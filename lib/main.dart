@@ -460,16 +460,6 @@ class _CollaborationTab extends StatelessWidget {
                         },
                       ),
                     ),
-                    IconButton(
-                      icon: messageProvider.isSyncing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.sync),
-                      onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
-                    ),
                   ],
                 ),
               ),
