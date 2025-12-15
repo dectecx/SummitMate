@@ -178,10 +178,30 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // 連接同步回調：當行程同步完成時，通知 ItineraryProvider 重載
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final messageProvider = context.read<MessageProvider>();
+      final itineraryProvider = context.read<ItineraryProvider>();
+      messageProvider.onItinerarySynced = () {
+        itineraryProvider.reload();
+      };
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('SummitMate 山友'),
+        actions: [
+          // 設定按鈕
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _showSettingsDialog(context),
+          ),
+        ],
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -206,6 +226,51 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.build),
             label: '工具',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSettingsDialog(BuildContext context) {
+    final settingsProvider = context.read<SettingsProvider>();
+    final controller = TextEditingController(text: settingsProvider.username);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('設定'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: '暱稱',
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final newName = controller.text.trim();
+              if (newName.isNotEmpty) {
+                settingsProvider.setUsername(newName);
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('儲存'),
           ),
         ],
       ),
@@ -358,10 +423,11 @@ class _CollaborationTab extends StatelessWidget {
                   children: [
                     Expanded(
                       child: SegmentedButton<String>(
+                        showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(value: 'Gear', label: Text('🎒 裝備')),
-                          ButtonSegment(value: 'Plan', label: Text('💡 建議')),
-                          ButtonSegment(value: 'Misc', label: Text('💬 雜項')),
+                          ButtonSegment(value: 'Gear', label: Text('裝備')),
+                          ButtonSegment(value: 'Plan', label: Text('建議')),
+                          ButtonSegment(value: 'Misc', label: Text('雜項')),
                         ],
                         selected: {messageProvider.selectedCategory},
                         onSelectionChanged: (selected) {
@@ -392,18 +458,40 @@ class _CollaborationTab extends StatelessWidget {
                             itemCount: messageProvider.currentCategoryMessages.length,
                             itemBuilder: (context, index) {
                               final msg = messageProvider.currentCategoryMessages[index];
+                              final replies = messageProvider.getReplies(msg.uuid);
+
                               return Card(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                child: ListTile(
+                                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                child: ExpansionTile(
                                   title: Text(msg.content),
                                   subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
-                                  trailing: IconButton(
-                                    icon: const Icon(Icons.delete_outline, size: 20),
-                                    onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (replies.isNotEmpty)
+                                        Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
+                                      IconButton(
+                                        icon: const Icon(Icons.reply, size: 20),
+                                        onPressed: () => _showReplyDialog(
+                                          context, messageProvider, settingsProvider.username, msg.uuid),
+                                        tooltip: '回覆',
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 20),
+                                        onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
+                                        tooltip: '刪除',
+                                      ),
+                                    ],
                                   ),
+                                  children: replies.map((reply) => ListTile(
+                                    leading: const Icon(Icons.subdirectory_arrow_right, size: 16),
+                                    title: Text(reply.content),
+                                    subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.delete_outline, size: 18),
+                                      onPressed: () => _confirmDelete(context, messageProvider, reply.uuid),
+                                    ),
+                                  )).toList(),
                                 ),
                               );
                             },
@@ -412,7 +500,7 @@ class _CollaborationTab extends StatelessWidget {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => _showAddMessageDialog(context, messageProvider, settingsProvider.username),
+            onPressed: () => _showAddMessageDialog(context, messageProvider, settingsProvider.username, null),
             child: const Icon(Icons.add_comment),
           ),
         );
@@ -443,21 +531,28 @@ class _CollaborationTab extends StatelessWidget {
     );
   }
 
-  void _showAddMessageDialog(BuildContext context, MessageProvider provider, String username) {
+  void _showAddMessageDialog(BuildContext context, MessageProvider provider, String username, String? parentId) {
     final contentController = TextEditingController();
+    final isReply = parentId != null;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('新增留言 (${_getCategoryName(provider.selectedCategory)})'),
-        content: TextField(
-          controller: contentController,
-          decoration: const InputDecoration(
-            labelText: '留言內容',
-            hintText: '輸入您的留言...',
+        title: Text(isReply ? '回覆留言' : '新增留言 (${_getCategoryName(provider.selectedCategory)})'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: TextField(
+            controller: contentController,
+            decoration: InputDecoration(
+              labelText: isReply ? '回覆內容' : '留言內容',
+              hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
+              border: const OutlineInputBorder(),
+            ),
+            maxLines: 5,  // 加大輸入框
+            minLines: 3,
+            textInputAction: TextInputAction.newline, // 允許換行
+            autofocus: true,
           ),
-          maxLines: 3,
-          autofocus: true,
         ),
         actions: [
           TextButton(
@@ -471,6 +566,7 @@ class _CollaborationTab extends StatelessWidget {
                 provider.addMessage(
                   user: username.isNotEmpty ? username : 'Anonymous',
                   content: content,
+                  parentId: parentId,
                 );
                 Navigator.pop(context);
               }
@@ -480,6 +576,10 @@ class _CollaborationTab extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showReplyDialog(BuildContext context, MessageProvider provider, String username, String parentId) {
+    _showAddMessageDialog(context, provider, username, parentId);
   }
 
   String _getCategoryName(String category) {

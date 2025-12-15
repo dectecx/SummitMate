@@ -18,6 +18,9 @@ class MessageProvider extends ChangeNotifier {
   bool _isSyncing = false;
   String? _error;
 
+  /// 行程同步完成回調 (供 UI 調用以通知 ItineraryProvider)
+  VoidCallback? onItinerarySynced;
+
   MessageProvider()
       : _repository = getIt<MessageRepository>(),
         _syncService = getIt<SyncService>() {
@@ -113,20 +116,28 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
-  /// 同步留言
+  /// 完整同步 (行程 + 留言)
   Future<void> sync() async {
     try {
       _isSyncing = true;
       _error = null;
       notifyListeners();
 
-      final result = await _syncService.syncMessages();
-      
+      // 使用 syncAll 同時同步行程和留言
+      final result = await _syncService.syncAll();
+
       if (!result.success) {
         _error = result.errors.join(', ');
       }
 
+      // 重新載入留言
       _loadMessages();
+
+      // 通知行程需要重載
+      if (result.itinerarySynced && onItinerarySynced != null) {
+        onItinerarySynced!();
+      }
+
       _isSyncing = false;
       notifyListeners();
     } catch (e) {

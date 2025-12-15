@@ -38,6 +38,16 @@ class SettingsProvider extends ChangeNotifier {
   /// 上次同步時間
   DateTime? get lastSyncTime => _settings?.lastSyncTime;
 
+  /// 上次同步時間 (格式化顯示)
+  String? get lastSyncTimeFormatted {
+    final time = lastSyncTime;
+    if (time == null) return null;
+    return '${time.month}/${time.day} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// 設定使用者名稱 (別名)
+  Future<void> setUsername(String username) => updateUsername(username);
+
   /// 載入設定
   void _loadSettings() {
     try {
