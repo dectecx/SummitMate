@@ -1,0 +1,119 @@
+import 'package:flutter/foundation.dart';
+import '../../core/constants.dart';
+import '../../core/di.dart';
+import '../../data/models/itinerary_item.dart';
+import '../../data/repositories/itinerary_repository.dart';
+
+/// 行程狀態管理
+class ItineraryProvider extends ChangeNotifier {
+  final ItineraryRepository _repository;
+
+  List<ItineraryItem> _items = [];
+  String _selectedDay = ItineraryDay.d1; // 預設顯示 D1
+  bool _isLoading = true;
+  String? _error;
+
+  ItineraryProvider() : _repository = getIt<ItineraryRepository>() {
+    _loadItems();
+  }
+
+  /// 所有行程節點
+  List<ItineraryItem> get allItems => _items;
+
+  /// 當前選擇天數的行程節點
+  List<ItineraryItem> get currentDayItems =>
+      _items.where((item) => item.day == _selectedDay).toList();
+
+  /// 當前選擇的天數
+  String get selectedDay => _selectedDay;
+
+  /// 是否正在載入
+  bool get isLoading => _isLoading;
+
+  /// 錯誤訊息
+  String? get error => _error;
+
+  /// 完成進度 (已打卡數 / 總數)
+  double get progress {
+    if (_items.isEmpty) return 0;
+    final checked = _items.where((item) => item.isCheckedIn).length;
+    return checked / _items.length;
+  }
+
+  /// 當前目標 (下一個未打卡節點)
+  ItineraryItem? get currentTarget {
+    try {
+      return currentDayItems.firstWhere((item) => !item.isCheckedIn);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 載入行程
+  Future<void> _loadItems() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      _items = await _repository.getAllItems();
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 切換顯示天數
+  void selectDay(String day) {
+    if (ItineraryDay.all.contains(day)) {
+      _selectedDay = day;
+      notifyListeners();
+    }
+  }
+
+  /// 打卡 - 使用當前時間
+  Future<void> checkInNow(int id) async {
+    await checkIn(id, DateTime.now());
+  }
+
+  /// 打卡 - 指定時間
+  Future<void> checkIn(int id, DateTime time) async {
+    try {
+      await _repository.checkIn(id, time);
+      await _loadItems();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 清除打卡
+  Future<void> clearCheckIn(int id) async {
+    try {
+      await _repository.clearCheckIn(id);
+      await _loadItems();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 重置所有打卡
+  Future<void> resetAllCheckIns() async {
+    try {
+      await _repository.resetAllCheckIns();
+      await _loadItems();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 同步行程後重新載入
+  Future<void> reload() async {
+    await _loadItems();
+  }
+}
