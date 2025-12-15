@@ -46,13 +46,13 @@ class MessageProvider extends ChangeNotifier {
   String? get error => _error;
 
   /// 載入留言
-  Future<void> _loadMessages() async {
+  void _loadMessages() {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      _allMessages = await _repository.getAllMessages();
+      _allMessages = _repository.getAllMessages();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -85,16 +85,17 @@ class MessageProvider extends ChangeNotifier {
     String? parentId,
   }) async {
     try {
-      final message = Message()
-        ..uuid = _uuid.v4()
-        ..parentId = parentId
-        ..user = user
-        ..category = _selectedCategory
-        ..content = content
-        ..timestamp = DateTime.now();
+      final message = Message(
+        uuid: _uuid.v4(),
+        parentId: parentId,
+        user: user,
+        category: _selectedCategory,
+        content: content,
+        timestamp: DateTime.now(),
+      );
 
       await _syncService.addMessageAndSync(message);
-      await _loadMessages();
+      _loadMessages();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -105,7 +106,7 @@ class MessageProvider extends ChangeNotifier {
   Future<void> deleteMessage(String uuid) async {
     try {
       await _syncService.deleteMessageAndSync(uuid);
-      await _loadMessages();
+      _loadMessages();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -125,7 +126,7 @@ class MessageProvider extends ChangeNotifier {
         _error = result.errors.join(', ');
       }
 
-      await _loadMessages();
+      _loadMessages();
       _isSyncing = false;
       notifyListeners();
     } catch (e) {
@@ -136,7 +137,7 @@ class MessageProvider extends ChangeNotifier {
   }
 
   /// 重新載入
-  Future<void> reload() async {
-    await _loadMessages();
+  void reload() {
+    _loadMessages();
   }
 }

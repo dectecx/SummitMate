@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:isar/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/isar_service.dart';
@@ -20,25 +19,27 @@ Future<void> setupDependencies() async {
   final prefs = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(prefs);
 
-  // Singleton: IsarService
-  final isarService = IsarService();
-  await isarService.init();
-  getIt.registerSingleton<IsarService>(isarService);
-  getIt.registerSingleton<Isar>(isarService.isar);
+  // Singleton: HiveService
+  final hiveService = HiveService();
+  await hiveService.init();
+  getIt.registerSingleton<HiveService>(hiveService);
 
-  // Repositories
-  getIt.registerLazySingleton<SettingsRepository>(
-    () => SettingsRepository(getIt<Isar>()),
-  );
-  getIt.registerLazySingleton<ItineraryRepository>(
-    () => ItineraryRepository(getIt<Isar>()),
-  );
-  getIt.registerLazySingleton<MessageRepository>(
-    () => MessageRepository(getIt<Isar>()),
-  );
-  getIt.registerLazySingleton<GearRepository>(
-    () => GearRepository(getIt<Isar>()),
-  );
+  // Repositories (需要先初始化)
+  final settingsRepo = SettingsRepository();
+  await settingsRepo.init();
+  getIt.registerSingleton<SettingsRepository>(settingsRepo);
+
+  final itineraryRepo = ItineraryRepository();
+  await itineraryRepo.init();
+  getIt.registerSingleton<ItineraryRepository>(itineraryRepo);
+
+  final messageRepo = MessageRepository();
+  await messageRepo.init();
+  getIt.registerSingleton<MessageRepository>(messageRepo);
+
+  final gearRepo = GearRepository();
+  await gearRepo.init();
+  getIt.registerSingleton<GearRepository>(gearRepo);
 
   // Services
   getIt.registerLazySingleton<GoogleSheetsService>(

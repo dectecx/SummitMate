@@ -1,53 +1,58 @@
-import 'package:isar/isar.dart';
+import 'package:hive/hive.dart';
 import '../models/settings.dart';
 
 /// Settings Repository
 /// 管理全域設定的 CRUD 操作
 class SettingsRepository {
-  final Isar _isar;
+  static const String _boxName = 'settings';
+  static const String _settingsKey = 'app_settings';
 
-  SettingsRepository(this._isar);
+  Box<Settings>? _box;
+
+  /// 開啟 Box
+  Future<void> init() async {
+    _box = await Hive.openBox<Settings>(_boxName);
+  }
+
+  /// 取得 Box
+  Box<Settings> get box {
+    if (_box == null || !_box!.isOpen) {
+      throw StateError('SettingsRepository not initialized. Call init() first.');
+    }
+    return _box!;
+  }
 
   /// 取得設定 (若不存在則建立預設值)
-  Future<Settings> getSettings() async {
-    final settings = await _isar.settings.get(1);
-    if (settings != null) return settings;
-
-    // 建立預設設定
-    final defaultSettings = Settings.withDefaults();
-    await _isar.writeTxn(() async {
-      await _isar.settings.put(defaultSettings);
-    });
-    return defaultSettings;
+  Settings getSettings() {
+    var settings = box.get(_settingsKey);
+    if (settings == null) {
+      settings = Settings.withDefaults();
+      box.put(_settingsKey, settings);
+    }
+    return settings;
   }
 
   /// 更新使用者名稱
   Future<void> updateUsername(String username) async {
-    final settings = await getSettings();
+    final settings = getSettings();
     settings.username = username;
-    await _isar.writeTxn(() async {
-      await _isar.settings.put(settings);
-    });
+    await settings.save();
   }
 
   /// 更新最後同步時間
   Future<void> updateLastSyncTime(DateTime time) async {
-    final settings = await getSettings();
+    final settings = getSettings();
     settings.lastSyncTime = time;
-    await _isar.writeTxn(() async {
-      await _isar.settings.put(settings);
-    });
+    await settings.save();
   }
 
   /// 監聽設定變更
-  Stream<Settings?> watchSettings() {
-    return _isar.settings.watchObject(1);
+  Stream<BoxEvent> watchSettings() {
+    return box.watch(key: _settingsKey);
   }
 
   /// 重置設定 (Debug 用途)
   Future<void> resetSettings() async {
-    await _isar.writeTxn(() async {
-      await _isar.settings.clear();
-    });
+    await box.clear();
   }
 }

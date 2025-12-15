@@ -481,7 +481,7 @@ class _ToolsTab extends StatelessWidget {
                       subtitle: Text('${entry.value.fold<double>(0, (sum, item) => sum + item.weight).toStringAsFixed(0)}g'),
                       children: entry.value.map((item) => CheckboxListTile(
                         value: item.isChecked,
-                        onChanged: (_) => provider.toggleChecked(item.id!),
+                        onChanged: (_) => provider.toggleChecked(item.key),
                         title: Text(item.name),
                         secondary: Text('${item.weight.toStringAsFixed(0)}g'),
                       )).toList(),

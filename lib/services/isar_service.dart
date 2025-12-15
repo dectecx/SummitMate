@@ -1,98 +1,58 @@
-import 'dart:io';
-import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../data/models/settings.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 import '../data/models/gear_item.dart';
 
-/// Isar 資料庫服務
+/// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期
-class IsarService {
-  static IsarService? _instance;
-  Isar? _isar;
+class HiveService {
+  static HiveService? _instance;
+  bool _isInitialized = false;
 
   /// 單例模式
-  factory IsarService() {
-    _instance ??= IsarService._internal();
+  factory HiveService() {
+    _instance ??= HiveService._internal();
     return _instance!;
   }
 
-  IsarService._internal();
-
-  /// 取得 Isar 實例
-  Isar get isar {
-    if (_isar == null) {
-      throw StateError('IsarService has not been initialized. Call init() first.');
-    }
-    return _isar!;
-  }
+  HiveService._internal();
 
   /// 是否已初始化
-  bool get isInitialized => _isar != null;
+  bool get isInitialized => _isInitialized;
 
-  /// 初始化資料庫
+  /// 初始化 Hive
   Future<void> init() async {
-    if (_isar != null) return;
+    if (_isInitialized) return;
 
-    final dir = await getApplicationDocumentsDirectory();
-    _isar = await Isar.open(
-      [
-        SettingsSchema,
-        ItineraryItemSchema,
-        MessageSchema,
-        GearItemSchema,
-      ],
-      directory: dir.path,
-      name: 'summitmate',
-    );
+    // 初始化 Hive Flutter
+    await Hive.initFlutter();
+
+    // 註冊 Adapters (由 build_runner 生成)
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(SettingsAdapter());
+    }
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(ItineraryItemAdapter());
+    }
+    if (!Hive.isAdapterRegistered(2)) {
+      Hive.registerAdapter(MessageAdapter());
+    }
+    if (!Hive.isAdapterRegistered(3)) {
+      Hive.registerAdapter(GearItemAdapter());
+    }
+
+    _isInitialized = true;
   }
 
-  /// 關閉資料庫
+  /// 關閉所有 Box
   Future<void> close() async {
-    await _isar?.close();
-    _isar = null;
+    await Hive.close();
+    _isInitialized = false;
   }
 
   /// 清除所有資料 (Debug 用途)
   Future<void> clearAllData() async {
-    await _isar?.writeTxn(() async {
-      await _isar!.clear();
-    });
-  }
-
-  /// 取得資料庫大小 (bytes)
-  /// 透過備份檔案來計算大小
-  Future<int> getDatabaseSize() async {
-    if (_isar == null) return 0;
-    
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      final backupPath = '${dir.path}/summitmate_backup.isar';
-      await _isar!.copyToFile(backupPath);
-      
-      // 使用 dart:io 操作檔案
-      final backupFile = File(backupPath);
-      final size = await backupFile.length();
-      await backupFile.delete();
-      return size;
-    } catch (e) {
-      // 如果備份失敗，返回 0
-      return 0;
-    }
-  }
-
-  /// 為測試提供的初始化方法
-  static Future<Isar> initForTest({String? directory, String? name}) async {
-    return await Isar.open(
-      [
-        SettingsSchema,
-        ItineraryItemSchema,
-        MessageSchema,
-        GearItemSchema,
-      ],
-      directory: directory ?? '',
-      name: name ?? 'test_${DateTime.now().millisecondsSinceEpoch}',
-    );
+    await Hive.deleteFromDisk();
   }
 }

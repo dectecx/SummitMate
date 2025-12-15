@@ -61,15 +61,13 @@ class GearProvider extends ChangeNotifier {
   String? get error => _error;
 
   /// 總重量 (克)
-  double get totalWeight => _items.fold<double>(0.0, (sum, item) => sum + item.weight);
+  double get totalWeight => _repository.getTotalWeight();
 
   /// 總重量 (公斤)
   double get totalWeightKg => totalWeight / 1000;
 
   /// 已打包重量 (克)
-  double get checkedWeight => _items
-      .where((item) => item.isChecked)
-      .fold<double>(0.0, (sum, item) => sum + item.weight);
+  double get checkedWeight => _repository.getCheckedWeight();
 
   /// 已打包重量 (公斤)
   double get checkedWeightKg => checkedWeight / 1000;
@@ -82,22 +80,16 @@ class GearProvider extends ChangeNotifier {
   }
 
   /// 依分類統計重量
-  Map<String, double> get weightByCategory {
-    final result = <String, double>{};
-    for (final item in _items) {
-      result[item.category] = (result[item.category] ?? 0) + item.weight;
-    }
-    return result;
-  }
+  Map<String, double> get weightByCategory => _repository.getWeightByCategory();
 
   /// 載入裝備
-  Future<void> _loadItems() async {
+  void _loadItems() {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      _items = await _repository.getAllItems();
+      _items = _repository.getAllItems();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -126,14 +118,15 @@ class GearProvider extends ChangeNotifier {
     required String category,
   }) async {
     try {
-      final item = GearItem()
-        ..name = name
-        ..weight = weight
-        ..category = category
-        ..isChecked = false;
+      final item = GearItem(
+        name: name,
+        weight: weight,
+        category: category,
+        isChecked: false,
+      );
 
       await _repository.addItem(item);
-      await _loadItems();
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -144,7 +137,7 @@ class GearProvider extends ChangeNotifier {
   Future<void> updateItem(GearItem item) async {
     try {
       await _repository.updateItem(item);
-      await _loadItems();
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -152,10 +145,10 @@ class GearProvider extends ChangeNotifier {
   }
 
   /// 刪除裝備
-  Future<void> deleteItem(int id) async {
+  Future<void> deleteItem(dynamic key) async {
     try {
-      await _repository.deleteItem(id);
-      await _loadItems();
+      await _repository.deleteItem(key);
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -163,10 +156,10 @@ class GearProvider extends ChangeNotifier {
   }
 
   /// 切換打包狀態
-  Future<void> toggleChecked(int id) async {
+  Future<void> toggleChecked(dynamic key) async {
     try {
-      await _repository.toggleChecked(id);
-      await _loadItems();
+      await _repository.toggleChecked(key);
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -177,7 +170,7 @@ class GearProvider extends ChangeNotifier {
   Future<void> resetAllChecked() async {
     try {
       await _repository.resetAllChecked();
-      await _loadItems();
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -185,7 +178,7 @@ class GearProvider extends ChangeNotifier {
   }
 
   /// 重新載入
-  Future<void> reload() async {
-    await _loadItems();
+  void reload() {
+    _loadItems();
   }
 }

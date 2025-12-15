@@ -1,111 +1,123 @@
-import 'package:isar/isar.dart';
+import 'package:hive/hive.dart';
 import '../models/message.dart';
 
 /// Message Repository
 /// 管理留言的 CRUD 操作與同步
 class MessageRepository {
-  final Isar _isar;
+  static const String _boxName = 'messages';
 
-  MessageRepository(this._isar);
+  Box<Message>? _box;
+
+  /// 開啟 Box
+  Future<void> init() async {
+    _box = await Hive.openBox<Message>(_boxName);
+  }
+
+  /// 取得 Box
+  Box<Message> get box {
+    if (_box == null || !_box!.isOpen) {
+      throw StateError('MessageRepository not initialized. Call init() first.');
+    }
+    return _box!;
+  }
 
   /// 取得所有留言
-  Future<List<Message>> getAllMessages() async {
-    return await _isar.messages
-        .where()
-        .sortByTimestampDesc()
-        .findAll();
+  List<Message> getAllMessages() {
+    final messages = box.values.toList();
+    messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return messages;
   }
 
   /// 依分類取得留言
-  Future<List<Message>> getMessagesByCategory(String category) async {
-    return await _isar.messages
-        .filter()
-        .categoryEqualTo(category)
-        .sortByTimestampDesc()
-        .findAll();
+  List<Message> getMessagesByCategory(String category) {
+    final messages = box.values.where((m) => m.category == category).toList();
+    messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return messages;
   }
 
   /// 取得主留言 (非回覆)
-  Future<List<Message>> getMainMessages({String? category}) async {
-    var query = _isar.messages.filter().parentIdIsNull();
-
+  List<Message> getMainMessages({String? category}) {
+    var messages = box.values.where((m) => m.parentId == null);
+    
     if (category != null) {
-      query = query.categoryEqualTo(category);
+      messages = messages.where((m) => m.category == category);
     }
-
-    return await query.sortByTimestampDesc().findAll();
+    
+    final result = messages.toList();
+    result.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return result;
   }
 
   /// 取得子留言 (回覆)
-  Future<List<Message>> getReplies(String parentUuid) async {
-    return await _isar.messages
-        .filter()
-        .parentIdEqualTo(parentUuid)
-        .sortByTimestamp()
-        .findAll();
+  List<Message> getReplies(String parentUuid) {
+    final messages = box.values.where((m) => m.parentId == parentUuid).toList();
+    messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    return messages;
   }
 
   /// 依 UUID 取得留言
-  Future<Message?> getByUuid(String uuid) async {
-    return await _isar.messages
-        .filter()
-        .uuidEqualTo(uuid)
-        .findFirst();
+  Message? getByUuid(String uuid) {
+    try {
+      return box.values.firstWhere((m) => m.uuid == uuid);
+    } catch (e) {
+      return null;
+    }
   }
 
   /// 新增留言
   Future<void> addMessage(Message message) async {
-    await _isar.writeTxn(() async {
-      await _isar.messages.put(message);
-    });
+    await box.add(message);
   }
 
   /// 刪除留言 (依 UUID)
   Future<void> deleteByUuid(String uuid) async {
-    await _isar.writeTxn(() async {
-      await _isar.messages.filter().uuidEqualTo(uuid).deleteFirst();
-    });
+    final keyToDelete = box.keys.cast<dynamic>().firstWhere(
+      (key) => box.get(key)?.uuid == uuid,
+      orElse: () => null,
+    );
+    if (keyToDelete != null) {
+      await box.delete(keyToDelete);
+    }
   }
 
   /// 批次同步留言 (從雲端)
   Future<void> syncFromCloud(List<Message> cloudMessages) async {
-    await _isar.writeTxn(() async {
-      // 獲取現有 UUID 集合
-      final existing = await _isar.messages.where().findAll();
-      final existingUuids = existing.map((m) => m.uuid).toSet();
+    // 獲取現有 UUID 集合
+    final existingUuids = box.values.map((m) => m.uuid).toSet();
+    final cloudUuids = cloudMessages.map((m) => m.uuid).toSet();
 
-      // 新增或更新雲端留言
-      for (final msg in cloudMessages) {
-        if (!existingUuids.contains(msg.uuid)) {
-          await _isar.messages.put(msg);
-        }
+    // 新增雲端有但本地沒有的留言
+    for (final msg in cloudMessages) {
+      if (!existingUuids.contains(msg.uuid)) {
+        await box.add(msg);
       }
+    }
 
-      // 移除雲端已刪除的留言
-      final cloudUuids = cloudMessages.map((m) => m.uuid).toSet();
-      for (final localMsg in existing) {
-        if (!cloudUuids.contains(localMsg.uuid)) {
-          await _isar.messages.delete(localMsg.id!);
-        }
+    // 移除本地有但雲端沒有的留言
+    final keysToDelete = <dynamic>[];
+    for (final key in box.keys) {
+      final localMsg = box.get(key);
+      if (localMsg != null && !cloudUuids.contains(localMsg.uuid)) {
+        keysToDelete.add(key);
       }
-    });
+    }
+    for (final key in keysToDelete) {
+      await box.delete(key);
+    }
   }
 
   /// 取得待上傳的本地留言 (尚未在雲端)
-  Future<List<Message>> getPendingMessages(Set<String> cloudUuids) async {
-    final all = await getAllMessages();
-    return all.where((m) => !cloudUuids.contains(m.uuid)).toList();
+  List<Message> getPendingMessages(Set<String> cloudUuids) {
+    return box.values.where((m) => !cloudUuids.contains(m.uuid)).toList();
   }
 
   /// 監聽留言變更
-  Stream<List<Message>> watchAllMessages() {
-    return _isar.messages.where().watch(fireImmediately: true);
+  Stream<BoxEvent> watchAllMessages() {
+    return box.watch();
   }
 
   /// 清除所有留言 (Debug 用途)
   Future<void> clearAll() async {
-    await _isar.writeTxn(() async {
-      await _isar.messages.clear();
-    });
+    await box.clear();
   }
 }

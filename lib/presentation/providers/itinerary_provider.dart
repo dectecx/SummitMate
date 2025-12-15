@@ -50,13 +50,13 @@ class ItineraryProvider extends ChangeNotifier {
   }
 
   /// 載入行程
-  Future<void> _loadItems() async {
+  void _loadItems() {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      _items = await _repository.getAllItems();
+      _items = _repository.getAllItems();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -75,15 +75,15 @@ class ItineraryProvider extends ChangeNotifier {
   }
 
   /// 打卡 - 使用當前時間
-  Future<void> checkInNow(int id) async {
-    await checkIn(id, DateTime.now());
+  Future<void> checkInNow(dynamic key) async {
+    await checkIn(key, DateTime.now());
   }
 
   /// 打卡 - 指定時間
-  Future<void> checkIn(int id, DateTime time) async {
+  Future<void> checkIn(dynamic key, DateTime time) async {
     try {
-      await _repository.checkIn(id, time);
-      await _loadItems();
+      await _repository.checkIn(key, time);
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -91,10 +91,10 @@ class ItineraryProvider extends ChangeNotifier {
   }
 
   /// 清除打卡
-  Future<void> clearCheckIn(int id) async {
+  Future<void> clearCheckIn(dynamic key) async {
     try {
-      await _repository.clearCheckIn(id);
-      await _loadItems();
+      await _repository.clearCheckIn(key);
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -105,7 +105,7 @@ class ItineraryProvider extends ChangeNotifier {
   Future<void> resetAllCheckIns() async {
     try {
       await _repository.resetAllCheckIns();
-      await _loadItems();
+      _loadItems();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -113,7 +113,7 @@ class ItineraryProvider extends ChangeNotifier {
   }
 
   /// 同步行程後重新載入
-  Future<void> reload() async {
-    await _loadItems();
+  void reload() {
+    _loadItems();
   }
 }

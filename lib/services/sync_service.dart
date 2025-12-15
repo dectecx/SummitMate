@@ -134,7 +134,7 @@ class SyncService {
 
     // 2. 從雲端刪除
     final result = await _sheetsService.deleteMessage(uuid);
-    
+
     if (!result.success) {
       // TODO: 實作離線佇列，稍後重試
     }
@@ -148,8 +148,8 @@ class SyncService {
     final cloudUuids = cloudMessages.map((m) => m.uuid).toSet();
 
     // 1. 找出本地有但雲端沒有的留言 (待上傳)
-    final pendingMessages = await _messageRepo.getPendingMessages(cloudUuids);
-    
+    final pendingMessages = _messageRepo.getPendingMessages(cloudUuids);
+
     // 2. 上傳待同步的留言
     for (final msg in pendingMessages) {
       await _sheetsService.addMessage(msg);

@@ -39,19 +39,19 @@ class SettingsProvider extends ChangeNotifier {
   DateTime? get lastSyncTime => _settings?.lastSyncTime;
 
   /// 載入設定
-  Future<void> _loadSettings() async {
+  void _loadSettings() {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      _settings = await _repository.getSettings();
+      _settings = _repository.getSettings();
 
       // 也嘗試從 SharedPreferences 讀取 (向下相容)
       if (_settings?.username.isEmpty ?? true) {
         final savedUsername = _prefs.getString(PrefKeys.username);
         if (savedUsername != null && savedUsername.isNotEmpty) {
-          await updateUsername(savedUsername);
+          updateUsername(savedUsername);
         }
       }
 
@@ -69,7 +69,7 @@ class SettingsProvider extends ChangeNotifier {
     try {
       await _repository.updateUsername(username);
       await _prefs.setString(PrefKeys.username, username);
-      _settings = await _repository.getSettings();
+      _settings = _repository.getSettings();
       _error = null;
       notifyListeners();
     } catch (e) {
@@ -82,7 +82,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> updateLastSyncTime(DateTime time) async {
     try {
       await _repository.updateLastSyncTime(time);
-      _settings = await _repository.getSettings();
+      _settings = _repository.getSettings();
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -91,7 +91,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   /// 重新載入設定
-  Future<void> reload() async {
-    await _loadSettings();
+  void reload() {
+    _loadSettings();
   }
 }

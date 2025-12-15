@@ -1,57 +1,61 @@
-import 'package:isar/isar.dart';
+import 'package:hive/hive.dart';
 
 part 'message.g.dart';
 
-/// 留言 Collection
-/// 來源：與 Google Sheets 雙向同步
-@collection
-class Message {
-  /// Isar Auto ID
-  Id? id;
-
+/// 留言
+@HiveType(typeId: 2)
+class Message extends HiveObject {
   /// 後端識別用 UUID
-  @Index(unique: true)
-  String uuid = '';
+  @HiveField(0)
+  String uuid;
 
   /// 父留言 UUID (若為 null 則為主留言，否則為子留言)
-  @Index()
+  @HiveField(1)
   String? parentId;
 
   /// 發文者暱稱
-  String user = '';
+  @HiveField(2)
+  String user;
 
   /// 留言分類：Gear, Plan, Misc
-  @Index()
-  String category = '';
+  @HiveField(3)
+  String category;
 
   /// 留言內容
-  String content = '';
+  @HiveField(4)
+  String content;
 
   /// 發文時間
-  @Index()
-  DateTime timestamp = DateTime.now();
+  @HiveField(5)
+  DateTime timestamp;
 
-  /// 建構子
-  Message();
+  Message({
+    this.uuid = '',
+    this.parentId,
+    this.user = '',
+    this.category = '',
+    this.content = '',
+    DateTime? timestamp,
+  }) : timestamp = timestamp ?? DateTime.now();
 
   /// 是否為回覆留言
-  @ignore
   bool get isReply => parentId != null;
 
-  /// 從 JSON 建立 (用於 Google Sheets 資料解析)
+  /// 從 JSON 建立
   factory Message.fromJson(Map<String, dynamic> json) {
-    return Message()
-      ..uuid = json['uuid'] as String? ?? json['message_id'] as String? ?? ''
-      ..parentId = json['parent_id'] as String?
-      ..user = json['user'] as String? ?? ''
-      ..category = json['category'] as String? ?? ''
-      ..content = json['content'] as String? ?? ''
-      ..timestamp = json['timestamp'] != null
+    return Message(
+      uuid: json['uuid'] as String? ?? json['message_id'] as String? ?? '',
+      parentId: json['parent_id'] as String?,
+      user: json['user'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      content: json['content'] as String? ?? '',
+      timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'] as String)
-          : DateTime.now();
+          : DateTime.now(),
+    );
   }
 
-  /// 轉換為 JSON (用於 API 請求)
+  /// 轉換為 JSON
   Map<String, dynamic> toJson() {
     return {
       'uuid': uuid,
