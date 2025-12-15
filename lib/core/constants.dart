@@ -62,9 +62,6 @@ class PrefKeys {
 
 /// API 配置
 class ApiConfig {
-  // Google Apps Script Web App URL (需於實際部署時替換)
-  static const String gasBaseUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
-
   // API Actions
   static const String actionFetchAll = 'fetch_all';
   static const String actionAddMessage = 'add_message';

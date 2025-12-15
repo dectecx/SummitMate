@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/constants.dart';
+import '../core/env_config.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 
@@ -17,7 +18,7 @@ class GoogleSheetsService {
     http.Client? client,
     String? baseUrl,
   })  : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConfig.gasBaseUrl;
+        _baseUrl = baseUrl ?? EnvConfig.gasBaseUrl;
 
   /// 取得所有資料 (行程 + 留言)
   /// 回傳格式：{ itinerary: [...], messages: [...] }
@@ -28,11 +29,11 @@ class GoogleSheetsService {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
-        
+
         final itineraryList = (json['itinerary'] as List<dynamic>?)
             ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
             .toList() ?? [];
-        
+
         final messagesList = (json['messages'] as List<dynamic>?)
             ?.map((e) => Message.fromJson(e as Map<String, dynamic>))
             .toList() ?? [];
