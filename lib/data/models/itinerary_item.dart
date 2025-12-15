@@ -53,14 +53,30 @@ class ItineraryItem extends HiveObject {
 
   /// 從 JSON 建立
   factory ItineraryItem.fromJson(Map<String, dynamic> json) {
+    // 解析 est_time：API 可能返回 ISO 格式，需轉為 HH:mm
+    String parseEstTime(dynamic value) {
+      if (value == null || value.toString().isEmpty) return '';
+      final str = value.toString();
+      // 如果是 ISO 格式 (包含 T)，解析並提取時間
+      if (str.contains('T')) {
+        try {
+          final dt = DateTime.parse(str);
+          return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+        } catch (_) {
+          return str;
+        }
+      }
+      return str;
+    }
+
     return ItineraryItem(
-      day: json['day'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      estTime: json['est_time'] as String? ?? '',
+      day: json['day']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      estTime: parseEstTime(json['est_time']),
       altitude: (json['altitude'] as num?)?.toInt() ?? 0,
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
-      note: json['note'] as String? ?? '',
-      imageAsset: json['image_asset'] as String?,
+      note: json['note']?.toString() ?? '',
+      imageAsset: json['image_asset']?.toString(),
     );
   }
 
