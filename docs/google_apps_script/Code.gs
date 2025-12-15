@@ -2,7 +2,7 @@
 // SummitMate - Google Apps Script API
 // 嘉明湖登山行程助手 Backend API
 // ============================================================
-// 
+//
 // 部署步驟：
 // 1. 建立 Google Sheets，包含兩個工作表：
 //    - "Itinerary" (行程)
@@ -16,7 +16,7 @@
 //    - 誰可以存取：任何人
 // 7. 點擊「部署」並複製網頁應用程式 URL
 // 8. 將 URL 更新到 Flutter App 的 constants.dart
-// 
+//
 // ============================================================
 
 // 取得試算表
@@ -30,7 +30,7 @@ function getSpreadsheet() {
 
 function doGet(e) {
   const action = e.parameter.action;
-  
+
   try {
     switch (action) {
       case 'fetch_all':
@@ -49,7 +49,7 @@ function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     const action = data.action;
-    
+
     switch (action) {
       case 'add_message':
         return createJsonResponse(addMessage(data.data));
@@ -78,7 +78,7 @@ function createJsonResponse(data, statusCode = 200) {
  */
 function fetchAll() {
   const ss = getSpreadsheet();
-  
+
   return {
     itinerary: getItineraryData(ss),
     messages: getMessagesData(ss)
@@ -91,13 +91,13 @@ function fetchAll() {
 function getItineraryData(ss) {
   const sheet = ss.getSheetByName('Itinerary');
   if (!sheet) return [];
-  
+
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return []; // Only header row
-  
+
   const headers = data[0];
   const rows = data.slice(1);
-  
+
   return rows.map(row => {
     const item = {};
     headers.forEach((header, index) => {
@@ -115,19 +115,19 @@ function getItineraryData(ss) {
 function getMessagesData(ss) {
   const sheet = ss.getSheetByName('Messages');
   if (!sheet) return [];
-  
+
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
-  
+
   const headers = data[0];
   const rows = data.slice(1);
-  
+
   return rows.map(row => {
     const msg = {};
     headers.forEach((header, index) => {
       const key = headerToKey(header);
       let value = row[index];
-      
+
       // Handle timestamp
       if (key === 'timestamp' && value instanceof Date) {
         value = value.toISOString();
@@ -136,7 +136,7 @@ function getMessagesData(ss) {
       if (key === 'parent_id' && !value) {
         value = null;
       }
-      
+
       msg[key] = value;
     });
     return msg;
@@ -149,13 +149,13 @@ function getMessagesData(ss) {
 function addMessage(messageData) {
   const ss = getSpreadsheet();
   let sheet = ss.getSheetByName('Messages');
-  
+
   // Create sheet if not exists
   if (!sheet) {
     sheet = ss.insertSheet('Messages');
     sheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp']);
   }
-  
+
   // Check for duplicate UUID
   const existingData = sheet.getDataRange().getValues();
   for (let i = 1; i < existingData.length; i++) {
@@ -163,7 +163,7 @@ function addMessage(messageData) {
       return { success: true, message: 'Message already exists' };
     }
   }
-  
+
   // Append new row
   sheet.appendRow([
     messageData.uuid || Utilities.getUuid(),
@@ -173,7 +173,7 @@ function addMessage(messageData) {
     messageData.content || '',
     messageData.timestamp ? new Date(messageData.timestamp) : new Date()
   ]);
-  
+
   return { success: true, message: 'Message added' };
 }
 
@@ -183,20 +183,20 @@ function addMessage(messageData) {
 function deleteMessage(uuid) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName('Messages');
-  
+
   if (!sheet) {
     return { success: false, error: 'Messages sheet not found' };
   }
-  
+
   const data = sheet.getDataRange().getValues();
-  
+
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === uuid) {
       sheet.deleteRow(i + 1); // +1 because array is 0-indexed, rows are 1-indexed
       return { success: true, message: 'Message deleted' };
     }
   }
-  
+
   return { success: false, error: 'Message not found' };
 }
 
@@ -242,13 +242,13 @@ function testAddMessage() {
 
 function setupSheets() {
   const ss = getSpreadsheet();
-  
+
   // Create Itinerary sheet
   let itinerarySheet = ss.getSheetByName('Itinerary');
   if (!itinerarySheet) {
     itinerarySheet = ss.insertSheet('Itinerary');
     itinerarySheet.appendRow(['day', 'name', 'est_time', 'altitude', 'distance', 'note', 'image_asset']);
-    
+
     // Add sample data
     const sampleData = [
       ['D0', '向陽國家森林遊樂區', '13:00', 2320, 0, '入園整裝', ''],
@@ -262,18 +262,18 @@ function setupSheets() {
       ['D2', '向陽山屋', '09:00', 2850, 5.9, '休息', ''],
       ['D2', '向陽國家森林遊樂區', '12:00', 2320, 10.2, '完成', '']
     ];
-    
+
     sampleData.forEach(row => itinerarySheet.appendRow(row));
-    
+
     Logger.log('Itinerary sheet created with sample data');
   }
-  
+
   // Create Messages sheet
   let messagesSheet = ss.getSheetByName('Messages');
   if (!messagesSheet) {
     messagesSheet = ss.insertSheet('Messages');
     messagesSheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp']);
-    
+
     // Add sample message
     messagesSheet.appendRow([
       Utilities.getUuid(),
@@ -283,9 +283,9 @@ function setupSheets() {
       '歡迎使用 SummitMate！這是行程協作留言板。',
       new Date()
     ]);
-    
+
     Logger.log('Messages sheet created with welcome message');
   }
-  
+
   Logger.log('Setup complete!');
 }
