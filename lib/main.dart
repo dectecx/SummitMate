@@ -431,7 +431,7 @@ class _ToolsTab extends StatelessWidget {
                   ),
                   ListTile(
                     leading: const Icon(Icons.cloud),
-                    title: const Text('開啟 Windy (向陽山屋)'),
+                    title: const Text('開啟 Windy (嘉明湖)'),
                     trailing: const Icon(Icons.open_in_new),
                     onTap: () {
                       // TODO: launchUrl
@@ -439,7 +439,7 @@ class _ToolsTab extends StatelessWidget {
                   ),
                   ListTile(
                     leading: const Icon(Icons.thermostat),
-                    title: const Text('開啟 中央氣象署 (海端鄉)'),
+                    title: const Text('開啟 中央氣象署 (三叉山)'),
                     trailing: const Icon(Icons.open_in_new),
                     onTap: () {
                       // TODO: launchUrl

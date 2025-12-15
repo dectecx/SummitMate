@@ -50,8 +50,8 @@ class ItineraryDay {
 
 /// 外部連結
 class ExternalLinks {
-  static const String windyUrl = 'https://www.windy.com/?23.298,120.960,12';
-  static const String cwaUrl = 'https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=1001708';
+  static const String windyUrl = 'https://www.windy.com/23.293/121.034?23.284,121.034,14';
+  static const String cwaUrl = 'https://www.cwa.gov.tw/V8/C/L/Mountain/Mountain.html?PID=D055';
 }
 
 /// SharedPreferences Keys
@@ -64,7 +64,7 @@ class PrefKeys {
 class ApiConfig {
   // Google Apps Script Web App URL (需於實際部署時替換)
   static const String gasBaseUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
-  
+
   // API Actions
   static const String actionFetchAll = 'fetch_all';
   static const String actionAddMessage = 'add_message';
