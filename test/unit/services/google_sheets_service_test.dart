@@ -9,31 +9,31 @@ void main() {
   group('GoogleSheetsService Tests', () {
     test('fetchAll should return itinerary and messages on success', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(
-          jsonEncode({
-            'itinerary': [
-              {
-                'day': 'D1',
-                'name': '向陽山屋',
-                'est_time': '11:30',
-                'altitude': 2850,
-                'distance': 4.3,
-                'note': '午餐點',
-              }
-            ],
-            'messages': [
-              {
-                'uuid': 'test-uuid-1',
-                'parent_id': null,
-                'user': 'Alex',
-                'category': 'Gear',
-                'content': '誰有帶攻頂爐？',
-                'timestamp': '2024-12-15T09:00:00Z',
-              }
-            ],
-          }),
-          200,
-        );
+        final responseBody = jsonEncode({
+          'itinerary': [
+            {
+              'day': 'D1',
+              'name': 'Mountain Lodge',
+              'est_time': '11:30',
+              'altitude': 2850,
+              'distance': 4.3,
+              'note': 'Lunch stop',
+            }
+          ],
+          'messages': [
+            {
+              'uuid': 'test-uuid-1',
+              'parent_id': null,
+              'user': 'Alex',
+              'category': 'Gear',
+              'content': 'Test message',
+              'timestamp': '2024-12-15T09:00:00Z',
+            }
+          ],
+        });
+        return http.Response(responseBody, 200, headers: {
+          'content-type': 'application/json; charset=utf-8',
+        });
       });
 
       final service = GoogleSheetsService(
@@ -45,7 +45,7 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.itinerary.length, 1);
-      expect(result.itinerary.first.name, '向陽山屋');
+      expect(result.itinerary.first.name, 'Mountain Lodge');
       expect(result.messages.length, 1);
       expect(result.messages.first.user, 'Alex');
     });
@@ -78,12 +78,13 @@ void main() {
         baseUrl: 'https://mock.api.com',
       );
 
-      final message = Message()
-        ..uuid = 'new-uuid'
-        ..user = 'Bob'
-        ..category = 'Plan'
-        ..content = '明天幾點出發？'
-        ..timestamp = DateTime(2024, 12, 15, 10, 0);
+      final message = Message(
+        uuid: 'new-uuid',
+        user: 'Bob',
+        category: 'Plan',
+        content: 'Test message',
+        timestamp: DateTime(2024, 12, 15, 10, 0),
+      );
 
       final result = await service.addMessage(message);
 

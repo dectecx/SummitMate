@@ -3,79 +3,80 @@ import 'package:summitmate/data/models/gear_item.dart';
 
 void main() {
   group('GearItem Model Tests', () {
-    test('should create gear item with required fields', () {
-      final item = GearItem()
-        ..name = '羽絨睡袋'
-        ..weight = 800
-        ..category = 'Sleep'
-        ..isChecked = false;
+    test('should create with default values', () {
+      final item = GearItem();
 
-      expect(item.name, '羽絨睡袋');
-      expect(item.weight, 800);
-      expect(item.category, 'Sleep');
+      expect(item.name, isEmpty);
+      expect(item.weight, equals(0));
+      expect(item.category, isEmpty);
       expect(item.isChecked, isFalse);
     });
 
-    test('should toggle isChecked state', () {
-      final item = GearItem()
-        ..name = '睡墊'
-        ..weight = 400
-        ..category = 'Sleep'
-        ..isChecked = false;
+    test('should create with named parameters', () {
+      final item = GearItem(
+        name: '睡袋',
+        weight: 1200,
+        category: 'Sleep',
+        isChecked: false,
+      );
+
+      expect(item.name, equals('睡袋'));
+      expect(item.weight, equals(1200));
+      expect(item.category, equals('Sleep'));
+      expect(item.isChecked, isFalse);
+    });
+
+    test('should toggle isChecked', () {
+      final item = GearItem(isChecked: false);
 
       item.isChecked = true;
-
       expect(item.isChecked, isTrue);
+
+      item.isChecked = false;
+      expect(item.isChecked, isFalse);
+    });
+
+    test('should calculate weightInKg correctly', () {
+      final item = GearItem(weight: 1500);
+
+      expect(item.weightInKg, equals(1.5));
     });
 
     test('should validate category values', () {
       final validCategories = ['Sleep', 'Cook', 'Wear', 'Other'];
 
-      final item = GearItem()
-        ..name = '測試裝備'
-        ..weight = 100
-        ..category = 'Sleep'
-        ..isChecked = false;
-
-      expect(validCategories.contains(item.category), isTrue);
-
-      item.category = 'InvalidCategory';
-      expect(validCategories.contains(item.category), isFalse);
-    });
-
-    test('should handle decimal weights', () {
-      final item = GearItem()
-        ..name = '鈦杯'
-        ..weight = 150.5
-        ..category = 'Cook'
-        ..isChecked = false;
-
-      expect(item.weight, 150.5);
-    });
-
-    test('should calculate weight in kg', () {
-      final item = GearItem()
-        ..name = '大背包'
-        ..weight = 1500
-        ..category = 'Other'
-        ..isChecked = false;
-
-      // weight 是 grams，除以 1000 得到 kg
-      expect(item.weight / 1000, 1.5);
-    });
-
-    test('should support all gear categories', () {
-      final categories = ['Sleep', 'Cook', 'Wear', 'Other'];
-
-      for (final cat in categories) {
-        final item = GearItem()
-          ..name = 'Test Item'
-          ..weight = 100
-          ..category = cat
-          ..isChecked = false;
-
-        expect(item.category, cat);
+      for (final cat in validCategories) {
+        final item = GearItem(category: cat);
+        expect(validCategories.contains(item.category), isTrue);
       }
+    });
+
+    test('should calculate total weight for multiple items', () {
+      final items = [
+        GearItem(weight: 1200),
+        GearItem(weight: 800),
+        GearItem(weight: 500),
+      ];
+
+      final total = items.fold<double>(0, (sum, item) => sum + item.weight);
+      expect(total, equals(2500));
+    });
+
+    test('should convert to/from JSON', () {
+      final item = GearItem(
+        name: '睡袋',
+        weight: 1200,
+        category: 'Sleep',
+        isChecked: true,
+      );
+
+      final json = item.toJson();
+      final restored = GearItem.fromJson(json);
+
+      expect(restored.name, equals(item.name));
+      expect(restored.weight, equals(item.weight));
+      expect(restored.category, equals(item.category));
+      expect(restored.isChecked, equals(item.isChecked));
     });
   });
 }

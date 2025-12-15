@@ -3,64 +3,75 @@ import 'package:summitmate/data/models/itinerary_item.dart';
 
 void main() {
   group('ItineraryItem Model Tests', () {
-    test('should create itinerary item with required fields', () {
-      final item = ItineraryItem()
-        ..day = 'D1'
-        ..name = '向陽山屋'
-        ..estTime = '11:30'
-        ..altitude = 2850
-        ..distance = 4.3
-        ..note = '午餐點';
+    test('should create with default values', () {
+      final item = ItineraryItem();
 
-      expect(item.day, 'D1');
-      expect(item.name, '向陽山屋');
-      expect(item.estTime, '11:30');
-      expect(item.altitude, 2850);
-      expect(item.distance, 4.3);
-      expect(item.note, '午餐點');
+      expect(item.day, isEmpty);
+      expect(item.name, isEmpty);
+      expect(item.estTime, isEmpty);
       expect(item.actualTime, isNull);
+      expect(item.altitude, equals(0));
+      expect(item.distance, equals(0.0));
+      expect(item.note, isEmpty);
       expect(item.imageAsset, isNull);
     });
 
-    test('should handle check-in with actualTime', () {
-      final checkInTime = DateTime(2024, 12, 15, 11, 35);
-      final item = ItineraryItem()
-        ..day = 'D1'
-        ..name = '向陽山屋'
-        ..estTime = '11:30';
+    test('should create with named parameters', () {
+      final item = ItineraryItem(
+        day: 'D1',
+        name: '向陽山屋',
+        estTime: '11:30',
+        altitude: 2850,
+        distance: 4.3,
+        note: '午餐點',
+      );
 
-      item.actualTime = checkInTime;
-
-      expect(item.actualTime, checkInTime);
+      expect(item.day, equals('D1'));
+      expect(item.name, equals('向陽山屋'));
+      expect(item.estTime, equals('11:30'));
+      expect(item.altitude, equals(2850));
+      expect(item.distance, equals(4.3));
+      expect(item.note, equals('午餐點'));
     });
 
-    test('should clear check-in by setting actualTime to null', () {
-      final item = ItineraryItem()
-        ..day = 'D1'
-        ..name = '向陽山屋'
-        ..estTime = '11:30'
-        ..actualTime = DateTime.now();
+    test('should report not checked in when actualTime is null', () {
+      final item = ItineraryItem();
 
-      item.actualTime = null;
-
-      expect(item.actualTime, isNull);
+      expect(item.isCheckedIn, isFalse);
     });
 
-    test('should support image asset', () {
-      final item = ItineraryItem()
-        ..day = 'D1'
-        ..name = '向陽登山口'
-        ..imageAsset = 'trailhead.jpg';
+    test('should report checked in when actualTime is set', () {
+      final item = ItineraryItem();
+      item.actualTime = DateTime.now();
 
-      expect(item.imageAsset, 'trailhead.jpg');
+      expect(item.isCheckedIn, isTrue);
     });
 
     test('should validate day format', () {
-      final item = ItineraryItem()..day = 'D0';
-      expect(['D0', 'D1', 'D2'].contains(item.day), isTrue);
+      final item = ItineraryItem(day: 'D1');
 
-      item.day = 'InvalidDay';
-      expect(['D0', 'D1', 'D2'].contains(item.day), isFalse);
+      expect(item.day, matches(RegExp(r'^D\d$')));
+    });
+
+    test('should convert to/from JSON', () {
+      final item = ItineraryItem(
+        day: 'D1',
+        name: '向陽山屋',
+        estTime: '11:30',
+        altitude: 2850,
+        distance: 4.3,
+        note: '午餐點',
+      );
+
+      final json = item.toJson();
+      final restored = ItineraryItem.fromJson(json);
+
+      expect(restored.day, equals(item.day));
+      expect(restored.name, equals(item.name));
+      expect(restored.estTime, equals(item.estTime));
+      expect(restored.altitude, equals(item.altitude));
+      expect(restored.distance, equals(item.distance));
+      expect(restored.note, equals(item.note));
     });
   });
 }
