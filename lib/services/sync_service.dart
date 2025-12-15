@@ -59,7 +59,7 @@ class SyncService {
   /// 僅同步行程
   Future<SyncResult> syncItinerary() async {
     final fetchResult = await _sheetsService.fetchAll();
-    
+
     if (!fetchResult.success) {
       return SyncResult(
         success: false,

@@ -126,8 +126,15 @@ class MessageProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
+      debugPrint('📡 開始同步...');
+
       // 使用 syncAll 同時同步行程和留言
       final result = await _syncService.syncAll();
+
+      debugPrint('📡 同步結果: success=${result.success}, itinerary=${result.itinerarySynced}, messages=${result.messagesSynced}');
+      if (result.errors.isNotEmpty) {
+        debugPrint('📡 同步錯誤: ${result.errors}');
+      }
 
       if (!result.success) {
         _error = result.errors.join(', ');
@@ -135,20 +142,25 @@ class MessageProvider extends ChangeNotifier {
 
       // 重新載入留言
       _loadMessages();
+      debugPrint('📡 留言數量: ${_allMessages.length}');
 
       // 通知行程需要重載
       if (result.itinerarySynced && onItinerarySynced != null) {
+        debugPrint('📡 通知行程重載');
         onItinerarySynced!();
       }
 
       // 通知同步完成以更新 lastSyncTime
       if (result.success && onSyncComplete != null) {
+        debugPrint('📡 更新同步時間: ${result.syncedAt}');
         onSyncComplete!(result.syncedAt);
       }
 
       _isSyncing = false;
       notifyListeners();
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('📡 同步異常: $e');
+      debugPrint('📡 堆疊: $stack');
       _error = e.toString();
       _isSyncing = false;
       notifyListeners();

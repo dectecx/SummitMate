@@ -2,6 +2,9 @@ import 'package:hive/hive.dart';
 
 part 'message.g.dart';
 
+/// 空字串轉 null 輔助函數
+String? _nullIfEmpty(String? value) => (value == null || value.isEmpty) ? null : value;
+
 /// 留言
 @HiveType(typeId: 2)
 class Message extends HiveObject {
@@ -44,13 +47,13 @@ class Message extends HiveObject {
   /// 從 JSON 建立
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      uuid: json['uuid'] as String? ?? json['message_id'] as String? ?? '',
-      parentId: json['parent_id'] as String?,
-      user: json['user'] as String? ?? '',
-      category: json['category'] as String? ?? '',
-      content: json['content'] as String? ?? '',
+      uuid: json['uuid']?.toString() ?? json['message_id']?.toString() ?? '',
+      parentId: _nullIfEmpty(json['parent_id']?.toString()),
+      user: json['user']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
       timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'] as String)
+          ? DateTime.tryParse(json['timestamp'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
   }

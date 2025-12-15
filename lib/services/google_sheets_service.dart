@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../core/constants.dart';
 import '../core/env_config.dart';
@@ -25,7 +26,19 @@ class GoogleSheetsService {
   Future<FetchAllResult> fetchAll() async {
     try {
       final uri = Uri.parse('$_baseUrl?action=${ApiConfig.actionFetchAll}');
+      debugPrint('🌐 API 請求: $uri');
+      debugPrint('🌐 baseUrl: $_baseUrl (isEmpty: ${_baseUrl.isEmpty})');
+
+      if (_baseUrl.isEmpty) {
+        return FetchAllResult(
+          success: false,
+          errorMessage: 'GAS_BASE_URL 未設定。請確認 .env.dev 檔案已正確配置。',
+        );
+      }
+
       final response = await _client.get(uri);
+      debugPrint('🌐 API 回應: ${response.statusCode}');
+      debugPrint('🌐 回應內容: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}...');
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -38,6 +51,8 @@ class GoogleSheetsService {
             ?.map((e) => Message.fromJson(e as Map<String, dynamic>))
             .toList() ?? [];
 
+        debugPrint('🌐 解析成功: 行程=${itineraryList.length}, 留言=${messagesList.length}');
+
         return FetchAllResult(
           itinerary: itineraryList,
           messages: messagesList,
@@ -49,7 +64,9 @@ class GoogleSheetsService {
           errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('🌐 API 異常: $e');
+      debugPrint('🌐 堆疊: $stack');
       return FetchAllResult(
         success: false,
         errorMessage: e.toString(),
