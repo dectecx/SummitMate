@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'core/theme.dart';
 import 'core/di.dart';
+import 'core/constants.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
@@ -301,7 +303,7 @@ class _ItineraryTab extends StatelessWidget {
             leading: const Icon(Icons.access_time),
             title: const Text('現在時間打卡'),
             onTap: () {
-              provider.checkInNow(item.id);
+              provider.checkInNow(item.key);
               Navigator.pop(context);
             },
           ),
@@ -317,7 +319,7 @@ class _ItineraryTab extends StatelessWidget {
               if (time != null) {
                 final now = DateTime.now();
                 provider.checkIn(
-                  item.id,
+                  item.key,
                   DateTime(now.year, now.month, now.day, time.hour, time.minute),
                 );
               }
@@ -328,7 +330,7 @@ class _ItineraryTab extends StatelessWidget {
               leading: const Icon(Icons.clear),
               title: const Text('清除打卡'),
               onTap: () {
-                provider.clearCheckIn(item.id);
+                provider.clearCheckIn(item.key);
                 Navigator.pop(context);
               },
             ),
@@ -338,74 +340,155 @@ class _ItineraryTab extends StatelessWidget {
   }
 }
 
-/// Tab 2: 協作頁 (Placeholder)
+/// Tab 2: 協作頁
 class _CollaborationTab extends StatelessWidget {
   const _CollaborationTab();
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MessageProvider>(
-      builder: (context, provider, child) {
-        return Column(
-          children: [
-            // 分類切換 + 同步按鈕
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'Gear', label: Text('🎒 裝備')),
-                        ButtonSegment(value: 'Plan', label: Text('💡 建議')),
-                        ButtonSegment(value: 'Misc', label: Text('💬 雜項')),
-                      ],
-                      selected: {provider.selectedCategory},
-                      onSelectionChanged: (selected) {
-                        provider.selectCategory(selected.first);
-                      },
+    return Consumer2<MessageProvider, SettingsProvider>(
+      builder: (context, messageProvider, settingsProvider, child) {
+        return Scaffold(
+          body: Column(
+            children: [
+              // 分類切換 + 同步按鈕
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'Gear', label: Text('🎒 裝備')),
+                          ButtonSegment(value: 'Plan', label: Text('💡 建議')),
+                          ButtonSegment(value: 'Misc', label: Text('💬 雜項')),
+                        ],
+                        selected: {messageProvider.selectedCategory},
+                        onSelectionChanged: (selected) {
+                          messageProvider.selectCategory(selected.first);
+                        },
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: provider.isSyncing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.sync),
-                    onPressed: provider.isSyncing ? null : () => provider.sync(),
-                  ),
-                ],
+                    IconButton(
+                      icon: messageProvider.isSyncing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.sync),
+                      onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // 留言列表
-            Expanded(
-              child: provider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : provider.currentCategoryMessages.isEmpty
-                      ? const Center(child: Text('尚無留言'))
-                      : ListView.builder(
-                          itemCount: provider.currentCategoryMessages.length,
-                          itemBuilder: (context, index) {
-                            final msg = provider.currentCategoryMessages[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              child: ListTile(
-                                title: Text(msg.content),
-                                subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
-                              ),
-                            );
-                          },
-                        ),
-            ),
-          ],
+              // 留言列表
+              Expanded(
+                child: messageProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : messageProvider.currentCategoryMessages.isEmpty
+                        ? const Center(child: Text('尚無留言，點擊右下角新增'))
+                        : ListView.builder(
+                            itemCount: messageProvider.currentCategoryMessages.length,
+                            itemBuilder: (context, index) {
+                              final msg = messageProvider.currentCategoryMessages[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                child: ListTile(
+                                  title: Text(msg.content),
+                                  subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 20),
+                                    onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddMessageDialog(context, messageProvider, settingsProvider.username),
+            child: const Icon(Icons.add_comment),
+          ),
         );
       },
     );
+  }
+
+  void _confirmDelete(BuildContext context, MessageProvider provider, String uuid) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('確認刪除'),
+        content: const Text('確定要刪除此留言嗎？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              provider.deleteMessage(uuid);
+              Navigator.pop(context);
+            },
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddMessageDialog(BuildContext context, MessageProvider provider, String username) {
+    final contentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('新增留言 (${_getCategoryName(provider.selectedCategory)})'),
+        content: TextField(
+          controller: contentController,
+          decoration: const InputDecoration(
+            labelText: '留言內容',
+            hintText: '輸入您的留言...',
+          ),
+          maxLines: 3,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final content = contentController.text.trim();
+              if (content.isNotEmpty) {
+                provider.addMessage(
+                  user: username.isNotEmpty ? username : 'Anonymous',
+                  content: content,
+                );
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('發送'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getCategoryName(String category) {
+    switch (category) {
+      case 'Gear': return '裝備';
+      case 'Plan': return '建議';
+      case 'Misc': return '雜項';
+      default: return category;
+    }
   }
 }
 
@@ -433,17 +516,13 @@ class _ToolsTab extends StatelessWidget {
                     leading: const Icon(Icons.cloud),
                     title: const Text('開啟 Windy (嘉明湖)'),
                     trailing: const Icon(Icons.open_in_new),
-                    onTap: () {
-                      // TODO: launchUrl
-                    },
+                    onTap: () => _launchUrl(ExternalLinks.windyUrl),
                   ),
                   ListTile(
                     leading: const Icon(Icons.thermostat),
                     title: const Text('開啟 中央氣象署 (三叉山)'),
                     trailing: const Icon(Icons.open_in_new),
-                    onTap: () {
-                      // TODO: launchUrl
-                    },
+                    onTap: () => _launchUrl(ExternalLinks.cwaUrl),
                   ),
                 ],
               ),
@@ -461,9 +540,7 @@ class _ToolsTab extends StatelessWidget {
                       children: [
                         const Text('我的裝備清單', style: TextStyle(fontWeight: FontWeight.bold)),
                         TextButton.icon(
-                          onPressed: () {
-                            // TODO: 新增裝備 Dialog
-                          },
+                          onPressed: () => _showAddGearDialog(context, provider),
                           icon: const Icon(Icons.add),
                           label: const Text('新增'),
                         ),
@@ -513,5 +590,81 @@ class _ToolsTab extends StatelessWidget {
       case 'Other': return '其他';
       default: return category;
     }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _showAddGearDialog(BuildContext context, GearProvider provider) {
+    final nameController = TextEditingController();
+    final weightController = TextEditingController();
+    String selectedCategory = 'Other';
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('新增裝備'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: '裝備名稱',
+                  hintText: '例如：睡袋',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: weightController,
+                decoration: const InputDecoration(
+                  labelText: '重量 (公克)',
+                  hintText: '例如：1200',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                decoration: const InputDecoration(labelText: '分類'),
+                items: const [
+                  DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
+                  DropdownMenuItem(value: 'Cook', child: Text('炊具與飲食')),
+                  DropdownMenuItem(value: 'Wear', child: Text('穿著')),
+                  DropdownMenuItem(value: 'Other', child: Text('其他')),
+                ],
+                onChanged: (value) => setState(() => selectedCategory = value!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final name = nameController.text.trim();
+                final weight = double.tryParse(weightController.text) ?? 0;
+                if (name.isNotEmpty && weight > 0) {
+                  provider.addItem(
+                    name: name,
+                    weight: weight,
+                    category: selectedCategory,
+                  );
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('新增'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
