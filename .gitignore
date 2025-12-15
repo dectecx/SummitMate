@@ -81,3 +81,8 @@ default.isar.lock
 *.tmp
 *.temp
 *~
+
+# Isar test files
+isar.dll
+*.isar-lck
+test_*.isar*
