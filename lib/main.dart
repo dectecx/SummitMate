@@ -636,6 +636,45 @@ class _ToolsTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            // 電話訊號資訊
+            Card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Icon(Icons.signal_cellular_alt),
+                        SizedBox(width: 8),
+                        Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SignalInfoRow(location: '起點 ~ 3.3K', signal: '有訊號'),
+                        _SignalInfoRow(location: '3.3K ~ 向陽山屋', signal: '無訊號'),
+                        _SignalInfoRow(location: '黑水塘稜線', signal: '中華/遠傳 1~2 格'),
+                        _SignalInfoRow(location: '向陽山屋 ~ 10K', signal: '無訊號'),
+                        _SignalInfoRow(location: '10K', signal: '遠傳微弱 (風大易失溫)'),
+                        _SignalInfoRow(location: '10.5K', signal: '遠傳 2 格穩定'),
+                        _SignalInfoRow(location: '嘉明湖本湖', signal: '中華/遠傳 (視雲況)'),
+                        SizedBox(height: 8),
+                        Text(
+                          '💡 建議使用遠傳門號以獲得較多通訊點',
+                          style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             // 裝備區
             Card(
               child: Column(
@@ -775,6 +814,40 @@ class _ToolsTab extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 訊號資訊行
+class _SignalInfoRow extends StatelessWidget {
+  final String location;
+  final String signal;
+
+  const _SignalInfoRow({required this.location, required this.signal});
+
+  @override
+  Widget build(BuildContext context) {
+    final isNoSignal = signal.contains('無');
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            isNoSignal ? Icons.signal_cellular_off : Icons.signal_cellular_alt,
+            size: 16,
+            color: isNoSignal ? Colors.red : Colors.green,
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(location)),
+          Text(
+            signal,
+            style: TextStyle(
+              color: isNoSignal ? Colors.red : null,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
