@@ -1,0 +1,61 @@
+name: summitmate
+description: "SummitMate (山友) - 嘉明湖登山行程助手"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.6.0
+  photo_view: ^0.15.0
+
+  # 本地資料庫
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.0
+
+  # API 請求
+  http: ^1.2.0
+
+  # 狀態管理與依賴注入
+  provider: ^6.1.0
+  get_it: ^8.0.0
+
+  # 工具套件
+  intl: ^0.19.0
+  uuid: ^4.5.0
+  shared_preferences: ^2.3.0
+  url_launcher: ^6.3.0
+
+  # 程式碼生成輔助
+  freezed_annotation: ^2.4.0
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Isar 程式碼生成
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.0
+
+  # Freezed 程式碼生成
+  freezed: ^2.5.0
+  json_serializable: ^6.8.0
+
+  # Mock 測試
+  mockito: ^5.4.0
+  mocktail: ^1.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
