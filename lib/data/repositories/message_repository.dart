@@ -80,29 +80,14 @@ class MessageRepository {
     }
   }
 
-  /// 批次同步留言 (從雲端)
+  /// 批次同步留言 (從雲端) - 完全覆蓋模式
   Future<void> syncFromCloud(List<Message> cloudMessages) async {
-    // 獲取現有 UUID 集合
-    final existingUuids = box.values.map((m) => m.uuid).toSet();
-    final cloudUuids = cloudMessages.map((m) => m.uuid).toSet();
+    // 清除現有資料，用雲端資料完全覆蓋
+    await box.clear();
 
-    // 新增雲端有但本地沒有的留言
+    // 寫入雲端資料
     for (final msg in cloudMessages) {
-      if (!existingUuids.contains(msg.uuid)) {
-        await box.add(msg);
-      }
-    }
-
-    // 移除本地有但雲端沒有的留言
-    final keysToDelete = <dynamic>[];
-    for (final key in box.keys) {
-      final localMsg = box.get(key);
-      if (localMsg != null && !cloudUuids.contains(localMsg.uuid)) {
-        keysToDelete.add(key);
-      }
-    }
-    for (final key in keysToDelete) {
-      await box.delete(key);
+      await box.add(msg);
     }
   }
 

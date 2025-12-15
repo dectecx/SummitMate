@@ -26,7 +26,7 @@ class SyncService {
 
     // 1. 從雲端拉取資料
     final fetchResult = await _sheetsService.fetchAll();
-    
+
     if (fetchResult.success) {
       // 2. 同步行程 (雲端 -> 本地，單向)
       try {

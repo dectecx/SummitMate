@@ -20,6 +20,9 @@ class MessageProvider extends ChangeNotifier {
 
   /// 行程同步完成回調 (供 UI 調用以通知 ItineraryProvider)
   VoidCallback? onItinerarySynced;
+  
+  /// 同步完成回調 (供 UI 調用以更新 lastSyncTime)
+  void Function(DateTime)? onSyncComplete;
 
   MessageProvider()
       : _repository = getIt<MessageRepository>(),
@@ -136,6 +139,11 @@ class MessageProvider extends ChangeNotifier {
       // 通知行程需要重載
       if (result.itinerarySynced && onItinerarySynced != null) {
         onItinerarySynced!();
+      }
+
+      // 通知同步完成以更新 lastSyncTime
+      if (result.success && onSyncComplete != null) {
+        onSyncComplete!(result.syncedAt);
       }
 
       _isSyncing = false;

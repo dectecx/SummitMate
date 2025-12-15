@@ -180,12 +180,20 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   @override
   void initState() {
     super.initState();
-    // 連接同步回調：當行程同步完成時，通知 ItineraryProvider 重載
+    // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final messageProvider = context.read<MessageProvider>();
       final itineraryProvider = context.read<ItineraryProvider>();
+      final settingsProvider = context.read<SettingsProvider>();
+
+      // 行程同步完成時，通知 ItineraryProvider 重載
       messageProvider.onItinerarySynced = () {
         itineraryProvider.reload();
+      };
+
+      // 同步完成時，更新 lastSyncTime
+      messageProvider.onSyncComplete = (syncedAt) {
+        settingsProvider.updateLastSyncTime(syncedAt);
       };
     });
   }
