@@ -200,43 +200,60 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SummitMate 山友'),
-        actions: [
-          // 設定按鈕
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showSettingsDialog(context),
+    return Consumer<MessageProvider>(
+      builder: (context, messageProvider, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('SummitMate 山友'),
+            actions: [
+              // 同步按鈕
+              IconButton(
+                icon: messageProvider.isSyncing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.sync),
+                onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
+                tooltip: '同步資料',
+              ),
+              // 設定按鈕
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () => _showSettingsDialog(context),
+                tooltip: '設定',
+              ),
+            ],
           ),
-        ],
-      ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          _ItineraryTab(),
-          _CollaborationTab(),
-          _ToolsTab(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schedule),
-            label: '行程',
+          body: IndexedStack(
+            index: _currentIndex,
+            children: const [
+              _ItineraryTab(),
+              _CollaborationTab(),
+              _ToolsTab(),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.forum),
-            label: '協作',
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.schedule),
+                label: '行程',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.forum),
+                label: '協作',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.build),
+                label: '工具',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.build),
-            label: '工具',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
