@@ -594,8 +594,11 @@ class _ToolsTab extends StatelessWidget {
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      // 直接嘗試啟動，不檢查 canLaunchUrl (模擬器可能返回 false)
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    } catch (e) {
+      debugPrint('無法開啟連結: $e');
     }
   }
 
