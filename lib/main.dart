@@ -11,6 +11,7 @@ import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
 import 'presentation/providers/gear_provider.dart';
+import 'presentation/screens/map_viewer_screen.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -211,6 +212,16 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           appBar: AppBar(
             title: const Text('SummitMate 山友'),
             actions: [
+              // 地圖按鈕 (僅在行程頁顯示)
+              if (_currentIndex == 0)
+                IconButton(
+                  icon: const Icon(Icons.map_outlined),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MapViewerScreen()),
+                  ),
+                  tooltip: '步道導覽圖',
+                ),
               // 同步按鈕
               IconButton(
                 icon: messageProvider.isSyncing
