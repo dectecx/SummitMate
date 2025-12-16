@@ -230,14 +230,15 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               ),
             ],
           ),
-          body: IndexedStack(
-            index: _currentIndex,
-            children: const [
-              _ItineraryTab(),
-              _CollaborationTab(),
-              _GearTab(),
-              _ToolsTab(),
-            ],
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            child: _buildTabContent(_currentIndex),
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
@@ -264,6 +265,22 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
         );
       },
     );
+  }
+
+  /// 建立對應頁籤內容 (帶 key 以支援 AnimatedSwitcher)
+  Widget _buildTabContent(int index) {
+    switch (index) {
+      case 0:
+        return const _ItineraryTab(key: ValueKey(0));
+      case 1:
+        return const _CollaborationTab(key: ValueKey(1));
+      case 2:
+        return const _GearTab(key: ValueKey(2));
+      case 3:
+        return const _ToolsTab(key: ValueKey(3));
+      default:
+        return const _ItineraryTab(key: ValueKey(0));
+    }
   }
 
   void _showSettingsDialog(BuildContext context) {
@@ -314,7 +331,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
 /// Tab 1: 行程頁 (Placeholder - Phase 5 完整實作)
 class _ItineraryTab extends StatelessWidget {
-  const _ItineraryTab();
+  const _ItineraryTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -532,7 +549,7 @@ class _InfoChip extends StatelessWidget {
 
 /// Tab 2: 協作頁
 class _CollaborationTab extends StatelessWidget {
-  const _CollaborationTab();
+  const _CollaborationTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -709,7 +726,7 @@ class _CollaborationTab extends StatelessWidget {
 
 /// Tab 3: 裝備頁 (獨立頁籤)
 class _GearTab extends StatelessWidget {
-  const _GearTab();
+  const _GearTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -871,7 +888,7 @@ class _GearTab extends StatelessWidget {
 
 /// Tab 4: 資訊頁 (外部連結與訊號資訊)
 class _ToolsTab extends StatelessWidget {
-  const _ToolsTab();
+  const _ToolsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
