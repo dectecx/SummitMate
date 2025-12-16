@@ -289,7 +289,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       case 2:
         return const _GearTab(key: ValueKey(2));
       case 3:
-        return const _ToolsTab(key: ValueKey(3));
+        return const _InfoTab(key: ValueKey(3));
       default:
         return const _ItineraryTab(key: ValueKey(0));
     }
@@ -868,6 +868,17 @@ class _GearTab extends StatelessWidget {
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    // 官方建議裝備連結
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.description, color: Colors.blue),
+                        title: const Text('官方建議裝備清單'),
+                        subtitle: const Text('台灣山林悠遊網提供'),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     // 總重量
                     Card(
                       color: Theme.of(context).colorScheme.primaryContainer,
@@ -913,6 +924,15 @@ class _GearTab extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    try {
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    } catch (e) {
+      debugPrint('無法開啟連結: $e');
+    }
   }
 
   IconData _getCategoryIcon(String category) {
@@ -1006,61 +1026,174 @@ class _GearTab extends StatelessWidget {
   }
 }
 
-/// Tab 4: 資訊頁 (外部連結與訊號資訊)
-class _ToolsTab extends StatelessWidget {
-  const _ToolsTab({super.key});
+/// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
+class _InfoTab extends StatelessWidget {
+  const _InfoTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Column(
       children: [
-        // 外部資訊區 (可摺疊)
-        Card(
-          child: ExpansionTile(
-            leading: const Icon(Icons.language),
-            title: const Text('外部資訊', style: TextStyle(fontWeight: FontWeight.bold)),
-            initiallyExpanded: true,
+        // 頂部視覺圖 (嘉明湖)
+        SizedBox(
+          height: 200,
+          width: double.infinity,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              ListTile(
-                leading: const Icon(Icons.cloud),
-                title: const Text('開啟 Windy (嘉明湖)'),
-                trailing: const Icon(Icons.open_in_new),
-                onTap: () => _launchUrl(ExternalLinks.windyUrl),
+              Image.asset(
+                'assets/images/jiaming_lake.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(color: Colors.grey),
               ),
-              ListTile(
-                leading: const Icon(Icons.thermostat),
-                title: const Text('開啟 中央氣象署 (三叉山)'),
-                trailing: const Icon(Icons.open_in_new),
-                onTap: () => _launchUrl(ExternalLinks.cwaUrl),
+              // 漸層遮罩，讓文字更清晰 (Optional)
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                    stops: const [0.6, 1.0],
+                  ),
+                ),
+              ),
+              const Positioned(
+                bottom: 16,
+                left: 16,
+                child: Text(
+                  '嘉明湖國家步道',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                  ),
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        // 電話訊號資訊 (可摺疊)
-        Card(
-          child: ExpansionTile(
-            leading: const Icon(Icons.signal_cellular_alt),
-            title: const Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
-            initiallyExpanded: true,
-            children: const [
-              Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+
+        // 內容列表
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // 步道概況
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '步道概況',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _buildStatItem(context, Icons.straighten, '全長', '13 km'),
+                          _buildStatItem(context, Icons.landscape, '海拔', '2320~3603m'),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        '嘉明湖國家步道為中央山脈南二段的一部分，穿越台灣鐵杉林、高山深谷與箭竹草原，以高山寒原與藍寶石般的嘉明湖聞名。',
+                        style: TextStyle(height: 1.4),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // 快捷按鈕 (入山準備)
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () => _launchUrl(ExternalLinks.permitUrl),
+                      icon: const Icon(Icons.assignment_turned_in),
+                      label: const Text('申請入山證'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _launchUrl(ExternalLinks.cabinUrl),
+                      icon: const Icon(Icons.home_work),
+                      label: const Text('山屋預約'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 外部資訊連結
+              Card(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SignalInfoRow(location: '起點 ~ 3.3K', signal: '有訊號'),
-                    _SignalInfoRow(location: '3.3K ~ 向陽山屋', signal: '無訊號'),
-                    _SignalInfoRow(location: '黑水塘稜線', signal: '中華/遠傳 1~2 格'),
-                    _SignalInfoRow(location: '向陽山屋 ~ 10K', signal: '無訊號'),
-                    _SignalInfoRow(location: '10K', signal: '遠傳微弱 (風大易失溫)'),
-                    _SignalInfoRow(location: '10.5K', signal: '遠傳 2 格穩定'),
-                    _SignalInfoRow(location: '嘉明湖本湖', signal: '中華/遠傳 (視雲況)'),
-                    SizedBox(height: 8),
-                    Text(
-                      '💡 建議使用遠傳門號以獲得較多通訊點',
-                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                    ListTile(
+                      leading: const Icon(Icons.public, color: Colors.indigo),
+                      title: const Text('台灣山林悠遊網 (官網)'),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.trailPageUrl),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.map, color: Colors.green),
+                      title: const Text('GPX 軌跡檔下載 (健行筆記)'),
+                      trailing: const Icon(Icons.download, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.gpxUrl),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.cloud, color: Colors.blue),
+                      title: const Text('Windy 天氣預報'),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.windyUrl),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.wb_sunny, color: Colors.orange),
+                      title: const Text('中央氣象署 (三叉山)'),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.cwaUrl),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 電話訊號資訊 (保留原有)
+              Card(
+                child: ExpansionTile(
+                  leading: const Icon(Icons.signal_cellular_alt),
+                  title: const Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SignalInfoRow(location: '起點 ~ 3.3K', signal: '有訊號'),
+                          _SignalInfoRow(location: '3.3K ~ 向陽山屋', signal: '無訊號'),
+                          _SignalInfoRow(location: '黑水塘稜線', signal: '中華/遠傳 1~2 格'),
+                          _SignalInfoRow(location: '向陽山屋 ~ 10K', signal: '無訊號'),
+                          _SignalInfoRow(location: '10K', signal: '遠傳微弱 (風大易失溫)'),
+                          _SignalInfoRow(location: '10.5K', signal: '遠傳 2 格穩定'),
+                          _SignalInfoRow(location: '嘉明湖本湖', signal: '中華/遠傳 (視雲況)'),
+                          SizedBox(height: 8),
+                          Text(
+                            '💡 建議使用遠傳門號以獲得較多通訊點',
+                            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1069,6 +1202,24 @@ class _ToolsTab extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStatItem(BuildContext context, IconData icon, String label, String value) {
+    return Expanded(
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
