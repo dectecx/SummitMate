@@ -414,46 +414,113 @@ class _ItineraryTab extends StatelessWidget {
   ) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.access_time),
-            title: const Text('現在時間打卡'),
-            onTap: () {
-              provider.checkInNow(item.key);
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.edit_calendar),
-            title: const Text('指定時間'),
-            onTap: () async {
-              Navigator.pop(context);
-              final time = await showTimePicker(
-                context: context,
-                initialTime: TimeOfDay.now(),
-              );
-              if (time != null) {
-                final now = DateTime.now();
-                provider.checkIn(
-                  item.key,
-                  DateTime(now.year, now.month, now.day, time.hour, time.minute),
-                );
-              }
-            },
-          ),
-          if (item.isCheckedIn)
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 標題列
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: const Icon(Icons.terrain, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            // 詳情資訊
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                _InfoChip(icon: Icons.schedule, label: '預計 ${item.estTime}'),
+                _InfoChip(icon: Icons.landscape, label: '海拔 ${item.altitude}m'),
+                _InfoChip(icon: Icons.straighten, label: '距離 ${item.distance} km'),
+              ],
+            ),
+            if (item.note.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(item.note, style: const TextStyle(fontSize: 14)),
+              ),
+            ],
+            const Divider(height: 24),
+            // 打卡選項
             ListTile(
-              leading: const Icon(Icons.clear),
-              title: const Text('清除打卡'),
+              leading: const Icon(Icons.access_time),
+              title: const Text('現在時間打卡'),
               onTap: () {
-                provider.clearCheckIn(item.key);
+                provider.checkInNow(item.key);
+                ToastService.success('已打卡：${item.name}');
                 Navigator.pop(context);
               },
             ),
-        ],
+            ListTile(
+              leading: const Icon(Icons.edit_calendar),
+              title: const Text('指定時間'),
+              onTap: () async {
+                Navigator.pop(context);
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+                if (time != null) {
+                  final now = DateTime.now();
+                  provider.checkIn(
+                    item.key,
+                    DateTime(now.year, now.month, now.day, time.hour, time.minute),
+                  );
+                  ToastService.success('已打卡：${item.name}');
+                }
+              },
+            ),
+            if (item.isCheckedIn)
+              ListTile(
+                leading: const Icon(Icons.clear),
+                title: const Text('清除打卡'),
+                onTap: () {
+                  provider.clearCheckIn(item.key);
+                  ToastService.info('已清除打卡');
+                  Navigator.pop(context);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+/// 資訊 Chip
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _InfoChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      avatar: Icon(icon, size: 16),
+      label: Text(label),
+      visualDensity: VisualDensity.compact,
     );
   }
 }
