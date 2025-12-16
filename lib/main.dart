@@ -362,6 +362,19 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     children: [
                       TextButton.icon(
                         onPressed: () async {
+                          ToastService.info('正在上傳...');
+                          final (success, message) = await LogService.uploadToCloud();
+                          if (success) {
+                            ToastService.success(message);
+                          } else {
+                            ToastService.error(message);
+                          }
+                        },
+                        icon: const Icon(Icons.cloud_upload_outlined, size: 18),
+                        label: const Text('上傳'),
+                      ),
+                      TextButton.icon(
+                        onPressed: () async {
                           await LogService.clearAll();
                           Navigator.pop(context);
                           ToastService.info('日誌已清除');

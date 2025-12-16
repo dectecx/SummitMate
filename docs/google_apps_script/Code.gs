@@ -55,6 +55,8 @@ function doPost(e) {
         return createJsonResponse(addMessage(data.data));
       case 'delete_message':
         return createJsonResponse(deleteMessage(data.uuid));
+      case 'upload_logs':
+        return createJsonResponse(uploadLogs(data.logs, data.device_info));
       default:
         return createJsonResponse({ error: 'Unknown action' }, 400);
     }
@@ -198,6 +200,52 @@ function deleteMessage(uuid) {
   }
 
   return { success: false, error: 'Message not found' };
+}
+
+/**
+ * 上傳應用日誌
+ * @param {Array} logs - 日誌條目陣列
+ * @param {Object} deviceInfo - 裝置資訊
+ */
+function uploadLogs(logs, deviceInfo) {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName('Logs');
+
+  // Create sheet if not exists
+  if (!sheet) {
+    sheet = ss.insertSheet('Logs');
+    sheet.appendRow(['upload_time', 'device_id', 'device_name', 'timestamp', 'level', 'source', 'message']);
+  }
+
+  if (!logs || logs.length === 0) {
+    return { success: false, error: 'No logs provided' };
+  }
+
+  const uploadTime = new Date().toISOString();
+  const deviceId = deviceInfo?.device_id || 'unknown';
+  const deviceName = deviceInfo?.device_name || 'unknown';
+
+  // Batch append logs
+  const rows = logs.map(log => [
+    uploadTime,
+    deviceId,
+    deviceName,
+    log.timestamp || '',
+    log.level || 'info',
+    log.source || '',
+    log.message || ''
+  ]);
+
+  // Append all rows at once for better performance
+  if (rows.length > 0) {
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
+  }
+
+  return { 
+    success: true, 
+    message: `Uploaded ${logs.length} log entries`,
+    count: logs.length 
+  };
 }
 
 // ============================================================

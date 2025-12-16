@@ -1,7 +1,10 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import '../core/env_config.dart';
 
 /// 日誌等級
 enum LogLevel { debug, info, warning, error }
@@ -52,6 +55,7 @@ class LogEntry {
 /// - 自動限制日誌數量 (最多 1000 條)
 /// - 持久化存儲到 Hive
 /// - 提供查閱介面
+/// - 上傳到雲端
 class LogService {
   static const String _boxName = 'app_logs';
   static const int _maxLogCount = 1000;  // 最多保留 1000 條
@@ -217,4 +221,53 @@ class LogService {
   static String exportAsText() {
     return getAllLogs().map((e) => e.formatted).join('\n');
   }
+
+  /// 上傳日誌到雲端
+  /// 
+  /// 回傳 (success, message) tuple
+  static Future<(bool, String)> uploadToCloud({String? deviceName}) async {
+    try {
+      final logs = getAllLogs();
+      if (logs.isEmpty) {
+        return (false, '沒有日誌可上傳');
+      }
+
+      final apiUrl = EnvConfig.gasBaseUrl;
+      if (apiUrl.isEmpty) {
+        return (false, 'API 未設定');
+      }
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'action': 'upload_logs',
+          'logs': logs.map((e) => e.toJson()).toList(),
+          'device_info': {
+            'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
+            'device_name': deviceName ?? 'SummitMate App',
+          },
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        if (result['success'] == true) {
+          info('日誌上傳成功: ${result['count']} 條', source: 'LogUpload');
+          return (true, '已上傳 ${result['count']} 條日誌');
+        } else {
+          final errorMsg = (result['error'] ?? '上傳失敗').toString();
+          error('日誌上傳失敗: $errorMsg', source: 'LogUpload');
+          return (false, errorMsg);
+        }
+      } else {
+        error('日誌上傳 HTTP 錯誤: ${response.statusCode}', source: 'LogUpload');
+        return (false, 'HTTP 錯誤: ${response.statusCode}');
+      }
+    } catch (e) {
+      error('日誌上傳異常: $e', source: 'LogUpload');
+      return (false, '上傳錯誤: $e');
+    }
+  }
 }
+
