@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 網路權限：用於 Google Sheets API 同步 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="summitmate"
         android:name="${applicationName}"
