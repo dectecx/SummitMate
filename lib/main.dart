@@ -340,7 +340,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
   void _showLogViewer(BuildContext context) {
     final logs = LogService.getRecentLogs(count: 100);
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

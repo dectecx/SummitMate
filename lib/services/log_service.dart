@@ -46,7 +46,7 @@ class LogEntry {
 }
 
 /// 本地日誌服務
-/// 
+///
 /// 功能：
 /// - 記錄各級別日誌 (debug/info/warning/error)
 /// - 自動限制日誌數量 (最多 1000 條)
@@ -68,7 +68,7 @@ class LogService {
   /// 從存儲載入日誌
   static void _loadFromStorage() {
     if (_box == null) return;
-    
+
     _memoryLogs.clear();
     for (var i = 0; i < _box!.length; i++) {
       try {
@@ -105,7 +105,7 @@ class LogService {
       final levelMatch = RegExp(r'"level"\s*:\s*"([^"]+)"').firstMatch(jsonStr);
       final messageMatch = RegExp(r'"message"\s*:\s*"([^"]*)"').firstMatch(jsonStr);
       final sourceMatch = RegExp(r'"source"\s*:\s*"?([^",}]*)"?').firstMatch(jsonStr);
-      
+
       if (timestampMatch != null && levelMatch != null && messageMatch != null) {
         return {
           'timestamp': timestampMatch.group(1),
@@ -151,7 +151,7 @@ class LogService {
 
     // 記憶體快取
     _memoryLogs.add(entry);
-    
+
     // 超過上限時移除舊日誌
     while (_memoryLogs.length > _maxLogCount) {
       _memoryLogs.removeFirst();
