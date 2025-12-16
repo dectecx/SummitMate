@@ -235,6 +235,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             children: const [
               _ItineraryTab(),
               _CollaborationTab(),
+              _GearTab(),
               _ToolsTab(),
             ],
           ),
@@ -251,8 +252,12 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 label: '協作',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.build),
-                label: '工具',
+                icon: Icon(Icons.backpack),
+                label: '裝備',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.info_outline),
+                label: '資訊',
               ),
             ],
           ),
@@ -702,122 +707,85 @@ class _CollaborationTab extends StatelessWidget {
   }
 }
 
-/// Tab 3: 工具頁 (Placeholder)
-class _ToolsTab extends StatelessWidget {
-  const _ToolsTab();
+/// Tab 3: 裝備頁 (獨立頁籤)
+class _GearTab extends StatelessWidget {
+  const _GearTab();
 
   @override
   Widget build(BuildContext context) {
     return Consumer<GearProvider>(
       builder: (context, provider, child) {
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // 外部資訊區 (可摺疊)
-            Card(
-              child: ExpansionTile(
-                leading: const Icon(Icons.language),
-                title: const Text('外部資訊', style: TextStyle(fontWeight: FontWeight.bold)),
-                initiallyExpanded: true,
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.cloud),
-                    title: const Text('開啟 Windy (嘉明湖)'),
-                    trailing: const Icon(Icons.open_in_new),
-                    onTap: () => _launchUrl(ExternalLinks.windyUrl),
+        return Scaffold(
+          body: provider.allItems.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.backpack_outlined, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text('尚無裝備', style: TextStyle(fontSize: 18)),
+                      Text('點擊右下角新增裝備', style: TextStyle(color: Colors.grey)),
+                    ],
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.thermostat),
-                    title: const Text('開啟 中央氣象署 (三叉山)'),
-                    trailing: const Icon(Icons.open_in_new),
-                    onTap: () => _launchUrl(ExternalLinks.cwaUrl),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            // 電話訊號資訊 (可摺疊)
-            Card(
-              child: ExpansionTile(
-                leading: const Icon(Icons.signal_cellular_alt),
-                title: const Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        _SignalInfoRow(location: '起點 ~ 3.3K', signal: '有訊號'),
-                        _SignalInfoRow(location: '3.3K ~ 向陽山屋', signal: '無訊號'),
-                        _SignalInfoRow(location: '黑水塘稜線', signal: '中華/遠傳 1~2 格'),
-                        _SignalInfoRow(location: '向陽山屋 ~ 10K', signal: '無訊號'),
-                        _SignalInfoRow(location: '10K', signal: '遠傳微弱 (風大易失溫)'),
-                        _SignalInfoRow(location: '10.5K', signal: '遠傳 2 格穩定'),
-                        _SignalInfoRow(location: '嘉明湖本湖', signal: '中華/遠傳 (視雲況)'),
-                        SizedBox(height: 8),
-                        Text(
-                          '💡 建議使用遠傳門號以獲得較多通訊點',
-                          style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                )
+              : ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // 總重量
+                    Card(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('總重量', style: TextStyle(fontSize: 18)),
+                            Text(
+                              '${provider.totalWeightKg.toStringAsFixed(2)} kg',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            // 裝備區
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('我的裝備清單', style: TextStyle(fontWeight: FontWeight.bold)),
-                        TextButton.icon(
-                          onPressed: () => _showAddGearDialog(context, provider),
-                          icon: const Icon(Icons.add),
-                          label: const Text('新增'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (provider.allItems.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('尚無裝備，點擊右上角新增'),
-                    )
-                  else
-                    ...provider.itemsByCategory.entries.map((entry) => ExpansionTile(
-                      title: Text('${_getCategoryName(entry.key)} (${entry.value.length}件)'),
-                      subtitle: Text('${entry.value.fold<double>(0, (sum, item) => sum + item.weight).toStringAsFixed(0)}g'),
-                      children: entry.value.map((item) => CheckboxListTile(
-                        value: item.isChecked,
-                        onChanged: (_) => provider.toggleChecked(item.key),
-                        title: Text(item.name),
-                        secondary: Text('${item.weight.toStringAsFixed(0)}g'),
-                      )).toList(),
-                    )),
-                  const Divider(),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      '總重量: ${provider.totalWeightKg.toStringAsFixed(2)} kg',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+                    const SizedBox(height: 8),
+                    // 分類清單
+                    ...provider.itemsByCategory.entries.map((entry) => Card(
+                      child: ExpansionTile(
+                        leading: Icon(_getCategoryIcon(entry.key)),
+                        title: Text('${_getCategoryName(entry.key)} (${entry.value.length}件)'),
+                        subtitle: Text('${entry.value.fold<double>(0, (sum, item) => sum + item.weight).toStringAsFixed(0)}g'),
+                        children: entry.value.map((item) => CheckboxListTile(
+                          value: item.isChecked,
+                          onChanged: (_) => provider.toggleChecked(item.key),
+                          title: Text(item.name),
+                          secondary: Text('${item.weight.toStringAsFixed(0)}g'),
+                        )).toList(),
+                      ),
+                    )),
+                  ],
+                ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddGearDialog(context, provider),
+            child: const Icon(Icons.add),
+          ),
         );
       },
     );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Sleep': return Icons.bed;
+      case 'Cook': return Icons.restaurant;
+      case 'Wear': return Icons.checkroom;
+      case 'Other': return Icons.category;
+      default: return Icons.inventory_2;
+    }
   }
 
   String _getCategoryName(String category) {
@@ -827,16 +795,6 @@ class _ToolsTab extends StatelessWidget {
       case 'Wear': return '穿著';
       case 'Other': return '其他';
       default: return category;
-    }
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    try {
-      // 直接嘗試啟動，不檢查 canLaunchUrl (模擬器可能返回 false)
-      await launchUrl(uri, mode: LaunchMode.platformDefault);
-    } catch (e) {
-      debugPrint('無法開啟連結: $e');
     }
   }
 
@@ -898,6 +856,7 @@ class _ToolsTab extends StatelessWidget {
                     weight: weight,
                     category: selectedCategory,
                   );
+                  ToastService.success('已新增：$name');
                   Navigator.pop(context);
                 }
               },
@@ -907,6 +866,82 @@ class _ToolsTab extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Tab 4: 資訊頁 (外部連結與訊號資訊)
+class _ToolsTab extends StatelessWidget {
+  const _ToolsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // 外部資訊區 (可摺疊)
+        Card(
+          child: ExpansionTile(
+            leading: const Icon(Icons.language),
+            title: const Text('外部資訊', style: TextStyle(fontWeight: FontWeight.bold)),
+            initiallyExpanded: true,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.cloud),
+                title: const Text('開啟 Windy (嘉明湖)'),
+                trailing: const Icon(Icons.open_in_new),
+                onTap: () => _launchUrl(ExternalLinks.windyUrl),
+              ),
+              ListTile(
+                leading: const Icon(Icons.thermostat),
+                title: const Text('開啟 中央氣象署 (三叉山)'),
+                trailing: const Icon(Icons.open_in_new),
+                onTap: () => _launchUrl(ExternalLinks.cwaUrl),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // 電話訊號資訊 (可摺疊)
+        Card(
+          child: ExpansionTile(
+            leading: const Icon(Icons.signal_cellular_alt),
+            title: const Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
+            initiallyExpanded: true,
+            children: const [
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SignalInfoRow(location: '起點 ~ 3.3K', signal: '有訊號'),
+                    _SignalInfoRow(location: '3.3K ~ 向陽山屋', signal: '無訊號'),
+                    _SignalInfoRow(location: '黑水塘稜線', signal: '中華/遠傳 1~2 格'),
+                    _SignalInfoRow(location: '向陽山屋 ~ 10K', signal: '無訊號'),
+                    _SignalInfoRow(location: '10K', signal: '遠傳微弱 (風大易失溫)'),
+                    _SignalInfoRow(location: '10.5K', signal: '遠傳 2 格穩定'),
+                    _SignalInfoRow(location: '嘉明湖本湖', signal: '中華/遠傳 (視雲況)'),
+                    SizedBox(height: 8),
+                    Text(
+                      '💡 建議使用遠傳門號以獲得較多通訊點',
+                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    try {
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    } catch (e) {
+      debugPrint('無法開啟連結: $e');
+    }
   }
 }
 
