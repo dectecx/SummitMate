@@ -48,6 +48,17 @@ dev_dependencies:
   # JSON 程式碼生成
   json_serializable: ^6.8.0
 
+  # App Icon 生成
+  flutter_launcher_icons: ^0.14.3
+
+# App Icon 配置
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
+  adaptive_icon_background: "#0D2137"
+  adaptive_icon_foreground: "assets/icon.png"
+
   # Mock 測試
   mockito: ^5.4.0
   mocktail: ^1.0.0
