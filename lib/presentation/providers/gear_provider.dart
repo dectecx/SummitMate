@@ -3,6 +3,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_item.dart';
 import '../../data/repositories/gear_repository.dart';
+import '../../services/log_service.dart';
 
 /// 裝備狀態管理
 class GearProvider extends ChangeNotifier {
@@ -15,6 +16,7 @@ class GearProvider extends ChangeNotifier {
   String? _error;
 
   GearProvider() : _repository = getIt<GearRepository>() {
+    LogService.info('GearProvider 初始化', source: 'Gear');
     _loadItems();
   }
 
@@ -90,9 +92,11 @@ class GearProvider extends ChangeNotifier {
       notifyListeners();
 
       _items = _repository.getAllItems();
+      LogService.debug('載入 ${_items.length} 個裝備', source: 'Gear');
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      LogService.error('載入裝備失敗: $e', source: 'Gear');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -125,9 +129,11 @@ class GearProvider extends ChangeNotifier {
         isChecked: false,
       );
 
+      LogService.info('新增裝備: $name (${weight}g)', source: 'Gear');
       await _repository.addItem(item);
       _loadItems();
     } catch (e) {
+      LogService.error('新增裝備失敗: $e', source: 'Gear');
       _error = e.toString();
       notifyListeners();
     }
@@ -136,9 +142,11 @@ class GearProvider extends ChangeNotifier {
   /// 更新裝備
   Future<void> updateItem(GearItem item) async {
     try {
+      LogService.info('更新裝備: ${item.name}', source: 'Gear');
       await _repository.updateItem(item);
       _loadItems();
     } catch (e) {
+      LogService.error('更新裝備失敗: $e', source: 'Gear');
       _error = e.toString();
       notifyListeners();
     }
@@ -147,9 +155,12 @@ class GearProvider extends ChangeNotifier {
   /// 刪除裝備
   Future<void> deleteItem(dynamic key) async {
     try {
+      final item = _items.firstWhere((i) => i.key == key);
+      LogService.warning('刪除裝備: ${item.name}', source: 'Gear');
       await _repository.deleteItem(key);
       _loadItems();
     } catch (e) {
+      LogService.error('刪除裝備失敗: $e', source: 'Gear');
       _error = e.toString();
       notifyListeners();
     }
@@ -158,9 +169,12 @@ class GearProvider extends ChangeNotifier {
   /// 切換打包狀態
   Future<void> toggleChecked(dynamic key) async {
     try {
+      final item = _items.firstWhere((i) => i.key == key);
+      LogService.debug('切換打包: ${item.name} -> ${!item.isChecked}', source: 'Gear');
       await _repository.toggleChecked(key);
       _loadItems();
     } catch (e) {
+      LogService.error('切換打包失敗: $e', source: 'Gear');
       _error = e.toString();
       notifyListeners();
     }
@@ -169,9 +183,11 @@ class GearProvider extends ChangeNotifier {
   /// 重置所有打包狀態
   Future<void> resetAllChecked() async {
     try {
+      LogService.warning('重置所有打包狀態', source: 'Gear');
       await _repository.resetAllChecked();
       _loadItems();
     } catch (e) {
+      LogService.error('重置打包失敗: $e', source: 'Gear');
       _error = e.toString();
       notifyListeners();
     }
@@ -179,6 +195,8 @@ class GearProvider extends ChangeNotifier {
 
   /// 重新載入
   void reload() {
+    LogService.debug('裝備重新載入', source: 'Gear');
     _loadItems();
   }
 }
+

@@ -4,6 +4,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../data/models/settings.dart';
+import '../../services/log_service.dart';
 
 /// 設定狀態管理
 class SettingsProvider extends ChangeNotifier {
@@ -17,6 +18,7 @@ class SettingsProvider extends ChangeNotifier {
   SettingsProvider()
       : _repository = getIt<SettingsRepository>(),
         _prefs = getIt<SharedPreferences>() {
+    LogService.info('SettingsProvider 初始化', source: 'Settings');
     _loadSettings();
   }
 
@@ -77,12 +79,14 @@ class SettingsProvider extends ChangeNotifier {
   /// 更新使用者名稱
   Future<void> updateUsername(String username) async {
     try {
+      LogService.info('更新暱稱: $username', source: 'Settings');
       await _repository.updateUsername(username);
       await _prefs.setString(PrefKeys.username, username);
       _settings = _repository.getSettings();
       _error = null;
       notifyListeners();
     } catch (e) {
+      LogService.error('更新暱稱失敗: $e', source: 'Settings');
       _error = e.toString();
       notifyListeners();
     }

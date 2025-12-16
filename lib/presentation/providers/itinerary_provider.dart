@@ -3,6 +3,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/itinerary_item.dart';
 import '../../data/repositories/itinerary_repository.dart';
+import '../../services/log_service.dart';
 
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {
@@ -14,6 +15,7 @@ class ItineraryProvider extends ChangeNotifier {
   String? _error;
 
   ItineraryProvider() : _repository = getIt<ItineraryRepository>() {
+    LogService.info('ItineraryProvider 初始化', source: 'Itinerary');
     _loadItems();
   }
 
@@ -57,9 +59,11 @@ class ItineraryProvider extends ChangeNotifier {
       notifyListeners();
 
       _items = _repository.getAllItems();
+      LogService.debug('載入 ${_items.length} 個行程節點', source: 'Itinerary');
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      LogService.error('載入行程失敗: $e', source: 'Itinerary');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -70,6 +74,7 @@ class ItineraryProvider extends ChangeNotifier {
   void selectDay(String day) {
     if (ItineraryDay.all.contains(day)) {
       _selectedDay = day;
+      LogService.debug('切換到 $day', source: 'Itinerary');
       notifyListeners();
     }
   }
@@ -82,9 +87,12 @@ class ItineraryProvider extends ChangeNotifier {
   /// 打卡 - 指定時間
   Future<void> checkIn(dynamic key, DateTime time) async {
     try {
+      final item = _items.firstWhere((i) => i.key == key);
+      LogService.info('打卡: ${item.name} @ ${time.hour}:${time.minute}', source: 'Itinerary');
       await _repository.checkIn(key, time);
       _loadItems();
     } catch (e) {
+      LogService.error('打卡失敗: $e', source: 'Itinerary');
       _error = e.toString();
       notifyListeners();
     }
@@ -93,9 +101,12 @@ class ItineraryProvider extends ChangeNotifier {
   /// 清除打卡
   Future<void> clearCheckIn(dynamic key) async {
     try {
+      final item = _items.firstWhere((i) => i.key == key);
+      LogService.info('清除打卡: ${item.name}', source: 'Itinerary');
       await _repository.clearCheckIn(key);
       _loadItems();
     } catch (e) {
+      LogService.error('清除打卡失敗: $e', source: 'Itinerary');
       _error = e.toString();
       notifyListeners();
     }
@@ -104,9 +115,11 @@ class ItineraryProvider extends ChangeNotifier {
   /// 重置所有打卡
   Future<void> resetAllCheckIns() async {
     try {
+      LogService.warning('重置所有打卡', source: 'Itinerary');
       await _repository.resetAllCheckIns();
       _loadItems();
     } catch (e) {
+      LogService.error('重置打卡失敗: $e', source: 'Itinerary');
       _error = e.toString();
       notifyListeners();
     }
@@ -114,6 +127,8 @@ class ItineraryProvider extends ChangeNotifier {
 
   /// 同步行程後重新載入
   void reload() {
+    LogService.debug('行程重新載入', source: 'Itinerary');
     _loadItems();
   }
 }
+
