@@ -241,10 +241,10 @@ function uploadLogs(logs, deviceInfo) {
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
   }
 
-  return { 
-    success: true, 
+  return {
+    success: true,
     message: `Uploaded ${logs.length} log entries`,
-    count: logs.length 
+    count: logs.length
   };
 }
 
