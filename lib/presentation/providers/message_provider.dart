@@ -21,7 +21,7 @@ class MessageProvider extends ChangeNotifier {
 
   /// 行程同步完成回調 (供 UI 調用以通知 ItineraryProvider)
   VoidCallback? onItinerarySynced;
-  
+
   /// 同步完成回調 (供 UI 調用以更新 lastSyncTime)
   void Function(DateTime)? onSyncComplete;
 

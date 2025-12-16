@@ -42,7 +42,7 @@ class SummitMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'SummitMate',
       debugShowCheckedModeBanner: false,
-      
+
       // Toast 訊息的 key
       scaffoldMessengerKey: ToastService.messengerKey,
 
@@ -356,23 +356,47 @@ class _ItineraryTab extends StatelessWidget {
                 itemCount: provider.currentDayItems.length,
                 itemBuilder: (context, index) {
                   final item = provider.currentDayItems[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: item.isCheckedIn
-                          ? Colors.green
-                          : Theme.of(context).colorScheme.primary,
-                      child: item.isCheckedIn
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : Text('${index + 1}'),
+                  // 計算累積距離
+                  double cumulativeDistance = 0;
+                  for (int i = 0; i <= index; i++) {
+                    cumulativeDistance += provider.currentDayItems[i].distance;
+                  }
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: item.isCheckedIn
+                            ? Colors.green
+                            : Theme.of(context).colorScheme.primary,
+                        child: item.isCheckedIn
+                            ? const Icon(Icons.check, color: Colors.white)
+                            : Text('${index + 1}', style: const TextStyle(color: Colors.white)),
+                      ),
+                      title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.isCheckedIn
+                                ? '✓ 打卡: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
+                                : '預計: ${item.estTime}',
+                            style: TextStyle(
+                              color: item.isCheckedIn ? Colors.green : null,
+                            ),
+                          ),
+                          Text(
+                            '海拔 ${item.altitude}m  |  累計 ${cumulativeDistance.toStringAsFixed(1)} km',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                      isThreeLine: true,
+                      trailing: item.note.isNotEmpty 
+                          ? const Icon(Icons.info_outline, size: 20)
+                          : null,
+                      onTap: () => _showCheckInDialog(context, item, provider),
                     ),
-                    title: Text(item.name),
-                    subtitle: Text(
-                      item.isCheckedIn
-                          ? '實際: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
-                          : '預計: ${item.estTime}',
-                    ),
-                    trailing: Text('${item.altitude}m'),
-                    onTap: () => _showCheckInDialog(context, item, provider),
                   );
                 },
               ),
@@ -622,15 +646,13 @@ class _ToolsTab extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // 外部資訊區
+            // 外部資訊區 (可摺疊)
             Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: ExpansionTile(
+                leading: const Icon(Icons.language),
+                title: const Text('外部資訊', style: TextStyle(fontWeight: FontWeight.bold)),
+                initiallyExpanded: true,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('外部資訊', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
                   ListTile(
                     leading: const Icon(Icons.cloud),
                     title: const Text('開啟 Windy (嘉明湖)'),
@@ -646,27 +668,18 @@ class _ToolsTab extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            // 電話訊號資訊
+            const SizedBox(height: 8),
+            // 電話訊號資訊 (可摺疊)
             Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: ExpansionTile(
+                leading: const Icon(Icons.signal_cellular_alt),
+                title: const Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(Icons.signal_cellular_alt),
-                        SizedBox(width: 8),
-                        Text('電話訊號資訊', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      children: const [
                         _SignalInfoRow(location: '起點 ~ 3.3K', signal: '有訊號'),
                         _SignalInfoRow(location: '3.3K ~ 向陽山屋', signal: '無訊號'),
                         _SignalInfoRow(location: '黑水塘稜線', signal: '中華/遠傳 1~2 格'),
@@ -685,7 +698,7 @@ class _ToolsTab extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             // 裝備區
             Card(
               child: Column(

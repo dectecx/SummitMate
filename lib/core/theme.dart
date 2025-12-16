@@ -141,7 +141,7 @@ class AppTheme {
   }
 
   // ======== 大自然主題配色 ========
-  
+
   // 主色調：森林綠
   static const Color primaryColor = Color(0xFF2E7D32);
   // 次要色：山脈藍
