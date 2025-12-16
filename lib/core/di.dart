@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/isar_service.dart';
+import '../services/hive_service.dart';
 import '../services/google_sheets_service.dart';
 import '../services/sync_service.dart';
 import '../services/log_service.dart';
