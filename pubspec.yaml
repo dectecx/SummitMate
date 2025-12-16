@@ -51,6 +51,7 @@ dev_dependencies:
   # App Icon 生成
   flutter_launcher_icons: ^0.14.3
   mocktail: ^1.0.4
+  flutter_native_splash: ^2.4.7
 
 # App Icon 配置
 flutter_launcher_icons:
@@ -63,6 +64,13 @@ flutter_launcher_icons:
   # Mock 測試
   mockito: ^5.4.0
   mocktail: ^1.0.0
+
+flutter_native_splash:
+  color: "#0D2137"
+  image: assets/icon.png
+  android_12:
+    image: assets/icon.png
+    color: "#0D2137"
 
 flutter:
   uses-material-design: true
