@@ -10,8 +10,8 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式（
 
 * **動態行程表**：支援預計時間與實際時間的比對，允許跳躍式打卡與修正。
 * **個人裝備清單**：類似 LighterPack 的裝備重量計算與打包檢核（資料僅存於本地）。
-* **靜態圖資**：內建關鍵地標與岔路口照片，不依賴網路加載。
-* **緊急資訊**：離線存取的電話與座標資訊。
+* **電話訊號資訊**：內建各地點的通訊覆蓋資訊。
+* **本地日誌系統**：記錄操作日誌，支援查閱與雲端上傳。
 
 ### 線上協作 (Online Collaboration)
 
@@ -21,12 +21,32 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式（
   * 行程表：Google Sheets -> App (單向下載)。
   * 留言板：Google Sheets <-> App (雙向同步)。
 
+### UI/UX 特色
+
+* **大自然主題配色**：森林綠主色調，適合戶外使用。
+* **四頁籤導航**：行程 / 協作 / 裝備 / 資訊。
+* **Toast 通知**：操作反饋清晰。
+* **頁面切換動畫**：流暢的淡入過渡效果。
+
 ## 技術堆疊 (Tech Stack)
 
-* **Frontend**: Flutter (Dart)
-* **Local Database**: Isar (NoSQL)
-* **Cloud Backend**: Google Sheets (Database) + Google Apps Script (API Gateway)
-* **External Service**: Open-Meteo / Windy / CWA (via URL Launcher)
+* **Frontend**: Flutter 3.x (Dart 3.x)
+* **Local Database**: Hive (NoSQL, 輕量化)
+* **State Management**: Provider
+* **Dependency Injection**: GetIt
+* **Cloud Backend**: Google Sheets + Google Apps Script
+* **External Service**: Windy / CWA (via URL Launcher)
+
+## 專案結構 (Project Structure)
+
+```
+lib/
+├── core/           # 共用工具、常數、主題、DI
+├── data/           # 資料層 (Models, Repositories)
+├── services/       # 服務層 (API, Sync, Log, Toast)
+├── presentation/   # UI 層 (Providers)
+└── main.dart
+```
 
 ## 環境建置 (Setup)
 
@@ -35,23 +55,57 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式（
 * Flutter SDK: `3.x` (Stable)
 * Dart SDK: `3.x`
 
-### 2. 依賴套件 (pubspec.yaml)
+### 2. 環境設定
+
+建立 `.env.dev` 檔案：
+
+```
+GAS_BASE_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
+```
+
+### 3. 執行
+
+```bash
+# 開發模式
+flutter run --dart-define-from-file=.env.dev
+
+# 執行測試
+flutter test
+
+# 打包 APK
+flutter build apk --dart-define-from-file=.env.prod
+```
+
+### 4. 主要依賴套件
 
 ```yaml
 dependencies:
   flutter:
     sdk: flutter
-  isar: ^3.1.0        # 本地資料庫
-  isar_flutter_libs: ^3.1.0
+  hive: ^2.2.3          # 本地資料庫
+  hive_flutter: ^1.1.0
   path_provider: ^2.0.0
-  http: ^1.1.0        # API 請求
-  provider: ^6.0.0    # 狀態管理
-  intl: ^0.18.0       # 時間格式化
-  uuid: ^4.0.0        # 生成 Message ID
-  shared_preferences: ^2.2.0 # 儲存簡單設定 (User Name)
-  url_launcher: ^6.1.0 # 開啟外部天氣網頁
-  font_awesome_flutter: ^10.6.0 # 圖示庫
+  http: ^1.1.0          # API 請求
+  provider: ^6.0.0      # 狀態管理
+  get_it: ^7.6.4        # 依賴注入
+  intl: ^0.18.0         # 時間格式化
+  uuid: ^4.0.0          # 生成 Message ID
+  shared_preferences: ^2.2.0
+  url_launcher: ^6.1.0
+  fluttertoast: ^8.2.4  # Toast 通知
 
 dev_dependencies:
-  isar_generator: ^3.1.0
-  build_runner: ^2.4.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  mocktail: ^1.0.1
+```
+
+## 測試覆蓋
+
+* **單元測試**: 36 個 (Models, Services, Providers)
+* **執行測試**: `flutter test test/unit`
+
+## 部署
+
+詳見 [Google Apps Script 部署指南](docs/google_apps_script/DEPLOYMENT.md)

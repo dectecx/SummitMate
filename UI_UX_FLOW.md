@@ -2,59 +2,97 @@
 
 ## 1. 啟動流程 (Onboarding)
 
-1. **Splash Screen**: 檢查 `SharedPreferences` 是否有 `username`。
+1. **App 啟動**: 初始化 Hive 資料庫與依賴注入。
 2. **Case A (無 Username)**: 
    * 顯示全螢幕 Dialog (不可關閉)。
    * 標題：「歡迎使用 SummitMate」。
    * 輸入框：「請輸入你的暱稱 (供隊友識別)」。
-   * 按鈕：「開始」。
+   * 按鈕：「開始使用」。
 3. **Case B (有 Username)**: 直接進入主畫面。
 
-## 2. 主導覽列 (Bottom Navigation)
+## 2. 主導覽列 (Bottom Navigation - 4 Tabs)
 
 ### Tab 1: 行程 (Itinerary) - [預設首頁]
 
-* **頂部**: D0 / D1 / D2 切換標籤。
-* **列表**: 垂直時間軸。
+* **頂部 AppBar**: 
+  * 標題：「SummitMate」
+  * 右上角：設定齒輪圖示
+* **日期切換**: D0 / D1 / D2 標籤按鈕
+* **列表**: 垂直時間軸，顯示累積距離
 * **Item 狀態**:
-  * *未打卡*: 顯示 `預計: HH:mm`。
-  * *已打卡*: 顯示 `實際: HH:mm` (綠色高亮)。
+  * *未打卡*: 顯示 `預計: HH:mm`
+  * *已打卡*: 顯示 `實際: HH:mm` (綠色高亮)
 * **互動**:
-  * **點擊 Item**: 展開 ActionSheet。
-    * `現在時間打卡`: 寫入 `DateTime.now()`。
-    * `指定時間`: 跳出 TimePicker。
-    * `清除`: 將 `actualTime` 設為 null。
-  * **點擊縮圖**: 開啟 PhotoView (讀取 assets)。
+  * **點擊 Item**: 展開 ModalBottomSheet
+    * 顯示詳情 (海拔、距離、備註)
+    * `現在時間打卡`: 寫入 `DateTime.now()`
+    * `指定時間`: 跳出 TimePicker
+    * `清除`: 將 `actualTime` 設為 null
+  * **Toast 通知**: 打卡成功/失敗
 
 ### Tab 2: 協作 (Collaboration)
 
-* **頂部**: 右上角「同步按鈕 (Sync)」。
-* **次級導覽**: 裝備 (Gear) / 行程 (Plan) / 其他 (Misc)。
+* **頂部**: 右上角「同步按鈕 (🔄)」
+* **次級導覽**: 裝備 (Gear) / 行程 (Plan) / 其他 (Misc)
 * **列表**:
-  * 顯示留言卡片。
-  * 若有 `parentId`，則縮排顯示於父留言下方。
-  * 若 `message.user == me`，顯示「垃圾桶」圖示。
-* **新增**: 右下角 FAB (+) -> 彈窗輸入內容。
+  * 顯示留言卡片
+  * 若有 `parentId`，則縮排顯示於父留言下方
+  * 若 `message.user == me`，顯示「垃圾桶」圖示
+* **新增**: 右下角 FAB (+) -> 彈窗輸入內容
+* **同步狀態**: Toast 顯示同步成功/失敗
 
-### Tab 3: 工具 (Tools)
+### Tab 3: 裝備 (Gear) - [獨立頁籤]
 
-* **Section 1: 天氣**
-  * 按鈕：`Windy (向陽)` -> `launchUrl(windy_url)`。
-  * 按鈕：`CWA (海端鄉)` -> `launchUrl(cwa_url)`。
-* **Section 2: 個人裝備 (Offline)**
-  * 列表：顯示 `GearItem`。
-  * 功能：新增/編輯/刪除。
-  * **底部**: 固定顯示 `總重量: X.XX kg`。
-* **Section 3: 設定**
-  * 修改暱稱。
-  * 完全重置資料庫 (Debug用)。
+* **總重量卡片**: 顯示當前總重量 (kg)
+* **分類列表**: 
+  * 睡眠系統 / 炊具與飲食 / 穿著 / 其他
+  * 使用 ExpansionTile 可展開收合
+  * 每項顯示名稱、重量、打包狀態
+* **新增**: 右下角 FAB (+)
+  * 輸入名稱、重量、選擇分類
+* **互動**:
+  * 勾選/取消勾選打包狀態
+  * 長按可刪除
 
-## 3. UI 設計準則 (Design Guidelines)
+### Tab 4: 資訊 (Info)
 
-* **Theme**: 強制深色模式 (Dark Mode) 以適應夜間攀登。
-  * Background: `#121212`
-  * Text: `#E0E0E0`
-  * Accent: `#FFC107` (Amber) for actions.
+* **Section 1: 外部資訊** (可摺疊)
+  * 按鈕：`Windy (嘉明湖)` -> `launchUrl(windy_url)`
+  * 按鈕：`中央氣象署 (三叉山)` -> `launchUrl(cwa_url)`
+* **Section 2: 電話訊號資訊** (可摺疊)
+  * 顯示各路段通訊覆蓋情況
+  * 建議使用電信商
+
+## 3. 設定對話框 (Settings Dialog)
+
+透過 AppBar 右上角齒輪圖示開啟：
+
+* 修改暱稱
+* 上次同步時間
+* 查看日誌 (開啟 Log Viewer)
+
+## 4. 日誌查看器 (Log Viewer)
+
+* **觸發**: 設定 -> 查看日誌
+* **顯示**: ModalBottomSheet (可拖曳調整高度)
+* **功能**:
+  * 顯示最近 100 條日誌
+  * 按等級區分圖示 (debug/info/warning/error)
+  * 上傳到雲端按鈕
+  * 清除所有日誌
+
+## 5. UI 設計準則 (Design Guidelines)
+
+* **Theme**: 大自然淺色主題
+  * Primary: 森林綠 `#2E7D32`
+  * Background: 米色 `#FAF8F5`
+  * Text: 深灰 `#1B1B1B`
+  * Accent: 山脈藍 `#1565C0`
 * **Typography**:
-  * 關鍵數值 (海拔、時間) 需大於 18sp。
-  * 避免細明體，使用無襯線黑體。
+  * 關鍵數值 (海拔、時間) 需大於 18sp
+  * 使用無襯線字體
+* **動畫**:
+  * 頁面切換使用 AnimatedSwitcher (250ms 淡入)
+* **通知**:
+  * 使用 SnackBar (Toast) 顯示操作結果
+  * 成功：綠色 / 失敗：紅色 / 警告：橙色 / 資訊：藍色

@@ -21,6 +21,7 @@
 2. 這會開啟 Apps Script 編輯器
 3. 刪除預設的 `myFunction` 程式碼
 4. 複製 `Code.gs` 的全部內容貼上
+5. 點擊 💾 **儲存**
 
 ### Step 3: 初始化工作表
 
@@ -42,16 +43,39 @@
 4. 點擊 **部署**
 5. **複製** 網頁應用程式 URL (類似 `https://script.google.com/macros/s/xxx/exec`)
 
-### Step 5: 更新 Flutter App
+### Step 5: 建立環境設定檔
 
-1. 開啟 `lib/core/constants.dart`
-2. 將 `gasBaseUrl` 更新為您的 URL：
+在專案根目錄建立 `.env.dev` 檔案：
 
-```dart
-static const String gasBaseUrl = 'https://script.google.com/macros/s/YOUR_ID/exec';
+```
+GAS_BASE_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 ```
 
-3. 重新執行 App：`flutter run`
+### Step 6: 執行 Flutter App
+
+```bash
+flutter run --dart-define-from-file=.env.dev
+```
+
+---
+
+## 🔄 更新部署
+
+當修改 `Code.gs` 後，需要重新部署才會生效：
+
+### 方法一：更新現有部署 (推薦)
+
+1. 點擊 **部署** → **管理部署作業**
+2. 點擊現有部署的 ✏️ **編輯** 圖示
+3. 在 **版本** 下拉選單中選擇 **新版本**
+4. 點擊 **部署**
+5. **URL 不會改變**，App 不需要更新
+
+### 方法二：建立新部署
+
+1. 點擊 **部署** → **新增部署作業**
+2. 設定同 Step 4
+3. **會產生新 URL**，需要更新 `.env.dev`
 
 ---
 
@@ -80,17 +104,40 @@ static const String gasBaseUrl = 'https://script.google.com/macros/s/YOUR_ID/exe
 | content | String | 留言內容 |
 | timestamp | DateTime | 發文時間 |
 
+### Logs (日誌) - 自動建立
+
+| Column | Type | 說明 |
+|--------|------|------|
+| upload_time | DateTime | 上傳時間 |
+| device_id | String | 設備 ID |
+| device_name | String | 設備名稱 |
+| timestamp | DateTime | 日誌時間 |
+| level | String | debug/info/warning/error |
+| source | String | 來源模組 |
+| message | String | 日誌訊息 |
+
 ---
 
 ## 🧪 測試 API
 
 部署完成後，可以在瀏覽器測試：
 
+### 健康檢查
+```
+YOUR_URL?action=health
+```
+
+回傳：
+```json
+{ "status": "ok", "timestamp": "2024-12-16T10:00:00Z" }
+```
+
+### 取得所有資料
 ```
 YOUR_URL?action=fetch_all
 ```
 
-應該會回傳 JSON：
+回傳：
 ```json
 {
   "itinerary": [...],
@@ -100,9 +147,44 @@ YOUR_URL?action=fetch_all
 
 ---
 
+## 📱 API 端點
+
+### GET 請求
+
+| Action | 說明 |
+|--------|------|
+| `fetch_all` | 取得行程和留言 |
+| `health` | 健康檢查 |
+
+### POST 請求
+
+| Action | 說明 |
+|--------|------|
+| `add_message` | 新增留言 |
+| `delete_message` | 刪除留言 |
+| `upload_logs` | 上傳日誌 |
+
+---
+
 ## ⚠️ 注意事項
 
-1. **每次修改 Code.gs 後**，需要重新部署才會生效
-2. 部署時選擇 **新增部署作業**，不要覆蓋舊的，這樣可以保留版本歷史
+1. **每次修改 Code.gs 後**，需要建立新版本才會生效
+2. 使用「管理部署作業」更新版本，URL 不會改變
 3. URL 是公開的，任何知道 URL 的人都可以存取
 4. 如需更高安全性，可以加入 API Key 驗證 (進階)
+
+---
+
+## 🔧 疑難排解
+
+### App 收到 302 錯誤但資料寫入成功
+
+這是正常行為。GAS 的 POST 請求會返回 302 重定向，App 已處理此情況。
+
+### 找不到工作表
+
+執行 `setupSheets` 函式來初始化工作表。
+
+### 授權錯誤
+
+重新執行任一函式，系統會要求重新授權。
