@@ -5,6 +5,7 @@ import '../../core/di.dart';
 import '../../data/models/message.dart';
 import '../../data/repositories/message_repository.dart';
 import '../../services/sync_service.dart';
+import '../../services/toast_service.dart';
 
 /// 留言狀態管理
 class MessageProvider extends ChangeNotifier {
@@ -136,7 +137,11 @@ class MessageProvider extends ChangeNotifier {
         debugPrint('📡 同步錯誤: ${result.errors}');
       }
 
-      if (!result.success) {
+      // 顯示同步結果 Toast
+      if (result.success) {
+        ToastService.success('同步成功！');
+      } else {
+        ToastService.error('同步失敗：${result.errors.first}');
         _error = result.errors.join(', ');
       }
 
@@ -161,6 +166,7 @@ class MessageProvider extends ChangeNotifier {
     } catch (e, stack) {
       debugPrint('📡 同步異常: $e');
       debugPrint('📡 堆疊: $stack');
+      ToastService.error('同步錯誤：$e');
       _error = e.toString();
       _isSyncing = false;
       notifyListeners();

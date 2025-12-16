@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'core/constants.dart';
+import 'services/toast_service.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
@@ -41,11 +42,14 @@ class SummitMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'SummitMate',
       debugShowCheckedModeBanner: false,
+      
+      // Toast 訊息的 key
+      scaffoldMessengerKey: ToastService.messengerKey,
 
-      // 強制深色主題
-      theme: AppTheme.darkTheme,
+      // 大自然主題配色
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
 
       // 初始頁面
       home: const _HomeScreen(),
