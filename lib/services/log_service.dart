@@ -223,7 +223,7 @@ class LogService {
   }
 
   /// 上傳日誌到雲端
-  /// 
+  ///
   /// 回傳 (success, message) tuple
   static Future<(bool, String)> uploadToCloud({String? deviceName}) async {
     try {
@@ -250,12 +250,12 @@ class LogService {
             'device_name': deviceName ?? 'SummitMate App',
           },
         });
-        
+
         // followRedirects 設為 false 以手動處理重定向
         request.followRedirects = false;
-        
+
         final streamedResponse = await client.send(request);
-        
+
         // GAS 返回 302 重定向，需跟隨取得實際響應
         if (streamedResponse.statusCode == 302) {
           final redirectUrl = streamedResponse.headers['location'];
@@ -278,7 +278,7 @@ class LogService {
           info('日誌上傳完成 (302)', source: 'LogUpload');
           return (true, '已上傳 ${logs.length} 條日誌');
         }
-        
+
         // 處理 200 響應
         if (streamedResponse.statusCode == 200) {
           final responseBody = await streamedResponse.stream.bytesToString();
