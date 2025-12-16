@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/isar_service.dart';
 import '../services/google_sheets_service.dart';
 import '../services/sync_service.dart';
+import '../services/log_service.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
@@ -23,6 +24,10 @@ Future<void> setupDependencies() async {
   final hiveService = HiveService();
   await hiveService.init();
   getIt.registerSingleton<HiveService>(hiveService);
+
+  // LogService 初始化
+  await LogService.init();
+  LogService.info('App 啟動', source: 'DI');
 
   // Repositories (需要先初始化)
   final settingsRepo = SettingsRepository();

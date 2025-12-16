@@ -6,6 +6,7 @@ import 'core/theme.dart';
 import 'core/di.dart';
 import 'core/constants.dart';
 import 'services/toast_service.dart';
+import 'services/log_service.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
@@ -306,6 +307,15 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                _showLogViewer(context);
+              },
+              icon: const Icon(Icons.article_outlined, size: 18),
+              label: const Text('查看日誌'),
+            ),
           ],
         ),
         actions: [
@@ -326,6 +336,92 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
         ],
       ),
     );
+  }
+
+  void _showLogViewer(BuildContext context) {
+    final logs = LogService.getRecentLogs(count: 100);
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            // 標題列
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('應用日誌 (${logs.length})', style: Theme.of(context).textTheme.titleLarge),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          await LogService.clearAll();
+                          Navigator.pop(context);
+                          ToastService.info('日誌已清除');
+                        },
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: const Text('清除'),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // 日誌列表
+            Expanded(
+              child: logs.isEmpty
+                  ? const Center(child: Text('暫無日誌'))
+                  : ListView.builder(
+                      controller: scrollController,
+                      itemCount: logs.length,
+                      itemBuilder: (context, index) {
+                        final log = logs[index];
+                        return ListTile(
+                          dense: true,
+                          leading: _getLogIcon(log.level),
+                          title: Text(
+                            log.message,
+                            style: const TextStyle(fontSize: 13),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '${log.formatted.substring(0, 8)} ${log.source ?? ''}',
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _getLogIcon(LogLevel level) {
+    switch (level) {
+      case LogLevel.debug:
+        return const Icon(Icons.bug_report, size: 18, color: Colors.grey);
+      case LogLevel.info:
+        return const Icon(Icons.info_outline, size: 18, color: Colors.blue);
+      case LogLevel.warning:
+        return const Icon(Icons.warning_amber, size: 18, color: Colors.orange);
+      case LogLevel.error:
+        return const Icon(Icons.error_outline, size: 18, color: Colors.red);
+    }
   }
 }
 
