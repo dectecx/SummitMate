@@ -50,6 +50,7 @@ dev_dependencies:
 
   # App Icon 生成
   flutter_launcher_icons: ^0.14.3
+  mocktail: ^1.0.4
 
 # App Icon 配置
 flutter_launcher_icons:
