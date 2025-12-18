@@ -29,6 +29,17 @@ class MealPlannerScreen extends StatelessWidget {
               ],
               bottom: TabBar(
                 isScrollable: true,
+                indicatorColor: Colors.white,
+                indicatorWeight: 4.0,
+                indicatorSize: TabBarIndicatorSize.label,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white60,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  letterSpacing: 1.0,
+                ),
                 tabs: provider.dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
               ),
             ),
