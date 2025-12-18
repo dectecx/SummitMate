@@ -11,7 +11,9 @@ import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
 import 'presentation/providers/gear_provider.dart';
+import 'presentation/providers/meal_provider.dart';
 import 'presentation/screens/map_viewer_screen.dart';
+import 'presentation/screens/meal_planner_screen.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -35,6 +37,7 @@ class SummitMateApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ItineraryProvider()),
         ChangeNotifierProvider(create: (_) => MessageProvider()),
         ChangeNotifierProvider(create: (_) => GearProvider()),
+        ChangeNotifierProvider(create: (_) => MealProvider()),
       ],
       child: _buildMaterialApp(),
     );
@@ -852,6 +855,9 @@ class _GearTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<GearProvider>(
       builder: (context, provider, child) {
+        final mealProvider = Provider.of<MealProvider>(context);
+        final totalWeight = provider.totalWeightKg + mealProvider.totalWeightKg;
+
         return Scaffold(
           body: provider.allItems.isEmpty
               ? const Center(
@@ -887,9 +893,9 @@ class _GearTab extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('總重量', style: TextStyle(fontSize: 18)),
+                            const Text('總重量 (含糧食)', style: TextStyle(fontSize: 18)),
                             Text(
-                              '${provider.totalWeightKg.toStringAsFixed(2)} kg',
+                              '${totalWeight.toStringAsFixed(2)} kg',
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -901,6 +907,49 @@ class _GearTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
+                    // 糧食計畫卡片
+                    Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const MealPlannerScreen()),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.bento, color: Colors.orange, size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      mealProvider.totalWeightKg > 0 
+                                          ? '已規劃 ${mealProvider.totalWeightKg.toStringAsFixed(2)} kg'
+                                          : '尚未規劃',
+                                      style: TextStyle(color: Colors.grey[600]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
                     // 分類清單
                     ...provider.itemsByCategory.entries.map((entry) => Card(
                       child: ExpansionTile(
