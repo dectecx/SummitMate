@@ -1103,6 +1103,10 @@ class _CollaborationTab extends StatelessWidget {
                               return Card(
                                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 child: ExpansionTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                    child: Text(msg.avatar),
+                                  ),
                                   title: Text(msg.content),
                                   subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
                                   trailing: Row(
