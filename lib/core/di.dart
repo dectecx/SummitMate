@@ -55,6 +55,7 @@ Future<void> setupDependencies() async {
       sheetsService: getIt<GoogleSheetsService>(),
       itineraryRepo: getIt<ItineraryRepository>(),
       messageRepo: getIt<MessageRepository>(),
+      settingsRepo: getIt<SettingsRepository>(),
     ),
   );
 }

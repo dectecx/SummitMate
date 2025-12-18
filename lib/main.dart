@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'core/theme.dart';
@@ -117,11 +118,11 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
     if (username.isEmpty) return;
 
     setState(() => _isSubmitting = true);
-    
+
     final settingsProvider = context.read<SettingsProvider>();
     await settingsProvider.setAvatar(_selectedAvatar);
     await settingsProvider.updateUsername(username);
-    
+
     if (mounted) {
       setState(() => _isSubmitting = false);
     }
@@ -146,7 +147,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
               ),
               const SizedBox(height: 32),
-              
+
               // Avatar Preview & Selector
               Container(
                 width: 80,
@@ -162,7 +163,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Emoji Grid
               Wrap(
                 spacing: 12,
@@ -190,9 +191,9 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                   );
                 }).toList(),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Username Input
               TextField(
                 controller: _controller,
@@ -206,7 +207,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                 onSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 24),
-              
+
               // Submit Button
               SizedBox(
                 width: double.infinity,
@@ -219,7 +220,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text('開始冒險'),
+                      : const Text('開始使用'),
                 ),
               ),
             ],
@@ -259,7 +260,38 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       messageProvider.onSyncComplete = (syncedAt) {
         settingsProvider.updateLastSyncTime(syncedAt);
       };
+
+      // 檢查首次同步
+      _checkFirstTimeSync(context, settingsProvider);
     });
+  }
+
+  void _checkFirstTimeSync(BuildContext context, SettingsProvider settings) {
+    if (settings.lastSyncTime == null && !settings.isOfflineMode) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('歡迎來到 SummitMate'),
+          content: const Text(
+            '為了讓您有最佳體驗，建議您先同步最新的行程與留言資料。\n\n'
+            '這只需要一點點時間。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('稍後'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.read<MessageProvider>().sync();
+              },
+              child: const Text('立即同步'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -416,56 +448,102 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     }
   }
 
-  void _showSettingsDialog(BuildContext context) {
+  void _showSettingsDialog(BuildContext context) async {
     final settingsProvider = context.read<SettingsProvider>();
     final controller = TextEditingController(text: settingsProvider.username);
 
+    // 取得 app 版本
+    PackageInfo? packageInfo;
+    try {
+      packageInfo = await PackageInfo.fromPlatform();
+    } catch (_) {}
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('設定'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: '暱稱',
-                prefixIcon: Icon(Icons.person),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('設定'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: '暱稱',
+                  prefixIcon: Icon(Icons.person),
+                ),
               ),
+              const SizedBox(height: 16),
+
+              // 離線模式開關
+              SwitchListTile(
+                title: const Text('離線模式'),
+                subtitle: const Text('暫停所有自動同步'),
+                value: settingsProvider.isOfflineMode,
+                onChanged: (value) async {
+                  await settingsProvider.setOfflineMode(value);
+                  setState(() {}); // 更新 Dialog 內的 Switch 狀態
+                },
+              ),
+
+              const Divider(),
+
+              // 版本資訊
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(
+                      packageInfo != null 
+                        ? '版本 ${packageInfo.version} (${packageInfo.buildNumber})'
+                        : '版本資訊讀取中...',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+
+              Text(
+                '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showLogViewer(context);
+                  },
+                  icon: const Icon(Icons.article_outlined, size: 18),
+                  label: const Text('查看日誌'),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
             ),
-            const SizedBox(height: 16),
-            Text(
-              '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
+            FilledButton(
               onPressed: () {
+                final newName = controller.text.trim();
+                if (newName.isNotEmpty) {
+                  settingsProvider.updateUsername(newName);
+                }
                 Navigator.pop(context);
-                _showLogViewer(context);
               },
-              icon: const Icon(Icons.article_outlined, size: 18),
-              label: const Text('查看日誌'),
+              child: const Text('儲存'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final newName = controller.text.trim();
-              if (newName.isNotEmpty) {
-                settingsProvider.setUsername(newName);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('儲存'),
-          ),
-        ],
       ),
     );
   }

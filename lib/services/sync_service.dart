@@ -4,6 +4,7 @@ import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../services/log_service.dart';
 import 'google_sheets_service.dart';
+import '../data/repositories/settings_repository.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步
@@ -11,17 +12,24 @@ class SyncService {
   final GoogleSheetsService _sheetsService;
   final ItineraryRepository _itineraryRepo;
   final MessageRepository _messageRepo;
+  final SettingsRepository _settingsRepo;
 
   SyncService({
     required GoogleSheetsService sheetsService,
     required ItineraryRepository itineraryRepo,
     required MessageRepository messageRepo,
+    required SettingsRepository settingsRepo,
   })  : _sheetsService = sheetsService,
         _itineraryRepo = itineraryRepo,
-        _messageRepo = messageRepo;
+        _messageRepo = messageRepo,
+        _settingsRepo = settingsRepo;
+
+  bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
   /// 完整同步 (下載 + 上傳)
   Future<SyncResult> syncAll() async {
+    if (_isOffline) return _offlineSyncResult();
+
     final errors = <String>[];
     var itinerarySuccess = false;
     var messagesSuccess = false;
@@ -60,6 +68,8 @@ class SyncService {
 
   /// 僅同步行程
   Future<SyncResult> syncItinerary() async {
+    if (_isOffline) return _offlineSyncResult();
+
     final fetchResult = await _sheetsService.fetchAll();
 
     if (!fetchResult.success) {
@@ -88,8 +98,10 @@ class SyncService {
 
   /// 僅同步留言
   Future<SyncResult> syncMessages() async {
+    if (_isOffline) return _offlineSyncResult();
+
     final fetchResult = await _sheetsService.fetchAll();
-    
+
     if (!fetchResult.success) {
       return SyncResult(
         success: false,
@@ -119,9 +131,14 @@ class SyncService {
     // 1. 先存到本地
     await _messageRepo.addMessage(message);
 
+    if (_isOffline) {
+      LogService.info('離線模式：跳過留言上傳', source: 'SyncService');
+      returnApiResult(success: true, message: '已儲存至本地 (離線模式)');
+    }
+
     // 2. 上傳到雲端
     final result = await _sheetsService.addMessage(message);
-    
+
     if (!result.success) {
       // TODO: 實作離線佇列，稍後重試
     }
@@ -134,6 +151,11 @@ class SyncService {
     // 1. 從本地刪除
     await _messageRepo.deleteByUuid(uuid);
 
+    if (_isOffline) {
+      LogService.info('離線模式：跳過留言刪除同步', source: 'SyncService');
+      returnApiResult(success: true, message: '已從本地刪除 (離線模式)');
+    }
+
     // 2. 從雲端刪除
     final result = await _sheetsService.deleteMessage(uuid);
 
@@ -142,6 +164,20 @@ class SyncService {
     }
 
     return result;
+  }
+
+  SyncResult _offlineSyncResult() {
+    return SyncResult(
+      success: false,
+      errors: ['目前為離線模式，無法同步'],
+      syncedAt: DateTime.now(),
+    );
+  }
+
+  ApiResult returnApiResult({required bool success, String? message}) {
+    // Helper to return ApiResult since it's defined in google_sheets_service.dart
+    // Assuming ApiResult constructor is public
+    return ApiResult(success: success, errorMessage: success ? null : message);
   }
 
   /// 內部方法：雙向同步留言

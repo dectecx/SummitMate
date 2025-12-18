@@ -1,32 +1,47 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:hive/hive.dart';
 import 'package:summitmate/services/sync_service.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/data/repositories/itinerary_repository.dart';
 import 'package:summitmate/data/repositories/message_repository.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/data/models/itinerary_item.dart';
+import 'package:summitmate/data/repositories/settings_repository.dart';
+import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/services/log_service.dart';
 
 // Mocks
 class MockGoogleSheetsService extends Mock implements GoogleSheetsService {}
 class MockItineraryRepository extends Mock implements ItineraryRepository {}
 class MockMessageRepository extends Mock implements MessageRepository {}
+class MockSettingsRepository extends Mock implements SettingsRepository {}
+class MockSettings extends Mock implements Settings {}
 
 void main() {
   late SyncService syncService;
   late MockGoogleSheetsService mockSheetsService;
   late MockItineraryRepository mockItineraryRepo;
   late MockMessageRepository mockMessageRepo;
+  late MockSettingsRepository mockSettingsRepo;
+  late MockSettings mockSettings;
 
   setUp(() {
     mockSheetsService = MockGoogleSheetsService();
     mockItineraryRepo = MockItineraryRepository();
     mockMessageRepo = MockMessageRepository();
+    mockSettingsRepo = MockSettingsRepository();
+    mockSettings = MockSettings();
+
+    // Default: Online mode
+    when(() => mockSettings.isOfflineMode).thenReturn(false);
+    when(() => mockSettingsRepo.getSettings()).thenReturn(mockSettings);
 
     syncService = SyncService(
       sheetsService: mockSheetsService,
       itineraryRepo: mockItineraryRepo,
       messageRepo: mockMessageRepo,
+      settingsRepo: mockSettingsRepo,
     );
 
     // Register fallback values
@@ -37,9 +52,23 @@ void main() {
       content: 'content',
       timestamp: DateTime.now(),
     ));
+    // registerFallbackValue(Settings()); // HiveObject might be hard to instantiate directly without hive
   });
 
   group('SyncService Tests', () {
+    test('syncAll should skip when offline', () async {
+      // Arrange
+      when(() => mockSettings.isOfflineMode).thenReturn(true);
+
+      // Act
+      final result = await syncService.syncAll();
+
+      // Assert
+      expect(result.success, isFalse);
+      expect(result.errors, contains('目前為離線模式，無法同步'));
+      verifyNever(() => mockSheetsService.fetchAll());
+    });
+
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
       final cloudMessages = [
@@ -48,13 +77,13 @@ void main() {
       final cloudItinerary = [
          ItineraryItem(day: 'D1', name: 'Start', estTime: '08:00', altitude: 2000, distance: 0, note: '')
       ];
-      
+
       when(() => mockSheetsService.fetchAll()).thenAnswer((_) async => FetchAllResult(
         success: true,
         itinerary: cloudItinerary,
         messages: cloudMessages,
       ));
-      
+
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
       when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
@@ -72,24 +101,25 @@ void main() {
     test('syncAll should upload pending messages', () async {
       // Arrange
       final pendingMsg = Message(uuid: 'pending', user: 'Local', category: 'Misc', content: 'B', timestamp: DateTime.now());
-      
+
       when(() => mockSheetsService.fetchAll()).thenAnswer((_) async => FetchAllResult(
         success: true,
         itinerary: [],
         messages: [],
       ));
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
-      
+
       // Simulate one pending message
       when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([pendingMsg]);
-      when(() => mockSheetsService.addMessage(any())).thenAnswer((_) async => ApiResult(success: true));
+      when(() => mockSheetsService.batchAddMessages(any())).thenAnswer((_) async => ApiResult(success: true));
       when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
 
       // Act
       await syncService.syncAll();
 
       // Assert
-      verify(() => mockSheetsService.addMessage(pendingMsg)).called(1);
+      // Note: syncAll calls batchAddMessages, not addMessage
+      verify(() => mockSheetsService.batchAddMessages([pendingMsg])).called(1);
     });
 
     test('syncAll should handle fetch failure', () async {
@@ -108,10 +138,25 @@ void main() {
       verifyNever(() => mockItineraryRepo.syncFromCloud(any()));
     });
 
+    test('addMessageAndSync should skip upload when offline', () async {
+      // Arrange
+      when(() => mockSettings.isOfflineMode).thenReturn(true);
+      final newMsg = Message(uuid: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
+      when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
+
+      // Act
+      final result = await syncService.addMessageAndSync(newMsg);
+
+      // Assert
+      expect(result.success, isTrue); // Offline save is considered success
+      verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
+      verifyNever(() => mockSheetsService.addMessage(any()));
+    });
+
     test('addMessageAndSync should save locally and then upload', () async {
       // Arrange
       final newMsg = Message(uuid: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
-      
+
       when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
       when(() => mockSheetsService.addMessage(any())).thenAnswer((_) async => ApiResult(success: true));
 
@@ -128,7 +173,7 @@ void main() {
     test('deleteMessageAndSync should delete locally and then from cloud', () async {
       // Arrange
       const uuid = 'delete-me';
-      
+
       when(() => mockMessageRepo.deleteByUuid(any())).thenAnswer((_) async {});
       when(() => mockSheetsService.deleteMessage(any())).thenAnswer((_) async => ApiResult(success: true));
 
