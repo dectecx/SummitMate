@@ -152,9 +152,13 @@ class SyncService {
     // 1. 找出本地有但雲端沒有的留言 (待上傳)
     final pendingMessages = _messageRepo.getPendingMessages(cloudUuids);
 
-    // 2. 上傳待同步的留言
-    for (final msg in pendingMessages) {
-      await _sheetsService.addMessage(msg);
+    // 2. 上傳待同步的留言 (使用批次 API)
+    if (pendingMessages.isNotEmpty) {
+      LogService.info('Batch uploading ${pendingMessages.length} messages...', source: 'SyncService');
+      final result = await _sheetsService.batchAddMessages(pendingMessages);
+      if (!result.success) {
+        LogService.error('Batch upload failed: ${result.errorMessage}', source: 'SyncService');
+      }
     }
 
     // 3. 從雲端同步到本地 (會自動處理新增/刪除)

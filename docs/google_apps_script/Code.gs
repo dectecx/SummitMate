@@ -53,6 +53,8 @@ function doPost(e) {
     switch (action) {
       case 'add_message':
         return createJsonResponse(addMessage(data.data));
+      case 'batch_add_messages':
+        return createJsonResponse(batchAddMessages(data.data));
       case 'delete_message':
         return createJsonResponse(deleteMessage(data.uuid));
       case 'upload_logs':
@@ -185,6 +187,31 @@ function addMessage(messageData) {
   ]);
 
   return { success: true, message: 'Message added' };
+}
+
+function batchAddMessages(messages) {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName('Messages');
+
+  if (!messages || messages.length === 0) {
+    return { success: true, message: 'No messages to add' };
+  }
+
+  const rows = messages.map(messageData => [
+    messageData.uuid || Utilities.getUuid(),
+    messageData.parent_id || '', // parent_id is optional
+    messageData.user || 'Anonymous',
+    messageData.category || 'Misc',
+    messageData.content || '',
+    // Force String format for timestamp to avoid timezone issues
+    "'" + (messageData.timestamp || new Date().toISOString())
+  ]);
+
+  if (rows.length > 0) {
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
+  }
+
+  return { success: true, message: `Batch added ${rows.length} messages` };
 }
 
 /**

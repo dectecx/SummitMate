@@ -110,6 +110,24 @@ class GoogleSheetsService {
     }
   }
 
+  /// 批次新增留言
+  Future<ApiResult> batchAddMessages(List<Message> messages) async {
+    try {
+      final uri = Uri.parse(_baseUrl);
+      final response = await _postWithRedirect(
+        uri,
+        {
+          'action': 'batch_add_messages',
+          'data': messages.map((m) => m.toJson()).toList(),
+        },
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResult(success: false, errorMessage: e.toString());
+    }
+  }
+
   /// 更新行程 (覆寫雲端)
   Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
     try {
