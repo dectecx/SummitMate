@@ -304,6 +304,12 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             final scaffold = Scaffold(
               appBar: AppBar(
                 title: const Text('SummitMate 山友'),
+                bottom: messageProvider.isSyncing
+                    ? const PreferredSize(
+                        preferredSize: Size.fromHeight(4.0),
+                        child: LinearProgressIndicator(),
+                      )
+                    : null,
                 actions: [
                   // Tab 0: 行程編輯與地圖
                   if (_currentIndex == 0) ...[
@@ -1184,60 +1190,90 @@ class _CollaborationTab extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isReply ? '回覆留言' : '新增留言 (${_getCategoryName(provider.selectedCategory)})'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-               if (!isReply)
-                 Padding(
-                   padding: const EdgeInsets.only(bottom: 12),
-                   child: Row(
+      barrierDismissible: false, // 避免誤觸關閉
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          bool isSubmitting = false;
+
+          return StatefulBuilder(
+            builder: (context, setInnerState) {
+              return AlertDialog(
+                title: Text(isReply ? '回覆留言' : '新增留言 (${_getCategoryName(provider.selectedCategory)})'),
+                content: SizedBox(
+                   width: double.maxFinite,
+                   child: Column(
+                     mainAxisSize: MainAxisSize.min,
                      children: [
-                       CircleAvatar(child: Text(avatar)),
-                       const SizedBox(width: 8),
-                       Text('以 $username 的身分發言'),
+                        if (!isReply)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                CircleAvatar(child: Text(avatar)),
+                                const SizedBox(width: 8),
+                                Text('以 $username 的身分發言'),
+                              ],
+                            ),
+                          ),
+                       TextField(
+                         controller: contentController,
+                         enabled: !isSubmitting, // 提交時鎖定輸入
+                         decoration: InputDecoration(
+                           labelText: isReply ? '回覆內容' : '留言內容',
+                           hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
+                           border: const OutlineInputBorder(),
+                         ),
+                         maxLines: 5,
+                         minLines: 3,
+                         textInputAction: TextInputAction.newline,
+                         autofocus: true,
+                       ),
                      ],
                    ),
                  ),
-              TextField(
-                controller: contentController,
-                decoration: InputDecoration(
-                  labelText: isReply ? '回覆內容' : '留言內容',
-                  hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 5,  // 加大輸入框
-                minLines: 3,
-                textInputAction: TextInputAction.newline, // 允許換行
-                autofocus: true,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final content = contentController.text.trim();
-              if (content.isNotEmpty) {
-                provider.addMessage(
-                  user: username.isNotEmpty ? username : 'Anonymous',
-                  avatar: avatar,
-                  content: content,
-                  parentId: parentId,
-                );
-                Navigator.pop(context);
-              }
-            },
+                actions: [
+                  TextButton(
+                    onPressed: isSubmitting ? null : () => Navigator.pop(context),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: isSubmitting
+                        ? null // 提交中禁用按鈕
+                        : () async {
+                            final content = contentController.text.trim();
+                            if (content.isNotEmpty) {
+                              // 更新內部狀態顯示 Loading
+                              setInnerState(() => isSubmitting = true);
+                              try {
+                                await provider.addMessage(
+                                  user: username.isNotEmpty ? username : 'Anonymous',
+                                  avatar: avatar,
+                                  content: content,
+                                  parentId: parentId,
+                                );
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('留言傳送成功！'), backgroundColor: Colors.green),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  setInnerState(() => isSubmitting = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red),
+                                  );
+                                }
+                              }
+                            }
+                          },
             child: const Text('發送'),
-          ),
-        ],
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
