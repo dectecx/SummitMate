@@ -16,7 +16,10 @@
 
 * **頂部 AppBar**: 
   * 標題：「SummitMate」
-  * 右上角：設定齒輪圖示
+  * 右上角區塊：
+    * **新增按鈕 (+)**: 開啟行程編輯頁面 (新增模式)
+    * **雲端上傳 (☁️)**: 觸發與 Google Sheets 的同步與衝突檢測
+    * **設定 (⚙️)**: 開啟設定對話框
 * **日期切換**: D0 / D1 / D2 標籤按鈕
 * **列表**: 垂直時間軸，顯示累積距離
 * **Item 狀態**:
@@ -25,9 +28,12 @@
 * **互動**:
   * **點擊 Item**: 展開 ModalBottomSheet
     * 顯示詳情 (海拔、距離、備註)
-    * `現在時間打卡`: 寫入 `DateTime.now()`
-    * `指定時間`: 跳出 TimePicker
-    * `清除`: 將 `actualTime` 設為 null
+    * **Action Bar**:
+      * `現在時間打卡`: 寫入 `DateTime.now()`
+      * `指定時間`: 跳出 TimePicker
+      * `清除`: 將 `actualTime` 設為 null
+      * `編輯`: 進入行程編輯頁面
+      * `刪除`: 移除此節點
   * **Toast 通知**: 打卡成功/失敗
 
 ### Tab 2: 協作 (Collaboration)
@@ -63,25 +69,48 @@
   * 顯示各路段通訊覆蓋情況
   * 建議使用電信商
 
-## 3. 設定對話框 (Settings Dialog)
+## 3. 次級頁面 (Sub-Pages)
 
+### 行程編輯頁面 (Itinerary Edit Screen)
+* **進入點**: Tab 1 右上角 (+) 或 BottomSheet 編輯按鈕。
+* **表單欄位**:
+  * 天數 (D0, D1...)
+  * 名稱 (必填)
+  * 預計時間 (TimePicker)
+  * 海拔 (選填)
+  * 里程 (選填)
+  * 備註 (多行輸入)
+* **動作**:
+  * 儲存: 驗證並寫入 Hive。
+  * 取消: 返回上一頁。
+
+## 4. 設定與工具
+
+### 設定對話框 (Settings Dialog)
 透過 AppBar 右上角齒輪圖示開啟：
-
 * 修改暱稱
 * 上次同步時間
 * 查看日誌 (開啟 Log Viewer)
 
-## 4. 日誌查看器 (Log Viewer)
-
+### 日誌查看器 (Log Viewer)
 * **觸發**: 設定 -> 查看日誌
 * **顯示**: ModalBottomSheet (可拖曳調整高度)
 * **功能**:
   * 顯示最近 100 條日誌
   * 按等級區分圖示 (debug/info/warning/error)
-  * 上傳到雲端按鈕
+  * 上傳到雲端按鈕 (Web 相容)
   * 清除所有日誌
 
-## 5. UI 設計準則 (Design Guidelines)
+## 5. Web 版適配 (Responsive Design)
+
+### Desktop / Large Screen
+當螢幕寬度 > 600px 時：
+* **Layout Wrapper**: 整個 App 內容被限制在 `maxWidth: 600px` 的容器中。
+* **置中顯示**: 容器水平置中。
+* **背景**: 兩側顯示背景色，模擬手機長寬比體驗。
+* **目的**: 避免列表在寬螢幕上過度拉伸，保持單手操作的 UI 邏輯。
+
+## 6. UI 設計準則 (Design Guidelines)
 
 * **Theme**: 大自然淺色主題
   * Primary: 森林綠 `#2E7D32`
