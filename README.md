@@ -42,7 +42,7 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 * [📐 架構與資料庫 (Architecture)](docs/ARCHITECTURE_AND_SCHEMA.md) - 系統架構與 Schema 設計
 * [🌊 UI/UX 流程 (Flow)](docs/UI_UX_FLOW.md) - 頁面流程圖
 * [📱 UI 線框圖 (Wireframes)](docs/UI_WIREFRAMES.md) - 介面設計草圖
-* [🚀 部署指南 (Deployment)](docs/google_apps_script/DEPLOYMENT.md) - Google Apps Script 與 Web 部署
+* [🚀 部署指南 (Deployment)](docs/DEPLOYMENT.md) - Google Apps Script 與 Web 部署
 * [🔒 隱私權政策 (Privacy)](docs/PRIVACY_POLICY.md)
 
 ## 環境建置 (Setup)
