@@ -46,6 +46,20 @@ class SettingsRepository {
     await settings.save();
   }
 
+  /// 更新頭像
+  Future<void> updateAvatar(String avatar) async {
+    final settings = getSettings();
+    settings.avatar = avatar;
+    await settings.save();
+  }
+
+  /// 更新離線模式
+  Future<void> updateOfflineMode(bool isOffline) async {
+    final settings = getSettings();
+    settings.isOfflineMode = isOffline;
+    await settings.save();
+  }
+
   /// 監聽設定變更
   Stream<BoxEvent> watchSettings() {
     return box.watch(key: _settingsKey);

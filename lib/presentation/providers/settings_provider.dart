@@ -47,6 +47,12 @@ class SettingsProvider extends ChangeNotifier {
     return '${time.month}/${time.day} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
   }
 
+  /// 使用者頭像
+  String get avatar => _settings?.avatar ?? '🐻';
+
+  /// 是否為離線模式
+  bool get isOfflineMode => _settings?.isOfflineMode ?? false;
+
   /// 設定使用者名稱 (別名)
   Future<void> setUsername(String username) => updateUsername(username);
 
@@ -96,6 +102,35 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> updateLastSyncTime(DateTime time) async {
     try {
       await _repository.updateLastSyncTime(time);
+      _settings = _repository.getSettings();
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 設定頭像
+  Future<void> setAvatar(String avatar) async {
+    try {
+      await _repository.updateAvatar(avatar);
+      _settings = _repository.getSettings();
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 切換離線模式
+  Future<void> toggleOfflineMode() async {
+    await setOfflineMode(!isOfflineMode);
+  }
+
+  /// 設定離線模式
+  Future<void> setOfflineMode(bool isOffline) async {
+    try {
+      await _repository.updateOfflineMode(isOffline);
       _settings = _repository.getSettings();
       notifyListeners();
     } catch (e) {

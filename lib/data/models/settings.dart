@@ -13,9 +13,19 @@ class Settings extends HiveObject {
   @HiveField(1)
   DateTime? lastSyncTime;
 
+  /// 使用者頭像 (Emoji)
+  @HiveField(2)
+  String avatar;
+
+  /// 是否為離線模式
+  @HiveField(3)
+  bool isOfflineMode;
+
   Settings({
     this.username = '',
     this.lastSyncTime,
+    this.avatar = '🐻', // 預設熊頭像
+    this.isOfflineMode = false, // 預設連線模式
   });
 
   /// 建立預設設定
