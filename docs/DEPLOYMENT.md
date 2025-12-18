@@ -39,7 +39,10 @@
 #### 1. Netlify 設定
 1.  新增網站 (Import from Git 或 Deploy manually)。
 2.  取得 **Site ID** (`Site settings` > `Site details` > `API ID`)。
-3.  取得 **Access Token** (`User settings` > `OAuth` > `New access token`)。
+3.  取得 **Access Token** (`User settings` > `Applications` > `Personal access tokens` > `New access token`)。
+    *   注意：請勿建立 "OAuth application"，這不是我們要的。
+    *   Description 填寫 "GitHub Actions" 並設定過期時間。
+    *   複製生成的 Token (以此作為 `NETLIFY_AUTH_TOKEN`)。
 
 #### 2. GitHub Secrets 設定
 於 GitHub Repository 的 `Settings` > `Secrets and variables` > `Actions` 新增以下變數：
