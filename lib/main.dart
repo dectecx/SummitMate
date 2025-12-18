@@ -88,7 +88,7 @@ class _HomeScreen extends StatelessWidget {
   }
 }
 
-/// Onboarding 畫面 (設定暱稱)
+/// Onboarding 畫面 (設定暱稱與頭像)
 class _OnboardingScreen extends StatefulWidget {
   const _OnboardingScreen();
 
@@ -99,6 +99,12 @@ class _OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<_OnboardingScreen> {
   final _controller = TextEditingController();
   bool _isSubmitting = false;
+  String _selectedAvatar = '🐻';
+
+  final List<String> _avatars = [
+    '🐻', '🦊', '🦁', '🐯', '🐨',
+    '🐵', '🐧', '🦉', '🐺', '🐗',
+  ];
 
   @override
   void dispose() {
@@ -112,7 +118,9 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
 
     setState(() => _isSubmitting = true);
     
-    await context.read<SettingsProvider>().updateUsername(username);
+    final settingsProvider = context.read<SettingsProvider>();
+    await settingsProvider.setAvatar(_selectedAvatar);
+    await settingsProvider.updateUsername(username);
     
     if (mounted) {
       setState(() => _isSubmitting = false);
@@ -123,49 +131,95 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.terrain,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
               Text(
                 '歡迎使用 SummitMate',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Text(
-                '為了方便隊友辨識，請輸入你的暱稱：',
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
+                '請設定您的登山者形象',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+              ),
+              const SizedBox(height: 32),
+              
+              // Avatar Preview & Selector
+              Container(
+                width: 80,
+                height: 80,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  _selectedAvatar,
+                  style: const TextStyle(fontSize: 40),
+                ),
               ),
               const SizedBox(height: 24),
+              
+              // Emoji Grid
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: _avatars.map((emoji) {
+                  final isSelected = _selectedAvatar == emoji;
+                  return InkWell(
+                    onTap: () => setState(() => _selectedAvatar = emoji),
+                    borderRadius: BorderRadius.circular(50),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                        ),
+                      ),
+                      child: Text(
+                        emoji,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              
+              const SizedBox(height: 32),
+              
+              // Username Input
               TextField(
                 controller: _controller,
                 decoration: const InputDecoration(
-                  hintText: '你的暱稱',
+                  labelText: '您的暱稱',
+                  hintText: '例：山林小精靈',
                   prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(),
                 ),
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 24),
+              
+              // Submit Button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                height: 48,
+                child: FilledButton(
                   onPressed: _isSubmitting ? null : _submit,
                   child: _isSubmitting
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text('開始使用'),
+                      : const Text('開始冒險'),
                 ),
               ),
             ],
