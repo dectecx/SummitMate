@@ -99,7 +99,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   /// 更新同步時間
-  Future<void> updateLastSyncTime(DateTime time) async {
+  Future<void> updateLastSyncTime(DateTime? time) async {
     try {
       await _repository.updateLastSyncTime(time);
       _settings = _repository.getSettings();
@@ -134,6 +134,22 @@ class SettingsProvider extends ChangeNotifier {
       _settings = _repository.getSettings();
       notifyListeners();
     } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 重設身分 (登出)
+  Future<void> resetIdentity() async {
+    try {
+      LogService.info('重設使用者身分 (登出)', source: 'Settings');
+      await updateUsername(''); // 清除暱稱
+      await setAvatar('🐻'); // 重置頭像
+      await _repository.updateLastSyncTime(null); // 清除同步時間
+      await _prefs.remove(PrefKeys.username); 
+      _loadSettings(); // 重新載入確保狀態一致
+    } catch (e) {
+      LogService.error('重設身分失敗: $e', source: 'Settings');
       _error = e.toString();
       notifyListeners();
     }

@@ -451,8 +451,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   void _showSettingsDialog(BuildContext context) async {
     final settingsProvider = context.read<SettingsProvider>();
     final controller = TextEditingController(text: settingsProvider.username);
-
-    // 取得 app 版本
+    
     PackageInfo? packageInfo;
     try {
       packageInfo = await PackageInfo.fromPlatform();
@@ -469,29 +468,46 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: '暱稱',
-                  prefixIcon: Icon(Icons.person),
+              // 離線模式 (獨立於表單上方)
+              Card(
+                color: settingsProvider.isOfflineMode ? Colors.orange.shade50 : null,
+                child: SwitchListTile(
+                  title: const Text('離線模式'),
+                  subtitle: Text(
+                    settingsProvider.isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
+                    style: TextStyle(
+                      color: settingsProvider.isOfflineMode ? Colors.orange.shade800 : null,
+                      fontSize: 12,
+                    ),
+                  ),
+                  value: settingsProvider.isOfflineMode,
+                  onChanged: (value) async {
+                    await settingsProvider.setOfflineMode(value);
+                    setState(() {});
+                  },
                 ),
               ),
               const SizedBox(height: 16),
 
-              // 離線模式開關
-              SwitchListTile(
-                title: const Text('離線模式'),
-                subtitle: const Text('暫停所有自動同步'),
-                value: settingsProvider.isOfflineMode,
-                onChanged: (value) async {
-                  await settingsProvider.setOfflineMode(value);
-                  setState(() {}); // 更新 Dialog 內的 Switch 狀態
-                },
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: '暱稱',
+                  prefixIcon: const Icon(Icons.person),
+                  // 顯示當前頭像
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      radius: 16,
+                      child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                ),
               ),
-
-              const Divider(),
-
-              // 版本資訊
+              
+              const Divider(height: 32),
+              
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
@@ -507,13 +523,13 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   ],
                 ),
               ),
-
+              
               Text(
                 '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
-
+              
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -523,6 +539,38 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   },
                   icon: const Icon(Icons.article_outlined, size: 18),
                   label: const Text('查看日誌'),
+                ),
+              ),
+              
+              const SizedBox(height: 8),
+              // 登出按鈕
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('重設身分'),
+                        content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text('重設'),
+                          ),
+                        ],
+                      ),
+                    );
+                    
+                    if (confirm == true && context.mounted) {
+                      Navigator.pop(context); // 關閉設定對話框
+                      await settingsProvider.resetIdentity();
+                    }
+                  },
+                  icon: const Icon(Icons.logout, size: 18, color: Colors.red),
+                  label: const Text('重設身分 (登出)', style: TextStyle(color: Colors.red)),
                 ),
               ),
             ],
@@ -540,7 +588,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 }
                 Navigator.pop(context);
               },
-              child: const Text('儲存'),
+              child: const Text('儲存詳細資料'),
             ),
           ],
         ),
@@ -548,7 +596,20 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     );
   }
 
+
   void _handleCloudUpload(BuildContext context, ItineraryProvider provider) async {
+    // 檢查離線模式
+    final settingsIsOffline = context.read<SettingsProvider>().isOfflineMode;
+    if (settingsIsOffline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ 目前為離線模式，無法上傳行程'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     // 1. 顯示檢查中 Loading
     showDialog(
       context: context,
@@ -1045,8 +1106,10 @@ class _CollaborationTab extends StatelessWidget {
                                         Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
                                       IconButton(
                                         icon: const Icon(Icons.reply, size: 20),
-                                        onPressed: () => _showReplyDialog(
-                                          context, messageProvider, settingsProvider.username, msg.uuid),
+                                        onPressed: settingsProvider.isOfflineMode
+                                            ? null
+                                            : () => _showReplyDialog(
+                                                context, messageProvider, settingsProvider.username, settingsProvider.avatar, msg.uuid),
                                         tooltip: '回覆',
                                       ),
                                       IconButton(
@@ -1057,7 +1120,11 @@ class _CollaborationTab extends StatelessWidget {
                                     ],
                                   ),
                                   children: replies.map((reply) => ListTile(
-                                    leading: const Icon(Icons.subdirectory_arrow_right, size: 16),
+                                    leading: CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                      child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
+                                    ),
                                     title: Text(reply.content),
                                     subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
                                     trailing: IconButton(
@@ -1073,7 +1140,14 @@ class _CollaborationTab extends StatelessWidget {
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => _showAddMessageDialog(context, messageProvider, settingsProvider.username, null),
+            backgroundColor: settingsProvider.isOfflineMode ? Colors.grey : null,
+            onPressed: settingsProvider.isOfflineMode
+                ? () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')),
+                    );
+                  }
+                : () => _showAddMessageDialog(context, messageProvider, settingsProvider.username, settingsProvider.avatar, null),
             child: const Icon(Icons.add_comment),
           ),
         );
@@ -1104,7 +1178,7 @@ class _CollaborationTab extends StatelessWidget {
     );
   }
 
-  void _showAddMessageDialog(BuildContext context, MessageProvider provider, String username, String? parentId) {
+  void _showAddMessageDialog(BuildContext context, MessageProvider provider, String username, String avatar, String? parentId) {
     final contentController = TextEditingController();
     final isReply = parentId != null;
 
@@ -1114,17 +1188,33 @@ class _CollaborationTab extends StatelessWidget {
         title: Text(isReply ? '回覆留言' : '新增留言 (${_getCategoryName(provider.selectedCategory)})'),
         content: SizedBox(
           width: double.maxFinite,
-          child: TextField(
-            controller: contentController,
-            decoration: InputDecoration(
-              labelText: isReply ? '回覆內容' : '留言內容',
-              hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
-              border: const OutlineInputBorder(),
-            ),
-            maxLines: 5,  // 加大輸入框
-            minLines: 3,
-            textInputAction: TextInputAction.newline, // 允許換行
-            autofocus: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+               if (!isReply)
+                 Padding(
+                   padding: const EdgeInsets.only(bottom: 12),
+                   child: Row(
+                     children: [
+                       CircleAvatar(child: Text(avatar)),
+                       const SizedBox(width: 8),
+                       Text('以 $username 的身分發言'),
+                     ],
+                   ),
+                 ),
+              TextField(
+                controller: contentController,
+                decoration: InputDecoration(
+                  labelText: isReply ? '回覆內容' : '留言內容',
+                  hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
+                  border: const OutlineInputBorder(),
+                ),
+                maxLines: 5,  // 加大輸入框
+                minLines: 3,
+                textInputAction: TextInputAction.newline, // 允許換行
+                autofocus: true,
+              ),
+            ],
           ),
         ),
         actions: [
@@ -1138,6 +1228,7 @@ class _CollaborationTab extends StatelessWidget {
               if (content.isNotEmpty) {
                 provider.addMessage(
                   user: username.isNotEmpty ? username : 'Anonymous',
+                  avatar: avatar,
                   content: content,
                   parentId: parentId,
                 );
@@ -1151,8 +1242,8 @@ class _CollaborationTab extends StatelessWidget {
     );
   }
 
-  void _showReplyDialog(BuildContext context, MessageProvider provider, String username, String parentId) {
-    _showAddMessageDialog(context, provider, username, parentId);
+  void _showReplyDialog(BuildContext context, MessageProvider provider, String username, String avatar, String parentId) {
+    _showAddMessageDialog(context, provider, username, avatar, parentId);
   }
 
   String _getCategoryName(String category) {

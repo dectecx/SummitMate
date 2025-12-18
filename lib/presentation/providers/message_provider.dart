@@ -89,6 +89,7 @@ class MessageProvider extends ChangeNotifier {
   /// 新增留言
   Future<void> addMessage({
     required String user,
+    required String avatar,
     required String content,
     String? parentId,
   }) async {
@@ -99,6 +100,7 @@ class MessageProvider extends ChangeNotifier {
         user: user,
         category: _selectedCategory,
         content: content,
+        avatar: avatar,
         timestamp: DateTime.now(),
       );
 

@@ -61,7 +61,7 @@ void main() {
         Message(uuid: '3', user: 'A', category: 'Plan', content: 'Plan', timestamp: now),
       ];
       when(() => mockRepository.getAllMessages()).thenReturn(messages);
-      
+
       provider = MessageProvider();
       provider.selectCategory('Gear');
 
@@ -82,7 +82,7 @@ void main() {
         Message(uuid: '3', user: 'A', category: 'Gear', content: 'Reply 2', parentId: '1', timestamp: now.add(Duration(seconds: 2))),
       ];
       when(() => mockRepository.getAllMessages()).thenReturn(messages);
-      
+
       provider = MessageProvider();
 
       // Act
@@ -98,11 +98,11 @@ void main() {
       // Arrange
       when(() => mockRepository.getAllMessages()).thenReturn([]);
       when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => ApiResult(success: true));
-      
+
       provider = MessageProvider();
 
       // Act
-      await provider.addMessage(user: 'TestUser', content: 'Hello');
+      await provider.addMessage(user: 'TestUser', avatar: '🐻', content: 'Hello');
 
       // Assert
       verify(() => mockSyncService.addMessageAndSync(any())).called(1);
@@ -114,7 +114,7 @@ void main() {
       // Arrange
       when(() => mockRepository.getAllMessages()).thenReturn([]);
       when(() => mockSyncService.deleteMessageAndSync(any())).thenAnswer((_) async => ApiResult(success: true));
-      
+
       provider = MessageProvider();
 
       // Act

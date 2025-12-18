@@ -142,14 +142,19 @@ function getMessagesData(ss) {
       if (key === 'parent_id') {
         value = value || null;
       }
-
-      // Timestamp is already string if stored with ' prefix, but just in case
-      if (key === 'timestamp' && value instanceof Date) {
-        value = value.toISOString();
+      // Provide default avatar if missing
+      if (key === 'avatar' && (value === null || value === '')) {
+        value = '🐻';
       }
 
       msg[key] = value;
     });
+
+    // Fallback if avatar column doesn't exist yet
+    if (!msg.avatar) {
+      msg.avatar = '🐻';
+    }
+
     return msg;
   }).filter(msg => msg.uuid); // Filter empty rows
 }
@@ -164,7 +169,13 @@ function addMessage(messageData) {
   // Create sheet if not exists
   if (!sheet) {
     sheet = ss.insertSheet('Messages');
-    sheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp']);
+    sheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp', 'avatar']);
+  } else {
+    // Check if 'avatar' column exists, if not adds it
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (!headers.includes('avatar')) {
+      sheet.getRange(1, headers.length + 1).setValue('avatar');
+    }
   }
 
   // Check for duplicate UUID
@@ -176,14 +187,23 @@ function addMessage(messageData) {
   }
 
   // Append new row
+  // We should ideally map by header, but for simplicity assuming appendRow works with new column at end
+  // Or explicitly matching new structure.
+  // The safest way with potentially dynamic columns is to find index, but let's assume standard structure:
+  // uuid, parent_id, user, category, content, timestamp, avatar (if added)
+
+  // Note: appendRow just adds to the first empty row. It doesn't care about column names.
+  // We need to ensure the order matches the header.
+  // If the sheet was created with 6 columns, and we added 'avatar' as 7th.
+
   sheet.appendRow([
     messageData.uuid || Utilities.getUuid(),
     messageData.parent_id || '',
     messageData.user || 'Anonymous',
     messageData.category || 'Misc',
     messageData.content || '',
-    // Force String format for timestamp to avoid timezone issues
-    "'" + (messageData.timestamp || new Date().toISOString())
+    "'" + (messageData.timestamp || new Date().toISOString()),
+    messageData.avatar || '🐻'
   ]);
 
   return { success: true, message: 'Message added' };
@@ -197,6 +217,12 @@ function batchAddMessages(messages) {
     return { success: true, message: 'No messages to add' };
   }
 
+  // Ensure header exists
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (!headers.includes('avatar')) {
+    sheet.getRange(1, headers.length + 1).setValue('avatar');
+  }
+
   const rows = messages.map(messageData => [
     messageData.uuid || Utilities.getUuid(),
     messageData.parent_id || '', // parent_id is optional
@@ -204,11 +230,13 @@ function batchAddMessages(messages) {
     messageData.category || 'Misc',
     messageData.content || '',
     // Force String format for timestamp to avoid timezone issues
-    "'" + (messageData.timestamp || new Date().toISOString())
+    "'" + (messageData.timestamp || new Date().toISOString()),
+    messageData.avatar || '🐻'
   ]);
 
   if (rows.length > 0) {
-    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 6).setValues(rows);
+    // Assuming 7 columns now
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
   }
 
   return { success: true, message: `Batch added ${rows.length} messages` };
@@ -355,7 +383,8 @@ function testAddMessage() {
     user: 'TestUser',
     category: 'Gear',
     content: 'This is a test message',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    avatar: '🐼'
   });
   Logger.log(JSON.stringify(result));
 }
@@ -412,7 +441,7 @@ function setupSheets() {
   let messagesSheet = ss.getSheetByName('Messages');
   if (!messagesSheet) {
     messagesSheet = ss.insertSheet('Messages');
-    messagesSheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp']);
+    messagesSheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp', 'avatar']);
 
     // Add sample message
     messagesSheet.appendRow([
@@ -421,10 +450,18 @@ function setupSheets() {
       'Admin',
       'Plan',
       '歡迎使用 SummitMate！這是行程協作留言板。',
-      "'" + new Date().toISOString()
+      "'" + new Date().toISOString(),
+      '🤖'
     ]);
 
     Logger.log('Messages sheet created with welcome message');
+  } else {
+    // Migration: Add avatar column if missing
+    const headers = messagesSheet.getRange(1, 1, 1, messagesSheet.getLastColumn()).getValues()[0];
+    if (!headers.includes('avatar')) {
+      messagesSheet.getRange(1, headers.length + 1).setValue('avatar');
+      Logger.log('Added avatar column to Messages sheet');
+    }
   }
 
   // Create Logs sheet

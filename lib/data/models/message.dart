@@ -32,12 +32,17 @@ class Message extends HiveObject {
   @HiveField(5)
   DateTime timestamp;
 
+  /// 使用者頭像
+  @HiveField(6, defaultValue: '🐻')
+  String avatar;
+
   Message({
     this.uuid = '',
     this.parentId,
     this.user = '',
     this.category = '',
     this.content = '',
+    this.avatar = '🐻',
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
@@ -52,6 +57,7 @@ class Message extends HiveObject {
       user: json['user']?.toString() ?? '',
       category: json['category']?.toString() ?? '',
       content: json['content']?.toString() ?? '',
+      avatar: json['avatar']?.toString() ?? '🐻',
       timestamp: json['timestamp'] != null
           ? DateTime.tryParse(json['timestamp'].toString())?.toLocal() ?? DateTime.now()
           : DateTime.now(),
@@ -66,6 +72,7 @@ class Message extends HiveObject {
       'user': user,
       'category': category,
       'content': content,
+      'avatar': avatar,
       'timestamp': timestamp.toUtc().toIso8601String(),
     };
   }

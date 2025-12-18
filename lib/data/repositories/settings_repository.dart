@@ -40,7 +40,7 @@ class SettingsRepository {
   }
 
   /// 更新最後同步時間
-  Future<void> updateLastSyncTime(DateTime time) async {
+  Future<void> updateLastSyncTime(DateTime? time) async {
     final settings = getSettings();
     settings.lastSyncTime = time;
     await settings.save();
