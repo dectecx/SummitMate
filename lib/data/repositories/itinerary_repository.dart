@@ -88,4 +88,19 @@ class ItineraryRepository {
       await item.save();
     }
   }
+
+  /// 新增行程節點
+  Future<void> addItem(ItineraryItem item) async {
+    await box.add(item);
+  }
+
+  /// 更新行程節點
+  Future<void> updateItem(dynamic key, ItineraryItem item) async {
+    await box.put(key, item);
+  }
+
+  /// 刪除行程節點
+  Future<void> deleteItem(dynamic key) async {
+    await box.delete(key);
+  }
 }
