@@ -1,0 +1,45 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: 🔑 Create .env.prod
+        run: |
+          echo "GAS_BASE_URL=${{ secrets.GAS_BASE_URL }}" > .env.prod
+
+      - name: 📦 Install Dependencies
+        run: flutter pub get
+
+      - name: 🏗️ Build Web App
+        # Netlify runs at the root domain usually, so base-href is /
+        run: flutter build web --release --base-href "/" --dart-define-from-file=.env.prod
+
+      - name: 🚀 Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: './build/web'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
