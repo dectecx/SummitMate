@@ -133,7 +133,7 @@ class SyncService {
 
     if (_isOffline) {
       LogService.info('離線模式：跳過留言上傳', source: 'SyncService');
-      returnApiResult(success: true, message: '已儲存至本地 (離線模式)');
+      return returnApiResult(success: true, message: '已儲存至本地 (離線模式)');
     }
 
     // 2. 上傳到雲端
@@ -153,7 +153,7 @@ class SyncService {
 
     if (_isOffline) {
       LogService.info('離線模式：跳過留言刪除同步', source: 'SyncService');
-      returnApiResult(success: true, message: '已從本地刪除 (離線模式)');
+      return returnApiResult(success: true, message: '已從本地刪除 (離線模式)');
     }
 
     // 2. 從雲端刪除
