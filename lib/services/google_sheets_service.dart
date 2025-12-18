@@ -5,6 +5,7 @@ import '../core/constants.dart';
 import '../core/env_config.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
+import 'log_service.dart';
 
 /// Google Sheets API 服務
 /// 透過 Google Apps Script 作為 API Gateway
@@ -153,15 +154,63 @@ class GoogleSheetsService {
     }
   }
 
+  /// 上傳日誌
+  Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
+    try {
+      final uri = Uri.parse(_baseUrl);
+      final response = await _postWithRedirect(
+        uri,
+        {
+          'action': 'upload_logs',
+          'logs': logs.map((e) => e.toJson()).toList(),
+          'device_info': {
+            'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
+            'device_name': deviceName ?? 'SummitMate App',
+          },
+        },
+      );
+
+      final result = _handleResponse(response);
+
+      // 解析 GAS 可能回傳的計數 (如果成功)
+      if (result.success && response.body.isNotEmpty) {
+        try {
+          final json = jsonDecode(response.body);
+          if (json['success'] == true && json['count'] != null) {
+            return ApiResult(success: true, errorMessage: '已上傳 ${json['count']} 條日誌');
+          }
+        } catch (_) {} // 忽略解析錯誤，僅回傳成功
+      }
+
+      return result;
+    } catch (e) {
+      return ApiResult(success: false, errorMessage: e.toString());
+    }
+  }
+
   /// 處理 POST 請求 (自動處理 Redirect)
   Future<http.Response> _postWithRedirect(Uri uri, Map<String, dynamic> body) async {
+    // [Web Compatibility]
+    // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
+    // GAS parses e.postData.contents regardless of Content-Type.
+    final headers = {
+      'Content-Type': kIsWeb ? 'text/plain' : 'application/json',
+    };
+
     final response = await _client.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode(body),
     );
 
-    // 處理 GAS 302 Redirect
+    // [Web Compatibility]
+    // Web: Browser follows redirects automatically. We just return the response.
+    if (kIsWeb) {
+      return response;
+    }
+
+    // [Mobile Compatibility]
+    // Manual handling of GAS 302 Redirect (http package limitation on mobile)
     if (response.statusCode == 302) {
       final location = response.headers['location'];
       if (location != null && location.isNotEmpty) {

@@ -215,7 +215,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       builder: (context, itineraryProvider, child) {
         return Consumer<MessageProvider>(
           builder: (context, messageProvider, child) {
-            return Scaffold(
+            final scaffold = Scaffold(
               appBar: AppBar(
                 title: const Text('SummitMate 山友'),
                 actions: [
@@ -312,6 +312,15 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       child: const Icon(Icons.add),
                     )
                   : null,
+            );
+
+            // [Web Support] Responsive Wrapper
+            // 在寬螢幕上限制最大寬度，置中顯示，維持手機版面比例
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: scaffold,
+              ),
             );
           },
         );

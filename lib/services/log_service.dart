@@ -1,10 +1,11 @@
 import 'dart:collection';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
-import '../core/env_config.dart';
+
+import '../core/di.dart';
+import '../services/google_sheets_service.dart';
+
 
 /// 日誌等級
 enum LogLevel { debug, info, warning, error }
@@ -232,71 +233,17 @@ class LogService {
         return (false, '沒有日誌可上傳');
       }
 
-      final apiUrl = EnvConfig.gasBaseUrl;
-      if (apiUrl.isEmpty) {
-        return (false, 'API 未設定');
-      }
+      // 使用 GoogleSheetsService (已處理 Web 相容性與 302 Redirect)
+      final sheetsService = getIt<GoogleSheetsService>();
+      final result = await sheetsService.uploadLogs(logs, deviceName: deviceName);
 
-      // 使用 Client 以便能跟隨重定向
-      final client = http.Client();
-      try {
-        final request = http.Request('POST', Uri.parse(apiUrl));
-        request.headers['Content-Type'] = 'application/json';
-        request.body = jsonEncode({
-          'action': 'upload_logs',
-          'logs': logs.map((e) => e.toJson()).toList(),
-          'device_info': {
-            'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
-            'device_name': deviceName ?? 'SummitMate App',
-          },
-        });
-
-        // followRedirects 設為 false 以手動處理重定向
-        request.followRedirects = false;
-
-        final streamedResponse = await client.send(request);
-
-        // GAS 返回 302 重定向，需跟隨取得實際響應
-        if (streamedResponse.statusCode == 302) {
-          final redirectUrl = streamedResponse.headers['location'];
-          if (redirectUrl != null) {
-            // 跟隨重定向 (GET 請求)
-            final redirectResponse = await http.get(Uri.parse(redirectUrl));
-            if (redirectResponse.statusCode == 200) {
-              final result = jsonDecode(redirectResponse.body);
-              if (result['success'] == true) {
-                info('日誌上傳成功: ${result['count']} 條', source: 'LogUpload');
-                return (true, '已上傳 ${result['count']} 條日誌');
-              } else {
-                final errorMsg = (result['error'] ?? '上傳失敗').toString();
-                error('日誌上傳失敗: $errorMsg', source: 'LogUpload');
-                return (false, errorMsg);
-              }
-            }
-          }
-          // 如果沒有 location 但有 302，假設成功（因為資料確實寫入了）
-          info('日誌上傳完成 (302)', source: 'LogUpload');
-          return (true, '已上傳 ${logs.length} 條日誌');
-        }
-
-        // 處理 200 響應
-        if (streamedResponse.statusCode == 200) {
-          final responseBody = await streamedResponse.stream.bytesToString();
-          final result = jsonDecode(responseBody);
-          if (result['success'] == true) {
-            info('日誌上傳成功: ${result['count']} 條', source: 'LogUpload');
-            return (true, '已上傳 ${result['count']} 條日誌');
-          } else {
-            final errorMsg = (result['error'] ?? '上傳失敗').toString();
-            error('日誌上傳失敗: $errorMsg', source: 'LogUpload');
-            return (false, errorMsg);
-          }
-        } else {
-          error('日誌上傳 HTTP 錯誤: ${streamedResponse.statusCode}', source: 'LogUpload');
-          return (false, 'HTTP 錯誤: ${streamedResponse.statusCode}');
-        }
-      } finally {
-        client.close();
+      if (result.success) {
+        info('日誌上傳成功', source: 'LogUpload');
+        return (true, result.errorMessage ?? '上傳成功');
+      } else {
+        final msg = result.errorMessage ?? '未知錯誤';
+        error('日誌上傳失敗: $msg', source: 'LogUpload');
+        return (false, msg);
       }
     } catch (e) {
       error('日誌上傳異常: $e', source: 'LogUpload');
