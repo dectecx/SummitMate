@@ -53,7 +53,7 @@ class Message extends HiveObject {
       category: json['category']?.toString() ?? '',
       content: json['content']?.toString() ?? '',
       timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'].toString()) ?? DateTime.now()
+          ? DateTime.tryParse(json['timestamp'].toString())?.toLocal() ?? DateTime.now()
           : DateTime.now(),
     );
   }
@@ -66,7 +66,7 @@ class Message extends HiveObject {
       'user': user,
       'category': category,
       'content': content,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': timestamp.toUtc().toIso8601String(),
     };
   }
 }

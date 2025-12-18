@@ -57,6 +57,8 @@ function doPost(e) {
         return createJsonResponse(deleteMessage(data.uuid));
       case 'upload_logs':
         return createJsonResponse(uploadLogs(data.logs, data.device_info));
+      case 'update_itinerary':
+        return createJsonResponse(updateItinerary(data.data));
       default:
         return createJsonResponse({ error: 'Unknown action' }, 400);
     }
@@ -135,8 +137,13 @@ function getMessagesData(ss) {
         value = value.toISOString();
       }
       // Handle empty parent_id
-      if (key === 'parent_id' && !value) {
-        value = null;
+      if (key === 'parent_id') {
+        value = value || null;
+      }
+
+      // Timestamp is already string if stored with ' prefix, but just in case
+      if (key === 'timestamp' && value instanceof Date) {
+        value = value.toISOString();
       }
 
       msg[key] = value;
@@ -173,7 +180,8 @@ function addMessage(messageData) {
     messageData.user || 'Anonymous',
     messageData.category || 'Misc',
     messageData.content || '',
-    messageData.timestamp ? new Date(messageData.timestamp) : new Date()
+    // Force String format for timestamp to avoid timezone issues
+    "'" + (messageData.timestamp || new Date().toISOString())
   ]);
 
   return { success: true, message: 'Message added' };
@@ -230,7 +238,7 @@ function uploadLogs(logs, deviceInfo) {
     uploadTime,
     deviceId,
     deviceName,
-    log.timestamp || '',
+    "'" + (log.timestamp || new Date().toISOString()), // Force String
     log.level || 'info',
     log.source || '',
     log.message || ''
@@ -246,6 +254,47 @@ function uploadLogs(logs, deviceInfo) {
     message: `Uploaded ${logs.length} log entries`,
     count: logs.length
   };
+}
+
+/**
+ * 更新行程 (覆寫)
+ * @param {Array} itineraryItems - 行程資料列表
+ */
+function updateItinerary(itineraryItems) {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName('Itinerary');
+
+  if (!sheet) {
+    sheet = ss.insertSheet('Itinerary');
+    sheet.appendRow(['day', 'name', 'est_time', 'altitude', 'distance', 'note', 'image_asset']);
+  }
+
+  // Clear existing content (except header)
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
+  }
+
+  if (!itineraryItems || itineraryItems.length === 0) {
+    return { success: true, message: 'Itinerary cleared' };
+  }
+
+  // Prepare rows
+  const rows = itineraryItems.map(item => [
+    item.day,
+    item.name,
+    item.est_time || item.estTime || '', // Handle camelCase or snake_case
+    item.altitude,
+    item.distance,
+    item.note,
+    item.image_asset || item.imageAsset || ''
+  ]);
+
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 7).setValues(rows);
+  }
+
+  return { success: true, message: 'Itinerary updated' };
 }
 
 // ============================================================
@@ -299,16 +348,32 @@ function setupSheets() {
 
     // Add sample data
     const sampleData = [
-      ['D0', '向陽國家森林遊樂區', '13:00', 2320, 0, '入園整裝', ''],
-      ['D0', '松濤營地', '14:30', 2600, 2.0, '通過芒草區', ''],
-      ['D1', '向陽山屋', '06:00', 2850, 4.3, '出發', ''],
-      ['D1', '向陽山叉路口', '08:00', 3200, 6.5, '休息', ''],
-      ['D1', '嘉明湖避難山屋', '11:00', 3380, 10.2, '午餐', ''],
-      ['D1', '嘉明湖', '13:00', 3310, 11.5, '拍照', ''],
-      ['D1', '嘉明湖避難山屋', '15:00', 3380, 12.8, '住宿', ''],
-      ['D2', '嘉明湖避難山屋', '06:00', 3380, 0, '出發下山', ''],
-      ['D2', '向陽山屋', '09:00', 2850, 5.9, '休息', ''],
-      ['D2', '向陽國家森林遊樂區', '12:00', 2320, 10.2, '完成', '']
+      ["'D0", '台北車站出發', "'18:00", 20, 0, '搭乘火車前往池上 (晚餐自理)', 'assets/images/d0_train_station.jpg'],
+      ["'D0", '抵達池上車站', "'22:00", 260, 0, '前往青旅 Check-in', 'assets/images/d0_chishang_station.jpg'],
+      ["'D0", '就寢休息', "'23:00", 260, 0, '整理裝備，準備隔日早起', 'assets/images/d0_hostel_sleep.jpg'],
+      ["'D1", '起床/早餐', "'04:30", 260, 0, '於青旅享用或外帶早餐', 'assets/images/d1_breakfast.jpg'],
+      ["'D1", '接駁車出發', "'05:00", 260, 0, '搭乘包車前往向陽森林遊樂區', 'assets/images/d1_shuttle_bus.jpg'],
+      ["'D1", '向陽登山口 (起登)', "'06:00", 2312, 0, '檢查入山入園證，熱身起登', 'assets/images/d1_trailhead_start.jpg'],
+      ["'D1", '觀景台休息', "'07:30", 2650, 2.5, '休息 10 分鐘，調整衣物', 'assets/images/d1_observation_deck.jpg'],
+      ["'D1", '向陽山屋', "'08:40", 2850, 1.8, '大休息 20 分鐘，補充水分', 'assets/images/d1_xiangyang_cabin.jpg'],
+      ["'D1", '黑水塘營地', "'10:30", 3100, 1.2, '途經名樹 (Famous Tree) 拍照', 'assets/images/d1_blackwater_pond.jpg'],
+      ["'D1", '向陽大崩壁', "'11:30", 3350, 1, '午餐時間 (行動糧)，休息 30 分鐘', 'assets/images/d1_grand_wall.jpg'],
+      ["'D1", '向陽山登山口', "'13:00", 3490, 1.4, '輕裝可選攻向陽山 (視體力決定)', 'assets/images/d1_xiangyang_junction.jpg'],
+      ["'D1", '嘉明湖避難山屋', "'14:00", 3347, 0.5, '抵達住宿點，整理床位', 'assets/images/d1_jiaming_shelter.jpg'],
+      ["'D1", '晚餐時間', "'17:30", 3347, 0, '協作供餐或自煮，觀賞夕陽', 'assets/images/d1_dinner.jpg'],
+      ["'D1", '就寢', "'19:00", 3347, 0, '儲備體力迎接日出', 'assets/images/d1_sleep.jpg'],
+      ["'D2", '起床/早餐', "'02:30", 3347, 0, '著保暖衣物，攜帶頭燈', 'assets/images/d2_early_wake.jpg'],
+      ["'D2", '出發前往嘉明湖', "'03:30", 3347, 0, '輕裝出發，夜行注意路況', 'assets/images/d2_night_hike.jpg'],
+      ["'D2", '三叉山登山口', "'05:00", 3400, 3, '稍作休息，腰繞路線', 'assets/images/d2_sancha_junction.jpg'],
+      ["'D2", '嘉明湖 (看日出)', "'06:00", 3310, 1.6, '抵達湖畔，等待日出 (Sunrise)', 'assets/images/d2_jiaming_lake_sunrise.jpg'],
+      ["'D2", '離開嘉明湖', "'07:30", 3310, 0, '拍照結束，回程', 'assets/images/d2_leaving_lake.jpg'],
+      ["'D2", '三叉山 (選攻)', "'08:15", 3496, 0.6, '視體力決定是否登頂', 'assets/images/d2_sancha_peak.jpg'],
+      ["'D2", '返回避難山屋', "'09:30", 3347, 4, '休息 40 分鐘，整裝打包', 'assets/images/d2_back_to_shelter.jpg'],
+      ["'D2", '開始下山', "'10:10", 3347, 0, '離開避難山屋', 'assets/images/d2_start_descent.jpg'],
+      ["'D2", '向陽山屋', "'12:40", 2850, 4.1, '午餐時間 (行動糧)，休息 30 分鐘', 'assets/images/d2_cabin_lunch.jpg'],
+      ["'D2", '回到向陽登山口', "'15:30", 2312, 4.3, '完成登山行程，搭乘接駁車', 'assets/images/d2_trailhead_finish.jpg'],
+      ["'D2", '慶功宴/晚餐', "'17:30", 260, 0, '於池上市區用餐', 'assets/images/d2_celebration_dinner.jpg'],
+      ["'D2", '池上車站 (回程)', "'19:00", 260, 0, '搭乘火車返回台北', 'assets/images/d2_train_home.jpg']
     ];
 
     sampleData.forEach(row => itinerarySheet.appendRow(row));
@@ -329,10 +394,19 @@ function setupSheets() {
       'Admin',
       'Plan',
       '歡迎使用 SummitMate！這是行程協作留言板。',
-      new Date()
+      "'" + new Date().toISOString()
     ]);
 
     Logger.log('Messages sheet created with welcome message');
+  }
+
+  // Create Logs sheet
+  let logsSheet = ss.getSheetByName('Logs');
+  if (!logsSheet) {
+    logsSheet = ss.insertSheet('Logs');
+    logsSheet.appendRow(['upload_time', 'device_id', 'device_name', 'timestamp', 'level', 'source', 'message']);
+
+    Logger.log('Logs sheet created');
   }
 
   Logger.log('Setup complete!');

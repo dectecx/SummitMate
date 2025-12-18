@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import '../data/models/message.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
+import '../services/log_service.dart';
 import 'google_sheets_service.dart';
 
 /// 同步服務
@@ -157,6 +159,56 @@ class SyncService {
 
     // 3. 從雲端同步到本地 (會自動處理新增/刪除)
     await _messageRepo.syncFromCloud(cloudMessages);
+  }
+  /// 檢查行程衝突
+  /// 回傳 true 表示有衝突 (雲端資料與本地不一致)
+  Future<bool> checkItineraryConflict() async {
+    final fetchResult = await _sheetsService.fetchAll();
+
+    if (!fetchResult.success) {
+      // 若無法取得雲端資料，視為無衝突 (或拋出錯誤，這裡選擇保守策略: 讓用戶決定是否硬上傳)
+      // 但為了安全，若連線失敗應無法上傳，故回傳 false 讓上傳流程繼續但因為連線失敗而報錯
+      // 這裡僅做比對。若 fetch 失敗，通常後續上傳也會失敗。
+      return false;
+    }
+
+    final cloudItems = fetchResult.itinerary;
+    final localItems = _itineraryRepo.getAllItems();
+
+    // 簡單比對: 數量不同 -> 衝突
+    if (cloudItems.length != localItems.length) return true;
+
+    // 內容比對: 排序後逐一比對 key fields (day, name, estTime)
+    // 忽略 actualTime, altitude, distance (因為這些可能本地較新)
+    // 但用戶要求「覆蓋」，表示本地為準。
+    // 這邊的衝突定義是：「雲端是否被其他人改過？」
+    // 如果雲端跟本地不一樣，就可能是被改過，或者本地改過。
+    // 用戶的情境是：本地改了，想上傳，但怕覆蓋掉雲端別人的修改。
+    // 所以只要不一樣，就是衝突。
+
+    // 建立比較用的字串列表
+    final cloudStrings = cloudItems.map((e) => '${e.day}_${e.name}_${e.estTime}').toSet();
+    final localStrings = localItems.map((e) => '${e.day}_${e.name}_${e.estTime}').toSet();
+
+    // Debug Logs for Conflict
+    if (!setEquals(cloudStrings, localStrings)) {
+      LogService.info('Conflict Detected!', source: 'SyncService');
+      LogService.info('Cloud (${cloudStrings.length}): $cloudStrings', source: 'SyncService');
+      LogService.info('Local (${localStrings.length}): $localStrings', source: 'SyncService');
+
+      final diffLocal = localStrings.difference(cloudStrings);
+      final diffCloud = cloudStrings.difference(localStrings);
+      if (diffLocal.isNotEmpty) LogService.info('In Local only: $diffLocal', source: 'SyncService');
+      if (diffCloud.isNotEmpty) LogService.info('In Cloud only: $diffCloud', source: 'SyncService');
+    }
+
+    return !setEquals(cloudStrings, localStrings);
+  }
+
+  /// 強制上傳行程 (覆寫雲端)
+  Future<ApiResult> uploadItinerary() async {
+    final localItems = _itineraryRepo.getAllItems();
+    return await _sheetsService.updateItinerary(localItems);
   }
 }
 

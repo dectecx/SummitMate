@@ -78,23 +78,15 @@ class GoogleSheetsService {
   Future<ApiResult> addMessage(Message message) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _client.post(
+      final response = await _postWithRedirect(
         uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+        {
           'action': ApiConfig.actionAddMessage,
           'data': message.toJson(),
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        return ApiResult(success: true);
-      } else {
-        return ApiResult(
-          success: false,
-          errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
-        );
-      }
+      return _handleResponse(response);
     } catch (e) {
       return ApiResult(success: false, errorMessage: e.toString());
     }
@@ -104,25 +96,74 @@ class GoogleSheetsService {
   Future<ApiResult> deleteMessage(String uuid) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _client.post(
+      final response = await _postWithRedirect(
         uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+        {
           'action': ApiConfig.actionDeleteMessage,
           'uuid': uuid,
-        }),
+        },
       );
 
-      if (response.statusCode == 200) {
-        return ApiResult(success: true);
-      } else {
-        return ApiResult(
-          success: false,
-          errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
-        );
-      }
+      return _handleResponse(response);
     } catch (e) {
       return ApiResult(success: false, errorMessage: e.toString());
+    }
+  }
+
+  /// 更新行程 (覆寫雲端)
+  Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
+    try {
+      final uri = Uri.parse(_baseUrl);
+      final response = await _postWithRedirect(
+        uri,
+        {
+          'action': 'update_itinerary',
+          'data': items.map((e) {
+            final json = e.toJson();
+            // Force est_time to be string in Google Sheets by prepending '
+            if (e.estTime.isNotEmpty) {
+              json['est_time'] = "'${e.estTime}";
+            }
+            return json;
+          }).toList(),
+        },
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResult(success: false, errorMessage: e.toString());
+    }
+  }
+
+  /// 處理 POST 請求 (自動處理 Redirect)
+  Future<http.Response> _postWithRedirect(Uri uri, Map<String, dynamic> body) async {
+    final response = await _client.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    // 處理 GAS 302 Redirect
+    if (response.statusCode == 302) {
+      final location = response.headers['location'];
+      if (location != null && location.isNotEmpty) {
+        debugPrint('🌐 轉導至: $location');
+        return await _client.get(Uri.parse(location));
+      }
+    }
+
+    return response;
+  }
+
+  /// 統一處理回應
+  ApiResult _handleResponse(http.Response response) {
+    if (response.statusCode == 200) {
+      return ApiResult(success: true);
+    } else {
+      return ApiResult(
+        success: false,
+        errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
+      );
     }
   }
 

@@ -60,7 +60,7 @@ class ItineraryItem extends HiveObject {
       // 如果是 ISO 格式 (包含 T)，解析並提取時間
       if (str.contains('T')) {
         try {
-          final dt = DateTime.parse(str);
+          final dt = DateTime.parse(str).toLocal(); // Convert UTC to Local to match Sheet's wall-clock time
           return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
         } catch (_) {
           return str;
@@ -73,6 +73,9 @@ class ItineraryItem extends HiveObject {
       day: json['day']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       estTime: parseEstTime(json['est_time']),
+      actualTime: json['actual_time'] != null
+          ? DateTime.tryParse(json['actual_time'].toString())?.toLocal()
+          : null,
       altitude: (json['altitude'] as num?)?.toInt() ?? 0,
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
       note: json['note']?.toString() ?? '',
@@ -86,7 +89,7 @@ class ItineraryItem extends HiveObject {
       'day': day,
       'name': name,
       'est_time': estTime,
-      'actual_time': actualTime?.toIso8601String(),
+      'actual_time': actualTime?.toUtc().toIso8601String(),
       'altitude': altitude,
       'distance': distance,
       'note': note,

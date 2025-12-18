@@ -14,6 +14,7 @@ import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/meal_provider.dart';
 import 'presentation/screens/map_viewer_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
+import 'presentation/widgets/itinerary_edit_dialog.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -209,74 +210,110 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MessageProvider>(
-      builder: (context, messageProvider, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('SummitMate 山友'),
-            actions: [
-              // 地圖按鈕 (僅在行程頁顯示)
-              if (_currentIndex == 0)
-                IconButton(
-                  icon: const Icon(Icons.map_outlined),
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MapViewerScreen()),
+    // 監聽 ItineraryProvider 以控制 AppBar/FAB
+    return Consumer<ItineraryProvider>(
+      builder: (context, itineraryProvider, child) {
+        return Consumer<MessageProvider>(
+          builder: (context, messageProvider, child) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('SummitMate 山友'),
+                actions: [
+                  // Tab 0: 行程編輯與地圖
+                  if (_currentIndex == 0) ...[
+                    IconButton(
+                      icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
+                      tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
+                      onPressed: () => itineraryProvider.toggleEditMode(),
+                    ),
+                    if (itineraryProvider.isEditMode)
+                      IconButton(
+                        icon: const Icon(Icons.cloud_upload_outlined),
+                        tooltip: '上傳至雲端',
+                        onPressed: () => _handleCloudUpload(context, itineraryProvider),
+                      ),
+                    if (!itineraryProvider.isEditMode)
+                      IconButton(
+                        icon: const Icon(Icons.map_outlined),
+                        tooltip: '查看地圖',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const MapViewerScreen()),
+                          );
+                        },
+                      ),
+                  ],
+                  // 同步按鈕
+                  IconButton(
+                    icon: messageProvider.isSyncing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.sync),
+                    onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
+                    tooltip: '同步資料',
                   ),
-                  tooltip: '步道導覽圖',
-                ),
-              // 同步按鈕
-              IconButton(
-                icon: messageProvider.isSyncing
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.sync),
-                onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
-                tooltip: '同步資料',
+                  // 設定按鈕
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => _showSettingsDialog(context),
+                    tooltip: '設定',
+                  ),
+                ],
               ),
-              // 設定按鈕
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () => _showSettingsDialog(context),
-                tooltip: '設定',
+              body: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                child: _buildTabContent(_currentIndex),
               ),
-            ],
-          ),
-          body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            child: _buildTabContent(_currentIndex),
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.schedule),
-                label: '行程',
+              bottomNavigationBar: NavigationBar(
+                selectedIndex: _currentIndex,
+                onDestinationSelected: (index) {
+                  setState(() => _currentIndex = index);
+                  // 切換分頁時關閉編輯模式
+                  if (itineraryProvider.isEditMode) {
+                    itineraryProvider.toggleEditMode();
+                  }
+                },
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.schedule),
+                    selectedIcon: Icon(Icons.schedule),
+                    label: '行程',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.forum_outlined),
+                    selectedIcon: Icon(Icons.forum),
+                    label: '協作',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.backpack_outlined),
+                    selectedIcon: Icon(Icons.backpack),
+                    label: '裝備',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.info_outline),
+                    selectedIcon: Icon(Icons.info),
+                    label: '資訊',
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.forum),
-                label: '協作',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.backpack),
-                label: '裝備',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.info_outline),
-                label: '資訊',
-              ),
-            ],
-          ),
+              floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
+                  ? FloatingActionButton(
+                      onPressed: () => _showAddItineraryDialog(context, itineraryProvider),
+                      child: const Icon(Icons.add),
+                    )
+                  : null,
+            );
+          },
         );
       },
     );
@@ -295,6 +332,24 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
         return const _InfoTab(key: ValueKey(3));
       default:
         return const _ItineraryTab(key: ValueKey(0));
+    }
+  }
+
+  void _showAddItineraryDialog(BuildContext context, ItineraryProvider provider) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => ItineraryEditDialog(defaultDay: provider.selectedDay),
+    );
+
+    if (result != null) {
+      provider.addItem(
+        day: provider.selectedDay,
+        name: result['name'],
+        estTime: result['estTime'],
+        altitude: result['altitude'],
+        distance: result['distance'],
+        note: result['note'],
+      );
     }
   }
 
@@ -350,6 +405,74 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
         ],
       ),
     );
+  }
+
+  void _handleCloudUpload(BuildContext context, ItineraryProvider provider) async {
+    // 1. 顯示檢查中 Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    // 2. 檢查衝突
+    final hasConflict = await provider.checkConflict();
+
+    if (!context.mounted) return;
+    Navigator.pop(context); // 關閉 Loading
+
+    if (hasConflict) {
+      // 3. 有衝突，顯示警告
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('⚠️ 雲端資料衝突'),
+          content: const Text(
+            '雲端上的行程資料與您目前的版本不同。\n\n'
+            '若選擇「強制覆蓋」，雲端的資料將被您的版本完全取代。\n'
+            '確定要繼續嗎？'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context); // 關閉 Dialog
+                provider.uploadToCloud(); // 執行上傳
+              },
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('強制覆蓋'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // 4. 無衝突，直接確認上傳
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('上傳行程'),
+          content: const Text('確定將目前的行程計畫上傳至雲端嗎？此操作將覆寫雲端資料。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+                provider.uploadToCloud();
+              },
+              child: const Text('上傳'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   void _showLogViewer(BuildContext context) {
@@ -537,10 +660,19 @@ class _ItineraryTab extends StatelessWidget {
                         ],
                       ),
                       isThreeLine: true,
-                      trailing: item.note.isNotEmpty 
-                          ? const Icon(Icons.info_outline, size: 20)
-                          : null,
-                      onTap: () => _showCheckInDialog(context, item, provider),
+                      trailing: provider.isEditMode
+                          ? IconButton(
+                              icon: const Icon(Icons.remove_circle, color: Colors.red),
+                              onPressed: () => _confirmDelete(context, provider, item.key),
+                            )
+                          : (item.note.isNotEmpty ? const Icon(Icons.info_outline, size: 20) : null),
+                      onTap: () {
+                        if (provider.isEditMode) {
+                          _showEditDialog(context, provider, item);
+                        } else {
+                          _showCheckInDialog(context, item, provider);
+                        }
+                      },
                     ),
                   );
                 },
@@ -550,6 +682,51 @@ class _ItineraryTab extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _confirmDelete(BuildContext context, ItineraryProvider provider, dynamic key) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('刪除行程'),
+        content: const Text('確定要刪除此行程節點嗎？此動作無法復原。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.deleteItem(key);
+              Navigator.pop(context);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, ItineraryProvider provider, dynamic item) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => ItineraryEditDialog(item: item, defaultDay: provider.selectedDay),
+    );
+
+    if (result != null) {
+      // 保留原有屬性，僅更新變更部分 (但 Repository 是覆蓋)
+      // 需要建構完整的 ItineraryItem
+      final updatedItem = item.copyWith(
+        name: result['name'],
+        estTime: result['estTime'],
+        altitude: result['altitude'],
+        distance: result['distance'],
+        note: result['note'],
+      );
+      
+      provider.updateItem(item.key, updatedItem);
+    }
   }
 
   void _showCheckInDialog(
