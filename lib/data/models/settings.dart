@@ -6,7 +6,7 @@ part 'settings.g.dart';
 @HiveType(typeId: 0)
 class Settings extends HiveObject {
   /// 使用者暱稱 (用於留言識別)
-  @HiveField(0)
+  @HiveField(0, defaultValue: '')
   String username;
 
   /// 上次同步時間
@@ -14,11 +14,11 @@ class Settings extends HiveObject {
   DateTime? lastSyncTime;
 
   /// 使用者頭像 (Emoji)
-  @HiveField(2)
+  @HiveField(2, defaultValue: '🐻')
   String avatar;
 
   /// 是否為離線模式
-  @HiveField(3)
+  @HiveField(3, defaultValue: false)
   bool isOfflineMode;
 
   Settings({
