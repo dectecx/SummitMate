@@ -1,5 +1,5 @@
 [[redirects]]
   from = "/cwa-proxy/*"
-  to = "https://opendata.cwa.gov.tw/*"
+  to = "/.netlify/functions/cwa_proxy?path=:splat"
   status = 200
   force = true

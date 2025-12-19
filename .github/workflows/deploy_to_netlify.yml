@@ -23,6 +23,7 @@ jobs:
         run: |
           echo "GAS_BASE_URL=${{ secrets.GAS_BASE_URL }}" > .env.prod
           echo "CWA_API_KEY=${{ secrets.CWA_API_KEY }}" >> .env.prod
+          echo "CWA_API_HOST=/cwa-proxy" >> .env.prod
 
       - name: 📦 Install Dependencies
         run: flutter pub get
@@ -41,6 +42,7 @@ jobs:
         uses: nwtgck/actions-netlify@v2.0
         with:
           publish-dir: './build/web'
+          functions-dir: './netlify/functions'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
           deploy-message: "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"

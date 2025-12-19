@@ -24,10 +24,10 @@ class EnvConfig {
   static const bool enableDebugLog = String.fromEnvironment('DEBUG_LOG', defaultValue: 'false') == 'true';
 
   // CWA API Key (Central Weather Administration)
-  static const String cwaApiKey = String.fromEnvironment(
-    'CWA_API_KEY',
-    defaultValue: '',
-  );
+  static const String cwaApiKey = String.fromEnvironment('CWA_API_KEY', defaultValue: '');
+
+  // CWA API Host (Direct or Proxy)
+  static const String cwaApiHost = String.fromEnvironment('CWA_API_HOST', defaultValue: 'https://opendata.cwa.gov.tw');
 
   /// 檢查必要的環境變數是否已設定
   static bool get isConfigured => gasBaseUrl.isNotEmpty && cwaApiKey.isNotEmpty;
