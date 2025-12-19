@@ -16,7 +16,7 @@ import 'presentation/providers/meal_provider.dart';
 import 'presentation/screens/map_viewer_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
 import 'presentation/widgets/itinerary_edit_dialog.dart';
-import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:summitmate/presentation/widgets/tutorial_overlay.dart';
 import 'services/tutorial_service.dart';
 
 void main() async {
@@ -235,7 +235,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   final GlobalKey _keyBtnSync = GlobalKey();
   // final GlobalKey _keyCategorySelect = GlobalKey(); // Reserved for future use
 
-  late TutorialCoachMark tutorialCoachMark;
+  OverlayEntry? _tutorialEntry;
 
   @override
   void initState() {
@@ -269,53 +269,50 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   }
 
   void _showTutorial(BuildContext context) {
-    tutorialCoachMark = TutorialCoachMark(
-      targets: TutorialService.initTargets(
-        keyTabItinerary: _keyTabItinerary,
-        keyTabMessage: _keyTabMessage,
-        keyTabGear: _keyTabGear,
-        keyTabInfo: _keyTabInfo,
-        keyBtnEdit: _keyBtnEdit,
-        keyBtnSync: _keyBtnSync,
-      ),
-      colorShadow: Colors.black,
-      textSkip: "跳過教學",
-      paddingFocus: 10,
-      opacityShadow: 0.8,
-      // 關閉呼吸動畫
-      pulseEnable: false,
-      // 調整轉場時間 (移除縮小動畫以達成平滑移動，拉長聚焦時間增強滑動感)
-      focusAnimationDuration: const Duration(milliseconds: 800),
-      unFocusAnimationDuration: Duration.zero,
-      onFinish: () {
-        context.read<SettingsProvider>().completeOnboarding();
-        // 導覽結束重置分頁
-        setState(() => _currentIndex = 0);
+    if (_tutorialEntry != null) return;
 
-        // 結束後檢查同步
-        _checkFirstTimeSync(context, context.read<SettingsProvider>());
-      },
-      onClickTarget: (target) {
-        // 依據目標自動切換分頁
-        if (target.identify == "Target 4") {
-          // 留言板
-          setState(() => _currentIndex = 1);
-        } else if (target.identify == "Target 6") {
-          // 裝備清單
-          setState(() => _currentIndex = 2);
-        } else if (target.identify == "Target 7") {
-          // 資訊頁
-          setState(() => _currentIndex = 3);
-        }
-      },
-      onSkip: () {
-        context.read<SettingsProvider>().completeOnboarding();
-        setState(() => _currentIndex = 0);
-        // 跳過後檢查同步
-        _checkFirstTimeSync(context, context.read<SettingsProvider>());
-        return true;
-      },
-    )..show(context: context);
+    _tutorialEntry = OverlayEntry(
+      builder: (context) => TutorialOverlay(
+        targets: TutorialService.initTargets(
+          keyTabItinerary: _keyTabItinerary,
+          keyTabMessage: _keyTabMessage,
+          keyTabGear: _keyTabGear,
+          keyTabInfo: _keyTabInfo,
+          keyBtnEdit: _keyBtnEdit,
+          keyBtnSync: _keyBtnSync,
+          onSwitchToItinerary: () async {
+            setState(() => _currentIndex = 0);
+            if (context.read<ItineraryProvider>().isEditMode) {
+              context.read<ItineraryProvider>().toggleEditMode();
+            }
+          },
+          onSwitchToMessage: () async => setState(() => _currentIndex = 1),
+          onSwitchToGear: () async => setState(() => _currentIndex = 2),
+          onSwitchToInfo: () async => setState(() => _currentIndex = 3),
+        ),
+        onFinish: _removeTutorial,
+        onSkip: () {
+          context.read<SettingsProvider>().completeOnboarding();
+          _removeTutorial();
+          // Check sync after skip
+          _checkFirstTimeSync(context, context.read<SettingsProvider>());
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_tutorialEntry!);
+  }
+
+  void _removeTutorial() {
+    _tutorialEntry?.remove();
+    _tutorialEntry = null;
+    context.read<SettingsProvider>().completeOnboarding();
+    
+    // Reset to first tab
+    if (mounted) {
+      setState(() => _currentIndex = 0);
+      _checkFirstTimeSync(context, context.read<SettingsProvider>());
+    }
   }
 
   void _checkFirstTimeSync(BuildContext context, SettingsProvider settings) {
@@ -359,11 +356,16 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 actions: [
                   // Tab 0: 行程編輯與地圖
                   if (_currentIndex == 0) ...[
-                    IconButton(
+                    Container(
                       key: _keyBtnEdit,
-                      icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
-                      tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
-                      onPressed: () => itineraryProvider.toggleEditMode(),
+                      child: IconButton(
+                        icon: Icon(
+                          itineraryProvider.isEditMode ? Icons.check : Icons.edit,
+                          color: itineraryProvider.isEditMode ? Theme.of(context).colorScheme.onPrimary : null,
+                        ),
+                        tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
+                        onPressed: () => itineraryProvider.toggleEditMode(),
+                      ),
                     ),
                     if (itineraryProvider.isEditMode)
                       IconButton(
@@ -381,17 +383,19 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       ),
                   ],
                   // 同步按鈕
-                  IconButton(
+                  Container(
                     key: _keyBtnSync,
-                    icon: messageProvider.isSyncing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.sync),
-                    onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
-                    tooltip: '同步資料',
+                    child: IconButton(
+                      icon: messageProvider.isSyncing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.sync),
+                      onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
+                      tooltip: '同步資料',
+                    ),
                   ),
                   // 設定按鈕
                   IconButton(
