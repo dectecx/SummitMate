@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb
 import '../data/models/weather_data.dart';
 import '../services/log_service.dart';
 import '../core/env_config.dart';
@@ -66,10 +67,16 @@ class WeatherService {
   }
 
   Future<WeatherData> _fetchHikingWeather(String locationName) async {
-    final url = Uri.parse(
-        '$_cwaApiUrl?Authorization=$_apiKey&downloadType=WEB&format=JSON');
+    String baseUrl = _cwaApiUrl;
+    if (kIsWeb) {
+      // Use using netlify proxy
+      baseUrl = '/cwa-proxy/fileapi/v1/opendataapi/F-B0053-033';
+    }
 
-    LogService.info('Fetching hiking weather: $locationName', source: 'WeatherService');
+    final url = Uri.parse(
+        '$baseUrl?Authorization=$_apiKey&downloadType=WEB&format=JSON');
+
+    LogService.info('Fetching hiking weather: $locationName (Web: $kIsWeb)', source: 'WeatherService');
 
     try {
       final response = await http.get(url);
@@ -89,10 +96,16 @@ class WeatherService {
   Future<WeatherData> _fetchTownshipWeather(String locationName) async {
     // F-D0047-039 (Taitung)
     final target = '池上鄉'; // Map '池上' to '池上鄉'
-    final url = Uri.parse(
-        'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-039?Authorization=$_apiKey&locationName=$target&elementName=MaxT,MinT,PoP12h,Wx,T,RH,WS');
     
-    LogService.info('Fetching town weather: $target', source: 'WeatherService');
+    String baseUrl = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-039';
+    if (kIsWeb) {
+       baseUrl = '/cwa-proxy/api/v1/rest/datastore/F-D0047-039';
+    }
+
+    final url = Uri.parse(
+        '$baseUrl?Authorization=$_apiKey&locationName=$target&elementName=MaxT,MinT,PoP12h,Wx,T,RH,WS');
+    
+    LogService.info('Fetching town weather: $target (Web: $kIsWeb)', source: 'WeatherService');
 
     try {
       final response = await http.get(url);
