@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -29,19 +28,13 @@ class TutorialOverlay extends StatefulWidget {
   final VoidCallback onFinish;
   final VoidCallback onSkip;
 
-  const TutorialOverlay({
-    super.key,
-    required this.targets,
-    required this.onFinish,
-    required this.onSkip,
-  });
+  const TutorialOverlay({super.key, required this.targets, required this.onFinish, required this.onSkip});
 
   @override
   State<TutorialOverlay> createState() => _TutorialOverlayState();
 }
 
-class _TutorialOverlayState extends State<TutorialOverlay>
-    with SingleTickerProviderStateMixin {
+class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -84,7 +77,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
       // 等待 UI 更新
       if (mounted) {
         // 增加延遲以確保分頁切換動畫完成
-        await Future.delayed(const Duration(milliseconds: 300)); 
+        await Future.delayed(const Duration(milliseconds: 300));
       }
     }
 
@@ -92,23 +85,18 @@ class _TutorialOverlayState extends State<TutorialOverlay>
 
     // Retry 機制：尋找渲染物件
     RenderBox? renderBox;
-    for (int i = 0; i < 20; i++) {
-        renderBox = target.keyTarget.currentContext?.findRenderObject() as RenderBox?;
-        if (renderBox != null && renderBox.hasSize) break;
-        await Future.delayed(const Duration(milliseconds: 100));
+    for (int i = 0; i < 10; i++) {
+      renderBox = target.keyTarget.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize) break;
+      await Future.delayed(const Duration(milliseconds: 100));
     }
 
     if (renderBox != null && renderBox.hasSize) {
       final size = renderBox.size;
       final offset = renderBox.localToGlobal(Offset.zero);
-      
+
       // 增加一點 padding
-      final rect = Rect.fromLTWH(
-        offset.dx - 4, 
-        offset.dy - 4, 
-        size.width + 8, 
-        size.height + 8
-      );
+      final rect = Rect.fromLTWH(offset.dx - 4, offset.dy - 4, size.width + 8, size.height + 8);
 
       // 如果是第一次，直接設定位置 (不動畫)
       if (!_isInit) {
@@ -172,11 +160,9 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         // 2. 繪製說明文字與按鈕
         // 簡單實作：根據 align 判斷顯示位置
         Positioned(
-          top: currentTarget.align == ContentAlign.bottom 
-              ? currentHole.bottom + 20 
-              : null,
-          bottom: currentTarget.align == ContentAlign.top 
-              ? MediaQuery.of(context).size.height - currentHole.top + 20 
+          top: currentTarget.align == ContentAlign.bottom ? currentHole.bottom + 20 : null,
+          bottom: currentTarget.align == ContentAlign.top
+              ? MediaQuery.of(context).size.height - currentHole.top + 20
               : null,
           left: 20,
           right: 20,
@@ -188,17 +174,10 @@ class _TutorialOverlayState extends State<TutorialOverlay>
               children: [
                 Text(
                   currentTarget.content,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  "點擊螢幕繼續",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
+                const Text("點擊螢幕繼續", style: TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),
           ),
@@ -232,19 +211,15 @@ class _HolePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // 使用 SaveLayer + BlendMode.clear 來確保開孔正確 (替代 Path.combine)
     canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
-    
+
     // 1. 繪製半透明背景
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = Colors.black.withOpacity(0.8),
-    );
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = Colors.black.withOpacity(0.8));
 
     // 2. 挖孔 (使用 BlendMode.clear)
     final radius = (hole.width > hole.height ? hole.width : hole.height) / 2;
     final center = hole.center;
-    
-    final holePaint = Paint()
-      ..blendMode = BlendMode.clear;
+
+    final holePaint = Paint()..blendMode = BlendMode.clear;
 
     canvas.drawCircle(center, radius, holePaint);
 

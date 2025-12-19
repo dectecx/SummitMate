@@ -356,16 +356,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 actions: [
                   // Tab 0: 行程編輯與地圖
                   if (_currentIndex == 0) ...[
-                    Container(
+                    IconButton(
                       key: _keyBtnEdit,
-                      child: IconButton(
-                        icon: Icon(
-                          itineraryProvider.isEditMode ? Icons.check : Icons.edit,
-                          color: itineraryProvider.isEditMode ? Theme.of(context).colorScheme.onPrimary : null,
-                        ),
-                        tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
-                        onPressed: () => itineraryProvider.toggleEditMode(),
-                      ),
+                      icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
+                      tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
+                      onPressed: () => itineraryProvider.toggleEditMode(),
                     ),
                     if (itineraryProvider.isEditMode)
                       IconButton(
@@ -383,19 +378,17 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       ),
                   ],
                   // 同步按鈕
-                  Container(
+                  IconButton(
                     key: _keyBtnSync,
-                    child: IconButton(
-                      icon: messageProvider.isSyncing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.sync),
-                      onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
-                      tooltip: '同步資料',
-                    ),
+                    icon: messageProvider.isSyncing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.sync),
+                    onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
+                    tooltip: '同步資料',
                   ),
                   // 設定按鈕
                   IconButton(
