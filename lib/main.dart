@@ -226,7 +226,7 @@ class _MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // Tutorial Target Keys
+  // 導覽目標 Keys
   final GlobalKey _keyTabItinerary = GlobalKey();
   final GlobalKey _keyTabMessage = GlobalKey();
   final GlobalKey _keyTabGear = GlobalKey();
@@ -247,23 +247,23 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       final settingsProvider = context.read<SettingsProvider>();
 
       // 行程同步完成時，通知 ItineraryProvider 重載
-      // Notify ItineraryProvider to reload when itinerary sync is complete
+      // 行程同步完成後，重載行程列表
       messageProvider.onItinerarySynced = () {
         itineraryProvider.reload();
       };
 
-      // Update last sync time on completion
+      // 接收同步完成時間
       messageProvider.onSyncComplete = (syncedAt) {
         settingsProvider.updateLastSyncTime(syncedAt);
       };
 
-      // Show tutorial if first time
+      // 初次啟動顯示導覽
       if (!settingsProvider.hasSeenOnboarding) {
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) _showTutorial(context);
         });
       } else {
-        // Check for sync if tutorial is already seen
+        // 若無需導覽，直接檢查同步
         _checkFirstTimeSync(context, settingsProvider);
       }
     });
@@ -283,31 +283,36 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       textSkip: "跳過教學",
       paddingFocus: 10,
       opacityShadow: 0.8,
+      // 關閉呼吸動畫
+      pulseEnable: false,
+      // 調整轉場時間
+      focusAnimationDuration: const Duration(milliseconds: 600),
+      unFocusAnimationDuration: const Duration(milliseconds: 300),
       onFinish: () {
         context.read<SettingsProvider>().completeOnboarding();
-        // Reset to first tab
+        // 導覽結束重置分頁
         setState(() => _currentIndex = 0);
 
-        // Check sync after tutorial
+        // 結束後檢查同步
         _checkFirstTimeSync(context, context.read<SettingsProvider>());
       },
       onClickTarget: (target) {
-        // Auto-switch tabs based on target
+        // 依據目標自動切換分頁
         if (target.identify == "Target 4") {
-          // Message Tab
+          // 留言板
           setState(() => _currentIndex = 1);
         } else if (target.identify == "Target 6") {
-          // Gear Tab
+          // 裝備清單
           setState(() => _currentIndex = 2);
         } else if (target.identify == "Target 7") {
-          // Info Tab
+          // 資訊頁
           setState(() => _currentIndex = 3);
         }
       },
       onSkip: () {
         context.read<SettingsProvider>().completeOnboarding();
         setState(() => _currentIndex = 0);
-        // Check sync after skip
+        // 跳過後檢查同步
         _checkFirstTimeSync(context, context.read<SettingsProvider>());
         return true;
       },
@@ -552,15 +557,15 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 ),
               ),
 
-              // Replay Tutorial
+              // 重看教學
               ListTile(
                 leading: const Icon(Icons.help_outline),
                 title: const Text('重看教學'),
                 onTap: () async {
                   if (innerContext.mounted) {
-                    Navigator.pop(innerContext); // Close dialog
+                    Navigator.pop(innerContext); // 關閉對話框
 
-                    // Delay slightly to allow dialog to close before starting tutorial
+                    // 延遲執行確保對話框已關閉
                     Future.delayed(const Duration(milliseconds: 300), () {
                       if (mounted) {
                         _showTutorial(this.context);
