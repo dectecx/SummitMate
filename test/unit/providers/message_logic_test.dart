@@ -29,7 +29,7 @@ void main() {
     // Default mock behaviors
     when(() => mockRepository.getAllMessages()).thenReturn([]);
     registerFallbackValue(
-      Message(uuid: 'fallback', user: 'user', category: 'Misc', content: 'content', timestamp: DateTime.now()),
+      Message(uuid: 'fallback', user: 'user', category: 'Chat', content: 'content', timestamp: DateTime.now()),
     );
   });
 
@@ -53,7 +53,7 @@ void main() {
       final messages = [
         Message(uuid: '1', user: 'A', category: 'Gear', content: 'Main', timestamp: now),
         Message(uuid: '2', user: 'A', category: 'Gear', content: 'Reply', parentId: '1', timestamp: now),
-        Message(uuid: '3', user: 'A', category: 'Plan', content: 'Plan', timestamp: now),
+        Message(uuid: '3', user: 'A', category: 'Chat', content: 'Chat', timestamp: now),
       ];
       when(() => mockRepository.getAllMessages()).thenReturn(messages);
 

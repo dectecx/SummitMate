@@ -49,7 +49,7 @@ void main() {
       final message = Message(
         uuid: 'test-uuid',
         user: 'Bob',
-        category: 'Plan',
+        category: 'Chat',
         content: '明天幾點出發?',
         timestamp: DateTime(2024, 12, 15, 10, 0),
       );

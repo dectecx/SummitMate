@@ -448,7 +448,7 @@ function setupSheets() {
       Utilities.getUuid(),
       '',
       'Admin',
-      'Plan',
+      'Chat',
       '歡迎使用 SummitMate！這是行程協作留言板。',
       "'" + new Date().toISOString(),
       '🤖'

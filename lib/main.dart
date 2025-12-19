@@ -346,13 +346,17 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 },
                 destinations: const [
                   NavigationDestination(icon: Icon(Icons.schedule), selectedIcon: Icon(Icons.schedule), label: '行程'),
-                  NavigationDestination(icon: Icon(Icons.forum_outlined), selectedIcon: Icon(Icons.forum), label: '協作'),
+
+                  NavigationDestination(
+                    icon: Icon(Icons.forum_outlined),
+                    selectedIcon: Icon(Icons.forum),
+                    label: '留言板',
+                  ),
                   NavigationDestination(
                     icon: Icon(Icons.backpack_outlined),
                     selectedIcon: Icon(Icons.backpack),
                     label: '裝備',
                   ),
-                  NavigationDestination(icon: Icon(Icons.info_outline), selectedIcon: Icon(Icons.info), label: '資訊'),
                 ],
               ),
               floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
@@ -980,9 +984,21 @@ class _CollaborationTab extends StatelessWidget {
                       child: SegmentedButton<String>(
                         showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(value: 'Gear', label: Text('裝備')),
-                          ButtonSegment(value: 'Plan', label: Text('建議')),
-                          ButtonSegment(value: 'Misc', label: Text('雜項')),
+                          ButtonSegment(
+                            value: 'Important',
+                            label: Text('重要'),
+                            icon: Icon(Icons.campaign_outlined),
+                          ),
+                          ButtonSegment(
+                            value: 'Chat',
+                            label: Text('討論'),
+                            icon: Icon(Icons.chat_bubble_outline),
+                          ),
+                          ButtonSegment(
+                            value: 'Gear',
+                            label: Text('裝備'),
+                            icon: Icon(Icons.backpack_outlined),
+                          ),
                         ],
                         selected: {messageProvider.selectedCategory},
                         onSelectionChanged: (selected) {
@@ -1212,12 +1228,12 @@ class _CollaborationTab extends StatelessWidget {
 
   String _getCategoryName(String category) {
     switch (category) {
+      case 'Important':
+        return '重要公告';
+      case 'Chat':
+        return '討論區';
       case 'Gear':
-        return '裝備';
-      case 'Plan':
-        return '建議';
-      case 'Misc':
-        return '雜項';
+        return '裝備協調';
       default:
         return category;
     }

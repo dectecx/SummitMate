@@ -5,7 +5,7 @@ library;
 class AppInfo {
   static const String appName = 'SummitMate';
   static const String appNameChinese = '山友';
-  static const String version = '0.1.0';
+  static const String version = '0.0.1';
 }
 
 /// 顏色常數 (遵循 Dark Mode 設計)
@@ -22,11 +22,11 @@ class AppColors {
 
 /// 留言分類
 class MessageCategory {
-  static const String gear = 'Gear';
-  static const String plan = 'Plan';
-  static const String misc = 'Misc';
+  static const String important = 'Important'; // 重要公告
+  static const String chat = 'Chat'; // 討論/閒聊
+  static const String gear = 'Gear'; // 裝備
 
-  static const List<String> all = [gear, plan, misc];
+  static const List<String> all = [important, chat, gear];
 }
 
 /// 裝備分類

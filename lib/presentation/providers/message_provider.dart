@@ -15,7 +15,7 @@ class MessageProvider extends ChangeNotifier {
   final Uuid _uuid = const Uuid();
 
   List<Message> _allMessages = [];
-  String _selectedCategory = MessageCategory.gear;
+  String _selectedCategory = MessageCategory.chat;
   bool _isLoading = true;
   bool _isSyncing = false;
   String? _error;
