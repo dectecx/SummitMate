@@ -246,7 +246,6 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       final itineraryProvider = context.read<ItineraryProvider>();
       final settingsProvider = context.read<SettingsProvider>();
 
-      // 行程同步完成時，通知 ItineraryProvider 重載
       // 行程同步完成後，重載行程列表
       messageProvider.onItinerarySynced = () {
         itineraryProvider.reload();
@@ -285,9 +284,9 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       opacityShadow: 0.8,
       // 關閉呼吸動畫
       pulseEnable: false,
-      // 調整轉場時間
-      focusAnimationDuration: const Duration(milliseconds: 600),
-      unFocusAnimationDuration: const Duration(milliseconds: 300),
+      // 調整轉場時間 (移除縮小動畫以達成平滑移動)
+      focusAnimationDuration: const Duration(milliseconds: 300),
+      unFocusAnimationDuration: Duration.zero,
       onFinish: () {
         context.read<SettingsProvider>().completeOnboarding();
         // 導覽結束重置分頁
