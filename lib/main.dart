@@ -233,7 +233,10 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   final GlobalKey _keyTabInfo = GlobalKey();
   final GlobalKey _keyBtnEdit = GlobalKey();
   final GlobalKey _keyBtnSync = GlobalKey();
-  // final GlobalKey _keyCategorySelect = GlobalKey(); // Reserved for future use
+  final GlobalKey _keyBtnUpload = GlobalKey();
+  final GlobalKey _keyInfoElevation = GlobalKey();
+  final GlobalKey _keyInfoTimeMap = GlobalKey();
+  final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
 
   OverlayEntry? _tutorialEntry;
 
@@ -279,16 +282,39 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           keyTabGear: _keyTabGear,
           keyTabInfo: _keyTabInfo,
           keyBtnEdit: _keyBtnEdit,
+          keyBtnUpload: _keyBtnUpload,
           keyBtnSync: _keyBtnSync,
+          keyInfoElevation: _keyInfoElevation,
+          keyInfoTimeMap: _keyInfoTimeMap,
           onSwitchToItinerary: () async {
             setState(() => _currentIndex = 0);
             if (context.read<ItineraryProvider>().isEditMode) {
               context.read<ItineraryProvider>().toggleEditMode();
             }
           },
+          onFocusUpload: () async {
+            setState(() => _currentIndex = 0);
+            if (!context.read<ItineraryProvider>().isEditMode) {
+              context.read<ItineraryProvider>().toggleEditMode();
+              // 等待 UI 重繪以顯示上傳按鈕
+              await Future.delayed(const Duration(milliseconds: 600));
+            }
+          },
           onSwitchToMessage: () async => setState(() => _currentIndex = 1),
           onSwitchToGear: () async => setState(() => _currentIndex = 2),
           onSwitchToInfo: () async => setState(() => _currentIndex = 3),
+          onFocusElevation: () async {
+            setState(() => _currentIndex = 3);
+            await Future.delayed(const Duration(milliseconds: 600));
+            _keyInfoTab.currentState?.expandElevation();
+            await Future.delayed(const Duration(milliseconds: 600));
+          },
+          onFocusTimeMap: () async {
+            setState(() => _currentIndex = 3);
+            await Future.delayed(const Duration(milliseconds: 600));
+            _keyInfoTab.currentState?.expandTimeMap();
+            await Future.delayed(const Duration(milliseconds: 600));
+          },
         ),
         onFinish: _removeTutorial,
         onSkip: () {
@@ -364,6 +390,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     ),
                     if (itineraryProvider.isEditMode)
                       IconButton(
+                        key: _keyBtnUpload,
                         icon: const Icon(Icons.cloud_upload_outlined),
                         tooltip: '上傳至雲端',
                         onPressed: () => _handleCloudUpload(context, itineraryProvider),
@@ -471,7 +498,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       case 2:
         return const _GearTab(key: ValueKey(2));
       case 3:
-        return const _InfoTab(key: ValueKey(3));
+        return InfoTab(
+          key: _keyInfoTab,
+          keyElevation: _keyInfoElevation,
+          keyTimeMap: _keyInfoTimeMap,
+        );
       default:
         return const _ItineraryTab(key: ValueKey(0));
     }
@@ -1575,16 +1606,35 @@ class _GearTab extends StatelessWidget {
 }
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
-class _InfoTab extends StatefulWidget {
-  const _InfoTab({super.key});
+class InfoTab extends StatefulWidget {
+  final Key? keyElevation;
+  final Key? keyTimeMap;
+
+  const InfoTab({
+    super.key,
+    this.keyElevation,
+    this.keyTimeMap,
+  });
 
   @override
-  State<_InfoTab> createState() => _InfoTabState();
+  State<InfoTab> createState() => InfoTabState();
 }
 
-class _InfoTabState extends State<_InfoTab> {
+class InfoTabState extends State<InfoTab> {
   bool _isElevationExpanded = false;
   bool _isTimeMapExpanded = false;
+
+  void expandElevation() {
+    if (!_isElevationExpanded) {
+      setState(() => _isElevationExpanded = true);
+    }
+  }
+
+  void expandTimeMap() {
+    if (!_isTimeMapExpanded) {
+      setState(() => _isTimeMapExpanded = true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1652,6 +1702,7 @@ class _InfoTabState extends State<_InfoTab> {
                             Icons.landscape,
                             '海拔 (點擊展開高度圖)',
                             '2320~3603m',
+                            key: widget.keyElevation,
                             onTap: () => setState(() => _isElevationExpanded = !_isElevationExpanded),
                             highlight: _isElevationExpanded,
                           ),
@@ -1660,6 +1711,7 @@ class _InfoTabState extends State<_InfoTab> {
                             Icons.timer,
                             '路程時間',
                             '點擊查看參考圖',
+                            key: widget.keyTimeMap,
                             onTap: () => setState(() => _isTimeMapExpanded = !_isTimeMapExpanded),
                             highlight: _isTimeMapExpanded,
                           ),
@@ -1840,11 +1892,13 @@ class _InfoTabState extends State<_InfoTab> {
     IconData icon,
     String label,
     String value, {
+    Key? key,
     VoidCallback? onTap,
     bool highlight = false,
   }) {
     return Expanded(
       child: InkWell(
+        key: key,
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
