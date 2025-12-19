@@ -10,9 +10,9 @@ class WeatherService {
   static const String _boxName = 'weather_cache';
   static const String _cacheKey = 'current_weather';
   static const String _cwaApiUrl =
-      'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-039';
+      'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/F-B0053-033';
   static const String _apiKey = EnvConfig.cwaApiKey;
-  static const String _targetLocation = '海端鄉';
+  static const String _targetLocation = '向陽山';
 
   Box<WeatherData>? _box;
 
@@ -43,9 +43,9 @@ class WeatherService {
 
   Future<WeatherData> fetchWeather() async {
     final url = Uri.parse(
-        '$_cwaApiUrl?Authorization=$_apiKey&format=JSON&locationName=$_targetLocation&elementName=PoP12h,T,AT,RH,WS,Wx');
+        '$_cwaApiUrl?Authorization=$_apiKey&downloadType=WEB&format=JSON');
 
-    LogService.info('Fetching weather from CWA: $_targetLocation', source: 'WeatherService');
+    LogService.info('Fetching hiking weather: $_targetLocation', source: 'WeatherService');
 
     try {
       final response = await http.get(url);
@@ -65,91 +65,156 @@ class WeatherService {
 
   WeatherData _parseWeatherData(Map<String, dynamic> json) {
     try {
-      if (json['records'] == null ||
-          json['records']['Locations'] == null ||
-          (json['records']['Locations'] as List).isEmpty) {
-        throw Exception('Invalid API format: Locations not found');
-      }
-
-      final dataset = json['records']['Locations'][0];
-      final locations = dataset['Location'];
+      // 1. Traverse to Location List
+      // Structure: cwaopendata -> Dataset -> Locations -> Location
+      final root = json['cwaopendata'];
+      if (root == null) throw Exception('Root cwaopendata missing');
       
-      if (locations == null) throw Exception('Location list is null');
+      final dataset = root['Dataset'];
+      if (dataset == null) throw Exception('Dataset missing');
+      
+      final locationsObj = dataset['Locations'];
+      if (locationsObj == null) throw Exception('Locations missing');
 
-      final locationList = locations as List;
-      // Debug: Log all found locations
-      final names = locationList.map((l) => l['LocationName']).toList();
-      LogService.info('Available Locations: $names', source: 'WeatherService');
+      final locations = locationsObj['Location'] as List?;
+      if (locations == null || locations.isEmpty) throw Exception('Location list empty');
 
-      final locationData = locationList.firstWhere(
+      // 2. Find Target Location
+      final locationData = locations.firstWhere(
         (loc) => loc['LocationName'] == _targetLocation,
         orElse: () => null,
       );
 
       if (locationData == null) {
-        throw Exception('Location "$_targetLocation" not found in response');
+        throw Exception('Location "$_targetLocation" not found');
       }
 
       final elements = locationData['WeatherElement'] as List?;
       if (elements == null) throw Exception('Weather elements missing');
 
-      // Helper to find value from specific element name and key
-      String getValue({required String name, required String key}) {
+      // Helper to extract Time list for a given element
+      List<dynamic> getTimeList(String elementName) {
         final el = elements.firstWhere(
-            (e) => e['ElementName'] == name,
-            orElse: () => null);
-        
-        if (el == null) return '';
-
-        final timeSegments = el['Time'] as List?;
-        if (timeSegments == null || timeSegments.isEmpty) {
-          return '';
-        }
-
-        // Use the first available time block
-        final firstBlock = timeSegments[0];
-        final elementValues = firstBlock['ElementValue'] as List?;
-        
-        if (elementValues == null || elementValues.isEmpty) return '';
-
-        final valMap = elementValues[0];
-        return valMap[key]?.toString() ?? '';
+            (e) => e['ElementName'] == elementName, 
+            orElse: () => null
+        );
+        return el?['Time'] as List? ?? [];
       }
 
-      // Map API fields to Model
-      // T -> 平均溫度 -> Temperature
-      // RH -> 平均相對濕度 -> RelativeHumidity
-      // PoP12h -> 12小時降雨機率 -> ProbabilityOfPrecipitation
-      // WS -> 風速 -> WindSpeed
-      // Wx -> 天氣現象 -> Weather
+      // 3. Extract Current Weather (Use first time block of '平均溫度')
+      // Map API fields:
+      // 平均溫度 -> Temperature
+      // 平均相對濕度 -> Humidity
+      // 12小時降雨機率 -> RainProbability
+      // 風速 -> WindSpeed
+      // 天氣現象 -> Condition (Wx)
       
-      final tempStr = getValue(name: '平均溫度', key: 'Temperature');
-      final humStr = getValue(name: '平均相對濕度', key: 'RelativeHumidity');
-      final popStr = getValue(name: '12小時降雨機率', key: 'ProbabilityOfPrecipitation');
-      final wsStr = getValue(name: '風速', key: 'WindSpeed');
-      final wxStr = getValue(name: '天氣現象', key: 'Weather');
+      String getValue(String elemName, {int index = 0}) {
+         final list = getTimeList(elemName);
+         if (list.isEmpty || list.length <= index) return '';
+         final valMap = list[index]['ElementValue'] as List?;
+         if (valMap == null || valMap.isEmpty) return '';
+         return valMap[0]['value']?.toString() ?? ''; // Usually 'value' or 'Weather'
+      }
+      
+      // Note: '平均相對濕度' might have a space? Based on debug: '平均相 對濕度'
+      // Try fuzzy match if exact fails can be hard. Let's assume standard '平均相對濕度'.
+      
+      final temp = double.tryParse(getValue('平均溫度')) ?? 0.0;
+      final humidity = double.tryParse(getValue('平均相對濕度')) ?? 0.0; // Verify key name later if 0
+      final pop = int.tryParse(getValue('12小時降雨機率')) ?? 0;
+      final windSpeed = double.tryParse(getValue('風速')) ?? 0.0;
+      final wx = getValue('天氣現象'); // Often "多雲" etc.
 
-      final temp = double.tryParse(tempStr) ?? 0.0;
-      final humidity = double.tryParse(humStr) ?? 0.0;
-      final pop = int.tryParse(popStr) ?? 0;
-      final windSpeed = double.tryParse(wsStr) ?? 0.0;
-      // Handle the case where PoP might be "-"
-      final safePop = popStr == '-' ? 0 : pop;
+      // 4. Build 7-Day Forecast
+      // Group by Date (YYYY-MM-DD)
+      // Elements needed: 最高溫度, 最低溫度, 天氣現象, 12小時降雨機率
+      final dailyMap = <String, Map<String, dynamic>>{};
 
-      // Calculate sun times locally for Jiaming Lake (approx 23.29, 121.03)
+      // Process '天氣現象' (Wx) to determine Day/Night condition
+      final wxList = getTimeList('天氣現象');
+      for (var item in wxList) {
+        final start = DateTime.parse(item['StartTime']);
+        final dateKey = "${start.year}-${start.month.toString().padLeft(2,'0')}-${start.day.toString().padLeft(2,'0')}";
+        
+        dailyMap.putIfAbsent(dateKey, () => {
+          'dayCondition': '', 
+          'nightCondition': '',
+          'maxTemp': -100.0,
+          'minTemp': 100.0,
+          'pop': 0
+        });
+
+        final val = item['ElementValue'][0]['value'].toString();
+        // Crude Day/Night check: 06:00 ~ 18:00 is Day
+        if (start.hour >= 6 && start.hour < 18) {
+          dailyMap[dateKey]!['dayCondition'] = val;
+        } else {
+          dailyMap[dateKey]!['nightCondition'] = val;
+        }
+      }
+
+      // Process MaxT/MinT
+      void processTemp(String elName, String mapKey, bool isMax) {
+        final list = getTimeList(elName);
+        for (var item in list) {
+          final start = DateTime.parse(item['StartTime']);
+          final dateKey = "${start.year}-${start.month.toString().padLeft(2,'0')}-${start.day.toString().padLeft(2,'0')}";
+          if (!dailyMap.containsKey(dateKey)) continue;
+
+          final val = double.tryParse(item['ElementValue'][0]['value'].toString()) ?? 0.0;
+          if (isMax) {
+             if (val > dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
+          } else {
+             if (val < dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
+          }
+        }
+      }
+      processTemp('最高溫度', 'maxTemp', true);
+      processTemp('最低溫度', 'minTemp', false);
+
+      // Process PoP (Take max for the day)
+      final popList = getTimeList('12小時降雨機率');
+      for (var item in popList) {
+          final start = DateTime.parse(item['StartTime']);
+          final dateKey = "${start.year}-${start.month.toString().padLeft(2,'0')}-${start.day.toString().padLeft(2,'0')}";
+          if (!dailyMap.containsKey(dateKey)) continue;
+          
+          final valStr = item['ElementValue'][0]['value'].toString();
+          final val = valStr == ' ' ? 0 : (int.tryParse(valStr) ?? 0);
+          if (val > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = val;
+      }
+
+      final dailyForecasts = dailyMap.entries.map((e) {
+        final d = e.value;
+        return DailyForecast(
+          date: DateTime.parse(e.key),
+          dayCondition: d['dayCondition'] == '' ? d['nightCondition'] : d['dayCondition'], // Fallback
+          nightCondition: d['nightCondition'] == '' ? d['dayCondition'] : d['nightCondition'],
+          maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
+          minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
+          rainProbability: d['pop'],
+        );
+      }).toList();
+      
+      // Sort by date
+      dailyForecasts.sort((a, b) => a.date.compareTo(b.date));
+
+      // Calculate sun times locally (approx 23.29, 121.03 for Jiaming/Xiangyang)
       final now = DateTime.now();
       final sunTimes = _calculateSunTimes(now, 23.29, 121.03);
 
       final weather = WeatherData(
         temperature: temp,
         humidity: humidity,
-        rainProbability: safePop,
+        rainProbability: pop,
         windSpeed: windSpeed,
-        condition: wxStr,
+        condition: wx,
         sunrise: sunTimes['sunrise']!,
         sunset: sunTimes['sunset']!,
         timestamp: DateTime.now(),
         locationName: _targetLocation,
+        dailyForecasts: dailyForecasts,
       );
 
       // Cache the result
@@ -158,9 +223,6 @@ class WeatherService {
       return weather;
     } catch (e) {
       LogService.error('Parse Error: $e', source: 'WeatherService');
-      if (json['records'] != null) {
-         // Debug partial keys if needed
-      }
       throw Exception('Failed to parse weather data');
     }
   }
@@ -178,15 +240,8 @@ class WeatherService {
     // Declination of the Sun
     final declination = 0.4095 * sin(0.016906 * (dayOfYear - 80.089));
     
-    // Equation of time
-    // Approximation for solar transit
-    // This is a simplified version, sufficient for hiking reference (+/- 5~10 mins)
-    // Detailed implementation is complex, for "Offline First" simple logic is better
-    // Or we assume standard 6:00/18:00 adjusted by season.
-    
-    // Let's use a slightly better approx:
+    // Equation of time (Simplified)
     // H = acos(-tan(lat) * tan(declination))
-    // This gives half-day length in radians.
     
     double halfDayRad = 0;
     try {
@@ -199,11 +254,7 @@ class WeatherService {
     
     final halfDayHours = (halfDayRad * 180 / pi) / 15.0;
     
-    // Solar Noon (Approx 12:00 for Taiwan GMT+8, adjusted by Longitude)
-    // Taiwan (120-122E) is close to 120E (GMT+8 standard).
-    // 121.03 is +1.03 deg off = +4 mins.
-    // So Solar Noon is approx 11:56 AM.
-    // Let's simplify: Noon = 12:00 - (Longitude - 120) * 4min
+    // Solar Noon Approx
     final timeOffsetMin = (lng - 120.0) * 4.0;
     final solarNoon = 12.0 - (timeOffsetMin / 60.0);
     

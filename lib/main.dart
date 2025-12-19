@@ -2117,7 +2117,9 @@ class InfoTabState extends State<InfoTab> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -2133,7 +2135,7 @@ class InfoTabState extends State<InfoTab> {
                         color: Colors.blue.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text('海拔 ~2300m', style: TextStyle(fontSize: 10, color: Colors.blue[800])),
+                      child: Text('海拔 ~3602m', style: TextStyle(fontSize: 10, color: Colors.blue[800])),
                     ),
                   ],
                 ),
@@ -2153,14 +2155,15 @@ class InfoTabState extends State<InfoTab> {
               ],
             ),
             const Divider(),
+            // Current Weather
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Column(
                   children: [
-                    Text('${w.temperature}°C',
+                    Text('${w.temperature.toStringAsFixed(1)}°C',
                         style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange)),
-                    Text(w.condition),
+                    Text(w.condition, style: const TextStyle(fontSize: 16)),
                   ],
                 ),
                 Column(
@@ -2190,10 +2193,63 @@ class InfoTabState extends State<InfoTab> {
                 )
               ],
             ),
+            
+            // 7-Day Forecast
+            if (w.dailyForecasts.isNotEmpty) ...[
+              const Divider(height: 24),
+              const Text('未來 7 天預報', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: w.dailyForecasts.map((d) {
+                    final dateStr = DateFormat('MM/dd').format(d.date);
+                    final isWeekend = d.date.weekday == 6 || d.date.weekday == 7;
+                    return Container(
+                      width: 90,
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        children: [
+                           Text(dateStr, style: TextStyle(fontWeight: FontWeight.bold, color: isWeekend ? Colors.red : Colors.black87)),
+                           const SizedBox(height: 4),
+                           Icon(_getWeatherIcon(d.dayCondition), color: Colors.orange, size: 24),
+                           const SizedBox(height: 4),
+                           Text(d.dayCondition, style: const TextStyle(fontSize: 10), overflow: TextOverflow.ellipsis),
+                           const SizedBox(height: 4),
+                           Text('${d.minTemp.round()}~${d.maxTemp.round()}°C', style: const TextStyle(fontSize: 12)),
+                           const SizedBox(height: 2),
+                           Row(
+                             mainAxisAlignment: MainAxisAlignment.center,
+                             children: [
+                               const Icon(Icons.water_drop, size: 10, color: Colors.blue),
+                               Text('${d.rainProbability}%', style: const TextStyle(fontSize: 10)),
+                             ],
+                           ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  IconData _getWeatherIcon(String condition) {
+    if (condition.contains('晴')) return Icons.wb_sunny;
+    if (condition.contains('雨')) return Icons.grain;
+    if (condition.contains('雲') || condition.contains('陰')) return Icons.cloud;
+    if (condition.contains('霧')) return Icons.blur_on;
+    return Icons.wb_cloudy;
   }
 }
 

@@ -45,6 +45,9 @@ class HiveService {
     if (!Hive.isAdapterRegistered(4)) {
       Hive.registerAdapter(WeatherDataAdapter());
     }
+    if (!Hive.isAdapterRegistered(5)) {
+      Hive.registerAdapter(DailyForecastAdapter());
+    }
 
     _isInitialized = true;
   }
