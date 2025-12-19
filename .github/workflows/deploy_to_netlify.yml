@@ -34,7 +34,10 @@ jobs:
         # Netlify runs at the root domain usually, so base-href is /
         run: flutter build web --release --base-href "/" --dart-define-from-file=.env.prod
 
-      - name: 🚀 Deploy to Netlify
+      - name: � Copy Netlify Config
+        run: cp netlify.toml build/web/netlify.toml
+
+      - name: �🚀 Deploy to Netlify
         uses: nwtgck/actions-netlify@v2.0
         with:
           publish-dir: './build/web'
