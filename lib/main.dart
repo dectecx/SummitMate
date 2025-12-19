@@ -1735,6 +1735,8 @@ class InfoTabState extends State<InfoTab> {
   bool _isElevationExpanded = false;
   bool _isTimeMapExpanded = false;
   WeatherData? _weather;
+  String _selectedLocation = '向陽山';
+  bool _isWeatherExpanded = false;
   bool _loadingWeather = false;
 
   @override
@@ -1746,8 +1748,10 @@ class InfoTabState extends State<InfoTab> {
   Future<void> _refreshWeather({bool force = false}) async {
     setState(() => _loadingWeather = true);
     try {
-      final weather = await getIt<WeatherService>().getWeather(forceRefresh: force);
-      if (mounted) setState(() => _weather = weather);
+      final weather = await getIt<WeatherService>().getWeather(
+        forceRefresh: force,
+        locationName: _selectedLocation, 
+      );if (mounted) setState(() => _weather = weather);
     } finally {
       if (mounted) setState(() => _loadingWeather = false);
     }
@@ -2119,25 +2123,36 @@ class InfoTabState extends State<InfoTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+            // Header with Location Dropdown
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(w.locationName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
+                DropdownButton<String>(
+                  value: _selectedLocation,
+                  underline: const SizedBox(),
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 16),
+                  onChanged: (String? newValue) {
+                    if (newValue != null && newValue != _selectedLocation) {
+                      setState(() {
+                        _selectedLocation = newValue;
+                        _weather = null; // Clear old data visually
+                        _refreshWeather(force: true);
+                      });
+                    }
+                  },
+                  items: <String>['向陽山', '三叉山', '池上'].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(value),
+                        ],
                       ),
-                      child: Text('海拔 ~3602m', style: TextStyle(fontSize: 10, color: Colors.blue[800])),
-                    ),
-                  ],
+                    );
+                  }).toList(),
                 ),
                 if (_loadingWeather)
                   const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
@@ -2156,46 +2171,54 @@ class InfoTabState extends State<InfoTab> {
             ),
             const Divider(),
             // Current Weather
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Text('${w.temperature.toStringAsFixed(1)}°C',
-                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange)),
-                    Text(w.condition, style: const TextStyle(fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(children: [
-                      const Icon(Icons.water_drop, size: 14, color: Colors.blue),
-                      const SizedBox(width: 4),
-                      Text('降雨機率: ${w.rainProbability}%')
-                    ]),
-                    const SizedBox(height: 4),
-                    Row(children: [
-                      const Icon(Icons.air, size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text('風速: ${w.windSpeed} m/s')
-                    ]),
-                    const SizedBox(height: 4),
-                    Row(children: [
-                      Icon(isDay ? Icons.wb_sunny : Icons.nightlight_round,
-                          size: 14, color: isDay ? Colors.orange : Colors.purple),
-                      const SizedBox(width: 4),
-                      Text(isDay
-                          ? '日落: ${DateFormat('HH:mm').format(w.sunset)}'
-                          : '日出: ${DateFormat('HH:mm').format(w.sunrise)}')
-                    ]),
-                  ],
-                )
-              ],
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _isWeatherExpanded = !_isWeatherExpanded;
+                });
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      Text('${w.temperature.toStringAsFixed(1)}°C',
+                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange)),
+                      Text(w.condition, style: const TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.water_drop, size: 14, color: Colors.blue),
+                        const SizedBox(width: 4),
+                        Text('降雨機率: ${w.rainProbability}%')
+                      ]),
+                      const SizedBox(height: 4),
+                      Row(children: [
+                        const Icon(Icons.air, size: 14, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text('風速: ${w.windSpeed} m/s')
+                      ]),
+                      const SizedBox(height: 4),
+                      Row(children: [
+                        Icon(isDay ? Icons.wb_sunny : Icons.nightlight_round,
+                            size: 14, color: isDay ? Colors.orange : Colors.purple),
+                        const SizedBox(width: 4),
+                        Text(isDay
+                            ? '日落: ${DateFormat('HH:mm').format(w.sunset)}'
+                            : '日出: ${DateFormat('HH:mm').format(w.sunrise)}')
+                      ]),
+                    ],
+                  ),
+                  Icon(_isWeatherExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
+                ],
+              ),
             ),
             
-            // 7-Day Forecast
-            if (w.dailyForecasts.isNotEmpty) ...[
+            // 7-Day Forecast (Collapsible)
+            if (_isWeatherExpanded && w.dailyForecasts.isNotEmpty) ...[
               const Divider(height: 24),
               const Text('未來 7 天預報', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               const SizedBox(height: 8),
