@@ -13,41 +13,46 @@ class MealPlannerScreen extends StatelessWidget {
       builder: (context, provider, child) {
         return DefaultTabController(
           length: provider.dailyPlans.length,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('糧食計畫'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.info_outline),
-                  tooltip: '參考資訊',
-                  onPressed: () =>
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const FoodReferenceScreen())),
-                ),
-              ],
-              bottom: TabBar(
-                isScrollable: true,
-                indicatorColor: Colors.white,
-                indicatorWeight: 4.0,
-                indicatorSize: TabBarIndicatorSize.label,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white60,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
-                tabs: provider.dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
-              ),
-            ),
-            body: TabBarView(
-              children: provider.dailyPlans.map((plan) {
-                return ListView(
-                  padding: const EdgeInsets.only(bottom: 80),
-                  children: [
-                    _buildSummaryCard(context, plan),
-                    ...MealType.values.map(
-                      (type) => _buildMealSection(context, provider, plan.day, type, plan.meals[type] ?? []),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Scaffold(
+                appBar: AppBar(
+                  title: const Text('糧食計畫'),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.info_outline),
+                      tooltip: '參考資訊',
+                      onPressed: () =>
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const FoodReferenceScreen())),
                     ),
                   ],
-                );
-              }).toList(),
+                  bottom: TabBar(
+                    isScrollable: true,
+                    indicatorColor: Colors.white,
+                    indicatorWeight: 4.0,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white60,
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
+                    tabs: provider.dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
+                  ),
+                ),
+                body: TabBarView(
+                  children: provider.dailyPlans.map((plan) {
+                    return ListView(
+                      padding: const EdgeInsets.only(bottom: 80),
+                      children: [
+                        _buildSummaryCard(context, plan),
+                        ...MealType.values.map(
+                          (type) => _buildMealSection(context, provider, plan.day, type, plan.meals[type] ?? []),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
         );

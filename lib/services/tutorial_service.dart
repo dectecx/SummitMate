@@ -70,19 +70,7 @@ class TutorialService {
       ),
     );
 
-    // 5. 留言板頁籤
-    targets.add(
-      TutorialTarget(
-        identify: "Target Message",
-        keyTarget: keyTabMessage,
-        alignSkip: Alignment.topRight,
-        align: ContentAlign.top,
-        content: "留言板 💬\n有什麼話想對隊友說？\n提醒事項或裝備建議都可以在這留言",
-        onFocus: onSwitchToMessage,
-      ),
-    );
-
-    // 6. 裝備頁籤
+    // 5. 裝備頁籤
     targets.add(
       TutorialTarget(
         identify: "Target Gear",
@@ -91,6 +79,18 @@ class TutorialService {
         align: ContentAlign.top,
         content: "裝備檢查 🎒\n把裝備和糧食都輸入進來\n幫你算好總重量，出發前輔助檢查",
         onFocus: onSwitchToGear,
+      ),
+    );
+
+    // 6. 留言板頁籤
+    targets.add(
+      TutorialTarget(
+        identify: "Target Message",
+        keyTarget: keyTabMessage,
+        alignSkip: Alignment.topRight,
+        align: ContentAlign.top,
+        content: "留言板 💬\n有什麼話想對隊友說？\n提醒事項或裝備建議都可以在這留言",
+        onFocus: onSwitchToMessage,
       ),
     );
 

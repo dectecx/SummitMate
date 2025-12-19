@@ -307,12 +307,12 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               context.read<ItineraryProvider>().toggleEditMode();
             }
           },
-          onSwitchToMessage: () async {
+          onSwitchToGear: () async {
              Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentIndex = 1);
             });
           },
-          onSwitchToGear: () async {
+          onSwitchToMessage: () async {
              Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentIndex = 2);
             });
@@ -475,16 +475,16 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   ),
 
                   NavigationDestination(
-                    key: _keyTabMessage,
-                    icon: const Icon(Icons.forum_outlined),
-                    selectedIcon: const Icon(Icons.forum),
-                    label: '留言板',
-                  ),
-                  NavigationDestination(
                     key: _keyTabGear,
                     icon: const Icon(Icons.backpack_outlined),
                     selectedIcon: const Icon(Icons.backpack),
                     label: '裝備',
+                  ),
+                  NavigationDestination(
+                    key: _keyTabMessage,
+                    icon: const Icon(Icons.forum_outlined),
+                    selectedIcon: const Icon(Icons.forum),
+                    label: '留言板',
                   ),
                   NavigationDestination(
                     key: _keyTabInfo,
@@ -519,9 +519,9 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       case 0:
         return const _ItineraryTab(key: ValueKey(0));
       case 1:
-        return const _CollaborationTab(key: ValueKey(1));
+        return const _GearTab(key: ValueKey(1));
       case 2:
-        return const _GearTab(key: ValueKey(2));
+        return const _CollaborationTab(key: ValueKey(2));
       case 3:
         return InfoTab(
           key: _keyInfoTab,
@@ -1275,85 +1275,124 @@ class _CollaborationTab extends StatelessWidget {
 
     showDialog(
       context: context,
-      barrierDismissible: false, // 避免誤觸關閉
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
+      barrierDismissible: true,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (innerContext, setState) {
           bool isSubmitting = false;
 
-          return StatefulBuilder(
-            builder: (context, setInnerState) {
-              return AlertDialog(
-                title: Text(isReply ? '回覆留言' : '新增留言 (${_getCategoryName(provider.selectedCategory)})'),
-                content: SizedBox(
-                  width: double.maxFinite,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (!isReply)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              CircleAvatar(child: Text(avatar)),
-                              const SizedBox(width: 8),
-                              Text('以 $username 的身分發言'),
-                            ],
-                          ),
-                        ),
-                      TextField(
-                        controller: contentController,
-                        enabled: !isSubmitting, // 提交時鎖定輸入
-                        decoration: InputDecoration(
-                          labelText: isReply ? '回覆內容' : '留言內容',
-                          hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
-                          border: const OutlineInputBorder(),
-                        ),
-                        maxLines: 5,
-                        minLines: 3,
-                        textInputAction: TextInputAction.newline,
-                        autofocus: true,
-                      ),
-                    ],
-                  ),
-                ),
+          // Checking logic for dismissal
+          Future<bool> checkDismiss() async {
+             if (contentController.text.trim().isEmpty) return true;
+             final confirm = await showDialog<bool>(
+              context: dialogContext,
+              builder: (ctx) => AlertDialog(
+                title: const Text('捨棄留言？'),
+                content: const Text('您有未發送的內容，確定要離開嗎？'),
                 actions: [
-                  TextButton(onPressed: isSubmitting ? null : () => Navigator.pop(context), child: const Text('取消')),
+                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
                   FilledButton(
-                    onPressed: isSubmitting
-                        ? null // 提交中禁用按鈕
-                        : () async {
-                            final content = contentController.text.trim();
-                            if (content.isNotEmpty) {
-                              // 更新內部狀態顯示 Loading
-                              setInnerState(() => isSubmitting = true);
-                              try {
-                                await provider.addMessage(
-                                  user: username.isNotEmpty ? username : 'Anonymous',
-                                  avatar: avatar,
-                                  content: content,
-                                  parentId: parentId,
-                                );
+                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('捨棄'),
+                  ),
+                ],
+              ),
+            );
+            return confirm ?? false;
+          }
+
+          return PopScope(
+            canPop: false,
+            onPopInvoked: (didPop) async {
+              if (didPop) return;
+              if (isSubmitting) return;
+              final shouldPop = await checkDismiss();
+              if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: AlertDialog(
+              title: Text(isReply ? '回覆留言' : _getCategoryName(provider.selectedCategory)),
+              content: SizedBox(
+                width: 600,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isReply)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            CircleAvatar(child: Text(avatar)),
+                            const SizedBox(width: 8),
+                            Text('以 $username 的身分發言'),
+                          ],
+                        ),
+                      ),
+                    TextField(
+                      controller: contentController,
+                      enabled: !isSubmitting,
+                      decoration: InputDecoration(
+                        labelText: isReply ? '回覆內容' : '留言內容',
+                        hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
+                        border: const OutlineInputBorder(),
+                      ),
+                      maxLines: 5,
+                      minLines: 3,
+                      textInputAction: TextInputAction.newline,
+                      autofocus: true,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          final shouldPop = await checkDismiss();
+                          if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
+                        },
+                  child: const Text('取消'),
+                ),
+                FilledButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          final content = contentController.text.trim();
+                          if (content.isNotEmpty) {
+                            setState(() => isSubmitting = true);
+                            try {
+                              await provider.addMessage(
+                                user: username.isNotEmpty ? username : 'Anonymous',
+                                avatar: avatar,
+                                content: content,
+                                parentId: parentId,
+                              );
+                              if (dialogContext.mounted) {
+                                Navigator.pop(dialogContext);
+                                // Use outer context for SnackBar
                                 if (context.mounted) {
-                                  Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('留言傳送成功！'), backgroundColor: Colors.green),
                                   );
                                 }
-                              } catch (e) {
+                              }
+                            } catch (e) {
+                              if (innerContext.mounted) {
+                                setState(() => isSubmitting = false);
+                                // Use outer context for SnackBar
                                 if (context.mounted) {
-                                  setInnerState(() => isSubmitting = false);
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red)
+                                  );
                                 }
                               }
                             }
-                          },
-                    child: const Text('發送'),
-                  ),
-                ],
-              );
-            },
+                          }
+                        },
+                  child: const Text('發送'),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -1579,52 +1618,96 @@ class _GearTab extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('新增裝備'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: '裝備名稱', hintText: '例如：睡袋'),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: weightController,
-                decoration: const InputDecoration(labelText: '重量 (公克)', hintText: '例如：1200'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                decoration: const InputDecoration(labelText: '分類'),
-                items: const [
-                  DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
-                  DropdownMenuItem(value: 'Cook', child: Text('炊具與飲食')),
-                  DropdownMenuItem(value: 'Wear', child: Text('穿著')),
-                  DropdownMenuItem(value: 'Other', child: Text('其他')),
+      barrierDismissible: true, 
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (innerContext, setState) {
+
+          Future<bool> checkDismiss() async {
+             final hasContent = nameController.text.isNotEmpty || weightController.text.isNotEmpty;
+             if (!hasContent) return true;
+
+             final confirm = await showDialog<bool>(
+              context: dialogContext,
+              builder: (ctx) => AlertDialog(
+                title: const Text('捨棄裝備？'),
+                content: const Text('您有未儲存的內容，確定要離開嗎？'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
+                  FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('捨棄'),
+                  ),
                 ],
-                onChanged: (value) => setState(() => selectedCategory = value!),
               ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                final weight = double.tryParse(weightController.text) ?? 0;
-                if (name.isNotEmpty && weight > 0) {
-                  provider.addItem(name: name, weight: weight, category: selectedCategory);
-                  ToastService.success('已新增：$name');
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('新增'),
+            );
+            return confirm ?? false;
+          }
+
+          return PopScope(
+            canPop: false,
+            onPopInvoked: (didPop) async {
+              if (didPop) return;
+              final shouldPop = await checkDismiss();
+              if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: AlertDialog(
+              title: const Text('新增裝備'),
+              content: SizedBox(
+                width: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: '裝備名稱', hintText: '例如：睡袋'),
+                      autofocus: true,
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: weightController,
+                      decoration: const InputDecoration(labelText: '重量 (公克)', hintText: '例如：1200'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      decoration: const InputDecoration(labelText: '分類'),
+                      items: const [
+                        DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
+                        DropdownMenuItem(value: 'Cook', child: Text('炊具與飲食')),
+                        DropdownMenuItem(value: 'Wear', child: Text('穿著')),
+                        DropdownMenuItem(value: 'Other', child: Text('其他')),
+                      ],
+                      onChanged: (value) => setState(() => selectedCategory = value!),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    final shouldPop = await checkDismiss();
+                    if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
+                  }, 
+                  child: const Text('取消')
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    final weight = double.tryParse(weightController.text) ?? 0;
+                    if (name.isNotEmpty && weight > 0) {
+                      provider.addItem(name: name, weight: weight, category: selectedCategory);
+                      if (context.mounted) ToastService.success('已新增：$name');
+                      if (dialogContext.mounted) Navigator.pop(dialogContext);
+                    }
+                  },
+                  child: const Text('新增'),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
