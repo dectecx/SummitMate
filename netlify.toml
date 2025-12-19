@@ -1,3 +1,7 @@
+[build]
+  functions = "netlify/functions"
+  publish = "build/web"
+
 [[redirects]]
   from = "/cwa-proxy/*"
   to = "/.netlify/functions/cwa_proxy?path=:splat"
