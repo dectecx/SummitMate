@@ -32,6 +32,21 @@ class SettingsProvider extends ChangeNotifier {
   /// 錯誤訊息
   String? get error => _error;
 
+  /// 是否已完成教學導覽 (預設為 false)
+  bool get hasSeenOnboarding => _prefs.getBool('has_seen_onboarding') ?? false;
+
+  /// 標記已完成教學導覽
+  Future<void> completeOnboarding() async {
+    await _prefs.setBool('has_seen_onboarding', true);
+    notifyListeners();
+  }
+
+  /// 重置教學導覽 (用於重看)
+  Future<void> resetOnboarding() async {
+    await _prefs.setBool('has_seen_onboarding', false);
+    notifyListeners();
+  }
+
   /// 是否已設定使用者名稱 (用於 Onboarding 判斷)
   bool get hasUsername => username.isNotEmpty;
 

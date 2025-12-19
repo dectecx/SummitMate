@@ -16,6 +16,8 @@ import 'presentation/providers/meal_provider.dart';
 import 'presentation/screens/map_viewer_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
 import 'presentation/widgets/itinerary_edit_dialog.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'services/tutorial_service.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -76,11 +78,12 @@ class _HomeScreen extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        // 若尚未設定使用者名稱，顯示 Onboarding
+        // 若尚未設定使用者名稱，顯示設定名稱畫面
         if (!settings.hasUsername) {
           return const _OnboardingScreen();
         }
 
+        // 其他情況都進入主畫面，Tutorial 由主畫面initState觸發
         return const _MainNavigationScreen();
       },
     );
@@ -223,6 +226,17 @@ class _MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   int _currentIndex = 0;
 
+  // Tutorial Target Keys
+  final GlobalKey _keyTabItinerary = GlobalKey();
+  final GlobalKey _keyTabMessage = GlobalKey();
+  final GlobalKey _keyTabGear = GlobalKey();
+  final GlobalKey _keyTabInfo = GlobalKey();
+  final GlobalKey _keyBtnEdit = GlobalKey();
+  final GlobalKey _keyBtnSync = GlobalKey();
+  // final GlobalKey _keyCategorySelect = GlobalKey(); // Reserved for future use
+
+  late TutorialCoachMark tutorialCoachMark;
+
   @override
   void initState() {
     super.initState();
@@ -233,18 +247,71 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       final settingsProvider = context.read<SettingsProvider>();
 
       // 行程同步完成時，通知 ItineraryProvider 重載
+      // Notify ItineraryProvider to reload when itinerary sync is complete
       messageProvider.onItinerarySynced = () {
         itineraryProvider.reload();
       };
 
-      // 同步完成時，更新 lastSyncTime
+      // Update last sync time on completion
       messageProvider.onSyncComplete = (syncedAt) {
         settingsProvider.updateLastSyncTime(syncedAt);
       };
 
-      // 檢查首次同步
-      _checkFirstTimeSync(context, settingsProvider);
+      // Show tutorial if first time
+      if (!settingsProvider.hasSeenOnboarding) {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) _showTutorial(context);
+        });
+      } else {
+        // Check for sync if tutorial is already seen
+        _checkFirstTimeSync(context, settingsProvider);
+      }
     });
+  }
+
+  void _showTutorial(BuildContext context) {
+    tutorialCoachMark = TutorialCoachMark(
+      targets: TutorialService.initTargets(
+        keyTabItinerary: _keyTabItinerary,
+        keyTabMessage: _keyTabMessage,
+        keyTabGear: _keyTabGear,
+        keyTabInfo: _keyTabInfo,
+        keyBtnEdit: _keyBtnEdit,
+        keyBtnSync: _keyBtnSync,
+      ),
+      colorShadow: Colors.black,
+      textSkip: "跳過教學",
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+      onFinish: () {
+        context.read<SettingsProvider>().completeOnboarding();
+        // Reset to first tab
+        setState(() => _currentIndex = 0);
+
+        // Check sync after tutorial
+        _checkFirstTimeSync(context, context.read<SettingsProvider>());
+      },
+      onClickTarget: (target) {
+        // Auto-switch tabs based on target
+        if (target.identify == "Target 4") {
+          // Message Tab
+          setState(() => _currentIndex = 1);
+        } else if (target.identify == "Target 6") {
+          // Gear Tab
+          setState(() => _currentIndex = 2);
+        } else if (target.identify == "Target 7") {
+          // Info Tab
+          setState(() => _currentIndex = 3);
+        }
+      },
+      onSkip: () {
+        context.read<SettingsProvider>().completeOnboarding();
+        setState(() => _currentIndex = 0);
+        // Check sync after skip
+        _checkFirstTimeSync(context, context.read<SettingsProvider>());
+        return true;
+      },
+    )..show(context: context);
   }
 
   void _checkFirstTimeSync(BuildContext context, SettingsProvider settings) {
@@ -289,6 +356,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   // Tab 0: 行程編輯與地圖
                   if (_currentIndex == 0) ...[
                     IconButton(
+                      key: _keyBtnEdit,
                       icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
                       tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
                       onPressed: () => itineraryProvider.toggleEditMode(),
@@ -310,6 +378,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   ],
                   // 同步按鈕
                   IconButton(
+                    key: _keyBtnSync,
                     icon: messageProvider.isSyncing
                         ? const SizedBox(
                             width: 20,
@@ -344,20 +413,32 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     itineraryProvider.toggleEditMode();
                   }
                 },
-                destinations: const [
-                  NavigationDestination(icon: Icon(Icons.schedule), selectedIcon: Icon(Icons.schedule), label: '行程'),
+                destinations: [
+                  NavigationDestination(
+                    key: _keyTabItinerary,
+                    icon: const Icon(Icons.schedule),
+                    selectedIcon: const Icon(Icons.schedule),
+                    label: '行程',
+                  ),
 
                   NavigationDestination(
-                    icon: Icon(Icons.forum_outlined),
-                    selectedIcon: Icon(Icons.forum),
+                    key: _keyTabMessage,
+                    icon: const Icon(Icons.forum_outlined),
+                    selectedIcon: const Icon(Icons.forum),
                     label: '留言板',
                   ),
                   NavigationDestination(
-                    icon: Icon(Icons.backpack_outlined),
-                    selectedIcon: Icon(Icons.backpack),
+                    key: _keyTabGear,
+                    icon: const Icon(Icons.backpack_outlined),
+                    selectedIcon: const Icon(Icons.backpack),
                     label: '裝備',
                   ),
-                  NavigationDestination(icon: Icon(Icons.info_outline), selectedIcon: Icon(Icons.info), label: '資訊'),
+                  NavigationDestination(
+                    key: _keyTabInfo,
+                    icon: const Icon(Icons.info_outline),
+                    selectedIcon: const Icon(Icons.info),
+                    label: '資訊',
+                  ),
                 ],
               ),
               floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
@@ -426,8 +507,8 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (innerContext, setState) => AlertDialog(
           title: const Text('設定'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -463,7 +544,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   suffixIcon: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
                       radius: 16,
                       child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
                     ),
@@ -471,7 +552,24 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 ),
               ),
 
-              const Divider(height: 32),
+              // Replay Tutorial
+              ListTile(
+                leading: const Icon(Icons.help_outline),
+                title: const Text('重看教學'),
+                onTap: () async {
+                  if (innerContext.mounted) {
+                    Navigator.pop(innerContext); // Close dialog
+
+                    // Delay slightly to allow dialog to close before starting tutorial
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      if (mounted) {
+                        _showTutorial(this.context);
+                      }
+                    });
+                  }
+                },
+              ),
+              const Divider(),
 
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -481,7 +579,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     const SizedBox(width: 8),
                     Text(
                       packageInfo != null ? '版本 ${packageInfo.version} (${packageInfo.buildNumber})' : '版本資訊讀取中...',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(dialogContext).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -489,7 +587,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
 
               Text(
                 '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(dialogContext).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
 
@@ -497,8 +595,8 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    Navigator.pop(context);
-                    _showLogViewer(context);
+                    Navigator.pop(dialogContext);
+                    _showLogViewer(context); // 這裡可以用外層 context
                   },
                   icon: const Icon(Icons.article_outlined, size: 18),
                   label: const Text('查看日誌'),
@@ -512,14 +610,14 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 child: TextButton.icon(
                   onPressed: () async {
                     final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
+                      context: dialogContext,
+                      builder: (c) => AlertDialog(
                         title: const Text('重設身分'),
                         content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
                           FilledButton(
-                            onPressed: () => Navigator.pop(context, true),
+                            onPressed: () => Navigator.pop(c, true),
                             style: FilledButton.styleFrom(backgroundColor: Colors.red),
                             child: const Text('重設'),
                           ),
@@ -527,8 +625,8 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       ),
                     );
 
-                    if (confirm == true && context.mounted) {
-                      Navigator.pop(context); // 關閉設定對話框
+                    if (confirm == true && innerContext.mounted) {
+                      Navigator.pop(innerContext); // 關閉設定對話框
                       await settingsProvider.resetIdentity();
                     }
                   },
@@ -539,14 +637,14 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
             FilledButton(
               onPressed: () {
                 final newName = controller.text.trim();
                 if (newName.isNotEmpty) {
                   settingsProvider.updateUsername(newName);
                 }
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
               child: const Text('儲存詳細資料'),
             ),
@@ -985,21 +1083,9 @@ class _CollaborationTab extends StatelessWidget {
                       child: SegmentedButton<String>(
                         showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(
-                            value: 'Important',
-                            label: Text('重要'),
-                            icon: Icon(Icons.campaign_outlined),
-                          ),
-                          ButtonSegment(
-                            value: 'Chat',
-                            label: Text('討論'),
-                            icon: Icon(Icons.chat_bubble_outline),
-                          ),
-                          ButtonSegment(
-                            value: 'Gear',
-                            label: Text('裝備'),
-                            icon: Icon(Icons.backpack_outlined),
-                          ),
+                          ButtonSegment(value: 'Important', label: Text('重要'), icon: Icon(Icons.campaign_outlined)),
+                          ButtonSegment(value: 'Chat', label: Text('討論'), icon: Icon(Icons.chat_bubble_outline)),
+                          ButtonSegment(value: 'Gear', label: Text('裝備'), icon: Icon(Icons.backpack_outlined)),
                         ],
                         selected: {messageProvider.selectedCategory},
                         onSelectionChanged: (selected) {
