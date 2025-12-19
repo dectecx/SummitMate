@@ -357,6 +357,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     selectedIcon: Icon(Icons.backpack),
                     label: '裝備',
                   ),
+                  NavigationDestination(icon: Icon(Icons.info_outline), selectedIcon: Icon(Icons.info), label: '資訊'),
                 ],
               ),
               floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
