@@ -51,7 +51,8 @@ class WeatherService {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        // Enforce UTF-8 decoding
+        final data = json.decode(utf8.decode(response.bodyBytes));
         return _parseWeatherData(data);
       } else {
         throw Exception('API Error: ${response.statusCode}');
@@ -64,44 +65,87 @@ class WeatherService {
 
   WeatherData _parseWeatherData(Map<String, dynamic> json) {
     try {
-      final locations = json['records']['locations'][0]['location'];
-      final locationData = locations.firstWhere(
-        (loc) => loc['locationName'] == _targetLocation,
-        orElse: () => throw Exception('Location not found'),
-      );
-
-      final elements = locationData['weatherElement'] as List;
-
-      // Helper to find element value by time (nearest future)
-      String getValue(String elementName) {
-        final el = elements.firstWhere((e) => e['elementName'] == elementName);
-        // data[0] is usually the next 12h block or current block
-        // For accurate current, we take the first available forecast block.
-        // F-D0047-039 blocks are usually 12h or 6h.
-        // Let's just take the first time block [0]. 
-        // For numeric values, it's inside 'elementValue'[0]['value'].
-        // For Wx, it's 'elementValue'[0]['value'] (String) and [1] (Code).
-        return el['time'][0]['elementValue'][0]['value'].toString();
+      if (json['records'] == null ||
+          json['records']['Locations'] == null ||
+          (json['records']['Locations'] as List).isEmpty) {
+        throw Exception('Invalid API format: Locations not found');
       }
 
-      final pop = int.tryParse(getValue('PoP12h')) ?? 0;
-      final temp = double.tryParse(getValue('T')) ?? 0.0;
-      final apparentTemp = double.tryParse(getValue('AT')) ?? 0.0; // Not used in model yet but good to have logic
-      final humidity = double.tryParse(getValue('RH')) ?? 0.0;
-      final windSpeed = double.tryParse(getValue('WS')) ?? 0.0;
-      final condition = getValue('Wx');
+      final dataset = json['records']['Locations'][0];
+      final locations = dataset['Location'];
       
+      if (locations == null) throw Exception('Location list is null');
+
+      final locationList = locations as List;
+      // Debug: Log all found locations
+      final names = locationList.map((l) => l['LocationName']).toList();
+      LogService.info('Available Locations: $names', source: 'WeatherService');
+
+      final locationData = locationList.firstWhere(
+        (loc) => loc['LocationName'] == _targetLocation,
+        orElse: () => null,
+      );
+
+      if (locationData == null) {
+        throw Exception('Location "$_targetLocation" not found in response');
+      }
+
+      final elements = locationData['WeatherElement'] as List?;
+      if (elements == null) throw Exception('Weather elements missing');
+
+      // Helper to find value from specific element name and key
+      String getValue({required String name, required String key}) {
+        final el = elements.firstWhere(
+            (e) => e['ElementName'] == name,
+            orElse: () => null);
+        
+        if (el == null) return '';
+
+        final timeSegments = el['Time'] as List?;
+        if (timeSegments == null || timeSegments.isEmpty) {
+          return '';
+        }
+
+        // Use the first available time block
+        final firstBlock = timeSegments[0];
+        final elementValues = firstBlock['ElementValue'] as List?;
+        
+        if (elementValues == null || elementValues.isEmpty) return '';
+
+        final valMap = elementValues[0];
+        return valMap[key]?.toString() ?? '';
+      }
+
+      // Map API fields to Model
+      // T -> 平均溫度 -> Temperature
+      // RH -> 平均相對濕度 -> RelativeHumidity
+      // PoP12h -> 12小時降雨機率 -> ProbabilityOfPrecipitation
+      // WS -> 風速 -> WindSpeed
+      // Wx -> 天氣現象 -> Weather
+      
+      final tempStr = getValue(name: '平均溫度', key: 'Temperature');
+      final humStr = getValue(name: '平均相對濕度', key: 'RelativeHumidity');
+      final popStr = getValue(name: '12小時降雨機率', key: 'ProbabilityOfPrecipitation');
+      final wsStr = getValue(name: '風速', key: 'WindSpeed');
+      final wxStr = getValue(name: '天氣現象', key: 'Weather');
+
+      final temp = double.tryParse(tempStr) ?? 0.0;
+      final humidity = double.tryParse(humStr) ?? 0.0;
+      final pop = int.tryParse(popStr) ?? 0;
+      final windSpeed = double.tryParse(wsStr) ?? 0.0;
+      // Handle the case where PoP might be "-"
+      final safePop = popStr == '-' ? 0 : pop;
+
       // Calculate sun times locally for Jiaming Lake (approx 23.29, 121.03)
-      // This is dynamic based on DATE.
       final now = DateTime.now();
       final sunTimes = _calculateSunTimes(now, 23.29, 121.03);
 
       final weather = WeatherData(
         temperature: temp,
         humidity: humidity,
-        rainProbability: pop,
+        rainProbability: safePop,
         windSpeed: windSpeed,
-        condition: condition,
+        condition: wxStr,
         sunrise: sunTimes['sunrise']!,
         sunset: sunTimes['sunset']!,
         timestamp: DateTime.now(),
@@ -114,6 +158,9 @@ class WeatherService {
       return weather;
     } catch (e) {
       LogService.error('Parse Error: $e', source: 'WeatherService');
+      if (json['records'] != null) {
+         // Debug partial keys if needed
+      }
       throw Exception('Failed to parse weather data');
     }
   }
