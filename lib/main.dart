@@ -284,8 +284,8 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       opacityShadow: 0.8,
       // 關閉呼吸動畫
       pulseEnable: false,
-      // 調整轉場時間 (移除縮小動畫以達成平滑移動)
-      focusAnimationDuration: const Duration(milliseconds: 300),
+      // 調整轉場時間 (移除縮小動畫以達成平滑移動，拉長聚焦時間增強滑動感)
+      focusAnimationDuration: const Duration(milliseconds: 800),
       unFocusAnimationDuration: Duration.zero,
       onFinish: () {
         context.read<SettingsProvider>().completeOnboarding();

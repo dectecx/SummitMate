@@ -18,6 +18,7 @@ class TutorialService {
         identify: "Target 1",
         keyTarget: keyTabItinerary,
         alignSkip: Alignment.topRight,
+        shape: ShapeLightFocus.Circle, // 強制圓形以達平滑移動效果
         contents: [
           TargetContent(
             align: ContentAlign.top,
@@ -48,6 +49,7 @@ class TutorialService {
         identify: "Target 2",
         keyTarget: keyBtnEdit,
         alignSkip: Alignment.bottomLeft,
+        shape: ShapeLightFocus.Circle,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
@@ -78,6 +80,7 @@ class TutorialService {
         identify: "Target 3",
         keyTarget: keyBtnSync,
         alignSkip: Alignment.bottomLeft,
+        shape: ShapeLightFocus.Circle,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
@@ -108,6 +111,7 @@ class TutorialService {
         identify: "Target 4",
         keyTarget: keyTabMessage,
         alignSkip: Alignment.topRight,
+        shape: ShapeLightFocus.Circle,
         contents: [
           TargetContent(
             align: ContentAlign.top,
@@ -138,6 +142,7 @@ class TutorialService {
         identify: "Target 6",
         keyTarget: keyTabGear,
         alignSkip: Alignment.topRight,
+        shape: ShapeLightFocus.Circle,
         contents: [
           TargetContent(
             align: ContentAlign.top,
@@ -167,7 +172,8 @@ class TutorialService {
       TargetFocus(
         identify: "Target 7",
         keyTarget: keyTabInfo,
-        alignSkip: Alignment.topRight,
+        alignSkip: Alignment.topLeft,
+        shape: ShapeLightFocus.Circle,
         contents: [
           TargetContent(
             align: ContentAlign.top,
