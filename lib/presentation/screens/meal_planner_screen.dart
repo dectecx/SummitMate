@@ -113,9 +113,33 @@ class MealPlannerScreen extends StatelessWidget {
                 subtitle: Text('${item.weight.toStringAsFixed(0)}g / ${item.calories}kcal'),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                  onPressed: () => provider.removeMealItem(day, type, item.id),
+                  onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
                 ),
               )).toList(),
+      ),
+    );
+  }
+
+  void _confirmRemoveMeal(BuildContext context, MealProvider provider, String day, MealType type, String itemId, String itemName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('刪除糧食'),
+        content: Text('確定要刪除「$itemName」嗎？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              provider.removeMealItem(day, type, itemId);
+              Navigator.pop(context);
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
       ),
     );
   }
