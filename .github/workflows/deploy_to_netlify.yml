@@ -22,6 +22,7 @@ jobs:
       - name: 🔑 Create .env.prod
         run: |
           echo "GAS_BASE_URL=${{ secrets.GAS_BASE_URL }}" > .env.prod
+          echo "CWA_API_KEY=${{ secrets.CWA_API_KEY }}" >> .env.prod
 
       - name: 📦 Install Dependencies
         run: flutter pub get
