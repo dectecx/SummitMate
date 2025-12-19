@@ -50,16 +50,65 @@ exports.handler = async function(event, context) {
         }
     }
 
-    const data = await response.text();
+    // [Critical Fix for 6MB Limit] 
+    // Filter data Server-Side based on client request.
+    // The client sends ?locationName=...
+    // If missing, default to "向陽山" (Xiangyang Mountain) as a fallback.
+    const targetLocationName = event.queryStringParameters.locationName || "向陽山";
     
+    // Navigate the JSON structure: cwaopendata -> dataset -> locations -> location[]
+    if (jsonData?.cwaopendata?.dataset?.locations?.location) {
+      const locations = jsonData.cwaopendata.dataset.locations.location;
+      
+      // Find the specific location
+      const targetLoc = locations.find(l => l.locationName === targetLocationName);
+
+      if (targetLoc) {
+        // Construct minimized response
+        const minimizedData = {
+          cwaopendata: {
+            dataset: {
+              locations: {
+                location: [targetLoc]
+              }
+            }
+          }
+        };
+        
+        console.log(`Filtered data for ${targetLocationName}. Size reduced.`);
+        
+        return {
+          statusCode: 200,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(minimizedData)
+        };
+      } else {
+         console.warn(`Location ${targetLocationName} not found in API response.`);
+         // Optional: Return 404 or empty structure? 
+         // For now, let it fall through to original (which implies failure if too big)
+         // or better, return an empty friendly response to avoid 502 crash
+         return {
+             statusCode: 404, // Not Found
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({ error: `Location '${targetLocationName}' not found in weather data.` })
+         };
+      }
+    }
+    
+    // Fallback: If structure doesn't match or location not found, return original
+    // (This will likely fail with 502 again if too big, but it's the only option)
     return {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json"
       },
-      body: data
+      body: jsonText
     };
+
   } catch (error) {
     console.error("Fetch Error:", error);
     return {

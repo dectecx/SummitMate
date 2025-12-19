@@ -64,7 +64,7 @@ class WeatherService {
   Future<WeatherData> _fetchHikingWeather(String locationName) async {
     final baseUrl = '${EnvConfig.cwaApiHost}/fileapi/v1/opendataapi/F-B0053-033';
 
-    final url = Uri.parse('$baseUrl?Authorization=$_apiKey&downloadType=WEB&format=JSON');
+    final url = Uri.parse('$baseUrl?Authorization=$_apiKey&downloadType=WEB&format=JSON&locationName=$locationName');
 
     LogService.info('Fetching hiking weather: $locationName (Host: ${EnvConfig.cwaApiHost})', source: 'WeatherService');
 
