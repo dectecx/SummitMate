@@ -1494,7 +1494,7 @@ class _InfoTabState extends State<_InfoTab> {
             fit: StackFit.expand,
             children: [
               Image.asset(
-                'assets/images/jiaming_lake.png',
+                'assets/images/jiaming_lake.jpg',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(color: Colors.grey),
               ),
