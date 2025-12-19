@@ -1471,8 +1471,16 @@ class _GearTab extends StatelessWidget {
 }
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
-class _InfoTab extends StatelessWidget {
+class _InfoTab extends StatefulWidget {
   const _InfoTab({super.key});
+
+  @override
+  State<_InfoTab> createState() => _InfoTabState();
+}
+
+class _InfoTabState extends State<_InfoTab> {
+  bool _isElevationExpanded = false;
+  bool _isTimeMapExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1490,7 +1498,7 @@ class _InfoTab extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(color: Colors.grey),
               ),
-              // 漸層遮罩，讓文字更清晰 (Optional)
+              // 漸層遮罩
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1535,13 +1543,111 @@ class _InfoTab extends StatelessWidget {
                       Row(
                         children: [
                           _buildStatItem(context, Icons.straighten, '全長', '13 km'),
-                          _buildStatItem(context, Icons.landscape, '海拔', '2320~3603m'),
+                          _buildStatItem(
+                            context,
+                            Icons.landscape,
+                            '海拔 (點擊展開高度圖)',
+                            '2320~3603m',
+                            onTap: () => setState(() => _isElevationExpanded = !_isElevationExpanded),
+                            highlight: _isElevationExpanded,
+                          ),
+                          _buildStatItem(
+                            context,
+                            Icons.timer,
+                            '路程時間',
+                            '點擊查看參考圖',
+                            onTap: () => setState(() => _isTimeMapExpanded = !_isTimeMapExpanded),
+                            highlight: _isTimeMapExpanded,
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+
+                      // 高度圖 (可縮合)
+                      AnimatedCrossFade(
+                        firstChild: const SizedBox(height: 0, width: double.infinity),
+                        secondChild: Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '📏 高度變化圖',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset('assets/images/elevation_profile.png', fit: BoxFit.contain),
+                              ),
+                            ],
+                          ),
+                        ),
+                        crossFadeState: _isElevationExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                        duration: const Duration(milliseconds: 300),
+                      ),
+
+                      // 路程時間圖 (可縮合)
+                      AnimatedCrossFade(
+                        firstChild: const SizedBox(height: 0, width: double.infinity),
+                        secondChild: Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '⏱️ 路程時間參考',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                              ),
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset('assets/images/trail_time_map.png', fit: BoxFit.contain),
+                              ),
+                            ],
+                          ),
+                        ),
+                        crossFadeState: _isTimeMapExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                        duration: const Duration(milliseconds: 300),
+                      ),
+
+                      const SizedBox(height: 16),
                       const Text(
                         '嘉明湖國家步道為中央山脈南二段的一部分，穿越台灣鐵杉林、高山深谷與箭竹草原，以高山寒原與藍寶石般的嘉明湖聞名。',
-                        style: TextStyle(height: 1.4),
+                        style: TextStyle(height: 1.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _launchUrl(ExternalLinks.permitUrl),
+                              icon: const Icon(Icons.assignment_turned_in),
+                              label: const Text('申請入山證'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _launchUrl(ExternalLinks.cwaUrl),
+                              icon: const Icon(Icons.wb_sunny),
+                              label: const Text('氣象預報'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () =>
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapViewerScreen())),
+                          icon: const Icon(Icons.map),
+                          label: const Text('查看步道導覽地圖'),
+                        ),
                       ),
                     ],
                   ),
@@ -1549,33 +1655,17 @@ class _InfoTab extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
-              // 快捷按鈕 (入山準備)
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => _launchUrl(ExternalLinks.permitUrl),
-                      icon: const Icon(Icons.assignment_turned_in),
-                      label: const Text('申請入山證'),
-                      style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _launchUrl(ExternalLinks.cabinUrl),
-                      icon: const Icon(Icons.home_work),
-                      label: const Text('山屋預約'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
               // 外部資訊連結
               Card(
                 child: Column(
                   children: [
+                    ListTile(
+                      leading: const Icon(Icons.home_work, color: Colors.brown),
+                      title: const Text('山屋預約申請'),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.cabinUrl),
+                    ),
+                    const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.public, color: Colors.indigo),
                       title: const Text('台灣山林悠遊網 (官網)'),
@@ -1608,7 +1698,7 @@ class _InfoTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 電話訊號資訊 (保留原有)
+              // 電話訊號資訊
               Card(
                 child: ExpansionTile(
                   leading: const Icon(Icons.signal_cellular_alt),
@@ -1641,20 +1731,56 @@ class _InfoTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildStatItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    VoidCallback? onTap,
+    bool highlight = false,
+  }) {
     return Expanded(
-      child: Row(
-        children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: highlight
+              ? BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
+                )
+              : null,
+          child: Row(
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Icon(icon, size: 20, color: highlight ? Theme.of(context).colorScheme.primary : Colors.grey),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: highlight ? Theme.of(context).colorScheme.primary : Colors.grey,
+                      ),
+                    ),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: highlight ? Theme.of(context).colorScheme.primary : null,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

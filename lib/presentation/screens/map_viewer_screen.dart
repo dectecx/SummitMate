@@ -15,7 +15,7 @@ class MapViewerScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: PhotoView(
-        imageProvider: const AssetImage('assets/images/trail_map.jpg'),
+        imageProvider: const AssetImage('assets/images/trail_map.png'),
         minScale: PhotoViewComputedScale.contained,
         maxScale: PhotoViewComputedScale.covered * 3.0,
         backgroundDecoration: const BoxDecoration(color: Colors.black),
