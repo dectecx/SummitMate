@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/cwa-proxy/*"
+  to = "https://opendata.cwa.gov.tw/*"
+  status = 200
+  force = true
