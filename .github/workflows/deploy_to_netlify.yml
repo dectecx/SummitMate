@@ -38,18 +38,12 @@ jobs:
       - name:  Copy Netlify Config
         run: cp netlify.toml build/web/netlify.toml
 
-      - name: 🚀 Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        timeout-minutes: 5
-        with:
-          publish-dir: './build/web'
-          functions-dir: './netlify/functions'
-          production-branch: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"
-          enable-pull-request-comment: false
-          enable-commit-comment: true
-          overwrites-pull-request-comment: true
+      - name: � Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: 🚀 Deploy to Netlify (CLI)
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          netlify deploy --dir=build/web --functions=netlify/functions --prod --message "Deploy from GitHub Actions: ${{ github.event.head_commit.message }}"
