@@ -101,37 +101,39 @@ class WeatherService {
         return el?['Time'] as List? ?? [];
       }
 
-      // 3. Extract Current Weather (Use first time block of '平均溫度')
-      // Map API fields:
-      // 平均溫度 -> Temperature
-      // 平均相對濕度 -> Humidity
-      // 12小時降雨機率 -> RainProbability
-      // 風速 -> WindSpeed
-      // 天氣現象 -> Condition (Wx)
-      
+      // Helper to get value key based on element name
+      String getKeyForElement(String name) {
+        if (name == '平均溫度') return 'Temperature';
+        if (name == '平均相對濕度') return 'RelativeHumidity';
+        if (name == '12小時降雨機率') return 'ProbabilityOfPrecipitation';
+        if (name == '風速') return 'WindSpeed';
+        if (name == '天氣現象') return 'Weather';
+        if (name == '最高溫度') return 'MaxTemperature';
+        if (name == '最低溫度') return 'MinTemperature';
+        return 'value';
+      }
+
+      // 3. Extract Current Weather
       String getValue(String elemName, {int index = 0}) {
          final list = getTimeList(elemName);
          if (list.isEmpty || list.length <= index) return '';
-         final valMap = list[index]['ElementValue'] as List?;
-         if (valMap == null || valMap.isEmpty) return '';
-         return valMap[0]['value']?.toString() ?? ''; // Usually 'value' or 'Weather'
+         final valMap = list[index]['ElementValue']; // Is Map, not List
+         if (valMap is! Map) return '';
+         
+         final key = getKeyForElement(elemName);
+         return valMap[key]?.toString() ?? '';
       }
       
-      // Note: '平均相對濕度' might have a space? Based on debug: '平均相 對濕度'
-      // Try fuzzy match if exact fails can be hard. Let's assume standard '平均相對濕度'.
-      
       final temp = double.tryParse(getValue('平均溫度')) ?? 0.0;
-      final humidity = double.tryParse(getValue('平均相對濕度')) ?? 0.0; // Verify key name later if 0
+      final humidity = double.tryParse(getValue('平均相對濕度')) ?? 0.0;
       final pop = int.tryParse(getValue('12小時降雨機率')) ?? 0;
       final windSpeed = double.tryParse(getValue('風速')) ?? 0.0;
-      final wx = getValue('天氣現象'); // Often "多雲" etc.
+      final wx = getValue('天氣現象'); 
 
       // 4. Build 7-Day Forecast
-      // Group by Date (YYYY-MM-DD)
-      // Elements needed: 最高溫度, 最低溫度, 天氣現象, 12小時降雨機率
       final dailyMap = <String, Map<String, dynamic>>{};
 
-      // Process '天氣現象' (Wx) to determine Day/Night condition
+      // Process '天氣現象' (Wx)
       final wxList = getTimeList('天氣現象');
       for (var item in wxList) {
         final start = DateTime.parse(item['StartTime']);
@@ -145,8 +147,9 @@ class WeatherService {
           'pop': 0
         });
 
-        final val = item['ElementValue'][0]['value'].toString();
-        // Crude Day/Night check: 06:00 ~ 18:00 is Day
+        final valMap = item['ElementValue'];
+        final val = (valMap is Map ? valMap['Weather'] : '').toString();
+
         if (start.hour >= 6 && start.hour < 18) {
           dailyMap[dateKey]!['dayCondition'] = val;
         } else {
@@ -162,7 +165,11 @@ class WeatherService {
           final dateKey = "${start.year}-${start.month.toString().padLeft(2,'0')}-${start.day.toString().padLeft(2,'0')}";
           if (!dailyMap.containsKey(dateKey)) continue;
 
-          final val = double.tryParse(item['ElementValue'][0]['value'].toString()) ?? 0.0;
+          final valMap = item['ElementValue'];
+          final key = getKeyForElement(elName);
+          final valStr = (valMap is Map ? valMap[key] : '0').toString();
+          final val = double.tryParse(valStr) ?? 0.0;
+
           if (isMax) {
              if (val > dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
           } else {
@@ -173,15 +180,17 @@ class WeatherService {
       processTemp('最高溫度', 'maxTemp', true);
       processTemp('最低溫度', 'minTemp', false);
 
-      // Process PoP (Take max for the day)
+      // Process PoP
       final popList = getTimeList('12小時降雨機率');
       for (var item in popList) {
           final start = DateTime.parse(item['StartTime']);
           final dateKey = "${start.year}-${start.month.toString().padLeft(2,'0')}-${start.day.toString().padLeft(2,'0')}";
           if (!dailyMap.containsKey(dateKey)) continue;
           
-          final valStr = item['ElementValue'][0]['value'].toString();
-          final val = valStr == ' ' ? 0 : (int.tryParse(valStr) ?? 0);
+          final valMap = item['ElementValue'];
+          final valStr = (valMap is Map ? valMap['ProbabilityOfPrecipitation'] : '0').toString(); // Space check?
+          final val = (valStr == ' ' || valStr.isEmpty) ? 0 : (int.tryParse(valStr) ?? 0);
+          
           if (val > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = val;
       }
 
