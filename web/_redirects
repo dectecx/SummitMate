@@ -1,5 +1,0 @@
-# Proxy CWA API requests
-/cwa-proxy/*  https://opendata.cwa.gov.tw/:splat  200!
-
-# SPA Fallback (handle client-side routing)
-/*  /index.html  200
