@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/meal_item.dart';
@@ -21,10 +20,8 @@ class MealPlannerScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.info_outline),
                   tooltip: '參考資訊',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const FoodReferenceScreen()),
-                  ),
+                  onPressed: () =>
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const FoodReferenceScreen())),
                 ),
               ],
               bottom: TabBar(
@@ -35,11 +32,7 @@ class MealPlannerScreen extends StatelessWidget {
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.white60,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                labelStyle: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  letterSpacing: 1.0,
-                ),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
                 tabs: provider.dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
               ),
             ),
@@ -49,7 +42,9 @@ class MealPlannerScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 80),
                   children: [
                     _buildSummaryCard(context, plan),
-                    ...MealType.values.map((type) => _buildMealSection(context, provider, plan.day, type, plan.meals[type] ?? [])),
+                    ...MealType.values.map(
+                      (type) => _buildMealSection(context, provider, plan.day, type, plan.meals[type] ?? []),
+                    ),
                   ],
                 );
               }).toList(),
@@ -72,7 +67,10 @@ class MealPlannerScreen extends StatelessWidget {
             Column(
               children: [
                 const Text('總重量', style: TextStyle(fontSize: 12)),
-                Text('${plan.totalWeight.toStringAsFixed(0)} g', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  '${plan.totalWeight.toStringAsFixed(0)} g',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ],
             ),
             Column(
@@ -87,7 +85,13 @@ class MealPlannerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMealSection(BuildContext context, MealProvider provider, String day, MealType type, List<MealItem> items) {
+  Widget _buildMealSection(
+    BuildContext context,
+    MealProvider provider,
+    String day,
+    MealType type,
+    List<MealItem> items,
+  ) {
     if (items.isEmpty && type != MealType.breakfast && type != MealType.lunch && type != MealType.dinner) {
       // 隱藏非主要且空的餐別，這裡選擇顯示所有以方便規劃，或者只摺疊
       // 策略：顯示 Header，若空則顯示 placeholder 鼓勵新增
@@ -99,38 +103,46 @@ class MealPlannerScreen extends StatelessWidget {
         initiallyExpanded: true,
         leading: Icon(_getMealIcon(type), color: _getMealColor(type)),
         title: Text(type.label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: items.isNotEmpty 
-            ? Text('${items.length} 項 • ${items.fold<double>(0, (sum, i) => sum + i.weight).toStringAsFixed(0)}g') 
+        subtitle: items.isNotEmpty
+            ? Text('${items.length} 項 • ${items.fold<double>(0, (sum, i) => sum + i.weight).toStringAsFixed(0)}g')
             : const Text('尚未規劃', style: TextStyle(color: Colors.grey, fontSize: 12)),
         trailing: IconButton(
           icon: const Icon(Icons.add_circle_outline),
           onPressed: () => _showAddMealDialog(context, provider, day, type),
         ),
-        children: items.isEmpty 
-            ? [const SizedBox(height: 10)] 
-            : items.map((item) => ListTile(
-                title: Text(item.name),
-                subtitle: Text('${item.weight.toStringAsFixed(0)}g / ${item.calories}kcal'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                  onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
-                ),
-              )).toList(),
+        children: items.isEmpty
+            ? [const SizedBox(height: 10)]
+            : items
+                  .map(
+                    (item) => ListTile(
+                      title: Text(item.name),
+                      subtitle: Text('${item.weight.toStringAsFixed(0)}g / ${item.calories}kcal'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
+                        onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
+                      ),
+                    ),
+                  )
+                  .toList(),
       ),
     );
   }
 
-  void _confirmRemoveMeal(BuildContext context, MealProvider provider, String day, MealType type, String itemId, String itemName) {
+  void _confirmRemoveMeal(
+    BuildContext context,
+    MealProvider provider,
+    String day,
+    MealType type,
+    String itemId,
+    String itemName,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('刪除糧食'),
         content: Text('確定要刪除「$itemName」嗎？'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () {
               provider.removeMealItem(day, type, itemId);
@@ -204,25 +216,39 @@ class MealPlannerScreen extends StatelessWidget {
 
   IconData _getMealIcon(MealType type) {
     switch (type) {
-      case MealType.preBreakfast: return Icons.wb_twilight;
-      case MealType.breakfast: return Icons.wb_sunny;
-      case MealType.lunch: return Icons.lunch_dining;
-      case MealType.teatime: return Icons.coffee;
-      case MealType.dinner: return Icons.dinner_dining;
-      case MealType.action: return Icons.directions_walk;
-      case MealType.emergency: return Icons.medical_services;
+      case MealType.preBreakfast:
+        return Icons.wb_twilight;
+      case MealType.breakfast:
+        return Icons.wb_sunny;
+      case MealType.lunch:
+        return Icons.lunch_dining;
+      case MealType.teatime:
+        return Icons.coffee;
+      case MealType.dinner:
+        return Icons.dinner_dining;
+      case MealType.action:
+        return Icons.directions_walk;
+      case MealType.emergency:
+        return Icons.medical_services;
     }
   }
 
   Color _getMealColor(MealType type) {
     switch (type) {
-      case MealType.preBreakfast: return Colors.indigo;
-      case MealType.breakfast: return Colors.orange;
-      case MealType.lunch: return Colors.green;
-      case MealType.teatime: return Colors.brown;
-      case MealType.dinner: return Colors.deepPurple;
-      case MealType.action: return Colors.blue;
-      case MealType.emergency: return Colors.red;
+      case MealType.preBreakfast:
+        return Colors.indigo;
+      case MealType.breakfast:
+        return Colors.orange;
+      case MealType.lunch:
+        return Colors.green;
+      case MealType.teatime:
+        return Colors.brown;
+      case MealType.dinner:
+        return Colors.deepPurple;
+      case MealType.action:
+        return Colors.blue;
+      case MealType.emergency:
+        return Colors.red;
     }
   }
 }

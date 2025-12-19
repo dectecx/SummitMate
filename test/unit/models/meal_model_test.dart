@@ -1,16 +1,10 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/data/models/meal_item.dart';
 
 void main() {
   group('MealItem Tests', () {
     test('should create MealItem correctly', () {
-      final item = MealItem(
-        id: '1',
-        name: 'Rice',
-        weight: 100,
-        calories: 350,
-      );
+      final item = MealItem(id: '1', name: 'Rice', weight: 100, calories: 350);
 
       expect(item.id, '1');
       expect(item.name, 'Rice');
@@ -20,12 +14,7 @@ void main() {
     });
 
     test('should copyWith correctly', () {
-      final item = MealItem(
-        id: '1',
-        name: 'Rice',
-        weight: 100,
-        calories: 350,
-      );
+      final item = MealItem(id: '1', name: 'Rice', weight: 100, calories: 350);
 
       final copy = item.copyWith(quantity: 2, name: 'Big Rice');
 

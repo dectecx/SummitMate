@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 /// Toast 訊息服務
 /// 用於顯示成功、失敗、提示等訊息
 class ToastService {
-  static final GlobalKey<ScaffoldMessengerState> messengerKey =
-      GlobalKey<ScaffoldMessengerState>();
+  static final GlobalKey<ScaffoldMessengerState> messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   /// 顯示成功訊息
   static void success(String message) {
@@ -39,10 +38,7 @@ class ToastService {
             Icon(icon, color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.white),
-              ),
+              child: Text(message, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),

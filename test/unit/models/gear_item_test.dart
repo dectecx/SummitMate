@@ -13,12 +13,7 @@ void main() {
     });
 
     test('should create with named parameters', () {
-      final item = GearItem(
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-        isChecked: false,
-      );
+      final item = GearItem(name: '睡袋', weight: 1200, category: 'Sleep', isChecked: false);
 
       expect(item.name, equals('睡袋'));
       expect(item.weight, equals(1200));
@@ -52,23 +47,14 @@ void main() {
     });
 
     test('should calculate total weight for multiple items', () {
-      final items = [
-        GearItem(weight: 1200),
-        GearItem(weight: 800),
-        GearItem(weight: 500),
-      ];
+      final items = [GearItem(weight: 1200), GearItem(weight: 800), GearItem(weight: 500)];
 
       final total = items.fold<double>(0, (sum, item) => sum + item.weight);
       expect(total, equals(2500));
     });
 
     test('should convert to/from JSON', () {
-      final item = GearItem(
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-        isChecked: true,
-      );
+      final item = GearItem(name: '睡袋', weight: 1200, category: 'Sleep', isChecked: true);
 
       final json = item.toJson();
       final restored = GearItem.fromJson(json);

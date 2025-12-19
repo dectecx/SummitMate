@@ -12,11 +12,7 @@ void main() {
         MaterialApp(
           title: 'SummitMate Test',
           theme: ThemeData.dark(),
-          home: const Scaffold(
-            body: Center(
-              child: Text('SummitMate'),
-            ),
-          ),
+          home: const Scaffold(body: Center(child: Text('SummitMate'))),
         ),
       );
 
@@ -36,18 +32,9 @@ void main() {
                   currentIndex: selectedIndex,
                   onTap: (index) => setState(() => selectedIndex = index),
                   items: const [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.schedule),
-                      label: '行程',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.forum),
-                      label: '協作',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.build),
-                      label: '工具',
-                    ),
+                    BottomNavigationBarItem(icon: Icon(Icons.schedule), label: '行程'),
+                    BottomNavigationBarItem(icon: Icon(Icons.forum), label: '協作'),
+                    BottomNavigationBarItem(icon: Icon(Icons.build), label: '工具'),
                   ],
                 ),
               );
@@ -78,16 +65,9 @@ void main() {
                 children: [
                   const Text('歡迎使用 SummitMate'),
                   const SizedBox(height: 16),
-                  const TextField(
-                    decoration: InputDecoration(
-                      hintText: '你的暱稱',
-                    ),
-                  ),
+                  const TextField(decoration: InputDecoration(hintText: '你的暱稱')),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('開始使用'),
-                  ),
+                  ElevatedButton(onPressed: () {}, child: const Text('開始使用')),
                 ],
               ),
             ),

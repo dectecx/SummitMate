@@ -26,9 +26,7 @@ class MessageProvider extends ChangeNotifier {
   /// 同步完成回調 (供 UI 調用以更新 lastSyncTime)
   void Function(DateTime)? onSyncComplete;
 
-  MessageProvider()
-      : _repository = getIt<MessageRepository>(),
-        _syncService = getIt<SyncService>() {
+  MessageProvider() : _repository = getIt<MessageRepository>(), _syncService = getIt<SyncService>() {
     _loadMessages();
   }
 
@@ -36,10 +34,9 @@ class MessageProvider extends ChangeNotifier {
   List<Message> get allMessages => _allMessages;
 
   /// 當前分類的主留言 (非回覆)
-  List<Message> get currentCategoryMessages => _allMessages
-      .where((msg) => msg.category == _selectedCategory && !msg.isReply)
-      .toList()
-    ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  List<Message> get currentCategoryMessages =>
+      _allMessages.where((msg) => msg.category == _selectedCategory && !msg.isReply).toList()
+        ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
   /// 當前選擇的分類
   String get selectedCategory => _selectedCategory;
@@ -80,9 +77,7 @@ class MessageProvider extends ChangeNotifier {
 
   /// 取得留言的回覆
   List<Message> getReplies(String parentUuid) {
-    return _allMessages
-        .where((msg) => msg.parentId == parentUuid)
-        .toList()
+    return _allMessages.where((msg) => msg.parentId == parentUuid).toList()
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
   }
 
@@ -135,7 +130,9 @@ class MessageProvider extends ChangeNotifier {
       // 使用 syncAll 同時同步行程和留言
       final result = await _syncService.syncAll();
 
-      debugPrint('📡 同步結果: success=${result.success}, itinerary=${result.itinerarySynced}, messages=${result.messagesSynced}');
+      debugPrint(
+        '📡 同步結果: success=${result.success}, itinerary=${result.itinerarySynced}, messages=${result.messagesSynced}',
+      );
       if (result.errors.isNotEmpty) {
         debugPrint('📡 同步錯誤: ${result.errors}');
       }

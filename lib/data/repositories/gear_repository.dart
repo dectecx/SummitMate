@@ -67,19 +67,17 @@ class GearRepository {
 
   /// 計算已打包重量 (克)
   double getCheckedWeight() {
-    return box.values
-        .where((item) => item.isChecked)
-        .fold<double>(0.0, (sum, item) => sum + item.weight);
+    return box.values.where((item) => item.isChecked).fold<double>(0.0, (sum, item) => sum + item.weight);
   }
 
   /// 依分類統計重量
   Map<String, double> getWeightByCategory() {
     final result = <String, double>{};
-    
+
     for (final item in box.values) {
       result[item.category] = (result[item.category] ?? 0) + item.weight;
     }
-    
+
     return result;
   }
 

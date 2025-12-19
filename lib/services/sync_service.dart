@@ -19,10 +19,10 @@ class SyncService {
     required ItineraryRepository itineraryRepo,
     required MessageRepository messageRepo,
     required SettingsRepository settingsRepo,
-  })  : _sheetsService = sheetsService,
-        _itineraryRepo = itineraryRepo,
-        _messageRepo = messageRepo,
-        _settingsRepo = settingsRepo;
+  }) : _sheetsService = sheetsService,
+       _itineraryRepo = itineraryRepo,
+       _messageRepo = messageRepo,
+       _settingsRepo = settingsRepo;
 
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
@@ -73,26 +73,14 @@ class SyncService {
     final fetchResult = await _sheetsService.fetchAll();
 
     if (!fetchResult.success) {
-      return SyncResult(
-        success: false,
-        errors: [fetchResult.errorMessage ?? '網路連線失敗'],
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
     }
 
     try {
       await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
-      return SyncResult(
-        success: true,
-        itinerarySynced: true,
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: true, itinerarySynced: true, syncedAt: DateTime.now());
     } catch (e) {
-      return SyncResult(
-        success: false,
-        errors: ['行程同步失敗: $e'],
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
     }
   }
 
@@ -103,26 +91,14 @@ class SyncService {
     final fetchResult = await _sheetsService.fetchAll();
 
     if (!fetchResult.success) {
-      return SyncResult(
-        success: false,
-        errors: [fetchResult.errorMessage ?? '網路連線失敗'],
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
     }
 
     try {
       await _syncMessages(fetchResult.messages);
-      return SyncResult(
-        success: true,
-        messagesSynced: true,
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: true, messagesSynced: true, syncedAt: DateTime.now());
     } catch (e) {
-      return SyncResult(
-        success: false,
-        errors: ['留言同步失敗: $e'],
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());
     }
   }
 
@@ -167,11 +143,7 @@ class SyncService {
   }
 
   SyncResult _offlineSyncResult() {
-    return SyncResult(
-      success: false,
-      errors: ['目前為離線模式，無法同步'],
-      syncedAt: DateTime.now(),
-    );
+    return SyncResult(success: false, errors: ['目前為離線模式，無法同步'], syncedAt: DateTime.now());
   }
 
   ApiResult returnApiResult({required bool success, String? message}) {
@@ -200,6 +172,7 @@ class SyncService {
     // 3. 從雲端同步到本地 (會自動處理新增/刪除)
     await _messageRepo.syncFromCloud(cloudMessages);
   }
+
   /// 檢查行程衝突
   /// 回傳 true 表示有衝突 (雲端資料與本地不一致)
   Future<bool> checkItineraryConflict() async {

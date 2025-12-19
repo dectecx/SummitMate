@@ -13,9 +13,13 @@ import 'package:summitmate/services/log_service.dart';
 
 // Mocks
 class MockGoogleSheetsService extends Mock implements GoogleSheetsService {}
+
 class MockItineraryRepository extends Mock implements ItineraryRepository {}
+
 class MockMessageRepository extends Mock implements MessageRepository {}
+
 class MockSettingsRepository extends Mock implements SettingsRepository {}
+
 class MockSettings extends Mock implements Settings {}
 
 void main() {
@@ -45,13 +49,9 @@ void main() {
     );
 
     // Register fallback values
-    registerFallbackValue(Message(
-      uuid: 'fallback',
-      user: 'user',
-      category: 'Misc',
-      content: 'content',
-      timestamp: DateTime.now(),
-    ));
+    registerFallbackValue(
+      Message(uuid: 'fallback', user: 'user', category: 'Misc', content: 'content', timestamp: DateTime.now()),
+    );
     // registerFallbackValue(Settings()); // HiveObject might be hard to instantiate directly without hive
   });
 
@@ -72,17 +72,15 @@ void main() {
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
       final cloudMessages = [
-        Message(uuid: '1', user: 'Cloud', category: 'Misc', content: 'A', timestamp: DateTime.now())
+        Message(uuid: '1', user: 'Cloud', category: 'Misc', content: 'A', timestamp: DateTime.now()),
       ];
       final cloudItinerary = [
-         ItineraryItem(day: 'D1', name: 'Start', estTime: '08:00', altitude: 2000, distance: 0, note: '')
+        ItineraryItem(day: 'D1', name: 'Start', estTime: '08:00', altitude: 2000, distance: 0, note: ''),
       ];
 
-      when(() => mockSheetsService.fetchAll()).thenAnswer((_) async => FetchAllResult(
-        success: true,
-        itinerary: cloudItinerary,
-        messages: cloudMessages,
-      ));
+      when(
+        () => mockSheetsService.fetchAll(),
+      ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: cloudItinerary, messages: cloudMessages));
 
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
@@ -100,13 +98,17 @@ void main() {
 
     test('syncAll should upload pending messages', () async {
       // Arrange
-      final pendingMsg = Message(uuid: 'pending', user: 'Local', category: 'Misc', content: 'B', timestamp: DateTime.now());
+      final pendingMsg = Message(
+        uuid: 'pending',
+        user: 'Local',
+        category: 'Misc',
+        content: 'B',
+        timestamp: DateTime.now(),
+      );
 
-      when(() => mockSheetsService.fetchAll()).thenAnswer((_) async => FetchAllResult(
-        success: true,
-        itinerary: [],
-        messages: [],
-      ));
+      when(
+        () => mockSheetsService.fetchAll(),
+      ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: [], messages: []));
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
 
       // Simulate one pending message
@@ -124,10 +126,9 @@ void main() {
 
     test('syncAll should handle fetch failure', () async {
       // Arrange
-      when(() => mockSheetsService.fetchAll()).thenAnswer((_) async => FetchAllResult(
-        success: false,
-        errorMessage: 'Network Error',
-      ));
+      when(
+        () => mockSheetsService.fetchAll(),
+      ).thenAnswer((_) async => FetchAllResult(success: false, errorMessage: 'Network Error'));
 
       // Act
       final result = await syncService.syncAll();

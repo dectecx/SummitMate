@@ -18,16 +18,10 @@ class EnvConfig {
   );
 
   // 是否為開發模式
-  static const bool isDev = String.fromEnvironment(
-    'ENVIRONMENT',
-    defaultValue: 'dev',
-  ) == 'dev';
+  static const bool isDev = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev') == 'dev';
 
   // 是否啟用 Debug Log
-  static const bool enableDebugLog = String.fromEnvironment(
-    'DEBUG_LOG',
-    defaultValue: 'false',
-  ) == 'true';
+  static const bool enableDebugLog = String.fromEnvironment('DEBUG_LOG', defaultValue: 'false') == 'true';
 
   /// 檢查必要的環境變數是否已設定
   static bool get isConfigured => gasBaseUrl.isNotEmpty;

@@ -73,9 +73,7 @@ class _HomeScreen extends StatelessWidget {
     return Consumer<SettingsProvider>(
       builder: (context, settings, child) {
         if (settings.isLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
         // 若尚未設定使用者名稱，顯示 Onboarding
@@ -102,10 +100,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
   bool _isSubmitting = false;
   String _selectedAvatar = '🐻';
 
-  final List<String> _avatars = [
-    '🐻', '🦊', '🦁', '🐯', '🐨',
-    '🐵', '🐧', '🦉', '🐺', '🐗',
-  ];
+  final List<String> _avatars = ['🐻', '🦊', '🦁', '🐯', '🐨', '🐵', '🐧', '🦉', '🐺', '🐗'];
 
   @override
   void dispose() {
@@ -137,15 +132,9 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                '歡迎使用 SummitMate',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              Text('歡迎使用 SummitMate', style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 8),
-              Text(
-                '請設定您的登山者形象',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
-              ),
+              Text('請設定您的登山者形象', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey)),
               const SizedBox(height: 32),
 
               // Avatar Preview & Selector
@@ -157,10 +146,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                   color: Theme.of(context).colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                 ),
-                child: Text(
-                  _selectedAvatar,
-                  style: const TextStyle(fontSize: 40),
-                ),
+                child: Text(_selectedAvatar, style: const TextStyle(fontSize: 40)),
               ),
               const SizedBox(height: 24),
 
@@ -179,14 +165,9 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
                       decoration: BoxDecoration(
                         color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected ? Colors.transparent : Colors.grey.shade300,
-                        ),
+                        border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade300),
                       ),
-                      child: Text(
-                        emoji,
-                        style: const TextStyle(fontSize: 24),
-                      ),
+                      child: Text(emoji, style: const TextStyle(fontSize: 24)),
                     ),
                   );
                 }).toList(),
@@ -277,10 +258,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             '這只需要一點點時間。',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('稍後'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('稍後')),
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -305,10 +283,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               appBar: AppBar(
                 title: const Text('SummitMate 山友'),
                 bottom: messageProvider.isSyncing
-                    ? const PreferredSize(
-                        preferredSize: Size.fromHeight(4.0),
-                        child: LinearProgressIndicator(),
-                      )
+                    ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
                     : null,
                 actions: [
                   // Tab 0: 行程編輯與地圖
@@ -329,10 +304,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                         icon: const Icon(Icons.map_outlined),
                         tooltip: '查看地圖',
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const MapViewerScreen()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const MapViewerScreen()));
                         },
                       ),
                   ],
@@ -359,10 +331,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               body: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
+                  return FadeTransition(opacity: animation, child: child);
                 },
                 child: _buildTabContent(_currentIndex),
               ),
@@ -376,26 +345,14 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   }
                 },
                 destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.schedule),
-                    selectedIcon: Icon(Icons.schedule),
-                    label: '行程',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.forum_outlined),
-                    selectedIcon: Icon(Icons.forum),
-                    label: '協作',
-                  ),
+                  NavigationDestination(icon: Icon(Icons.schedule), selectedIcon: Icon(Icons.schedule), label: '行程'),
+                  NavigationDestination(icon: Icon(Icons.forum_outlined), selectedIcon: Icon(Icons.forum), label: '協作'),
                   NavigationDestination(
                     icon: Icon(Icons.backpack_outlined),
                     selectedIcon: Icon(Icons.backpack),
                     label: '裝備',
                   ),
-                  NavigationDestination(
-                    icon: Icon(Icons.info_outline),
-                    selectedIcon: Icon(Icons.info),
-                    label: '資訊',
-                  ),
+                  NavigationDestination(icon: Icon(Icons.info_outline), selectedIcon: Icon(Icons.info), label: '資訊'),
                 ],
               ),
               floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
@@ -409,10 +366,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             // [Web Support] Responsive Wrapper
             // 在寬螢幕上限制最大寬度，置中顯示，維持手機版面比例
             return Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: scaffold,
-              ),
+              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: scaffold),
             );
           },
         );
@@ -457,7 +411,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   void _showSettingsDialog(BuildContext context) async {
     final settingsProvider = context.read<SettingsProvider>();
     final controller = TextEditingController(text: settingsProvider.username);
-    
+
     PackageInfo? packageInfo;
     try {
       packageInfo = await PackageInfo.fromPlatform();
@@ -511,9 +465,9 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   ),
                 ),
               ),
-              
+
               const Divider(height: 32),
-              
+
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
@@ -521,21 +475,19 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     const Icon(Icons.info_outline, size: 16, color: Colors.grey),
                     const SizedBox(width: 8),
                     Text(
-                      packageInfo != null 
-                        ? '版本 ${packageInfo.version} (${packageInfo.buildNumber})'
-                        : '版本資訊讀取中...',
+                      packageInfo != null ? '版本 ${packageInfo.version} (${packageInfo.buildNumber})' : '版本資訊讀取中...',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
-              
+
               Text(
                 '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -547,7 +499,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   label: const Text('查看日誌'),
                 ),
               ),
-              
+
               const SizedBox(height: 8),
               // 登出按鈕
               SizedBox(
@@ -569,7 +521,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                         ],
                       ),
                     );
-                    
+
                     if (confirm == true && context.mounted) {
                       Navigator.pop(context); // 關閉設定對話框
                       await settingsProvider.resetIdentity();
@@ -582,10 +534,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
             FilledButton(
               onPressed: () {
                 final newName = controller.text.trim();
@@ -602,17 +551,13 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     );
   }
 
-
   void _handleCloudUpload(BuildContext context, ItineraryProvider provider) async {
     // 檢查離線模式
     final settingsIsOffline = context.read<SettingsProvider>().isOfflineMode;
     if (settingsIsOffline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('⚠️ 目前為離線模式，無法上傳行程'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('⚠️ 目前為離線模式，無法上傳行程'), backgroundColor: Colors.orange));
       return;
     }
 
@@ -620,9 +565,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
     // 2. 檢查衝突
@@ -640,13 +583,10 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           content: const Text(
             '雲端上的行程資料與您目前的版本不同。\n\n'
             '若選擇「強制覆蓋」，雲端的資料將被您的版本完全取代。\n'
-            '確定要繼續嗎？'
+            '確定要繼續嗎？',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
             FilledButton(
               onPressed: () {
                 Navigator.pop(context); // 關閉 Dialog
@@ -666,10 +606,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           title: const Text('上傳行程'),
           content: const Text('確定將目前的行程計畫上傳至雲端嗎？此操作將覆寫雲端資料。'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -727,10 +664,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                         icon: const Icon(Icons.delete_outline, size: 18),
                         label: const Text('清除'),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
+                      IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
                     ],
                   ),
                 ],
@@ -842,9 +776,7 @@ class _ItineraryTab extends StatelessWidget {
                     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: item.isCheckedIn
-                            ? Colors.green
-                            : Theme.of(context).colorScheme.primary,
+                        backgroundColor: item.isCheckedIn ? Colors.green : Theme.of(context).colorScheme.primary,
                         child: item.isCheckedIn
                             ? const Icon(Icons.check, color: Colors.white)
                             : Text('${index + 1}', style: const TextStyle(color: Colors.white)),
@@ -857,9 +789,7 @@ class _ItineraryTab extends StatelessWidget {
                             item.isCheckedIn
                                 ? '✓ 打卡: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
                                 : '預計: ${item.estTime}',
-                            style: TextStyle(
-                              color: item.isCheckedIn ? Colors.green : null,
-                            ),
+                            style: TextStyle(color: item.isCheckedIn ? Colors.green : null),
                           ),
                           Text(
                             '海拔 ${item.altitude}m  |  累計 ${cumulativeDistance.toStringAsFixed(1)} km',
@@ -899,10 +829,7 @@ class _ItineraryTab extends StatelessWidget {
         title: const Text('刪除行程'),
         content: const Text('確定要刪除此行程節點嗎？此動作無法復原。'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           TextButton(
             onPressed: () {
               provider.deleteItem(key);
@@ -932,16 +859,12 @@ class _ItineraryTab extends StatelessWidget {
         distance: result['distance'],
         note: result['note'],
       );
-      
+
       provider.updateItem(item.key, updatedItem);
     }
   }
 
-  void _showCheckInDialog(
-    BuildContext context,
-    dynamic item,
-    ItineraryProvider provider,
-  ) {
+  void _showCheckInDialog(BuildContext context, dynamic item, ItineraryProvider provider) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -959,12 +882,7 @@ class _ItineraryTab extends StatelessWidget {
                   child: const Icon(Icons.terrain, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    item.name,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
+                Expanded(child: Text(item.name, style: Theme.of(context).textTheme.titleLarge)),
               ],
             ),
             const Divider(height: 24),
@@ -983,10 +901,7 @@ class _ItineraryTab extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
                 child: Text(item.note, style: const TextStyle(fontSize: 14)),
               ),
             ],
@@ -1006,16 +921,10 @@ class _ItineraryTab extends StatelessWidget {
               title: const Text('指定時間'),
               onTap: () async {
                 Navigator.pop(context);
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                );
+                final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
                 if (time != null) {
                   final now = DateTime.now();
-                  provider.checkIn(
-                    item.key,
-                    DateTime(now.year, now.month, now.day, time.hour, time.minute),
-                  );
+                  provider.checkIn(item.key, DateTime(now.year, now.month, now.day, time.hour, time.minute));
                   ToastService.success('已打卡：${item.name}');
                 }
               },
@@ -1047,11 +956,7 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: Icon(icon, size: 16),
-      label: Text(label),
-      visualDensity: VisualDensity.compact,
-    );
+    return Chip(avatar: Icon(icon, size: 16), label: Text(label), visualDensity: VisualDensity.compact);
   }
 }
 
@@ -1093,59 +998,68 @@ class _CollaborationTab extends StatelessWidget {
                 child: messageProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : messageProvider.currentCategoryMessages.isEmpty
-                        ? const Center(child: Text('尚無留言，點擊右下角新增'))
-                        : ListView.builder(
-                            itemCount: messageProvider.currentCategoryMessages.length,
-                            itemBuilder: (context, index) {
-                              final msg = messageProvider.currentCategoryMessages[index];
-                              final replies = messageProvider.getReplies(msg.uuid);
+                    ? const Center(child: Text('尚無留言，點擊右下角新增'))
+                    : ListView.builder(
+                        itemCount: messageProvider.currentCategoryMessages.length,
+                        itemBuilder: (context, index) {
+                          final msg = messageProvider.currentCategoryMessages[index];
+                          final replies = messageProvider.getReplies(msg.uuid);
 
-                              return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                child: ExpansionTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                    child: Text(msg.avatar),
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: ExpansionTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                child: Text(msg.avatar),
+                              ),
+                              title: Text(msg.content),
+                              subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (replies.isNotEmpty)
+                                    Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
+                                  IconButton(
+                                    icon: const Icon(Icons.reply, size: 20),
+                                    onPressed: settingsProvider.isOfflineMode
+                                        ? null
+                                        : () => _showReplyDialog(
+                                            context,
+                                            messageProvider,
+                                            settingsProvider.username,
+                                            settingsProvider.avatar,
+                                            msg.uuid,
+                                          ),
+                                    tooltip: '回覆',
                                   ),
-                                  title: Text(msg.content),
-                                  subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (replies.isNotEmpty)
-                                        Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
-                                      IconButton(
-                                        icon: const Icon(Icons.reply, size: 20),
-                                        onPressed: settingsProvider.isOfflineMode
-                                            ? null
-                                            : () => _showReplyDialog(
-                                                context, messageProvider, settingsProvider.username, settingsProvider.avatar, msg.uuid),
-                                        tooltip: '回覆',
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline, size: 20),
-                                        onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
-                                        tooltip: '刪除',
-                                      ),
-                                    ],
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 20),
+                                    onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
+                                    tooltip: '刪除',
                                   ),
-                                  children: replies.map((reply) => ListTile(
-                                    leading: CircleAvatar(
-                                      radius: 12,
-                                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                      child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                              children: replies
+                                  .map(
+                                    (reply) => ListTile(
+                                      leading: CircleAvatar(
+                                        radius: 12,
+                                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                        child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
+                                      ),
+                                      title: Text(reply.content),
+                                      subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 18),
+                                        onPressed: () => _confirmDelete(context, messageProvider, reply.uuid),
+                                      ),
                                     ),
-                                    title: Text(reply.content),
-                                    subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.delete_outline, size: 18),
-                                      onPressed: () => _confirmDelete(context, messageProvider, reply.uuid),
-                                    ),
-                                  )).toList(),
-                                ),
-                              );
-                            },
-                          ),
+                                  )
+                                  .toList(),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -1153,11 +1067,15 @@ class _CollaborationTab extends StatelessWidget {
             backgroundColor: settingsProvider.isOfflineMode ? Colors.grey : null,
             onPressed: settingsProvider.isOfflineMode
                 ? () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')),
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
                   }
-                : () => _showAddMessageDialog(context, messageProvider, settingsProvider.username, settingsProvider.avatar, null),
+                : () => _showAddMessageDialog(
+                    context,
+                    messageProvider,
+                    settingsProvider.username,
+                    settingsProvider.avatar,
+                    null,
+                  ),
             child: const Icon(Icons.add_comment),
           ),
         );
@@ -1172,10 +1090,7 @@ class _CollaborationTab extends StatelessWidget {
         title: const Text('確認刪除'),
         content: const Text('確定要刪除此留言嗎？'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () {
               provider.deleteMessage(uuid);
@@ -1188,7 +1103,13 @@ class _CollaborationTab extends StatelessWidget {
     );
   }
 
-  void _showAddMessageDialog(BuildContext context, MessageProvider provider, String username, String avatar, String? parentId) {
+  void _showAddMessageDialog(
+    BuildContext context,
+    MessageProvider provider,
+    String username,
+    String avatar,
+    String? parentId,
+  ) {
     final contentController = TextEditingController();
     final isReply = parentId != null;
 
@@ -1204,42 +1125,39 @@ class _CollaborationTab extends StatelessWidget {
               return AlertDialog(
                 title: Text(isReply ? '回覆留言' : '新增留言 (${_getCategoryName(provider.selectedCategory)})'),
                 content: SizedBox(
-                   width: double.maxFinite,
-                   child: Column(
-                     mainAxisSize: MainAxisSize.min,
-                     children: [
-                        if (!isReply)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              children: [
-                                CircleAvatar(child: Text(avatar)),
-                                const SizedBox(width: 8),
-                                Text('以 $username 的身分發言'),
-                              ],
-                            ),
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isReply)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              CircleAvatar(child: Text(avatar)),
+                              const SizedBox(width: 8),
+                              Text('以 $username 的身分發言'),
+                            ],
                           ),
-                       TextField(
-                         controller: contentController,
-                         enabled: !isSubmitting, // 提交時鎖定輸入
-                         decoration: InputDecoration(
-                           labelText: isReply ? '回覆內容' : '留言內容',
-                           hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
-                           border: const OutlineInputBorder(),
-                         ),
-                         maxLines: 5,
-                         minLines: 3,
-                         textInputAction: TextInputAction.newline,
-                         autofocus: true,
-                       ),
-                     ],
-                   ),
-                 ),
-                actions: [
-                  TextButton(
-                    onPressed: isSubmitting ? null : () => Navigator.pop(context),
-                    child: const Text('取消'),
+                        ),
+                      TextField(
+                        controller: contentController,
+                        enabled: !isSubmitting, // 提交時鎖定輸入
+                        decoration: InputDecoration(
+                          labelText: isReply ? '回覆內容' : '留言內容',
+                          hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
+                          border: const OutlineInputBorder(),
+                        ),
+                        maxLines: 5,
+                        minLines: 3,
+                        textInputAction: TextInputAction.newline,
+                        autofocus: true,
+                      ),
+                    ],
                   ),
+                ),
+                actions: [
+                  TextButton(onPressed: isSubmitting ? null : () => Navigator.pop(context), child: const Text('取消')),
                   FilledButton(
                     onPressed: isSubmitting
                         ? null // 提交中禁用按鈕
@@ -1264,14 +1182,14 @@ class _CollaborationTab extends StatelessWidget {
                               } catch (e) {
                                 if (context.mounted) {
                                   setInnerState(() => isSubmitting = false);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red),
-                                  );
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red));
                                 }
                               }
                             }
                           },
-            child: const Text('發送'),
+                    child: const Text('發送'),
                   ),
                 ],
               );
@@ -1282,16 +1200,26 @@ class _CollaborationTab extends StatelessWidget {
     );
   }
 
-  void _showReplyDialog(BuildContext context, MessageProvider provider, String username, String avatar, String parentId) {
+  void _showReplyDialog(
+    BuildContext context,
+    MessageProvider provider,
+    String username,
+    String avatar,
+    String parentId,
+  ) {
     _showAddMessageDialog(context, provider, username, avatar, parentId);
   }
 
   String _getCategoryName(String category) {
     switch (category) {
-      case 'Gear': return '裝備';
-      case 'Plan': return '建議';
-      case 'Misc': return '雜項';
-      default: return category;
+      case 'Gear':
+        return '裝備';
+      case 'Plan':
+        return '建議';
+      case 'Misc':
+        return '雜項';
+      default:
+        return category;
     }
   }
 }
@@ -1348,20 +1276,14 @@ class _GearTab extends StatelessWidget {
               Card(
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MealPlannerScreen()),
-                  ),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
                           child: const Icon(Icons.bento, color: Colors.orange, size: 28),
                         ),
                         const SizedBox(width: 16),
@@ -1371,7 +1293,7 @@ class _GearTab extends StatelessWidget {
                             children: [
                               const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                               Text(
-                                mealProvider.totalWeightKg > 0 
+                                mealProvider.totalWeightKg > 0
                                     ? '已規劃 ${mealProvider.totalWeightKg.toStringAsFixed(2)} kg'
                                     : '尚未規劃',
                                 style: TextStyle(color: Colors.grey[600]),
@@ -1402,37 +1324,44 @@ class _GearTab extends StatelessWidget {
                   ),
                 )
               else
-                ...provider.itemsByCategory.entries.map((entry) => Card(
-                  child: ExpansionTile(
-                    maintainState: true,
-                    initiallyExpanded: true,
-                    leading: Icon(_getCategoryIcon(entry.key)),
-                    title: Text('${_getCategoryName(entry.key)} (${entry.value.length}件)'),
-                    subtitle: Text('${entry.value.fold<double>(0, (sum, item) => sum + item.weight).toStringAsFixed(0)}g'),
-                    children: entry.value.map((item) => ListTile(
-                      leading: Checkbox(
-                        value: item.isChecked,
-                        onChanged: (_) => provider.toggleChecked(item.key),
+                ...provider.itemsByCategory.entries.map(
+                  (entry) => Card(
+                    child: ExpansionTile(
+                      maintainState: true,
+                      initiallyExpanded: true,
+                      leading: Icon(_getCategoryIcon(entry.key)),
+                      title: Text('${_getCategoryName(entry.key)} (${entry.value.length}件)'),
+                      subtitle: Text(
+                        '${entry.value.fold<double>(0, (sum, item) => sum + item.weight).toStringAsFixed(0)}g',
                       ),
-                      title: Text(
-                        item.name,
-                        style: TextStyle(
-                          decoration: item.isChecked ? TextDecoration.lineThrough : null,
-                          color: item.isChecked ? Colors.grey : null,
-                        ),
-                      ),
-                      subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                        // 裝備刪除不需確認 (依需求)
-                        onPressed: () => provider.deleteItem(item.key),
-                      ),
-                      onTap: () => provider.toggleChecked(item.key),
-                    )).toList(),
+                      children: entry.value
+                          .map(
+                            (item) => ListTile(
+                              leading: Checkbox(
+                                value: item.isChecked,
+                                onChanged: (_) => provider.toggleChecked(item.key),
+                              ),
+                              title: Text(
+                                item.name,
+                                style: TextStyle(
+                                  decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                                  color: item.isChecked ? Colors.grey : null,
+                                ),
+                              ),
+                              subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
+                                // 裝備刪除不需確認 (依需求)
+                                onPressed: () => provider.deleteItem(item.key),
+                              ),
+                              onTap: () => provider.toggleChecked(item.key),
+                            ),
+                          )
+                          .toList(),
+                    ),
                   ),
-                )),
-                
-                const SizedBox(height: 80), // 底部留白
+                ),
+              const SizedBox(height: 80), // 底部留白
             ],
           ),
           floatingActionButton: FloatingActionButton(
@@ -1455,21 +1384,31 @@ class _GearTab extends StatelessWidget {
 
   IconData _getCategoryIcon(String category) {
     switch (category) {
-      case 'Sleep': return Icons.bed;
-      case 'Cook': return Icons.restaurant;
-      case 'Wear': return Icons.checkroom;
-      case 'Other': return Icons.category;
-      default: return Icons.inventory_2;
+      case 'Sleep':
+        return Icons.bed;
+      case 'Cook':
+        return Icons.restaurant;
+      case 'Wear':
+        return Icons.checkroom;
+      case 'Other':
+        return Icons.category;
+      default:
+        return Icons.inventory_2;
     }
   }
 
   String _getCategoryName(String category) {
     switch (category) {
-      case 'Sleep': return '睡眠系統';
-      case 'Cook': return '炊具與飲食';
-      case 'Wear': return '穿著';
-      case 'Other': return '其他';
-      default: return category;
+      case 'Sleep':
+        return '睡眠系統';
+      case 'Cook':
+        return '炊具與飲食';
+      case 'Wear':
+        return '穿著';
+      case 'Other':
+        return '其他';
+      default:
+        return category;
     }
   }
 
@@ -1488,18 +1427,12 @@ class _GearTab extends StatelessWidget {
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: '裝備名稱',
-                  hintText: '例如：睡袋',
-                ),
+                decoration: const InputDecoration(labelText: '裝備名稱', hintText: '例如：睡袋'),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: weightController,
-                decoration: const InputDecoration(
-                  labelText: '重量 (公克)',
-                  hintText: '例如：1200',
-                ),
+                decoration: const InputDecoration(labelText: '重量 (公克)', hintText: '例如：1200'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
@@ -1517,20 +1450,13 @@ class _GearTab extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
             FilledButton(
               onPressed: () {
                 final name = nameController.text.trim();
                 final weight = double.tryParse(weightController.text) ?? 0;
                 if (name.isNotEmpty && weight > 0) {
-                  provider.addItem(
-                    name: name,
-                    weight: weight,
-                    category: selectedCategory,
-                  );
+                  provider.addItem(name: name, weight: weight, category: selectedCategory);
                   ToastService.success('已新增：$name');
                   Navigator.pop(context);
                 }
@@ -1604,10 +1530,7 @@ class _InfoTab extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '步道概況',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
+                      const Text('步道概況', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -1634,9 +1557,7 @@ class _InfoTab extends StatelessWidget {
                       onPressed: () => _launchUrl(ExternalLinks.permitUrl),
                       icon: const Icon(Icons.assignment_turned_in),
                       label: const Text('申請入山證'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
+                      style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -1706,10 +1627,7 @@ class _InfoTab extends StatelessWidget {
                           _SignalInfoRow(location: '10.5K', signal: '遠傳 2 格穩定'),
                           _SignalInfoRow(location: '嘉明湖本湖', signal: '中華/遠傳 (視雲況)'),
                           SizedBox(height: 8),
-                          Text(
-                            '💡 建議使用遠傳門號以獲得較多通訊點',
-                            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                          ),
+                          Text('💡 建議使用遠傳門號以獲得較多通訊點', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
                         ],
                       ),
                     ),
@@ -1774,10 +1692,7 @@ class _SignalInfoRow extends StatelessWidget {
           Expanded(child: Text(location)),
           Text(
             signal,
-            style: TextStyle(
-              color: isNoSignal ? Colors.red : null,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: isNoSignal ? Colors.red : null, fontWeight: FontWeight.w500),
           ),
         ],
       ),

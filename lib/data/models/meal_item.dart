@@ -1,4 +1,3 @@
-
 enum MealType {
   preBreakfast('早早餐'),
   breakfast('早餐'),
@@ -30,13 +29,7 @@ class MealItem {
   });
 
   // Create a copy with some changes
-  MealItem copyWith({
-    String? name,
-    double? weight,
-    int? calories,
-    int? quantity,
-    String? note,
-  }) {
+  MealItem copyWith({String? name, double? weight, int? calories, int? quantity, String? note}) {
     return MealItem(
       id: id,
       name: name ?? this.name,
@@ -52,16 +45,12 @@ class DailyMealPlan {
   final String day; // D0, D1...
   final Map<MealType, List<MealItem>> meals;
 
-  DailyMealPlan({
-    required this.day,
-    Map<MealType, List<MealItem>>? meals,
-  }) : meals = meals ?? {for (var type in MealType.values) type: []};
+  DailyMealPlan({required this.day, Map<MealType, List<MealItem>>? meals})
+    : meals = meals ?? {for (var type in MealType.values) type: []};
 
-  double get totalWeight => meals.values
-      .expand((items) => items)
-      .fold(0, (sum, item) => sum + (item.weight * item.quantity));
+  double get totalWeight =>
+      meals.values.expand((items) => items).fold(0, (sum, item) => sum + (item.weight * item.quantity));
 
-  int get totalCalories => meals.values
-      .expand((items) => items)
-      .fold(0, (sum, item) => sum + (item.calories * item.quantity));
+  int get totalCalories =>
+      meals.values.expand((items) => items).fold(0, (sum, item) => sum + (item.calories * item.quantity));
 }

@@ -15,9 +15,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _isLoading = true;
   String? _error;
 
-  SettingsProvider()
-      : _repository = getIt<SettingsRepository>(),
-        _prefs = getIt<SharedPreferences>() {
+  SettingsProvider() : _repository = getIt<SettingsRepository>(), _prefs = getIt<SharedPreferences>() {
     LogService.info('SettingsProvider 初始化', source: 'Settings');
     _loadSettings();
   }
@@ -146,7 +144,7 @@ class SettingsProvider extends ChangeNotifier {
       await updateUsername(''); // 清除暱稱
       await setAvatar('🐻'); // 重置頭像
       await _repository.updateLastSyncTime(null); // 清除同步時間
-      await _prefs.remove(PrefKeys.username); 
+      await _prefs.remove(PrefKeys.username);
       _loadSettings(); // 重新載入確保狀態一致
     } catch (e) {
       LogService.error('重設身分失敗: $e', source: 'Settings');

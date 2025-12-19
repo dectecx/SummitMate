@@ -9,6 +9,7 @@ import 'package:summitmate/services/sync_service.dart';
 
 // Mocks
 class MockMessageRepository extends Mock implements MessageRepository {}
+
 class MockSyncService extends Mock implements SyncService {}
 
 void main() {
@@ -27,21 +28,15 @@ void main() {
 
     // Default mock behaviors
     when(() => mockRepository.getAllMessages()).thenReturn([]);
-    registerFallbackValue(Message(
-      uuid: 'fallback',
-      user: 'user',
-      category: 'Misc',
-      content: 'content',
-      timestamp: DateTime.now(),
-    ));
+    registerFallbackValue(
+      Message(uuid: 'fallback', user: 'user', category: 'Misc', content: 'content', timestamp: DateTime.now()),
+    );
   });
 
   group('MessageProvider Logic Tests', () {
     test('should load messages on initialization', () {
       // Arrange
-      final messages = [
-        Message(uuid: '1', user: 'A', category: 'Gear', content: 'Msg 1', timestamp: DateTime.now()),
-      ];
+      final messages = [Message(uuid: '1', user: 'A', category: 'Gear', content: 'Msg 1', timestamp: DateTime.now())];
       when(() => mockRepository.getAllMessages()).thenReturn(messages);
 
       // Act
@@ -78,8 +73,22 @@ void main() {
       final now = DateTime.now();
       final messages = [
         Message(uuid: '1', user: 'A', category: 'Gear', content: 'Main', timestamp: now),
-        Message(uuid: '2', user: 'A', category: 'Gear', content: 'Reply 1', parentId: '1', timestamp: now.add(Duration(seconds: 1))),
-        Message(uuid: '3', user: 'A', category: 'Gear', content: 'Reply 2', parentId: '1', timestamp: now.add(Duration(seconds: 2))),
+        Message(
+          uuid: '2',
+          user: 'A',
+          category: 'Gear',
+          content: 'Reply 1',
+          parentId: '1',
+          timestamp: now.add(Duration(seconds: 1)),
+        ),
+        Message(
+          uuid: '3',
+          user: 'A',
+          category: 'Gear',
+          content: 'Reply 2',
+          parentId: '1',
+          timestamp: now.add(Duration(seconds: 2)),
+        ),
       ];
       when(() => mockRepository.getAllMessages()).thenReturn(messages);
 

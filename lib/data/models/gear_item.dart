@@ -21,12 +21,7 @@ class GearItem extends HiveObject {
   @HiveField(3)
   bool isChecked;
 
-  GearItem({
-    this.name = '',
-    this.weight = 0,
-    this.category = '',
-    this.isChecked = false,
-  });
+  GearItem({this.name = '', this.weight = 0, this.category = '', this.isChecked = false});
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;
@@ -43,11 +38,6 @@ class GearItem extends HiveObject {
 
   /// 轉換為 JSON
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'weight': weight,
-      'category': category,
-      'is_checked': isChecked,
-    };
+    return {'name': name, 'weight': weight, 'category': category, 'is_checked': isChecked};
   }
 }

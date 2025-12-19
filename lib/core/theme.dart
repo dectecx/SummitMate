@@ -33,9 +33,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: const Color(AppColors.surfaceValue),
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       // Bottom Navigation 主題
@@ -48,63 +46,27 @@ class AppTheme {
 
       // Text 主題
       textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          color: Color(AppColors.textPrimaryValue),
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineMedium: TextStyle(
-          color: Color(AppColors.textPrimaryValue),
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-        titleLarge: TextStyle(
-          color: Color(AppColors.textPrimaryValue),
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-        titleMedium: TextStyle(
-          color: Color(AppColors.textPrimaryValue),
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyLarge: TextStyle(
-          color: Color(AppColors.textPrimaryValue),
-          fontSize: 16,
-        ),
-        bodyMedium: TextStyle(
-          color: Color(AppColors.textSecondaryValue),
-          fontSize: 14,
-        ),
+        headlineLarge: TextStyle(color: Color(AppColors.textPrimaryValue), fontSize: 28, fontWeight: FontWeight.bold),
+        headlineMedium: TextStyle(color: Color(AppColors.textPrimaryValue), fontSize: 24, fontWeight: FontWeight.bold),
+        titleLarge: TextStyle(color: Color(AppColors.textPrimaryValue), fontSize: 20, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(color: Color(AppColors.textPrimaryValue), fontSize: 18, fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(color: Color(AppColors.textPrimaryValue), fontSize: 16),
+        bodyMedium: TextStyle(color: Color(AppColors.textSecondaryValue), fontSize: 14),
         // 關鍵數值 (海拔、時間) - 規範要求大於 18sp
-        labelLarge: TextStyle(
-          color: Color(AppColors.accentValue),
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
+        labelLarge: TextStyle(color: Color(AppColors.accentValue), fontSize: 20, fontWeight: FontWeight.bold),
       ),
 
       // Input 主題
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(AppColors.surfaceValue),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(
-            color: Color(AppColors.accentValue),
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: Color(AppColors.accentValue), width: 2),
         ),
-        labelStyle: const TextStyle(
-          color: Color(AppColors.textSecondaryValue),
-        ),
-        hintStyle: const TextStyle(
-          color: Color(AppColors.textSecondaryValue),
-        ),
+        labelStyle: const TextStyle(color: Color(AppColors.textSecondaryValue)),
+        hintStyle: const TextStyle(color: Color(AppColors.textSecondaryValue)),
       ),
 
       // Elevated Button 主題
@@ -113,9 +75,7 @@ class AppTheme {
           backgroundColor: const Color(AppColors.accentValue),
           foregroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
 
@@ -133,10 +93,7 @@ class AppTheme {
       ),
 
       // Divider 主題
-      dividerTheme: const DividerThemeData(
-        color: Color(0xFF2C2C2C),
-        thickness: 1,
-      ),
+      dividerTheme: const DividerThemeData(color: Color(0xFF2C2C2C), thickness: 1),
     );
   }
 
@@ -172,9 +129,7 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: lightSurface,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -185,15 +140,11 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: primaryColor, width: 2),
@@ -205,15 +156,10 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         backgroundColor: lightSurface,
       ),
-      expansionTileTheme: const ExpansionTileThemeData(
-        iconColor: primaryColor,
-        collapsedIconColor: Colors.grey,
-      ),
+      expansionTileTheme: const ExpansionTileThemeData(iconColor: primaryColor, collapsedIconColor: Colors.grey),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

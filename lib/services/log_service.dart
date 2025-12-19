@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../core/di.dart';
 import '../services/google_sheets_service.dart';
 
-
 /// 日誌等級
 enum LogLevel { debug, info, warning, error }
 
@@ -17,12 +16,7 @@ class LogEntry {
   final String message;
   final String? source;
 
-  LogEntry({
-    required this.timestamp,
-    required this.level,
-    required this.message,
-    this.source,
-  });
+  LogEntry({required this.timestamp, required this.level, required this.message, this.source});
 
   String get formatted {
     final time = DateFormat('HH:mm:ss').format(timestamp);
@@ -40,10 +34,7 @@ class LogEntry {
 
   factory LogEntry.fromJson(Map<String, dynamic> json) => LogEntry(
     timestamp: DateTime.parse(json['timestamp']),
-    level: LogLevel.values.firstWhere(
-      (e) => e.name == json['level'],
-      orElse: () => LogLevel.info,
-    ),
+    level: LogLevel.values.firstWhere((e) => e.name == json['level'], orElse: () => LogLevel.info),
     message: json['message'],
     source: json['source'],
   );
@@ -59,7 +50,7 @@ class LogEntry {
 /// - 上傳到雲端
 class LogService {
   static const String _boxName = 'app_logs';
-  static const int _maxLogCount = 1000;  // 最多保留 1000 條
+  static const int _maxLogCount = 1000; // 最多保留 1000 條
 
   static Box<String>? _box;
   static final Queue<LogEntry> _memoryLogs = Queue<LogEntry>();
@@ -94,9 +85,7 @@ class LogService {
   static Map<String, dynamic>? _parseJson(String jsonStr) {
     try {
       // 使用 dart:convert
-      return Map<String, dynamic>.from(
-        (jsonStr.startsWith('{') ? _simpleJsonDecode(jsonStr) : null) ?? {},
-      );
+      return Map<String, dynamic>.from((jsonStr.startsWith('{') ? _simpleJsonDecode(jsonStr) : null) ?? {});
     } catch (e) {
       return null;
     }
@@ -147,12 +136,7 @@ class LogService {
 
   /// 內部記錄方法
   static void _log(LogLevel level, String message, {String? source}) {
-    final entry = LogEntry(
-      timestamp: DateTime.now(),
-      level: level,
-      message: message,
-      source: source,
-    );
+    final entry = LogEntry(timestamp: DateTime.now(), level: level, message: message, source: source);
 
     // 記憶體快取
     _memoryLogs.add(entry);
@@ -177,7 +161,8 @@ class LogService {
 
     try {
       final json = entry.toJson();
-      final jsonStr = '{"timestamp":"${json['timestamp']}","level":"${json['level']}","message":"${json['message']}","source":"${json['source'] ?? ''}"}';
+      final jsonStr =
+          '{"timestamp":"${json['timestamp']}","level":"${json['level']}","message":"${json['message']}","source":"${json['source'] ?? ''}"}';
       await _box!.add(jsonStr);
 
       // 超過上限時清理舊日誌
@@ -251,4 +236,3 @@ class LogService {
     }
   }
 }
-

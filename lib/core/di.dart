@@ -47,9 +47,7 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<GearRepository>(gearRepo);
 
   // Services
-  getIt.registerLazySingleton<GoogleSheetsService>(
-    () => GoogleSheetsService(),
-  );
+  getIt.registerLazySingleton<GoogleSheetsService>(() => GoogleSheetsService());
   getIt.registerLazySingleton<SyncService>(
     () => SyncService(
       sheetsService: getIt<GoogleSheetsService>(),

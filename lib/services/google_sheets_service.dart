@@ -16,11 +16,9 @@ class GoogleSheetsService {
   /// 建構子
   /// [client] - HTTP 客戶端 (用於測試時注入 Mock)
   /// [baseUrl] - Google Apps Script Web App URL
-  GoogleSheetsService({
-    http.Client? client,
-    String? baseUrl,
-  })  : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? EnvConfig.gasBaseUrl;
+  GoogleSheetsService({http.Client? client, String? baseUrl})
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl ?? EnvConfig.gasBaseUrl;
 
   /// 取得所有資料 (行程 + 留言)
   /// 回傳格式：{ itinerary: [...], messages: [...] }
@@ -31,10 +29,7 @@ class GoogleSheetsService {
       debugPrint('🌐 baseUrl: $_baseUrl (isEmpty: ${_baseUrl.isEmpty})');
 
       if (_baseUrl.isEmpty) {
-        return FetchAllResult(
-          success: false,
-          errorMessage: 'GAS_BASE_URL 未設定。請確認 .env.dev 檔案已正確配置。',
-        );
+        return FetchAllResult(success: false, errorMessage: 'GAS_BASE_URL 未設定。請確認 .env.dev 檔案已正確配置。');
       }
 
       final response = await _client.get(uri);
@@ -44,34 +39,26 @@ class GoogleSheetsService {
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
 
-        final itineraryList = (json['itinerary'] as List<dynamic>?)
-            ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
-            .toList() ?? [];
+        final itineraryList =
+            (json['itinerary'] as List<dynamic>?)
+                ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
 
-        final messagesList = (json['messages'] as List<dynamic>?)
-            ?.map((e) => Message.fromJson(e as Map<String, dynamic>))
-            .toList() ?? [];
+        final messagesList =
+            (json['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
+            [];
 
         debugPrint('🌐 解析成功: 行程=${itineraryList.length}, 留言=${messagesList.length}');
 
-        return FetchAllResult(
-          itinerary: itineraryList,
-          messages: messagesList,
-          success: true,
-        );
+        return FetchAllResult(itinerary: itineraryList, messages: messagesList, success: true);
       } else {
-        return FetchAllResult(
-          success: false,
-          errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
-        );
+        return FetchAllResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}');
       }
     } catch (e, stack) {
       debugPrint('🌐 API 異常: $e');
       debugPrint('🌐 堆疊: $stack');
-      return FetchAllResult(
-        success: false,
-        errorMessage: e.toString(),
-      );
+      return FetchAllResult(success: false, errorMessage: e.toString());
     }
   }
 
@@ -79,13 +66,7 @@ class GoogleSheetsService {
   Future<ApiResult> addMessage(Message message) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(
-        uri,
-        {
-          'action': ApiConfig.actionAddMessage,
-          'data': message.toJson(),
-        },
-      );
+      final response = await _postWithRedirect(uri, {'action': ApiConfig.actionAddMessage, 'data': message.toJson()});
 
       return _handleResponse(response);
     } catch (e) {
@@ -97,13 +78,7 @@ class GoogleSheetsService {
   Future<ApiResult> deleteMessage(String uuid) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(
-        uri,
-        {
-          'action': ApiConfig.actionDeleteMessage,
-          'uuid': uuid,
-        },
-      );
+      final response = await _postWithRedirect(uri, {'action': ApiConfig.actionDeleteMessage, 'uuid': uuid});
 
       return _handleResponse(response);
     } catch (e) {
@@ -115,13 +90,10 @@ class GoogleSheetsService {
   Future<ApiResult> batchAddMessages(List<Message> messages) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(
-        uri,
-        {
-          'action': 'batch_add_messages',
-          'data': messages.map((m) => m.toJson()).toList(),
-        },
-      );
+      final response = await _postWithRedirect(uri, {
+        'action': 'batch_add_messages',
+        'data': messages.map((m) => m.toJson()).toList(),
+      });
 
       return _handleResponse(response);
     } catch (e) {
@@ -133,20 +105,17 @@ class GoogleSheetsService {
   Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(
-        uri,
-        {
-          'action': 'update_itinerary',
-          'data': items.map((e) {
-            final json = e.toJson();
-            // Force est_time to be string in Google Sheets by prepending '
-            if (e.estTime.isNotEmpty) {
-              json['est_time'] = "'${e.estTime}";
-            }
-            return json;
-          }).toList(),
-        },
-      );
+      final response = await _postWithRedirect(uri, {
+        'action': 'update_itinerary',
+        'data': items.map((e) {
+          final json = e.toJson();
+          // Force est_time to be string in Google Sheets by prepending '
+          if (e.estTime.isNotEmpty) {
+            json['est_time'] = "'${e.estTime}";
+          }
+          return json;
+        }).toList(),
+      });
 
       return _handleResponse(response);
     } catch (e) {
@@ -158,17 +127,14 @@ class GoogleSheetsService {
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {
       final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(
-        uri,
-        {
-          'action': 'upload_logs',
-          'logs': logs.map((e) => e.toJson()).toList(),
-          'device_info': {
-            'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
-            'device_name': deviceName ?? 'SummitMate App',
-          },
+      final response = await _postWithRedirect(uri, {
+        'action': 'upload_logs',
+        'logs': logs.map((e) => e.toJson()).toList(),
+        'device_info': {
+          'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
+          'device_name': deviceName ?? 'SummitMate App',
         },
-      );
+      });
 
       final result = _handleResponse(response);
 
@@ -193,15 +159,9 @@ class GoogleSheetsService {
     // [Web Compatibility]
     // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
     // GAS parses e.postData.contents regardless of Content-Type.
-    final headers = {
-      'Content-Type': kIsWeb ? 'text/plain' : 'application/json',
-    };
+    final headers = {'Content-Type': kIsWeb ? 'text/plain' : 'application/json'};
 
-    final response = await _client.post(
-      uri,
-      headers: headers,
-      body: jsonEncode(body),
-    );
+    final response = await _client.post(uri, headers: headers, body: jsonEncode(body));
 
     // [Web Compatibility]
     // Web: Browser follows redirects automatically. We just return the response.
@@ -227,10 +187,7 @@ class GoogleSheetsService {
     if (response.statusCode == 200) {
       return ApiResult(success: true);
     } else {
-      return ApiResult(
-        success: false,
-        errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}',
-      );
+      return ApiResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}');
     }
   }
 
@@ -253,10 +210,5 @@ class FetchAllResult extends ApiResult {
   final List<ItineraryItem> itinerary;
   final List<Message> messages;
 
-  FetchAllResult({
-    this.itinerary = const [],
-    this.messages = const [],
-    required super.success,
-    super.errorMessage,
-  });
+  FetchAllResult({this.itinerary = const [], this.messages = const [], required super.success, super.errorMessage});
 }

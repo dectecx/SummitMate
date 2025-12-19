@@ -116,18 +116,9 @@ class GearProvider extends ChangeNotifier {
   }
 
   /// 新增裝備
-  Future<void> addItem({
-    required String name,
-    required double weight,
-    required String category,
-  }) async {
+  Future<void> addItem({required String name, required double weight, required String category}) async {
     try {
-      final item = GearItem(
-        name: name,
-        weight: weight,
-        category: category,
-        isChecked: false,
-      );
+      final item = GearItem(name: name, weight: weight, category: category, isChecked: false);
 
       LogService.info('新增裝備: $name (${weight}g)', source: 'Gear');
       await _repository.addItem(item);
@@ -199,4 +190,3 @@ class GearProvider extends ChangeNotifier {
     _loadItems();
   }
 }
-

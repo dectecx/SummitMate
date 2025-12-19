@@ -17,14 +17,7 @@ void main() {
     });
 
     test('should create with named parameters', () {
-      final item = ItineraryItem(
-        day: 'D1',
-        name: '向陽山屋',
-        estTime: '11:30',
-        altitude: 2850,
-        distance: 4.3,
-        note: '午餐點',
-      );
+      final item = ItineraryItem(day: 'D1', name: '向陽山屋', estTime: '11:30', altitude: 2850, distance: 4.3, note: '午餐點');
 
       expect(item.day, equals('D1'));
       expect(item.name, equals('向陽山屋'));
@@ -54,14 +47,7 @@ void main() {
     });
 
     test('should convert to/from JSON', () {
-      final item = ItineraryItem(
-        day: 'D1',
-        name: '向陽山屋',
-        estTime: '11:30',
-        altitude: 2850,
-        distance: 4.3,
-        note: '午餐點',
-      );
+      final item = ItineraryItem(day: 'D1', name: '向陽山屋', estTime: '11:30', altitude: 2850, distance: 4.3, note: '午餐點');
 
       final json = item.toJson();
       final restored = ItineraryItem.fromJson(json);

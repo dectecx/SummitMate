@@ -240,4 +240,3 @@ class ItineraryProvider extends ChangeNotifier {
     }
   }
 }
-

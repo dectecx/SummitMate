@@ -18,7 +18,7 @@ void main() {
               'altitude': 2850,
               'distance': 4.3,
               'note': 'Lunch stop',
-            }
+            },
           ],
           'messages': [
             {
@@ -28,18 +28,13 @@ void main() {
               'category': 'Gear',
               'content': 'Test message',
               'timestamp': '2024-12-15T09:00:00Z',
-            }
+            },
           ],
         });
-        return http.Response(responseBody, 200, headers: {
-          'content-type': 'application/json; charset=utf-8',
-        });
+        return http.Response(responseBody, 200, headers: {'content-type': 'application/json; charset=utf-8'});
       });
 
-      final service = GoogleSheetsService(
-        client: mockClient,
-        baseUrl: 'https://mock.api.com',
-      );
+      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
 
       final result = await service.fetchAll();
 
@@ -55,10 +50,7 @@ void main() {
         return http.Response('Internal Server Error', 500);
       });
 
-      final service = GoogleSheetsService(
-        client: mockClient,
-        baseUrl: 'https://mock.api.com',
-      );
+      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
 
       final result = await service.fetchAll();
 
@@ -73,10 +65,7 @@ void main() {
         return http.Response('{"success": true}', 200);
       });
 
-      final service = GoogleSheetsService(
-        client: mockClient,
-        baseUrl: 'https://mock.api.com',
-      );
+      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
 
       final message = Message(
         uuid: 'new-uuid',
@@ -90,7 +79,7 @@ void main() {
 
       expect(result.success, isTrue);
       expect(capturedBody, isNotNull);
-      
+
       final parsedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
       expect(parsedBody['action'], 'add_message');
       expect(parsedBody['data']['uuid'], 'new-uuid');
@@ -103,15 +92,12 @@ void main() {
         return http.Response('{"success": true}', 200);
       });
 
-      final service = GoogleSheetsService(
-        client: mockClient,
-        baseUrl: 'https://mock.api.com',
-      );
+      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
 
       final result = await service.deleteMessage('uuid-to-delete');
 
       expect(result.success, isTrue);
-      
+
       final parsedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
       expect(parsedBody['action'], 'delete_message');
       expect(parsedBody['uuid'], 'uuid-to-delete');
@@ -122,10 +108,7 @@ void main() {
         throw Exception('Network error');
       });
 
-      final service = GoogleSheetsService(
-        client: mockClient,
-        baseUrl: 'https://mock.api.com',
-      );
+      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
 
       final result = await service.fetchAll();
 

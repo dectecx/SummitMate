@@ -38,11 +38,11 @@ class MessageRepository {
   /// 取得主留言 (非回覆)
   List<Message> getMainMessages({String? category}) {
     var messages = box.values.where((m) => m.parentId == null);
-    
+
     if (category != null) {
       messages = messages.where((m) => m.category == category);
     }
-    
+
     final result = messages.toList();
     result.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     return result;
@@ -71,10 +71,7 @@ class MessageRepository {
 
   /// 刪除留言 (依 UUID)
   Future<void> deleteByUuid(String uuid) async {
-    final keyToDelete = box.keys.cast<dynamic>().firstWhere(
-      (key) => box.get(key)?.uuid == uuid,
-      orElse: () => null,
-    );
+    final keyToDelete = box.keys.cast<dynamic>().firstWhere((key) => box.get(key)?.uuid == uuid, orElse: () => null);
     if (keyToDelete != null) {
       await box.delete(keyToDelete);
     }

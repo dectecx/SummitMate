@@ -26,7 +26,8 @@ void main() {
     test('should calculate progress correctly', () {
       // Arrange
       final items = [
-        ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '')..actualTime = DateTime.now(), // Checked
+        ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '')
+          ..actualTime = DateTime.now(), // Checked
         ItineraryItem(day: 'D1', name: 'B', estTime: '09:00', altitude: 200, distance: 2.0, note: ''), // Unchecked
         ItineraryItem(day: 'D2', name: 'C', estTime: '10:00', altitude: 300, distance: 3.0, note: ''), // Unchecked
       ];
@@ -38,7 +39,7 @@ void main() {
       final progress = provider.progress;
 
       // Assert
-      expect(progress, equals(1/3)); // 0.333...
+      expect(progress, equals(1 / 3)); // 0.333...
     });
 
     test('progress should be 0 when empty', () {
@@ -50,15 +51,14 @@ void main() {
     test('currentTarget should return first unchecked item of selected day', () {
       // Arrange
       final d1Items = [
-         ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '')..actualTime = DateTime.now(),
-         ItineraryItem(day: 'D1', name: 'B', estTime: '09:00', altitude: 200, distance: 2.0, note: ''),
+        ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '')
+          ..actualTime = DateTime.now(),
+        ItineraryItem(day: 'D1', name: 'B', estTime: '09:00', altitude: 200, distance: 2.0, note: ''),
       ];
-      final d2Items = [
-         ItineraryItem(day: 'D2', name: 'C', estTime: '10:00', altitude: 300, distance: 3.0, note: ''),
-      ];
-      
+      final d2Items = [ItineraryItem(day: 'D2', name: 'C', estTime: '10:00', altitude: 300, distance: 3.0, note: '')];
+
       when(() => mockRepo.getAllItems()).thenReturn([...d1Items, ...d2Items]);
-      
+
       provider = ItineraryProvider();
       provider.selectDay('D1');
 

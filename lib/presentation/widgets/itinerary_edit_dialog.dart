@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../data/models/itinerary_item.dart';
 
@@ -67,10 +66,7 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
               onTap: _pickTime,
               child: InputDecorator(
                 decoration: const InputDecoration(labelText: '預計時間'),
-                child: Text(
-                  _selectedTime.format(context),
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+                child: Text(_selectedTime.format(context), style: Theme.of(context).textTheme.bodyLarge),
               ),
             ),
             const SizedBox(height: 16),
@@ -103,14 +99,8 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(isEdit ? '儲存' : '新增'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+        FilledButton(onPressed: _submit, child: Text(isEdit ? '儲存' : '新增')),
       ],
     );
   }
@@ -129,15 +119,10 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
     final alt = int.tryParse(_altitudeCtrl.text) ?? 0;
     final dist = double.tryParse(_distanceCtrl.text) ?? 0.0;
     final note = _noteCtrl.text.trim();
-    final timeStr = '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
     // Return partial map or object to parent to handle submission
-    Navigator.pop(context, {
-      'name': name,
-      'estTime': timeStr,
-      'altitude': alt,
-      'distance': dist,
-      'note': note,
-    });
+    Navigator.pop(context, {'name': name, 'estTime': timeStr, 'altitude': alt, 'distance': dist, 'note': note});
   }
 }

@@ -73,9 +73,7 @@ class ItineraryItem extends HiveObject {
       day: json['day']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       estTime: parseEstTime(json['est_time']),
-      actualTime: json['actual_time'] != null
-          ? DateTime.tryParse(json['actual_time'].toString())?.toLocal()
-          : null,
+      actualTime: json['actual_time'] != null ? DateTime.tryParse(json['actual_time'].toString())?.toLocal() : null,
       altitude: (json['altitude'] as num?)?.toInt() ?? 0,
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
       note: json['note']?.toString() ?? '',
