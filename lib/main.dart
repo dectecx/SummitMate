@@ -287,33 +287,58 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           keyInfoElevation: _keyInfoElevation,
           keyInfoTimeMap: _keyInfoTimeMap,
           onSwitchToItinerary: () async {
-            setState(() => _currentIndex = 0);
+            // 延遲切換以讓光圈先移動
+            Future.delayed(const Duration(milliseconds: 400), () {
+              if (mounted) setState(() => _currentIndex = 0);
+            });
             if (context.read<ItineraryProvider>().isEditMode) {
-              context.read<ItineraryProvider>().toggleEditMode();
+               context.read<ItineraryProvider>().toggleEditMode();
             }
           },
           onFocusUpload: () async {
             setState(() => _currentIndex = 0);
             if (!context.read<ItineraryProvider>().isEditMode) {
               context.read<ItineraryProvider>().toggleEditMode();
-              // 等待 UI 重繪以顯示上傳按鈕
-              await Future.delayed(const Duration(milliseconds: 600));
             }
           },
-          onSwitchToMessage: () async => setState(() => _currentIndex = 1),
-          onSwitchToGear: () async => setState(() => _currentIndex = 2),
-          onSwitchToInfo: () async => setState(() => _currentIndex = 3),
+          onFocusSync: () async {
+            // 離開上傳步驟後，關閉編輯模式
+            if (context.read<ItineraryProvider>().isEditMode) {
+              context.read<ItineraryProvider>().toggleEditMode();
+            }
+          },
+          onSwitchToMessage: () async {
+             Future.delayed(const Duration(milliseconds: 400), () {
+              if (mounted) setState(() => _currentIndex = 1);
+            });
+          },
+          onSwitchToGear: () async {
+             Future.delayed(const Duration(milliseconds: 400), () {
+              if (mounted) setState(() => _currentIndex = 2);
+            });
+          },
+          onSwitchToInfo: () async {
+             Future.delayed(const Duration(milliseconds: 400), () {
+              if (mounted) setState(() => _currentIndex = 3);
+            });
+          },
           onFocusElevation: () async {
-            setState(() => _currentIndex = 3);
-            await Future.delayed(const Duration(milliseconds: 600));
-            _keyInfoTab.currentState?.expandElevation();
-            await Future.delayed(const Duration(milliseconds: 600));
+             Future.delayed(const Duration(milliseconds: 400), () {
+              if (mounted) setState(() => _currentIndex = 3);
+            });
+            // 等待光圈移動到位後展開
+            Future.delayed(const Duration(milliseconds: 800), () {
+               _keyInfoTab.currentState?.expandElevation();
+            });
           },
           onFocusTimeMap: () async {
-            setState(() => _currentIndex = 3);
-            await Future.delayed(const Duration(milliseconds: 600));
-            _keyInfoTab.currentState?.expandTimeMap();
-            await Future.delayed(const Duration(milliseconds: 600));
+            Future.delayed(const Duration(milliseconds: 400), () {
+              if (mounted) setState(() => _currentIndex = 3);
+            });
+            // 等待光圈移動到位後展開
+             Future.delayed(const Duration(milliseconds: 800), () {
+              _keyInfoTab.currentState?.expandTimeMap();
+            });
           },
         ),
         onFinish: _removeTutorial,
@@ -1626,13 +1651,19 @@ class InfoTabState extends State<InfoTab> {
 
   void expandElevation() {
     if (!_isElevationExpanded) {
-      setState(() => _isElevationExpanded = true);
+      setState(() {
+        _isElevationExpanded = true;
+        _isTimeMapExpanded = false;
+      });
     }
   }
 
   void expandTimeMap() {
     if (!_isTimeMapExpanded) {
-      setState(() => _isTimeMapExpanded = true);
+      setState(() {
+        _isTimeMapExpanded = true;
+        _isElevationExpanded = false;
+      });
     }
   }
 
@@ -1703,7 +1734,10 @@ class InfoTabState extends State<InfoTab> {
                             '海拔 (點擊展開高度圖)',
                             '2320~3603m',
                             key: widget.keyElevation,
-                            onTap: () => setState(() => _isElevationExpanded = !_isElevationExpanded),
+                            onTap: () => setState(() {
+                              _isElevationExpanded = !_isElevationExpanded;
+                              if (_isElevationExpanded) _isTimeMapExpanded = false;
+                            }),
                             highlight: _isElevationExpanded,
                           ),
                           _buildStatItem(
@@ -1712,7 +1746,10 @@ class InfoTabState extends State<InfoTab> {
                             '路程時間',
                             '點擊查看參考圖',
                             key: widget.keyTimeMap,
-                            onTap: () => setState(() => _isTimeMapExpanded = !_isTimeMapExpanded),
+                            onTap: () => setState(() {
+                              _isTimeMapExpanded = !_isTimeMapExpanded;
+                              if (_isTimeMapExpanded) _isElevationExpanded = false;
+                            }),
                             highlight: _isTimeMapExpanded,
                           ),
                         ],

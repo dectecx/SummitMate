@@ -17,6 +17,7 @@ class TutorialService {
     required Future<void> Function() onSwitchToGear,
     required Future<void> Function() onSwitchToInfo,
     required Future<void> Function() onFocusUpload,
+    required Future<void> Function() onFocusSync,
     required Future<void> Function() onFocusElevation,
     required Future<void> Function() onFocusTimeMap,
   }) {
@@ -65,6 +66,7 @@ class TutorialService {
         alignSkip: Alignment.bottomLeft,
         align: ContentAlign.bottom,
         content: "同步更新 🔄\n把雲端最新的行程和留言抓下來\n(⚠️這也會覆蓋掉你手機裡的舊資料)",
+        onFocus: onFocusSync,
       ),
     );
 
@@ -87,7 +89,7 @@ class TutorialService {
         keyTarget: keyTabGear,
         alignSkip: Alignment.topRight,
         align: ContentAlign.top,
-        content: "裝備檢查 🎒\n把裝備和糧食都輸入進來\n幫你算好總重量，出發前檢查很方便",
+        content: "裝備檢查 🎒\n把裝備和糧食都輸入進來\n幫你算好總重量，出發前輔助檢查",
         onFocus: onSwitchToGear,
       ),
     );
