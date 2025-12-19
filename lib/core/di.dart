@@ -9,6 +9,7 @@ import '../data/repositories/settings_repository.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../data/repositories/gear_repository.dart';
+import '../services/weather_service.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -45,6 +46,10 @@ Future<void> setupDependencies() async {
   final gearRepo = GearRepository();
   await gearRepo.init();
   getIt.registerSingleton<GearRepository>(gearRepo);
+
+  final weatherService = WeatherService();
+  await weatherService.init();
+  getIt.registerSingleton<WeatherService>(weatherService);
 
   // Services
   getIt.registerLazySingleton<GoogleSheetsService>(() => GoogleSheetsService());

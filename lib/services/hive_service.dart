@@ -3,6 +3,7 @@ import '../data/models/settings.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 import '../data/models/gear_item.dart';
+import '../data/models/weather_data.dart';
 
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期
@@ -40,6 +41,9 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(3)) {
       Hive.registerAdapter(GearItemAdapter());
+    }
+    if (!Hive.isAdapterRegistered(4)) {
+      Hive.registerAdapter(WeatherDataAdapter());
     }
 
     _isInitialized = true;

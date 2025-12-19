@@ -23,8 +23,14 @@ class EnvConfig {
   // 是否啟用 Debug Log
   static const bool enableDebugLog = String.fromEnvironment('DEBUG_LOG', defaultValue: 'false') == 'true';
 
+  // CWA API Key (Central Weather Administration)
+  static const String cwaApiKey = String.fromEnvironment(
+    'CWA_API_KEY',
+    defaultValue: '',
+  );
+
   /// 檢查必要的環境變數是否已設定
-  static bool get isConfigured => gasBaseUrl.isNotEmpty;
+  static bool get isConfigured => gasBaseUrl.isNotEmpty && cwaApiKey.isNotEmpty;
 
   /// 取得有效的 API URL
   /// 如果環境變數未設定，會使用 fallback

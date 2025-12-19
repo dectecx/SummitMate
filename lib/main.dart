@@ -18,6 +18,9 @@ import 'presentation/screens/meal_planner_screen.dart';
 import 'presentation/widgets/itinerary_edit_dialog.dart';
 import 'package:summitmate/presentation/widgets/tutorial_overlay.dart';
 import 'services/tutorial_service.dart';
+import 'package:intl/intl.dart';
+import 'services/weather_service.dart';
+import 'data/models/weather_data.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -1731,24 +1734,40 @@ class InfoTab extends StatefulWidget {
 class InfoTabState extends State<InfoTab> {
   bool _isElevationExpanded = false;
   bool _isTimeMapExpanded = false;
+  WeatherData? _weather;
+  bool _loadingWeather = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshWeather();
+  }
+
+  Future<void> _refreshWeather({bool force = false}) async {
+    setState(() => _loadingWeather = true);
+    try {
+      final weather = await getIt<WeatherService>().getWeather(forceRefresh: force);
+      if (mounted) setState(() => _weather = weather);
+    } finally {
+      if (mounted) setState(() => _loadingWeather = false);
+    }
+  }
 
   void expandElevation() {
-    if (!_isElevationExpanded) {
-      setState(() {
-        _isElevationExpanded = true;
-        _isTimeMapExpanded = false;
-      });
-    }
+    setState(() {
+      _isElevationExpanded = true;
+      _isTimeMapExpanded = false;
+    });
   }
 
   void expandTimeMap() {
-    if (!_isTimeMapExpanded) {
-      setState(() {
-        _isTimeMapExpanded = true;
-        _isElevationExpanded = false;
-      });
-    }
+    setState(() {
+      _isTimeMapExpanded = true;
+      _isElevationExpanded = false;
+    });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -1973,6 +1992,8 @@ class InfoTabState extends State<InfoTab> {
                 ),
               ),
               const SizedBox(height: 16),
+  
+              _buildWeatherCard(),
 
               // 電話訊號資訊
               Card(
@@ -2070,6 +2091,109 @@ class InfoTabState extends State<InfoTab> {
     } catch (e) {
       debugPrint('無法開啟連結: $e');
     }
+  }
+
+  Widget _buildWeatherCard() {
+    if (_weather == null && _loadingWeather) {
+      return const Card(child: Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator())));
+    }
+
+    if (_weather == null) {
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.cloud_off),
+          title: const Text('暫無氣象資料'),
+          trailing: TextButton(onPressed: () => _refreshWeather(force: true), child: const Text('重試')),
+        ),
+      );
+    }
+
+    final w = _weather!;
+    final timeStr = DateFormat('MM/dd HH:mm').format(w.timestamp);
+    final isDay = DateTime.now().hour > 6 && DateTime.now().hour < 18;
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(w.locationName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text('海拔 ~2300m', style: TextStyle(fontSize: 10, color: Colors.blue[800])),
+                    ),
+                  ],
+                ),
+                if (_loadingWeather)
+                  const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                else
+                  InkWell(
+                    onTap: () => _refreshWeather(force: true),
+                    child: Row(
+                      children: [
+                        Text('更新: $timeStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.refresh, size: 14, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const Divider(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Column(
+                  children: [
+                    Text('${w.temperature}°C',
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange)),
+                    Text(w.condition),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      const Icon(Icons.water_drop, size: 14, color: Colors.blue),
+                      const SizedBox(width: 4),
+                      Text('降雨機率: ${w.rainProbability}%')
+                    ]),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      const Icon(Icons.air, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text('風速: ${w.windSpeed} m/s')
+                    ]),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      Icon(isDay ? Icons.wb_sunny : Icons.nightlight_round,
+                          size: 14, color: isDay ? Colors.orange : Colors.purple),
+                      const SizedBox(width: 4),
+                      Text(isDay
+                          ? '日落: ${DateFormat('HH:mm').format(w.sunset)}'
+                          : '日出: ${DateFormat('HH:mm').format(w.sunrise)}')
+                    ]),
+                  ],
+                )
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
