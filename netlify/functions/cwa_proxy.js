@@ -50,6 +50,19 @@ exports.handler = async function(event, context) {
         }
     }
 
+    const jsonText = await response.text();
+    let jsonData;
+    try {
+      jsonData = JSON.parse(jsonText);
+    } catch (e) {
+      console.error("JSON Parse Error:", e);
+      return {
+          statusCode: 200,
+          headers: { "Content-Type": "application/json" },
+          body: jsonText 
+      };
+    }
+
     // [Critical Fix for 6MB Limit] 
     // Filter data Server-Side based on client request.
     // The client sends ?locationName=...
