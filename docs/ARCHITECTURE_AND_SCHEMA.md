@@ -141,6 +141,12 @@ lib/
 | --- | --- | --- | --- | --- | --- | --- |
 | ISO8601 | ... | ... | 'ISO8601 | ... | ... | ... |
 
+### Sheet: `Weather_Hiking_App`
+ETL 處理後的應用端檢視 (Simplified View)。
+| Location | StartTime | EndTime | PoP | T | RH | WS | Wx | MaxT | MinT |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 向陽山 | ISO8601 | ISO8601 | 20 | 5.0 | 80 | 2.5 | 陰 | 10.0 | 2.0 |
+
 ---
 
 ## 5. API 介面 (Google Apps Script)
@@ -166,6 +172,10 @@ Payload: `{ "action": "update_itinerary", "data": [ ...items ] }`
 #### 5. `upload_logs` (POST)
 上傳日誌。
 Payload: `{ "action": "upload_logs", "logs": [ ... ], "device_info": { ... } }`
+
+#### 6. `fetch_weather` (GET)
+取得登山氣象資料 (讀取 `Weather_Hiking_App` Sheet)。
+Response: JSON Array of Weather objects.
 
 ---
 
