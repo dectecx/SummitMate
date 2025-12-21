@@ -2106,8 +2106,9 @@ class InfoTabState extends State<InfoTab> {
       return Card(
         child: ListTile(
           leading: const Icon(Icons.cloud_off),
-          title: const Text('暫無氣象資料'),
-          trailing: TextButton(onPressed: () => _refreshWeather(force: true), child: const Text('重試')),
+          title: Text(_loadingWeather ? '讀取中...' : '請更新氣象資料', style: TextStyle(color: Colors.grey)),
+          subtitle: const Text('點擊右側按鈕取得最新預報'),
+          trailing: IconButton(onPressed: () => _refreshWeather(force: true), icon: const Icon(Icons.refresh, color: Colors.blue)),
         ),
       );
     }
@@ -2161,7 +2162,8 @@ class InfoTabState extends State<InfoTab> {
                     onTap: () => _refreshWeather(force: true),
                     child: Row(
                       children: [
-                        Text('更新: $timeStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                        Text('更新: $timeStr${w.isStale ? " (過期)" : ""}', 
+                             style: TextStyle(fontSize: 10, color: w.isStale ? Colors.red : Colors.grey)),
                         const SizedBox(width: 4),
                         const Icon(Icons.refresh, size: 14, color: Colors.grey),
                       ],
@@ -2170,6 +2172,19 @@ class InfoTabState extends State<InfoTab> {
               ],
             ),
             const Divider(),
+            if (w.isStale)
+               Container(
+                 margin: const EdgeInsets.only(bottom: 8),
+                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                 decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
+                 child: Row(
+                   children: [
+                     Icon(Icons.warning_amber, size: 16, color: Colors.red.shade700),
+                     const SizedBox(width: 8),
+                     Expanded(child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: Colors.red.shade700))),
+                   ],
+                 ),
+               ),
             // Current Weather
             InkWell(
               onTap: () {

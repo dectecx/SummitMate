@@ -100,6 +100,10 @@ function fetchFromCWA() {
     const locations = json.cwaopendata.Dataset.Locations.Location;
     Logger.log(`取得 ${locations.length} 個地點`);
 
+    const issueTime = getIssueTime(json);
+    PropertiesService.getScriptProperties().setProperty("LATEST_ISSUE_TIME", issueTime || "");
+    Logger.log(`取得 ${locations.length} 個地點, 發布時間: ${issueTime}`);
+
     const rawData = [];
 
     locations.forEach(loc => {
@@ -227,18 +231,36 @@ function generateAppView(rawDataRows) {
       consolidatedData[compositeKey][shortKey] = val;
     }
   });
+  
+  const issueTime = PropertiesService.getScriptProperties().getProperty("LATEST_ISSUE_TIME") || "";
 
-  const appHeader = ["Location", "StartTime", "EndTime", "Wx", "T", "PoP", "MinT", "MaxT", "RH", "WS", "MinAT", "MaxAT"];
+  Object.values(consolidatedData).forEach(item => {
+    // Add IssueTime to each item
+    item.IssueTime = issueTime;
+  });
+
+  const appHeader = ["Location", "StartTime", "EndTime", "Wx", "T", "PoP", "MinT", "MaxT", "RH", "WS", "MinAT", "MaxAT", "IssueTime"];
   const appRows = [];
 
   Object.values(consolidatedData).forEach(item => {
     appRows.push([
       item.Location, item.StartTime, item.EndTime,
-      item.Wx, item.T, item.PoP, item.MinT, item.MaxT, item.RH, item.WS, item.MinAT, item.MaxAT
+      item.Wx, item.T, item.PoP, item.MinT, item.MaxT, item.RH, item.WS, item.MinAT, item.MaxAT, item.IssueTime
     ]);
   });
 
   updateSheet("Weather_Hiking_App", [appHeader, ...appRows]);
+}
+
+/**
+ * 輔助：提取 IssueTime
+ */
+function getIssueTime(json) {
+  try {
+    return json.cwaopendata.Dataset.DatasetInfo.IssueTime;
+  } catch (e) {
+    return "";
+  }
 }
 
 /**

@@ -8,6 +8,15 @@ import '../core/env_config.dart';
 import '../core/constants.dart';
 
 
+
+/// Weather Service
+/// Data Sources:
+/// 1. Hiking Weather: F-B0053-031 育樂天氣預報資料-登山一週日夜天氣預報(中文)
+///    - URL: https://opendata.cwa.gov.tw/dataset/forecast/F-B0053-031 (Actually F-B0053-003 or 033 per usage)
+///    - Accessed via Google Apps Script Proxy
+/// 2. Township Weather: F-D0047-039 鄉鎮天氣預報-臺東縣未來1週天氣預報
+///    - URL: https://opendata.cwa.gov.tw/dataset/all/F-D0047-039
+///    - Accessed via Direct API (Mobile) or Netlify Proxy (Web)
 class WeatherService {
   static const String _boxName = 'weather_cache';
   static const String _cacheKey = 'current_weather';
@@ -24,25 +33,36 @@ class WeatherService {
     }
   }
 
-  // Get cached weather or fetch new if stale
+  // Get cached weather. Only fetch new if forceRefresh is true or cache is missing.
   Future<WeatherData?> getWeather({bool forceRefresh = false, String locationName = '向陽山'}) async {
     final dynamicCacheKey = 'weather_$locationName';
     final cached = _box?.get(dynamicCacheKey);
 
-    if (cached != null && !cached.isStale && !forceRefresh) {
+    // If forcing refresh, fetch and update cache
+    if (forceRefresh) {
+      try {
+        final weather = await fetchWeather(locationName: locationName);
+        _box?.put(dynamicCacheKey, weather);
+        return weather;
+      } catch (e) {
+        LogService.error('Failed to force refresh weather: $e', source: 'WeatherService');
+        // If fetch fails, fall back to cache if available
+        return cached;
+      }
+    }
+
+    // If not forcing refresh, attempt to return cache (even if stale)
+    if (cached != null) {
+      if (cached.isStale) {
+        // Option: We could auto-fetch background, but user requested Manual Only.
+        // So we just return stale cache. UI can show "Data out of date" warning if needed.
+        LogService.info('Returning stale cache for $locationName', source: 'WeatherService');
+      }
       return cached;
     }
 
-    try {
-      final weather = await fetchWeather(locationName: locationName);
-      // Cache the result with dynamic key
-      _box?.put(dynamicCacheKey, weather);
-      return weather;
-    } catch (e) {
-      LogService.error('Failed to fetch weather: $e', source: 'WeatherService');
-      // Return stale cache if fetch fails
-      return cached;
-    }
+    // No cache and not force refresh -> Return null (UI should prompt user)
+    return null;
   }
 
   Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
@@ -137,6 +157,14 @@ class WeatherService {
     final maxAT = double.tryParse(current['MaxAT'].toString()) ?? 0.0;
     final minAT = double.tryParse(current['MinAT'].toString()) ?? 0.0;
     final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
+
+    // IssueTime (if available)
+    DateTime? issueTime;
+    if (current.containsKey('IssueTime') && current['IssueTime'].toString().isNotEmpty) {
+      try {
+        issueTime = DateTime.parse(current['IssueTime'].toString());
+      } catch (_) {}
+    }
 
     // 4. Build Daily Forecast
     final dailyMap = <String, Map<String, dynamic>>{};
@@ -233,6 +261,7 @@ class WeatherService {
       locationName: locationName,
       dailyForecasts: dailyForecasts,
       apparentTemperature: apparentTemp,
+      issueTime: issueTime,
     );
   }
 
@@ -275,6 +304,18 @@ class WeatherService {
     final pop = int.tryParse(getValue('12小時降雨機率', 'ProbabilityOfPrecipitation')) ?? 0;
     final wx = getValue('天氣現象', 'Weather');
     final ws = double.tryParse(getValue('風速', 'WindSpeed')) ?? 0.0; // If available
+
+    // Issue Time (Township)
+    DateTime? issueTime;
+    try {
+       final locationsRoot = json['records']['Locations'][0];
+       if (locationsRoot['DatasetInfo'] != null) {
+          final info = locationsRoot['DatasetInfo'];
+          if (info['IssueTime'] != null) {
+             issueTime = DateTime.parse(info['IssueTime'].toString());
+          }
+       }
+    } catch (_) {}
 
     // Apparent Temp
     final maxAT = double.tryParse(getValue('最高體感溫度', 'MaxApparentTemperature')) ?? 0.0;
@@ -367,6 +408,7 @@ class WeatherService {
       locationName: diffName,
       dailyForecasts: dailyForecasts,
       apparentTemperature: apparentTemp,
+      issueTime: issueTime,
     );
 
     return weather;
