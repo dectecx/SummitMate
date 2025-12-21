@@ -2197,9 +2197,21 @@ class InfoTabState extends State<InfoTab> {
                       ]),
                       const SizedBox(height: 4),
                       Row(children: [
+                        const Icon(Icons.water, size: 14, color: Colors.lightBlue),
+                        const SizedBox(width: 4),
+                        Text('濕度: ${w.humidity.toStringAsFixed(0)}%')
+                      ]),
+                      const SizedBox(height: 4),
+                      Row(children: [
                         const Icon(Icons.air, size: 14, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text('風速: ${w.windSpeed} m/s')
+                      ]),
+                      const SizedBox(height: 4),
+                      Row(children: [
+                        const Icon(Icons.thermostat, size: 14, color: Colors.orangeAccent),
+                        const SizedBox(width: 4),
+                        Text('體感: ${(w.apparentTemperature ?? w.temperature).toStringAsFixed(1)}°C')
                       ]),
                       const SizedBox(height: 4),
                       Row(children: [
@@ -2246,6 +2258,11 @@ class InfoTabState extends State<InfoTab> {
                            Text(d.dayCondition, style: const TextStyle(fontSize: 10), overflow: TextOverflow.ellipsis),
                            const SizedBox(height: 4),
                            Text('${d.minTemp.round()}~${d.maxTemp.round()}°C', style: const TextStyle(fontSize: 12)),
+                           if ((d.maxApparentTemp ?? 0) != 0)
+                             Text(
+                               '體感 ${(d.minApparentTemp ?? d.minTemp).round()}~${(d.maxApparentTemp ?? d.maxTemp).round()}',
+                               style: const TextStyle(fontSize: 10, color: Colors.grey),
+                             ),
                            const SizedBox(height: 2),
                            Row(
                              mainAxisAlignment: MainAxisAlignment.center,

@@ -159,6 +159,8 @@ function extractValue(elementName, valObj) {
     case "天氣現象": key = "Weather"; break;
     case "最高溫度": key = "MaxTemperature"; break;
     case "最低溫度": key = "MinTemperature"; break;
+    case "最高體感溫度": key = "MaxApparentTemperature"; break;
+    case "最低體感溫度": key = "MinApparentTemperature"; break;
   }
 
   if (key && valObj[key] !== undefined) return valObj[key];
@@ -169,8 +171,6 @@ function extractValue(elementName, valObj) {
   
   return "";
 }
-
-// ... readRawData ...
 
 /**
  * 步驟 C: 儲存 Raw Data
@@ -194,15 +194,6 @@ function readRawData() {
 }
 
 /**
- * 步驟 C: 儲存 Raw Data
- */
-function saveRawData(rows) {
-  const header = ["Location", "StartTime", "EndTime", "Element", "Value", "FullElementValue"];
-  updateSheet("Weather_CWA_Hiking_Raw", [header, ...rows]);
-  PropertiesService.getScriptProperties().setProperty("LAST_CWA_FETCH", new Date().toISOString());
-}
-
-/**
  * 步驟 D: 產出 App View
  */
 function generateAppView(rawDataRows) {
@@ -213,7 +204,9 @@ function generateAppView(rawDataRows) {
     "風速": "WS",
     "天氣現象": "Wx",
     "最高溫度": "MaxT",
-    "最低溫度": "MinT"
+    "最低溫度": "MinT",
+    "最高體感溫度": "MaxAT",
+    "最低體感溫度": "MinAT"
   };
 
   const consolidatedData = {};
@@ -228,20 +221,20 @@ function generateAppView(rawDataRows) {
       if (!consolidatedData[compositeKey]) {
         consolidatedData[compositeKey] = {
           Location: loc, StartTime: start, EndTime: end,
-          T: "", RH: "", PoP: "", WS: "", Wx: "", MaxT: "", MinT: ""
+          T: "", RH: "", PoP: "", WS: "", Wx: "", MaxT: "", MinT: "", MaxAT: "", MinAT: ""
         };
       }
       consolidatedData[compositeKey][shortKey] = val;
     }
   });
 
-  const appHeader = ["Location", "StartTime", "EndTime", "Wx", "T", "PoP", "MinT", "MaxT", "RH", "WS"];
+  const appHeader = ["Location", "StartTime", "EndTime", "Wx", "T", "PoP", "MinT", "MaxT", "RH", "WS", "MinAT", "MaxAT"];
   const appRows = [];
 
   Object.values(consolidatedData).forEach(item => {
     appRows.push([
       item.Location, item.StartTime, item.EndTime,
-      item.Wx, item.T, item.PoP, item.MinT, item.MaxT, item.RH, item.WS
+      item.Wx, item.T, item.PoP, item.MinT, item.MaxT, item.RH, item.WS, item.MinAT, item.MaxAT
     ]);
   });
 

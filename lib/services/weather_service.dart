@@ -93,7 +93,7 @@ class WeatherService {
     final baseUrl = '${EnvConfig.cwaApiHost}/api/v1/rest/datastore/F-D0047-039';
 
     final url = Uri.parse(
-      '$baseUrl?Authorization=$_apiKey&locationName=$target&elementName=MaxT,MinT,PoP12h,Wx,T,RH,WS',
+      '$baseUrl?Authorization=$_apiKey&locationName=$target&elementName=MaxT,MinT,PoP12h,Wx,T,RH,WS,MaxAT,MinAT',
     );
 
     LogService.info('Fetching town weather: $target (Host: ${EnvConfig.cwaApiHost})', source: 'WeatherService');
@@ -132,6 +132,11 @@ class WeatherService {
     final pop = int.tryParse(current['PoP'].toString()) ?? 0;
     final windSpeed = double.tryParse(current['WS'].toString()) ?? 0.0;
     final wx = current['Wx'].toString();
+    
+    // Apparent Temp (Avg of Max/Min if available)
+    final maxAT = double.tryParse(current['MaxAT'].toString()) ?? 0.0;
+    final minAT = double.tryParse(current['MinAT'].toString()) ?? 0.0;
+    final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
 
     // 4. Build Daily Forecast
     final dailyMap = <String, Map<String, dynamic>>{};
@@ -142,7 +147,12 @@ class WeatherService {
 
       dailyMap.putIfAbsent(
         dateKey,
-        () => {'dayCondition': '', 'nightCondition': '', 'maxTemp': -100.0, 'minTemp': 100.0, 'pop': 0},
+        () => {
+          'dayCondition': '', 'nightCondition': '', 
+          'maxTemp': -100.0, 'minTemp': 100.0, 
+          'maxAT': -100.0, 'minAT': 100.0,
+          'pop': 0
+        },
       );
 
       // Wx logic (Day 06-18, Night 18-06)
@@ -159,7 +169,7 @@ class WeatherService {
 
       // MaxT
       final maxT = double.tryParse(row['MaxT'].toString());
-      if (maxT != null && maxT != 0.0) { // Sometimes plain 0.0 if missing?
+      if (maxT != null && maxT != 0.0) {
          if (maxT > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = maxT;
       } else {
          final t = double.tryParse(row['T'].toString()) ?? 0.0;
@@ -173,6 +183,18 @@ class WeatherService {
       } else {
          final t = double.tryParse(row['T'].toString()) ?? 0.0;
          if (t < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = t;
+      }
+
+      // MaxAT
+      final mxAT = double.tryParse(row['MaxAT'].toString());
+      if (mxAT != null && mxAT != 0.0) {
+         if (mxAT > dailyMap[dateKey]!['maxAT']) dailyMap[dateKey]!['maxAT'] = mxAT;
+      }
+
+      // MinAT
+      final mnAT = double.tryParse(row['MinAT'].toString());
+      if (mnAT != null && mnAT != 0.0) {
+        if (mnAT < dailyMap[dateKey]!['minAT']) dailyMap[dateKey]!['minAT'] = mnAT;
       }
 
       // PoP
@@ -189,6 +211,8 @@ class WeatherService {
         maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
         minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
         rainProbability: d['pop'],
+        maxApparentTemp: d['maxAT'] == -100.0 ? 0.0 : d['maxAT'],
+        minApparentTemp: d['minAT'] == 100.0 ? 0.0 : d['minAT'],
       );
     }).toList();
 
@@ -208,6 +232,7 @@ class WeatherService {
       timestamp: DateTime.now(),
       locationName: locationName,
       dailyForecasts: dailyForecasts,
+      apparentTemperature: apparentTemp,
     );
   }
 
@@ -251,6 +276,11 @@ class WeatherService {
     final wx = getValue('天氣現象', 'Weather');
     final ws = double.tryParse(getValue('風速', 'WindSpeed')) ?? 0.0; // If available
 
+    // Apparent Temp
+    final maxAT = double.tryParse(getValue('最高體感溫度', 'MaxApparentTemperature')) ?? 0.0;
+    final minAT = double.tryParse(getValue('最低體感溫度', 'MinApparentTemperature')) ?? 0.0;
+    final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
+
     // Daily Forecast
     final dailyMap = <String, Map<String, dynamic>>{};
 
@@ -261,7 +291,12 @@ class WeatherService {
       final dateKey = "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
       dailyMap.putIfAbsent(
         dateKey,
-        () => {'dayCondition': '', 'nightCondition': '', 'maxTemp': -100.0, 'minTemp': 100.0, 'pop': 0},
+        () => {
+          'dayCondition': '', 'nightCondition': '', 
+          'maxTemp': -100.0, 'minTemp': 100.0, 
+          'maxAT': -100.0, 'minAT': 100.0,
+          'pop': 0
+        },
       );
       final val = item['ElementValue'][0]['Weather'].toString();
       if (start.hour >= 6 && start.hour < 18) {
@@ -289,6 +324,8 @@ class WeatherService {
 
     processTemp('最高溫度', 'MaxTemperature', 'maxTemp', true);
     processTemp('最低溫度', 'MinTemperature', 'minTemp', false);
+    processTemp('最高體感溫度', 'MaxApparentTemperature', 'maxAT', true);
+    processTemp('最低體感溫度', 'MinApparentTemperature', 'minAT', false);
 
     // PoP
     final popList = getTimeList('12小時降雨機率');
@@ -309,6 +346,8 @@ class WeatherService {
         maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
         minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
         rainProbability: d['pop'],
+        maxApparentTemp: d['maxAT'] == -100.0 ? 0.0 : d['maxAT'],
+        minApparentTemp: d['minAT'] == 100.0 ? 0.0 : d['minAT'],
       );
     }).toList();
     dailyForecasts.sort((a, b) => a.date.compareTo(b.date));
@@ -327,6 +366,7 @@ class WeatherService {
       timestamp: DateTime.now(),
       locationName: diffName,
       dailyForecasts: dailyForecasts,
+      apparentTemperature: apparentTemp,
     );
 
     return weather;

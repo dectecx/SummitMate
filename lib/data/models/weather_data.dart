@@ -34,6 +34,9 @@ class WeatherData extends HiveObject {
   @HiveField(9)
   final List<DailyForecast> dailyForecasts; // 未來7天天氣預報
 
+  @HiveField(10)
+  final double? apparentTemperature; // 體感溫度 (攝氏)
+
   WeatherData({
     required this.temperature,
     required this.humidity,
@@ -45,6 +48,7 @@ class WeatherData extends HiveObject {
     required this.timestamp,
     required this.locationName,
     this.dailyForecasts = const [],
+    this.apparentTemperature,
   });
 
   // 檢查資料是否過期 (> 3小時)
@@ -71,6 +75,12 @@ class DailyForecast extends HiveObject {
   @HiveField(5)
   final int rainProbability; // 降雨機率 (平均或最高)
 
+  @HiveField(6)
+  final double? maxApparentTemp; // 最高體感溫度
+
+  @HiveField(7)
+  final double? minApparentTemp; // 最低體感溫度
+
   DailyForecast({
     required this.date,
     required this.dayCondition,
@@ -78,5 +88,7 @@ class DailyForecast extends HiveObject {
     required this.maxTemp,
     required this.minTemp,
     required this.rainProbability,
+    this.maxApparentTemp,
+    this.minApparentTemp,
   });
 }
