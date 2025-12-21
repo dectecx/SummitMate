@@ -61,8 +61,16 @@ class WeatherService {
       return cached;
     }
 
-    // No cache and not force refresh -> Return null (UI should prompt user)
-    return null;
+    // No cache and not force refresh -> Auto-fetch
+    try {
+       LogService.info('Cache miss for $locationName, fetching...', source: 'WeatherService');
+       final weather = await fetchWeather(locationName: locationName);
+       _box?.put(dynamicCacheKey, weather);
+       return weather;
+    } catch (e) {
+       LogService.error('Failed to auto-fetch weather: $e', source: 'WeatherService');
+       return null;
+    }
   }
 
   Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
@@ -88,7 +96,7 @@ class WeatherService {
     final baseUrl = EnvConfig.getApiUrl();
     final url = Uri.parse('$baseUrl?action=${ApiConfig.actionFetchWeather}');
 
-    LogService.info('Fetching hiking weather from GAS: $locationName', source: 'WeatherService');
+    LogService.info('Fetching hiking weather from GAS for: $locationName', source: 'WeatherService');
 
     try {
       final response = await http.get(url);
@@ -96,7 +104,29 @@ class WeatherService {
       if (response.statusCode == 200) {
         // GAS returns List<Map>
         final List<dynamic> jsonList = json.decode(utf8.decode(response.bodyBytes));
+        
+        // --- OPTIMIZATION: Cache ALL locations from this response ---
+        // 1. Identify all unique locations
+        final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
+        LogService.info('GAS returned data for: ${uniqueLocations.join(', ')}', source: 'WeatherService');
+
+        // 2. Parse and Cache each location
+        for (var loc in uniqueLocations) {
+           try {
+             final weather = _parseGasWeatherData(jsonList, loc);
+             final key = 'weather_$loc';
+             _box?.put(key, weather);
+             LogService.info('Cached bulk data for: $loc', source: 'WeatherService');
+           } catch (e) {
+             LogService.error('Failed to parse/cache bulk data for $loc: $e', source: 'WeatherService');
+           }
+        }
+
+        // 3. Return the requested location's data (now in cache) or parse directly if something failed above
+        // We will just return the parsed data for the requested location
+        // If it was cached above, we could technically re-read it, but parsing again is fine/safer return.
         return _parseGasWeatherData(jsonList, locationName);
+
       } else {
         throw Exception('GAS API Error: ${response.statusCode}');
       }

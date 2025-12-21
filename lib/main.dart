@@ -2138,7 +2138,7 @@ class InfoTabState extends State<InfoTab> {
                       setState(() {
                         _selectedLocation = newValue;
                         _weather = null; // Clear old data visually
-                        _refreshWeather(force: true);
+                        _refreshWeather(force: false);
                       });
                     }
                   },
