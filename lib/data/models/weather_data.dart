@@ -37,6 +37,9 @@ class WeatherData extends HiveObject {
   @HiveField(10)
   final double? apparentTemperature; // 體感溫度 (攝氏)
 
+  @HiveField(11)
+  final DateTime? issueTime; // 資料發布時間 (CWA Dataset IssueTime)
+
   WeatherData({
     required this.temperature,
     required this.humidity,
@@ -49,6 +52,7 @@ class WeatherData extends HiveObject {
     required this.locationName,
     this.dailyForecasts = const [],
     this.apparentTemperature,
+    this.issueTime,
   });
 
   // 檢查資料是否過期 (> 3小時)
