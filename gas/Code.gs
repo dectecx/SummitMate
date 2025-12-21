@@ -1,21 +1,23 @@
 // ============================================================
 // SummitMate - Google Apps Script API
-// 嘉明湖登山行程助手 Backend API
+// Backend API for SummitMate App
 // ============================================================
 //
-// 部署步驟：
-// 1. 建立 Google Sheets，包含兩個工作表：
-//    - "Itinerary" (行程)
-//    - "Messages" (留言)
-// 2. 點擊「擴充功能」→「Apps Script」
-// 3. 複製此檔案內容到 Code.gs
-// 4. 點擊「部署」→「新增部署作業」
-// 5. 選擇類型「網頁應用程式」
-// 6. 設定：
-//    - 執行身分：我
-//    - 誰可以存取：任何人
-// 7. 點擊「部署」並複製網頁應用程式 URL
-// 8. 將 URL 更新到 Flutter App 的 constants.dart
+// Deployment Instructions:
+// 1. Create a Google Sheet with Sheets: "Itinerary", "Messages", "Logs", "Weather_CWA_Hiking_Raw", "Weather_Hiking_App".
+// 2. Open "Extensions" -> "Apps Script".
+// 3. Copy content from `gas/Code.gs` to project's `Code.gs`.
+// 4. Create new script file `weather_etl.gs` and copy content from `gas/weather_etl.gs`.
+// 5. Set Script Properties (Project Settings -> Script Properties):
+//    - CWA_API_KEY: [Your CWA API Key]
+// 6. Set Trigger:
+//    - Function: syncWeatherToSheets
+//    - Event Source: Time-driven
+//    - Type: Hourly (or as needed)
+// 7. Deploy as Web App:
+//    - Execute as: Me
+//    - Who has access: Anyone
+// 8. Update specific API URL in Flutter App constants.
 //
 // ============================================================
 
@@ -35,6 +37,9 @@ function doGet(e) {
     switch (action) {
       case 'fetch_all':
         return createJsonResponse(fetchAll());
+      case 'fetch_weather':
+        // 需搭配 weather_etl.gs 中的 getWeatherData()
+        return createJsonResponse(getWeatherData());
       case 'health':
         return createJsonResponse({ status: 'ok', timestamp: new Date().toISOString() });
       default:
