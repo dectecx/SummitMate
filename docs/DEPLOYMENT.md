@@ -11,7 +11,8 @@
 1.  **建立專案**
     *   建立 Google Sheet，命名為 `SummitMate Database`。
     *   開啟 **擴充功能** > **Apps Script**。
-    *   複製 `docs/google_apps_script/Code.gs` 內容至編輯器。
+    *   複製 `gas/Code.gs` 內容至 `Code.gs`。
+    *   建立新腳本 `weather_etl.gs`，並複製 `gas/weather_etl.gs` 內容。
 
 2.  **初始化資料**
     *   執行 `setupSheets` 函式以建立 `Itinerary`, `Messages`, `Logs` 工作表。
@@ -25,6 +26,12 @@
 4.  **環境設定**
     *   將 URL 填入 `.env.prod` (本地開發用) 或 GitHub Secrets (CI/CD 用)。
     *   Key: `GAS_BASE_URL`
+    *   **氣象功能設定**:
+        *   於 **專案設定** > **指令碼屬性** 新增 `CWA_API_KEY` (填入您的 CWA API 授權碼)。
+        *   設定 **觸發條件** (Triggers):
+            *   函式: `syncWeatherToSheets`
+            *   類型: 時間驅動 (Time-driven)
+            *   頻率: 每 4 小時 (Every 4 hours)
 
 ---
 

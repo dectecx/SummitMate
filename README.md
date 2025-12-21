@@ -18,6 +18,12 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 * **團隊留言板**：支援巢狀留言與分類顯示。
 * **Google Sheets 同步**：雙向同步留言，單向下載行程，並支援 Web 版跨域上傳。
 
+### 登山氣象 (Hiking Weather)
+
+*   **GAS ETL 架構**：Serverless 氣象資料處理，自動從 CWA 擷取並快取。
+*   **7日預報**：針對高山 (如向陽山) 提供精準 7 日天氣預報。
+*   **離線快取**：支援離線查看最後更新的氣象資訊。
+
 ### 跨平台支援 (Cross-Platform)
 
 * **Mobile (iOS/Android)**：原生體驗，完整硬體支援。
@@ -51,6 +57,7 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 建立 `.env.dev` 檔案：
 ```properties
 GAS_BASE_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
+# 若需測試氣象功能，請確保 CWA_API_KEY 已配置於 GAS Script Properties
 ```
 
 ### 2. 執行應用
