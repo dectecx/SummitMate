@@ -74,4 +74,5 @@ class ApiConfig {
   static const String actionFetchAll = 'fetch_all';
   static const String actionAddMessage = 'add_message';
   static const String actionDeleteMessage = 'delete_message';
+  static const String actionFetchWeather = 'fetch_weather';
 }
