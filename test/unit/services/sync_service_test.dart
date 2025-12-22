@@ -41,6 +41,14 @@ void main() {
     when(() => mockSettings.isOfflineMode).thenReturn(false);
     when(() => mockSettingsRepo.getSettings()).thenReturn(mockSettings);
 
+    // Default: No last sync time
+    when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
+    when(() => mockMessageRepo.getLastSyncTime()).thenReturn(null);
+
+    // Default: Save sync time success
+    when(() => mockItineraryRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
+    when(() => mockMessageRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
+
     syncService = SyncService(
       sheetsService: mockSheetsService,
       itineraryRepo: mockItineraryRepo,

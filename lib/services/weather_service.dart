@@ -40,12 +40,15 @@ class WeatherService {
     final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
 
     if (isOffline) {
-       if (cached != null) {
-          LogService.info('Offline Mode: Returning cached weather for $locationName (Stale: ${cached.isStale})', source: 'WeatherService');
-          return cached;
-       }
-       LogService.warning('Offline Mode: No cache for $locationName', source: 'WeatherService');
-       throw Exception('目前為離線模式且無快取資料');
+      if (cached != null) {
+        LogService.info(
+          'Offline Mode: Returning cached weather for $locationName (Stale: ${cached.isStale})',
+          source: 'WeatherService',
+        );
+        return cached;
+      }
+      LogService.warning('Offline Mode: No cache for $locationName', source: 'WeatherService');
+      throw Exception('目前為離線模式且無快取資料');
     }
 
     // If forcing refresh
@@ -55,7 +58,10 @@ class WeatherService {
         final now = DateTime.now();
         final diff = now.difference(cached.timestamp);
         if (diff.inMinutes < 5) {
-          LogService.info('Weather cache is fresh (${diff.inMinutes}m ago), ignoring force refresh.', source: 'WeatherService');
+          LogService.info(
+            'Weather cache is fresh (${diff.inMinutes}m ago), ignoring force refresh.',
+            source: 'WeatherService',
+          );
           return cached;
         }
       }
