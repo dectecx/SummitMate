@@ -682,11 +682,13 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 ),
               ],
             ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 320),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   // ====== 暱稱區塊 ======
                   TextField(
                     controller: controller,
@@ -822,6 +824,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 ],
               ),
             ),
+          ),
             actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
           );
         },
@@ -1819,6 +1822,17 @@ class InfoTabState extends State<InfoTab> {
               ),
               const SizedBox(height: 8),
 
+              // 天氣預報 (可縮合)
+              Card(
+                child: ExpansionTile(
+                  leading: const Icon(Icons.cloud, color: Colors.blue),
+                  title: const Text('天氣預報', style: TextStyle(fontWeight: FontWeight.bold)),
+                  initiallyExpanded: true,
+                  children: [_buildWeatherContent()],
+                ),
+              ),
+              const SizedBox(height: 8),
+
               // 外部資訊連結 (可縮合)
               Card(
                 child: ExpansionTile(
@@ -1867,17 +1881,6 @@ class InfoTabState extends State<InfoTab> {
                       onTap: () => _launchUrl(ExternalLinks.cwaUrl),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // 天氣預報 (可縮合)
-              Card(
-                child: ExpansionTile(
-                  leading: const Icon(Icons.cloud, color: Colors.blue),
-                  title: const Text('天氣預報', style: TextStyle(fontWeight: FontWeight.bold)),
-                  initiallyExpanded: true,
-                  children: [_buildWeatherContent()],
                 ),
               ),
               const SizedBox(height: 8),
