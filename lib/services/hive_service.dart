@@ -79,6 +79,7 @@ class HiveService {
     bool clearWeather = false,
     bool clearSettings = false,
     bool clearLogs = false,
+    bool clearPolls = false,
   }) async {
     // 先關閉所有 box 以避免 type conflict
     await Hive.close();
@@ -100,6 +101,9 @@ class HiveService {
     }
     if (clearLogs) {
       await Hive.deleteBoxFromDisk('app_logs');
+    }
+    if (clearPolls) {
+      await Hive.deleteBoxFromDisk('polls');
     }
   }
 }

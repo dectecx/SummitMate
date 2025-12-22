@@ -553,6 +553,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     bool clearWeather = true;
     bool clearSettings = false; // 預設不清除設定
     bool clearLogs = false;
+    bool clearPolls = true;
 
     showDialog(
       context: context,
@@ -596,6 +597,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   value: clearLogs,
                   onChanged: (v) => setState(() => clearLogs = v ?? false),
                 ),
+                CheckboxListTile(
+                  title: const Text('投票資料'),
+                  value: clearPolls,
+                  onChanged: (v) => setState(() => clearPolls = v ?? false),
+                ),
                 const Divider(),
                 const Text(
                   '此操作無法復原！',
@@ -618,6 +624,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   clearWeather: clearWeather,
                   clearSettings: clearSettings,
                   clearLogs: clearLogs,
+                  clearPolls: clearPolls,
                 );
 
                 // 顯示重啟提示對話框 (不可取消)
@@ -742,11 +749,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     ),
                     const Divider(height: 32),
 
-                    // ====== 重看使用引導 ======
-                    ListTile(
-                      leading: const Icon(Icons.help_outline),
-                      title: const Text('重看使用引導'),
-                      onTap: () async {
+                      // ====== 重看教學引導 ======
+                      ListTile(
+                        leading: const Icon(Icons.help_outline),
+                        title: const Text('重看教學引導'),
+                        onTap: () async {
                         if (innerContext.mounted) {
                           Navigator.pop(innerContext);
                           Future.delayed(const Duration(milliseconds: 300), () {
@@ -766,20 +773,20 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
                         ListTile(
-                          leading: const Icon(Icons.article_outlined, size: 20),
-                          title: const Text('查看日誌'),
-                          onTap: () {
-                            Navigator.pop(dialogContext);
-                            _showLogViewer(context);
-                          },
-                        ),
-                        ListTile(
                           leading: const Icon(Icons.delete_forever, size: 20, color: Colors.red),
                           title: const Text('清除本地資料庫', style: TextStyle(color: Colors.red)),
                           subtitle: const Text('選擇要刪除的資料類型', style: TextStyle(fontSize: 11)),
                           onTap: () async {
                             Navigator.pop(dialogContext); // 先關閉設定對話框
                             _showClearDataDialog(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.article_outlined, size: 20),
+                          title: const Text('查看日誌'),
+                          onTap: () {
+                            Navigator.pop(dialogContext);
+                            _showLogViewer(context);
                           },
                         ),
                         const ListTile(
