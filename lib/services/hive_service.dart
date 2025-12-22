@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants.dart';
 import '../data/models/settings.dart';
 import '../data/models/itinerary_item.dart';
@@ -99,6 +100,8 @@ class HiveService {
     }
     if (clearSettings) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.settings);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(PrefKeys.username);
     }
     if (clearLogs) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.logs);
