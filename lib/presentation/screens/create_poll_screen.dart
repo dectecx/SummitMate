@@ -159,16 +159,18 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
             const SizedBox(height: 16),
 
             // Settings
-            SwitchListTile(
-              title: const Text('允許多選'),
-              value: _allowMultipleVotes,
-              onChanged: _isSubmitting ? null : (v) => setState(() => _allowMultipleVotes = v),
-            ),
-            SwitchListTile(
-              title: const Text('允許參與者新增選項'),
-              value: _allowAddOption,
-              onChanged: _isSubmitting ? null : (v) => setState(() => _allowAddOption = v),
-            ),
+                  SwitchListTile(
+                    title: const Text('允許新增'),
+                    subtitle: const Text('允許其他成員新增選項'),
+                    value: _allowAddOption,
+                    onChanged: _isSubmitting ? null : (val) => setState(() => _allowAddOption = val),
+                  ),
+                  SwitchListTile(
+                    title: const Text('多選'),
+                    subtitle: const Text('允許成員選擇多個選項'),
+                    value: _allowMultipleVotes,
+                    onChanged: _isSubmitting ? null : (val) => setState(() => _allowMultipleVotes = val),
+                  ),
             const Divider(),
 
             // Options

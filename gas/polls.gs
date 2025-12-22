@@ -19,6 +19,10 @@ function handlePollAction(subAction, data) {
       return addOption(data);
     case 'delete_option':
       return deleteOption(data);
+    case 'close':
+      return closePoll(data);
+    case 'delete':
+      return deletePoll(data);
     default:
       return { error: '未知的投票子動作: ' + subAction };
   }
@@ -112,21 +116,26 @@ function getPolls(userId) {
     pollsMap[p.poll_id] = p;
   });
 
-  // 計算每個選項的票數，並標記使用者投過的選項
-  const voteCounts = {}; // { optionId: count }
+  // ... inside getPolls ...
+  // 計算每個選項的票數與投票者
+  const voteCounts = {}; 
+  const voteVoters = {}; // { optionId: [{user_id, user_name}] }
+
   votes.forEach(v => {
     voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1;
     
-    // 檢查是否為當前使用者投的票
+    if (!voteVoters[v.option_id]) voteVoters[v.option_id] = [];
+    voteVoters[v.option_id].push({ user_id: v.user_id, user_name: v.user_name });
+
     if (userId && v.user_id === userId && pollsMap[v.poll_id]) {
         pollsMap[v.poll_id].my_votes.push(v.option_id);
     }
   });
 
-  // 將選項歸戶到對應的投票中
   options.forEach(o => {
     if (pollsMap[o.poll_id]) {
       o.vote_count = voteCounts[o.option_id] || 0;
+      o.voters = voteVoters[o.option_id] || [];
       pollsMap[o.poll_id].options.push(o);
       pollsMap[o.poll_id].total_votes += o.vote_count;
     }
@@ -265,6 +274,72 @@ function deleteOption(data) {
         }
     }
     return { success: false, error: '找不到該選項' };
+}
+
+/**
+ * 關閉投票
+ */
+function closePoll(data) {
+  const ss = getSpreadsheet();
+  const pollSheet = ss.getSheetByName('Polls');
+  const pollId = data.poll_id;
+  const userId = data.user_id;
+
+  const polls = pollSheet.getDataRange().getValues();
+  for (let i = 1; i < polls.length; i++) {
+    if (polls[i][0] === pollId) {
+      // Check creator (optional, strictly speaking only creator should close)
+      if (polls[i][3] !== userId) return { success: false, error: '只有發起人可以關閉投票' };
+
+      // Update status to 'ended' (Column K -> index 10)
+      pollSheet.getRange(i + 1, 11).setValue('ended');
+      return { success: true, message: '投票已關閉' };
+    }
+  }
+  return { success: false, error: '找不到此投票' };
+}
+
+/**
+ * 刪除投票 (Hard Delete)
+ */
+function deletePoll(data) {
+  const ss = getSpreadsheet();
+  const pollSheet = ss.getSheetByName('Polls');
+  const optSheet = ss.getSheetByName('PollOptions');
+  const voteSheet = ss.getSheetByName('PollVotes');
+  
+  const pollId = data.poll_id;
+  const userId = data.user_id;
+
+  // 1. Verify creator
+  const polls = pollSheet.getDataRange().getValues();
+  let pollRowIndex = -1;
+  for (let i = 1; i < polls.length; i++) {
+    if (polls[i][0] === pollId) {
+      if (polls[i][3] !== userId) return { success: false, error: '只有發起人可以刪除投票' };
+      pollRowIndex = i + 1;
+      break;
+    }
+  }
+  if (pollRowIndex === -1) return { success: false, error: '找不到此投票' };
+
+  // 2. Delete Votes
+  const votes = voteSheet.getDataRange().getValues();
+  // Delete from bottom to top
+  for (let i = votes.length - 1; i >= 1; i--) {
+    if (votes[i][1] === pollId) voteSheet.deleteRow(i + 1);
+  }
+
+  // 3. Delete Options
+  const opts = optSheet.getDataRange().getValues();
+  for (let i = opts.length - 1; i >= 1; i--) {
+    if (opts[i][1] === pollId) optSheet.deleteRow(i + 1);
+  }
+
+  // 4. Delete Poll
+  pollSheet.deleteRow(pollRowIndex);
+
+  return { success: true, message: '投票已刪除' };
 }
 
 // ============================================================

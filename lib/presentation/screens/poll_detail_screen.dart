@@ -128,13 +128,92 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
           orElse: () => widget.poll, // Fallback
         );
 
+        // Check if I am creator
+        // Since we don't have global currentUserId storage easily accessible here except passed in arguments or providers, 
+        // we might need to rely on what we have. 
+        // Actually, we passed userId to services, but here we need to know "am I creator?".
+        // For now, let's assume we can compare IDs. But we need my userId.
+        // We can get it from EnvConfig or passed separately?
+        // Wait, PollService.votePoll requires userId. It comes from where? 
+        // In the previous code, we didn't check creator permission in UI strictly, just backend.
+        // But for UI buttons (Delete Poll), we should hide them if not creator.
+        // Let's assume we can show them and backend rejects if not allowed, OR we create a "Am I Creator" check if we had userId.
+        // Re-checking how userId is obtained in creating poll. It uses 'test_user_1' or similar from some constant? 
+        // In main.dart, we generate/get userId.
+        // Let's try to get userId from a Provider if available, or just show buttons for everyone (and fail safely).
+        // Actually, `PollListScreen` uses `PollProvider`. Does `PollProvider` store currentUserId?
+        // Let's check PollProvider.
+        // If not, I will just show the buttons.
+
         return Scaffold(
           appBar: AppBar(
             title: const Text('投票詳情'),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _isSubmitting ? null : () => provider.fetchPolls(),
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'refresh') {
+                    provider.fetchPolls();
+                  } else if (value == 'close') {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (c) => AlertDialog(
+                        title: const Text('關閉投票'),
+                        content: const Text('確定要提早結束此投票嗎？'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('確定')),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      setState(() => _isSubmitting = true);
+                       try {
+                        // Hardcoded userId for now as we don't have a AuthProvider yet? 
+                        // Actually let's try to get it from somewhere or pass it.
+                        // Ideally PollProvider has it.
+                        await provider.closePoll(pollId: freshPoll.id);
+                        ToastService.success('投票已關閉');
+                      } catch (e) {
+                        ToastService.error(e.toString());
+                      } finally {
+                        setState(() => _isSubmitting = false);
+                      }
+                    }
+                  } else if (value == 'delete') {
+                     final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (c) => AlertDialog(
+                        title: const Text('刪除投票'),
+                        content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                          FilledButton(
+                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                            onPressed: () => Navigator.pop(c, true), 
+                            child: const Text('刪除'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      setState(() => _isSubmitting = true);
+                      try {
+                        await provider.deletePoll(pollId: freshPoll.id);
+                        ToastService.success('投票已刪除');
+                        if (mounted) Navigator.pop(context);
+                      } catch (e) {
+                         ToastService.error(e.toString());
+                         setState(() => _isSubmitting = false);
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'refresh', child: Text('重新整理')),
+                  if (freshPoll.isActive)
+                    const PopupMenuItem(value: 'close', child: Text('結束投票')),
+                  const PopupMenuItem(value: 'delete', child: Text('刪除投票', style: TextStyle(color: Colors.red))),
+                ],
               ),
             ],
           ),
@@ -166,11 +245,16 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                               ),
                               child: const Text('已結束', style: TextStyle(fontSize: 12)),
                             ),
-                          const SizedBox(width: 8),
+                          const Spacer(), // Use spacer to push deadline to right
                           if (freshPoll.deadline != null)
-                            Text(
+                             Text(
                               '截止: ${DateFormat('yyyy/MM/dd HH:mm').format(freshPoll.deadline!)}',
                               style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(width: 8),
+                             Text(
+                              '總票數: ${freshPoll.totalVotes}',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                             ),
                         ],
                       ),
@@ -179,6 +263,12 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         freshPoll.title,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
+                       const SizedBox(height: 4),
+                      Text(
+                        '發起人: ${freshPoll.creatorId}  •  ${DateFormat('yyyy/MM/dd HH:mm').format(freshPoll.createdAt)}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
+                      ),
+                      
                       if (freshPoll.description.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(freshPoll.description, style: Theme.of(context).textTheme.bodyMedium),
@@ -189,19 +279,18 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         children: [
                           if (freshPoll.allowMultipleVotes)
                             Chip(
-                              label: const Text('可多選'),
+                              label: const Text('多選'),
                               visualDensity: VisualDensity.compact,
                               backgroundColor: Colors.blue.shade50,
                               labelStyle: TextStyle(color: Colors.blue.shade800),
                             ),
                           if (freshPoll.isAllowAddOption)
                             Chip(
-                              label: const Text('可新增選項'),
+                              label: const Text('允許新增'),
                               visualDensity: VisualDensity.compact,
                               backgroundColor: Colors.orange.shade50,
                               labelStyle: TextStyle(color: Colors.orange.shade800),
                             ),
-                          Chip(label: Text('總票數: ${freshPoll.totalVotes}'), visualDensity: VisualDensity.compact),
                         ],
                       ),
                       const Divider(height: 32),
@@ -216,78 +305,130 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           final option = freshPoll.options[index];
                           final isSelected = _selectedOptionIds.contains(option.id);
                           final percentage = freshPoll.totalVotes > 0 ? option.voteCount / freshPoll.totalVotes : 0.0;
+                          
+                          // Voters text
+                          // option.voters is List<Map<String, dynamic>>
+                          final votersList = option.voters.map((v) => v['user_name'] ?? v['user_id']).join(', ');
 
-                          return InkWell(
-                            onTap: freshPoll.isActive ? () => _toggleOption(option.id) : null,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
-                                    : Theme.of(context).cardColor,
-                                border: Border.all(
-                                  color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
-                                  width: isSelected ? 2 : 1,
-                                ),
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkWell(
+                                onTap: freshPoll.isActive ? () => _toggleOption(option.id) : null,
                                 borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+                                        : Theme.of(context).cardColor,
+                                    border: Border.all(
+                                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      if (freshPoll.isActive)
-                                        Padding(
-                                          padding: const EdgeInsets.only(right: 8, top: 2),
-                                          child: Icon(
-                                            freshPoll.allowMultipleVotes
-                                                ? (isSelected ? Icons.check_box : Icons.check_box_outline_blank)
-                                                : (isSelected ? Icons.radio_button_checked : Icons.radio_button_off),
-                                            color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
-                                            size: 20,
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          if (freshPoll.isActive)
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 8, top: 2),
+                                              child: Icon(
+                                                freshPoll.allowMultipleVotes
+                                                    ? (isSelected ? Icons.check_box : Icons.check_box_outline_blank)
+                                                    : (isSelected ? Icons.radio_button_checked : Icons.radio_button_off),
+                                                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
+                                                size: 20,
+                                              ),
+                                            ),
+                                          Expanded(
+                                            child: Text(
+                                              option.text,
+                                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      Expanded(
-                                        child: Text(
-                                          option.text,
-                                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                          Text(
+                                            '${(percentage * 100).toStringAsFixed(1)}%',
+                                            style: Theme.of(context).textTheme.bodySmall,
                                           ),
-                                        ),
+                                        ],
                                       ),
-                                      Text(
-                                        '${(percentage * 100).toStringAsFixed(1)}%',
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                      const SizedBox(height: 8),
+                                      // Progress Bar
+                                      Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(4),
+                                            child: LinearProgressIndicator(
+                                              value: percentage,
+                                              minHeight: 8,
+                                              backgroundColor: Colors.grey.shade200,
+                                              valueColor: AlwaysStoppedAnimation<Color>(
+                                                isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            '${option.voteCount} 票',
+                                            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
+                                          ),
+                                          const Spacer(),
+                                          // Delete Option Button (Only if 0 votes AND active)
+                                          if (freshPoll.isActive && option.voteCount == 0)
+                                            InkWell(
+                                                onTap: () async {
+                                                     final confirm = await showDialog<bool>(
+                                                      context: context,
+                                                      builder: (c) => AlertDialog(
+                                                        title: const Text('刪除選項'),
+                                                        content: Text('確定要刪除 "${option.text}" 嗎？'),
+                                                        actions: [
+                                                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                                                          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('刪除')),
+                                                        ],
+                                                      ),
+                                                    );
+                                                    if (confirm == true) {
+                                                      setState(() => _isSubmitting = true);
+                                                      try {
+                                                        await provider.deleteOption(optionId: option.id);
+                                                         ToastService.success('選項已刪除');
+                                                      } catch (e) {
+                                                         ToastService.error(e.toString());
+                                                      } finally {
+                                                        setState(() => _isSubmitting = false);
+                                                      }
+                                                    }
+                                                },
+                                                child: const Icon(Icons.delete_outline, size: 16, color: Colors.grey),    
+                                            ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  // Progress Bar
-                                  Stack(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(4),
-                                        child: LinearProgressIndicator(
-                                          value: percentage,
-                                          minHeight: 8,
-                                          backgroundColor: Colors.grey.shade200,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${option.voteCount} 票',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
+                              // Voters List
+                              if (votersList.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 12, top: 4, bottom: 8),
+                                  child: Text(
+                                    '投票者: $votersList',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                                  ),
+                                ),
+                            ],
                           );
                         },
                       ),

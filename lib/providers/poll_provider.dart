@@ -140,4 +140,30 @@ class PollProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> closePoll({required String pollId}) async {
+    _setLoading(true);
+    try {
+      await PollService.closePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
+      await fetchPolls();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> deletePoll({required String pollId}) async {
+    _setLoading(true);
+    try {
+      await PollService.deletePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
+      await fetchPolls();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
 }
