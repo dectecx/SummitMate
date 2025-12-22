@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
@@ -152,15 +153,20 @@ class SettingsProvider extends ChangeNotifier {
     }
   }
 
-  /// 重設身分 (登出)
+  /// 重設身分 (登出) - 同時清除設定資料
   Future<void> resetIdentity() async {
     try {
       LogService.info('重設使用者身分 (登出)', source: 'Settings');
-      await updateUsername(''); // 清除暱稱
-      await setAvatar('🐻'); // 重置頭像
-      await _repository.updateLastSyncTime(null); // 清除同步時間
+      
+      // 清除 Hive settings box
+      final settingsBox = await Hive.openBox<Settings>('settings');
+      await settingsBox.clear();
+      
+      // 清除 SharedPreferences 中的暱稱
       await _prefs.remove(PrefKeys.username);
-      _loadSettings(); // 重新載入確保狀態一致
+      
+      // 重新載入預設值
+      _loadSettings();
     } catch (e) {
       LogService.error('重設身分失敗: $e', source: 'Settings');
       _error = e.toString();

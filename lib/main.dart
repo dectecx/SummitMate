@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ import 'core/constants.dart';
 import 'services/toast_service.dart';
 import 'services/log_service.dart';
 import 'services/sync_service.dart';
+import 'services/hive_service.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
@@ -543,6 +545,114 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     }
   }
 
+  void _showClearDataDialog(BuildContext context) {
+    // 預設選項狀態
+    bool clearItinerary = true;
+    bool clearMessages = true;
+    bool clearGear = true;
+    bool clearWeather = true;
+    bool clearSettings = false; // 預設不清除設定
+    bool clearLogs = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (innerContext, setState) => AlertDialog(
+          title: const Text('⚠️ 清除本地資料'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('選擇要清除的資料類型：', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                CheckboxListTile(
+                  title: const Text('行程資料'),
+                  value: clearItinerary,
+                  onChanged: (v) => setState(() => clearItinerary = v ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('留言資料'),
+                  value: clearMessages,
+                  onChanged: (v) => setState(() => clearMessages = v ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('裝備清單'),
+                  value: clearGear,
+                  onChanged: (v) => setState(() => clearGear = v ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('天氣快取'),
+                  value: clearWeather,
+                  onChanged: (v) => setState(() => clearWeather = v ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('設定與身分'),
+                  subtitle: const Text('清除後需重新設定暱稱', style: TextStyle(fontSize: 11)),
+                  value: clearSettings,
+                  onChanged: (v) => setState(() => clearSettings = v ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('App 日誌'),
+                  value: clearLogs,
+                  onChanged: (v) => setState(() => clearLogs = v ?? false),
+                ),
+                const Divider(),
+                const Text(
+                  '此操作無法復原！',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                
+                // 執行選擇性清除
+                await getIt<HiveService>().clearSelectedData(
+                  clearItinerary: clearItinerary,
+                  clearMessages: clearMessages,
+                  clearGear: clearGear,
+                  clearWeather: clearWeather,
+                  clearSettings: clearSettings,
+                  clearLogs: clearLogs,
+                );
+
+                // 顯示重啟提示對話框 (不可取消)
+                if (context.mounted) {
+                  await showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (c) => AlertDialog(
+                      title: const Text('✅ 清除完成'),
+                      content: const Text('資料已清除，請重新啟動 App 以完成操作。'),
+                      actions: [
+                        FilledButton(
+                          onPressed: () {
+                            // 強制退出 App
+                            SystemNavigator.pop();
+                          },
+                          child: const Text('關閉 App'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('確定清除'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showSettingsDialog(BuildContext context) async {
     final settingsProvider = context.read<SettingsProvider>();
     final controller = TextEditingController(text: settingsProvider.username);
@@ -664,6 +774,15 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                         onTap: () {
                           Navigator.pop(dialogContext);
                           _showLogViewer(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.delete_forever, size: 20, color: Colors.red),
+                        title: const Text('清除本地資料庫', style: TextStyle(color: Colors.red)),
+                        subtitle: const Text('選擇要刪除的資料類型', style: TextStyle(fontSize: 11)),
+                        onTap: () async {
+                          Navigator.pop(dialogContext); // 先關閉設定對話框
+                          _showClearDataDialog(context);
                         },
                       ),
                       const ListTile(

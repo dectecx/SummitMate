@@ -69,4 +69,37 @@ class HiveService {
   Future<void> clearAllData() async {
     await Hive.deleteFromDisk();
   }
+
+  /// 選擇性清除資料
+  /// 使用 deleteBoxFromDisk 避免 type conflict
+  Future<void> clearSelectedData({
+    bool clearItinerary = false,
+    bool clearMessages = false,
+    bool clearGear = false,
+    bool clearWeather = false,
+    bool clearSettings = false,
+    bool clearLogs = false,
+  }) async {
+    // 先關閉所有 box 以避免 type conflict
+    await Hive.close();
+
+    if (clearItinerary) {
+      await Hive.deleteBoxFromDisk('itinerary');
+    }
+    if (clearMessages) {
+      await Hive.deleteBoxFromDisk('messages');
+    }
+    if (clearGear) {
+      await Hive.deleteBoxFromDisk('gear');
+    }
+    if (clearWeather) {
+      await Hive.deleteBoxFromDisk('weather_cache');
+    }
+    if (clearSettings) {
+      await Hive.deleteBoxFromDisk('settings');
+    }
+    if (clearLogs) {
+      await Hive.deleteBoxFromDisk('app_logs');
+    }
+  }
 }
