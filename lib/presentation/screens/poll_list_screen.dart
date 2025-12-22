@@ -113,32 +113,54 @@ class _PollListScreenState extends State<PollListScreen> {
                             return Card(
                               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                  child: Text(
-                                    poll.totalVotes.toString(),
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  leading: CircleAvatar(
+                                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                    child: const Icon(Icons.poll),
                                   ),
+                                  title: Text(poll.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        poll.description.isNotEmpty ? poll.description : '無描述',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.how_to_vote, size: 14, color: Colors.grey),
+                                          const SizedBox(width: 4),
+                                          Text('${poll.totalVotes} 票', style: Theme.of(context).textTheme.bodySmall),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  trailing: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      poll.isActive
+                                          ? const Chip(
+                                              label: Text('投票中', style: TextStyle(fontSize: 10)),
+                                              visualDensity: VisualDensity.compact,
+                                              backgroundColor: Colors.greenAccent,
+                                            )
+                                          : const Chip(
+                                              label: Text('已結束', style: TextStyle(fontSize: 10)),
+                                              visualDensity: VisualDensity.compact,
+                                            ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)),
+                                    );
+                                    if (context.mounted) {
+                                      context.read<PollProvider>().fetchPolls();
+                                    }
+                                  },
                                 ),
-                                title: Text(poll.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                subtitle: Text(
-                                  poll.description.isNotEmpty ? poll.description : '無描述',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: poll.isActive
-                                    ? const Chip(
-                                        label: Text('投票中', style: TextStyle(fontSize: 10)),
-                                        backgroundColor: Colors.greenAccent,
-                                      )
-                                    : const Chip(label: Text('已結束', style: TextStyle(fontSize: 10))),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)),
-                                  );
-                                },
-                              ),
                             );
                           },
                         ),

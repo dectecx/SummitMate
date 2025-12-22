@@ -129,7 +129,17 @@ class PollOption {
   @HiveField(4)
   final int voteCount;
 
-  PollOption({required this.id, required this.pollId, required this.text, required this.creatorId, this.voteCount = 0});
+  @HiveField(5)
+  final List<Map<String, dynamic>> voters;
+
+  PollOption({
+    required this.id,
+    required this.pollId,
+    required this.text,
+    required this.creatorId,
+    this.voteCount = 0,
+    this.voters = const [],
+  });
 
   factory PollOption.fromJson(Map<String, dynamic> json) {
     return PollOption(
@@ -138,10 +148,18 @@ class PollOption {
       text: json['text']?.toString() ?? '',
       creatorId: json['creator_id']?.toString() ?? '',
       voteCount: int.tryParse(json['vote_count'].toString()) ?? 0,
+      voters: (json['voters'] as List<dynamic>?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'option_id': id, 'poll_id': pollId, 'text': text, 'creator_id': creatorId, 'vote_count': voteCount};
+    return {
+      'option_id': id,
+      'poll_id': pollId,
+      'text': text,
+      'creator_id': creatorId,
+      'vote_count': voteCount,
+      'voters': voters,
+    };
   }
 }
