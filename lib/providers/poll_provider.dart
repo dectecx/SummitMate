@@ -28,6 +28,8 @@ class PollProvider with ChangeNotifier {
     _loadUserId();
   }
 
+  PollService get _pollService => getIt<PollService>();
+
   Future<void> _loadUserId() async {
     final prefs = getIt<SharedPreferences>();
     _currentUserId = prefs.getString(PrefKeys.username);
@@ -51,7 +53,7 @@ class PollProvider with ChangeNotifier {
       final user = prefs.getString(PrefKeys.username);
       if (user != null && user.isNotEmpty) _currentUserId = user;
 
-      _polls = await PollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
+      _polls = await _pollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
 
       // Sort: Active first, then by date desc
       _polls.sort((a, b) {
@@ -78,7 +80,7 @@ class PollProvider with ChangeNotifier {
   }) async {
     _setLoading(true);
     try {
-      await PollService.createPoll(
+      await _pollService.createPoll(
         title: title,
         description: description,
         creatorId: _currentUserId ?? 'anonymous',
@@ -100,7 +102,7 @@ class PollProvider with ChangeNotifier {
   Future<bool> votePoll({required String pollId, required List<String> optionIds}) async {
     _setLoading(true);
     try {
-      await PollService.votePoll(
+      await _pollService.votePoll(
         pollId: pollId,
         optionIds: optionIds,
         userId: _currentUserId ?? 'anonymous',
@@ -118,7 +120,7 @@ class PollProvider with ChangeNotifier {
   Future<bool> addOption({required String pollId, required String text}) async {
     _setLoading(true);
     try {
-      await PollService.addOption(pollId: pollId, text: text, creatorId: _currentUserId ?? 'anonymous');
+      await _pollService.addOption(pollId: pollId, text: text, creatorId: _currentUserId ?? 'anonymous');
       await fetchPolls();
       return true;
     } catch (e) {
@@ -131,7 +133,7 @@ class PollProvider with ChangeNotifier {
   Future<bool> deleteOption({required String optionId}) async {
     _setLoading(true);
     try {
-      await PollService.deleteOption(optionId: optionId, userId: _currentUserId ?? 'anonymous');
+      await _pollService.deleteOption(optionId: optionId, userId: _currentUserId ?? 'anonymous');
       await fetchPolls();
       return true;
     } catch (e) {
@@ -144,7 +146,7 @@ class PollProvider with ChangeNotifier {
   Future<bool> closePoll({required String pollId}) async {
     _setLoading(true);
     try {
-      await PollService.closePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
+      await _pollService.closePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
       await fetchPolls();
       return true;
     } catch (e) {
@@ -157,7 +159,7 @@ class PollProvider with ChangeNotifier {
   Future<bool> deletePoll({required String pollId}) async {
     _setLoading(true);
     try {
-      await PollService.deletePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
+      await _pollService.deletePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
       await fetchPolls();
       return true;
     } catch (e) {
