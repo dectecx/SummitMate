@@ -4,6 +4,7 @@ import '../../providers/poll_provider.dart';
 import '../../data/models/poll.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';
+import '../../presentation/providers/settings_provider.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -23,7 +24,10 @@ class _PollListScreenState extends State<PollListScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_isInit) {
-      Future.microtask(() => context.read<PollProvider>().fetchPolls());
+      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      if (!isOffline) {
+        Future.microtask(() => context.read<PollProvider>().fetchPolls());
+      }
       _isInit = false;
     }
   }
@@ -51,8 +55,9 @@ class _PollListScreenState extends State<PollListScreen> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已刪除')));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('刪除失敗: ${provider.error}'), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('刪除失敗: ${provider.error}'), backgroundColor: Colors.red));
         }
       }
     }
@@ -68,11 +73,7 @@ class _PollListScreenState extends State<PollListScreen> {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            poll.description.isNotEmpty ? poll.description : '無描述',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text(poll.description.isNotEmpty ? poll.description : '無描述', maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 4),
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -117,10 +118,7 @@ class _PollListScreenState extends State<PollListScreen> {
         ],
       ),
       onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)),
-        );
+        await Navigator.push(context, MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)));
         if (context.mounted) {
           context.read<PollProvider>().fetchPolls();
         }
@@ -151,8 +149,9 @@ class _PollListScreenState extends State<PollListScreen> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已結束')));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('結束失敗: ${provider.error}'), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('結束失敗: ${provider.error}'), backgroundColor: Colors.red));
         }
       }
     }
@@ -206,16 +205,28 @@ class _PollListScreenState extends State<PollListScreen> {
               // Filter Bar
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment(value: 0, label: Text('進行中'), icon: Icon(Icons.how_to_vote)),
-                    ButtonSegment(value: 1, label: Text('已結束'), icon: Icon(Icons.history)),
-                    ButtonSegment(value: 2, label: Text('我的投票'), icon: Icon(Icons.person_outline)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SegmentedButton<int>(
+                        segments: const [
+                          ButtonSegment(value: 0, label: Text('進行中'), icon: Icon(Icons.how_to_vote)),
+                          ButtonSegment(value: 1, label: Text('已結束'), icon: Icon(Icons.history)),
+                          ButtonSegment(value: 2, label: Text('我的'), icon: Icon(Icons.person_outline)),
+                        ],
+                        selected: {_selectedFilter},
+                        onSelectionChanged: (Set<int> newSelection) {
+                          setState(() => _selectedFilter = newSelection.first);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: () => provider.fetchPolls(),
+                      icon: const Icon(Icons.refresh),
+                      tooltip: '重新整理',
+                    ),
                   ],
-                  selected: {_selectedFilter},
-                  onSelectionChanged: (Set<int> newSelection) {
-                    setState(() => _selectedFilter = newSelection.first);
-                  },
                 ),
               ),
 
@@ -261,13 +272,13 @@ class _PollListScreenState extends State<PollListScreen> {
                                   },
                                   backgroundColor: Colors.orange,
                                   foregroundColor: Colors.white,
-                                  icon: Icons.power_settings_new, // Or stop_circle
+                                  icon: Icons.lock_clock, // More appropriate for "Ending"
                                   label: '結束',
                                   borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
                                 ),
                               );
                             }
-                            
+
                             actions.add(
                               SlidableAction(
                                 onPressed: (context) async {
@@ -278,7 +289,7 @@ class _PollListScreenState extends State<PollListScreen> {
                                 icon: Icons.delete,
                                 label: '刪除',
                                 // Adjust border radius based on position
-                                borderRadius: poll.isActive 
+                                borderRadius: poll.isActive
                                     ? const BorderRadius.horizontal(right: Radius.circular(12))
                                     : BorderRadius.circular(12),
                               ),
@@ -294,10 +305,7 @@ class _PollListScreenState extends State<PollListScreen> {
                                   extentRatio: actions.length * 0.25,
                                   children: actions,
                                 ),
-                                child: Card(
-                                  margin: EdgeInsets.zero,
-                                  child: _buildListTile(context, poll),
-                                ),
+                                child: Card(margin: EdgeInsets.zero, child: _buildListTile(context, poll)),
                               ),
                             );
                           },

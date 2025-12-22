@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../core/env_config.dart';
 import '../core/constants.dart';
@@ -11,13 +10,13 @@ class PollService {
   // Using static methods for simplicity as in other services
 
   static const String _source = 'PollService';
-  
+
   final http.Client _client;
   final String _baseUrl;
 
   PollService({http.Client? client, String? baseUrl})
-      : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? EnvConfig.getApiUrl();
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl ?? EnvConfig.getApiUrl();
 
   // Helper to get device/user ID
   // In a real app, this should come from a AuthProvider or UserSettings
@@ -25,14 +24,16 @@ class PollService {
   // But wait, the API requires a consistent ID to track "My Votes".
   // We should accept userId as a parameter.
 
+  /// Closed poll icon: Icons.lock_clock (or similar)
+
   /// Fetch all polls
   Future<List<Poll>> fetchPolls({required String userId}) async {
     final url = Uri.parse('$_baseUrl?action=${ApiConfig.actionPoll}&subAction=get&user_id=$userId');
 
     try {
-      debugPrint('[$_source] Fetching polls for user: $userId');
+      LogService.info('Fetching polls for user: $userId', source: _source);
       final response = await _client.get(url);
-      debugPrint('[$_source] Fetch response status: ${response.statusCode}');
+      LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(utf8.decode(response.bodyBytes));
@@ -84,9 +85,13 @@ class PollService {
     };
 
     try {
-      debugPrint('[$_source] Creating poll: $title');
-      final response = await _client.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode(payload));
-      debugPrint('[$_source] Create response: ${response.body}');
+      LogService.info('Creating poll: $title', source: _source);
+      final response = await _client.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload),
+      );
+      LogService.debug('Create response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['success'] != true) {
@@ -117,13 +122,13 @@ class PollService {
     };
 
     try {
-      debugPrint('[$_source] Voting on poll: $pollId, options: $optionIds');
+      LogService.info('Voting on poll: $pollId, options: $optionIds', source: _source);
       final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );
-      debugPrint('[$_source] Vote response: ${response.body}');
+      LogService.debug('Vote response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['success'] != true) {
@@ -148,19 +153,19 @@ class PollService {
     };
 
     try {
-      debugPrint('[$_source] Adding option "$text" to poll $pollId by creator $creatorId');
+      LogService.info('Adding option "$text" to poll $pollId by creator $creatorId', source: _source);
       final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );
-      debugPrint('[$_source] Add option response: ${response.body}');
+      LogService.debug('Add option response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['success'] != true) {
         throw Exception(jsonResponse['error']);
       }
-      debugPrint('[$_source] Option added successfully to poll $pollId.');
+      LogService.info('Option added successfully to poll $pollId.', source: _source);
     } catch (e) {
       LogService.error('Error adding option: $e', source: _source);
       rethrow;
@@ -170,27 +175,22 @@ class PollService {
   /// Close a poll (mark as ended)
   Future<void> closePoll({required String pollId, required String userId}) async {
     final url = Uri.parse(_baseUrl);
-    final payload = {
-      'action': ApiConfig.actionPoll,
-      'subAction': 'close',
-      'poll_id': pollId,
-      'user_id': userId,
-    };
+    final payload = {'action': ApiConfig.actionPoll, 'subAction': 'close', 'poll_id': pollId, 'user_id': userId};
 
     try {
-      debugPrint('[$_source] Closing poll: $pollId by user: $userId');
+      LogService.info('Closing poll: $pollId by user: $userId', source: _source);
       final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );
-      debugPrint('[$_source] Close response: ${response.body}');
+      LogService.debug('Close response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['success'] != true) {
         throw Exception(jsonResponse['error']);
       }
-      debugPrint('[$_source] Poll $pollId closed successfully.');
+      LogService.info('Poll $pollId closed successfully.', source: _source);
     } catch (e) {
       LogService.error('Error closing poll: $e', source: _source);
       rethrow;
@@ -200,27 +200,22 @@ class PollService {
   /// Delete a poll
   Future<void> deletePoll({required String pollId, required String userId}) async {
     final url = Uri.parse(_baseUrl);
-    final payload = {
-      'action': ApiConfig.actionPoll,
-      'subAction': 'delete',
-      'poll_id': pollId,
-      'user_id': userId,
-    };
+    final payload = {'action': ApiConfig.actionPoll, 'subAction': 'delete', 'poll_id': pollId, 'user_id': userId};
 
     try {
-      debugPrint('[$_source] Deleting poll: $pollId by user: $userId');
+      LogService.info('Deleting poll: $pollId by user: $userId', source: _source);
       final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );
-      debugPrint('[$_source] Delete response: ${response.body}');
+      LogService.debug('Delete response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['success'] != true) {
         throw Exception(jsonResponse['error']);
       }
-      debugPrint('[$_source] Poll $pollId deleted successfully.');
+      LogService.info('Poll $pollId deleted successfully.', source: _source);
     } catch (e) {
       LogService.error('Error deleting poll: $e', source: _source);
       rethrow;
@@ -239,19 +234,19 @@ class PollService {
     };
 
     try {
-      debugPrint('[$_source] Deleting option: $optionId by user: $userId');
+      LogService.info('Deleting option: $optionId by user: $userId', source: _source);
       final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
       );
-      debugPrint('[$_source] Delete option response: ${response.body}');
+      LogService.debug('Delete option response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['success'] != true) {
         throw Exception(jsonResponse['error']);
       }
-      debugPrint('[$_source] Option $optionId deleted successfully.');
+      LogService.info('Option $optionId deleted successfully.', source: _source);
     } catch (e) {
       LogService.error('Error deleting option: $e', source: _source);
       rethrow;

@@ -129,16 +129,16 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         );
 
         // Check if I am creator
-        // Since we don't have global currentUserId storage easily accessible here except passed in arguments or providers, 
-        // we might need to rely on what we have. 
+        // Since we don't have global currentUserId storage easily accessible here except passed in arguments or providers,
+        // we might need to rely on what we have.
         // Actually, we passed userId to services, but here we need to know "am I creator?".
         // For now, let's assume we can compare IDs. But we need my userId.
         // We can get it from EnvConfig or passed separately?
-        // Wait, PollService.votePoll requires userId. It comes from where? 
+        // Wait, PollService.votePoll requires userId. It comes from where?
         // In the previous code, we didn't check creator permission in UI strictly, just backend.
         // But for UI buttons (Delete Poll), we should hide them if not creator.
         // Let's assume we can show them and backend rejects if not allowed, OR we create a "Am I Creator" check if we had userId.
-        // Re-checking how userId is obtained in creating poll. It uses 'test_user_1' or similar from some constant? 
+        // Re-checking how userId is obtained in creating poll. It uses 'test_user_1' or similar from some constant?
         // In main.dart, we generate/get userId.
         // Let's try to get userId from a Provider if available, or just show buttons for everyone (and fail safely).
         // Actually, `PollListScreen` uses `PollProvider`. Does `PollProvider` store currentUserId?
@@ -146,77 +146,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         // If not, I will just show the buttons.
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('投票詳情'),
-            actions: [
-              PopupMenuButton<String>(
-                onSelected: (value) async {
-                  if (value == 'refresh') {
-                    provider.fetchPolls();
-                  } else if (value == 'close') {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (c) => AlertDialog(
-                        title: const Text('關閉投票'),
-                        content: const Text('確定要提早結束此投票嗎？'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('確定')),
-                        ],
-                      ),
-                    );
-                    if (confirm == true) {
-                      setState(() => _isSubmitting = true);
-                       try {
-                        // Hardcoded userId for now as we don't have a AuthProvider yet? 
-                        // Actually let's try to get it from somewhere or pass it.
-                        // Ideally PollProvider has it.
-                        await provider.closePoll(pollId: freshPoll.id);
-                        ToastService.success('投票已關閉');
-                      } catch (e) {
-                        ToastService.error(e.toString());
-                      } finally {
-                        setState(() => _isSubmitting = false);
-                      }
-                    }
-                  } else if (value == 'delete') {
-                     final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (c) => AlertDialog(
-                        title: const Text('刪除投票'),
-                        content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                          FilledButton(
-                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                            onPressed: () => Navigator.pop(c, true), 
-                            child: const Text('刪除'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true) {
-                      setState(() => _isSubmitting = true);
-                      try {
-                        await provider.deletePoll(pollId: freshPoll.id);
-                        ToastService.success('投票已刪除');
-                        if (mounted) Navigator.pop(context);
-                      } catch (e) {
-                         ToastService.error(e.toString());
-                         setState(() => _isSubmitting = false);
-                      }
-                    }
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'refresh', child: Text('重新整理')),
-                  if (freshPoll.isActive)
-                    const PopupMenuItem(value: 'close', child: Text('結束投票')),
-                  const PopupMenuItem(value: 'delete', child: Text('刪除投票', style: TextStyle(color: Colors.red))),
-                ],
-              ),
-            ],
-          ),
+          appBar: AppBar(title: const Text('投票詳情')),
           body: _isSubmitting
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
@@ -247,15 +177,15 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             ),
                           const Spacer(), // Use spacer to push deadline to right
                           if (freshPoll.deadline != null)
-                             Text(
+                            Text(
                               '截止: ${DateFormat('yyyy/MM/dd HH:mm').format(freshPoll.deadline!)}',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
-                            const SizedBox(width: 8),
-                             Text(
-                              '總票數: ${freshPoll.totalVotes}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                            ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '總票數: ${freshPoll.totalVotes}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -263,12 +193,12 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         freshPoll.title,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
-                       const SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         '發起人: ${freshPoll.creatorId}  •  ${DateFormat('yyyy/MM/dd HH:mm').format(freshPoll.createdAt)}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
                       ),
-                      
+
                       if (freshPoll.description.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(freshPoll.description, style: Theme.of(context).textTheme.bodyMedium),
@@ -305,7 +235,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           final option = freshPoll.options[index];
                           final isSelected = _selectedOptionIds.contains(option.id);
                           final percentage = freshPoll.totalVotes > 0 ? option.voteCount / freshPoll.totalVotes : 0.0;
-                          
+
                           // Voters text
                           // option.voters is List<Map<String, dynamic>>
                           final votersList = option.voters.map((v) => v['user_name'] ?? v['user_id']).join(', ');
@@ -340,7 +270,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                               child: Icon(
                                                 freshPoll.allowMultipleVotes
                                                     ? (isSelected ? Icons.check_box : Icons.check_box_outline_blank)
-                                                    : (isSelected ? Icons.radio_button_checked : Icons.radio_button_off),
+                                                    : (isSelected
+                                                          ? Icons.radio_button_checked
+                                                          : Icons.radio_button_off),
                                                 color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
                                                 size: 20,
                                               ),
@@ -370,7 +302,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                               minHeight: 8,
                                               backgroundColor: Colors.grey.shade200,
                                               valueColor: AlwaysStoppedAnimation<Color>(
-                                                isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade500,
+                                                isSelected
+                                                    ? Theme.of(context).colorScheme.primary
+                                                    : Colors.grey.shade500,
                                               ),
                                             ),
                                           ),
@@ -387,31 +321,37 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                           // Delete Option Button (Only if 0 votes AND active)
                                           if (freshPoll.isActive && option.voteCount == 0)
                                             InkWell(
-                                                onTap: () async {
-                                                     final confirm = await showDialog<bool>(
-                                                      context: context,
-                                                      builder: (c) => AlertDialog(
-                                                        title: const Text('刪除選項'),
-                                                        content: Text('確定要刪除 "${option.text}" 嗎？'),
-                                                        actions: [
-                                                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                                                          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('刪除')),
-                                                        ],
+                                              onTap: () async {
+                                                final confirm = await showDialog<bool>(
+                                                  context: context,
+                                                  builder: (c) => AlertDialog(
+                                                    title: const Text('刪除選項'),
+                                                    content: Text('確定要刪除 "${option.text}" 嗎？'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(c, false),
+                                                        child: const Text('取消'),
                                                       ),
-                                                    );
-                                                    if (confirm == true) {
-                                                      setState(() => _isSubmitting = true);
-                                                      try {
-                                                        await provider.deleteOption(optionId: option.id);
-                                                         ToastService.success('選項已刪除');
-                                                      } catch (e) {
-                                                         ToastService.error(e.toString());
-                                                      } finally {
-                                                        setState(() => _isSubmitting = false);
-                                                      }
-                                                    }
-                                                },
-                                                child: const Icon(Icons.delete_outline, size: 16, color: Colors.grey),    
+                                                      FilledButton(
+                                                        onPressed: () => Navigator.pop(c, true),
+                                                        child: const Text('刪除'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                                if (confirm == true) {
+                                                  setState(() => _isSubmitting = true);
+                                                  try {
+                                                    await provider.deleteOption(optionId: option.id);
+                                                    ToastService.success('選項已刪除');
+                                                  } catch (e) {
+                                                    ToastService.error(e.toString());
+                                                  } finally {
+                                                    setState(() => _isSubmitting = false);
+                                                  }
+                                                }
+                                              },
+                                              child: const Icon(Icons.delete_outline, size: 16, color: Colors.grey),
                                             ),
                                         ],
                                       ),
@@ -461,6 +401,96 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             ),
                           ],
                         ),
+
+                      // Management Actions (Visible to Creator)
+                      // Ideally we check if current user is creator.
+                      // Since we don't have global user context easily here, we show them
+                      // and let the backend/provider handle validation or errors if action fails.
+                      // Or relies on "freshPoll.creatorId == currentUserId" if we can access it.
+                      if (true) ...[
+                        // Just show them, we'll confirm and handle errors
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        Text('管理投票', style: Theme.of(context).textTheme.titleMedium),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            if (freshPoll.isActive)
+                              FilledButton.tonalIcon(
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (c) => AlertDialog(
+                                      title: const Text('關閉投票'),
+                                      content: const Text('確定要提早結束此投票嗎？'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                                        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('確定')),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    setState(() => _isSubmitting = true);
+                                    try {
+                                      await provider.closePoll(pollId: freshPoll.id);
+                                      ToastService.success('投票已關閉');
+                                    } catch (e) {
+                                      ToastService.error(e.toString());
+                                    } finally {
+                                      setState(() => _isSubmitting = false);
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.lock_clock),
+                                label: const Text('結束投票'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.orange.shade100,
+                                  foregroundColor: Colors.orange.shade900,
+                                ),
+                              ),
+
+                            OutlinedButton.icon(
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (c) => AlertDialog(
+                                    title: const Text('刪除投票'),
+                                    content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                                      FilledButton(
+                                        style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: const Text('刪除'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  setState(() => _isSubmitting = true);
+                                  try {
+                                    await provider.deletePoll(pollId: freshPoll.id);
+                                    ToastService.success('投票已刪除');
+                                    if (mounted) Navigator.pop(context);
+                                  } catch (e) {
+                                    ToastService.error(e.toString());
+                                    setState(() => _isSubmitting = false);
+                                  }
+                                }
+                              },
+                              icon: const Icon(Icons.delete_outline),
+                              label: const Text('刪除投票'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.red,
+                                side: const BorderSide(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

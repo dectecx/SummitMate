@@ -17,10 +17,7 @@ void main() {
 
   setUp(() {
     mockClient = MockClient();
-    pollService = PollService(
-      client: mockClient,
-      baseUrl: 'https://mock.api',
-    );
+    pollService = PollService(client: mockClient, baseUrl: 'https://mock.api');
   });
 
   group('PollService', () {
@@ -45,13 +42,12 @@ void main() {
             'status': 'active',
             'total_votes': 5,
             'options': [],
-            'my_votes': []
-          }
-        ]
+            'my_votes': [],
+          },
+        ],
       };
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       final polls = await pollService.fetchPolls(userId: userId);
 
@@ -62,13 +58,9 @@ void main() {
     });
 
     test('fetchPolls throws Exception on error response', () async {
-       final mockResponse = {
-        'success': false,
-        'error': 'Database error'
-      };
+      final mockResponse = {'success': false, 'error': 'Database error'};
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       expect(pollService.fetchPolls(userId: userId), throwsException);
     });
@@ -76,39 +68,25 @@ void main() {
     test('createPoll posts correct data and completes successfully', () async {
       final mockResponse = {'success': true};
 
-      when(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(
+        mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')),
+      ).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
-      await pollService.createPoll(
-        title: 'New Poll',
-        creatorId: userId,
-        description: 'Test description',
-      );
+      await pollService.createPoll(title: 'New Poll', creatorId: userId, description: 'Test description');
 
-      verify(mockClient.post(
-        any,
-        headers: {'Content-Type': 'application/json'},
-        body: anyNamed('body'),
-      )).called(1);
+      verify(mockClient.post(any, headers: {'Content-Type': 'application/json'}, body: anyNamed('body'))).called(1);
     });
 
     test('votePoll posts correct data and completes successfully', () async {
       final mockResponse = {'success': true};
 
-      when(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(
+        mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')),
+      ).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
-      await pollService.votePoll(
-        pollId: pollId,
-        optionIds: ['opt1'],
-        userId: userId,
-      );
+      await pollService.votePoll(pollId: pollId, optionIds: ['opt1'], userId: userId);
 
-      verify(mockClient.post(
-        any,
-        headers: {'Content-Type': 'application/json'},
-        body: anyNamed('body'),
-      )).called(1);
+      verify(mockClient.post(any, headers: {'Content-Type': 'application/json'}, body: anyNamed('body'))).called(1);
     });
   });
 }

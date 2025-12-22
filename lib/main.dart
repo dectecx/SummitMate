@@ -402,12 +402,13 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     // 監聽 ItineraryProvider 以控制 AppBar/FAB
     return Consumer<ItineraryProvider>(
       builder: (context, itineraryProvider, child) {
-        return Consumer<MessageProvider>(
-          builder: (context, messageProvider, child) {
+        return Consumer2<MessageProvider, PollProvider>(
+          builder: (context, messageProvider, pollProvider, child) {
+            final isLoading = messageProvider.isSyncing || pollProvider.isLoading;
             final scaffold = Scaffold(
               appBar: AppBar(
                 title: const Text('SummitMate 山友'),
-                bottom: messageProvider.isSyncing
+                bottom: isLoading
                     ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
                     : null,
                 actions: [
@@ -426,7 +427,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                         tooltip: '上傳至雲端',
                         onPressed: () => _handleCloudUpload(context, itineraryProvider),
                       ),
-                    if (!itineraryProvider.isEditMode)
+                    if (!itineraryProvider.isEditMode) ...[
                       IconButton(
                         icon: const Icon(Icons.map_outlined),
                         tooltip: '查看地圖',
@@ -434,20 +435,21 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const MapViewerScreen()));
                         },
                       ),
+                      // Itinerary Sync
+                      IconButton(
+                        key: _keyBtnSync,
+                        icon: messageProvider.isSyncing
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.sync),
+                        onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
+                        tooltip: '同步行程',
+                      ),
+                    ],
                   ],
-                  // 同步按鈕
-                  IconButton(
-                    key: _keyBtnSync,
-                    icon: messageProvider.isSyncing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.sync),
-                    onPressed: messageProvider.isSyncing ? null : () => messageProvider.sync(),
-                    tooltip: '同步資料',
-                  ),
                   // 設定按鈕
                   IconButton(
                     icon: const Icon(Icons.settings),
@@ -490,7 +492,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     key: _keyTabMessage,
                     icon: const Icon(Icons.forum_outlined),
                     selectedIcon: const Icon(Icons.forum),
-                    label: '留言板',
+                    label: '互動',
                   ),
                   NavigationDestination(
                     key: _keyTabInfo,

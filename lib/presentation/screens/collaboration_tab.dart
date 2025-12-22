@@ -15,7 +15,7 @@ class CollaborationTab extends StatelessWidget {
             color: Theme.of(context).colorScheme.surface,
             child: const TabBar(
               tabs: [
-                Tab(text: '協作', icon: Icon(Icons.forum_outlined)),
+                Tab(text: '留言板', icon: Icon(Icons.forum_outlined)),
                 Tab(text: '投票活動', icon: Icon(Icons.how_to_vote_outlined)),
               ],
             ),
