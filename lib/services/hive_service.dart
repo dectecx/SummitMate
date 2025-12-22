@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import '../core/constants.dart';
 import '../data/models/settings.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
@@ -85,25 +86,25 @@ class HiveService {
     await Hive.close();
 
     if (clearItinerary) {
-      await Hive.deleteBoxFromDisk('itinerary');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.itinerary);
     }
     if (clearMessages) {
-      await Hive.deleteBoxFromDisk('messages');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.messages);
     }
     if (clearGear) {
-      await Hive.deleteBoxFromDisk('gear');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.gear);
     }
     if (clearWeather) {
-      await Hive.deleteBoxFromDisk('weather_cache');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.weather);
     }
     if (clearSettings) {
-      await Hive.deleteBoxFromDisk('settings');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.settings);
     }
     if (clearLogs) {
-      await Hive.deleteBoxFromDisk('app_logs');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.logs);
     }
     if (clearPolls) {
-      await Hive.deleteBoxFromDisk('polls');
+      await Hive.deleteBoxFromDisk(HiveBoxNames.polls);
     }
   }
 }

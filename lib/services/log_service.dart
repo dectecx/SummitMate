@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
+import '../core/constants.dart';
+
 import '../core/di.dart';
 import '../services/google_sheets_service.dart';
 
@@ -48,8 +50,10 @@ class LogEntry {
 /// - 持久化存儲到 Hive
 /// - 提供查閱介面
 /// - 上傳到雲端
+
+
 class LogService {
-  static const String _boxName = 'app_logs';
+  static const String _boxName = HiveBoxNames.logs;
   static const int _maxLogCount = 1000; // 最多保留 1000 條
 
   static Box<String>? _box;

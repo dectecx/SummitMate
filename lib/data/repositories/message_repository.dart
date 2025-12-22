@@ -1,10 +1,11 @@
 import 'package:hive/hive.dart';
+import '../../core/constants.dart';
 import '../models/message.dart';
 
 /// Message Repository
 /// 管理留言的 CRUD 操作與同步
 class MessageRepository {
-  static const String _boxName = 'messages';
+  static const String _boxName = HiveBoxNames.messages;
 
   Box<Message>? _box;
 

@@ -1,10 +1,11 @@
 import 'package:hive/hive.dart';
+import '../../core/constants.dart';
 import '../models/settings.dart';
 
 /// Settings Repository
 /// 管理全域設定的 CRUD 操作
 class SettingsRepository {
-  static const String _boxName = 'settings';
+  static const String _boxName = HiveBoxNames.settings;
   static const String _settingsKey = 'app_settings';
 
   Box<Settings>? _box;
