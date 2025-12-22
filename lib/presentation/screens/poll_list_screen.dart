@@ -128,6 +128,36 @@ class _PollListScreenState extends State<PollListScreen> {
     );
   }
 
+  Future<void> _confirmAndClose(BuildContext context, PollProvider provider, Poll poll) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('結束投票'),
+        content: Text('確定要結束 "${poll.title}" 嗎？\n結束後將無法再進行投票。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            child: const Text('結束'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      final success = await provider.closePoll(pollId: poll.id);
+      if (context.mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已結束')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('結束失敗: ${provider.error}'), backgroundColor: Colors.red));
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PollProvider>(
@@ -221,28 +251,51 @@ class _PollListScreenState extends State<PollListScreen> {
                               );
                             }
 
+                            // Define actions based on poll status
+                            final actions = <Widget>[];
+                            if (poll.isActive) {
+                              actions.add(
+                                SlidableAction(
+                                  onPressed: (context) async {
+                                    await _confirmAndClose(context, provider, poll);
+                                  },
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                  icon: Icons.power_settings_new, // Or stop_circle
+                                  label: '結束',
+                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                                ),
+                              );
+                            }
+                            
+                            actions.add(
+                              SlidableAction(
+                                onPressed: (context) async {
+                                  await _confirmAndDelete(context, provider, poll);
+                                },
+                                backgroundColor: const Color(0xFFFE4A49),
+                                foregroundColor: Colors.white,
+                                icon: Icons.delete,
+                                label: '刪除',
+                                // Adjust border radius based on position
+                                borderRadius: poll.isActive 
+                                    ? const BorderRadius.horizontal(right: Radius.circular(12))
+                                    : BorderRadius.circular(12),
+                              ),
+                            );
+
                             return Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               child: Slidable(
                                 key: Key(poll.id),
                                 endActionPane: ActionPane(
                                   motion: const ScrollMotion(),
-                                  extentRatio: 0.25,
-                                  children: [
-                                    SlidableAction(
-                                      onPressed: (context) async {
-                                        await _confirmAndDelete(context, provider, poll);
-                                      },
-                                      backgroundColor: const Color(0xFFFE4A49),
-                                      foregroundColor: Colors.white,
-                                      icon: Icons.delete,
-                                      label: '刪除',
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ],
+                                  // 0.25 per action
+                                  extentRatio: actions.length * 0.25,
+                                  children: actions,
                                 ),
                                 child: Card(
-                                  margin: EdgeInsets.zero, // Card margin handling moved to Padding wrapper for Slidable
+                                  margin: EdgeInsets.zero,
                                   child: _buildListTile(context, poll),
                                 ),
                               ),
