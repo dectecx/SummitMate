@@ -27,6 +27,7 @@ import 'services/tutorial_service.dart';
 import 'package:intl/intl.dart';
 import 'services/weather_service.dart';
 import 'data/models/weather_data.dart';
+import 'services/usage_tracking_service.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -250,6 +251,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   final GlobalKey _keyTabPolls = GlobalKey();
 
   OverlayEntry? _tutorialEntry;
+  UsageTrackingService? _usageTrackingService;
 
   @override
   void initState() {
@@ -279,7 +281,17 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
         // 若無需導覽，直接檢查同步
         _checkFirstTimeSync(context, settingsProvider);
       }
+
+      // 啟動使用狀態追蹤 (Web only)
+      _usageTrackingService = UsageTrackingService();
+      _usageTrackingService!.start(settingsProvider.username);
     });
+  }
+
+  @override
+  void dispose() {
+    _usageTrackingService?.dispose();
+    super.dispose();
   }
 
   void _showTutorial(BuildContext context) {
