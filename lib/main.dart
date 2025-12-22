@@ -1909,6 +1909,13 @@ class InfoTabState extends State<InfoTab> {
                       trailing: const Icon(Icons.open_in_new, size: 18),
                       onTap: () => _launchUrl(ExternalLinks.cwaUrl),
                     ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.hotel, color: Colors.purple),
+                      title: const Text('鋤禾日好-站前館 (住宿)'),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.accommodationUrl),
+                    ),
                   ],
                 ),
               ),
