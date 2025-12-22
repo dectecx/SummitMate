@@ -5,6 +5,8 @@ import '../../data/models/poll.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';
 
+import 'package:flutter_slidable/flutter_slidable.dart';
+
 class PollListScreen extends StatefulWidget {
   const PollListScreen({super.key});
 
@@ -24,6 +26,106 @@ class _PollListScreenState extends State<PollListScreen> {
       Future.microtask(() => context.read<PollProvider>().fetchPolls());
       _isInit = false;
     }
+  }
+
+  Future<void> _confirmAndDelete(BuildContext context, PollProvider provider, Poll poll) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('刪除投票'),
+        content: Text('確定要刪除 "${poll.title}" 嗎？此動作無法復原。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      final success = await provider.deletePoll(pollId: poll.id);
+      if (context.mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已刪除')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('刪除失敗: ${provider.error}'), backgroundColor: Colors.red));
+        }
+      }
+    }
+  }
+
+  Widget _buildListTile(BuildContext context, Poll poll) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        child: const Icon(Icons.poll),
+      ),
+      title: Text(poll.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            poll.description.isNotEmpty ? poll.description : '無描述',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.how_to_vote, size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text('${poll.totalVotes} 票', style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.person, size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    poll.creatorId == context.read<PollProvider>().currentUserId ? '我' : poll.creatorId,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          poll.isActive
+              ? const Chip(
+                  label: Text('投票中', style: TextStyle(fontSize: 10)),
+                  visualDensity: VisualDensity.compact,
+                  backgroundColor: Colors.greenAccent,
+                )
+              : const Chip(
+                  label: Text('已結束', style: TextStyle(fontSize: 10)),
+                  visualDensity: VisualDensity.compact,
+                ),
+        ],
+      ),
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)),
+        );
+        if (context.mounted) {
+          context.read<PollProvider>().fetchPolls();
+        }
+      },
+    );
   }
 
   @override
@@ -112,113 +214,35 @@ class _PollListScreenState extends State<PollListScreen> {
                             final poll = filteredPolls[index];
                             final isCreator = poll.creatorId == provider.currentUserId;
 
-                            return Dismissible(
-                              key: Key(poll.id),
-                              direction: isCreator ? DismissDirection.endToStart : DismissDirection.none,
-                              background: Container(
-                                color: Colors.red,
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 20),
+                            if (!isCreator) {
+                              return Card(
                                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: const Icon(Icons.delete, color: Colors.white),
-                              ),
-                              confirmDismiss: (direction) async {
-                                return await showDialog(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text('刪除投票'),
-                                    content: Text('確定要刪除 "${poll.title}" 嗎？此動作無法復原。'),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-                                      TextButton(
-                                        onPressed: () => Navigator.of(ctx).pop(true),
-                                        style: TextButton.styleFrom(foregroundColor: Colors.red),
-                                        child: const Text('刪除'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              onDismissed: (direction) async {
-                                final success = await provider.deletePoll(pollId: poll.id);
-                                if (context.mounted) {
-                                  if (success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已刪除')));
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                        content: Text('刪除失敗: ${provider.error}'), backgroundColor: Colors.red));
-                                    provider.fetchPolls(); // Refresh to undo visual dismissal if failed
-                                  }
-                                }
-                              },
-                              child: Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                    child: const Icon(Icons.poll),
-                                  ),
-                                  title: Text(poll.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        poll.description.isNotEmpty ? poll.description : '無描述',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Wrap(
-                                        crossAxisAlignment: WrapCrossAlignment.center,
-                                        spacing: 8,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.how_to_vote, size: 14, color: Colors.grey),
-                                              const SizedBox(width: 4),
-                                              Text('${poll.totalVotes} 票', style: Theme.of(context).textTheme.bodySmall),
-                                            ],
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.person, size: 14, color: Colors.grey),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                poll.creatorId == provider.currentUserId ? '我' : poll.creatorId,
-                                                style: Theme.of(context).textTheme.bodySmall,
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      poll.isActive
-                                          ? const Chip(
-                                              label: Text('投票中', style: TextStyle(fontSize: 10)),
-                                              visualDensity: VisualDensity.compact,
-                                              backgroundColor: Colors.greenAccent,
-                                            )
-                                          : const Chip(
-                                              label: Text('已結束', style: TextStyle(fontSize: 10)),
-                                              visualDensity: VisualDensity.compact,
-                                            ),
-                                    ],
-                                  ),
-                                  onTap: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)),
-                                    );
-                                    if (context.mounted) {
-                                      context.read<PollProvider>().fetchPolls();
-                                    }
-                                  },
+                                child: _buildListTile(context, poll),
+                              );
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Slidable(
+                                key: Key(poll.id),
+                                endActionPane: ActionPane(
+                                  motion: const ScrollMotion(),
+                                  children: [
+                                    SlidableAction(
+                                      onPressed: (context) async {
+                                        await _confirmAndDelete(context, provider, poll);
+                                      },
+                                      backgroundColor: const Color(0xFFFE4A49),
+                                      foregroundColor: Colors.white,
+                                      icon: Icons.delete,
+                                      label: '刪除',
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ],
+                                ),
+                                child: Card(
+                                  margin: EdgeInsets.zero, // Card margin handling moved to Padding wrapper for Slidable
+                                  child: _buildListTile(context, poll),
                                 ),
                               ),
                             );
