@@ -23,13 +23,13 @@ class SyncService {
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,
        _settingsRepo = settingsRepo {
-     _loadLastSyncTimes();
-   }
+    _loadLastSyncTimes();
+  }
 
-   void _loadLastSyncTimes() {
-     _lastItinerarySyncTime = _itineraryRepo.getLastSyncTime();
-     _lastMessagesSyncTime = _messageRepo.getLastSyncTime();
-   }
+  void _loadLastSyncTimes() {
+    _lastItinerarySyncTime = _itineraryRepo.getLastSyncTime();
+    _lastMessagesSyncTime = _messageRepo.getLastSyncTime();
+  }
 
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
