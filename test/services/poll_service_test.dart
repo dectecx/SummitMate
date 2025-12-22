@@ -17,6 +17,7 @@ void main() {
   setUp(() {
     mockClient = MockClient();
     PollService.client = mockClient;
+    PollService.testBaseUrl = 'https://mock.api';
   });
 
   group('PollService', () {

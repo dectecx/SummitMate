@@ -16,6 +16,12 @@ class PollService {
   static http.Client _client = http.Client();
   static set client(http.Client client) => _client = client;
 
+  // Base URL override for testing
+  static String? _testBaseUrl;
+  static set testBaseUrl(String? url) => _testBaseUrl = url;
+
+  static String get _apiBaseUrl => _testBaseUrl ?? EnvConfig.getApiUrl();
+
   // Helper to get device/user ID
   // In a real app, this should come from a AuthProvider or UserSettings
   // For now, we reuse the logic from MessageService or just generate/store one locally
@@ -24,7 +30,7 @@ class PollService {
 
   /// Fetch all polls
   static Future<List<Poll>> fetchPolls({required String userId}) async {
-    final url = Uri.parse('${EnvConfig.getApiUrl()}?action=${ApiConfig.actionPoll}&subAction=get&user_id=$userId');
+    final url = Uri.parse('$_apiBaseUrl?action=${ApiConfig.actionPoll}&subAction=get&user_id=$userId');
 
     try {
       debugPrint('[$_source] Fetching polls for user: $userId');
@@ -61,7 +67,7 @@ class PollService {
     bool allowMultipleVotes = false,
     List<String> initialOptions = const [],
   }) async {
-    final url = Uri.parse(EnvConfig.getApiUrl());
+    final url = Uri.parse(_apiBaseUrl);
 
     final payload = {
       'action': ApiConfig.actionPoll,
@@ -102,7 +108,7 @@ class PollService {
     required String userId,
     String userName = 'Anonymous',
   }) async {
-    final url = Uri.parse(EnvConfig.getApiUrl());
+    final url = Uri.parse(_apiBaseUrl);
 
     final payload = {
       'action': ApiConfig.actionPoll,
@@ -134,7 +140,7 @@ class PollService {
 
   /// Add a new option
   static Future<void> addOption({required String pollId, required String text, required String creatorId}) async {
-    final url = Uri.parse(EnvConfig.getApiUrl());
+    final url = Uri.parse(_apiBaseUrl);
 
     final payload = {
       'action': ApiConfig.actionPoll,
@@ -166,7 +172,7 @@ class PollService {
 
   /// Close a poll (mark as ended)
   static Future<void> closePoll({required String pollId, required String userId}) async {
-    final url = Uri.parse(EnvConfig.getApiUrl());
+    final url = Uri.parse(_apiBaseUrl);
     final payload = {
       'action': ApiConfig.actionPoll,
       'subAction': 'close',
@@ -196,7 +202,7 @@ class PollService {
 
   /// Delete a poll
   static Future<void> deletePoll({required String pollId, required String userId}) async {
-    final url = Uri.parse(EnvConfig.getApiUrl());
+    final url = Uri.parse(_apiBaseUrl);
     final payload = {
       'action': ApiConfig.actionPoll,
       'subAction': 'delete',
@@ -226,7 +232,7 @@ class PollService {
 
   /// Delete an option
   static Future<void> deleteOption({required String optionId, required String userId}) async {
-    final url = Uri.parse(EnvConfig.getApiUrl());
+    final url = Uri.parse(_apiBaseUrl);
 
     final payload = {
       'action': ApiConfig.actionPoll,
