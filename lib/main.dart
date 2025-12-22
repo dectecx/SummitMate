@@ -557,148 +557,162 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (innerContext, setState) => AlertDialog(
-          title: const Text('設定'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 離線模式 (獨立於表單上方)
-              Card(
-                color: settingsProvider.isOfflineMode ? Colors.orange.shade50 : null,
-                child: SwitchListTile(
-                  title: const Text('離線模式'),
-                  subtitle: Text(
-                    settingsProvider.isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
-                    style: TextStyle(
-                      color: settingsProvider.isOfflineMode ? Colors.orange.shade800 : null,
-                      fontSize: 12,
-                    ),
-                  ),
-                  value: settingsProvider.isOfflineMode,
-                  onChanged: (value) async {
-                    await settingsProvider.setOfflineMode(value);
-                    setState(() {});
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
+        builder: (innerContext, setState) {
+          final versionStr = packageInfo != null 
+              ? 'v${packageInfo.version}' 
+              : '';
+          final lastSyncStr = settingsProvider.lastSyncTimeFormatted ?? '尚未同步';
 
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  labelText: '暱稱',
-                  prefixIcon: const Icon(Icons.person),
-                  // 顯示當前頭像
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: CircleAvatar(
-                      backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
-                      radius: 16,
-                      child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 重看教學
-              ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: const Text('重看教學'),
-                onTap: () async {
-                  if (innerContext.mounted) {
-                    Navigator.pop(innerContext); // 關閉對話框
-
-                    // 延遲執行確保對話框已關閉
-                    Future.delayed(const Duration(milliseconds: 300), () {
-                      if (mounted) {
-                        _showTutorial(this.context);
-                      }
-                    });
-                  }
-                },
-              ),
-              const Divider(),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
+          return AlertDialog(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('設定'),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Icon(Icons.info_outline, size: 16, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    Text(
-                      packageInfo != null ? '版本 ${packageInfo.version} (${packageInfo.buildNumber})' : '版本資訊讀取中...',
-                      style: Theme.of(dialogContext).textTheme.bodySmall,
-                    ),
+                    Text(versionStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text('同步: $lastSyncStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
                 ),
-              ),
-
-              Text(
-                '上次同步: ${settingsProvider.lastSyncTimeFormatted ?? "尚未同步"}',
-                style: Theme.of(dialogContext).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                    _showLogViewer(context); // 這裡可以用外層 context
-                  },
-                  icon: const Icon(Icons.article_outlined, size: 18),
-                  label: const Text('查看日誌'),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-              // 登出按鈕
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: dialogContext,
-                      builder: (c) => AlertDialog(
-                        title: const Text('重設身分'),
-                        content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(c, true),
-                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                            child: const Text('重設'),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirm == true && innerContext.mounted) {
-                      Navigator.pop(innerContext); // 關閉設定對話框
-                      await settingsProvider.resetIdentity();
-                    }
-                  },
-                  icon: const Icon(Icons.logout, size: 18, color: Colors.red),
-                  label: const Text('重設身分 (登出)', style: TextStyle(color: Colors.red)),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                final newName = controller.text.trim();
-                if (newName.isNotEmpty) {
-                  settingsProvider.updateUsername(newName);
-                }
-                Navigator.pop(dialogContext);
-              },
-              child: const Text('儲存詳細資料'),
+              ],
             ),
-          ],
-        ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ====== 暱稱區塊 ======
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      labelText: '暱稱',
+                      prefixIcon: const Icon(Icons.person),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CircleAvatar(
+                          backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                          radius: 16,
+                          child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () {
+                        final newName = controller.text.trim();
+                        if (newName.isNotEmpty) {
+                          settingsProvider.updateUsername(newName);
+                          ToastService.success('暱稱已更新');
+                        }
+                      },
+                      child: const Text('儲存暱稱'),
+                    ),
+                  ),
+                  const Divider(height: 32),
+
+                  // ====== 離線模式 ======
+                  Card(
+                    color: settingsProvider.isOfflineMode ? Colors.orange.shade50 : null,
+                    child: SwitchListTile(
+                      title: const Text('離線模式'),
+                      subtitle: Text(
+                        settingsProvider.isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
+                        style: TextStyle(
+                          color: settingsProvider.isOfflineMode ? Colors.orange.shade800 : null,
+                          fontSize: 12,
+                        ),
+                      ),
+                      value: settingsProvider.isOfflineMode,
+                      onChanged: (value) async {
+                        await settingsProvider.setOfflineMode(value);
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  const Divider(height: 32),
+
+                  // ====== 重看使用引導 ======
+                  ListTile(
+                    leading: const Icon(Icons.help_outline),
+                    title: const Text('重看使用引導'),
+                    onTap: () async {
+                      if (innerContext.mounted) {
+                        Navigator.pop(innerContext);
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          if (mounted) {
+                            _showTutorial(this.context);
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  const Divider(height: 32),
+
+                  // ====== 開發資訊 (縮合區塊) ======
+                  ExpansionTile(
+                    leading: const Icon(Icons.developer_mode),
+                    title: const Text('開發資訊'),
+                    childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.article_outlined, size: 20),
+                        title: const Text('查看日誌'),
+                        onTap: () {
+                          Navigator.pop(dialogContext);
+                          _showLogViewer(context);
+                        },
+                      ),
+                      const ListTile(
+                        leading: Icon(Icons.code, size: 20),
+                        title: Text('開發者資訊'),
+                        subtitle: Text('by 哲', style: TextStyle(fontStyle: FontStyle.italic)),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 32),
+
+                  // ====== 登出 / 重設身分 ======
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: dialogContext,
+                          builder: (c) => AlertDialog(
+                            title: const Text('重設身分'),
+                            content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                              FilledButton(
+                                onPressed: () => Navigator.pop(c, true),
+                                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                child: const Text('重設'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true && innerContext.mounted) {
+                          Navigator.pop(innerContext);
+                          await settingsProvider.resetIdentity();
+                        }
+                      },
+                      icon: const Icon(Icons.logout, size: 18, color: Colors.red),
+                      label: const Text('重設身分 (登出)', style: TextStyle(color: Colors.red)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉')),
+            ],
+          );
+        },
       ),
     );
   }
