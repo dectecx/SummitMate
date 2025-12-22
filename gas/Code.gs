@@ -1,33 +1,35 @@
 // ============================================================
 // SummitMate - Google Apps Script API
-// Backend API for SummitMate App
+// SummitMate 應用程式後端 API
 // ============================================================
 //
-// Deployment Instructions:
-// 1. Create a Google Sheet with Sheets: "Itinerary", "Messages", "Logs", "Weather_CWA_Hiking_Raw", "Weather_Hiking_App".
-// 2. Open "Extensions" -> "Apps Script".
-// 3. Copy content from `gas/Code.gs` to project's `Code.gs`.
-// 4. Create new script file `weather_etl.gs` and copy content from `gas/weather_etl.gs`.
-// 5. Set Script Properties (Project Settings -> Script Properties):
-//    - CWA_API_KEY: [Your CWA API Key]
-// 6. Set Trigger:
-//    - Function: syncWeatherToSheets
-//    - Event Source: Time-driven
-//    - Type: Hourly (or as needed)
-// 7. Deploy as Web App:
-//    - Execute as: Me
-//    - Who has access: Anyone
-// 8. Update specific API URL in Flutter App constants.
+// 部署說明 (Deployment Instructions):
+// 1. 建立一個 Google Sheets 試算表，並包含以下工作表 (Sheets): 
+//    "Itinerary" (行程), "Messages" (留言), "Logs" (日誌), "Weather_CWA_Hiking_Raw" (氣象原始資料), "Weather_Hiking_App" (App 用氣象資料)。
+// 2. 開啟 "擴充功能" (Extensions) -> "Apps Script"。
+// 3. 將 `gas/Code.gs` 的內容複製到專案的 `Code.gs`。
+// 4. 建立新的腳本檔案 `weather_etl.gs` 並複製 `gas/weather_etl.gs` 的內容。
+// 5. 建立新的腳本檔案 `polls.gs` 並複製 `gas/polls.gs` 的內容。
+// 6. 設定指令碼屬性 (Project Settings -> Script Properties):
+//    - CWA_API_KEY: [您的氣象局 CWA API Key]
+// 7. 設定觸發器 (Triggers):
+//    - 函式: syncWeatherToSheets
+//    - 事件來源: 時間驅動 (Time-driven)
+//    - 類型: 每小時 (Hourly) 或依需求調整
+// 8. 部署為網頁應用程式 (Deploy as Web App):
+//    - 執行身分 (Execute as): 我 (Me)
+//    - 存取權限 (Who has access): 所有人 (Anyone)
+// 9. 將產生的 API URL 更新至 Flutter App 的 constants 中。
 //
 // ============================================================
 
-// 取得試算表
+// 取得當前試算表
 function getSpreadsheet() {
   return SpreadsheetApp.getActiveSpreadsheet();
 }
 
 // ============================================================
-// HTTP Request Handlers
+// HTTP 請求處理器 (Request Handlers)
 // ============================================================
 
 function doGet(e) {
@@ -40,10 +42,12 @@ function doGet(e) {
       case 'fetch_weather':
         // 需搭配 weather_etl.gs 中的 getWeatherData()
         return createJsonResponse(getWeatherData());
+      case 'poll':
+        return createJsonResponse(handlePollAction(e.parameter.subAction, e.parameter));
       case 'health':
         return createJsonResponse({ status: 'ok', timestamp: new Date().toISOString() });
       default:
-        return createJsonResponse({ error: 'Unknown action' }, 400);
+        return createJsonResponse({ error: '未知動作 (Unknown action)' }, 400);
     }
   } catch (error) {
     return createJsonResponse({ error: error.message }, 500);
@@ -66,8 +70,11 @@ function doPost(e) {
         return createJsonResponse(uploadLogs(data.logs, data.device_info));
       case 'update_itinerary':
         return createJsonResponse(updateItinerary(data.data));
+      case 'poll':
+        // 處理投票相關請求 (請見 polls.gs)
+        return createJsonResponse(handlePollAction(data.subAction, data));
       default:
-        return createJsonResponse({ error: 'Unknown action' }, 400);
+        return createJsonResponse({ error: '未知動作 (Unknown action)' }, 400);
     }
   } catch (error) {
     return createJsonResponse({ error: error.message }, 500);
@@ -81,7 +88,7 @@ function createJsonResponse(data, statusCode = 200) {
 }
 
 // ============================================================
-// API Functions
+// API 功能函式 (API Functions)
 // ============================================================
 
 /**
@@ -104,7 +111,7 @@ function getItineraryData(ss) {
   if (!sheet) return [];
 
   const data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return []; // Only header row
+  if (data.length <= 1) return []; // 只有標題列
 
   const headers = data[0];
   const rows = data.slice(1);
@@ -112,12 +119,12 @@ function getItineraryData(ss) {
   return rows.map(row => {
     const item = {};
     headers.forEach((header, index) => {
-      // Convert header to snake_case for API
+      // 將標題轉為 snake_case 以供 API 使用
       const key = headerToKey(header);
       item[key] = row[index];
     });
     return item;
-  }).filter(item => item.day && item.name); // Filter empty rows
+  }).filter(item => item.day && item.name); // 過濾空行
 }
 
 /**
@@ -139,15 +146,15 @@ function getMessagesData(ss) {
       const key = headerToKey(header);
       let value = row[index];
 
-      // Handle timestamp
+      // 處理時間戳記
       if (key === 'timestamp' && value instanceof Date) {
         value = value.toISOString();
       }
-      // Handle empty parent_id
+      // 處理空的 parent_id
       if (key === 'parent_id') {
         value = value || null;
       }
-      // Provide default avatar if missing
+      // 若無頭像則提供預設值
       if (key === 'avatar' && (value === null || value === '')) {
         value = '🐻';
       }
@@ -155,13 +162,13 @@ function getMessagesData(ss) {
       msg[key] = value;
     });
 
-    // Fallback if avatar column doesn't exist yet
+    // 向下相容：若 avatar 欄位不存在
     if (!msg.avatar) {
       msg.avatar = '🐻';
     }
 
     return msg;
-  }).filter(msg => msg.uuid); // Filter empty rows
+  }).filter(msg => msg.uuid); // 過濾空行
 }
 
 /**
@@ -171,35 +178,29 @@ function addMessage(messageData) {
   const ss = getSpreadsheet();
   let sheet = ss.getSheetByName('Messages');
 
-  // Create sheet if not exists
+  // 若工作表不存在則建立
   if (!sheet) {
     sheet = ss.insertSheet('Messages');
     sheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp', 'avatar']);
   } else {
-    // Check if 'avatar' column exists, if not adds it
+    // 檢查是否有 'avatar' 欄位，若無則新增
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     if (!headers.includes('avatar')) {
       sheet.getRange(1, headers.length + 1).setValue('avatar');
     }
   }
 
-  // Check for duplicate UUID
+  // 檢查是否有重複的 UUID
   const existingData = sheet.getDataRange().getValues();
   for (let i = 1; i < existingData.length; i++) {
     if (existingData[i][0] === messageData.uuid) {
-      return { success: true, message: 'Message already exists' };
+      return { success: true, message: '訊息已存在 (Message already exists)' };
     }
   }
 
-  // Append new row
-  // We should ideally map by header, but for simplicity assuming appendRow works with new column at end
-  // Or explicitly matching new structure.
-  // The safest way with potentially dynamic columns is to find index, but let's assume standard structure:
-  // uuid, parent_id, user, category, content, timestamp, avatar (if added)
-
-  // Note: appendRow just adds to the first empty row. It doesn't care about column names.
-  // We need to ensure the order matches the header.
-  // If the sheet was created with 6 columns, and we added 'avatar' as 7th.
+  // 新增資料列
+  // 注意：appendRow 只是加到第一列空白處，需確保順序與標題一致。
+  // 假設欄位順序為：uuid, parent_id, user, category, content, timestamp, avatar
 
   sheet.appendRow([
     messageData.uuid || Utilities.getUuid(),
@@ -211,18 +212,21 @@ function addMessage(messageData) {
     messageData.avatar || '🐻'
   ]);
 
-  return { success: true, message: 'Message added' };
+  return { success: true, message: '訊息已新增 (Message added)' };
 }
 
+/**
+ * 批次新增留言
+ */
 function batchAddMessages(messages) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName('Messages');
 
   if (!messages || messages.length === 0) {
-    return { success: true, message: 'No messages to add' };
+    return { success: true, message: '無訊息可新增' };
   }
 
-  // Ensure header exists
+  // 確保標題列存在
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   if (!headers.includes('avatar')) {
     sheet.getRange(1, headers.length + 1).setValue('avatar');
@@ -230,21 +234,21 @@ function batchAddMessages(messages) {
 
   const rows = messages.map(messageData => [
     messageData.uuid || Utilities.getUuid(),
-    messageData.parent_id || '', // parent_id is optional
+    messageData.parent_id || '', // parent_id 是選填的
     messageData.user || 'Anonymous',
     messageData.category || 'Misc',
     messageData.content || '',
-    // Force String format for timestamp to avoid timezone issues
+    // 強制轉換為字串以避免時區問題
     "'" + (messageData.timestamp || new Date().toISOString()),
     messageData.avatar || '🐻'
   ]);
 
   if (rows.length > 0) {
-    // Assuming 7 columns now
+    // 假設目前有 7 個欄位
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
   }
 
-  return { success: true, message: `Batch added ${rows.length} messages` };
+  return { success: true, message: `批次新增了 ${rows.length} 則訊息` };
 }
 
 /**
@@ -255,19 +259,19 @@ function deleteMessage(uuid) {
   const sheet = ss.getSheetByName('Messages');
 
   if (!sheet) {
-    return { success: false, error: 'Messages sheet not found' };
+    return { success: false, error: '找不到 Messages 工作表' };
   }
 
   const data = sheet.getDataRange().getValues();
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === uuid) {
-      sheet.deleteRow(i + 1); // +1 because array is 0-indexed, rows are 1-indexed
-      return { success: true, message: 'Message deleted' };
+      sheet.deleteRow(i + 1); // +1 因為陣列是 0-indexed，列號是 1-indexed
+      return { success: true, message: '訊息已刪除' };
     }
   }
 
-  return { success: false, error: 'Message not found' };
+  return { success: false, error: '找不到該訊息' };
 }
 
 /**
@@ -279,45 +283,45 @@ function uploadLogs(logs, deviceInfo) {
   const ss = getSpreadsheet();
   let sheet = ss.getSheetByName('Logs');
 
-  // Create sheet if not exists
+  // 若工作表不存在則建立
   if (!sheet) {
     sheet = ss.insertSheet('Logs');
     sheet.appendRow(['upload_time', 'device_id', 'device_name', 'timestamp', 'level', 'source', 'message']);
   }
 
   if (!logs || logs.length === 0) {
-    return { success: false, error: 'No logs provided' };
+    return { success: false, error: '未提供日誌資料' };
   }
 
   const uploadTime = new Date().toISOString();
   const deviceId = deviceInfo?.device_id || 'unknown';
   const deviceName = deviceInfo?.device_name || 'unknown';
 
-  // Batch append logs
+  // 批次準備資料列
   const rows = logs.map(log => [
     uploadTime,
     deviceId,
     deviceName,
-    "'" + (log.timestamp || new Date().toISOString()), // Force String
+    "'" + (log.timestamp || new Date().toISOString()), // 強制字串
     log.level || 'info',
     log.source || '',
     log.message || ''
   ]);
 
-  // Append all rows at once for better performance
+  // 一次性寫入以提升效能
   if (rows.length > 0) {
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
   }
 
   return {
     success: true,
-    message: `Uploaded ${logs.length} log entries`,
+    message: `已上傳 ${logs.length} 條日誌`,
     count: logs.length
   };
 }
 
 /**
- * 更新行程 (覆寫)
+ * 更新行程 (覆寫模式)
  * @param {Array} itineraryItems - 行程資料列表
  */
 function updateItinerary(itineraryItems) {
@@ -329,21 +333,21 @@ function updateItinerary(itineraryItems) {
     sheet.appendRow(['day', 'name', 'est_time', 'altitude', 'distance', 'note', 'image_asset']);
   }
 
-  // Clear existing content (except header)
+  // 清除現有內容 (保留標題列)
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
     sheet.getRange(2, 1, lastRow - 1, 7).clearContent();
   }
 
   if (!itineraryItems || itineraryItems.length === 0) {
-    return { success: true, message: 'Itinerary cleared' };
+    return { success: true, message: '行程已清空' };
   }
 
-  // Prepare rows
+  // 準備資料列
   const rows = itineraryItems.map(item => [
     item.day,
     item.name,
-    item.est_time || item.estTime || '', // Handle camelCase or snake_case
+    item.est_time || item.estTime || '', // 處理 camelCase 或 snake_case
     item.altitude,
     item.distance,
     item.note,
@@ -354,16 +358,16 @@ function updateItinerary(itineraryItems) {
     sheet.getRange(2, 1, rows.length, 7).setValues(rows);
   }
 
-  return { success: true, message: 'Itinerary updated' };
+  return { success: true, message: '行程已更新' };
 }
 
 // ============================================================
-// Helper Functions
+// 輔助函式 (Helper Functions)
 // ============================================================
 
 /**
- * Convert header name to snake_case key
- * e.g., "Est Time" -> "est_time", "Day" -> "day"
+ * 將標題名稱轉換為 snake_case 鍵值
+ * 例如: "Est Time" -> "est_time", "Day" -> "day"
  */
 function headerToKey(header) {
   return header
@@ -374,7 +378,7 @@ function headerToKey(header) {
 }
 
 // ============================================================
-// Test Functions (for debugging)
+// 測試函式 (Test Functions - 供偵錯用)
 // ============================================================
 
 function testFetchAll() {
@@ -387,7 +391,7 @@ function testAddMessage() {
     uuid: 'test-' + new Date().getTime(),
     user: 'TestUser',
     category: 'Gear',
-    content: 'This is a test message',
+    content: '這是一條測試訊息',
     timestamp: new Date().toISOString(),
     avatar: '🐼'
   });
@@ -395,19 +399,19 @@ function testAddMessage() {
 }
 
 // ============================================================
-// Setup Function - Run once to create initial sheets
+// 初始化函式 (Setup Function) - 執行一次以建立初始工作表
 // ============================================================
 
 function setupSheets() {
   const ss = getSpreadsheet();
 
-  // Create Itinerary sheet
+  // 建立 Itinerary 工作表
   let itinerarySheet = ss.getSheetByName('Itinerary');
   if (!itinerarySheet) {
     itinerarySheet = ss.insertSheet('Itinerary');
     itinerarySheet.appendRow(['day', 'name', 'est_time', 'altitude', 'distance', 'note', 'image_asset']);
 
-    // Add sample data
+    // 加入範例資料
     const sampleData = [
       ["'D0", '台北車站出發', "'18:00", 20, 0, '搭乘火車前往池上 (晚餐自理)', 'assets/images/d0_train_station.jpg'],
       ["'D0", '抵達池上車站', "'22:00", 260, 0, '前往青旅 Check-in', 'assets/images/d0_chishang_station.jpg'],
@@ -439,16 +443,16 @@ function setupSheets() {
 
     sampleData.forEach(row => itinerarySheet.appendRow(row));
 
-    Logger.log('Itinerary sheet created with sample data');
+    Logger.log('Itinerary 工作表已建立並寫入範例資料');
   }
 
-  // Create Messages sheet
+  // 建立 Messages 工作表
   let messagesSheet = ss.getSheetByName('Messages');
   if (!messagesSheet) {
     messagesSheet = ss.insertSheet('Messages');
     messagesSheet.appendRow(['uuid', 'parent_id', 'user', 'category', 'content', 'timestamp', 'avatar']);
 
-    // Add sample message
+    // 加入歡迎訊息
     messagesSheet.appendRow([
       Utilities.getUuid(),
       '',
@@ -459,24 +463,31 @@ function setupSheets() {
       '🤖'
     ]);
 
-    Logger.log('Messages sheet created with welcome message');
+    Logger.log('Messages 工作表已建立並寫入歡迎訊息');
   } else {
-    // Migration: Add avatar column if missing
+    // 遷移：若缺少 avatar 欄位則補上
     const headers = messagesSheet.getRange(1, 1, 1, messagesSheet.getLastColumn()).getValues()[0];
     if (!headers.includes('avatar')) {
       messagesSheet.getRange(1, headers.length + 1).setValue('avatar');
-      Logger.log('Added avatar column to Messages sheet');
+      Logger.log('已新增 avatar 欄位至 Messages 工作表');
     }
   }
 
-  // Create Logs sheet
+  // 建立 Logs 工作表
   let logsSheet = ss.getSheetByName('Logs');
   if (!logsSheet) {
     logsSheet = ss.insertSheet('Logs');
     logsSheet.appendRow(['upload_time', 'device_id', 'device_name', 'timestamp', 'level', 'source', 'message']);
 
-    Logger.log('Logs sheet created');
+    Logger.log('Logs 工作表已建立');
   }
 
-  Logger.log('Setup complete!');
+  // 初始化投票工作表 (呼叫 polls.gs)
+  if (typeof setupPollSheets === 'function') {
+    setupPollSheets();
+  } else {
+    Logger.log('警告: 找不到 setupPollSheets 函式，請確認 polls.gs 是否已包含在專案中。');
+  }
+
+  Logger.log('初始化設定完成 (Setup complete)!');
 }

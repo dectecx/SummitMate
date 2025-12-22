@@ -13,8 +13,10 @@ import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
 import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/meal_provider.dart';
+import 'providers/poll_provider.dart';
 import 'presentation/screens/map_viewer_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
+import 'presentation/screens/collaboration_tab.dart';
 import 'presentation/widgets/itinerary_edit_dialog.dart';
 import 'package:summitmate/presentation/widgets/tutorial_overlay.dart';
 import 'services/tutorial_service.dart';
@@ -45,6 +47,7 @@ class SummitMateApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MessageProvider()),
         ChangeNotifierProvider(create: (_) => GearProvider()),
         ChangeNotifierProvider(create: (_) => MealProvider()),
+        ChangeNotifierProvider(create: (_) => PollProvider()),
       ],
       child: _buildMaterialApp(),
     );
@@ -295,7 +298,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               if (mounted) setState(() => _currentIndex = 0);
             });
             if (context.read<ItineraryProvider>().isEditMode) {
-               context.read<ItineraryProvider>().toggleEditMode();
+              context.read<ItineraryProvider>().toggleEditMode();
             }
           },
           onFocusUpload: () async {
@@ -311,27 +314,27 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             }
           },
           onSwitchToGear: () async {
-             Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentIndex = 1);
             });
           },
           onSwitchToMessage: () async {
-             Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentIndex = 2);
             });
           },
           onSwitchToInfo: () async {
-             Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentIndex = 3);
             });
           },
           onFocusElevation: () async {
-             Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentIndex = 3);
             });
             // 等待光圈移動到位後展開
             Future.delayed(const Duration(milliseconds: 800), () {
-               _keyInfoTab.currentState?.expandElevation();
+              _keyInfoTab.currentState?.expandElevation();
             });
           },
           onFocusTimeMap: () async {
@@ -339,7 +342,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               if (mounted) setState(() => _currentIndex = 3);
             });
             // 等待光圈移動到位後展開
-             Future.delayed(const Duration(milliseconds: 800), () {
+            Future.delayed(const Duration(milliseconds: 800), () {
               _keyInfoTab.currentState?.expandTimeMap();
             });
           },
@@ -361,7 +364,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
     _tutorialEntry?.remove();
     _tutorialEntry = null;
     context.read<SettingsProvider>().completeOnboarding();
-    
+
     // Reset to first tab
     if (mounted) {
       setState(() => _currentIndex = 0);
@@ -524,13 +527,9 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       case 1:
         return const _GearTab(key: ValueKey(1));
       case 2:
-        return const _CollaborationTab(key: ValueKey(2));
+        return const CollaborationTab(key: ValueKey(2));
       case 3:
-        return InfoTab(
-          key: _keyInfoTab,
-          keyElevation: _keyInfoElevation,
-          keyTimeMap: _keyInfoTimeMap,
-        );
+        return InfoTab(key: _keyInfoTab, keyElevation: _keyInfoElevation, keyTimeMap: _keyInfoTimeMap);
       default:
         return const _ItineraryTab(key: ValueKey(0));
     }
@@ -1123,309 +1122,6 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-/// Tab 2: 協作頁
-class _CollaborationTab extends StatelessWidget {
-  const _CollaborationTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer2<MessageProvider, SettingsProvider>(
-      builder: (context, messageProvider, settingsProvider, child) {
-        return Scaffold(
-          body: Column(
-            children: [
-              // 分類切換 + 同步按鈕
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SegmentedButton<String>(
-                        showSelectedIcon: false,
-                        segments: const [
-                          ButtonSegment(value: 'Important', label: Text('重要'), icon: Icon(Icons.campaign_outlined)),
-                          ButtonSegment(value: 'Chat', label: Text('討論'), icon: Icon(Icons.chat_bubble_outline)),
-                          ButtonSegment(value: 'Gear', label: Text('裝備'), icon: Icon(Icons.backpack_outlined)),
-                        ],
-                        selected: {messageProvider.selectedCategory},
-                        onSelectionChanged: (selected) {
-                          messageProvider.selectCategory(selected.first);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 留言列表
-              Expanded(
-                child: messageProvider.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : messageProvider.currentCategoryMessages.isEmpty
-                    ? const Center(child: Text('尚無留言，點擊右下角新增'))
-                    : ListView.builder(
-                        itemCount: messageProvider.currentCategoryMessages.length,
-                        itemBuilder: (context, index) {
-                          final msg = messageProvider.currentCategoryMessages[index];
-                          final replies = messageProvider.getReplies(msg.uuid);
-
-                          return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            child: ExpansionTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                child: Text(msg.avatar),
-                              ),
-                              title: Text(msg.content),
-                              subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (replies.isNotEmpty)
-                                    Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
-                                  IconButton(
-                                    icon: const Icon(Icons.reply, size: 20),
-                                    onPressed: settingsProvider.isOfflineMode
-                                        ? null
-                                        : () => _showReplyDialog(
-                                            context,
-                                            messageProvider,
-                                            settingsProvider.username,
-                                            settingsProvider.avatar,
-                                            msg.uuid,
-                                          ),
-                                    tooltip: '回覆',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, size: 20),
-                                    onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
-                                    tooltip: '刪除',
-                                  ),
-                                ],
-                              ),
-                              children: replies
-                                  .map(
-                                    (reply) => ListTile(
-                                      leading: CircleAvatar(
-                                        radius: 12,
-                                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                        child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
-                                      ),
-                                      title: Text(reply.content),
-                                      subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete_outline, size: 18),
-                                        onPressed: () => _confirmDelete(context, messageProvider, reply.uuid),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: settingsProvider.isOfflineMode ? Colors.grey : null,
-            onPressed: settingsProvider.isOfflineMode
-                ? () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
-                  }
-                : () => _showAddMessageDialog(
-                    context,
-                    messageProvider,
-                    settingsProvider.username,
-                    settingsProvider.avatar,
-                    null,
-                  ),
-            child: const Icon(Icons.add_comment),
-          ),
-        );
-      },
-    );
-  }
-
-  void _confirmDelete(BuildContext context, MessageProvider provider, String uuid) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('確認刪除'),
-        content: const Text('確定要刪除此留言嗎？'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            onPressed: () {
-              provider.deleteMessage(uuid);
-              Navigator.pop(context);
-            },
-            child: const Text('刪除'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddMessageDialog(
-    BuildContext context,
-    MessageProvider provider,
-    String username,
-    String avatar,
-    String? parentId,
-  ) {
-    final contentController = TextEditingController();
-    final isReply = parentId != null;
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (innerContext, setState) {
-          bool isSubmitting = false;
-
-          // Checking logic for dismissal
-          Future<bool> checkDismiss() async {
-             if (contentController.text.trim().isEmpty) return true;
-             final confirm = await showDialog<bool>(
-              context: dialogContext,
-              builder: (ctx) => AlertDialog(
-                title: const Text('捨棄留言？'),
-                content: const Text('您有未發送的內容，確定要離開嗎？'),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('繼續編輯')),
-                  FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('捨棄'),
-                  ),
-                ],
-              ),
-            );
-            return confirm ?? false;
-          }
-
-          return PopScope(
-            canPop: false,
-            onPopInvoked: (didPop) async {
-              if (didPop) return;
-              if (isSubmitting) return;
-              final shouldPop = await checkDismiss();
-              if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: AlertDialog(
-              title: Text(isReply ? '回覆留言' : _getCategoryName(provider.selectedCategory)),
-              content: SizedBox(
-                width: 600,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!isReply)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          children: [
-                            CircleAvatar(child: Text(avatar)),
-                            const SizedBox(width: 8),
-                            Text('以 $username 的身分發言'),
-                          ],
-                        ),
-                      ),
-                    TextField(
-                      controller: contentController,
-                      enabled: !isSubmitting,
-                      decoration: InputDecoration(
-                        labelText: isReply ? '回覆內容' : '留言內容',
-                        hintText: isReply ? '輸入您的回覆...' : '輸入您的留言...',
-                        border: const OutlineInputBorder(),
-                      ),
-                      maxLines: 5,
-                      minLines: 3,
-                      textInputAction: TextInputAction.newline,
-                      autofocus: true,
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final shouldPop = await checkDismiss();
-                          if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
-                        },
-                  child: const Text('取消'),
-                ),
-                FilledButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final content = contentController.text.trim();
-                          if (content.isNotEmpty) {
-                            setState(() => isSubmitting = true);
-                            try {
-                              await provider.addMessage(
-                                user: username.isNotEmpty ? username : 'Anonymous',
-                                avatar: avatar,
-                                content: content,
-                                parentId: parentId,
-                              );
-                              if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext);
-                                // Use outer context for SnackBar
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('留言傳送成功！'), backgroundColor: Colors.green),
-                                  );
-                                }
-                              }
-                            } catch (e) {
-                              if (innerContext.mounted) {
-                                setState(() => isSubmitting = false);
-                                // Use outer context for SnackBar
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('傳送失敗: $e'), backgroundColor: Colors.red)
-                                  );
-                                }
-                              }
-                            }
-                          }
-                        },
-                  child: const Text('發送'),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showReplyDialog(
-    BuildContext context,
-    MessageProvider provider,
-    String username,
-    String avatar,
-    String parentId,
-  ) {
-    _showAddMessageDialog(context, provider, username, avatar, parentId);
-  }
-
-  String _getCategoryName(String category) {
-    switch (category) {
-      case 'Important':
-        return '重要公告';
-      case 'Chat':
-        return '討論區';
-      case 'Gear':
-        return '裝備協調';
-      default:
-        return category;
-    }
-  }
-}
-
 /// Tab 3: 裝備頁 (獨立頁籤)
 class _GearTab extends StatelessWidget {
   const _GearTab({super.key});
@@ -1621,15 +1317,14 @@ class _GearTab extends StatelessWidget {
 
     showDialog(
       context: context,
-      barrierDismissible: true, 
+      barrierDismissible: true,
       builder: (dialogContext) => StatefulBuilder(
         builder: (innerContext, setState) {
-
           Future<bool> checkDismiss() async {
-             final hasContent = nameController.text.isNotEmpty || weightController.text.isNotEmpty;
-             if (!hasContent) return true;
+            final hasContent = nameController.text.isNotEmpty || weightController.text.isNotEmpty;
+            if (!hasContent) return true;
 
-             final confirm = await showDialog<bool>(
+            final confirm = await showDialog<bool>(
               context: dialogContext,
               builder: (ctx) => AlertDialog(
                 title: const Text('捨棄裝備？'),
@@ -1692,8 +1387,8 @@ class _GearTab extends StatelessWidget {
                   onPressed: () async {
                     final shouldPop = await checkDismiss();
                     if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
-                  }, 
-                  child: const Text('取消')
+                  },
+                  child: const Text('取消'),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -1721,11 +1416,7 @@ class InfoTab extends StatefulWidget {
   final Key? keyElevation;
   final Key? keyTimeMap;
 
-  const InfoTab({
-    super.key,
-    this.keyElevation,
-    this.keyTimeMap,
-  });
+  const InfoTab({super.key, this.keyElevation, this.keyTimeMap});
 
   @override
   State<InfoTab> createState() => InfoTabState();
@@ -1748,10 +1439,8 @@ class InfoTabState extends State<InfoTab> {
   Future<void> _refreshWeather({bool force = false}) async {
     setState(() => _loadingWeather = true);
     try {
-      final weather = await getIt<WeatherService>().getWeather(
-        forceRefresh: force,
-        locationName: _selectedLocation, 
-      );if (mounted) setState(() => _weather = weather);
+      final weather = await getIt<WeatherService>().getWeather(forceRefresh: force, locationName: _selectedLocation);
+      if (mounted) setState(() => _weather = weather);
     } finally {
       if (mounted) setState(() => _loadingWeather = false);
     }
@@ -1770,8 +1459,6 @@ class InfoTabState extends State<InfoTab> {
       _isElevationExpanded = false;
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -1996,7 +1683,7 @@ class InfoTabState extends State<InfoTab> {
                 ),
               ),
               const SizedBox(height: 16),
-  
+
               _buildWeatherCard(),
 
               // 電話訊號資訊
@@ -2099,7 +1786,12 @@ class InfoTabState extends State<InfoTab> {
 
   Widget _buildWeatherCard() {
     if (_weather == null && _loadingWeather) {
-      return const Card(child: Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator())));
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
     }
 
     if (_weather == null) {
@@ -2108,7 +1800,10 @@ class InfoTabState extends State<InfoTab> {
           leading: const Icon(Icons.cloud_off),
           title: Text(_loadingWeather ? '讀取中...' : '請更新氣象資料', style: TextStyle(color: Colors.grey)),
           subtitle: const Text('點擊右側按鈕取得最新預報'),
-          trailing: IconButton(onPressed: () => _refreshWeather(force: true), icon: const Icon(Icons.refresh, color: Colors.blue)),
+          trailing: IconButton(
+            onPressed: () => _refreshWeather(force: true),
+            icon: const Icon(Icons.refresh, color: Colors.blue),
+          ),
         ),
       );
     }
@@ -2162,8 +1857,10 @@ class InfoTabState extends State<InfoTab> {
                     onTap: () => _refreshWeather(force: true),
                     child: Row(
                       children: [
-                        Text('更新: $timeStr${w.isStale ? " (過期)" : ""}', 
-                             style: TextStyle(fontSize: 10, color: w.isStale ? Colors.red : Colors.grey)),
+                        Text(
+                          '更新: $timeStr${w.isStale ? " (過期)" : ""}',
+                          style: TextStyle(fontSize: 10, color: w.isStale ? Colors.red : Colors.grey),
+                        ),
                         const SizedBox(width: 4),
                         const Icon(Icons.refresh, size: 14, color: Colors.grey),
                       ],
@@ -2173,18 +1870,20 @@ class InfoTabState extends State<InfoTab> {
             ),
             const Divider(),
             if (w.isStale)
-               Container(
-                 margin: const EdgeInsets.only(bottom: 8),
-                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                 decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
-                 child: Row(
-                   children: [
-                     Icon(Icons.warning_amber, size: 16, color: Colors.red.shade700),
-                     const SizedBox(width: 8),
-                     Expanded(child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: Colors.red.shade700))),
-                   ],
-                 ),
-               ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber, size: 16, color: Colors.red.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
+                    ),
+                  ],
+                ),
+              ),
             // Current Weather
             InkWell(
               onTap: () {
@@ -2197,53 +1896,70 @@ class InfoTabState extends State<InfoTab> {
                 children: [
                   Column(
                     children: [
-                      Text('${w.temperature.toStringAsFixed(1)}°C',
-                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange)),
+                      Text(
+                        '${w.temperature.toStringAsFixed(1)}°C',
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange),
+                      ),
                       Text(w.condition, style: const TextStyle(fontSize: 16)),
                     ],
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [
-                        const Icon(Icons.water_drop, size: 14, color: Colors.blue),
-                        const SizedBox(width: 4),
-                        Text('降雨機率: ${w.rainProbability}%')
-                      ]),
+                      Row(
+                        children: [
+                          const Icon(Icons.water_drop, size: 14, color: Colors.blue),
+                          const SizedBox(width: 4),
+                          Text('降雨機率: ${w.rainProbability}%'),
+                        ],
+                      ),
                       const SizedBox(height: 4),
-                      Row(children: [
-                        const Icon(Icons.water, size: 14, color: Colors.lightBlue),
-                        const SizedBox(width: 4),
-                        Text('濕度: ${w.humidity.toStringAsFixed(0)}%')
-                      ]),
+                      Row(
+                        children: [
+                          const Icon(Icons.water, size: 14, color: Colors.lightBlue),
+                          const SizedBox(width: 4),
+                          Text('濕度: ${w.humidity.toStringAsFixed(0)}%'),
+                        ],
+                      ),
                       const SizedBox(height: 4),
-                      Row(children: [
-                        const Icon(Icons.air, size: 14, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text('風速: ${w.windSpeed} m/s')
-                      ]),
+                      Row(
+                        children: [
+                          const Icon(Icons.air, size: 14, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text('風速: ${w.windSpeed} m/s'),
+                        ],
+                      ),
                       const SizedBox(height: 4),
-                      Row(children: [
-                        const Icon(Icons.thermostat, size: 14, color: Colors.orangeAccent),
-                        const SizedBox(width: 4),
-                        Text('體感: ${(w.apparentTemperature ?? w.temperature).toStringAsFixed(1)}°C')
-                      ]),
+                      Row(
+                        children: [
+                          const Icon(Icons.thermostat, size: 14, color: Colors.orangeAccent),
+                          const SizedBox(width: 4),
+                          Text('體感: ${(w.apparentTemperature ?? w.temperature).toStringAsFixed(1)}°C'),
+                        ],
+                      ),
                       const SizedBox(height: 4),
-                      Row(children: [
-                        Icon(isDay ? Icons.wb_sunny : Icons.nightlight_round,
-                            size: 14, color: isDay ? Colors.orange : Colors.purple),
-                        const SizedBox(width: 4),
-                        Text(isDay
-                            ? '日落: ${DateFormat('HH:mm').format(w.sunset)}'
-                            : '日出: ${DateFormat('HH:mm').format(w.sunrise)}')
-                      ]),
+                      Row(
+                        children: [
+                          Icon(
+                            isDay ? Icons.wb_sunny : Icons.nightlight_round,
+                            size: 14,
+                            color: isDay ? Colors.orange : Colors.purple,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isDay
+                                ? '日落: ${DateFormat('HH:mm').format(w.sunset)}'
+                                : '日出: ${DateFormat('HH:mm').format(w.sunrise)}',
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                   Icon(_isWeatherExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
                 ],
               ),
             ),
-            
+
             // 7-Day Forecast (Collapsible)
             if (_isWeatherExpanded && w.dailyForecasts.isNotEmpty) ...[
               const Divider(height: 24),
@@ -2266,26 +1982,32 @@ class InfoTabState extends State<InfoTab> {
                       ),
                       child: Column(
                         children: [
-                           Text(dateStr, style: TextStyle(fontWeight: FontWeight.bold, color: isWeekend ? Colors.red : Colors.black87)),
-                           const SizedBox(height: 4),
-                           Icon(_getWeatherIcon(d.dayCondition), color: Colors.orange, size: 24),
-                           const SizedBox(height: 4),
-                           Text(d.dayCondition, style: const TextStyle(fontSize: 10), overflow: TextOverflow.ellipsis),
-                           const SizedBox(height: 4),
-                           Text('${d.minTemp.round()}~${d.maxTemp.round()}°C', style: const TextStyle(fontSize: 12)),
-                           if ((d.maxApparentTemp ?? 0) != 0)
-                             Text(
-                               '體感 ${(d.minApparentTemp ?? d.minTemp).round()}~${(d.maxApparentTemp ?? d.maxTemp).round()}',
-                               style: const TextStyle(fontSize: 10, color: Colors.grey),
-                             ),
-                           const SizedBox(height: 2),
-                           Row(
-                             mainAxisAlignment: MainAxisAlignment.center,
-                             children: [
-                               const Icon(Icons.water_drop, size: 10, color: Colors.blue),
-                               Text('${d.rainProbability}%', style: const TextStyle(fontSize: 10)),
-                             ],
-                           ),
+                          Text(
+                            dateStr,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isWeekend ? Colors.red : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Icon(_getWeatherIcon(d.dayCondition), color: Colors.orange, size: 24),
+                          const SizedBox(height: 4),
+                          Text(d.dayCondition, style: const TextStyle(fontSize: 10), overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 4),
+                          Text('${d.minTemp.round()}~${d.maxTemp.round()}°C', style: const TextStyle(fontSize: 12)),
+                          if ((d.maxApparentTemp ?? 0) != 0)
+                            Text(
+                              '體感 ${(d.minApparentTemp ?? d.minTemp).round()}~${(d.maxApparentTemp ?? d.maxTemp).round()}',
+                              style: const TextStyle(fontSize: 10, color: Colors.grey),
+                            ),
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.water_drop, size: 10, color: Colors.blue),
+                              Text('${d.rainProbability}%', style: const TextStyle(fontSize: 10)),
+                            ],
+                          ),
                         ],
                       ),
                     );

@@ -1,0 +1,143 @@
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/constants.dart';
+import '../core/di.dart';
+import '../data/models/poll.dart';
+import '../services/poll_service.dart';
+import '../services/log_service.dart';
+
+class PollProvider with ChangeNotifier {
+  static const String _source = 'PollProvider';
+
+  List<Poll> _polls = [];
+  bool _isLoading = false;
+  String? _error;
+  String? _currentUserId;
+
+  // Getters
+  List<Poll> get polls => _polls;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  // Filtered Getters
+  List<Poll> get activePolls => _polls.where((p) => p.isActive).toList();
+  List<Poll> get endedPolls => _polls.where((p) => !p.isActive).toList();
+  List<Poll> get myPolls => _polls.where((p) => p.creatorId == _currentUserId).toList();
+
+  PollProvider() {
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final prefs = getIt<SharedPreferences>();
+    _currentUserId = prefs.getString(PrefKeys.username);
+
+    if (_currentUserId == null || _currentUserId!.isEmpty) {
+      _currentUserId = 'User_${DateTime.now().millisecondsSinceEpoch}'; // Fallback
+    }
+  }
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  Future<void> fetchPolls() async {
+    _setLoading(true);
+    _error = null;
+    try {
+      // Refresh User ID just in case
+      final prefs = getIt<SharedPreferences>();
+      final user = prefs.getString(PrefKeys.username);
+      if (user != null && user.isNotEmpty) _currentUserId = user;
+
+      _polls = await PollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
+
+      // Sort: Active first, then by date desc
+      _polls.sort((a, b) {
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+    } catch (e) {
+      _error = e.toString();
+      LogService.error('Provider fetch error: $e', source: _source);
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> createPoll({
+    required String title,
+    String description = '',
+    DateTime? deadline,
+    bool isAllowAddOption = false,
+    int maxOptionLimit = 20,
+    bool allowMultipleVotes = false,
+    List<String> initialOptions = const [],
+  }) async {
+    _setLoading(true);
+    try {
+      await PollService.createPoll(
+        title: title,
+        description: description,
+        creatorId: _currentUserId ?? 'anonymous',
+        deadline: deadline,
+        isAllowAddOption: isAllowAddOption,
+        maxOptionLimit: maxOptionLimit,
+        allowMultipleVotes: allowMultipleVotes,
+        initialOptions: initialOptions,
+      );
+      await fetchPolls(); // Refresh list
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> votePoll({required String pollId, required List<String> optionIds}) async {
+    _setLoading(true);
+    try {
+      await PollService.votePoll(
+        pollId: pollId,
+        optionIds: optionIds,
+        userId: _currentUserId ?? 'anonymous',
+        userName: _currentUserId ?? 'Anonymous',
+      );
+      await fetchPolls(); // Refresh to get updated counts
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> addOption({required String pollId, required String text}) async {
+    _setLoading(true);
+    try {
+      await PollService.addOption(pollId: pollId, text: text, creatorId: _currentUserId ?? 'anonymous');
+      await fetchPolls();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> deleteOption({required String optionId}) async {
+    _setLoading(true);
+    try {
+      await PollService.deleteOption(optionId: optionId, userId: _currentUserId ?? 'anonymous');
+      await fetchPolls();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+}

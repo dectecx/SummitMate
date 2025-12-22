@@ -75,4 +75,5 @@ class ApiConfig {
   static const String actionAddMessage = 'add_message';
   static const String actionDeleteMessage = 'delete_message';
   static const String actionFetchWeather = 'fetch_weather';
+  static const String actionPoll = 'poll';
 }

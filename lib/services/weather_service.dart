@@ -7,8 +7,6 @@ import '../services/log_service.dart';
 import '../core/env_config.dart';
 import '../core/constants.dart';
 
-
-
 /// Weather Service
 /// Data Sources:
 /// 1. Hiking Weather: F-B0053-031 育樂天氣預報資料-登山一週日夜天氣預報(中文)
@@ -63,13 +61,13 @@ class WeatherService {
 
     // No cache and not force refresh -> Auto-fetch
     try {
-       LogService.info('Cache miss for $locationName, fetching...', source: 'WeatherService');
-       final weather = await fetchWeather(locationName: locationName);
-       _box?.put(dynamicCacheKey, weather);
-       return weather;
+      LogService.info('Cache miss for $locationName, fetching...', source: 'WeatherService');
+      final weather = await fetchWeather(locationName: locationName);
+      _box?.put(dynamicCacheKey, weather);
+      return weather;
     } catch (e) {
-       LogService.error('Failed to auto-fetch weather: $e', source: 'WeatherService');
-       return null;
+      LogService.error('Failed to auto-fetch weather: $e', source: 'WeatherService');
+      return null;
     }
   }
 
@@ -104,7 +102,7 @@ class WeatherService {
       if (response.statusCode == 200) {
         // GAS returns List<Map>
         final List<dynamic> jsonList = json.decode(utf8.decode(response.bodyBytes));
-        
+
         // --- OPTIMIZATION: Cache ALL locations from this response ---
         // 1. Identify all unique locations
         final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
@@ -112,21 +110,20 @@ class WeatherService {
 
         // 2. Parse and Cache each location
         for (var loc in uniqueLocations) {
-           try {
-             final weather = _parseGasWeatherData(jsonList, loc);
-             final key = 'weather_$loc';
-             _box?.put(key, weather);
-             LogService.info('Cached bulk data for: $loc', source: 'WeatherService');
-           } catch (e) {
-             LogService.error('Failed to parse/cache bulk data for $loc: $e', source: 'WeatherService');
-           }
+          try {
+            final weather = _parseGasWeatherData(jsonList, loc);
+            final key = 'weather_$loc';
+            _box?.put(key, weather);
+            LogService.info('Cached bulk data for: $loc', source: 'WeatherService');
+          } catch (e) {
+            LogService.error('Failed to parse/cache bulk data for $loc: $e', source: 'WeatherService');
+          }
         }
 
         // 3. Return the requested location's data (now in cache) or parse directly if something failed above
         // We will just return the parsed data for the requested location
         // If it was cached above, we could technically re-read it, but parsing again is fine/safer return.
         return _parseGasWeatherData(jsonList, locationName);
-
       } else {
         throw Exception('GAS API Error: ${response.statusCode}');
       }
@@ -182,7 +179,7 @@ class WeatherService {
     final pop = int.tryParse(current['PoP'].toString()) ?? 0;
     final windSpeed = double.tryParse(current['WS'].toString()) ?? 0.0;
     final wx = current['Wx'].toString();
-    
+
     // Apparent Temp (Avg of Max/Min if available)
     final maxAT = double.tryParse(current['MaxAT'].toString()) ?? 0.0;
     final minAT = double.tryParse(current['MinAT'].toString()) ?? 0.0;
@@ -206,10 +203,13 @@ class WeatherService {
       dailyMap.putIfAbsent(
         dateKey,
         () => {
-          'dayCondition': '', 'nightCondition': '', 
-          'maxTemp': -100.0, 'minTemp': 100.0, 
-          'maxAT': -100.0, 'minAT': 100.0,
-          'pop': 0
+          'dayCondition': '',
+          'nightCondition': '',
+          'maxTemp': -100.0,
+          'minTemp': 100.0,
+          'maxAT': -100.0,
+          'minAT': 100.0,
+          'pop': 0,
         },
       );
 
@@ -217,21 +217,21 @@ class WeatherService {
       final val = row['Wx'].toString();
       if (start.hour >= 6 && start.hour < 18) {
         if (dailyMap[dateKey]!['dayCondition'] == '') {
-           dailyMap[dateKey]!['dayCondition'] = val;
+          dailyMap[dateKey]!['dayCondition'] = val;
         }
       } else {
         if (dailyMap[dateKey]!['nightCondition'] == '') {
-           dailyMap[dateKey]!['nightCondition'] = val;
+          dailyMap[dateKey]!['nightCondition'] = val;
         }
       }
 
       // MaxT
       final maxT = double.tryParse(row['MaxT'].toString());
       if (maxT != null && maxT != 0.0) {
-         if (maxT > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = maxT;
+        if (maxT > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = maxT;
       } else {
-         final t = double.tryParse(row['T'].toString()) ?? 0.0;
-         if (t > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = t;
+        final t = double.tryParse(row['T'].toString()) ?? 0.0;
+        if (t > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = t;
       }
 
       // MinT
@@ -239,14 +239,14 @@ class WeatherService {
       if (minT != null && minT != 0.0) {
         if (minT < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = minT;
       } else {
-         final t = double.tryParse(row['T'].toString()) ?? 0.0;
-         if (t < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = t;
+        final t = double.tryParse(row['T'].toString()) ?? 0.0;
+        if (t < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = t;
       }
 
       // MaxAT
       final mxAT = double.tryParse(row['MaxAT'].toString());
       if (mxAT != null && mxAT != 0.0) {
-         if (mxAT > dailyMap[dateKey]!['maxAT']) dailyMap[dateKey]!['maxAT'] = mxAT;
+        if (mxAT > dailyMap[dateKey]!['maxAT']) dailyMap[dateKey]!['maxAT'] = mxAT;
       }
 
       // MinAT
@@ -338,13 +338,13 @@ class WeatherService {
     // Issue Time (Township)
     DateTime? issueTime;
     try {
-       final locationsRoot = json['records']['Locations'][0];
-       if (locationsRoot['DatasetInfo'] != null) {
-          final info = locationsRoot['DatasetInfo'];
-          if (info['IssueTime'] != null) {
-             issueTime = DateTime.parse(info['IssueTime'].toString());
-          }
-       }
+      final locationsRoot = json['records']['Locations'][0];
+      if (locationsRoot['DatasetInfo'] != null) {
+        final info = locationsRoot['DatasetInfo'];
+        if (info['IssueTime'] != null) {
+          issueTime = DateTime.parse(info['IssueTime'].toString());
+        }
+      }
     } catch (_) {}
 
     // Apparent Temp
@@ -363,10 +363,13 @@ class WeatherService {
       dailyMap.putIfAbsent(
         dateKey,
         () => {
-          'dayCondition': '', 'nightCondition': '', 
-          'maxTemp': -100.0, 'minTemp': 100.0, 
-          'maxAT': -100.0, 'minAT': 100.0,
-          'pop': 0
+          'dayCondition': '',
+          'nightCondition': '',
+          'maxTemp': -100.0,
+          'minTemp': 100.0,
+          'maxAT': -100.0,
+          'minAT': 100.0,
+          'pop': 0,
         },
       );
       final val = item['ElementValue'][0]['Weather'].toString();

@@ -61,61 +61,61 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
       },
       child: AlertDialog(
         title: Text(isEdit ? '編輯行程' : '新增行程'),
-      content: SizedBox(
-        width: 400, // Make dialog wider
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: '名稱', hintText: '例如：向陽山屋'),
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: _pickTime,
-                child: InputDecorator(
-                  decoration: const InputDecoration(labelText: '預計時間'),
-                  child: Text(_selectedTime.format(context), style: Theme.of(context).textTheme.bodyLarge),
+        content: SizedBox(
+          width: 400, // Make dialog wider
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(labelText: '名稱', hintText: '例如：向陽山屋'),
+                  autofocus: true,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _altitudeCtrl,
-                      decoration: const InputDecoration(labelText: '海拔 (m)'),
-                      keyboardType: TextInputType.number,
-                    ),
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: _pickTime,
+                  child: InputDecorator(
+                    decoration: const InputDecoration(labelText: '預計時間'),
+                    child: Text(_selectedTime.format(context), style: Theme.of(context).textTheme.bodyLarge),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextField(
-                      controller: _distanceCtrl,
-                      decoration: const InputDecoration(labelText: '距離 (km)'),
-                      keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _altitudeCtrl,
+                        decoration: const InputDecoration(labelText: '海拔 (m)'),
+                        keyboardType: TextInputType.number,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _noteCtrl,
-                decoration: const InputDecoration(labelText: '備註'),
-                maxLines: 3,
-              ),
-            ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: _distanceCtrl,
+                        decoration: const InputDecoration(labelText: '距離 (km)'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _noteCtrl,
+                  decoration: const InputDecoration(labelText: '備註'),
+                  maxLines: 3,
+                ),
+              ],
+            ),
           ),
         ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          FilledButton(onPressed: _submit, child: Text(isEdit ? '儲存' : '新增')),
+        ],
       ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-        FilledButton(onPressed: _submit, child: Text(isEdit ? '儲存' : '新增')),
-      ],
-    ),
-);
+    );
   }
 
   Future<void> _pickTime() async {
@@ -138,9 +138,11 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
     // Return partial map or object to parent to handle submission
     Navigator.pop(context, {'name': name, 'estTime': timeStr, 'altitude': alt, 'distance': dist, 'note': note});
   }
+
   Future<bool> _checkDismiss() async {
     // Check if any field has content
-    final hasContent = _nameCtrl.text.isNotEmpty ||
+    final hasContent =
+        _nameCtrl.text.isNotEmpty ||
         _noteCtrl.text.isNotEmpty ||
         (_altitudeCtrl.text != '3000' && _altitudeCtrl.text.isNotEmpty) ||
         (_distanceCtrl.text != '1.0' && _distanceCtrl.text.isNotEmpty);

@@ -1,10 +1,10 @@
 /**
- * Weather ETL Script
- * Functions:
- * 1. Fetch CWA Weather Data (JSON F-B0053-033).
- * 2. Parse and Flattern to Raw Data Sheet (Backup).
- * 3. Transform and Aggregate to App View Sheet (API Serving).
- * 4. Implement Caching to reduce API calls.
+ * Weather ETL Script (氣象資料擷取與轉換腳本)
+ * 功能:
+ * 1. 抓取 CWA 氣象資料 (JSON ID: F-B0053-033)。
+ * 2. 解析並攤平儲存至 Raw Data 工作表 (備份用)。
+ * 3. 轉換並聚合資料至 App View 工作表 (供 API 讀取)。
+ * 4. 實作快取機制以減少 API 呼叫次數。
  */
 
 // ==========================================
@@ -36,7 +36,7 @@ function syncWeatherToSheets(forceUpdate = false) {
     }
   }
 
-  // 1. 準備 Raw Data
+  // 1. 準備 Raw Data (原始資料)
   let rawData = [];
   if (shouldFetch) {
     rawData = fetchFromCWA(); // 抓取新資料
@@ -61,13 +61,10 @@ function syncWeatherToSheets(forceUpdate = false) {
     return;
   }
 
-  // 2. 轉換並產出 App View
+  // 2. 轉換並產出 App View (應用程式視圖)
   generateAppView(rawData);
 }
 
-/**
- * 步驟 A: 從 CWA API 抓取並解析 (Extract)
- */
 /**
  * 步驟 A: 從 CWA API 抓取並解析 (Extract)
  * 回傳：攤平後的二維陣列 (Raw Data 結構)
@@ -87,6 +84,7 @@ function fetchFromCWA() {
   try {
     const response = UrlFetchApp.fetch(URL, {muteHttpExceptions: true});
     let jsonString = response.getContentText();
+    // 處理 BOM (Byte Order Mark)
     if (jsonString.charCodeAt(0) === 0xFEFF) {
       jsonString = jsonString.substr(1);
     }
@@ -118,7 +116,7 @@ function fetchFromCWA() {
           const startTime = t.StartTime;
           const endTime = t.EndTime;
           
-          // [Fix]: ElementValue 是 Object (Map)，不是 Array
+          // [修正]: ElementValue 是物件 (Map)，不是陣列
           // 且新增 FullRawData 欄位儲存完整 JSON
           let valObj = t.ElementValue;
           let extractedValue = "";
@@ -144,7 +142,7 @@ function fetchFromCWA() {
 }
 
 /**
- * 輔助函式：從 ElementValue Object 中提取主要數值
+ * 輔助函式：從 ElementValue 物件中提取主要數值
  */
 function extractValue(elementName, valObj) {
   // 防呆：如果是 Array 取第一個
@@ -169,7 +167,7 @@ function extractValue(elementName, valObj) {
 
   if (key && valObj[key] !== undefined) return valObj[key];
   
-  // Fallback
+  // 後備方案 (Fallback)：若無對應 key，取第一個
   const keys = Object.keys(valObj);
   if (keys.length > 0) return valObj[keys[0]];
   
@@ -177,7 +175,7 @@ function extractValue(elementName, valObj) {
 }
 
 /**
- * 步驟 C: 儲存 Raw Data
+ * 步驟 C: 儲存 Raw Data (原始資料)
  */
 function saveRawData(rows) {
   const header = ["Location", "StartTime", "EndTime", "Element", "Value", "FullElementValue"];
@@ -198,7 +196,7 @@ function readRawData() {
 }
 
 /**
- * 步驟 D: 產出 App View
+ * 步驟 D: 產出 App View (應用程式視圖)
  */
 function generateAppView(rawDataRows) {
   const elementMap = {
@@ -232,10 +230,11 @@ function generateAppView(rawDataRows) {
     }
   });
   
+  // 取得發布時間
   const issueTime = PropertiesService.getScriptProperties().getProperty("LATEST_ISSUE_TIME") || "";
 
   Object.values(consolidatedData).forEach(item => {
-    // Add IssueTime to each item
+    // 將 IssueTime 加入每一筆資料中
     item.IssueTime = issueTime;
   });
 
@@ -253,7 +252,7 @@ function generateAppView(rawDataRows) {
 }
 
 /**
- * 輔助：提取 IssueTime
+ * 輔助：提取 IssueTime (發布時間)
  */
 function getIssueTime(json) {
   try {
@@ -264,7 +263,7 @@ function getIssueTime(json) {
 }
 
 /**
- * 通用寫入工具
+ * 通用寫入工具 (Update Sheet)
  */
 function updateSheet(sheetName, data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -291,7 +290,7 @@ function getWeatherData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Weather_Hiking_App");
   
-  if (!sheet) return { error: "Weather data not ready" };
+  if (!sheet) return { error: "Weather data not ready (氣象資料尚未準備好)" };
 
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
@@ -309,11 +308,11 @@ function getWeatherData() {
 }
 
 /**
- * (選用) 首次安裝初始化
+ * (選用) 首次安裝初始化氣象工作表
  */
 function setupWeatherSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss.getSheetByName("Weather_CWA_Hiking_Raw")) ss.insertSheet("Weather_CWA_Hiking_Raw");
   if (!ss.getSheetByName("Weather_Hiking_App")) ss.insertSheet("Weather_Hiking_App");
-  Logger.log("工作表初始化完成");
+  Logger.log("氣象工作表初始化完成");
 }
