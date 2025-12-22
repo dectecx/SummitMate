@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -638,14 +639,21 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     barrierDismissible: false,
                     builder: (c) => AlertDialog(
                       title: const Text('✅ 清除完成'),
-                      content: const Text('資料已清除，請重新啟動 App 以完成操作。'),
+                      content: Text(kIsWeb 
+                          ? '資料已清除，請重新載入網頁以完成操作。' 
+                          : '資料已清除，請重新啟動 App 以完成操作。'),
                       actions: [
                         FilledButton(
                           onPressed: () {
-                            // 強制退出 App
-                            SystemNavigator.pop();
+                            if (kIsWeb) {
+                              // Web: Reload the page
+                              launchUrl(Uri.base, webOnlyWindowName: '_self');
+                            } else {
+                              // Mobile: Close the app
+                              SystemNavigator.pop();
+                            }
                           },
-                          child: const Text('關閉 App'),
+                          child: Text(kIsWeb ? '重新載入' : '關閉 App'),
                         ),
                       ],
                     ),
