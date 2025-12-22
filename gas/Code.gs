@@ -86,6 +86,9 @@ function doPost(e) {
       case "poll":
         // 處理投票相關請求 (請見 polls.gs)
         return createJsonResponse(handlePollAction(data.subAction, data));
+      case "heartbeat":
+        // 處理使用狀態心跳 (Web 追蹤)
+        return createJsonResponse(recordHeartbeat(data));
       default:
         return createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
     }
@@ -402,6 +405,30 @@ function updateItinerary(itineraryItems) {
   }
 
   return { success: true, message: "行程已更新" };
+}
+
+/**
+ * 記錄使用狀態心跳 (Web 追蹤)
+ * @param {Object} data - 心跳資料 { username, timestamp, platform }
+ */
+function recordHeartbeat(data) {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName("Heartbeat");
+
+  // 若工作表不存在則建立
+  if (!sheet) {
+    sheet = ss.insertSheet("Heartbeat");
+    sheet.appendRow(["timestamp", "username", "platform"]);
+  }
+
+  // 新增心跳記錄
+  sheet.appendRow([
+    data.timestamp || new Date().toISOString(),
+    data.username || "Anonymous",
+    data.platform || "unknown",
+  ]);
+
+  return { success: true, message: "心跳已記錄" };
 }
 
 // ============================================================
