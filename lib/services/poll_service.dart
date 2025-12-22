@@ -11,6 +11,10 @@ class PollService {
   // Using static methods for simplicity as in other services
 
   static const String _source = 'PollService';
+  
+  // For testing
+  static http.Client _client = http.Client();
+  static set client(http.Client client) => _client = client;
 
   // Helper to get device/user ID
   // In a real app, this should come from a AuthProvider or UserSettings
@@ -24,7 +28,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Fetching polls for user: $userId');
-      final response = await http.get(url);
+      final response = await _client.get(url);
       debugPrint('[$_source] Fetch response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
@@ -78,7 +82,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Creating poll: $title');
-      final response = await http.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode(payload));
+      final response = await _client.post(url, headers: {'Content-Type': 'application/json'}, body: json.encode(payload));
       debugPrint('[$_source] Create response: ${response.body}');
 
       final jsonResponse = json.decode(response.body);
@@ -111,7 +115,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Voting on poll: $pollId, options: $optionIds');
-      final response = await http.post(
+      final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
@@ -142,7 +146,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Adding option "$text" to poll $pollId by creator $creatorId');
-      final response = await http.post(
+      final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
@@ -172,7 +176,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Closing poll: $pollId by user: $userId');
-      final response = await http.post(
+      final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
@@ -202,7 +206,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Deleting poll: $pollId by user: $userId');
-      final response = await http.post(
+      final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
@@ -233,7 +237,7 @@ class PollService {
 
     try {
       debugPrint('[$_source] Deleting option: $optionId by user: $userId');
-      final response = await http.post(
+      final response = await _client.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
