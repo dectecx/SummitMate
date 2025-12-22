@@ -81,6 +81,7 @@ class ApiConfig {
   static const String actionDeleteMessage = 'delete_message';
   static const String actionFetchWeather = 'fetch_weather';
   static const String actionPoll = 'poll';
+  static const String actionHeartbeat = 'heartbeat';
 }
 
 /// Hive Box 名稱
