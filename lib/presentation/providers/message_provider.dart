@@ -136,7 +136,6 @@ class MessageProvider extends ChangeNotifier {
           ToastService.success('留言同步成功！');
         } else {
           LogService.debug('留言同步跳過 (節流或無需更新)', source: 'Message');
-          ToastService.success('已是最新資料');
         }
       } else {
         LogService.error('留言同步失敗: ${result.errors.first}', source: 'Message');

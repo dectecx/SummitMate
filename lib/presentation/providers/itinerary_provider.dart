@@ -237,7 +237,6 @@ class ItineraryProvider extends ChangeNotifier {
         } else {
           // 被節流或無需更新
           LogService.debug('行程同步跳過 (節流或無需更新)', source: 'Itinerary');
-          if (!isAuto) ToastService.success('已是最新資料');
         }
       } else {
         LogService.error('行程同步失敗: ${result.errors.join(", ")}', source: 'Itinerary');

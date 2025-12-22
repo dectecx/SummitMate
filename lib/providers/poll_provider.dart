@@ -5,20 +5,24 @@ import '../core/di.dart';
 import '../data/models/poll.dart';
 import '../services/poll_service.dart';
 import '../services/log_service.dart';
+import '../services/toast_service.dart';
 
 class PollProvider with ChangeNotifier {
   static const String _source = 'PollProvider';
+  static const Duration _syncCooldown = Duration(minutes: 5);
 
   List<Poll> _polls = [];
   bool _isLoading = false;
   String? _error;
   String? _currentUserId;
+  DateTime? _lastSyncTime;
 
   // Getters
   List<Poll> get polls => _polls;
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get currentUserId => _currentUserId;
+  DateTime? get lastSyncTime => _lastSyncTime;
 
   // Filtered Getters
   List<Poll> get activePolls => _polls.where((p) => p.isActive).toList();
@@ -45,10 +49,23 @@ class PollProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchPolls() async {
+  /// 取得投票列表
+  /// [isAuto] 為 true 時會套用 5 分鐘節流
+  Future<void> fetchPolls({bool isAuto = false}) async {
+    // 節流：自動同步時檢查冷卻時間
+    if (isAuto && _lastSyncTime != null) {
+      final elapsed = DateTime.now().difference(_lastSyncTime!);
+      if (elapsed < _syncCooldown) {
+        LogService.debug('投票同步跳過 (節流中，剩餘 ${(_syncCooldown - elapsed).inSeconds}s)', source: _source);
+        return;
+      }
+    }
+
     _setLoading(true);
     _error = null;
     try {
+      LogService.info('開始同步投票...', source: _source);
+
       // Refresh User ID just in case
       final prefs = getIt<SharedPreferences>();
       final user = prefs.getString(PrefKeys.username);
@@ -62,9 +79,14 @@ class PollProvider with ChangeNotifier {
         if (!a.isActive && b.isActive) return 1;
         return b.createdAt.compareTo(a.createdAt);
       });
+
+      _lastSyncTime = DateTime.now();
+      LogService.info('投票同步成功，載入 ${_polls.length} 個投票', source: _source);
+      ToastService.success('投票同步成功！');
     } catch (e) {
       _error = e.toString();
       LogService.error('Provider fetch error: $e', source: _source);
+      ToastService.error('投票同步失敗：$e');
     } finally {
       _setLoading(false);
     }
