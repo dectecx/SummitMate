@@ -213,9 +213,9 @@ class _PollListScreenState extends State<PollListScreen> {
                       child: SegmentedButton<int>(
                         showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(value: 0, label: Text('🗳 進行中')),
-                          ButtonSegment(value: 1, label: Text('📋 已結束')),
-                          ButtonSegment(value: 2, label: Text('👤 我的')),
+                          ButtonSegment(value: 0, label: Text('🔥 進行中')),
+                          ButtonSegment(value: 1, label: Text('✔️ 已結束')),
+                          ButtonSegment(value: 2, label: Text('⭐ 我的')),
                         ],
                         selected: {_selectedFilter},
                         onSelectionChanged: (Set<int> newSelection) {
@@ -267,7 +267,7 @@ class _PollListScreenState extends State<PollListScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.assignment_outlined, size: 64, color: Colors.grey.withOpacity(0.5)),
+                            Icon(Icons.how_to_vote_outlined, size: 64, color: Colors.grey.withOpacity(0.5)),
                             const SizedBox(height: 16),
                             Text(
                               _selectedFilter == 0 ? '沒有進行中的投票' : '沒有相關投票',
