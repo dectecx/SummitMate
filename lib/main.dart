@@ -246,6 +246,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
   final GlobalKey _keyInfoElevation = GlobalKey();
   final GlobalKey _keyInfoTimeMap = GlobalKey();
   final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
+  final GlobalKey _keyTabPolls = GlobalKey();
 
   OverlayEntry? _tutorialEntry;
 
@@ -293,6 +294,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
           keyBtnEdit: _keyBtnEdit,
           keyBtnUpload: _keyBtnUpload,
           keyBtnSync: _keyBtnSync,
+          keyTabPolls: _keyTabPolls,
           keyInfoElevation: _keyInfoElevation,
           keyInfoTimeMap: _keyInfoTimeMap,
           onSwitchToItinerary: () async {
@@ -519,7 +521,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       case 1:
         return const _GearTab(key: ValueKey(1));
       case 2:
-        return const CollaborationTab(key: ValueKey(2));
+        return CollaborationTab(
+          key: const ValueKey(2),
+          keyBtnSync: _keyBtnSync,
+          keyTabPolls: _keyTabPolls,
+        );
       case 3:
         return InfoTab(key: _keyInfoTab, keyElevation: _keyInfoElevation, keyTimeMap: _keyInfoTimeMap);
       default:

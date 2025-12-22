@@ -3,7 +3,14 @@ import 'message_list_screen.dart';
 import 'poll_list_screen.dart';
 
 class CollaborationTab extends StatelessWidget {
-  const CollaborationTab({super.key});
+  final GlobalKey? keyBtnSync;
+  final GlobalKey? keyTabPolls;
+
+  const CollaborationTab({
+    super.key,
+    this.keyBtnSync,
+    this.keyTabPolls,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +20,21 @@ class CollaborationTab extends StatelessWidget {
         children: [
           Container(
             color: Theme.of(context).colorScheme.surface,
-            child: const TabBar(
+            child: TabBar(
               tabs: [
-                Tab(text: '留言板', icon: Icon(Icons.forum_outlined)),
-                Tab(text: '投票活動', icon: Icon(Icons.how_to_vote_outlined)),
+                const Tab(text: '留言板', icon: Icon(Icons.forum_outlined)),
+                Tab(key: keyTabPolls, text: '投票活動', icon: const Icon(Icons.how_to_vote_outlined)),
               ],
             ),
           ),
-          const Expanded(child: TabBarView(children: [MessageListScreen(), PollListScreen()])),
+          Expanded(
+            child: TabBarView(
+              children: [
+                MessageListScreen(keyBtnSync: keyBtnSync),
+                const PollListScreen(),
+              ],
+            ),
+          ),
         ],
       ),
     );

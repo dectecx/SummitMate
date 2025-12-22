@@ -10,6 +10,7 @@ class TutorialService {
     required GlobalKey keyBtnEdit,
     required GlobalKey keyBtnUpload,
     required GlobalKey keyBtnSync,
+    required GlobalKey keyTabPolls,
     required GlobalKey keyInfoElevation,
     required GlobalKey keyInfoTimeMap,
     required Future<void> Function() onSwitchToItinerary,
@@ -58,19 +59,7 @@ class TutorialService {
       ),
     );
 
-    // 4. 同步按鈕
-    targets.add(
-      TutorialTarget(
-        identify: "Target Sync",
-        keyTarget: keyBtnSync,
-        alignSkip: Alignment.bottomLeft,
-        align: ContentAlign.bottom,
-        content: "同步更新 🔄\n把雲端最新的行程和留言抓下來\n(⚠️這也會覆蓋掉你手機裡的舊資料)",
-        onFocus: onFocusSync,
-      ),
-    );
-
-    // 5. 裝備頁籤
+    // 9. 裝備頁籤 (Move Gear to after interaction)
     targets.add(
       TutorialTarget(
         identify: "Target Gear",
@@ -89,8 +78,29 @@ class TutorialService {
         keyTarget: keyTabMessage,
         alignSkip: Alignment.topRight,
         align: ContentAlign.top,
-        content: "留言板 💬\n有什麼話想對隊友說？\n提醒事項或裝備建議都可以在這留言",
+        content: "互動專區 💬\n有什麼話想對隊友說？\n這裡有留言板和投票活動",
         onFocus: onSwitchToMessage,
+      ),
+    );
+
+    // 7. 同步按鈕 (需切換到留言板)
+    targets.add(
+      TutorialTarget(
+        identify: "Target Sync",
+        keyTarget: keyBtnSync,
+        align: ContentAlign.bottom,
+        content: "同步更新 🔄\n把雲端最新的行程、留言和投票下載下來\n(⚠️將會覆蓋掉你手機裡的資料)",
+        onFocus: onFocusSync,
+      ),
+    );
+
+    // 8. 投票專區頁籤
+    targets.add(
+      TutorialTarget(
+        identify: "Target Polls",
+        keyTarget: keyTabPolls,
+        align: ContentAlign.bottom, // Tab is at top of screen inside content
+        content: "投票活動 🗳️\n晚餐吃什麼？何時集合？\n都可以在這裡發起投票表決",
       ),
     );
 
