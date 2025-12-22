@@ -1,4 +1,3 @@
-
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/poll.dart';

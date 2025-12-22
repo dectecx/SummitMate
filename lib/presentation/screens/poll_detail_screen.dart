@@ -431,30 +431,38 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           children: [
                             if (freshPoll.isActive)
                               FilledButton.tonalIcon(
-                                onPressed: isOffline ? null : () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (c) => AlertDialog(
-                                      title: const Text('關閉投票'),
-                                      content: const Text('確定要提早結束此投票嗎？'),
-                                      actions: [
-                                        TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                                        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('確定')),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirm == true) {
-                                    setState(() => _isSubmitting = true);
-                                    try {
-                                      await provider.closePoll(pollId: freshPoll.id);
-                                      ToastService.success('投票已關閉');
-                                    } catch (e) {
-                                      ToastService.error(e.toString());
-                                    } finally {
-                                      setState(() => _isSubmitting = false);
-                                    }
-                                  }
-                                },
+                                onPressed: isOffline
+                                    ? null
+                                    : () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (c) => AlertDialog(
+                                            title: const Text('關閉投票'),
+                                            content: const Text('確定要提早結束此投票嗎？'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(c, false),
+                                                child: const Text('取消'),
+                                              ),
+                                              FilledButton(
+                                                onPressed: () => Navigator.pop(c, true),
+                                                child: const Text('確定'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        if (confirm == true) {
+                                          setState(() => _isSubmitting = true);
+                                          try {
+                                            await provider.closePoll(pollId: freshPoll.id);
+                                            ToastService.success('投票已關閉');
+                                          } catch (e) {
+                                            ToastService.error(e.toString());
+                                          } finally {
+                                            setState(() => _isSubmitting = false);
+                                          }
+                                        }
+                                      },
                                 icon: const Icon(Icons.lock_clock),
                                 label: const Text('結束投票'),
                                 style: FilledButton.styleFrom(
@@ -466,48 +474,54 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                               ),
 
                             OutlinedButton.icon(
-                              onPressed: isOffline ? null : () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (c) => AlertDialog(
-                                    title: const Text('刪除投票'),
-                                    content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                                      FilledButton(
-                                        style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                                        onPressed: () => Navigator.pop(c, true),
-                                        child: const Text('刪除'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                                if (confirm == true) {
-                                  setState(() => _isSubmitting = true);
-                                  try {
-                                    await provider.deletePoll(pollId: freshPoll.id);
-                                    ToastService.success('投票已刪除');
-                                    if (mounted) Navigator.pop(context);
-                                  } catch (e) {
-                                    ToastService.error(e.toString());
-                                    setState(() => _isSubmitting = false);
-                                  }
-                                }
-                              },
+                              onPressed: isOffline
+                                  ? null
+                                  : () async {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (c) => AlertDialog(
+                                          title: const Text('刪除投票'),
+                                          content: const Text('確定要刪除此投票嗎？此動作無法復原。'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(c, false),
+                                              child: const Text('取消'),
+                                            ),
+                                            FilledButton(
+                                              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                              onPressed: () => Navigator.pop(c, true),
+                                              child: const Text('刪除'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirm == true) {
+                                        setState(() => _isSubmitting = true);
+                                        try {
+                                          await provider.deletePoll(pollId: freshPoll.id);
+                                          ToastService.success('投票已刪除');
+                                          if (mounted) Navigator.pop(context);
+                                        } catch (e) {
+                                          ToastService.error(e.toString());
+                                          setState(() => _isSubmitting = false);
+                                        }
+                                      }
+                                    },
                               icon: const Icon(Icons.delete_outline),
                               label: const Text('刪除投票'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.red,
-                                side: const BorderSide(color: Colors.red),
-                                disabledForegroundColor: Colors.grey,
-                              ).copyWith(
-                                side: WidgetStateProperty.resolveWith((states) {
-                                  if (states.contains(WidgetState.disabled)) {
-                                    return const BorderSide(color: Colors.grey);
-                                  }
-                                  return const BorderSide(color: Colors.red);
-                                }),
-                              ),
+                              style:
+                                  OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                    side: const BorderSide(color: Colors.red),
+                                    disabledForegroundColor: Colors.grey,
+                                  ).copyWith(
+                                    side: WidgetStateProperty.resolveWith((states) {
+                                      if (states.contains(WidgetState.disabled)) {
+                                        return const BorderSide(color: Colors.grey);
+                                      }
+                                      return const BorderSide(color: Colors.red);
+                                    }),
+                                  ),
                             ),
                           ],
                         ),

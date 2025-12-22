@@ -83,7 +83,7 @@ class PollProvider with ChangeNotifier {
     // 離線模式檢查
     if (_isOffline) {
       if (!isAuto) {
-         ToastService.warning('離線模式無法同步');
+        ToastService.warning('離線模式無法同步');
       }
       return;
     }
@@ -141,10 +141,7 @@ class PollProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> _performAction(
-    Future<void> Function() action, {
-    required String offlineMessage,
-  }) async {
+  Future<bool> _performAction(Future<void> Function() action, {required String offlineMessage}) async {
     if (_isOffline) {
       ToastService.error(offlineMessage);
       return false;
