@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/poll.dart';
 import '../../providers/poll_provider.dart';
+import '../../presentation/providers/settings_provider.dart';
 import '../../services/toast_service.dart';
 
 class PollDetailScreen extends StatefulWidget {
@@ -122,28 +123,13 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
     return Consumer<PollProvider>(
       builder: (context, provider, child) {
+        final isOffline = context.select<SettingsProvider, bool>((s) => s.isOfflineMode);
+
         // Find the fresh poll object from provider
         final freshPoll = provider.polls.firstWhere(
           (p) => p.id == widget.poll.id,
           orElse: () => widget.poll, // Fallback
         );
-
-        // Check if I am creator
-        // Since we don't have global currentUserId storage easily accessible here except passed in arguments or providers,
-        // we might need to rely on what we have.
-        // Actually, we passed userId to services, but here we need to know "am I creator?".
-        // For now, let's assume we can compare IDs. But we need my userId.
-        // We can get it from EnvConfig or passed separately?
-        // Wait, PollService.votePoll requires userId. It comes from where?
-        // In the previous code, we didn't check creator permission in UI strictly, just backend.
-        // But for UI buttons (Delete Poll), we should hide them if not creator.
-        // Let's assume we can show them and backend rejects if not allowed, OR we create a "Am I Creator" check if we had userId.
-        // Re-checking how userId is obtained in creating poll. It uses 'test_user_1' or similar from some constant?
-        // In main.dart, we generate/get userId.
-        // Let's try to get userId from a Provider if available, or just show buttons for everyone (and fail safely).
-        // Actually, `PollListScreen` uses `PollProvider`. Does `PollProvider` store currentUserId?
-        // Let's check PollProvider.
-        // If not, I will just show the buttons.
 
         return Scaffold(
           appBar: AppBar(title: const Text('投票詳情')),
@@ -223,6 +209,31 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             ),
                         ],
                       ),
+
+                      if (isOffline) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.wifi_off, size: 16, color: Colors.orange.shade800),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '離線模式中，無法進行投票或編輯',
+                                  style: TextStyle(color: Colors.orange.shade900, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       const Divider(height: 32),
 
                       // Options List
@@ -240,11 +251,13 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           // option.voters is List<Map<String, dynamic>>
                           final votersList = option.voters.map((v) => v['user_name'] ?? v['user_id']).join(', ');
 
+                          final canInteract = freshPoll.isActive && !isOffline;
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               InkWell(
-                                onTap: freshPoll.isActive ? () => _toggleOption(option.id) : null,
+                                onTap: canInteract ? () => _toggleOption(option.id) : null,
                                 borderRadius: BorderRadius.circular(8),
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
@@ -273,7 +286,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                                     : (isSelected
                                                           ? Icons.radio_button_checked
                                                           : Icons.radio_button_off),
-                                                color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
+                                                color: canInteract
+                                                    ? (isSelected ? Theme.of(context).colorScheme.primary : Colors.grey)
+                                                    : Colors.grey.shade300,
                                                 size: 20,
                                               ),
                                             ),
@@ -282,6 +297,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                               option.text,
                                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                                color: canInteract ? null : Colors.grey,
                                               ),
                                             ),
                                           ),
@@ -319,7 +335,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                           ),
                                           const Spacer(),
                                           // Delete Option Button (Only if 0 votes AND active)
-                                          if (freshPoll.isActive && option.voteCount == 0)
+                                          if (freshPoll.isActive && option.voteCount == 0 && !isOffline)
                                             InkWell(
                                               onTap: () async {
                                                 final confirm = await showDialog<bool>(
@@ -382,7 +398,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             if (freshPoll.isAllowAddOption) ...[
                               Expanded(
                                 child: OutlinedButton.icon(
-                                  onPressed: _addOption,
+                                  onPressed: isOffline ? null : _addOption,
                                   icon: const Icon(Icons.add),
                                   label: const Text('新增選項'),
                                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
@@ -393,7 +409,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             Expanded(
                               flex: 2,
                               child: FilledButton.icon(
-                                onPressed: _submitVote,
+                                onPressed: isOffline ? null : _submitVote,
                                 icon: const Icon(Icons.check),
                                 label: const Text('送出投票'),
                                 style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
@@ -403,12 +419,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         ),
 
                       // Management Actions (Visible to Creator)
-                      // Ideally we check if current user is creator.
-                      // Since we don't have global user context easily here, we show them
-                      // and let the backend/provider handle validation or errors if action fails.
-                      // Or relies on "freshPoll.creatorId == currentUserId" if we can access it.
                       if (true) ...[
-                        // Just show them, we'll confirm and handle errors
                         const SizedBox(height: 24),
                         const Divider(),
                         const SizedBox(height: 16),
@@ -420,7 +431,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           children: [
                             if (freshPoll.isActive)
                               FilledButton.tonalIcon(
-                                onPressed: () async {
+                                onPressed: isOffline ? null : () async {
                                   final confirm = await showDialog<bool>(
                                     context: context,
                                     builder: (c) => AlertDialog(
@@ -449,11 +460,13 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                 style: FilledButton.styleFrom(
                                   backgroundColor: Colors.orange.shade100,
                                   foregroundColor: Colors.orange.shade900,
+                                  disabledBackgroundColor: Colors.grey.shade200,
+                                  disabledForegroundColor: Colors.grey,
                                 ),
                               ),
 
                             OutlinedButton.icon(
-                              onPressed: () async {
+                              onPressed: isOffline ? null : () async {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (c) => AlertDialog(
@@ -486,6 +499,14 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.red,
                                 side: const BorderSide(color: Colors.red),
+                                disabledForegroundColor: Colors.grey,
+                              ).copyWith(
+                                side: WidgetStateProperty.resolveWith((states) {
+                                  if (states.contains(WidgetState.disabled)) {
+                                    return const BorderSide(color: Colors.grey);
+                                  }
+                                  return const BorderSide(color: Colors.red);
+                                }),
                               ),
                             ),
                           ],

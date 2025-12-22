@@ -4,6 +4,7 @@ import '../core/constants.dart';
 import '../core/di.dart';
 import '../data/models/poll.dart';
 import '../data/repositories/poll_repository.dart';
+import '../data/repositories/settings_repository.dart';
 import '../services/poll_service.dart';
 import '../services/log_service.dart';
 import '../services/toast_service.dart';
@@ -37,6 +38,9 @@ class PollProvider with ChangeNotifier {
 
   PollService get _pollService => getIt<PollService>();
   PollRepository get _pollRepository => getIt<PollRepository>();
+  SettingsRepository get _settingsRepo => getIt<SettingsRepository>();
+
+  bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
   Future<void> _loadUserId() async {
     final prefs = getIt<SharedPreferences>();
@@ -75,6 +79,14 @@ class PollProvider with ChangeNotifier {
     // 節流：自動同步時檢查冷卻時間
     // Load last sync time from repo if not set in memory (double check)
     _lastSyncTime ??= _pollRepository.getLastSyncTime();
+
+    // 離線模式檢查
+    if (_isOffline) {
+      if (!isAuto) {
+         ToastService.warning('離線模式無法同步');
+      }
+      return;
+    }
 
     if (isAuto && _lastSyncTime != null) {
       final elapsed = DateTime.now().difference(_lastSyncTime!);
@@ -129,6 +141,26 @@ class PollProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> _performAction(
+    Future<void> Function() action, {
+    required String offlineMessage,
+  }) async {
+    if (_isOffline) {
+      ToastService.error(offlineMessage);
+      return false;
+    }
+    _setLoading(true);
+    try {
+      await action();
+      await fetchPolls(); // Refresh list after successful action
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false); // fetchPolls handles loading inside, but on error we must reset if not calling fetchPolls
+      return false;
+    }
+  }
+
   Future<bool> createPoll({
     required String title,
     String description = '',
@@ -138,9 +170,8 @@ class PollProvider with ChangeNotifier {
     bool allowMultipleVotes = false,
     List<String> initialOptions = const [],
   }) async {
-    _setLoading(true);
-    try {
-      await _pollService.createPoll(
+    return _performAction(
+      () => _pollService.createPoll(
         title: title,
         description: description,
         creatorId: _currentUserId ?? 'anonymous',
@@ -149,83 +180,48 @@ class PollProvider with ChangeNotifier {
         maxOptionLimit: maxOptionLimit,
         allowMultipleVotes: allowMultipleVotes,
         initialOptions: initialOptions,
-      );
-      await fetchPolls(); // Refresh list
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
-      return false;
-    }
+      ),
+      offlineMessage: '離線模式無法建立投票',
+    );
   }
 
   Future<bool> votePoll({required String pollId, required List<String> optionIds}) async {
-    _setLoading(true);
-    try {
-      await _pollService.votePoll(
+    return _performAction(
+      () => _pollService.votePoll(
         pollId: pollId,
         optionIds: optionIds,
         userId: _currentUserId ?? 'anonymous',
         userName: _currentUserId ?? 'Anonymous',
-      );
-      await fetchPolls(); // Refresh to get updated counts
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
-      return false;
-    }
+      ),
+      offlineMessage: '離線模式無法投票',
+    );
   }
 
   Future<bool> addOption({required String pollId, required String text}) async {
-    _setLoading(true);
-    try {
-      await _pollService.addOption(pollId: pollId, text: text, creatorId: _currentUserId ?? 'anonymous');
-      await fetchPolls();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
-      return false;
-    }
+    return _performAction(
+      () => _pollService.addOption(pollId: pollId, text: text, creatorId: _currentUserId ?? 'anonymous'),
+      offlineMessage: '離線模式無法新增選項',
+    );
   }
 
   Future<bool> deleteOption({required String optionId}) async {
-    _setLoading(true);
-    try {
-      await _pollService.deleteOption(optionId: optionId, userId: _currentUserId ?? 'anonymous');
-      await fetchPolls();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
-      return false;
-    }
+    return _performAction(
+      () => _pollService.deleteOption(optionId: optionId, userId: _currentUserId ?? 'anonymous'),
+      offlineMessage: '離線模式無法刪除選項',
+    );
   }
 
   Future<bool> closePoll({required String pollId}) async {
-    _setLoading(true);
-    try {
-      await _pollService.closePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
-      await fetchPolls();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
-      return false;
-    }
+    return _performAction(
+      () => _pollService.closePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous'),
+      offlineMessage: '離線模式無法結束投票',
+    );
   }
 
   Future<bool> deletePoll({required String pollId}) async {
-    _setLoading(true);
-    try {
-      await _pollService.deletePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous');
-      await fetchPolls();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _setLoading(false);
-      return false;
-    }
+    return _performAction(
+      () => _pollService.deletePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous'),
+      offlineMessage: '離線模式無法刪除投票',
+    );
   }
 }

@@ -6,6 +6,8 @@ import '../data/models/weather_data.dart';
 import '../services/log_service.dart';
 import '../core/env_config.dart';
 import '../core/constants.dart';
+import '../core/di.dart';
+import '../data/repositories/settings_repository.dart';
 
 /// Weather Service
 /// Data Sources:
@@ -35,6 +37,16 @@ class WeatherService {
   Future<WeatherData?> getWeather({bool forceRefresh = false, String locationName = '向陽山'}) async {
     final dynamicCacheKey = 'weather_$locationName';
     final cached = _box?.get(dynamicCacheKey);
+    final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
+
+    if (isOffline) {
+       if (cached != null) {
+          LogService.info('Offline Mode: Returning cached weather for $locationName (Stale: ${cached.isStale})', source: 'WeatherService');
+          return cached;
+       }
+       LogService.warning('Offline Mode: No cache for $locationName', source: 'WeatherService');
+       throw Exception('目前為離線模式且無快取資料');
+    }
 
     // If forcing refresh
     if (forceRefresh) {
@@ -82,6 +94,11 @@ class WeatherService {
   }
 
   Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
+    final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
+    if (isOffline) {
+      throw Exception('Offline Mode: Cannot fetch weather');
+    }
+
     _targetLocation = locationName;
 
     // Check cache

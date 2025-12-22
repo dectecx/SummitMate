@@ -1033,6 +1033,10 @@ class _ItineraryTabState extends State<_ItineraryTab> {
     final context = this.context;
     if (!context.mounted) return;
 
+    // 檢查離線模式，若是離線模式則不自動同步
+    final isOffline = Provider.of<SettingsProvider>(context, listen: false).isOfflineMode;
+    if (isOffline) return;
+
     // 使用 Provider 進行自動同步 (包含冷卻檢查)
     final provider = Provider.of<ItineraryProvider>(context, listen: false);
     await provider.sync(isAuto: true);
@@ -1651,6 +1655,15 @@ class InfoTabState extends State<InfoTab> {
   }
 
   Future<void> _refreshWeather({bool force = false}) async {
+    // 離線模式禁止手動更新
+    if (force) {
+      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      if (isOffline) {
+        ToastService.warning('離線模式無法更新天氣資料');
+        return;
+      }
+    }
+
     setState(() => _loadingWeather = true);
     try {
       final weather = await getIt<WeatherService>().getWeather(forceRefresh: force, locationName: _selectedLocation);
