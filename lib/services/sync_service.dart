@@ -22,7 +22,14 @@ class SyncService {
   }) : _sheetsService = sheetsService,
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,
-       _settingsRepo = settingsRepo;
+       _settingsRepo = settingsRepo {
+     _loadLastSyncTimes();
+   }
+
+   void _loadLastSyncTimes() {
+     _lastItinerarySyncTime = _itineraryRepo.getLastSyncTime();
+     _lastMessagesSyncTime = _messageRepo.getLastSyncTime();
+   }
 
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
@@ -70,6 +77,7 @@ class SyncService {
       try {
         await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
         _lastItinerarySyncTime = DateTime.now();
+        await _itineraryRepo.saveLastSyncTime(_lastItinerarySyncTime!);
         itinSuccess = true;
       } catch (e) {
         errors.add('行程同步失敗: $e');
@@ -79,6 +87,7 @@ class SyncService {
       try {
         await _syncMessages(fetchResult.messages);
         _lastMessagesSyncTime = DateTime.now();
+        await _messageRepo.saveLastSyncTime(_lastMessagesSyncTime!);
         msgSuccess = true;
       } catch (e) {
         errors.add('留言同步失敗: $e');
@@ -129,6 +138,7 @@ class SyncService {
     try {
       await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
       _lastItinerarySyncTime = DateTime.now();
+      await _itineraryRepo.saveLastSyncTime(_lastItinerarySyncTime!);
       return SyncResult(success: true, itinerarySynced: true, syncedAt: _lastItinerarySyncTime!);
     } catch (e) {
       return SyncResult(success: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
@@ -155,6 +165,7 @@ class SyncService {
     try {
       await _syncMessages(fetchResult.messages);
       _lastMessagesSyncTime = DateTime.now();
+      await _messageRepo.saveLastSyncTime(_lastMessagesSyncTime!);
       return SyncResult(success: true, messagesSynced: true, syncedAt: _lastMessagesSyncTime!);
     } catch (e) {
       return SyncResult(success: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());

@@ -36,8 +36,18 @@ class WeatherService {
     final dynamicCacheKey = 'weather_$locationName';
     final cached = _box?.get(dynamicCacheKey);
 
-    // If forcing refresh, fetch and update cache
+    // If forcing refresh
     if (forceRefresh) {
+      // Check if cache is fresh enough (e.g. < 5 minutes) to avoid spamming
+      if (cached != null) {
+        final now = DateTime.now();
+        final diff = now.difference(cached.timestamp);
+        if (diff.inMinutes < 5) {
+          LogService.info('Weather cache is fresh (${diff.inMinutes}m ago), ignoring force refresh.', source: 'WeatherService');
+          return cached;
+        }
+      }
+
       try {
         final weather = await fetchWeather(locationName: locationName);
         _box?.put(dynamicCacheKey, weather);
