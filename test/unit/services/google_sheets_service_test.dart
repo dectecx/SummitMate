@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
+import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/data/models/message.dart';
 
 void main() {
@@ -34,7 +35,8 @@ void main() {
         return http.Response(responseBody, 200, headers: {'content-type': 'application/json; charset=utf-8'});
       });
 
-      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
+      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
+      final service = GoogleSheetsService(apiClient: apiClient);
 
       final result = await service.fetchAll();
 
@@ -50,7 +52,8 @@ void main() {
         return http.Response('Internal Server Error', 500);
       });
 
-      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
+      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
+      final service = GoogleSheetsService(apiClient: apiClient);
 
       final result = await service.fetchAll();
 
@@ -65,7 +68,8 @@ void main() {
         return http.Response('{"success": true}', 200);
       });
 
-      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
+      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
+      final service = GoogleSheetsService(apiClient: apiClient);
 
       final message = Message(
         uuid: 'new-uuid',
@@ -92,7 +96,8 @@ void main() {
         return http.Response('{"success": true}', 200);
       });
 
-      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
+      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
+      final service = GoogleSheetsService(apiClient: apiClient);
 
       final result = await service.deleteMessage('uuid-to-delete');
 
@@ -108,7 +113,8 @@ void main() {
         throw Exception('Network error');
       });
 
-      final service = GoogleSheetsService(client: mockClient, baseUrl: 'https://mock.api.com');
+      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
+      final service = GoogleSheetsService(apiClient: apiClient);
 
       final result = await service.fetchAll();
 
