@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../core/di.dart';
+import '../../services/sync_service.dart';
 import '../../presentation/providers/message_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
 
@@ -49,13 +52,46 @@ class _MessageListScreenState extends State<MessageListScreen> {
                         onSelectionChanged: (selected) {
                           messageProvider.selectCategory(selected.first);
                         },
+                        style: ButtonStyle(
+                           visualDensity: VisualDensity.compact,
+                           padding: WidgetStateProperty.all(EdgeInsets.zero),
+                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton.filledTonal(
-                      onPressed: () => messageProvider.sync(),
-                      icon: const Icon(Icons.refresh),
-                      tooltip: '重新整理',
+                    // Last Updated Timestamp & Refresh
+                    Builder(
+                      builder: (context) {
+                         // Note: Ideally use a Provider or Stream for updates, but simple setState in parent or passing down works.
+                         // Since SyncService is global/singleton, we can read it. 
+                         // To make UI update, we might need to rely on the fact that messageProvider.sync() notifies listeners 
+                         // or we can wrap this text in a ValueListenable if we had one.
+                         // For now, MessageProvider notifiesGlobal listeners when sync done, so this widget (Consumer) should rebuild.
+                         final lastSync = getIt<SyncService>().lastMessagesSync;
+                         final timeStr = lastSync != null 
+                            ? DateFormat('MM/dd HH:mm').format(lastSync) 
+                            : '未同步';
+                         
+                         return InkWell(
+                            onTap: () => messageProvider.sync(),
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Icon(Icons.refresh, size: 18),
+                                  Text(
+                                    timeStr,
+                                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                         );
+                      }
                     ),
                   ],
                 ),

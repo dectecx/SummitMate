@@ -62,6 +62,48 @@ class GoogleSheetsService {
     }
   }
 
+  /// 僅取得行程資料
+  Future<FetchAllResult> fetchItinerary() async {
+    try {
+      final uri = Uri.parse('$_baseUrl?action=${ApiConfig.actionFetchItinerary}');
+      final response = await _client.get(uri);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final itineraryList =
+            (json['itinerary'] as List<dynamic>?)
+                ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
+        return FetchAllResult(itinerary: itineraryList, success: true);
+      } else {
+        return FetchAllResult(success: false, errorMessage: 'HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      return FetchAllResult(success: false, errorMessage: e.toString());
+    }
+  }
+
+  /// 僅取得留言資料
+  Future<FetchAllResult> fetchMessages() async {
+    try {
+      final uri = Uri.parse('$_baseUrl?action=${ApiConfig.actionFetchMessages}');
+      final response = await _client.get(uri);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final messagesList =
+            (json['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
+            [];
+        return FetchAllResult(messages: messagesList, success: true);
+      } else {
+        return FetchAllResult(success: false, errorMessage: 'HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      return FetchAllResult(success: false, errorMessage: e.toString());
+    }
+  }
+
   /// 新增留言
   Future<ApiResult> addMessage(Message message) async {
     try {

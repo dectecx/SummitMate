@@ -215,6 +215,45 @@ class ItineraryProvider extends ChangeNotifier {
     }
   }
 
+  /// 同步行程 (自動或手動)
+  Future<void> sync({bool isAuto = false}) async {
+    try {
+      // 若為手動同步，顯示載入中
+      if (!isAuto) {
+        _isLoading = true;
+        notifyListeners();
+      }
+
+      final syncService = getIt<SyncService>();
+      final result = await syncService.syncItinerary(isAuto: isAuto);
+
+      if (result.success) {
+        if (result.itinerarySynced) {
+          LogService.info('行程與雲端同步完成', source: 'Itinerary');
+          if (!isAuto) ToastService.success('行程同步成功');
+          _loadItems(); // 重新載入本地資料庫的新資料
+        } else {
+          // 被節流或無需更新
+          LogService.debug('行程同步跳過 (節流或無需更新)', source: 'Itinerary');
+           if (!isAuto) ToastService.success('已是最新資料'); 
+        }
+      } else {
+        if (!isAuto) {
+          LogService.error('行程同步失敗: ${result.errors.join(", ")}', source: 'Itinerary');
+          ToastService.error(result.errors.join('\n'));
+        }
+      }
+    } catch (e) {
+      LogService.error('行程同步異常: $e', source: 'Itinerary');
+      if (!isAuto) ToastService.error('同步異常: $e');
+    } finally {
+      if (!isAuto) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    }
+  }
+
   /// 上傳行程 (覆寫雲端)
   Future<void> uploadToCloud() async {
     try {

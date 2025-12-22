@@ -72,6 +72,8 @@ class PrefKeys {
 class ApiConfig {
   // API Actions
   static const String actionFetchAll = 'fetch_all';
+  static const String actionFetchItinerary = 'fetch_itinerary';
+  static const String actionFetchMessages = 'fetch_messages';
   static const String actionAddMessage = 'add_message';
   static const String actionDeleteMessage = 'delete_message';
   static const String actionFetchWeather = 'fetch_weather';

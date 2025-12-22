@@ -26,77 +26,153 @@ class SyncService {
 
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
+  DateTime? _lastItinerarySyncTime;
+  DateTime? _lastMessagesSyncTime;
+  static const Duration _kAutoSyncCooldown = Duration(minutes: 5);
+
+  DateTime? get lastItinerarySync => _lastItinerarySyncTime;
+  DateTime? get lastMessagesSync => _lastMessagesSyncTime;
+
   /// 完整同步 (下載 + 上傳)
-  Future<SyncResult> syncAll() async {
+  /// 智慧選擇：若兩者皆需更新則使用 fetchAll，否則個別更新
+  Future<SyncResult> syncAll({bool isAuto = false}) async {
     if (_isOffline) return _offlineSyncResult();
 
-    final errors = <String>[];
-    var itinerarySuccess = false;
-    var messagesSuccess = false;
+    final now = DateTime.now();
+    
+    // 檢查冷卻時間
+    // 若非自動同步 (手動)，則忽略冷卻時間 (視為已冷卻/需更新)
+    final itinNeeded = !isAuto || (_lastItinerarySyncTime == null || now.difference(_lastItinerarySyncTime!) > _kAutoSyncCooldown);
+    final msgNeeded = !isAuto || (_lastMessagesSyncTime == null || now.difference(_lastMessagesSyncTime!) > _kAutoSyncCooldown);
 
-    // 1. 從雲端拉取資料
-    final fetchResult = await _sheetsService.fetchAll();
+    // Case 0: 兩者皆不需要 (被節流)
+    if (!itinNeeded && !msgNeeded) {
+      LogService.info('Auto-sync throttled (All cool)', source: 'SyncService');
+      return SyncResult(
+        success: true,
+        itinerarySynced: false,
+        messagesSynced: false,
+        syncedAt: now,
+      );
+    }
 
-    if (fetchResult.success) {
-      // 2. 同步行程 (雲端 -> 本地，單向)
+    // Case 1: 兩者皆需要 -> 使用 fetchAll (節省一次請求)
+    if (itinNeeded && msgNeeded) {
+      LogService.info('SyncAll: Fetching ALL (Itinerary + Messages)', source: 'SyncService');
+      final fetchResult = await _sheetsService.fetchAll();
+
+      if (!fetchResult.success) {
+        return SyncResult(
+          success: false,
+          errors: [fetchResult.errorMessage ?? '網路連線失敗'],
+          syncedAt: now,
+        );
+      }
+
+      var itinSuccess = false;
+      var msgSuccess = false;
+      final errors = <String>[];
+
+      // 處理行程
       try {
         await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
-        itinerarySuccess = true;
+        _lastItinerarySyncTime = DateTime.now();
+        itinSuccess = true;
       } catch (e) {
         errors.add('行程同步失敗: $e');
       }
 
-      // 3. 同步留言 (雙向)
+      // 處理留言
       try {
         await _syncMessages(fetchResult.messages);
-        messagesSuccess = true;
+        _lastMessagesSyncTime = DateTime.now();
+        msgSuccess = true;
       } catch (e) {
         errors.add('留言同步失敗: $e');
       }
-    } else {
-      errors.add(fetchResult.errorMessage ?? '網路連線失敗');
+
+      return SyncResult(
+        success: errors.isEmpty,
+        itinerarySynced: itinSuccess,
+        messagesSynced: msgSuccess,
+        errors: errors,
+        syncedAt: DateTime.now(),
+      );
     }
 
-    return SyncResult(
-      success: itinerarySuccess && messagesSuccess && errors.isEmpty,
-      itinerarySynced: itinerarySuccess,
-      messagesSynced: messagesSuccess,
-      errors: errors,
-      syncedAt: DateTime.now(),
-    );
+    // Case 2: 僅需行程
+    if (itinNeeded) {
+      LogService.info('SyncAll: Fetching Itinerary only', source: 'SyncService');
+      return await syncItinerary(isAuto: isAuto);
+    }
+
+    // Case 3: 僅需留言
+    if (msgNeeded) {
+      LogService.info('SyncAll: Fetching Messages only', source: 'SyncService');
+      return await syncMessages(isAuto: isAuto);
+    }
+
+    // 理論上不會執行到這裡
+    return SyncResult(success: true, syncedAt: now);
   }
 
   /// 僅同步行程
-  Future<SyncResult> syncItinerary() async {
+  Future<SyncResult> syncItinerary({bool isAuto = false}) async {
     if (_isOffline) return _offlineSyncResult();
 
-    final fetchResult = await _sheetsService.fetchAll();
+    final now = DateTime.now();
+    if (isAuto &&
+        _lastItinerarySyncTime != null &&
+        now.difference(_lastItinerarySyncTime!) < _kAutoSyncCooldown) {
+      LogService.info('Auto-sync itineraries throttled', source: 'SyncService');
+      return SyncResult(success: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
+    }
+
+    final fetchResult = await _sheetsService.fetchItinerary();
 
     if (!fetchResult.success) {
-      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
+      return SyncResult(
+        success: false,
+        errors: [fetchResult.errorMessage ?? '網路連線失敗'],
+        syncedAt: DateTime.now(),
+      );
     }
 
     try {
       await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
-      return SyncResult(success: true, itinerarySynced: true, syncedAt: DateTime.now());
+      _lastItinerarySyncTime = DateTime.now();
+      return SyncResult(success: true, itinerarySynced: true, syncedAt: _lastItinerarySyncTime!);
     } catch (e) {
       return SyncResult(success: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
     }
   }
 
   /// 僅同步留言
-  Future<SyncResult> syncMessages() async {
+  Future<SyncResult> syncMessages({bool isAuto = false}) async {
     if (_isOffline) return _offlineSyncResult();
 
-    final fetchResult = await _sheetsService.fetchAll();
+    final now = DateTime.now();
+    if (isAuto &&
+        _lastMessagesSyncTime != null &&
+        now.difference(_lastMessagesSyncTime!) < _kAutoSyncCooldown) {
+      LogService.info('Auto-sync messages throttled', source: 'SyncService');
+      return SyncResult(success: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
+    }
+
+    final fetchResult = await _sheetsService.fetchMessages();
 
     if (!fetchResult.success) {
-      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
+      return SyncResult(
+        success: false,
+        errors: [fetchResult.errorMessage ?? '網路連線失敗'],
+        syncedAt: DateTime.now(),
+      );
     }
 
     try {
       await _syncMessages(fetchResult.messages);
-      return SyncResult(success: true, messagesSynced: true, syncedAt: DateTime.now());
+      _lastMessagesSyncTime = DateTime.now();
+      return SyncResult(success: true, messagesSynced: true, syncedAt: _lastMessagesSyncTime!);
     } catch (e) {
       return SyncResult(success: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());
     }
