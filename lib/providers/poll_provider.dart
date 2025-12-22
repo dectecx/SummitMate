@@ -18,6 +18,7 @@ class PollProvider with ChangeNotifier {
   List<Poll> get polls => _polls;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get currentUserId => _currentUserId;
 
   // Filtered Getters
   List<Poll> get activePolls => _polls.where((p) => p.isActive).toList();

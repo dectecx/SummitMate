@@ -110,9 +110,50 @@ class _PollListScreenState extends State<PollListScreen> {
                           padding: const EdgeInsets.only(bottom: 80), // Fab space
                           itemBuilder: (context, index) {
                             final poll = filteredPolls[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: ListTile(
+                            final isCreator = poll.creatorId == provider.currentUserId;
+
+                            return Dismissible(
+                              key: Key(poll.id),
+                              direction: isCreator ? DismissDirection.endToStart : DismissDirection.none,
+                              background: Container(
+                                color: Colors.red,
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: const Icon(Icons.delete, color: Colors.white),
+                              ),
+                              confirmDismiss: (direction) async {
+                                return await showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('刪除投票'),
+                                    content: Text('確定要刪除 "${poll.title}" 嗎？此動作無法復原。'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+                                      TextButton(
+                                        onPressed: () => Navigator.of(ctx).pop(true),
+                                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                        child: const Text('刪除'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              onDismissed: (direction) async {
+                                final success = await provider.deletePoll(pollId: poll.id);
+                                if (context.mounted) {
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已刪除')));
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                        content: Text('刪除失敗: ${provider.error}'), backgroundColor: Colors.red));
+                                    provider.fetchPolls(); // Refresh to undo visual dismissal if failed
+                                  }
+                                }
+                              },
+                              child: Card(
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                                     child: const Icon(Icons.poll),
@@ -127,11 +168,29 @@ class _PollListScreenState extends State<PollListScreen> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 4),
-                                      Row(
+                                      Wrap(
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        spacing: 8,
                                         children: [
-                                          Icon(Icons.how_to_vote, size: 14, color: Colors.grey),
-                                          const SizedBox(width: 4),
-                                          Text('${poll.totalVotes} 票', style: Theme.of(context).textTheme.bodySmall),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.how_to_vote, size: 14, color: Colors.grey),
+                                              const SizedBox(width: 4),
+                                              Text('${poll.totalVotes} 票', style: Theme.of(context).textTheme.bodySmall),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.person, size: 14, color: Colors.grey),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                poll.creatorId == provider.currentUserId ? '我' : poll.creatorId,
+                                                style: Theme.of(context).textTheme.bodySmall,
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],
@@ -161,6 +220,7 @@ class _PollListScreenState extends State<PollListScreen> {
                                     }
                                   },
                                 ),
+                              ),
                             );
                           },
                         ),
