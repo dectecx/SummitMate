@@ -227,6 +227,7 @@ class _PollListScreenState extends State<PollListScreen> {
                                 key: Key(poll.id),
                                 endActionPane: ActionPane(
                                   motion: const ScrollMotion(),
+                                  extentRatio: 0.25,
                                   children: [
                                     SlidableAction(
                                       onPressed: (context) async {
