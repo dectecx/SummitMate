@@ -689,142 +689,142 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  // ====== 暱稱區塊 ======
-                  TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      labelText: '暱稱',
-                      prefixIcon: const Icon(Icons.person),
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: CircleAvatar(
-                          backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
-                          radius: 16,
-                          child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () {
-                        final newName = controller.text.trim();
-                        if (newName.isNotEmpty) {
-                          settingsProvider.updateUsername(newName);
-                          ToastService.success('暱稱已更新');
-                        }
-                      },
-                      child: const Text('儲存暱稱'),
-                    ),
-                  ),
-                  const Divider(height: 32),
-
-                  // ====== 離線模式 ======
-                  Card(
-                    color: settingsProvider.isOfflineMode ? Colors.orange.shade50 : null,
-                    child: SwitchListTile(
-                      title: const Text('離線模式'),
-                      subtitle: Text(
-                        settingsProvider.isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
-                        style: TextStyle(
-                          color: settingsProvider.isOfflineMode ? Colors.orange.shade800 : null,
-                          fontSize: 12,
-                        ),
-                      ),
-                      value: settingsProvider.isOfflineMode,
-                      onChanged: (value) async {
-                        await settingsProvider.setOfflineMode(value);
-                        setState(() {});
-                      },
-                    ),
-                  ),
-                  const Divider(height: 32),
-
-                  // ====== 重看使用引導 ======
-                  ListTile(
-                    leading: const Icon(Icons.help_outline),
-                    title: const Text('重看使用引導'),
-                    onTap: () async {
-                      if (innerContext.mounted) {
-                        Navigator.pop(innerContext);
-                        Future.delayed(const Duration(milliseconds: 300), () {
-                          if (mounted) {
-                            _showTutorial(this.context);
-                          }
-                        });
-                      }
-                    },
-                  ),
-                  const Divider(height: 32),
-
-                  // ====== 開發資訊 (縮合區塊) ======
-                  ExpansionTile(
-                    leading: const Icon(Icons.developer_mode),
-                    title: const Text('開發資訊'),
-                    childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.article_outlined, size: 20),
-                        title: const Text('查看日誌'),
-                        onTap: () {
-                          Navigator.pop(dialogContext);
-                          _showLogViewer(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.delete_forever, size: 20, color: Colors.red),
-                        title: const Text('清除本地資料庫', style: TextStyle(color: Colors.red)),
-                        subtitle: const Text('選擇要刪除的資料類型', style: TextStyle(fontSize: 11)),
-                        onTap: () async {
-                          Navigator.pop(dialogContext); // 先關閉設定對話框
-                          _showClearDataDialog(context);
-                        },
-                      ),
-                      const ListTile(
-                        leading: Icon(Icons.code, size: 20),
-                        title: Text('開發者資訊'),
-                        subtitle: Text('by 哲', style: TextStyle(fontStyle: FontStyle.italic)),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 32),
-
-                  // ====== 登出 / 重設身分 ======
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton.icon(
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: dialogContext,
-                          builder: (c) => AlertDialog(
-                            title: const Text('重設身分'),
-                            content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(c, true),
-                                style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                                child: const Text('重設'),
-                              ),
-                            ],
+                    // ====== 暱稱區塊 ======
+                    TextField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        labelText: '暱稱',
+                        prefixIcon: const Icon(Icons.person),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CircleAvatar(
+                            backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                            radius: 16,
+                            child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
                           ),
-                        );
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () {
+                          final newName = controller.text.trim();
+                          if (newName.isNotEmpty) {
+                            settingsProvider.updateUsername(newName);
+                            ToastService.success('暱稱已更新');
+                          }
+                        },
+                        child: const Text('儲存暱稱'),
+                      ),
+                    ),
+                    const Divider(height: 32),
 
-                        if (confirm == true && innerContext.mounted) {
+                    // ====== 離線模式 ======
+                    Card(
+                      color: settingsProvider.isOfflineMode ? Colors.orange.shade50 : null,
+                      child: SwitchListTile(
+                        title: const Text('離線模式'),
+                        subtitle: Text(
+                          settingsProvider.isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
+                          style: TextStyle(
+                            color: settingsProvider.isOfflineMode ? Colors.orange.shade800 : null,
+                            fontSize: 12,
+                          ),
+                        ),
+                        value: settingsProvider.isOfflineMode,
+                        onChanged: (value) async {
+                          await settingsProvider.setOfflineMode(value);
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                    const Divider(height: 32),
+
+                    // ====== 重看使用引導 ======
+                    ListTile(
+                      leading: const Icon(Icons.help_outline),
+                      title: const Text('重看使用引導'),
+                      onTap: () async {
+                        if (innerContext.mounted) {
                           Navigator.pop(innerContext);
-                          await settingsProvider.resetIdentity();
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            if (mounted) {
+                              _showTutorial(this.context);
+                            }
+                          });
                         }
                       },
-                      icon: const Icon(Icons.logout, size: 18, color: Colors.red),
-                      label: const Text('重設身分 (登出)', style: TextStyle(color: Colors.red)),
                     ),
-                  ),
-                ],
+                    const Divider(height: 32),
+
+                    // ====== 開發資訊 (縮合區塊) ======
+                    ExpansionTile(
+                      leading: const Icon(Icons.developer_mode),
+                      title: const Text('開發資訊'),
+                      childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.article_outlined, size: 20),
+                          title: const Text('查看日誌'),
+                          onTap: () {
+                            Navigator.pop(dialogContext);
+                            _showLogViewer(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.delete_forever, size: 20, color: Colors.red),
+                          title: const Text('清除本地資料庫', style: TextStyle(color: Colors.red)),
+                          subtitle: const Text('選擇要刪除的資料類型', style: TextStyle(fontSize: 11)),
+                          onTap: () async {
+                            Navigator.pop(dialogContext); // 先關閉設定對話框
+                            _showClearDataDialog(context);
+                          },
+                        ),
+                        const ListTile(
+                          leading: Icon(Icons.code, size: 20),
+                          title: Text('開發者資訊'),
+                          subtitle: Text('by 哲', style: TextStyle(fontStyle: FontStyle.italic)),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 32),
+
+                    // ====== 登出 / 重設身分 ======
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: dialogContext,
+                            builder: (c) => AlertDialog(
+                              title: const Text('重設身分'),
+                              content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+                                FilledButton(
+                                  onPressed: () => Navigator.pop(c, true),
+                                  style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                  child: const Text('重設'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true && innerContext.mounted) {
+                            Navigator.pop(innerContext);
+                            await settingsProvider.resetIdentity();
+                          }
+                        },
+                        icon: const Icon(Icons.logout, size: 18, color: Colors.red),
+                        label: const Text('重設身分 (登出)', style: TextStyle(color: Colors.red)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
             actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
           );
         },
@@ -1623,6 +1623,7 @@ class InfoTab extends StatefulWidget {
 }
 
 class InfoTabState extends State<InfoTab> {
+  int _selectedForecastIndex = -1;
   bool _isElevationExpanded = false;
   bool _isTimeMapExpanded = false;
   WeatherData? _weather;
@@ -2007,171 +2008,276 @@ class InfoTabState extends State<InfoTab> {
     final timeStr = DateFormat('MM/dd HH:mm').format(w.timestamp.toLocal());
     final isDay = DateTime.now().hour > 6 && DateTime.now().hour < 18;
 
+    // View Model Logic
+    String displayTemp;
+    String displayCondition;
+    String displayRain;
+    String displayHumidity;
+    String displayWind;
+    String displayApparentTemp;
+    String displaySun;
+    IconData displaySunIcon;
+    Color displaySunColor;
+    String displayDateTitle;
+    IconData displayIcon;
+    Color displayIconColor;
+
+    // Common Sun Logic (Show both Sunrise and Sunset)
+    displaySunIcon = Icons.wb_twilight;
+    displaySunColor = Colors.orange;
+
+    // Format: "日出 06:00 / 日落 17:30" or just "06:00 / 17:30" with icons?
+    // User said "Together".
+    final sunrise = DateFormat('HH:mm').format(w.sunrise);
+    final sunset = DateFormat('HH:mm').format(w.sunset);
+    displaySun = '日出 $sunrise / 日落 $sunset';
+
+    if (_selectedForecastIndex >= 0 && _selectedForecastIndex < w.dailyForecasts.length) {
+      final d = w.dailyForecasts[_selectedForecastIndex];
+      displayDateTitle = '預報: ${DateFormat('MM/dd').format(d.date)}';
+
+      // Temp Range Logic
+      if (d.minTemp.round() == d.maxTemp.round()) {
+        displayTemp = '${d.minTemp.round()}°C';
+      } else {
+        displayTemp = '${d.minTemp.round()} ~ ${d.maxTemp.round()}°C';
+      }
+
+      displayCondition = d.dayCondition;
+      displayRain = '${d.rainProbability}%';
+
+      // Apparent Temp Range Logic
+      final minApp = (d.minApparentTemp ?? d.minTemp).round();
+      final maxApp = (d.maxApparentTemp ?? d.maxTemp).round();
+      if (minApp == maxApp) {
+        displayApparentTemp = '${minApp}°C';
+      } else {
+        displayApparentTemp =
+            '$minApp ~ $maxApp°C'; // Note: Space added below in logic if needed, but here simple is fine. User asked for ranges.
+        // Wait, user asked for space around ~.
+        displayApparentTemp = '$minApp ~ ${maxApp}°C';
+      }
+
+      displayHumidity = '- %';
+      displayWind = '- m/s';
+      displayIcon = _getWeatherIcon(d.dayCondition);
+    } else {
+      displayDateTitle = '目前天氣';
+      displayTemp = '${w.temperature.toStringAsFixed(1)}°C';
+      displayCondition = w.condition;
+      displayRain = '${w.rainProbability}%';
+      displayApparentTemp = '${(w.apparentTemperature ?? w.temperature).toStringAsFixed(1)}°C';
+      displayHumidity = '${w.humidity.toStringAsFixed(0)}%';
+      displayWind = '${w.windSpeed} m/s';
+      displayIcon = _getWeatherIcon(w.condition);
+    }
+
+    displayIconColor = _getWeatherColor(displayCondition);
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with Location Dropdown
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DropdownButton<String>(
-                  value: _selectedLocation,
-                  underline: const SizedBox(),
-                  icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 16),
-                  onChanged: (String? newValue) {
-                    if (newValue != null && newValue != _selectedLocation) {
-                      setState(() {
-                        _selectedLocation = newValue;
-                        _weather = null; // Clear old data visually
-                        _refreshWeather(force: false);
-                      });
-                    }
-                  },
-                  items: <String>['向陽山', '三叉山', '池上'].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Row(
-                        children: [
-                          const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text(value),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-                if (_loadingWeather)
-                  const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                else
-                  InkWell(
-                    onTap: () => _refreshWeather(force: true),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with Location Dropdown
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              DropdownButton<String>(
+                value: _selectedLocation,
+                underline: const SizedBox(),
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 16),
+                onChanged: (String? newValue) {
+                  if (newValue != null && newValue != _selectedLocation) {
+                    setState(() {
+                      _selectedLocation = newValue;
+                      _weather = null; // Clear old data visually
+                      _selectedForecastIndex = -1; // Reset selection
+                      _refreshWeather(force: false);
+                    });
+                  }
+                },
+                items: <String>['向陽山', '三叉山', '池上'].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
                     child: Row(
                       children: [
-                        Text(
-                          '更新: $timeStr${w.isStale ? " (過期)" : ""}',
-                          style: TextStyle(fontSize: 10, color: w.isStale ? Colors.red : Colors.grey),
-                        ),
+                        const Icon(Icons.location_on, size: 16, color: Colors.grey),
                         const SizedBox(width: 4),
-                        const Icon(Icons.refresh, size: 14, color: Colors.grey),
+                        Text(value),
                       ],
                     ),
-                  ),
-              ],
-            ),
-            const Divider(),
-            if (w.isStale)
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
-                child: Row(
-                  children: [
-                    Icon(Icons.warning_amber, size: 16, color: Colors.red.shade700),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
-                    ),
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
-            // Current Weather
-            InkWell(
-              onTap: () {
-                setState(() {
-                  _isWeatherExpanded = !_isWeatherExpanded;
-                });
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
+              if (_loadingWeather)
+                const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              else
+                InkWell(
+                  onTap: () {
+                    setState(() => _selectedForecastIndex = -1); // Reset
+                    _refreshWeather(force: true);
+                  },
+                  child: Row(
                     children: [
                       Text(
-                        '${w.temperature.toStringAsFixed(1)}°C',
-                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.orange),
+                        '更新: $timeStr${w.isStale ? " (過期)" : ""}',
+                        style: TextStyle(fontSize: 10, color: w.isStale ? Colors.red : Colors.grey),
                       ),
-                      Text(w.condition, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.refresh, size: 14, color: Colors.grey),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.water_drop, size: 14, color: Colors.blue),
-                          const SizedBox(width: 4),
-                          Text('降雨機率: ${w.rainProbability}%'),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.water, size: 14, color: Colors.lightBlue),
-                          const SizedBox(width: 4),
-                          Text('濕度: ${w.humidity.toStringAsFixed(0)}%'),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.air, size: 14, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          Text('風速: ${w.windSpeed} m/s'),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.thermostat, size: 14, color: Colors.orangeAccent),
-                          const SizedBox(width: 4),
-                          Text('體感: ${(w.apparentTemperature ?? w.temperature).toStringAsFixed(1)}°C'),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            isDay ? Icons.wb_sunny : Icons.nightlight_round,
-                            size: 14,
-                            color: isDay ? Colors.orange : Colors.purple,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            isDay
-                                ? '日落: ${DateFormat('HH:mm').format(w.sunset)}'
-                                : '日出: ${DateFormat('HH:mm').format(w.sunrise)}',
-                          ),
-                        ],
-                      ),
-                    ],
+                ),
+            ],
+          ),
+          const Divider(),
+          if (w.isStale)
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber, size: 16, color: Colors.red.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
                   ),
-                  Icon(_isWeatherExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
                 ],
               ),
             ),
 
-            // 7-Day Forecast (Collapsible)
-            if (_isWeatherExpanded && w.dailyForecasts.isNotEmpty) ...[
-              const Divider(height: 24),
-              const Text('未來 7 天預報', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: w.dailyForecasts.map((d) {
-                    final dateStr = DateFormat('MM/dd').format(d.date);
-                    final isWeekend = d.date.weekday == 6 || d.date.weekday == 7;
-                    return Container(
+          // Main Weather Display
+          InkWell(
+            onTap: () {
+              // Toggle detail expansion or reset logic if desired
+              setState(() {
+                if (_selectedForecastIndex != -1) {
+                  _selectedForecastIndex = -1; // Click main area to reset to "Current"
+                } else {
+                  _isWeatherExpanded = !_isWeatherExpanded;
+                }
+              });
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayDateTitle,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      children: [
+                        Icon(displayIcon, size: 48, color: displayIconColor), // Reduced size
+                        const SizedBox(height: 2),
+                        Text(
+                          displayTemp,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ), // Reduced size
+                        ),
+                        Text(displayCondition, style: const TextStyle(fontSize: 14)), // Reduced size
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.water_drop, size: 14, color: Colors.blue),
+                            const SizedBox(width: 4),
+                            Text('降雨機率: $displayRain'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.water, size: 14, color: Colors.lightBlue),
+                            const SizedBox(width: 4),
+                            Text('濕度: $displayHumidity'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.air, size: 14, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text('風速: $displayWind'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.thermostat, size: 14, color: Colors.orangeAccent),
+                            const SizedBox(width: 4),
+                            Text('體感: $displayApparentTemp'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(displaySunIcon, size: 14, color: displaySunColor),
+                            const SizedBox(width: 4),
+                            Text(displaySun),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Icon(_isWeatherExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // 7-Day Forecast (Collapsible)
+          if (_isWeatherExpanded && w.dailyForecasts.isNotEmpty) ...[
+            const Divider(height: 24),
+            const Text('未來 7 天預報 (點擊切換顯示)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: w.dailyForecasts.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final d = entry.value;
+                  final dateStr = DateFormat('MM/dd').format(d.date);
+                  final isWeekend = d.date.weekday == 6 || d.date.weekday == 7;
+                  final isSelected = index == _selectedForecastIndex;
+
+                  // Temp format for list item (simplified)
+                  String listTempStr;
+                  if (d.minTemp.round() == d.maxTemp.round()) {
+                    listTempStr = '${d.minTemp.round()}°C';
+                  } else {
+                    listTempStr = '${d.minTemp.round()}-${d.maxTemp.round()}°C'; // Using dash for compactness in list
+                  }
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedForecastIndex = (_selectedForecastIndex == index) ? -1 : index;
+                      });
+                    },
+                    child: Container(
                       width: 90,
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
+                        color: isSelected ? Colors.blue.shade50 : Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(
+                          color: isSelected ? Colors.blue : Colors.grey.shade200,
+                          width: isSelected ? 2 : 1,
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -2183,11 +2289,15 @@ class InfoTabState extends State<InfoTab> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Icon(_getWeatherIcon(d.dayCondition), color: Colors.orange, size: 24),
+                          Icon(
+                            _getWeatherIcon(d.dayCondition),
+                            color: isSelected ? Colors.blue : Colors.orange,
+                            size: 24,
+                          ),
                           const SizedBox(height: 4),
                           Text(d.dayCondition, style: const TextStyle(fontSize: 10), overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 4),
-                          Text('${d.minTemp.round()}~${d.maxTemp.round()}°C', style: const TextStyle(fontSize: 12)),
+                          Text(listTempStr, style: const TextStyle(fontSize: 12)),
                           if ((d.maxApparentTemp ?? 0) != 0)
                             Text(
                               '體感 ${(d.minApparentTemp ?? d.minTemp).round()}~${(d.maxApparentTemp ?? d.maxTemp).round()}',
@@ -2203,22 +2313,80 @@ class InfoTabState extends State<InfoTab> {
                           ),
                         ],
                       ),
-                    );
-                  }).toList(),
-                ),
+                    ),
+                  );
+                }).toList(),
               ),
-            ],
+            ),
           ],
-        ),
+        ],
+      ),
     );
   }
 
   IconData _getWeatherIcon(String condition) {
-    if (condition.contains('晴')) return Icons.wb_sunny;
-    if (condition.contains('雨')) return Icons.grain;
-    if (condition.contains('雲') || condition.contains('陰')) return Icons.cloud;
-    if (condition.contains('霧')) return Icons.blur_on;
-    return Icons.wb_cloudy;
+    final c = condition.replaceAll(' ', ''); // Remove spaces
+
+    // 1. 精準比對 (Exact Matches from User List)
+    switch (c) {
+      case '多雲時晴':
+      case '晴時多雲':
+        return Icons.wb_cloudy; // 太陽+雲
+      case '多雲':
+        return Icons.cloud_queue; // 空心雲
+      case '陰天':
+      case '陰時多雲':
+      case '多雲時陰':
+        return Icons.cloud; // 實心雲 (陰天)
+      case '多雲短暫雨':
+      case '陰時多雲短暫雨':
+      case '多雲時陰短暫雨':
+      case '陰短暫雨':
+        return Icons.water_drop; // 雨滴
+      case '多雲短暫雨或雪':
+      case '多雲時陰短暫雨或雪':
+      case '陰短暫雨或雪':
+      case '陰時多雲短暫雨或雪':
+        return Icons.ac_unit; // 雪
+    }
+
+    // 2. 模糊比對 (Fuzzy Matches)
+    if (c.contains('雪') || c.contains('冰')) return Icons.ac_unit;
+    if (c.contains('雷')) return Icons.thunderstorm;
+    if (c.contains('霧')) return Icons.blur_on;
+
+    if (c.contains('雨')) {
+      if (c.contains('豪') || c.contains('大')) return Icons.grain;
+      return Icons.water_drop; // 一般雨
+    }
+
+    // 晴 + (雲 or 陰)
+    if (c.contains('晴') && (c.contains('雲') || c.contains('陰'))) {
+      return Icons.wb_cloudy;
+    }
+
+    if (c.contains('晴')) return Icons.wb_sunny;
+    if (c.contains('陰')) return Icons.cloud;
+    if (c.contains('多雲')) return Icons.cloud_queue;
+    if (c.contains('雲')) return Icons.cloud;
+
+    return Icons.help_outline; // 無法辨識時顯示問號，避免誤導
+  }
+
+  Color _getWeatherColor(String condition) {
+    final c = condition.replaceAll(' ', '');
+
+    // 雪/冰 -> 淺藍
+    if (c.contains('雪') || c.contains('冰')) return Colors.lightBlue;
+
+    // 雨/雷 -> 藍
+    if (c.contains('雨') || c.contains('雷')) return Colors.blue;
+
+    // 晴/多雲時晴 -> 橘 (只要有太陽成分，通常給點暖色，或者判斷主體)
+    if (c.contains('晴')) return Colors.orange;
+
+    // 陰/多雲/霧 -> 灰
+    return Colors.grey;
   }
 }
 
