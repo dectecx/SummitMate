@@ -22,7 +22,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
     if (_isInit) {
       final isOffline = context.read<SettingsProvider>().isOfflineMode;
       if (!isOffline) {
-        Future.microtask(() => context.read<MessageProvider>().sync());
+        Future.microtask(() => context.read<MessageProvider>().sync(isAuto: true));
       }
       _isInit = false;
     }
@@ -53,9 +53,9 @@ class _MessageListScreenState extends State<MessageListScreen> {
                           messageProvider.selectCategory(selected.first);
                         },
                         style: ButtonStyle(
-                           visualDensity: VisualDensity.compact,
-                           padding: WidgetStateProperty.all(EdgeInsets.zero),
-                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
+                          padding: WidgetStateProperty.all(EdgeInsets.zero),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
                     ),
@@ -63,35 +63,30 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     // Last Updated Timestamp & Refresh
                     Builder(
                       builder: (context) {
-                         // Note: Ideally use a Provider or Stream for updates, but simple setState in parent or passing down works.
-                         // Since SyncService is global/singleton, we can read it. 
-                         // To make UI update, we might need to rely on the fact that messageProvider.sync() notifies listeners 
-                         // or we can wrap this text in a ValueListenable if we had one.
-                         // For now, MessageProvider notifiesGlobal listeners when sync done, so this widget (Consumer) should rebuild.
-                         final lastSync = getIt<SyncService>().lastMessagesSync;
-                         final timeStr = lastSync != null 
-                            ? DateFormat('MM/dd HH:mm').format(lastSync) 
-                            : '未同步';
-                         
-                         return InkWell(
-                            onTap: () => messageProvider.sync(),
-                            borderRadius: BorderRadius.circular(4),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Icon(Icons.refresh, size: 18),
-                                  Text(
-                                    timeStr,
-                                    style: const TextStyle(fontSize: 10, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
+                        // Note: Ideally use a Provider or Stream for updates, but simple setState in parent or passing down works.
+                        // Since SyncService is global/singleton, we can read it.
+                        // To make UI update, we might need to rely on the fact that messageProvider.sync() notifies listeners
+                        // or we can wrap this text in a ValueListenable if we had one.
+                        // For now, MessageProvider notifiesGlobal listeners when sync done, so this widget (Consumer) should rebuild.
+                        final lastSync = getIt<SyncService>().lastMessagesSync;
+                        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync) : '未同步';
+
+                        return InkWell(
+                          onTap: () => messageProvider.sync(),
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Icon(Icons.refresh, size: 18),
+                                Text(timeStr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                              ],
                             ),
-                         );
-                      }
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
