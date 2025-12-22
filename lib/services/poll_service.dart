@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'gas_api_client.dart';
 import '../core/env_config.dart';
 import '../core/constants.dart';
 import '../data/models/poll.dart';
@@ -11,28 +12,18 @@ class PollService {
 
   static const String _source = 'PollService';
 
-  final http.Client _client;
-  final String _baseUrl;
+  final GasApiClient _apiClient;
 
-  PollService({http.Client? client, String? baseUrl})
-    : _client = client ?? http.Client(),
-      _baseUrl = baseUrl ?? EnvConfig.getApiUrl();
-
-  // Helper to get device/user ID
-  // In a real app, this should come from a AuthProvider or UserSettings
-  // For now, we reuse the logic from MessageService or just generate/store one locally
-  // But wait, the API requires a consistent ID to track "My Votes".
-  // We should accept userId as a parameter.
-
-  /// Closed poll icon: Icons.lock_clock (or similar)
+  PollService({GasApiClient? apiClient}) : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.getApiUrl());
 
   /// Fetch all polls
   Future<List<Poll>> fetchPolls({required String userId}) async {
-    final url = Uri.parse('$_baseUrl?action=${ApiConfig.actionPoll}&subAction=get&user_id=$userId');
-
     try {
       LogService.info('Fetching polls for user: $userId', source: _source);
-      final response = await _client.get(url);
+      final response = await _apiClient.get(
+        queryParams: {'action': ApiConfig.actionPoll, 'subAction': 'get', 'user_id': userId},
+      );
+
       LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
 
       if (response.statusCode == 200) {
@@ -65,8 +56,6 @@ class PollService {
     bool allowMultipleVotes = false,
     List<String> initialOptions = const [],
   }) async {
-    final url = Uri.parse(_baseUrl);
-
     final payload = {
       'action': ApiConfig.actionPoll,
       'subAction': 'create',
@@ -86,11 +75,7 @@ class PollService {
 
     try {
       LogService.info('Creating poll: $title', source: _source);
-      final response = await _client.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
+      final response = await _apiClient.post(payload);
       LogService.debug('Create response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
@@ -110,8 +95,6 @@ class PollService {
     required String userId,
     String userName = 'Anonymous',
   }) async {
-    final url = Uri.parse(_baseUrl);
-
     final payload = {
       'action': ApiConfig.actionPoll,
       'subAction': 'vote',
@@ -123,11 +106,7 @@ class PollService {
 
     try {
       LogService.info('Voting on poll: $pollId, options: $optionIds', source: _source);
-      final response = await _client.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
+      final response = await _apiClient.post(payload);
       LogService.debug('Vote response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
@@ -142,8 +121,6 @@ class PollService {
 
   /// Add a new option
   Future<void> addOption({required String pollId, required String text, required String creatorId}) async {
-    final url = Uri.parse(_baseUrl);
-
     final payload = {
       'action': ApiConfig.actionPoll,
       'subAction': 'add_option',
@@ -154,11 +131,7 @@ class PollService {
 
     try {
       LogService.info('Adding option "$text" to poll $pollId by creator $creatorId', source: _source);
-      final response = await _client.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
+      final response = await _apiClient.post(payload);
       LogService.debug('Add option response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
@@ -174,16 +147,11 @@ class PollService {
 
   /// Close a poll (mark as ended)
   Future<void> closePoll({required String pollId, required String userId}) async {
-    final url = Uri.parse(_baseUrl);
     final payload = {'action': ApiConfig.actionPoll, 'subAction': 'close', 'poll_id': pollId, 'user_id': userId};
 
     try {
       LogService.info('Closing poll: $pollId by user: $userId', source: _source);
-      final response = await _client.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
+      final response = await _apiClient.post(payload);
       LogService.debug('Close response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
@@ -199,16 +167,11 @@ class PollService {
 
   /// Delete a poll
   Future<void> deletePoll({required String pollId, required String userId}) async {
-    final url = Uri.parse(_baseUrl);
     final payload = {'action': ApiConfig.actionPoll, 'subAction': 'delete', 'poll_id': pollId, 'user_id': userId};
 
     try {
       LogService.info('Deleting poll: $pollId by user: $userId', source: _source);
-      final response = await _client.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
+      final response = await _apiClient.post(payload);
       LogService.debug('Delete response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
@@ -224,8 +187,6 @@ class PollService {
 
   /// Delete an option
   Future<void> deleteOption({required String optionId, required String userId}) async {
-    final url = Uri.parse(_baseUrl);
-
     final payload = {
       'action': ApiConfig.actionPoll,
       'subAction': 'delete_option',
@@ -235,11 +196,7 @@ class PollService {
 
     try {
       LogService.info('Deleting option: $optionId by user: $userId', source: _source);
-      final response = await _client.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(payload),
-      );
+      final response = await _apiClient.post(payload);
       LogService.debug('Delete option response: ${response.body}', source: _source);
 
       final jsonResponse = json.decode(response.body);
