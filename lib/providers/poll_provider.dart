@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants.dart';
 import '../core/di.dart';
 import '../data/models/poll.dart';
+import '../data/repositories/poll_repository.dart';
 import '../services/poll_service.dart';
 import '../services/log_service.dart';
 import '../services/toast_service.dart';
@@ -31,9 +32,11 @@ class PollProvider with ChangeNotifier {
 
   PollProvider() {
     _loadUserId();
+    _loadInitialData();
   }
 
   PollService get _pollService => getIt<PollService>();
+  PollRepository get _pollRepository => getIt<PollRepository>();
 
   Future<void> _loadUserId() async {
     final prefs = getIt<SharedPreferences>();
@@ -41,6 +44,23 @@ class PollProvider with ChangeNotifier {
 
     if (_currentUserId == null || _currentUserId!.isEmpty) {
       _currentUserId = 'User_${DateTime.now().millisecondsSinceEpoch}'; // Fallback
+    }
+  }
+
+  /// 載入初始資料 (從本地快取)
+  void _loadInitialData() {
+    _polls = _pollRepository.getAllPolls();
+    _lastSyncTime = _pollRepository.getLastSyncTime();
+
+    // Sort logic from fetchPolls
+    _polls.sort((a, b) {
+      if (a.isActive && !b.isActive) return -1;
+      if (!a.isActive && b.isActive) return 1;
+      return b.createdAt.compareTo(a.createdAt);
+    });
+
+    if (_polls.isNotEmpty) {
+      notifyListeners();
     }
   }
 
@@ -53,6 +73,9 @@ class PollProvider with ChangeNotifier {
   /// [isAuto] 為 true 時會套用 5 分鐘節流
   Future<void> fetchPolls({bool isAuto = false}) async {
     // 節流：自動同步時檢查冷卻時間
+    // Load last sync time from repo if not set in memory (double check)
+    _lastSyncTime ??= _pollRepository.getLastSyncTime();
+
     if (isAuto && _lastSyncTime != null) {
       final elapsed = DateTime.now().difference(_lastSyncTime!);
       if (elapsed < _syncCooldown) {
@@ -71,22 +94,36 @@ class PollProvider with ChangeNotifier {
       final user = prefs.getString(PrefKeys.username);
       if (user != null && user.isNotEmpty) _currentUserId = user;
 
-      _polls = await _pollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
+      final fetchedPolls = await _pollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
 
       // Sort: Active first, then by date desc
-      _polls.sort((a, b) {
+      fetchedPolls.sort((a, b) {
         if (a.isActive && !b.isActive) return -1;
         if (!a.isActive && b.isActive) return 1;
         return b.createdAt.compareTo(a.createdAt);
       });
 
+      _polls = fetchedPolls;
+
+      // Save to cache
+      await _pollRepository.savePolls(_polls);
+
       _lastSyncTime = DateTime.now();
+      await _pollRepository.saveLastSyncTime(_lastSyncTime!);
+
       LogService.info('投票同步成功，載入 ${_polls.length} 個投票', source: _source);
       ToastService.success('投票同步成功！');
     } catch (e) {
       _error = e.toString();
       LogService.error('Provider fetch error: $e', source: _source);
-      ToastService.error('投票同步失敗：$e');
+      // Don't clear _polls on error, keep the cached version
+      // But show error toast
+      if (_polls.isEmpty) {
+        // Only show loud error if we have no data at all, otherwise silent fail with stale data
+        ToastService.error('投票同步失敗：$e');
+      } else {
+        ToastService.error('無法更新投票資料，顯示離線版本');
+      }
     } finally {
       _setLoading(false);
     }
