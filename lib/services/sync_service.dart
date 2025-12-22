@@ -115,7 +115,8 @@ class SyncService {
 
     final now = DateTime.now();
     if (isAuto && _lastItinerarySyncTime != null && now.difference(_lastItinerarySyncTime!) < _kAutoSyncCooldown) {
-      LogService.info('Auto-sync itineraries throttled', source: 'SyncService');
+      final remaining = (_kAutoSyncCooldown - now.difference(_lastItinerarySyncTime!)).inSeconds;
+      LogService.info('行程同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
       return SyncResult(success: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
     }
 
@@ -140,7 +141,8 @@ class SyncService {
 
     final now = DateTime.now();
     if (isAuto && _lastMessagesSyncTime != null && now.difference(_lastMessagesSyncTime!) < _kAutoSyncCooldown) {
-      LogService.info('Auto-sync messages throttled', source: 'SyncService');
+      final remaining = (_kAutoSyncCooldown - now.difference(_lastMessagesSyncTime!)).inSeconds;
+      LogService.info('留言同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
       return SyncResult(success: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
     }
 
@@ -287,6 +289,7 @@ class SyncResult {
   final bool success;
   final bool itinerarySynced;
   final bool messagesSynced;
+  final bool pollsSynced;
   final List<String> errors;
   final DateTime syncedAt;
 
@@ -294,6 +297,7 @@ class SyncResult {
     required this.success,
     this.itinerarySynced = false,
     this.messagesSynced = false,
+    this.pollsSynced = false,
     this.errors = const [],
     required this.syncedAt,
   });

@@ -56,7 +56,7 @@ class SettingsProvider extends ChangeNotifier {
 
   /// 上次同步時間 (格式化顯示)
   String? get lastSyncTimeFormatted {
-    final time = lastSyncTime;
+    final time = lastSyncTime?.toLocal(); // 轉換為本地時區
     if (time == null) return null;
     return '${time.month}/${time.day} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
   }

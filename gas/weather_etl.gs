@@ -24,14 +24,18 @@ function syncWeatherToSheets(forceUpdate = false) {
   const props = PropertiesService.getScriptProperties();
   const lastUpdate = props.getProperty("LAST_CWA_FETCH");
   const now = new Date().getTime();
-  
+
   // 檢查是否需要抓取新資料
   let shouldFetch = true;
   if (!forceUpdate && lastUpdate) {
     const lastTime = new Date(lastUpdate).getTime();
     const hoursDiff = (now - lastTime) / (1000 * 60 * 60);
     if (hoursDiff < CACHE_DURATION_HOURS) {
-      Logger.log(`資料尚新 (上次更新: ${hoursDiff.toFixed(2)} 小時前)，跳過 CWA Fetch，使用 Raw Data 產出 View。`);
+      Logger.log(
+        `資料尚新 (上次更新: ${hoursDiff.toFixed(
+          2
+        )} 小時前)，跳過 CWA Fetch，使用 Raw Data 產出 View。`
+      );
       shouldFetch = false;
     }
   }
@@ -82,16 +86,22 @@ function fetchFromCWA() {
   Logger.log(`Fetch URL: ${URL}`);
 
   try {
-    const response = UrlFetchApp.fetch(URL, {muteHttpExceptions: true});
+    const response = UrlFetchApp.fetch(URL, { muteHttpExceptions: true });
     let jsonString = response.getContentText();
     // 處理 BOM (Byte Order Mark)
-    if (jsonString.charCodeAt(0) === 0xFEFF) {
+    if (jsonString.charCodeAt(0) === 0xfeff) {
       jsonString = jsonString.substr(1);
     }
     const json = JSON.parse(jsonString);
 
-    if (!json.cwaopendata || !json.cwaopendata.Dataset || !json.cwaopendata.Dataset.Locations) {
-      Logger.log("錯誤：JSON 結構不符。CWA Keys: " + Object.keys(json.cwaopendata));
+    if (
+      !json.cwaopendata ||
+      !json.cwaopendata.Dataset ||
+      !json.cwaopendata.Dataset.Locations
+    ) {
+      Logger.log(
+        "錯誤：JSON 結構不符。CWA Keys: " + Object.keys(json.cwaopendata)
+      );
       return null;
     }
 
@@ -99,23 +109,26 @@ function fetchFromCWA() {
     Logger.log(`取得 ${locations.length} 個地點`);
 
     const issueTime = getIssueTime(json);
-    PropertiesService.getScriptProperties().setProperty("LATEST_ISSUE_TIME", issueTime || "");
+    PropertiesService.getScriptProperties().setProperty(
+      "LATEST_ISSUE_TIME",
+      issueTime || ""
+    );
     Logger.log(`取得 ${locations.length} 個地點, 發布時間: ${issueTime}`);
 
     const rawData = [];
 
-    locations.forEach(loc => {
+    locations.forEach((loc) => {
       const locName = loc.LocationName;
       if (!loc.WeatherElement) return;
 
-      loc.WeatherElement.forEach(el => {
+      loc.WeatherElement.forEach((el) => {
         const elName = el.ElementName;
         if (!el.Time) return;
 
-        el.Time.forEach(t => {
+        el.Time.forEach((t) => {
           const startTime = t.StartTime;
           const endTime = t.EndTime;
-          
+
           // [修正]: ElementValue 是物件 (Map)，不是陣列
           // 且新增 FullRawData 欄位儲存完整 JSON
           let valObj = t.ElementValue;
@@ -126,15 +139,21 @@ function fetchFromCWA() {
             extractedValue = extractValue(elName, valObj);
             fullJson = JSON.stringify(valObj);
           }
-          
-          rawData.push([locName, startTime, endTime, elName, extractedValue, fullJson]);
+
+          rawData.push([
+            locName,
+            startTime,
+            endTime,
+            elName,
+            extractedValue,
+            fullJson,
+          ]);
         });
       });
     });
 
     Logger.log(`解析完成，共 ${rawData.length} 筆`);
     return rawData;
-
   } catch (e) {
     Logger.log("Fetch Error: " + e.toString());
     return null;
@@ -154,23 +173,41 @@ function extractValue(elementName, valObj) {
   // 特定對照表 (CWA Hiking API Keys)
   let key = "";
   switch (elementName) {
-    case "平均溫度": key = "Temperature"; break;
-    case "平均相對濕度": key = "RelativeHumidity"; break;
-    case "12小時降雨機率": key = "ProbabilityOfPrecipitation"; break;
-    case "風速": key = "WindSpeed"; break;
-    case "天氣現象": key = "Weather"; break;
-    case "最高溫度": key = "MaxTemperature"; break;
-    case "最低溫度": key = "MinTemperature"; break;
-    case "最高體感溫度": key = "MaxApparentTemperature"; break;
-    case "最低體感溫度": key = "MinApparentTemperature"; break;
+    case "平均溫度":
+      key = "Temperature";
+      break;
+    case "平均相對濕度":
+      key = "RelativeHumidity";
+      break;
+    case "12小時降雨機率":
+      key = "ProbabilityOfPrecipitation";
+      break;
+    case "風速":
+      key = "WindSpeed";
+      break;
+    case "天氣現象":
+      key = "Weather";
+      break;
+    case "最高溫度":
+      key = "MaxTemperature";
+      break;
+    case "最低溫度":
+      key = "MinTemperature";
+      break;
+    case "最高體感溫度":
+      key = "MaxApparentTemperature";
+      break;
+    case "最低體感溫度":
+      key = "MinApparentTemperature";
+      break;
   }
 
   if (key && valObj[key] !== undefined) return valObj[key];
-  
+
   // 後備方案 (Fallback)：若無對應 key，取第一個
   const keys = Object.keys(valObj);
   if (keys.length > 0) return valObj[keys[0]];
-  
+
   return "";
 }
 
@@ -178,9 +215,19 @@ function extractValue(elementName, valObj) {
  * 步驟 C: 儲存 Raw Data (原始資料)
  */
 function saveRawData(rows) {
-  const header = ["Location", "StartTime", "EndTime", "Element", "Value", "FullElementValue"];
+  const header = [
+    "Location",
+    "StartTime",
+    "EndTime",
+    "Element",
+    "Value",
+    "FullElementValue",
+  ];
   updateSheet("Weather_CWA_Hiking_Raw", [header, ...rows]);
-  PropertiesService.getScriptProperties().setProperty("LAST_CWA_FETCH", new Date().toISOString());
+  PropertiesService.getScriptProperties().setProperty(
+    "LAST_CWA_FETCH",
+    new Date().toISOString()
+  );
 }
 
 /**
@@ -200,20 +247,20 @@ function readRawData() {
  */
 function generateAppView(rawDataRows) {
   const elementMap = {
-    "平均溫度": "T",
-    "平均相對濕度": "RH",
+    平均溫度: "T",
+    平均相對濕度: "RH",
     "12小時降雨機率": "PoP",
-    "風速": "WS",
-    "天氣現象": "Wx",
-    "最高溫度": "MaxT",
-    "最低溫度": "MinT",
-    "最高體感溫度": "MaxAT",
-    "最低體感溫度": "MinAT"
+    風速: "WS",
+    天氣現象: "Wx",
+    最高溫度: "MaxT",
+    最低溫度: "MinT",
+    最高體感溫度: "MaxAT",
+    最低體感溫度: "MinAT",
   };
 
   const consolidatedData = {};
 
-  rawDataRows.forEach(row => {
+  rawDataRows.forEach((row) => {
     // row: [Location, StartTime, EndTime, ElementName, Value, FullRawData]
     const [loc, start, end, elName, val] = row;
     if (elementMap[elName]) {
@@ -222,29 +269,66 @@ function generateAppView(rawDataRows) {
 
       if (!consolidatedData[compositeKey]) {
         consolidatedData[compositeKey] = {
-          Location: loc, StartTime: start, EndTime: end,
-          T: "", RH: "", PoP: "", WS: "", Wx: "", MaxT: "", MinT: "", MaxAT: "", MinAT: ""
+          Location: loc,
+          StartTime: start,
+          EndTime: end,
+          T: "",
+          RH: "",
+          PoP: "",
+          WS: "",
+          Wx: "",
+          MaxT: "",
+          MinT: "",
+          MaxAT: "",
+          MinAT: "",
         };
       }
       consolidatedData[compositeKey][shortKey] = val;
     }
   });
-  
-  // 取得發布時間
-  const issueTime = PropertiesService.getScriptProperties().getProperty("LATEST_ISSUE_TIME") || "";
 
-  Object.values(consolidatedData).forEach(item => {
+  // 取得發布時間
+  const issueTime =
+    PropertiesService.getScriptProperties().getProperty("LATEST_ISSUE_TIME") ||
+    "";
+
+  Object.values(consolidatedData).forEach((item) => {
     // 將 IssueTime 加入每一筆資料中
     item.IssueTime = issueTime;
   });
 
-  const appHeader = ["Location", "StartTime", "EndTime", "Wx", "T", "PoP", "MinT", "MaxT", "RH", "WS", "MinAT", "MaxAT", "IssueTime"];
+  const appHeader = [
+    "Location",
+    "StartTime",
+    "EndTime",
+    "Wx",
+    "T",
+    "PoP",
+    "MinT",
+    "MaxT",
+    "RH",
+    "WS",
+    "MinAT",
+    "MaxAT",
+    "IssueTime",
+  ];
   const appRows = [];
 
-  Object.values(consolidatedData).forEach(item => {
+  Object.values(consolidatedData).forEach((item) => {
     appRows.push([
-      item.Location, item.StartTime, item.EndTime,
-      item.Wx, item.T, item.PoP, item.MinT, item.MaxT, item.RH, item.WS, item.MinAT, item.MaxAT, item.IssueTime
+      item.Location,
+      item.StartTime,
+      item.EndTime,
+      item.Wx,
+      item.T,
+      item.PoP,
+      item.MinT,
+      item.MaxT,
+      item.RH,
+      item.WS,
+      item.MinAT,
+      item.MaxAT,
+      item.IssueTime,
     ]);
   });
 
@@ -268,13 +352,13 @@ function getIssueTime(json) {
 function updateSheet(sheetName, data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(sheetName);
-  
+
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
   }
-  
+
   sheet.clearContents();
-  
+
   if (data && data.length > 0) {
     // 檢查行列數防止錯誤
     const rows = data.length;
@@ -289,7 +373,7 @@ function updateSheet(sheetName, data) {
 function getWeatherData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Weather_Hiking_App");
-  
+
   if (!sheet) return { error: "Weather data not ready (氣象資料尚未準備好)" };
 
   const data = sheet.getDataRange().getValues();
@@ -298,7 +382,7 @@ function getWeatherData() {
   const headers = data[0];
   const rows = data.slice(1);
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const item = {};
     headers.forEach((h, i) => {
       item[h] = row[i];
@@ -312,7 +396,9 @@ function getWeatherData() {
  */
 function setupWeatherSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss.getSheetByName("Weather_CWA_Hiking_Raw")) ss.insertSheet("Weather_CWA_Hiking_Raw");
-  if (!ss.getSheetByName("Weather_Hiking_App")) ss.insertSheet("Weather_Hiking_App");
+  if (!ss.getSheetByName("Weather_CWA_Hiking_Raw"))
+    ss.insertSheet("Weather_CWA_Hiking_Raw");
+  if (!ss.getSheetByName("Weather_Hiking_App"))
+    ss.insertSheet("Weather_Hiking_App");
   Logger.log("氣象工作表初始化完成");
 }

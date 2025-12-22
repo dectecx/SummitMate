@@ -37,16 +37,17 @@ class _MessageListScreenState extends State<MessageListScreen> {
             children: [
               // 分類切換
               Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: SegmentedButton<String>(
                         showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(value: 'Important', label: Text('重要'), icon: Icon(Icons.campaign_outlined)),
-                          ButtonSegment(value: 'Chat', label: Text('討論'), icon: Icon(Icons.chat_bubble_outline)),
-                          ButtonSegment(value: 'Gear', label: Text('裝備'), icon: Icon(Icons.backpack_outlined)),
+                          ButtonSegment(value: 'Important', label: Text('📢 重要')),
+                          ButtonSegment(value: 'Chat', label: Text('💬 討論')),
+                          ButtonSegment(value: 'Gear', label: Text('🎒 裝備')),
                         ],
                         selected: {messageProvider.selectedCategory},
                         onSelectionChanged: (selected) {
@@ -54,8 +55,10 @@ class _MessageListScreenState extends State<MessageListScreen> {
                         },
                         style: ButtonStyle(
                           visualDensity: VisualDensity.compact,
-                          padding: WidgetStateProperty.all(EdgeInsets.zero),
+                          textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
                         ),
                       ),
                     ),
@@ -63,26 +66,26 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     // Last Updated Timestamp & Refresh
                     Builder(
                       builder: (context) {
-                        // Note: Ideally use a Provider or Stream for updates, but simple setState in parent or passing down works.
-                        // Since SyncService is global/singleton, we can read it.
-                        // To make UI update, we might need to rely on the fact that messageProvider.sync() notifies listeners
-                        // or we can wrap this text in a ValueListenable if we had one.
-                        // For now, MessageProvider notifiesGlobal listeners when sync done, so this widget (Consumer) should rebuild.
                         final lastSync = getIt<SyncService>().lastMessagesSync;
-                        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync) : '未同步';
+                        final timeStr =
+                            lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '未同步';
 
-                        return InkWell(
-                          onTap: () => messageProvider.sync(),
-                          borderRadius: BorderRadius.circular(4),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Icon(Icons.refresh, size: 18),
-                                Text(timeStr, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                              ],
+                        return Material(
+                          color: Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          child: InkWell(
+                            onTap: () => messageProvider.sync(),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.sync, size: 16, color: Colors.grey),
+                                ],
+                              ),
                             ),
                           ),
                         );

@@ -7,6 +7,7 @@ import 'poll_detail_screen.dart';
 import '../../presentation/providers/settings_provider.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:intl/intl.dart';
 
 class PollListScreen extends StatefulWidget {
   const PollListScreen({super.key});
@@ -26,7 +27,7 @@ class _PollListScreenState extends State<PollListScreen> {
     if (_isInit) {
       final isOffline = context.read<SettingsProvider>().isOfflineMode;
       if (!isOffline) {
-        Future.microtask(() => context.read<PollProvider>().fetchPolls());
+        Future.microtask(() => context.read<PollProvider>().fetchPolls(isAuto: true));
       }
       _isInit = false;
     }
@@ -204,27 +205,56 @@ class _PollListScreenState extends State<PollListScreen> {
             children: [
               // Filter Bar
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: SegmentedButton<int>(
+                        showSelectedIcon: false,
                         segments: const [
-                          ButtonSegment(value: 0, label: Text('進行中'), icon: Icon(Icons.how_to_vote)),
-                          ButtonSegment(value: 1, label: Text('已結束'), icon: Icon(Icons.history)),
-                          ButtonSegment(value: 2, label: Text('我的'), icon: Icon(Icons.person_outline)),
+                          ButtonSegment(value: 0, label: Text('🗳 進行中')),
+                          ButtonSegment(value: 1, label: Text('📋 已結束')),
+                          ButtonSegment(value: 2, label: Text('👤 我的')),
                         ],
                         selected: {_selectedFilter},
                         onSelectionChanged: (Set<int> newSelection) {
                           setState(() => _selectedFilter = newSelection.first);
                         },
+                        style: ButtonStyle(
+                          visualDensity: VisualDensity.compact,
+                          textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton.filledTonal(
-                      onPressed: () => provider.fetchPolls(),
-                      icon: const Icon(Icons.refresh),
-                      tooltip: '重新整理',
+                    // Sync time + refresh button
+                    Material(
+                      color: Colors.grey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      child: InkWell(
+                        onTap: () => provider.fetchPolls(),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                provider.lastSyncTime != null
+                                    ? DateFormat('MM/dd HH:mm').format(provider.lastSyncTime!.toLocal())
+                                    : '未同步',
+                                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.sync, size: 16, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

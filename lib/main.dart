@@ -1035,7 +1035,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
     return Consumer<ItineraryProvider>(
       builder: (context, provider, child) {
         final lastSync = getIt<SyncService>().lastItinerarySync;
-        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync) : '尚未同步';
+        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '尚未同步';
 
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -1071,36 +1071,44 @@ class _ItineraryTabState extends State<_ItineraryTab> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 天數選擇器 (置左)
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'D0', label: Text('D0')),
-                        ButtonSegment(value: 'D1', label: Text('D1')),
-                        ButtonSegment(value: 'D2', label: Text('D2')),
-                      ],
-                      selected: {provider.selectedDay},
-                      onSelectionChanged: (selected) {
-                        provider.selectDay(selected.first);
-                      },
-                      style: ButtonStyle(
-                        visualDensity: VisualDensity.compact,
-                        padding: WidgetStateProperty.all(EdgeInsets.zero),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    // 天數選擇器
+                    Expanded(
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'D0', label: Text('D0')),
+                          ButtonSegment(value: 'D1', label: Text('D1')),
+                          ButtonSegment(value: 'D2', label: Text('D2')),
+                        ],
+                        selected: {provider.selectedDay},
+                        onSelectionChanged: (selected) {
+                          provider.selectDay(selected.first);
+                        },
+                        style: ButtonStyle(
+                          visualDensity: VisualDensity.compact,
+                          padding: WidgetStateProperty.all(EdgeInsets.zero),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
+                        ),
                       ),
                     ),
-
+                    const SizedBox(width: 8),
                     // 更新時間與按鈕 (置右)
-                    InkWell(
-                      onTap: () => _manualSync(context),
-                      borderRadius: BorderRadius.circular(4),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Row(
-                          children: [
-                            Text('更新: $timeStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.refresh, size: 14, color: Colors.grey),
-                          ],
+                    Material(
+                      color: Colors.grey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      child: InkWell(
+                        onTap: () => _manualSync(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.sync, size: 16, color: Colors.grey),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1629,7 +1637,12 @@ class InfoTabState extends State<InfoTab> {
     setState(() => _loadingWeather = true);
     try {
       final weather = await getIt<WeatherService>().getWeather(forceRefresh: force, locationName: _selectedLocation);
-      if (mounted) setState(() => _weather = weather);
+      if (mounted) {
+        setState(() => _weather = weather);
+        if (force) ToastService.success('天氣更新成功！');
+      }
+    } catch (e) {
+      if (mounted && force) ToastService.error('天氣更新失敗：$e');
     } finally {
       if (mounted) setState(() => _loadingWeather = false);
     }
@@ -1988,7 +2001,7 @@ class InfoTabState extends State<InfoTab> {
     }
 
     final w = _weather!;
-    final timeStr = DateFormat('MM/dd HH:mm').format(w.timestamp);
+    final timeStr = DateFormat('MM/dd HH:mm').format(w.timestamp.toLocal());
     final isDay = DateTime.now().hour > 6 && DateTime.now().hour < 18;
 
     return Padding(
