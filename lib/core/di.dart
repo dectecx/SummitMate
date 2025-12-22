@@ -10,6 +10,7 @@ import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../data/repositories/gear_repository.dart';
 import '../services/weather_service.dart';
+import '../services/poll_service.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -50,6 +51,9 @@ Future<void> setupDependencies() async {
   final weatherService = WeatherService();
   await weatherService.init();
   getIt.registerSingleton<WeatherService>(weatherService);
+
+  // PollService
+  getIt.registerSingleton<PollService>(PollService());
 
   // Services
   getIt.registerLazySingleton<GoogleSheetsService>(() => GoogleSheetsService());

@@ -13,11 +13,14 @@ import 'poll_service_test.mocks.dart';
 
 void main() {
   late MockClient mockClient;
+  late PollService pollService;
 
   setUp(() {
     mockClient = MockClient();
-    PollService.client = mockClient;
-    PollService.testBaseUrl = 'https://mock.api';
+    pollService = PollService(
+      client: mockClient,
+      baseUrl: 'https://mock.api',
+    );
   });
 
   group('PollService', () {
@@ -50,7 +53,7 @@ void main() {
       when(mockClient.get(any))
           .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
-      final polls = await PollService.fetchPolls(userId: userId);
+      final polls = await pollService.fetchPolls(userId: userId);
 
       expect(polls, isA<List<Poll>>());
       expect(polls.length, 1);
@@ -67,7 +70,7 @@ void main() {
       when(mockClient.get(any))
           .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
-      expect(PollService.fetchPolls(userId: userId), throwsException);
+      expect(pollService.fetchPolls(userId: userId), throwsException);
     });
 
     test('createPoll posts correct data and completes successfully', () async {
@@ -76,7 +79,7 @@ void main() {
       when(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')))
           .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
-      await PollService.createPoll(
+      await pollService.createPoll(
         title: 'New Poll',
         creatorId: userId,
         description: 'Test description',
@@ -95,7 +98,7 @@ void main() {
       when(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')))
           .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
-      await PollService.votePoll(
+      await pollService.votePoll(
         pollId: pollId,
         optionIds: ['opt1'],
         userId: userId,

@@ -19,22 +19,20 @@ void main() {
   late MockSharedPreferences mockSharedPreferences;
   late PollProvider provider;
 
-  setUp(() {
+  setUp(() async {
     mockClient = MockClient();
     mockSharedPreferences = MockSharedPreferences();
     
-    // Register mock SharedPreferences
+    // Register mock SharedPreferences & PollService
     final getIt = GetIt.instance;
-    if (getIt.isRegistered<SharedPreferences>()) {
-      getIt.unregister<SharedPreferences>();
-    }
+    await getIt.reset(); // Clear all
+
     getIt.registerSingleton<SharedPreferences>(mockSharedPreferences);
+    getIt.registerSingleton<PollService>(PollService(client: mockClient, baseUrl: 'https://mock.api'));
     
     // Stub common calls
     when(mockSharedPreferences.getString(any)).thenReturn('test_user_1');
 
-    PollService.client = mockClient;
-    PollService.testBaseUrl = 'https://mock.api';
     provider = PollProvider();
   });
 
