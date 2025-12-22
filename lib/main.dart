@@ -393,6 +393,8 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
               onPressed: () {
                 Navigator.pop(context);
                 context.read<MessageProvider>().sync();
+                context.read<ItineraryProvider>().sync();
+                context.read<PollProvider>().fetchPolls();
               },
               child: const Text('立即同步'),
             ),
@@ -521,11 +523,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       case 1:
         return const _GearTab(key: ValueKey(1));
       case 2:
-        return CollaborationTab(
-          key: const ValueKey(2),
-          keyBtnSync: _keyBtnSync,
-          keyTabPolls: _keyTabPolls,
-        );
+        return CollaborationTab(key: const ValueKey(2), keyBtnSync: _keyBtnSync, keyTabPolls: _keyTabPolls);
       case 3:
         return InfoTab(key: _keyInfoTab, keyElevation: _keyInfoElevation, keyTimeMap: _keyInfoTimeMap);
       default:
@@ -755,11 +753,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     ),
                     const Divider(height: 32),
 
-                      // ====== 重看教學引導 ======
-                      ListTile(
-                        leading: const Icon(Icons.help_outline),
-                        title: const Text('重看教學引導'),
-                        onTap: () async {
+                    // ====== 重看教學引導 ======
+                    ListTile(
+                      leading: const Icon(Icons.help_outline),
+                      title: const Text('重看教學引導'),
+                      onTap: () async {
                         if (innerContext.mounted) {
                           Navigator.pop(innerContext);
                           Future.delayed(const Duration(milliseconds: 300), () {
@@ -1034,8 +1032,12 @@ class _ItineraryTabState extends State<_ItineraryTab> {
     if (!context.mounted) return;
 
     // 檢查離線模式，若是離線模式則不自動同步
-    final isOffline = Provider.of<SettingsProvider>(context, listen: false).isOfflineMode;
-    if (isOffline) return;
+    // 檢查離線模式
+    final settingsInfo = Provider.of<SettingsProvider>(context, listen: false);
+    if (settingsInfo.isOfflineMode) return;
+
+    // 首次載入 (尚未同步過) 時，不觸發自動同步，交由 _checkFirstTimeSync 對話框決定
+    if (settingsInfo.lastSyncTime == null) return;
 
     // 使用 Provider 進行自動同步 (包含冷卻檢查)
     final provider = Provider.of<ItineraryProvider>(context, listen: false);
