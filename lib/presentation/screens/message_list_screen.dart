@@ -69,8 +69,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     Builder(
                       builder: (context) {
                         final lastSync = getIt<SyncService>().lastMessagesSync;
-                        final timeStr =
-                            lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '未同步';
+                        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '未同步';
 
                         return Material(
                           color: Colors.grey.withOpacity(0.1),

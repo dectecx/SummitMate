@@ -15,9 +15,13 @@ import 'package:summitmate/services/gas_api_client.dart';
 
 // Mocks
 class MockClient extends Mock implements http.Client {}
+
 class MockSharedPreferences extends Mock implements SharedPreferences {}
+
 class MockPollRepository extends Mock implements PollRepository {}
+
 class MockSettingsRepository extends Mock implements SettingsRepository {}
+
 class MockSettings extends Mock implements Settings {}
 
 void main() {
@@ -37,7 +41,7 @@ void main() {
 
     // Register mocks via GetIt
     final getIt = GetIt.instance;
-    await getIt.reset(); 
+    await getIt.reset();
 
     final gasApiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api');
 
@@ -50,7 +54,7 @@ void main() {
     when(() => mockSharedPreferences.getString(any())).thenReturn('test_user_1');
     when(() => mockSettingsRepository.getSettings()).thenReturn(mockSettings);
     when(() => mockSettings.isOfflineMode).thenReturn(false);
-    
+
     // Stub PollRepository calls needed by constructor
     when(() => mockPollRepository.getAllPolls()).thenReturn([]);
     when(() => mockPollRepository.getLastSyncTime()).thenReturn(null);
@@ -77,8 +81,7 @@ void main() {
       final mockResponse = {'success': true, 'polls': []};
 
       // PollService uses GasApiClient which calls _client.get(uri) WITHOUT headers
-      when(() => mockClient.get(any()))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(() => mockClient.get(any())).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       await provider.fetchPolls();
       expect(provider.polls.length, 0);
@@ -88,14 +91,13 @@ void main() {
     testWidgets('fetchPolls sets error on failure', (tester) async {
       final mockResponse = {'success': false, 'error': 'Database error'};
 
-      when(() => mockClient.get(any()))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(() => mockClient.get(any())).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       await provider.fetchPolls();
 
       expect(provider.isLoading, false);
       expect(provider.polls.isEmpty, true);
-      // Note: PollProvider catches error and sets it, but also shows toast. 
+      // Note: PollProvider catches error and sets it, but also shows toast.
       // ToastService is static, assume it handles itself or we might need to mock it if it crashes.
       // But PollProvider code: _error = e.toString();
       expect(provider.error, contains('Database error'));
@@ -104,24 +106,27 @@ void main() {
     testWidgets('createPoll calls service and refreshes polls', (tester) async {
       // Setup fetch mocks for the refresh call
       final mockFetchResponse = {'success': true, 'polls': []};
-      when(() => mockClient.get(any()))
-          .thenAnswer((_) async => http.Response(json.encode(mockFetchResponse), 200));
+      when(() => mockClient.get(any())).thenAnswer((_) async => http.Response(json.encode(mockFetchResponse), 200));
 
       // Setup create match
-      when(() => mockClient.post(
-            any(), 
-            headers: any(named: 'headers'), 
-            body: any(named: 'body')
-          )).thenAnswer((_) async => http.Response(json.encode({'success': true}), 200));
+      when(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer((_) async => http.Response(json.encode({'success': true}), 200));
 
       final result = await provider.createPoll(title: 'New');
 
       expect(result, true);
-      verify(() => mockClient.post(
-            any(), 
-            headers: any(named: 'headers'), 
-            body: any(named: 'body')
-          )).called(1);
+      verify(
+        () => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).called(1);
       verify(() => mockClient.get(any())).called(1); // Should call fetchPolls
     });
   });

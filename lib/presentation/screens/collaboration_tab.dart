@@ -6,11 +6,7 @@ class CollaborationTab extends StatelessWidget {
   final GlobalKey? keyBtnSync;
   final GlobalKey? keyTabPolls;
 
-  const CollaborationTab({
-    super.key,
-    this.keyBtnSync,
-    this.keyTabPolls,
-  });
+  const CollaborationTab({super.key, this.keyBtnSync, this.keyTabPolls});
 
   @override
   Widget build(BuildContext context) {

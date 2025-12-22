@@ -51,7 +51,6 @@ class LogEntry {
 /// - 提供查閱介面
 /// - 上傳到雲端
 
-
 class LogService {
   static const String _boxName = HiveBoxNames.logs;
   static const int _maxLogCount = 1000; // 最多保留 1000 條
