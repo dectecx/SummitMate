@@ -22,14 +22,14 @@ void main() {
   setUp(() async {
     mockClient = MockClient();
     mockSharedPreferences = MockSharedPreferences();
-    
+
     // Register mock SharedPreferences & PollService
     final getIt = GetIt.instance;
     await getIt.reset(); // Clear all
 
     getIt.registerSingleton<SharedPreferences>(mockSharedPreferences);
     getIt.registerSingleton<PollService>(PollService(client: mockClient, baseUrl: 'https://mock.api'));
-    
+
     // Stub common calls
     when(mockSharedPreferences.getString(any)).thenReturn('test_user_1');
 
@@ -37,7 +37,7 @@ void main() {
   });
 
   tearDown(() {
-    GetIt.instance.reset(); 
+    GetIt.instance.reset();
   });
 
   group('PollProvider', () {
@@ -47,13 +47,9 @@ void main() {
     });
 
     test('fetchPolls success', () async {
-      final mockResponse = {
-        'success': true,
-        'polls': []
-      };
-      
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      final mockResponse = {'success': true, 'polls': []};
+
+      when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       await provider.fetchPolls();
       expect(provider.polls.length, 0);
@@ -61,13 +57,9 @@ void main() {
     });
 
     test('fetchPolls sets error on failure', () async {
-       final mockResponse = {
-        'success': false,
-        'error': 'Database error'
-      };
+      final mockResponse = {'success': false, 'error': 'Database error'};
 
-      when(mockClient.get(any))
-          .thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       await provider.fetchPolls();
 
@@ -82,8 +74,9 @@ void main() {
       when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockFetchResponse), 200));
 
       // Setup create match
-      when(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')))
-          .thenAnswer((_) async => http.Response(json.encode({'success': true}), 200));
+      when(
+        mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')),
+      ).thenAnswer((_) async => http.Response(json.encode({'success': true}), 200));
 
       final result = await provider.createPoll(title: 'New');
 

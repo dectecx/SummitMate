@@ -3,8 +3,27 @@ import 'package:provider/provider.dart';
 import '../../presentation/providers/message_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
 
-class MessageListScreen extends StatelessWidget {
+class MessageListScreen extends StatefulWidget {
   const MessageListScreen({super.key});
+
+  @override
+  State<MessageListScreen> createState() => _MessageListScreenState();
+}
+
+class _MessageListScreenState extends State<MessageListScreen> {
+  bool _isInit = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      if (!isOffline) {
+        Future.microtask(() => context.read<MessageProvider>().sync());
+      }
+      _isInit = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +51,12 @@ class MessageListScreen extends StatelessWidget {
                         },
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: () => messageProvider.sync(),
+                      icon: const Icon(Icons.refresh),
+                      tooltip: '重新整理',
+                    ),
                   ],
                 ),
               ),
@@ -41,66 +66,72 @@ class MessageListScreen extends StatelessWidget {
                     ? const Center(child: CircularProgressIndicator())
                     : messageProvider.currentCategoryMessages.isEmpty
                     ? const Center(child: Text('尚無留言，點擊右下角新增'))
-                    : ListView.builder(
-                        itemCount: messageProvider.currentCategoryMessages.length,
-                        itemBuilder: (context, index) {
-                          final msg = messageProvider.currentCategoryMessages[index];
-                          final replies = messageProvider.getReplies(msg.uuid);
+                    : RefreshIndicator(
+                        onRefresh: () async => await messageProvider.sync(),
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: messageProvider.currentCategoryMessages.length,
+                          itemBuilder: (context, index) {
+                            final msg = messageProvider.currentCategoryMessages[index];
+                            final replies = messageProvider.getReplies(msg.uuid);
 
-                          return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            child: ExpansionTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                child: Text(msg.avatar),
-                              ),
-                              title: Text(msg.content),
-                              subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (replies.isNotEmpty)
-                                    Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
-                                  IconButton(
-                                    icon: const Icon(Icons.reply, size: 20),
-                                    onPressed: settingsProvider.isOfflineMode
-                                        ? null
-                                        : () => _showReplyDialog(
-                                            context,
-                                            messageProvider,
-                                            settingsProvider.username,
-                                            settingsProvider.avatar,
-                                            msg.uuid,
-                                          ),
-                                    tooltip: '回覆',
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, size: 20),
-                                    onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
-                                    tooltip: '刪除',
-                                  ),
-                                ],
-                              ),
-                              children: replies
-                                  .map(
-                                    (reply) => ListTile(
-                                      leading: CircleAvatar(
-                                        radius: 12,
-                                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                        child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
-                                      ),
-                                      title: Text(reply.content),
-                                      subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.delete_outline, size: 18),
-                                        onPressed: () => _confirmDelete(context, messageProvider, reply.uuid),
-                                      ),
+                            return Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              child: ExpansionTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                  child: Text(msg.avatar),
+                                ),
+                                title: Text(msg.content),
+                                subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (replies.isNotEmpty)
+                                      Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
+                                    IconButton(
+                                      icon: const Icon(Icons.reply, size: 20),
+                                      onPressed: settingsProvider.isOfflineMode
+                                          ? null
+                                          : () => _showReplyDialog(
+                                              context,
+                                              messageProvider,
+                                              settingsProvider.username,
+                                              settingsProvider.avatar,
+                                              msg.uuid,
+                                            ),
+                                      tooltip: '回覆',
                                     ),
-                                  )
-                                  .toList(),
-                            ),
-                          );
-                        },
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, size: 20),
+                                      onPressed: () => _confirmDelete(context, messageProvider, msg.uuid),
+                                      tooltip: '刪除',
+                                    ),
+                                  ],
+                                ),
+                                children: replies
+                                    .map(
+                                      (reply) => ListTile(
+                                        leading: CircleAvatar(
+                                          radius: 12,
+                                          backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                          child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
+                                        ),
+                                        title: Text(reply.content),
+                                        subtitle: Text(
+                                          '${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}',
+                                        ),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.delete_outline, size: 18),
+                                          onPressed: () => _confirmDelete(context, messageProvider, reply.uuid),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            );
+                          },
+                        ),
                       ),
               ),
             ],
