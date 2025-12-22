@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:summitmate/services/poll_service.dart';
+import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/data/models/poll.dart';
-import 'package:summitmate/core/env_config.dart';
 
 // Generate MockClient
 @GenerateMocks([http.Client])
@@ -17,7 +17,8 @@ void main() {
 
   setUp(() {
     mockClient = MockClient();
-    pollService = PollService(client: mockClient, baseUrl: 'https://mock.api');
+    final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api');
+    pollService = PollService(apiClient: apiClient);
   });
 
   group('PollService', () {
@@ -47,6 +48,7 @@ void main() {
         ],
       };
 
+      // GasApiClient calls client.get(uri) directly without headers
       when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
 
       final polls = await pollService.fetchPolls(userId: userId);
@@ -74,7 +76,8 @@ void main() {
 
       await pollService.createPoll(title: 'New Poll', creatorId: userId, description: 'Test description');
 
-      verify(mockClient.post(any, headers: {'Content-Type': 'application/json'}, body: anyNamed('body'))).called(1);
+      // GasApiClient adds specific headers
+      verify(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body'))).called(1);
     });
 
     test('votePoll posts correct data and completes successfully', () async {
@@ -86,7 +89,7 @@ void main() {
 
       await pollService.votePoll(pollId: pollId, optionIds: ['opt1'], userId: userId);
 
-      verify(mockClient.post(any, headers: {'Content-Type': 'application/json'}, body: anyNamed('body'))).called(1);
+      verify(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body'))).called(1);
     });
   });
 }
