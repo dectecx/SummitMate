@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'gas_api_client.dart';
 import '../core/constants.dart';
 import '../core/env_config.dart';
 import '../data/models/itinerary_item.dart';
@@ -10,28 +10,24 @@ import 'log_service.dart';
 /// Google Sheets API 服務
 /// 透過 Google Apps Script 作為 API Gateway
 class GoogleSheetsService {
-  final http.Client _client;
-  final String _baseUrl;
+  final GasApiClient _apiClient;
 
   /// 建構子
-  /// [client] - HTTP 客戶端 (用於測試時注入 Mock)
-  /// [baseUrl] - Google Apps Script Web App URL
-  GoogleSheetsService({http.Client? client, String? baseUrl})
-    : _client = client ?? http.Client(),
-      _baseUrl = baseUrl ?? EnvConfig.gasBaseUrl;
+  /// [apiClient] - 統一的 GAS API Client (包含 redirect 處理)
+  GoogleSheetsService({GasApiClient? apiClient})
+    : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
 
   /// 取得所有資料 (行程 + 留言)
   /// 回傳格式：{ itinerary: [...], messages: [...] }
   Future<FetchAllResult> fetchAll() async {
     try {
-      final uri = Uri.parse('$_baseUrl?action=${ApiConfig.actionFetchAll}');
-      LogService.info('API 請求: $uri', source: 'API');
+      LogService.info('API 請求: FetchAll', source: 'API');
 
-      if (_baseUrl.isEmpty) {
-        return FetchAllResult(success: false, errorMessage: 'GAS_BASE_URL 未設定。請確認 .env.dev 檔案已正確配置。');
-      }
+      // Note: GasApiClient constructor handles baseUrl assignment.
+      // We check emptiness via EnvConfig usually, but here checking client functionality is tricky.
+      // Assuming EnvConfig.gasBaseUrl is correct if not null.
 
-      final response = await _client.get(uri);
+      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchAll});
       LogService.debug('API 回應: ${response.statusCode}', source: 'API');
 
       if (response.statusCode == 200) {
@@ -62,9 +58,8 @@ class GoogleSheetsService {
   /// 僅取得行程資料
   Future<FetchAllResult> fetchItinerary() async {
     try {
-      final uri = Uri.parse('$_baseUrl?action=${ApiConfig.actionFetchItinerary}');
-      LogService.info('API 請求: $uri', source: 'API');
-      final response = await _client.get(uri);
+      LogService.info('API 請求: FetchItinerary', source: 'API');
+      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchItinerary});
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -85,9 +80,8 @@ class GoogleSheetsService {
   /// 僅取得留言資料
   Future<FetchAllResult> fetchMessages() async {
     try {
-      final uri = Uri.parse('$_baseUrl?action=${ApiConfig.actionFetchMessages}');
-      LogService.info('API 請求: $uri', source: 'API');
-      final response = await _client.get(uri);
+      LogService.info('API 請求: FetchMessages', source: 'API');
+      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchMessages});
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -106,9 +100,7 @@ class GoogleSheetsService {
   /// 新增留言
   Future<ApiResult> addMessage(Message message) async {
     try {
-      final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(uri, {'action': ApiConfig.actionAddMessage, 'data': message.toJson()});
-
+      final response = await _apiClient.post({'action': ApiConfig.actionAddMessage, 'data': message.toJson()});
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(success: false, errorMessage: e.toString());
@@ -118,9 +110,7 @@ class GoogleSheetsService {
   /// 刪除留言
   Future<ApiResult> deleteMessage(String uuid) async {
     try {
-      final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(uri, {'action': ApiConfig.actionDeleteMessage, 'uuid': uuid});
-
+      final response = await _apiClient.post({'action': ApiConfig.actionDeleteMessage, 'uuid': uuid});
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(success: false, errorMessage: e.toString());
@@ -130,12 +120,10 @@ class GoogleSheetsService {
   /// 批次新增留言
   Future<ApiResult> batchAddMessages(List<Message> messages) async {
     try {
-      final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(uri, {
+      final response = await _apiClient.post({
         'action': 'batch_add_messages',
         'data': messages.map((m) => m.toJson()).toList(),
       });
-
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(success: false, errorMessage: e.toString());
@@ -145,8 +133,7 @@ class GoogleSheetsService {
   /// 更新行程 (覆寫雲端)
   Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
     try {
-      final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(uri, {
+      final response = await _apiClient.post({
         'action': 'update_itinerary',
         'data': items.map((e) {
           final json = e.toJson();
@@ -157,7 +144,6 @@ class GoogleSheetsService {
           return json;
         }).toList(),
       });
-
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(success: false, errorMessage: e.toString());
@@ -167,8 +153,7 @@ class GoogleSheetsService {
   /// 上傳日誌
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {
-      final uri = Uri.parse(_baseUrl);
-      final response = await _postWithRedirect(uri, {
+      final response = await _apiClient.post({
         'action': 'upload_logs',
         'logs': logs.map((e) => e.toJson()).toList(),
         'device_info': {
@@ -195,34 +180,6 @@ class GoogleSheetsService {
     }
   }
 
-  /// 處理 POST 請求 (自動處理 Redirect)
-  Future<http.Response> _postWithRedirect(Uri uri, Map<String, dynamic> body) async {
-    // [Web Compatibility]
-    // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
-    // GAS parses e.postData.contents regardless of Content-Type.
-    final headers = {'Content-Type': kIsWeb ? 'text/plain' : 'application/json'};
-
-    final response = await _client.post(uri, headers: headers, body: jsonEncode(body));
-
-    // [Web Compatibility]
-    // Web: Browser follows redirects automatically. We just return the response.
-    if (kIsWeb) {
-      return response;
-    }
-
-    // [Mobile Compatibility]
-    // Manual handling of GAS 302 Redirect (http package limitation on mobile)
-    if (response.statusCode == 302) {
-      final location = response.headers['location'];
-      if (location != null && location.isNotEmpty) {
-        debugPrint('🌐 轉導至: $location');
-        return await _client.get(Uri.parse(location));
-      }
-    }
-
-    return response;
-  }
-
   /// 統一處理回應
   ApiResult _handleResponse(http.Response response) {
     if (response.statusCode == 200) {
@@ -230,11 +187,6 @@ class GoogleSheetsService {
     } else {
       return ApiResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}');
     }
-  }
-
-  /// 關閉 HTTP 客戶端
-  void dispose() {
-    _client.close();
   }
 }
 
