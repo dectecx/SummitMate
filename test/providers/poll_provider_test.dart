@@ -34,6 +34,7 @@ void main() {
     when(mockSharedPreferences.getString(any)).thenReturn('test_user_1');
 
     PollService.client = mockClient;
+    PollService.testBaseUrl = 'https://mock.api';
     provider = PollProvider();
   });
 
