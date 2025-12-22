@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
+import '../../core/di.dart';
 import '../models/itinerary_item.dart';
 
 /// Itinerary Repository
@@ -98,6 +100,20 @@ class ItineraryRepository {
   /// 更新行程節點
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     await box.put(key, item);
+  }
+
+  /// 儲存最後同步時間
+  Future<void> saveLastSyncTime(DateTime time) async {
+    final prefs = getIt<SharedPreferences>();
+    await prefs.setString('itin_last_sync_time', time.toIso8601String());
+  }
+
+  /// 取得最後同步時間
+  DateTime? getLastSyncTime() {
+    final prefs = getIt<SharedPreferences>();
+    final str = prefs.getString('itin_last_sync_time');
+    if (str == null) return null;
+    return DateTime.tryParse(str);
   }
 
   /// 刪除行程節點

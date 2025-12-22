@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
+import '../../core/di.dart';
 import '../models/message.dart';
 
 /// Message Repository
@@ -97,6 +99,20 @@ class MessageRepository {
   /// 監聽留言變更
   Stream<BoxEvent> watchAllMessages() {
     return box.watch();
+  }
+
+  /// 儲存最後同步時間
+  Future<void> saveLastSyncTime(DateTime time) async {
+    final prefs = getIt<SharedPreferences>();
+    await prefs.setString('msg_last_sync_time', time.toIso8601String());
+  }
+
+  /// 取得最後同步時間
+  DateTime? getLastSyncTime() {
+    final prefs = getIt<SharedPreferences>();
+    final str = prefs.getString('msg_last_sync_time');
+    if (str == null) return null;
+    return DateTime.tryParse(str);
   }
 
   /// 清除所有留言 (Debug 用途)
