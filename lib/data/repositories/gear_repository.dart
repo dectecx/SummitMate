@@ -1,10 +1,11 @@
 import 'package:hive/hive.dart';
+import '../../core/constants.dart';
 import '../models/gear_item.dart';
 
 /// Gear Repository
 /// 管理個人裝備的 CRUD 操作 (僅本地)
 class GearRepository {
-  static const String _boxName = 'gear';
+  static const String _boxName = HiveBoxNames.gear;
 
   Box<GearItem>? _box;
 

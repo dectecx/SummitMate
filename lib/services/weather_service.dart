@@ -16,7 +16,7 @@ import '../core/constants.dart';
 ///    - URL: https://opendata.cwa.gov.tw/dataset/all/F-D0047-039
 ///    - Accessed via Direct API (Mobile) or Netlify Proxy (Web)
 class WeatherService {
-  static const String _boxName = 'weather_cache';
+  static const String _boxName = HiveBoxNames.weather;
   static const String _cacheKey = 'current_weather';
   static const String _apiKey = EnvConfig.cwaApiKey;
   String _targetLocation = '向陽山';

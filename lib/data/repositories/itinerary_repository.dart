@@ -1,10 +1,11 @@
 import 'package:hive/hive.dart';
+import '../../core/constants.dart';
 import '../models/itinerary_item.dart';
 
 /// Itinerary Repository
 /// 管理行程節點的 CRUD 操作
 class ItineraryRepository {
-  static const String _boxName = 'itinerary';
+  static const String _boxName = HiveBoxNames.itinerary;
 
   Box<ItineraryItem>? _box;
 

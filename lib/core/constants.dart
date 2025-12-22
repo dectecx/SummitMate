@@ -79,3 +79,14 @@ class ApiConfig {
   static const String actionFetchWeather = 'fetch_weather';
   static const String actionPoll = 'poll';
 }
+
+/// Hive Box 名稱
+class HiveBoxNames {
+  static const String settings = 'settings';
+  static const String itinerary = 'itinerary';
+  static const String messages = 'messages';
+  static const String gear = 'gear';
+  static const String weather = 'weather_cache';
+  static const String logs = 'app_logs';
+  static const String polls = 'polls';
+}

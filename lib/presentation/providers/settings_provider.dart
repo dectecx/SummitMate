@@ -159,7 +159,7 @@ class SettingsProvider extends ChangeNotifier {
       LogService.info('重設使用者身分 (登出)', source: 'Settings');
 
       // 清除 Hive settings box
-      final settingsBox = await Hive.openBox<Settings>('settings');
+      final settingsBox = await Hive.openBox<Settings>(HiveBoxNames.settings);
       await settingsBox.clear();
 
       // 清除 SharedPreferences 中的暱稱
