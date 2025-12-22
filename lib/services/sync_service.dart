@@ -39,21 +39,18 @@ class SyncService {
     if (_isOffline) return _offlineSyncResult();
 
     final now = DateTime.now();
-    
+
     // 檢查冷卻時間
     // 若非自動同步 (手動)，則忽略冷卻時間 (視為已冷卻/需更新)
-    final itinNeeded = !isAuto || (_lastItinerarySyncTime == null || now.difference(_lastItinerarySyncTime!) > _kAutoSyncCooldown);
-    final msgNeeded = !isAuto || (_lastMessagesSyncTime == null || now.difference(_lastMessagesSyncTime!) > _kAutoSyncCooldown);
+    final itinNeeded =
+        !isAuto || (_lastItinerarySyncTime == null || now.difference(_lastItinerarySyncTime!) > _kAutoSyncCooldown);
+    final msgNeeded =
+        !isAuto || (_lastMessagesSyncTime == null || now.difference(_lastMessagesSyncTime!) > _kAutoSyncCooldown);
 
     // Case 0: 兩者皆不需要 (被節流)
     if (!itinNeeded && !msgNeeded) {
       LogService.info('Auto-sync throttled (All cool)', source: 'SyncService');
-      return SyncResult(
-        success: true,
-        itinerarySynced: false,
-        messagesSynced: false,
-        syncedAt: now,
-      );
+      return SyncResult(success: true, itinerarySynced: false, messagesSynced: false, syncedAt: now);
     }
 
     // Case 1: 兩者皆需要 -> 使用 fetchAll (節省一次請求)
@@ -62,11 +59,7 @@ class SyncService {
       final fetchResult = await _sheetsService.fetchAll();
 
       if (!fetchResult.success) {
-        return SyncResult(
-          success: false,
-          errors: [fetchResult.errorMessage ?? '網路連線失敗'],
-          syncedAt: now,
-        );
+        return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: now);
       }
 
       var itinSuccess = false;
@@ -121,9 +114,7 @@ class SyncService {
     if (_isOffline) return _offlineSyncResult();
 
     final now = DateTime.now();
-    if (isAuto &&
-        _lastItinerarySyncTime != null &&
-        now.difference(_lastItinerarySyncTime!) < _kAutoSyncCooldown) {
+    if (isAuto && _lastItinerarySyncTime != null && now.difference(_lastItinerarySyncTime!) < _kAutoSyncCooldown) {
       LogService.info('Auto-sync itineraries throttled', source: 'SyncService');
       return SyncResult(success: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
     }
@@ -131,11 +122,7 @@ class SyncService {
     final fetchResult = await _sheetsService.fetchItinerary();
 
     if (!fetchResult.success) {
-      return SyncResult(
-        success: false,
-        errors: [fetchResult.errorMessage ?? '網路連線失敗'],
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
     }
 
     try {
@@ -152,9 +139,7 @@ class SyncService {
     if (_isOffline) return _offlineSyncResult();
 
     final now = DateTime.now();
-    if (isAuto &&
-        _lastMessagesSyncTime != null &&
-        now.difference(_lastMessagesSyncTime!) < _kAutoSyncCooldown) {
+    if (isAuto && _lastMessagesSyncTime != null && now.difference(_lastMessagesSyncTime!) < _kAutoSyncCooldown) {
       LogService.info('Auto-sync messages throttled', source: 'SyncService');
       return SyncResult(success: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
     }
@@ -162,11 +147,7 @@ class SyncService {
     final fetchResult = await _sheetsService.fetchMessages();
 
     if (!fetchResult.success) {
-      return SyncResult(
-        success: false,
-        errors: [fetchResult.errorMessage ?? '網路連線失敗'],
-        syncedAt: DateTime.now(),
-      );
+      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
     }
 
     try {

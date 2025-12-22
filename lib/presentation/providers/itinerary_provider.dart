@@ -224,6 +224,8 @@ class ItineraryProvider extends ChangeNotifier {
         notifyListeners();
       }
 
+      LogService.info('開始同步行程...', source: 'Itinerary');
+
       final syncService = getIt<SyncService>();
       final result = await syncService.syncItinerary(isAuto: isAuto);
 
@@ -235,17 +237,15 @@ class ItineraryProvider extends ChangeNotifier {
         } else {
           // 被節流或無需更新
           LogService.debug('行程同步跳過 (節流或無需更新)', source: 'Itinerary');
-           if (!isAuto) ToastService.success('已是最新資料'); 
+          if (!isAuto) ToastService.success('已是最新資料');
         }
       } else {
-        if (!isAuto) {
-          LogService.error('行程同步失敗: ${result.errors.join(", ")}', source: 'Itinerary');
-          ToastService.error(result.errors.join('\n'));
-        }
+        LogService.error('行程同步失敗: ${result.errors.join(", ")}', source: 'Itinerary');
+        ToastService.error(result.errors.join('\n'));
       }
     } catch (e) {
       LogService.error('行程同步異常: $e', source: 'Itinerary');
-      if (!isAuto) ToastService.error('同步異常: $e');
+      ToastService.error('同步異常: $e');
     } finally {
       if (!isAuto) {
         _isLoading = false;

@@ -157,14 +157,14 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> resetIdentity() async {
     try {
       LogService.info('重設使用者身分 (登出)', source: 'Settings');
-      
+
       // 清除 Hive settings box
       final settingsBox = await Hive.openBox<Settings>('settings');
       await settingsBox.clear();
-      
+
       // 清除 SharedPreferences 中的暱稱
       await _prefs.remove(PrefKeys.username);
-      
+
       // 重新載入預設值
       _loadSettings();
     } catch (e) {

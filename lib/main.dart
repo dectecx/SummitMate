@@ -605,14 +605,11 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('取消'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
             FilledButton(
               onPressed: () async {
                 Navigator.pop(dialogContext);
-                
+
                 // 執行選擇性清除
                 await getIt<HiveService>().clearSelectedData(
                   clearItinerary: clearItinerary,
@@ -668,9 +665,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (innerContext, setState) {
-          final versionStr = packageInfo != null 
-              ? 'v${packageInfo.version}' 
-              : '';
+          final versionStr = packageInfo != null ? 'v${packageInfo.version}' : '';
           final lastSyncStr = settingsProvider.lastSyncTimeFormatted ?? '尚未同步';
 
           return AlertDialog(
@@ -827,9 +822,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 ],
               ),
             ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉')),
-            ],
+            actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
           );
         },
       ),
@@ -1023,11 +1016,11 @@ class _ItineraryTabState extends State<_ItineraryTab> {
   Future<void> _autoSync() async {
     final context = this.context;
     if (!context.mounted) return;
-    
+
     // 使用 Provider 進行自動同步 (包含冷卻檢查)
     final provider = Provider.of<ItineraryProvider>(context, listen: false);
     await provider.sync(isAuto: true);
-    
+
     if (context.mounted) setState(() {}); // 更新時間戳記
   }
 
@@ -1042,9 +1035,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
     return Consumer<ItineraryProvider>(
       builder: (context, provider, child) {
         final lastSync = getIt<SyncService>().lastItinerarySync;
-        final timeStr = lastSync != null 
-            ? DateFormat('MM/dd HH:mm').format(lastSync) 
-            : '尚未同步';
+        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync) : '尚未同步';
 
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -1097,7 +1088,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
-                    
+
                     // 更新時間與按鈕 (置右)
                     InkWell(
                       onTap: () => _manualSync(context),
@@ -1106,10 +1097,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
                         padding: const EdgeInsets.all(4.0),
                         child: Row(
                           children: [
-                            Text(
-                              '更新: $timeStr',
-                              style: const TextStyle(fontSize: 10, color: Colors.grey),
-                            ),
+                            Text('更新: $timeStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                             const SizedBox(width: 4),
                             const Icon(Icons.refresh, size: 14, color: Colors.grey),
                           ],
@@ -1119,7 +1107,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
                   ],
                 ),
               ),
-              
+
               // 行程列表
               Expanded(
                 child: ListView.builder(
@@ -1181,10 +1169,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: () => _manualSync(context),
-          child: content,
-        );
+        return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);
       },
     );
   }
@@ -1806,30 +1791,6 @@ class InfoTabState extends State<InfoTab> {
                         style: TextStyle(height: 1.5),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _launchUrl(ExternalLinks.permitUrl),
-                              icon: const Icon(Icons.assignment_turned_in),
-                              label: const Text('申請入山證'),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _launchUrl(ExternalLinks.cwaUrl),
-                              icon: const Icon(Icons.wb_sunny),
-                              label: const Text('氣象預報'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
@@ -1845,10 +1806,19 @@ class InfoTabState extends State<InfoTab> {
               ),
               const SizedBox(height: 8),
 
-              // 外部資訊連結
+              // 外部資訊連結 (可縮合)
               Card(
-                child: Column(
+                child: ExpansionTile(
+                  leading: const Icon(Icons.link),
+                  title: const Text('相關連結', style: TextStyle(fontWeight: FontWeight.bold)),
                   children: [
+                    ListTile(
+                      leading: const Icon(Icons.article_outlined, color: Colors.green),
+                      title: const Text('申請入山證'),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: () => _launchUrl(ExternalLinks.permitUrl),
+                    ),
+                    const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.home_work, color: Colors.brown),
                       title: const Text('山屋預約申請'),
@@ -1886,9 +1856,18 @@ class InfoTabState extends State<InfoTab> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
-              _buildWeatherCard(),
+              // 天氣預報 (可縮合)
+              Card(
+                child: ExpansionTile(
+                  leading: const Icon(Icons.cloud, color: Colors.blue),
+                  title: const Text('天氣預報', style: TextStyle(fontWeight: FontWeight.bold)),
+                  initiallyExpanded: true,
+                  children: [_buildWeatherContent()],
+                ),
+              ),
+              const SizedBox(height: 8),
 
               // 電話訊號資訊
               Card(
@@ -1988,26 +1967,22 @@ class InfoTabState extends State<InfoTab> {
     }
   }
 
-  Widget _buildWeatherCard() {
+  Widget _buildWeatherContent() {
     if (_weather == null && _loadingWeather) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Center(child: CircularProgressIndicator()),
-        ),
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_weather == null) {
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.cloud_off),
-          title: Text(_loadingWeather ? '讀取中...' : '請更新氣象資料', style: TextStyle(color: Colors.grey)),
-          subtitle: const Text('點擊右側按鈕取得最新預報'),
-          trailing: IconButton(
-            onPressed: () => _refreshWeather(force: true),
-            icon: const Icon(Icons.refresh, color: Colors.blue),
-          ),
+      return ListTile(
+        leading: const Icon(Icons.cloud_off),
+        title: Text(_loadingWeather ? '讀取中...' : '請更新氣象資料', style: TextStyle(color: Colors.grey)),
+        subtitle: const Text('點擊右側按鈕取得最新預報'),
+        trailing: IconButton(
+          onPressed: () => _refreshWeather(force: true),
+          icon: const Icon(Icons.refresh, color: Colors.blue),
         ),
       );
     }
@@ -2016,11 +1991,9 @@ class InfoTabState extends State<InfoTab> {
     final timeStr = DateFormat('MM/dd HH:mm').format(w.timestamp);
     final isDay = DateTime.now().hour > 6 && DateTime.now().hour < 18;
 
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with Location Dropdown
@@ -2221,7 +2194,6 @@ class InfoTabState extends State<InfoTab> {
             ],
           ],
         ),
-      ),
     );
   }
 

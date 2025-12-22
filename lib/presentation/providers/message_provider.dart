@@ -118,57 +118,45 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
-  /// 完整同步 (行程 + 留言)
-  Future<void> sync() async {
+  /// 同步留言 (支援 isAuto 冷卻)
+  Future<void> sync({bool isAuto = false}) async {
     try {
       _isSyncing = true;
       _error = null;
       notifyListeners();
 
-      debugPrint('📡 開始同步...');
+      LogService.info('開始同步留言...', source: 'Message');
 
-      // 使用 syncAll 同時同步行程和留言
-      final result = await _syncService.syncAll();
+      // 只同步留言
+      final result = await _syncService.syncMessages(isAuto: isAuto);
 
-      debugPrint(
-        '📡 同步結果: success=${result.success}, itinerary=${result.itinerarySynced}, messages=${result.messagesSynced}',
-      );
-      if (result.errors.isNotEmpty) {
-        debugPrint('📡 同步錯誤: ${result.errors}');
-      }
-
-      // 顯示同步結果 Toast
       if (result.success) {
-        LogService.info('同步成功', source: 'Sync');
-        ToastService.success('同步成功！');
+        if (result.messagesSynced) {
+          LogService.info('留言同步成功', source: 'Message');
+          ToastService.success('留言同步成功！');
+        } else {
+          LogService.debug('留言同步跳過 (節流或無需更新)', source: 'Message');
+          ToastService.success('已是最新資料');
+        }
       } else {
-        LogService.error('同步失敗: ${result.errors.first}', source: 'Sync');
+        LogService.error('留言同步失敗: ${result.errors.first}', source: 'Message');
         ToastService.error('同步失敗：${result.errors.first}');
         _error = result.errors.join(', ');
       }
 
       // 重新載入留言
       _loadMessages();
-      debugPrint('📡 留言數量: ${_allMessages.length}');
-
-      // 通知行程需要重載
-      if (result.itinerarySynced && onItinerarySynced != null) {
-        debugPrint('📡 通知行程重載');
-        onItinerarySynced!();
-      }
+      LogService.debug('載入 ${_allMessages.length} 則留言', source: 'Message');
 
       // 通知同步完成以更新 lastSyncTime
       if (result.success && onSyncComplete != null) {
-        debugPrint('📡 更新同步時間: ${result.syncedAt}');
         onSyncComplete!(result.syncedAt);
       }
 
       _isSyncing = false;
       notifyListeners();
-    } catch (e, stack) {
-      debugPrint('📡 同步異常: $e');
-      debugPrint('📡 堆疊: $stack');
-      LogService.error('同步異常: $e', source: 'Sync');
+    } catch (e) {
+      LogService.error('留言同步異常: $e', source: 'Message');
       ToastService.error('同步錯誤：$e');
       _error = e.toString();
       _isSyncing = false;
