@@ -6,6 +6,7 @@ import '../../data/repositories/itinerary_repository.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/sync_service.dart';
+import '../../data/repositories/settings_repository.dart';
 
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {
@@ -215,9 +216,18 @@ class ItineraryProvider extends ChangeNotifier {
     }
   }
 
+
+
   /// 同步行程 (自動或手動)
   Future<void> sync({bool isAuto = false}) async {
     try {
+      // Check offline mode
+      final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
+      if (isOffline) {
+        if (!isAuto) ToastService.warning('離線模式無法同步');
+        return;
+      }
+
       // 若為手動同步，顯示載入中
       if (!isAuto) {
         _isLoading = true;

@@ -8,6 +8,7 @@ import '../../presentation/providers/settings_provider.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import '../../services/toast_service.dart';
 
 class PollListScreen extends StatefulWidget {
   const PollListScreen({super.key});
@@ -121,7 +122,10 @@ class _PollListScreenState extends State<PollListScreen> {
       onTap: () async {
         await Navigator.push(context, MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)));
         if (context.mounted) {
-          context.read<PollProvider>().fetchPolls();
+           final isOffline = context.read<SettingsProvider>().isOfflineMode;
+           if (!isOffline) {
+              context.read<PollProvider>().fetchPolls();
+           }
         }
       },
     );
@@ -232,29 +236,41 @@ class _PollListScreenState extends State<PollListScreen> {
                     ),
                     const SizedBox(width: 8),
                     // Sync time + refresh button
-                    Material(
-                      color: Colors.grey.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        onTap: () => provider.fetchPolls(),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                provider.lastSyncTime != null
-                                    ? DateFormat('MM/dd HH:mm').format(provider.lastSyncTime!.toLocal())
-                                    : '未同步',
-                                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, child) {
+                        return Material(
+                          color: settings.isOfflineMode ? Colors.grey.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          child: InkWell(
+                            onTap: () {
+                              if (settings.isOfflineMode) {
+                                ToastService.warning('離線模式無法同步');
+                                return;
+                              }
+                              provider.fetchPolls();
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    settings.isOfflineMode
+                                        ? '離線模式'
+                                        : (provider.lastSyncTime != null
+                                            ? DateFormat('MM/dd HH:mm').format(provider.lastSyncTime!.toLocal())
+                                            : '未同步'),
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.sync, size: 16, color: settings.isOfflineMode ? Colors.grey : Colors.grey),
+                                ],
                               ),
-                              const SizedBox(width: 4),
-                              const Icon(Icons.sync, size: 16, color: Colors.grey),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -294,7 +310,9 @@ class _PollListScreenState extends State<PollListScreen> {
 
                             // Define actions based on poll status
                             final actions = <Widget>[];
-                            if (poll.isActive) {
+                            final isOffline = context.read<SettingsProvider>().isOfflineMode;
+
+                            if (!isOffline && poll.isActive) {
                               actions.add(
                                 SlidableAction(
                                   onPressed: (context) async {
@@ -309,21 +327,30 @@ class _PollListScreenState extends State<PollListScreen> {
                               );
                             }
 
-                            actions.add(
-                              SlidableAction(
-                                onPressed: (context) async {
-                                  await _confirmAndDelete(context, provider, poll);
-                                },
-                                backgroundColor: const Color(0xFFFE4A49),
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                                label: '刪除',
-                                // Adjust border radius based on position
-                                borderRadius: poll.isActive
-                                    ? const BorderRadius.horizontal(right: Radius.circular(12))
-                                    : BorderRadius.circular(12),
-                              ),
-                            );
+                            if (!isOffline) {
+                              actions.add(
+                                SlidableAction(
+                                  onPressed: (context) async {
+                                    await _confirmAndDelete(context, provider, poll);
+                                  },
+                                  backgroundColor: const Color(0xFFFE4A49),
+                                  foregroundColor: Colors.white,
+                                  icon: Icons.delete,
+                                  label: '刪除',
+                                  // Adjust border radius based on position
+                                  borderRadius: (poll.isActive && !isOffline) // Re-check if previous button exists
+                                      ? const BorderRadius.horizontal(right: Radius.circular(12))
+                                      : BorderRadius.circular(12),
+                                ),
+                              );
+                            }
+
+                            if (isOffline) {
+                               return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  child: Card(margin: EdgeInsets.zero, child: _buildListTile(context, poll)),
+                               );
+                            }
 
                             return Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -344,13 +371,22 @@ class _PollListScreenState extends State<PollListScreen> {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatePollScreen()));
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('發起投票'),
-          ),
+              floatingActionButton: Consumer<SettingsProvider>(
+                builder: (context, settings, child) {
+                  return FloatingActionButton.extended(
+                    onPressed: () {
+                      if (settings.isOfflineMode) {
+                        ToastService.warning('離線模式無法發起投票');
+                        return;
+                      }
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatePollScreen()));
+                    },
+                    backgroundColor: settings.isOfflineMode ? Colors.grey : null,
+                    icon: const Icon(Icons.add),
+                    label: const Text('發起投票'),
+                  );
+                },
+              ),
         );
       },
     );
