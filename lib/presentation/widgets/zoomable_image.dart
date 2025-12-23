@@ -103,6 +103,29 @@ class ImageViewerDialog extends StatefulWidget {
     this.title,
   });
 
+  /// 靜態方法：直接開啟圖片檢視器
+  static void show(BuildContext context, {required String assetPath, String? title}) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black87,
+        barrierDismissible: true,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return ImageViewerDialog(
+            assetPath: assetPath,
+            title: title,
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
   @override
   State<ImageViewerDialog> createState() => _ImageViewerDialogState();
 }
