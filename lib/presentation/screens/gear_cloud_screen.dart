@@ -28,11 +28,28 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   String? _busyGearSetId; // 防止連續點擊的狀態
+  final TextEditingController _searchController = TextEditingController();
+
+  List<GearSet> get _filteredGearSets {
+    if (_searchController.text.isEmpty) {
+      return _gearSets;
+    }
+    final query = _searchController.text.toLowerCase();
+    return _gearSets.where((g) {
+      return g.title.toLowerCase().contains(query) || g.author.toLowerCase().contains(query);
+    }).toList();
+  }
 
   @override
   void initState() {
     super.initState();
     _fetchGearSets();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchGearSets() async {
@@ -229,12 +246,25 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       onRefresh: _fetchGearSets,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _gearSets.length + 1, // +1 for the toolbar card
+        itemCount: _filteredGearSets.length + 2, // +1 toolbar, +1 search bar
         itemBuilder: (context, index) {
           if (index == 0) {
             return _buildToolbarCard(isOffline);
           }
-          final gearSet = _gearSets[index - 1];
+          if (index == 1) {
+            return _buildSearchBar();
+          }
+
+          if (_filteredGearSets.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 40),
+              child: Center(
+                child: Text('找不到相關結果', style: TextStyle(color: Colors.grey)),
+              ),
+            );
+          }
+
+          final gearSet = _filteredGearSets[index - 2];
           final isBusy = _busyGearSetId == gearSet.uuid;
           return _GearSetCard(
             gearSet: gearSet,
@@ -244,6 +274,38 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                 ? () => _confirmDeletePublicGearSet(gearSet)
                 : null,
           );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: '搜尋標題或作者...',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _searchController.clear();
+                    });
+                  },
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+          fillColor: Theme.of(context).cardColor,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        ),
+        onChanged: (_) {
+          setState(() {});
         },
       ),
     );
