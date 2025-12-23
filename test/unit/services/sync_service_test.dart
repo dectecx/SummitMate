@@ -104,32 +104,20 @@ void main() {
       verify(() => mockMessageRepo.syncFromCloud(cloudMessages)).called(1);
     });
 
-    test('syncAll should upload pending messages', () async {
+    test('syncAll should NOT upload pending messages (cloud-only sync)', () async {
       // Arrange
-      final pendingMsg = Message(
-        uuid: 'pending',
-        user: 'Local',
-        category: 'Misc',
-        content: 'B',
-        timestamp: DateTime.now(),
-      );
-
       when(
         () => mockSheetsService.fetchAll(),
       ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: [], messages: []));
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
-
-      // Simulate one pending message
-      when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([pendingMsg]);
-      when(() => mockSheetsService.batchAddMessages(any())).thenAnswer((_) async => ApiResult(success: true));
       when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
 
       // Act
       await syncService.syncAll();
 
       // Assert
-      // Note: syncAll calls batchAddMessages, not addMessage
-      verify(() => mockSheetsService.batchAddMessages([pendingMsg])).called(1);
+      verifyNever(() => mockSheetsService.batchAddMessages(any()));
+      verifyNever(() => mockMessageRepo.getPendingMessages(any()));
     });
 
     test('syncAll should handle fetch failure', () async {
@@ -147,22 +135,7 @@ void main() {
       verifyNever(() => mockItineraryRepo.syncFromCloud(any()));
     });
 
-    test('addMessageAndSync should skip upload when offline', () async {
-      // Arrange
-      when(() => mockSettings.isOfflineMode).thenReturn(true);
-      final newMsg = Message(uuid: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
-      when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
-
-      // Act
-      final result = await syncService.addMessageAndSync(newMsg);
-
-      // Assert
-      expect(result.success, isTrue); // Offline save is considered success
-      verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
-      verifyNever(() => mockSheetsService.addMessage(any()));
-    });
-
-    test('addMessageAndSync should save locally and then upload', () async {
+    test('addMessageAndSync should save locally and upload to cloud', () async {
       // Arrange
       final newMsg = Message(uuid: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
 
@@ -174,7 +147,6 @@ void main() {
 
       // Assert
       expect(result.success, isTrue);
-      // Verify order: local first, then cloud
       verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
       verify(() => mockSheetsService.addMessage(newMsg)).called(1);
     });
