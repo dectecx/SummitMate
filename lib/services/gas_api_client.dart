@@ -15,41 +15,57 @@ class GasApiClient {
 
   /// GET request
   Future<http.Response> get({Map<String, String>? queryParams}) async {
+    final stopwatch = Stopwatch()..start();
     try {
       Uri uri = Uri.parse(_baseUrl);
       if (queryParams != null && queryParams.isNotEmpty) {
-        // Merge existing params with new ones
         final newParams = Map<String, String>.from(uri.queryParameters);
         newParams.addAll(queryParams);
         uri = uri.replace(queryParameters: newParams);
       }
 
-      LogService.debug('GET $uri', source: _source);
+      LogService.debug('[GET] 請求開始: $uri', source: _source);
       final response = await _client.get(uri);
+      stopwatch.stop();
+      
+      LogService.info(
+        '[GET] 完成 (${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
+        source: _source,
+      );
       return response;
-    } catch (e) {
-      LogService.error('GET error: $e', source: _source);
+    } catch (e, stackTrace) {
+      stopwatch.stop();
+      LogService.error(
+        '[GET] 失敗 (${stopwatch.elapsedMilliseconds}ms): $e',
+        source: _source,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
 
   /// POST request with automated redirect handling
   Future<http.Response> post(Map<String, dynamic> body) async {
+    final stopwatch = Stopwatch()..start();
+    final action = body['action'] ?? 'unknown';
+    
     try {
       final uri = Uri.parse(_baseUrl);
       // [Web Compatibility]
       // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
-      // GAS parses e.postData.contents regardless of Content-Type.
       final headers = {'Content-Type': kIsWeb ? 'text/plain' : 'application/json'};
 
-      // Log simple info to avoid leaking too much data, or debug full body
-      LogService.debug('POST $_baseUrl action=${body['action']}', source: _source);
+      LogService.debug('[POST] 請求開始: action=$action', source: _source);
 
       final response = await _client.post(uri, headers: headers, body: jsonEncode(body));
 
-      // [Web Compatibility]
-      // Web: Browser follows redirects automatically.
+      // [Web Compatibility] Browser follows redirects automatically.
       if (kIsWeb) {
+        stopwatch.stop();
+        LogService.info(
+          '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
+          source: _source,
+        );
         return response;
       }
 
@@ -58,26 +74,46 @@ class GasApiClient {
       if (response.statusCode == 302) {
         final location = response.headers['location'];
         if (location != null && location.isNotEmpty) {
-          LogService.debug('Following 302 redirect: $location', source: _source);
-          return await _client.get(Uri.parse(location));
+          LogService.debug('[POST] 追蹤 302 重導向', source: _source);
+          final redirectResponse = await _client.get(Uri.parse(location));
+          stopwatch.stop();
+          LogService.info(
+            '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${redirectResponse.statusCode}',
+            source: _source,
+          );
+          return redirectResponse;
         }
       }
 
       // 2. HTML Body Redirect (Common in GAS)
-      // Sometimes GAS returns 200 OK (or other) but with HTML body containing redirect
       if (response.body.contains('<HTML>') && (response.body.contains('HREF=') || response.body.contains('href='))) {
-        // Using case-insensitive regex for robustness
         final hrefMatch = RegExp(r'HREF="([^"]+)"', caseSensitive: false).firstMatch(response.body);
         if (hrefMatch != null) {
           final redirectUrl = hrefMatch.group(1)!.replaceAll('&amp;', '&');
-          LogService.debug('Following HTML redirect: $redirectUrl', source: _source);
-          return await _client.get(Uri.parse(redirectUrl));
+          LogService.debug('[POST] 追蹤 HTML 重導向', source: _source);
+          final redirectResponse = await _client.get(Uri.parse(redirectUrl));
+          stopwatch.stop();
+          LogService.info(
+            '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${redirectResponse.statusCode}',
+            source: _source,
+          );
+          return redirectResponse;
         }
       }
 
+      stopwatch.stop();
+      LogService.info(
+        '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
+        source: _source,
+      );
       return response;
-    } catch (e) {
-      LogService.error('POST error: $e', source: _source);
+    } catch (e, stackTrace) {
+      stopwatch.stop();
+      LogService.error(
+        '[POST] 失敗 ($action, ${stopwatch.elapsedMilliseconds}ms): $e',
+        source: _source,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
