@@ -50,15 +50,18 @@ class GearRepository {
   /// 新增裝備
   Future<int> addItem(GearItem item) async {
     // 自動設定 orderIndex 為目前最大值 + 1
-    if (item.orderIndex == null && box.isNotEmpty) {
-      final maxOrder = box.values
-          .map((i) => i.orderIndex ?? 0)
-          .fold<int>(0, (max, current) => current > max ? current : max);
-      item.orderIndex = maxOrder + 1;
-    } else if (item.orderIndex == null) {
-      item.orderIndex = 0;
+    // 自動設定 orderIndex
+    if (item.orderIndex == null) {
+      if (box.isNotEmpty) {
+        final maxOrder = box.values
+            .map((i) => i.orderIndex ?? 0)
+            .fold<int>(0, (max, current) => current > max ? current : max);
+        item.orderIndex = maxOrder + 1;
+      } else {
+        item.orderIndex = 0;
+      }
     }
-    
+
     return await box.add(item);
   }
 
