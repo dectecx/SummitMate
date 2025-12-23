@@ -1362,8 +1362,21 @@ class _InfoChip extends StatelessWidget {
 }
 
 /// Tab 3: 裝備頁 (獨立頁籤)
-class _GearTab extends StatelessWidget {
+class _GearTab extends StatefulWidget {
   const _GearTab({super.key});
+
+  @override
+  State<_GearTab> createState() => _GearTabState();
+}
+
+class _GearTabState extends State<_GearTab> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1373,183 +1386,222 @@ class _GearTab extends StatelessWidget {
         final totalWeight = provider.totalWeightKg + mealProvider.totalWeightKg;
 
         return Scaffold(
-          body: ListView(
-            padding: const EdgeInsets.all(16),
+          body: Column(
             children: [
-              // 官方建議裝備 + 雲端裝備庫 (並排)
-              Row(
-                children: [
-                  // 官方建議裝備清單
-                  Expanded(
-                    child: Card(
-                      child: InkWell(
-                        onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
-                        borderRadius: BorderRadius.circular(12),
-                        child: const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Column(
-                            children: [
-                              Icon(Icons.description, color: Colors.green, size: 28),
-                              SizedBox(height: 8),
-                              Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                      ),
+              // 搜尋欄
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: '搜尋本地裝備...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              provider.setSearchQuery('');
+                              setState(() {});
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    filled: true,
+                    fillColor: Theme.of(context).cardColor,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                   ),
-                  const SizedBox(width: 8),
-                  // 雲端裝備庫
-                  Expanded(
-                    child: Card(
-                      child: InkWell(
-                        onTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
-                        borderRadius: BorderRadius.circular(12),
-                        child: const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Column(
-                            children: [
-                              Icon(Icons.cloud, color: Colors.blue, size: 28),
-                              SizedBox(height: 8),
-                              Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // 總重量
-              Card(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('總重量 (含糧食)', style: TextStyle(fontSize: 18)),
-                      Text(
-                        '${totalWeight.toStringAsFixed(2)} kg',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
+                  onChanged: (value) {
+                    provider.setSearchQuery(value);
+                    setState(() {});
+                  },
                 ),
               ),
-              const SizedBox(height: 8),
-              // 糧食計畫卡片
-              Card(
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
-                          child: const Icon(Icons.bento, color: Colors.orange, size: 28),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              Text(
-                                mealProvider.totalWeightKg > 0
-                                    ? '已規劃 ${mealProvider.totalWeightKg.toStringAsFixed(2)} kg'
-                                    : '尚未規劃',
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
 
-              // 分類清單
-              if (provider.allItems.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Center(
-                    child: Column(
+              // 列表內容
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  children: [
+                    // 官方建議裝備 + 雲端裝備庫 (並排)
+                    Row(
                       children: [
-                        Icon(Icons.backpack_outlined, size: 48, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('目前沒有自定義裝備', style: TextStyle(color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                ...provider.itemsByCategory.entries.map(
-                  (entry) => Card(
-                    child: ExpansionTile(
-                      maintainState: true,
-                      initiallyExpanded: true,
-                      leading: Icon(GearCategoryHelper.getIcon(entry.key)),
-                      title: Text('${GearCategoryHelper.getName(entry.key)} (${entry.value.length}件)'),
-                      subtitle: Text(
-                        WeightFormatter.format(
-                          entry.value.fold<double>(0, (sum, item) => sum + item.weight),
-                          decimals: 0,
-                        ),
-                      ),
-                      children: [
-                        ReorderableListView(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          onReorder: (oldIndex, newIndex) {
-                            provider.reorderItem(oldIndex, newIndex, category: entry.key);
-                          },
-                          children: entry.value.map((item) {
-                            return ListTile(
-                              key: ValueKey(item.key),
-                              leading: Checkbox(
-                                value: item.isChecked,
-                                onChanged: (_) => provider.toggleChecked(item.key),
-                              ),
-                              title: Text(
-                                item.name,
-                                style: TextStyle(
-                                  decoration: item.isChecked ? TextDecoration.lineThrough : null,
-                                  color: item.isChecked ? Colors.grey : null,
+                        // 官方建議裝備清單
+                        Expanded(
+                          child: Card(
+                            child: InkWell(
+                              onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
+                              borderRadius: BorderRadius.circular(12),
+                              child: const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.description, color: Colors.green, size: 28),
+                                    SizedBox(height: 8),
+                                    Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                                  ],
                                 ),
                               ),
-                              subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                                    onPressed: () => _confirmDeleteGearItem(context, provider, item),
-                                  ),
-                                  const Icon(Icons.drag_handle, color: Colors.grey),
-                                ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // 雲端裝備庫
+                        Expanded(
+                          child: Card(
+                            child: InkWell(
+                              onTap: () =>
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
+                              borderRadius: BorderRadius.circular(12),
+                              child: const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.cloud, color: Colors.blue, size: 28),
+                                    SizedBox(height: 8),
+                                    Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
                               ),
-                              onTap: () => provider.toggleChecked(item.key),
-                            );
-                          }).toList(),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    // 總重量
+                    Card(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('總重量 (含糧食)', style: TextStyle(fontSize: 18)),
+                            Text(
+                              '${totalWeight.toStringAsFixed(2)} kg',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // 糧食計畫卡片
+                    Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
+                                child: const Icon(Icons.bento, color: Colors.orange, size: 28),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      mealProvider.totalWeightKg > 0
+                                          ? '已規劃 ${mealProvider.totalWeightKg.toStringAsFixed(2)} kg'
+                                          : '尚未規劃',
+                                      style: TextStyle(color: Colors.grey[600]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 分類清單
+                    if (provider.allItems.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.backpack_outlined, size: 48, color: Colors.grey),
+                              SizedBox(height: 8),
+                              Text('目前沒有自定義裝備', style: TextStyle(color: Colors.grey)),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ...provider.itemsByCategory.entries.map(
+                        (entry) => Card(
+                          child: ExpansionTile(
+                            maintainState: true,
+                            initiallyExpanded: true,
+                            leading: Icon(GearCategoryHelper.getIcon(entry.key)),
+                            title: Text('${GearCategoryHelper.getName(entry.key)} (${entry.value.length}件)'),
+                            subtitle: Text(
+                              WeightFormatter.format(
+                                entry.value.fold<double>(0, (sum, item) => sum + item.weight),
+                                decimals: 0,
+                              ),
+                            ),
+                            children: [
+                              ReorderableListView(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                onReorder: (oldIndex, newIndex) {
+                                  provider.reorderItem(oldIndex, newIndex, category: entry.key);
+                                },
+                                children: entry.value.map((item) {
+                                  return ListTile(
+                                    key: ValueKey(item.key),
+                                    leading: Checkbox(
+                                      value: item.isChecked,
+                                      onChanged: (_) => provider.toggleChecked(item.key),
+                                    ),
+                                    title: Text(
+                                      item.name,
+                                      style: TextStyle(
+                                        decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                                        color: item.isChecked ? Colors.grey : null,
+                                      ),
+                                    ),
+                                    subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
+                                          onPressed: () => _confirmDeleteGearItem(context, provider, item),
+                                        ),
+                                        const Icon(Icons.drag_handle, color: Colors.grey),
+                                      ],
+                                    ),
+                                    onTap: () => provider.toggleChecked(item.key),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 80), // 底部留白
+                  ],
                 ),
-              const SizedBox(height: 80), // 底部留白
+              ),
             ],
           ),
           floatingActionButton: FloatingActionButton(

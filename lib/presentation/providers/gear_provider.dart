@@ -11,6 +11,7 @@ class GearProvider extends ChangeNotifier {
 
   List<GearItem> _items = [];
   String? _selectedCategory; // null 表示顯示全部
+  String _searchQuery = '';
   bool _showUncheckedOnly = false;
   bool _isLoading = true;
   String? _error;
@@ -33,6 +34,11 @@ class GearProvider extends ChangeNotifier {
 
     if (_showUncheckedOnly) {
       result = result.where((item) => !item.isChecked).toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      result = result.where((item) => item.name.toLowerCase().contains(query)).toList();
     }
 
     return result;
@@ -106,6 +112,12 @@ class GearProvider extends ChangeNotifier {
   /// 選擇分類過濾
   void selectCategory(String? category) {
     _selectedCategory = category;
+    notifyListeners();
+  }
+
+  /// 設定搜尋關鍵字
+  void setSearchQuery(String query) {
+    _searchQuery = query;
     notifyListeners();
   }
 
