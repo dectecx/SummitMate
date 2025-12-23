@@ -5,10 +5,7 @@ import '../../data/models/gear_set.dart';
 class GearKeyDownloadDialog extends StatefulWidget {
   final GearSet gearSet;
 
-  const GearKeyDownloadDialog({
-    super.key,
-    required this.gearSet,
-  });
+  const GearKeyDownloadDialog({super.key, required this.gearSet});
 
   @override
   State<GearKeyDownloadDialog> createState() => _GearKeyDownloadDialogState();
@@ -54,23 +51,14 @@ class _GearKeyDownloadDialogState extends State<GearKeyDownloadDialog> {
             maxLength: 4,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 24, letterSpacing: 8),
-            decoration: const InputDecoration(
-              hintText: '____',
-              counterText: '',
-            ),
+            decoration: const InputDecoration(hintText: '____', counterText: ''),
             enabled: !_isSubmitting,
           ),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        FilledButton(
-          onPressed: (!_isKeyValid || _isSubmitting) ? null : _handleSubmit,
-          child: const Text('查看'),
-        ),
+        TextButton(onPressed: _isSubmitting ? null : () => Navigator.pop(context), child: const Text('取消')),
+        FilledButton(onPressed: (!_isKeyValid || _isSubmitting) ? null : _handleSubmit, child: const Text('查看')),
       ],
     );
   }

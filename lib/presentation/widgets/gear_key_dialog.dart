@@ -8,10 +8,7 @@ import '../../services/toast_service.dart';
 class GearKeyInputDialog extends StatefulWidget {
   final GearCloudService cloudService;
 
-  const GearKeyInputDialog({
-    super.key,
-    required this.cloudService,
-  });
+  const GearKeyInputDialog({super.key, required this.cloudService});
 
   @override
   State<GearKeyInputDialog> createState() => _GearKeyInputDialogState();
@@ -69,32 +66,19 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
             maxLength: 4,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 24, letterSpacing: 8),
-            decoration: const InputDecoration(
-              hintText: '____',
-              counterText: '',
-            ),
+            decoration: const InputDecoration(hintText: '____', counterText: ''),
             enabled: !_isLoading,
           ),
           const SizedBox(height: 8),
-          Text(
-            '輸入 4 位數 Key 以查看私人組合',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-          ),
+          Text('輸入 4 位數 Key 以查看私人組合', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
+        TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('取消')),
         FilledButton(
           onPressed: (!_isKeyValid || _isLoading) ? null : _handleSubmit,
           child: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('查詢'),
         ),
       ],
@@ -118,12 +102,7 @@ class GearKeyStorage {
     final prefs = await SharedPreferences.getInstance();
     final keysJson = prefs.getStringList(_keyPrefix) ?? [];
 
-    final record = GearKeyRecord(
-      key: key,
-      title: title,
-      visibility: visibility,
-      uploadedAt: DateTime.now(),
-    );
+    final record = GearKeyRecord(key: key, title: title, visibility: visibility, uploadedAt: DateTime.now());
 
     keysJson.add(record.toStorageString());
     await prefs.setStringList(_keyPrefix, keysJson);
@@ -151,12 +130,7 @@ class GearKeyRecord {
   final String visibility;
   final DateTime uploadedAt;
 
-  GearKeyRecord({
-    required this.key,
-    required this.title,
-    required this.visibility,
-    required this.uploadedAt,
-  });
+  GearKeyRecord({required this.key, required this.title, required this.visibility, required this.uploadedAt});
 
   String toStorageString() {
     return '$key|$title|$visibility|${uploadedAt.toIso8601String()}';

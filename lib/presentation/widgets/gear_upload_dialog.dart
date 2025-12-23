@@ -9,12 +9,7 @@ class GearUploadDialog extends StatefulWidget {
   final String author;
   final Future<bool> Function(String title, GearSetVisibility visibility, String? key) onUpload;
 
-  const GearUploadDialog({
-    super.key,
-    required this.items,
-    required this.author,
-    required this.onUpload,
-  });
+  const GearUploadDialog({super.key, required this.items, required this.author, required this.onUpload});
 
   @override
   State<GearUploadDialog> createState() => _GearUploadDialogState();
@@ -26,8 +21,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
   GearSetVisibility _visibility = GearSetVisibility.public;
   bool _isUploading = false;
 
-  double get _totalWeight =>
-      widget.items.fold<double>(0, (sum, item) => sum + item.weight);
+  double get _totalWeight => widget.items.fold<double>(0, (sum, item) => sum + item.weight);
 
   String get _formattedWeight {
     if (_totalWeight >= 1000) {
@@ -73,12 +67,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Row(
-        children: [
-          Text('⬆️ '),
-          Text('上傳裝備組合'),
-        ],
-      ),
+      title: const Row(children: [Text('⬆️ '), Text('上傳裝備組合')]),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -87,11 +76,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
             // 組合名稱
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: '組合名稱',
-                hintText: '例如：輕裝三日行程',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '組合名稱', hintText: '例如：輕裝三日行程', border: OutlineInputBorder()),
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 20),
@@ -166,18 +151,11 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isUploading ? null : () => Navigator.pop(context, false),
-          child: const Text('取消'),
-        ),
+        TextButton(onPressed: _isUploading ? null : () => Navigator.pop(context, false), child: const Text('取消')),
         FilledButton(
           onPressed: _isValid && !_isUploading ? _handleUpload : null,
           child: _isUploading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('上傳'),
         ),
       ],
@@ -229,10 +207,7 @@ class _VisibilityOption extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                 ],
               ),
             ),

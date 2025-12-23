@@ -4,8 +4,10 @@ import 'gear_item.dart';
 enum GearSetVisibility {
   /// 公開 - 任何人可查看和下載
   public,
+
   /// 保護 - 可見標題，需輸入 Key 下載
   protected,
+
   /// 私人 - 不可見，需 Key 才能查看/下載
   private,
 }
@@ -57,9 +59,7 @@ class GearSet {
       itemCount: json['item_count'] as int? ?? 0,
       visibility: _parseVisibility(json['visibility'] as String?),
       uploadedAt: DateTime.tryParse(json['uploaded_at'] as String? ?? '') ?? DateTime.now(),
-      items: (json['items'] as List<dynamic>?)
-          ?.map((item) => GearItem.fromJson(item as Map<String, dynamic>))
-          .toList(),
+      items: (json['items'] as List<dynamic>?)?.map((item) => GearItem.fromJson(item as Map<String, dynamic>)).toList(),
     );
   }
 
