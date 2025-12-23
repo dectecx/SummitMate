@@ -5,7 +5,7 @@
 //
 // 部署說明 (Deployment Instructions):
 // 1. 建立一個 Google Sheets 試算表，並包含以下工作表 (Sheets):
-//    "Itinerary" (行程), "Messages" (留言), "Logs" (日誌), 
+//    "Itinerary" (行程), "Messages" (留言), "Logs" (日誌),
 //    "Weather_CWA_Hiking_Raw" (氣象原始資料), "Weather_Hiking_App" (App 用氣象資料),
 //    "Heartbeat" (使用狀態追蹤), "GearSets" (雲端裝備庫)。
 //    (注意: Heartbeat 和 GearSets 會在首次使用時自動建立)
@@ -104,6 +104,9 @@ function doPost(e) {
       case "upload_gear_set":
         // 上傳裝備組合
         return createJsonResponse(uploadGearSet(data));
+      case "delete_gear_set":
+        // 刪除裝備組合
+        return createJsonResponse(deleteGearSet(data.uuid, data.key));
       default:
         return createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
     }
@@ -451,7 +454,17 @@ function recordHeartbeat(data) {
 // ============================================================
 
 const GEAR_SHEET_NAME = "GearSets";
-const GEAR_HEADERS = ["uuid", "title", "author", "total_weight", "item_count", "visibility", "key", "uploaded_at", "items_json"];
+const GEAR_HEADERS = [
+  "uuid",
+  "title",
+  "author",
+  "total_weight",
+  "item_count",
+  "visibility",
+  "key",
+  "uploaded_at",
+  "items_json",
+];
 
 /**
  * 初始化 GearSets 工作表
@@ -561,7 +574,10 @@ function downloadGearSet(uuid, key) {
       const storedKey = row[headers.indexOf("key")];
 
       // Protected/Private 需要正確的 key (將兩邊轉為字串比對)
-      if ((visibility === "protected" || visibility === "private") && String(storedKey) !== String(key)) {
+      if (
+        (visibility === "protected" || visibility === "private") &&
+        String(storedKey) !== String(key)
+      ) {
         return { success: false, error: "需要正確的 Key 才能下載" };
       }
 
@@ -589,14 +605,18 @@ function downloadGearSet(uuid, key) {
  * @param {Object} data - 上傳資料
  */
 function uploadGearSet(data) {
-  const { title, author, visibility, key, total_weight, item_count, items } = data;
+  const { title, author, visibility, key, total_weight, item_count, items } =
+    data;
 
   if (!title || !author) {
     return { success: false, error: "缺少必要欄位 (title, author)" };
   }
 
   // Protected/Private 必須有 key
-  if ((visibility === "protected" || visibility === "private") && (!key || key.length !== 4)) {
+  if (
+    (visibility === "protected" || visibility === "private") &&
+    (!key || key.length !== 4)
+  ) {
     return { success: false, error: "Protected/Private 模式需要 4 位數 Key" };
   }
 
@@ -683,6 +703,48 @@ function testAddMessage() {
     avatar: "🐼",
   });
   Logger.log(JSON.stringify(result));
+}
+
+/**
+ * 刪除裝備組合
+ * @param {string} uuid - 裝備組合 UUID
+ * @param {string} key - 4 位數 Key (protected/private 需要驗證)
+ */
+function deleteGearSet(uuid, key) {
+  if (!uuid) {
+    return { success: false, error: "缺少 UUID" };
+  }
+
+  const sheet = initGearSheet();
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const uuidIndex = headers.indexOf("uuid");
+  const keyIndex = headers.indexOf("key");
+  const visibilityIndex = headers.indexOf("visibility");
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][uuidIndex] === uuid) {
+      const storedKey = data[i][keyIndex];
+      const visibility = data[i][visibilityIndex];
+
+      // public 不需要 Key，可直接刪除
+      // protected/private 需要驗證 Key
+      if (visibility !== "public") {
+        if (!key || key.length !== 4) {
+          return { success: false, error: "需要正確的 Key 才能刪除" };
+        }
+        if (String(storedKey) !== String(key)) {
+          return { success: false, error: "Key 不正確，無法刪除" };
+        }
+      }
+
+      // 刪除該列
+      sheet.deleteRow(i + 1); // +1 因為 row index 是 1-based
+      return { success: true, message: "已刪除裝備組合" };
+    }
+  }
+
+  return { success: false, error: "找不到指定的裝備組合" };
 }
 
 // ============================================================
