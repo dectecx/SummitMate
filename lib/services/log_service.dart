@@ -52,7 +52,7 @@ class LogEntry {
 /// - 上傳到雲端
 ///
 /// 日誌格式規範：
-/// - 格式: `[動作類型] 描述 (額外資訊)` 
+/// - 格式: `[動作類型] 描述 (額外資訊)`
 /// - 例如: `[POST] 完成 (sync, 1234ms) HTTP 200`
 /// - 層級使用建議:
 ///   - debug: 開發除錯 (API 請求開始、詳細參數)
@@ -142,12 +142,10 @@ class LogService {
   }
 
   /// 記錄 Error 訊息
-  /// 
+  ///
   /// [stackTrace] 可選，記錄錯誤發生時的堆疊追蹤
   static void error(String message, {String? source, StackTrace? stackTrace}) {
-    final fullMessage = stackTrace != null 
-        ? '$message\nStackTrace:\n$stackTrace'
-        : message;
+    final fullMessage = stackTrace != null ? '$message\nStackTrace:\n$stackTrace' : message;
     _log(LogLevel.error, fullMessage, source: source);
   }
 
