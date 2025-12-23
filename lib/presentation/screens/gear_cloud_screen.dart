@@ -159,12 +159,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
       // 匯入新裝備
       for (final item in items) {
-        await gearRepo.addItem(GearItem(
-          name: item.name,
-          weight: item.weight,
-          category: item.category,
-          isChecked: false,
-        ));
+        await gearRepo.addItem(
+          GearItem(name: item.name, weight: item.weight, category: item.category, isChecked: false),
+        );
       }
 
       // 刷新 GearProvider 以同步 UI
@@ -186,9 +183,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     final isOffline = context.watch<SettingsProvider>().isOfflineMode;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('☁️ 雲端裝備庫'),
-      ),
+      appBar: AppBar(title: const Text('☁️ 雲端裝備庫')),
       body: _buildBody(isOffline),
     );
   }
@@ -207,10 +202,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             const SizedBox(height: 16),
             Text(_errorMessage!, style: TextStyle(color: Colors.red.shade600)),
             const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: _fetchGearSets,
-              child: const Text('重試'),
-            ),
+            OutlinedButton(onPressed: _fetchGearSets, child: const Text('重試')),
           ],
         ),
       );
@@ -223,15 +215,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           children: [
             Icon(Icons.cloud_off, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            Text(
-              '尚無公開的裝備組合',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-            ),
+            Text('尚無公開的裝備組合', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
             const SizedBox(height: 8),
-            Text(
-              '成為第一個分享的人！',
-              style: TextStyle(color: Colors.grey.shade500),
-            ),
+            Text('成為第一個分享的人！', style: TextStyle(color: Colors.grey.shade500)),
             const SizedBox(height: 24),
             _buildToolbarCard(isOffline),
           ],
@@ -276,11 +262,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
               children: [
                 // 同步按鈕
                 Expanded(
-                  child: _ToolButton(
-                    icon: Icons.refresh,
-                    label: '同步',
-                    onTap: _fetchGearSets,
-                  ),
+                  child: _ToolButton(icon: Icons.refresh, label: '同步', onTap: _fetchGearSets),
                 ),
                 const SizedBox(width: 8),
                 // 上傳
@@ -300,20 +282,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
               children: [
                 // 我的 Keys
                 Expanded(
-                  child: _ToolButton(
-                    icon: Icons.key,
-                    label: '我的 Keys',
-                    onTap: _showMyKeysDialog,
-                  ),
+                  child: _ToolButton(icon: Icons.key, label: '我的 Keys', onTap: _showMyKeysDialog),
                 ),
                 const SizedBox(width: 8),
                 // 用 Key 下載
                 Expanded(
-                  child: _ToolButton(
-                    icon: Icons.download,
-                    label: '用 Key 下載',
-                    onTap: _showKeyInputDialog,
-                  ),
+                  child: _ToolButton(icon: Icons.download, label: '用 Key 下載', onTap: _showKeyInputDialog),
                 ),
               ],
             ),
@@ -335,29 +309,31 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             ? const Text('尚無上傳記錄', style: TextStyle(color: Colors.grey))
             : Column(
                 mainAxisSize: MainAxisSize.min,
-                children: keys.map((record) => ListTile(
-                  leading: Text(
-                    record.visibility == 'protected' ? '🔒' : '🔐',
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  title: Text(record.key, style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 20)),
-                  subtitle: Text(record.title),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    tooltip: '刪除此組合',
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                      _confirmDeleteGearSet(record);
-                    },
-                  ),
-                )).toList(),
+                children: keys
+                    .map(
+                      (record) => ListTile(
+                        leading: Text(
+                          record.visibility == 'protected' ? '🔒' : '🔐',
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                        title: Text(
+                          record.key,
+                          style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                        subtitle: Text(record.title),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          tooltip: '刪除此組合',
+                          onPressed: () {
+                            Navigator.pop(dialogContext);
+                            _confirmDeleteGearSet(record);
+                          },
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('關閉'),
-          ),
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
       ),
     );
   }
@@ -373,14 +349,14 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           children: [
             Text('確定要刪除「${record.title}」嗎？'),
             const SizedBox(height: 8),
-            const Text('此操作無法復原！', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            const Text(
+              '此操作無法復原！',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -428,14 +404,14 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           children: [
             Text('確定要刪除「${gearSet.title}」嗎？'),
             const SizedBox(height: 8),
-            const Text('此操作無法復原！', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            const Text(
+              '此操作無法復原！',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -484,12 +460,7 @@ class _GearSetCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final bool isLoading;
 
-  const _GearSetCard({
-    required this.gearSet,
-    this.onDownload,
-    this.onDelete,
-    this.isLoading = false,
-  });
+  const _GearSetCard({required this.gearSet, this.onDownload, this.onDelete, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -502,41 +473,20 @@ class _GearSetCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(
-                  gearSet.visibilityIcon,
-                  style: const TextStyle(fontSize: 20),
-                ),
+                Text(gearSet.visibilityIcon, style: const TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    gearSet.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text(gearSet.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
-                Text(
-                  '@${gearSet.author}',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
-                ),
+                Text('@${gearSet.author}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                _InfoChip(
-                  icon: Icons.fitness_center,
-                  label: gearSet.formattedWeight,
-                ),
+                _InfoChip(icon: Icons.fitness_center, label: gearSet.formattedWeight),
                 const SizedBox(width: 12),
-                _InfoChip(
-                  icon: Icons.backpack,
-                  label: '${gearSet.itemCount} items',
-                ),
+                _InfoChip(icon: Icons.backpack, label: '${gearSet.itemCount} items'),
                 const Spacer(),
                 // public 組合顯示刪除按鈕
                 if (gearSet.visibility == GearSetVisibility.public && onDelete != null) ...[
@@ -558,11 +508,7 @@ class _GearSetCard extends StatelessWidget {
 
   Widget _buildDownloadButton() {
     if (isLoading) {
-      return const SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
+      return const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2));
     }
 
     if (gearSet.visibility == GearSetVisibility.protected) {
@@ -594,10 +540,7 @@ class _InfoChip extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: Colors.grey.shade600),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-        ),
+        Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
       ],
     );
   }
@@ -610,12 +553,7 @@ class _ToolButton extends StatelessWidget {
   final VoidCallback? onTap;
   final bool disabled;
 
-  const _ToolButton({
-    required this.icon,
-    required this.label,
-    this.onTap,
-    this.disabled = false,
-  });
+  const _ToolButton({required this.icon, required this.label, this.onTap, this.disabled = false});
 
   @override
   Widget build(BuildContext context) {

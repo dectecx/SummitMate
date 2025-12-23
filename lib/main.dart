@@ -653,9 +653,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     barrierDismissible: false,
                     builder: (c) => AlertDialog(
                       title: const Text('✅ 清除完成'),
-                      content: Text(kIsWeb 
-                          ? '資料已清除，請重新載入網頁以完成操作。' 
-                          : '資料已清除，請重新啟動 App 以完成操作。'),
+                      content: Text(kIsWeb ? '資料已清除，請重新載入網頁以完成操作。' : '資料已清除，請重新啟動 App 以完成操作。'),
                       actions: [
                         FilledButton(
                           onPressed: () {
@@ -1405,7 +1403,8 @@ class _GearTab extends StatelessWidget {
                   Expanded(
                     child: Card(
                       child: InkWell(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
                         borderRadius: BorderRadius.circular(12),
                         child: const Padding(
                           padding: EdgeInsets.all(12),
@@ -1505,7 +1504,10 @@ class _GearTab extends StatelessWidget {
                       leading: Icon(GearCategoryHelper.getIcon(entry.key)),
                       title: Text('${GearCategoryHelper.getName(entry.key)} (${entry.value.length}件)'),
                       subtitle: Text(
-                        WeightFormatter.format(entry.value.fold<double>(0, (sum, item) => sum + item.weight), decimals: 0),
+                        WeightFormatter.format(
+                          entry.value.fold<double>(0, (sum, item) => sum + item.weight),
+                          decimals: 0,
+                        ),
                       ),
                       children: entry.value
                           .map(
@@ -1562,10 +1564,7 @@ class _GearTab extends StatelessWidget {
         title: const Text('確認刪除'),
         content: Text('確定要刪除「${item.name}」嗎？'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
           FilledButton(
             onPressed: () {
               Navigator.pop(dialogContext);

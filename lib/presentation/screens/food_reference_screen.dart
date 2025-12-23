@@ -7,10 +7,6 @@ class FoodReferenceScreen {
 
   /// 開啟乾燥飯比較圖
   static void show(BuildContext context) {
-    ImageViewerDialog.show(
-      context,
-      assetPath: 'assets/images/dried_rice_comparison.png',
-      title: '乾燥飯比較參考',
-    );
+    ImageViewerDialog.show(context, assetPath: 'assets/images/dried_rice_comparison.png', title: '乾燥飯比較參考');
   }
 }

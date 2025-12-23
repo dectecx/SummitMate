@@ -16,7 +16,7 @@ class UsageTrackingService {
   final GasApiClient _apiClient;
 
   UsageTrackingService({GasApiClient? apiClient})
-      : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+    : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
 
   /// 啟動追蹤 (僅 Web 平台)
   void start(String username) {

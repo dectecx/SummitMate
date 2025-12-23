@@ -42,8 +42,7 @@ class ZoomableImage extends StatelessWidget {
             child: Image.asset(
               assetPath,
               fit: fit,
-              errorBuilder: (context, error, stackTrace) =>
-                  errorWidget ?? Container(color: Colors.grey.shade300),
+              errorBuilder: (context, error, stackTrace) => errorWidget ?? Container(color: Colors.grey.shade300),
             ),
           ),
           // 右下角放大提示
@@ -57,11 +56,7 @@ class ZoomableImage extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Icon(
-                  Icons.zoom_in,
-                  color: Colors.white,
-                  size: 18,
-                ),
+                child: const Icon(Icons.zoom_in, color: Colors.white, size: 18),
               ),
             ),
         ],
@@ -76,16 +71,10 @@ class ZoomableImage extends StatelessWidget {
         barrierColor: Colors.black87,
         barrierDismissible: true,
         pageBuilder: (context, animation, secondaryAnimation) {
-          return ImageViewerDialog(
-            assetPath: assetPath,
-            title: title,
-          );
+          return ImageViewerDialog(assetPath: assetPath, title: title);
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
       ),
     );
@@ -97,11 +86,7 @@ class ImageViewerDialog extends StatefulWidget {
   final String assetPath;
   final String? title;
 
-  const ImageViewerDialog({
-    super.key,
-    required this.assetPath,
-    this.title,
-  });
+  const ImageViewerDialog({super.key, required this.assetPath, this.title});
 
   /// 靜態方法：直接開啟圖片檢視器
   static void show(BuildContext context, {required String assetPath, String? title}) {
@@ -111,16 +96,10 @@ class ImageViewerDialog extends StatefulWidget {
         barrierColor: Colors.black87,
         barrierDismissible: true,
         pageBuilder: (context, animation, secondaryAnimation) {
-          return ImageViewerDialog(
-            assetPath: assetPath,
-            title: title,
-          );
+          return ImageViewerDialog(assetPath: assetPath, title: title);
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
       ),
     );
@@ -180,11 +159,8 @@ class _ImageViewerDialogState extends State<ImageViewerDialog> {
                 child: Image.asset(
                   widget.assetPath,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.broken_image,
-                    color: Colors.white54,
-                    size: 64,
-                  ),
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.broken_image, color: Colors.white54, size: 64),
                 ),
               ),
             ),
@@ -209,11 +185,7 @@ class _ImageViewerDialogState extends State<ImageViewerDialog> {
                       Expanded(
                         child: Text(
                           widget.title!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -235,10 +207,7 @@ class _ImageViewerDialogState extends State<ImageViewerDialog> {
                 child: const Text(
                   '雙擊放大/縮小 • 雙指縮放 • 點擊背景關閉',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
                 ),
               ),
             ),
