@@ -1747,43 +1747,63 @@ class InfoTabState extends State<InfoTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 頂部視覺圖 (嘉明湖)
-        SizedBox(
-          height: 200,
-          width: double.infinity,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(
-                'assets/images/jiaming_lake.jpg',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(color: Colors.grey),
-              ),
-              // 漸層遮罩
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
-                    stops: const [0.6, 1.0],
+        // 頂部視覺圖 (嘉明湖) - 可點擊放大
+        GestureDetector(
+          onTap: () => ImageViewerDialog.show(
+            context,
+            assetPath: 'assets/images/jiaming_lake.jpg',
+            title: '嘉明湖',
+          ),
+          child: SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/images/jiaming_lake.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(color: Colors.grey),
+                ),
+                // 漸層遮罩
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
+                      stops: const [0.6, 1.0],
+                    ),
                   ),
                 ),
-              ),
-              const Positioned(
-                bottom: 16,
-                left: 16,
-                child: Text(
-                  '嘉明湖國家步道',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                // 放大提示 icon
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.zoom_in, color: Colors.white, size: 18),
                   ),
                 ),
-              ),
-            ],
+                const Positioned(
+                  bottom: 16,
+                  left: 16,
+                  child: Text(
+                    '嘉明湖國家步道',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
 
