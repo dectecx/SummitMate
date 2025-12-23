@@ -88,6 +88,7 @@ class ApiConfig {
   static const String actionFetchGearSetByKey = 'fetch_gear_set_by_key';
   static const String actionDownloadGearSet = 'download_gear_set';
   static const String actionUploadGearSet = 'upload_gear_set';
+  static const String actionDeleteGearSet = 'delete_gear_set';
 }
 
 /// Hive Box 名稱

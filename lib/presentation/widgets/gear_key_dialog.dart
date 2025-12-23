@@ -120,6 +120,20 @@ class GearKeyStorage {
     keysJson.add(record.toStorageString());
     await prefs.setStringList(_keyPrefix, keysJson);
   }
+
+  /// 移除已上傳的 Key
+  static Future<void> removeUploadedKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final keysJson = prefs.getStringList(_keyPrefix) ?? [];
+
+    // 過濾掉指定的 key
+    final filtered = keysJson.where((json) {
+      final record = GearKeyRecord.fromStorageString(json);
+      return record.key != key;
+    }).toList();
+
+    await prefs.setStringList(_keyPrefix, filtered);
+  }
 }
 
 /// Key 記錄

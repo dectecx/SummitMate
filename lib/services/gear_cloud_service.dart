@@ -155,6 +155,30 @@ class GearCloudService {
       return GearCloudResult.failure('$e');
     }
   }
+
+  /// 刪除裝備組合 (需要 Key 驗證)
+  Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key) async {
+    try {
+      LogService.info('刪除裝備組合: $uuid', source: _source);
+
+      final response = await _apiClient.post({
+        'action': ApiConfig.actionDeleteGearSet,
+        'uuid': uuid,
+        'key': key,
+      });
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (data['success'] != true) {
+        return GearCloudResult.failure(data['error'] ?? '刪除失敗');
+      }
+
+      LogService.info('刪除成功', source: _source);
+      return GearCloudResult.success(true);
+    } catch (e) {
+      LogService.error('刪除失敗: $e', source: _source);
+      return GearCloudResult.failure('$e');
+    }
+  }
 }
 
 /// 雲端裝備操作結果
