@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/di.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
 import '../../data/repositories/gear_repository.dart';
 import '../../services/gear_cloud_service.dart';
 import '../../services/toast_service.dart';
 import '../providers/settings_provider.dart';
+import '../providers/gear_provider.dart';
 import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
@@ -25,6 +27,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   List<GearSet> _gearSets = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _busyGearSetId; // 防止連續點擊的狀態
 
   @override
   void initState() {
@@ -116,14 +119,20 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   }
 
   Future<void> _downloadGearSet(GearSet gearSet, {String? key}) async {
+    // 防止連續點擊
+    if (_busyGearSetId != null) return;
+    setState(() => _busyGearSetId = gearSet.uuid);
+
     final result = await _cloudService.downloadGearSet(gearSet.uuid, key: key);
 
+    if (!mounted) return;
+    setState(() => _busyGearSetId = null);
+
     if (!result.success || result.data?.items == null) {
-      ToastService.error(result.errorMessage ?? '下載失敗');
+      ToastService.error(result.errorMessage ?? '查詢失敗');
       return;
     }
 
-    if (!mounted) return;
     _showDownloadConfirmDialog(result.data!);
   }
 
@@ -142,8 +151,8 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   Future<void> _importGearItems(List<GearItem> items) async {
     try {
-      final gearRepo = GearRepository();
-      await gearRepo.init();
+      // 使用 DI 容器中的 Repository
+      final gearRepo = getIt<GearRepository>();
 
       // 清除現有裝備
       await gearRepo.clearAll();
@@ -156,6 +165,11 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           category: item.category,
           isChecked: false,
         ));
+      }
+
+      // 刷新 GearProvider 以同步 UI
+      if (mounted) {
+        context.read<GearProvider>().reload();
       }
 
       ToastService.success('已匯入 ${items.length} 件裝備');
@@ -235,10 +249,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             return _buildToolbarCard(isOffline);
           }
           final gearSet = _gearSets[index - 1];
+          final isBusy = _busyGearSetId == gearSet.uuid;
           return _GearSetCard(
             gearSet: gearSet,
-            onDownload: () => _onDownloadPressed(gearSet),
-            onDelete: gearSet.visibility == GearSetVisibility.public
+            isLoading: isBusy,
+            onDownload: isBusy ? null : () => _onDownloadPressed(gearSet),
+            onDelete: gearSet.visibility == GearSetVisibility.public && !isBusy
                 ? () => _confirmDeletePublicGearSet(gearSet)
                 : null,
           );
@@ -464,13 +480,15 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 /// 裝備組合卡片
 class _GearSetCard extends StatelessWidget {
   final GearSet gearSet;
-  final VoidCallback onDownload;
+  final VoidCallback? onDownload;
   final VoidCallback? onDelete;
+  final bool isLoading;
 
   const _GearSetCard({
     required this.gearSet,
-    required this.onDownload,
+    this.onDownload,
     this.onDelete,
+    this.isLoading = false,
   });
 
   @override
@@ -539,6 +557,14 @@ class _GearSetCard extends StatelessWidget {
   }
 
   Widget _buildDownloadButton() {
+    if (isLoading) {
+      return const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+
     if (gearSet.visibility == GearSetVisibility.protected) {
       return OutlinedButton.icon(
         onPressed: onDownload,
@@ -549,8 +575,8 @@ class _GearSetCard extends StatelessWidget {
 
     return FilledButton.icon(
       onPressed: onDownload,
-      icon: const Icon(Icons.download, size: 16),
-      label: const Text('下載'),
+      icon: const Icon(Icons.visibility, size: 16),
+      label: const Text('查看'),
     );
   }
 }
