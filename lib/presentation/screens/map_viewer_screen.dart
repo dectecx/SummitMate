@@ -1,26 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
+import '../widgets/zoomable_image.dart';
 
-class MapViewerScreen extends StatelessWidget {
-  const MapViewerScreen({super.key});
+/// 地圖檢視器 - 使用統一的 ImageViewerDialog
+class MapViewerScreen {
+  MapViewerScreen._();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('嘉明湖步道導覽圖', style: TextStyle(color: Colors.white)),
-        elevation: 0,
-      ),
-      body: PhotoView(
-        imageProvider: const AssetImage('assets/images/trail_map.png'),
-        minScale: PhotoViewComputedScale.contained,
-        maxScale: PhotoViewComputedScale.covered * 3.0,
-        backgroundDecoration: const BoxDecoration(color: Colors.black),
-        heroAttributes: const PhotoViewHeroAttributes(tag: 'trail_map'),
-      ),
+  /// 開啟導覽地圖
+  static void show(BuildContext context) {
+    ImageViewerDialog.show(
+      context,
+      assetPath: 'assets/images/trail_map.png',
+      title: '嘉明湖步道導覽圖',
     );
   }
 }
