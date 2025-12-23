@@ -173,42 +173,20 @@ class SyncService {
   }
 
   /// 新增留言並同步到雲端
+  /// 注意：離線模式下 UI 層應禁用此功能
   Future<ApiResult> addMessageAndSync(Message message) async {
-    // 1. 先存到本地
     await _messageRepo.addMessage(message);
-
-    if (_isOffline) {
-      LogService.info('離線模式：跳過留言上傳', source: 'SyncService');
-      return returnApiResult(success: true, message: '已儲存至本地 (離線模式)');
-    }
-
-    // 2. 上傳到雲端
     final result = await _sheetsService.addMessage(message);
-
-    if (!result.success) {
-      // TODO: 實作離線佇列，稍後重試
-    }
-
+    LogService.info('留言已同步: ${message.uuid}', source: 'SyncService');
     return result;
   }
 
   /// 刪除留言並同步到雲端
+  /// 注意：離線模式下 UI 層應禁用此功能
   Future<ApiResult> deleteMessageAndSync(String uuid) async {
-    // 1. 從本地刪除
     await _messageRepo.deleteByUuid(uuid);
-
-    if (_isOffline) {
-      LogService.info('離線模式：跳過留言刪除同步', source: 'SyncService');
-      return returnApiResult(success: true, message: '已從本地刪除 (離線模式)');
-    }
-
-    // 2. 從雲端刪除
     final result = await _sheetsService.deleteMessage(uuid);
-
-    if (!result.success) {
-      // TODO: 實作離線佇列，稍後重試
-    }
-
+    LogService.info('留言已刪除: $uuid', source: 'SyncService');
     return result;
   }
 
@@ -222,25 +200,11 @@ class SyncService {
     return ApiResult(success: success, errorMessage: success ? null : message);
   }
 
-  /// 內部方法：雙向同步留言
+  /// 內部方法：單向同步留言 (雲端覆蓋本地)
   Future<void> _syncMessages(List<Message> cloudMessages) async {
-    // 取得雲端留言的 UUID 集合
-    final cloudUuids = cloudMessages.map((m) => m.uuid).toSet();
-
-    // 1. 找出本地有但雲端沒有的留言 (待上傳)
-    final pendingMessages = _messageRepo.getPendingMessages(cloudUuids);
-
-    // 2. 上傳待同步的留言 (使用批次 API)
-    if (pendingMessages.isNotEmpty) {
-      LogService.info('Batch uploading ${pendingMessages.length} messages...', source: 'SyncService');
-      final result = await _sheetsService.batchAddMessages(pendingMessages);
-      if (!result.success) {
-        LogService.error('Batch upload failed: ${result.errorMessage}', source: 'SyncService');
-      }
-    }
-
-    // 3. 從雲端同步到本地 (會自動處理新增/刪除)
+    // 直接使用雲端資料覆蓋本地，不上傳本地留言
     await _messageRepo.syncFromCloud(cloudMessages);
+    LogService.info('留言已從雲端同步 (${cloudMessages.length} 則)', source: 'SyncService');
   }
 
   /// 檢查行程衝突
