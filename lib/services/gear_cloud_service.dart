@@ -13,17 +13,14 @@ class GearCloudService {
 
   final GasApiClient _apiClient;
 
-  GearCloudService({GasApiClient? apiClient})
-      : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+  GearCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
 
   /// 取得公開/保護的裝備組合列表
   Future<GearCloudResult<List<GearSet>>> fetchGearSets() async {
     try {
       LogService.info('取得雲端裝備組合列表...', source: _source);
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionFetchGearSets,
-      });
+      final response = await _apiClient.post({'action': ApiConfig.actionFetchGearSets});
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -34,7 +31,8 @@ class GearCloudService {
         return GearCloudResult.failure(data['error'] ?? '取得失敗');
       }
 
-      final gearSets = (data['gear_sets'] as List<dynamic>?)
+      final gearSets =
+          (data['gear_sets'] as List<dynamic>?)
               ?.map((item) => GearSet.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [];
@@ -52,10 +50,7 @@ class GearCloudService {
     try {
       LogService.info('用 Key 取得裝備組合...', source: _source);
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionFetchGearSetByKey,
-        'key': key,
-      });
+      final response = await _apiClient.post({'action': ApiConfig.actionFetchGearSetByKey, 'key': key});
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -161,11 +156,7 @@ class GearCloudService {
     try {
       LogService.info('刪除裝備組合: $uuid', source: _source);
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionDeleteGearSet,
-        'uuid': uuid,
-        'key': key,
-      });
+      final response = await _apiClient.post({'action': ApiConfig.actionDeleteGearSet, 'uuid': uuid, 'key': key});
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (data['success'] != true) {
@@ -191,6 +182,5 @@ class GearCloudResult<T> {
 
   factory GearCloudResult.success(T data) => GearCloudResult._(success: true, data: data);
 
-  factory GearCloudResult.failure(String message) =>
-      GearCloudResult._(success: false, errorMessage: message);
+  factory GearCloudResult.failure(String message) => GearCloudResult._(success: false, errorMessage: message);
 }

@@ -9,10 +9,7 @@ import '../../data/models/gear_item.dart';
 class GearPreviewDialog extends StatefulWidget {
   final GearSet gearSet;
 
-  const GearPreviewDialog({
-    super.key,
-    required this.gearSet,
-  });
+  const GearPreviewDialog({super.key, required this.gearSet});
 
   @override
   State<GearPreviewDialog> createState() => _GearPreviewDialogState();
@@ -72,29 +69,14 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
               ),
               child: Row(
                 children: [
-                  Text(
-                    widget.gearSet.visibilityIcon,
-                    style: const TextStyle(fontSize: 24),
-                  ),
+                  Text(widget.gearSet.visibilityIcon, style: const TextStyle(fontSize: 24)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.gearSet.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '@${widget.gearSet.author}',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 13,
-                          ),
-                        ),
+                        Text(widget.gearSet.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('@${widget.gearSet.author}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -108,16 +90,8 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _StatChip(
-                    icon: Icons.backpack,
-                    value: '${items.length}',
-                    label: '件裝備',
-                  ),
-                  _StatChip(
-                    icon: Icons.fitness_center,
-                    value: WeightFormatter.format(totalWeight),
-                    label: '總重量',
-                  ),
+                  _StatChip(icon: Icons.backpack, value: '${items.length}', label: '件裝備'),
+                  _StatChip(icon: Icons.fitness_center, value: WeightFormatter.format(totalWeight), label: '總重量'),
                 ],
               ),
             ),
@@ -128,10 +102,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
             Flexible(
               child: items.isEmpty
                   ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text('此組合沒有裝備項目'),
-                      ),
+                      child: Padding(padding: EdgeInsets.all(32), child: Text('此組合沒有裝備項目')),
                     )
                   : ListView(
                       shrinkWrap: true,
@@ -139,9 +110,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                         for (final category in sortedCategories) ...[
                           _buildCategoryHeader(category),
                           if (_expandedCategories.contains(category))
-                            ...groupedItems[category]!.map(
-                              (item) => _GearItemTile(item: item),
-                            ),
+                            ...groupedItems[category]!.map((item) => _GearItemTile(item: item)),
                         ],
                       ],
                     ),
@@ -166,10 +135,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                         Icon(Icons.warning_amber, color: Colors.orange, size: 20),
                         SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            '下載將覆蓋您目前的裝備清單',
-                            style: TextStyle(color: Colors.orange, fontSize: 13),
-                          ),
+                          child: Text('下載將覆蓋您目前的裝備清單', style: TextStyle(color: Colors.orange, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -178,10 +144,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('取消'),
-                      ),
+                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
                       const SizedBox(width: 8),
                       FilledButton.icon(
                         onPressed: () => Navigator.pop(context, true),
@@ -219,28 +182,17 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
         color: Colors.grey.shade100,
         child: Row(
           children: [
-            Icon(
-              GearCategoryHelper.getIcon(category),
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            Icon(GearCategoryHelper.getIcon(category), size: 20, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                GearCategoryHelper.getName(category),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
+              child: Text(GearCategoryHelper.getName(category), style: const TextStyle(fontWeight: FontWeight.w600)),
             ),
             Text(
               '${itemsInCategory.length} 件 • ${WeightFormatter.format(categoryWeight)}',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
             ),
             const SizedBox(width: 8),
-            Icon(
-              isExpanded ? Icons.expand_less : Icons.expand_more,
-              size: 20,
-              color: Colors.grey.shade600,
-            ),
+            Icon(isExpanded ? Icons.expand_less : Icons.expand_more, size: 20, color: Colors.grey.shade600),
           ],
         ),
       ),
@@ -253,11 +205,7 @@ class _StatChip extends StatelessWidget {
   final String value;
   final String label;
 
-  const _StatChip({
-    required this.icon,
-    required this.value,
-    required this.label,
-  });
+  const _StatChip({required this.icon, required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -265,14 +213,8 @@ class _StatChip extends StatelessWidget {
       children: [
         Icon(icon, size: 24, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-        ),
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
       ],
     );
   }
@@ -287,21 +229,11 @@ class _GearItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
-      leading: Icon(
-        GearCategoryHelper.getIcon(item.category),
-        size: 20,
-        color: Colors.grey.shade600,
-      ),
-      title: Text(
-        item.name,
-        style: const TextStyle(fontSize: 14),
-      ),
+      leading: Icon(GearCategoryHelper.getIcon(item.category), size: 20, color: Colors.grey.shade600),
+      title: Text(item.name, style: const TextStyle(fontSize: 14)),
       trailing: Text(
         WeightFormatter.formatPrecise(item.weight),
-        style: TextStyle(
-          color: Colors.grey.shade700,
-          fontWeight: FontWeight.w500,
-        ),
+        style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w500),
       ),
     );
   }
