@@ -15,7 +15,7 @@ class MealItem {
   final String id;
   final String name;
   final double weight; // Grams
-  final int calories; // Kcal
+  final double calories; // Kcal
   final int quantity;
   final String? note;
 
@@ -29,7 +29,7 @@ class MealItem {
   });
 
   // Create a copy with some changes
-  MealItem copyWith({String? name, double? weight, int? calories, int? quantity, String? note}) {
+  MealItem copyWith({String? name, double? weight, double? calories, int? quantity, String? note}) {
     return MealItem(
       id: id,
       name: name ?? this.name,
@@ -51,6 +51,6 @@ class DailyMealPlan {
   double get totalWeight =>
       meals.values.expand((items) => items).fold(0, (sum, item) => sum + (item.weight * item.quantity));
 
-  int get totalCalories =>
+  double get totalCalories =>
       meals.values.expand((items) => items).fold(0, (sum, item) => sum + (item.calories * item.quantity));
 }

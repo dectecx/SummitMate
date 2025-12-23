@@ -20,7 +20,7 @@ class MealProvider extends ChangeNotifier {
   }
 
   // 新增餐點
-  void addMealItem(String day, MealType type, String name, double weight, int calories) {
+  void addMealItem(String day, MealType type, String name, double weight, double calories) {
     final planIndex = _dailyPlans.indexWhere((p) => p.day == day);
     if (planIndex == -1) return;
 
