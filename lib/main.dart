@@ -1136,7 +1136,7 @@ class _ItineraryTabState extends State<_ItineraryTab> {
                     const SizedBox(width: 8),
                     // 更新時間與按鈕 (置右)
                     Material(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       child: InkWell(
                         onTap: () => _manualSync(context),
@@ -1455,7 +1455,7 @@ class _GearTab extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), shape: BoxShape.circle),
+                          decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
                           child: const Icon(Icons.bento, color: Colors.orange, size: 28),
                         ),
                         const SizedBox(width: 16),
@@ -1765,7 +1765,7 @@ class InfoTabState extends State<InfoTab> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
                     stops: const [0.6, 1.0],
                   ),
                 ),
@@ -2022,9 +2022,9 @@ class InfoTabState extends State<InfoTab> {
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: highlight
               ? BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
                 )
               : null,
           child: Row(
@@ -2091,7 +2091,6 @@ class InfoTabState extends State<InfoTab> {
 
     final w = _weather!;
     final timeStr = DateFormat('MM/dd HH:mm').format(w.timestamp.toLocal());
-    final isDay = DateTime.now().hour > 6 && DateTime.now().hour < 18;
 
     // View Model Logic
     String displayTemp;
