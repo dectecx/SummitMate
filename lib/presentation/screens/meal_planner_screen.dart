@@ -24,7 +24,7 @@ class MealPlannerScreen extends StatelessWidget {
                       icon: const Icon(Icons.info_outline),
                       tooltip: '參考資訊',
                       onPressed: () =>
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const FoodReferenceScreen())),
+                          FoodReferenceScreen.show(context),
                     ),
                   ],
                   bottom: TabBar(

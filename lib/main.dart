@@ -455,9 +455,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       IconButton(
                         icon: const Icon(Icons.map_outlined),
                         tooltip: '查看地圖',
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const MapViewerScreen()));
-                        },
+                        onPressed: () => MapViewerScreen.show(context),
                       ),
                     ],
                   ],
@@ -1893,8 +1891,7 @@ class InfoTabState extends State<InfoTab> {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: () =>
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapViewerScreen())),
+                          onPressed: () => MapViewerScreen.show(context),
                           icon: const Icon(Icons.map),
                           label: const Text('查看步道導覽地圖'),
                         ),
