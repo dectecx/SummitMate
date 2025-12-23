@@ -28,6 +28,7 @@ import 'package:intl/intl.dart';
 import 'services/weather_service.dart';
 import 'data/models/weather_data.dart';
 import 'services/usage_tracking_service.dart';
+import 'presentation/screens/gear_cloud_screen.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -1376,15 +1377,49 @@ class _GearTab extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // 官方建議裝備連結
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.description, color: Colors.blue),
-                  title: const Text('官方建議裝備清單'),
-                  subtitle: const Text('台灣山林悠遊網提供'),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
-                ),
+              // 官方建議裝備 + 雲端裝備庫 (並排)
+              Row(
+                children: [
+                  // 官方建議裝備清單
+                  Expanded(
+                    child: Card(
+                      child: InkWell(
+                        onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Icon(Icons.description, color: Colors.green, size: 28),
+                              SizedBox(height: 8),
+                              Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 雲端裝備庫
+                  Expanded(
+                    child: Card(
+                      child: InkWell(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              Icon(Icons.cloud, color: Colors.blue, size: 28),
+                              SizedBox(height: 8),
+                              Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               // 總重量

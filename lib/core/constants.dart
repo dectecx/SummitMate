@@ -82,6 +82,12 @@ class ApiConfig {
   static const String actionFetchWeather = 'fetch_weather';
   static const String actionPoll = 'poll';
   static const String actionHeartbeat = 'heartbeat';
+
+  // Gear Cloud API Actions
+  static const String actionFetchGearSets = 'fetch_gear_sets';
+  static const String actionFetchGearSetByKey = 'fetch_gear_set_by_key';
+  static const String actionDownloadGearSet = 'download_gear_set';
+  static const String actionUploadGearSet = 'upload_gear_set';
 }
 
 /// Hive Box 名稱
