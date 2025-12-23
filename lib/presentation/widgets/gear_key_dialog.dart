@@ -22,14 +22,22 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _keyController.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _keyController.dispose();
     super.dispose();
   }
 
+  bool get _isKeyValid => _keyController.text.length == 4;
+
   Future<void> _handleSubmit() async {
     final key = _keyController.text;
-    if (key.length != 4) {
+    if (!_isKeyValid) {
       ToastService.error('請輸入 4 位數 Key');
       return;
     }
@@ -51,7 +59,7 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('🔐 用 Key 下載私人組合'),
+      title: const Text('🔐 用 Key 查看私人組合'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -80,14 +88,14 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
           child: const Text('取消'),
         ),
         FilledButton(
-          onPressed: _isLoading ? null : _handleSubmit,
+          onPressed: (!_isKeyValid || _isLoading) ? null : _handleSubmit,
           child: _isLoading
               ? const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('確認'),
+              : const Text('查詢'),
         ),
       ],
     );
@@ -150,17 +158,17 @@ class GearKeyRecord {
     required this.uploadedAt,
   });
 
-  /// 從儲存字串建立
+  String toStorageString() {
+    return '$key|$title|$visibility|${uploadedAt.toIso8601String()}';
+  }
+
   factory GearKeyRecord.fromStorageString(String str) {
     final parts = str.split('|');
     return GearKeyRecord(
       key: parts.isNotEmpty ? parts[0] : '',
       title: parts.length > 1 ? parts[1] : '',
-      visibility: parts.length > 2 ? parts[2] : '',
+      visibility: parts.length > 2 ? parts[2] : 'private',
       uploadedAt: parts.length > 3 ? DateTime.tryParse(parts[3]) ?? DateTime.now() : DateTime.now(),
     );
   }
-
-  /// 轉為儲存字串
-  String toStorageString() => '$key|$title|$visibility|${uploadedAt.toIso8601String()}';
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/models/gear_set.dart';
-import '../../services/toast_service.dart';
 
 /// Key 輸入下載對話框
 class GearKeyDownloadDialog extends StatefulWidget {
@@ -20,17 +19,23 @@ class _GearKeyDownloadDialogState extends State<GearKeyDownloadDialog> {
   bool _isSubmitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    _keyController.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _keyController.dispose();
     super.dispose();
   }
 
+  bool get _isKeyValid => _keyController.text.length == 4;
+
   void _handleSubmit() {
-    if (_keyController.text.length == 4) {
+    if (_isKeyValid) {
       setState(() => _isSubmitting = true);
       Navigator.pop(context, _keyController.text);
-    } else {
-      ToastService.error('請輸入 4 位數 Key');
     }
   }
 
@@ -41,7 +46,7 @@ class _GearKeyDownloadDialogState extends State<GearKeyDownloadDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('此組合需要 Key 才能下載'),
+          const Text('此組合需要 Key 才能查看'),
           const SizedBox(height: 16),
           TextField(
             controller: _keyController,
@@ -63,8 +68,8 @@ class _GearKeyDownloadDialogState extends State<GearKeyDownloadDialog> {
           child: const Text('取消'),
         ),
         FilledButton(
-          onPressed: _isSubmitting ? null : _handleSubmit,
-          child: const Text('下載'),
+          onPressed: (!_isKeyValid || _isSubmitting) ? null : _handleSubmit,
+          child: const Text('查看'),
         ),
       ],
     );

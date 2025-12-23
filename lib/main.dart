@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'core/constants.dart';
+import 'core/gear_helpers.dart';
 import 'services/toast_service.dart';
 import 'services/log_service.dart';
 import 'services/sync_service.dart';
@@ -1501,10 +1502,10 @@ class _GearTab extends StatelessWidget {
                     child: ExpansionTile(
                       maintainState: true,
                       initiallyExpanded: true,
-                      leading: Icon(_getCategoryIcon(entry.key)),
-                      title: Text('${_getCategoryName(entry.key)} (${entry.value.length}件)'),
+                      leading: Icon(GearCategoryHelper.getIcon(entry.key)),
+                      title: Text('${GearCategoryHelper.getName(entry.key)} (${entry.value.length}件)'),
                       subtitle: Text(
-                        '${entry.value.fold<double>(0, (sum, item) => sum + item.weight).toStringAsFixed(0)}g',
+                        WeightFormatter.format(entry.value.fold<double>(0, (sum, item) => sum + item.weight), decimals: 0),
                       ),
                       children: entry.value
                           .map(
@@ -1551,36 +1552,6 @@ class _GearTab extends StatelessWidget {
       await launchUrl(uri, mode: LaunchMode.platformDefault);
     } catch (e) {
       debugPrint('無法開啟連結: $e');
-    }
-  }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Sleep':
-        return Icons.bed;
-      case 'Cook':
-        return Icons.restaurant;
-      case 'Wear':
-        return Icons.checkroom;
-      case 'Other':
-        return Icons.category;
-      default:
-        return Icons.inventory_2;
-    }
-  }
-
-  String _getCategoryName(String category) {
-    switch (category) {
-      case 'Sleep':
-        return '睡眠系統';
-      case 'Cook':
-        return '炊具與飲食';
-      case 'Wear':
-        return '穿著';
-      case 'Other':
-        return '其他';
-      default:
-        return category;
     }
   }
 

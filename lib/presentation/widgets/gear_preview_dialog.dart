@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../core/gear_helpers.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
 
 /// 裝備組合預覽對話框
-class GearPreviewDialog extends StatelessWidget {
+/// 使用 GearCategoryHelper 確保與主裝備頁一致
+class GearPreviewDialog extends StatefulWidget {
   final GearSet gearSet;
 
   const GearPreviewDialog({
@@ -13,8 +15,46 @@ class GearPreviewDialog extends StatelessWidget {
   });
 
   @override
+  State<GearPreviewDialog> createState() => _GearPreviewDialogState();
+}
+
+class _GearPreviewDialogState extends State<GearPreviewDialog> {
+  // 記錄哪些類別是展開的 (預設全部展開)
+  final Set<String> _expandedCategories = {};
+  bool _initialized = false;
+
+  List<GearItem> get items => widget.gearSet.items ?? [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      // 預設展開所有類別
+      final categories = items.map((e) => e.category).toSet();
+      _expandedCategories.addAll(categories);
+      _initialized = true;
+    }
+  }
+
+  /// 依類別分組
+  Map<String, List<GearItem>> get groupedItems {
+    final map = <String, List<GearItem>>{};
+    for (final item in items) {
+      final category = item.category.isEmpty ? GearCategoryHelper.other : item.category;
+      map.putIfAbsent(category, () => []).add(item);
+    }
+    return map;
+  }
+
+  /// 有序的類別列表
+  List<String> get sortedCategories {
+    final keys = groupedItems.keys.toList();
+    keys.sort(GearCategoryHelper.compareCategories);
+    return keys;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final items = gearSet.items ?? [];
     final totalWeight = items.fold<double>(0, (sum, item) => sum + item.weight);
 
     return Dialog(
@@ -33,7 +73,7 @@ class GearPreviewDialog extends StatelessWidget {
               child: Row(
                 children: [
                   Text(
-                    gearSet.visibilityIcon,
+                    widget.gearSet.visibilityIcon,
                     style: const TextStyle(fontSize: 24),
                   ),
                   const SizedBox(width: 12),
@@ -42,14 +82,14 @@ class GearPreviewDialog extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          gearSet.title,
+                          widget.gearSet.title,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          '@${gearSet.author}',
+                          '@${widget.gearSet.author}',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 13,
@@ -75,7 +115,7 @@ class GearPreviewDialog extends StatelessWidget {
                   ),
                   _StatChip(
                     icon: Icons.fitness_center,
-                    value: _formatWeight(totalWeight),
+                    value: WeightFormatter.format(totalWeight),
                     label: '總重量',
                   ),
                 ],
@@ -84,7 +124,7 @@ class GearPreviewDialog extends StatelessWidget {
 
             const Divider(height: 1),
 
-            // 裝備列表
+            // 裝備列表 (按類別分組，可縮合)
             Flexible(
               child: items.isEmpty
                   ? const Center(
@@ -93,13 +133,17 @@ class GearPreviewDialog extends StatelessWidget {
                         child: Text('此組合沒有裝備項目'),
                       ),
                     )
-                  : ListView.builder(
+                  : ListView(
                       shrinkWrap: true,
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        return _GearItemTile(item: item);
-                      },
+                      children: [
+                        for (final category in sortedCategories) ...[
+                          _buildCategoryHeader(category),
+                          if (_expandedCategories.contains(category))
+                            ...groupedItems[category]!.map(
+                              (item) => _GearItemTile(item: item),
+                            ),
+                        ],
+                      ],
                     ),
             ),
 
@@ -155,11 +199,52 @@ class GearPreviewDialog extends StatelessWidget {
     );
   }
 
-  String _formatWeight(double weight) {
-    if (weight >= 1000) {
-      return '${(weight / 1000).toStringAsFixed(1)} kg';
-    }
-    return '${weight.toStringAsFixed(0)} g';
+  Widget _buildCategoryHeader(String category) {
+    final isExpanded = _expandedCategories.contains(category);
+    final itemsInCategory = groupedItems[category] ?? [];
+    final categoryWeight = itemsInCategory.fold<double>(0, (sum, item) => sum + item.weight);
+
+    return InkWell(
+      onTap: () {
+        setState(() {
+          if (isExpanded) {
+            _expandedCategories.remove(category);
+          } else {
+            _expandedCategories.add(category);
+          }
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        color: Colors.grey.shade100,
+        child: Row(
+          children: [
+            Icon(
+              GearCategoryHelper.getIcon(category),
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                GearCategoryHelper.getName(category),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            Text(
+              '${itemsInCategory.length} 件 • ${WeightFormatter.format(categoryWeight)}',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              isExpanded ? Icons.expand_less : Icons.expand_more,
+              size: 20,
+              color: Colors.grey.shade600,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -202,84 +287,22 @@ class _GearItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: _getCategoryColor(item.category).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Center(
-          child: Text(
-            _getCategoryEmoji(item.category),
-            style: const TextStyle(fontSize: 14),
-          ),
-        ),
+      leading: Icon(
+        GearCategoryHelper.getIcon(item.category),
+        size: 20,
+        color: Colors.grey.shade600,
       ),
       title: Text(
         item.name,
         style: const TextStyle(fontSize: 14),
       ),
-      subtitle: Text(
-        item.category,
-        style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
-      ),
       trailing: Text(
-        _formatItemWeight(item.weight),
+        WeightFormatter.formatPrecise(item.weight),
         style: TextStyle(
           color: Colors.grey.shade700,
           fontWeight: FontWeight.w500,
         ),
       ),
     );
-  }
-
-  String _formatItemWeight(double weight) {
-    if (weight >= 1000) {
-      return '${(weight / 1000).toStringAsFixed(2)} kg';
-    }
-    return '${weight.toStringAsFixed(0)} g';
-  }
-
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case '背負系統':
-        return Colors.blue;
-      case '睡眠系統':
-        return Colors.purple;
-      case '炊煮系統':
-        return Colors.orange;
-      case '衣物':
-        return Colors.green;
-      case '電子設備':
-        return Colors.red;
-      case '個人用品':
-        return Colors.teal;
-      case '糧食':
-        return Colors.brown;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getCategoryEmoji(String category) {
-    switch (category) {
-      case '背負系統':
-        return '🎒';
-      case '睡眠系統':
-        return '🛏️';
-      case '炊煮系統':
-        return '🍳';
-      case '衣物':
-        return '👕';
-      case '電子設備':
-        return '📱';
-      case '個人用品':
-        return '🪥';
-      case '糧食':
-        return '🍙';
-      default:
-        return '📦';
-    }
   }
 }
