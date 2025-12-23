@@ -50,7 +50,6 @@ class GearRepository {
   /// 新增裝備
   Future<int> addItem(GearItem item) async {
     // 自動設定 orderIndex 為目前最大值 + 1
-    // 自動設定 orderIndex
     if (item.orderIndex == null) {
       if (box.isNotEmpty) {
         final maxOrder = box.values
