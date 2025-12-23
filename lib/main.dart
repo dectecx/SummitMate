@@ -28,6 +28,7 @@ import 'services/tutorial_service.dart';
 import 'package:intl/intl.dart';
 import 'services/weather_service.dart';
 import 'data/models/weather_data.dart';
+import 'data/models/gear_item.dart';
 import 'services/usage_tracking_service.dart';
 import 'presentation/screens/gear_cloud_screen.dart';
 
@@ -1524,8 +1525,7 @@ class _GearTab extends StatelessWidget {
                               subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                                // 裝備刪除不需確認 (依需求)
-                                onPressed: () => provider.deleteItem(item.key),
+                                onPressed: () => _confirmDeleteGearItem(context, provider, item),
                               ),
                               onTap: () => provider.toggleChecked(item.key),
                             ),
@@ -1553,6 +1553,31 @@ class _GearTab extends StatelessWidget {
     } catch (e) {
       debugPrint('無法開啟連結: $e');
     }
+  }
+
+  /// 確認刪除單一裝備
+  void _confirmDeleteGearItem(BuildContext context, GearProvider provider, GearItem item) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('確認刪除'),
+        content: Text('確定要刪除「${item.name}」嗎？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              provider.deleteItem(item.key);
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAddGearDialog(BuildContext context, GearProvider provider) {
