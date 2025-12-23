@@ -80,7 +80,7 @@ class MealPlannerScreen extends StatelessWidget {
             Column(
               children: [
                 const Text('總熱量', style: TextStyle(fontSize: 12)),
-                Text('${plan.totalCalories} kcal', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ],
             ),
           ],
@@ -120,7 +120,7 @@ class MealPlannerScreen extends StatelessWidget {
                   .map(
                     (item) => ListTile(
                       title: Text(item.name),
-                      subtitle: Text('${item.weight.toStringAsFixed(0)}g / ${item.calories}kcal'),
+                      subtitle: Text('${item.weight.toStringAsFixed(0)}g / ${item.calories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")}kcal'),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
                         onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
@@ -192,7 +192,7 @@ class MealPlannerScreen extends StatelessWidget {
                   child: TextField(
                     controller: calCtrl,
                     decoration: const InputDecoration(labelText: '熱量 (kcal)', hintText: '350'),
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   ),
                 ),
               ],
@@ -205,7 +205,7 @@ class MealPlannerScreen extends StatelessWidget {
             onPressed: () {
               final name = nameCtrl.text.trim();
               final weight = double.tryParse(weightCtrl.text) ?? 0;
-              final cal = int.tryParse(calCtrl.text) ?? 0;
+              final cal = double.tryParse(calCtrl.text) ?? 0;
               if (name.isNotEmpty) {
                 provider.addMealItem(day, type, name, weight, cal);
                 Navigator.pop(context);
