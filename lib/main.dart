@@ -1509,9 +1509,16 @@ class _GearTab extends StatelessWidget {
                           decimals: 0,
                         ),
                       ),
-                      children: entry.value
-                          .map(
-                            (item) => ListTile(
+                      children: [
+                        ReorderableListView(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          onReorder: (oldIndex, newIndex) {
+                            provider.reorderItem(oldIndex, newIndex, category: entry.key);
+                          },
+                          children: entry.value.map((item) {
+                            return ListTile(
+                              key: ValueKey(item.key),
                               leading: Checkbox(
                                 value: item.isChecked,
                                 onChanged: (_) => provider.toggleChecked(item.key),
@@ -1524,14 +1531,21 @@ class _GearTab extends StatelessWidget {
                                 ),
                               ),
                               subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                                onPressed: () => _confirmDeleteGearItem(context, provider, item),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
+                                    onPressed: () => _confirmDeleteGearItem(context, provider, item),
+                                  ),
+                                  const Icon(Icons.drag_handle, color: Colors.grey),
+                                ],
                               ),
                               onTap: () => provider.toggleChecked(item.key),
-                            ),
-                          )
-                          .toList(),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   ),
                 ),
