@@ -10,6 +10,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
+import '../widgets/gear_preview_dialog.dart';
 
 /// 雲端裝備庫畫面
 class GearCloudScreen extends StatefulWidget {
@@ -131,33 +132,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('下載「${gearSet.title}」？'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('作者: @${gearSet.author}'),
-            Text('重量: ${gearSet.formattedWeight}'),
-            Text('裝備: ${items.length} 件'),
-            const SizedBox(height: 16),
-            const Text(
-              '下載將覆蓋您目前的裝備清單，確定要繼續嗎？',
-              style: TextStyle(color: Colors.orange),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('下載並覆蓋'),
-          ),
-        ],
-      ),
+      builder: (context) => GearPreviewDialog(gearSet: gearSet),
     );
 
     if (confirmed == true) {
