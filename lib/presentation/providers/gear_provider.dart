@@ -188,18 +188,16 @@ class GearProvider extends ChangeNotifier {
   Future<void> reorderItem(int oldIndex, int newIndex, {String? category}) async {
     try {
       // 1. 取得操作目標列表 (全列表或分類列表)
-      final targetList = category == null
-          ? _items
-          : _items.where((item) => item.category == category).toList();
-      
+      final targetList = category == null ? _items : _items.where((item) => item.category == category).toList();
+
       if (oldIndex < newIndex) {
         newIndex -= 1;
       }
-      
+
       // 2. 在目標列表中移動 item
       final item = targetList.removeAt(oldIndex);
       targetList.insert(newIndex, item);
-      
+
       // 3. 如果是特定分類，需將新順序套回全列表 (保持其他分類位置不變)
       final List<GearItem> finalSortedList;
       if (category == null) {
@@ -216,7 +214,7 @@ class GearProvider extends ChangeNotifier {
 
       // 4. 更新資料庫內的 orderIndex
       await _repository.updateItemsOrder(finalSortedList);
-      
+
       // 5. 重新載入
       _loadItems();
     } catch (e, stackTrace) {

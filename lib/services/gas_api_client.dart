@@ -27,19 +27,12 @@ class GasApiClient {
       LogService.debug('[GET] 請求開始: $uri', source: _source);
       final response = await _client.get(uri);
       stopwatch.stop();
-      
-      LogService.info(
-        '[GET] 完成 (${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
-        source: _source,
-      );
+
+      LogService.info('[GET] 完成 (${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}', source: _source);
       return response;
     } catch (e, stackTrace) {
       stopwatch.stop();
-      LogService.error(
-        '[GET] 失敗 (${stopwatch.elapsedMilliseconds}ms): $e',
-        source: _source,
-        stackTrace: stackTrace,
-      );
+      LogService.error('[GET] 失敗 (${stopwatch.elapsedMilliseconds}ms): $e', source: _source, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -48,7 +41,7 @@ class GasApiClient {
   Future<http.Response> post(Map<String, dynamic> body) async {
     final stopwatch = Stopwatch()..start();
     final action = body['action'] ?? 'unknown';
-    
+
     try {
       final uri = Uri.parse(_baseUrl);
       // [Web Compatibility]
