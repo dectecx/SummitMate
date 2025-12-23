@@ -22,9 +22,19 @@ class GearRepository {
     return _box!;
   }
 
-  /// 取得所有裝備
+  /// 取得所有裝備 (依 orderIndex 排序)
   List<GearItem> getAllItems() {
-    return box.values.toList();
+    final items = box.values.toList();
+    items.sort((a, b) {
+      if (a.orderIndex != null && b.orderIndex != null) {
+        return a.orderIndex!.compareTo(b.orderIndex!);
+      }
+      // 如果沒有 orderIndex，將其視為無限大 (排在最後)
+      if (a.orderIndex != null) return -1;
+      if (b.orderIndex != null) return 1;
+      return 0;
+    });
+    return items;
   }
 
   /// 依分類取得裝備
@@ -39,6 +49,16 @@ class GearRepository {
 
   /// 新增裝備
   Future<int> addItem(GearItem item) async {
+    // 自動設定 orderIndex 為目前最大值 + 1
+    if (item.orderIndex == null && box.isNotEmpty) {
+      final maxOrder = box.values
+          .map((i) => i.orderIndex ?? 0)
+          .fold<int>(0, (max, current) => current > max ? current : max);
+      item.orderIndex = maxOrder + 1;
+    } else if (item.orderIndex == null) {
+      item.orderIndex = 0;
+    }
+    
     return await box.add(item);
   }
 
@@ -92,6 +112,17 @@ class GearRepository {
     for (final item in box.values) {
       item.isChecked = false;
       await item.save();
+    }
+  }
+
+  /// 批量更新裝備順序
+  Future<void> updateItemsOrder(List<GearItem> items) async {
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (item.orderIndex != i) {
+        item.orderIndex = i;
+        await item.save();
+      }
     }
   }
 
