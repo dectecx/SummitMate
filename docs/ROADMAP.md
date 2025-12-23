@@ -60,7 +60,7 @@
 
 ### 任務
 - [x] 時間格式統一 (String-First Strategy, UTC ISO8601)
-- [x] 批次上傳 API (`batchAddMessages`) 解決  N+1 問題
+- [x] 批次上傳 API (`batchAddMessages`) 解決 N+1 問題
 - [x] `SyncService` 效能調優
 
 ---
@@ -79,7 +79,53 @@
 
 ---
 
-## Phase 16: 進階功能 (Future Plans) 🚀
+## Phase 17: 雲端裝備庫 (Cloud Gear Library) ✅
+
+### 目標
+讓山友能分享裝備清單，並能下載他人的組合參考。
+
+### 任務
+- [x] GearSets Sheet Schema 設計
+- [x] 三層可見性 (Public/Protected/Private)
+- [x] 4 位數 Key 保護機制
+- [x] 上傳裝備組合 API
+- [x] 預覽對話框 (分類縮合顯示)
+- [x] 本地 Key 儲存 (SharedPreferences)
+- [x] 刪除組合功能
+- [x] 防連點機制
+
+---
+
+## Phase 18: 投票功能 (Polls) ✅
+
+### 目標
+讓團隊能快速投票決定行程細節。
+
+### 任務
+- [x] Polls/PollOptions/PollVotes Sheet Schema
+- [x] 建立投票 (標題、選項、截止時間)
+- [x] 單選/多選支援
+- [x] 允許/禁止新增選項
+- [x] 即時/盲投顯示模式
+- [x] 投票者列表顯示
+- [x] 關閉/刪除投票
+
+---
+
+## Phase 19: 教學導覽 (Tutorial Overlay) ✅
+
+### 目標
+引導新用戶熟悉 App 各項功能。
+
+### 任務
+- [x] TutorialService 步驟定義
+- [x] TutorialOverlay Widget (Spotlight 效果)
+- [x] 9 步驟互動式引導
+- [x] 首次使用自動觸發
+
+---
+
+## Phase 20: 進階功能 (Future Plans) 🚀
 
 ### 目標
 增強戶外實用性與社群功能。
@@ -99,13 +145,13 @@
 lib/
 ├── core/           # 共用工具、常數、主題、DI、環境配置
 ├── data/           # 資料層 (Models, Repositories)
-├── services/       # 服務層 (API, Sync, Log, Toast)
-├── presentation/   # UI 層 (Providers, Screens)
+├── services/       # 服務層 (API, Sync, Log, Toast, Weather, Poll, Gear)
+├── presentation/   # UI 層 (Providers, Screens, Widgets)
 └── main.dart
 ```
 
 ### 測試策略
-- **Unit Tests**: 保持高覆蓋率 (Models, Services, Providers)
+- **Unit Tests**: 保持高覆蓋率 (Models, Services, Providers) - 76 Tests
 - **Integration Tests**: 關鍵流程驗證
 - **Manual QA**: 實地登山測試 (Field Test)
 
@@ -115,3 +161,4 @@ lib/
 | Isar 相容性 | 已解決 | 遷移至 Hive |
 | Google Sheets 限流 | 監控中 | 實作批次上傳與錯誤重試 |
 | Web CORS 問題 | 已解決 | 調整 Content-Type 為 text/plain |
+| GAS 響應慢 | 已解決 | 防連點機制、Loading 狀態管理 |
