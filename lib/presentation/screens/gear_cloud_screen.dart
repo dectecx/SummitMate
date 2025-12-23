@@ -263,6 +263,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           return _GearSetCard(
             gearSet: gearSet,
             onDownload: () => _onDownloadPressed(gearSet),
+            onDelete: gearSet.visibility == GearSetVisibility.public
+                ? () => _confirmDeletePublicGearSet(gearSet)
+                : null,
           );
         },
       ),
@@ -277,7 +280,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            // 第一行：同步、我的 Keys
+            // 第一行：同步、上傳
             Row(
               children: [
                 // 同步按鈕
@@ -289,6 +292,21 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                // 上傳
+                Expanded(
+                  child: _ToolButton(
+                    icon: Icons.upload,
+                    label: '上傳我的裝備',
+                    onTap: isOffline ? null : _showUploadDialog,
+                    disabled: isOffline,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // 第二行：我的 Keys、用 Key 下載
+            Row(
+              children: [
                 // 我的 Keys
                 Expanded(
                   child: _ToolButton(
@@ -297,28 +315,13 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                     onTap: _showMyKeysDialog,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // 第二行：用 Key 下載、上傳
-            Row(
-              children: [
+                const SizedBox(width: 8),
                 // 用 Key 下載
                 Expanded(
                   child: _ToolButton(
                     icon: Icons.download,
                     label: '用 Key 下載',
                     onTap: _showKeyInputDialog,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // 上傳
-                Expanded(
-                  child: _ToolButton(
-                    icon: Icons.upload,
-                    label: '上傳我的裝備',
-                    onTap: isOffline ? null : _showUploadDialog,
-                    disabled: isOffline,
                   ),
                 ),
               ],
@@ -335,7 +338,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('🔑 我上傳的 Keys'),
         content: keys.isEmpty
             ? const Text('尚無上傳記錄', style: TextStyle(color: Colors.grey))
@@ -348,16 +351,119 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                   ),
                   title: Text(record.key, style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 20)),
                   subtitle: Text(record.title),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    tooltip: '刪除此組合',
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                      _confirmDeleteGearSet(record);
+                    },
+                  ),
                 )).toList(),
               ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('關閉'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteGearSet(GearKeyRecord record) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ 確認刪除'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('確定要刪除「${record.title}」嗎？'),
+            const SizedBox(height: 8),
+            const Text('此操作無法復原！', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _deleteGearSet(record);
+    }
+  }
+
+  Future<void> _deleteGearSet(GearKeyRecord record) async {
+    // 嘗試從雲端刪除 (需要透過 key 查詢 uuid)
+    final fetchResult = await _cloudService.fetchGearSetByKey(record.key);
+    if (!fetchResult.success || fetchResult.data == null) {
+      ToastService.error('找不到此組合或已被刪除');
+      return;
+    }
+
+    final gearSet = fetchResult.data!;
+    final deleteResult = await _cloudService.deleteGearSet(gearSet.uuid, record.key);
+
+    if (deleteResult.success) {
+      // 從本地儲存中也刪除記錄
+      await GearKeyStorage.removeUploadedKey(record.key);
+      ToastService.success('已刪除裝備組合');
+      _fetchGearSets(); // 刷新列表
+    } else {
+      ToastService.error(deleteResult.errorMessage ?? '刪除失敗');
+    }
+  }
+
+  /// 確認刪除 public 裝備組合
+  Future<void> _confirmDeletePublicGearSet(GearSet gearSet) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('⚠️ 確認刪除'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('確定要刪除「${gearSet.title}」嗎？'),
+            const SizedBox(height: 8),
+            const Text('此操作無法復原！', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // public 組合不需要 key
+      final deleteResult = await _cloudService.deleteGearSet(gearSet.uuid, '');
+      if (deleteResult.success) {
+        ToastService.success('已刪除裝備組合');
+        _fetchGearSets(); // 刷新列表
+      } else {
+        ToastService.error(deleteResult.errorMessage ?? '刪除失敗');
+      }
+    }
   }
 
   void _onDownloadPressed(GearSet gearSet) {
@@ -384,10 +490,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 class _GearSetCard extends StatelessWidget {
   final GearSet gearSet;
   final VoidCallback onDownload;
+  final VoidCallback? onDelete;
 
   const _GearSetCard({
     required this.gearSet,
     required this.onDownload,
+    this.onDelete,
   });
 
   @override
@@ -437,6 +545,15 @@ class _GearSetCard extends StatelessWidget {
                   label: '${gearSet.itemCount} items',
                 ),
                 const Spacer(),
+                // public 組合顯示刪除按鈕
+                if (gearSet.visibility == GearSetVisibility.public && onDelete != null) ...[
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                    tooltip: '刪除此組合',
+                    onPressed: onDelete,
+                  ),
+                  const SizedBox(width: 4),
+                ],
                 _buildDownloadButton(),
               ],
             ),
