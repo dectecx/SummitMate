@@ -31,6 +31,7 @@ import 'data/models/weather_data.dart';
 import 'data/models/gear_item.dart';
 import 'services/usage_tracking_service.dart';
 import 'presentation/screens/gear_cloud_screen.dart';
+import 'presentation/widgets/zoomable_image.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
@@ -1846,9 +1847,10 @@ class InfoTabState extends State<InfoTab> {
                                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
                               ),
                               const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset('assets/images/elevation_profile.png', fit: BoxFit.contain),
+                              const ZoomableImage(
+                                assetPath: 'assets/images/elevation_profile.png',
+                                borderRadius: 8,
+                                title: '高度變化圖',
                               ),
                             ],
                           ),
@@ -1870,9 +1872,10 @@ class InfoTabState extends State<InfoTab> {
                                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
                               ),
                               const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset('assets/images/trail_time_map.png', fit: BoxFit.contain),
+                              const ZoomableImage(
+                                assetPath: 'assets/images/trail_time_map.png',
+                                borderRadius: 8,
+                                title: '路程時間參考',
                               ),
                             ],
                           ),
