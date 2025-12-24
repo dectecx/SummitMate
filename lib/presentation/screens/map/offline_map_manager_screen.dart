@@ -19,26 +19,11 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
   // 預定義推薦區域 (約 10km x 10km)
   // 經緯度約 0.1 度 ~ 11km
   final List<({String name, LatLngBounds bounds})> _presets = [
-    (
-      name: '玉山主峰 (Mt. Jade)',
-      bounds: LatLngBounds(const LatLng(23.51, 120.91), const LatLng(23.43, 120.99)),
-    ),
-    (
-      name: '雪山主東 (Snow Mtn)',
-      bounds: LatLngBounds(const LatLng(24.42, 121.19), const LatLng(24.34, 121.27)),
-    ),
-    (
-      name: '合歡群峰 (Hehuan Mtn)',
-      bounds: LatLngBounds(const LatLng(24.18, 121.23), const LatLng(24.10, 121.31)),
-    ),
-    (
-      name: '嘉明湖 (Jiaming Lake)',
-      bounds: LatLngBounds(const LatLng(23.33, 120.98), const LatLng(23.25, 121.06)),
-    ),
-    (
-      name: '北大武山 (Beidawu)',
-      bounds: LatLngBounds(const LatLng(22.67, 120.71), const LatLng(22.59, 120.79)),
-    ),
+    (name: '玉山主峰 (Mt. Jade)', bounds: LatLngBounds(const LatLng(23.51, 120.91), const LatLng(23.43, 120.99))),
+    (name: '雪山主東 (Snow Mtn)', bounds: LatLngBounds(const LatLng(24.42, 121.19), const LatLng(24.34, 121.27))),
+    (name: '合歡群峰 (Hehuan Mtn)', bounds: LatLngBounds(const LatLng(24.18, 121.23), const LatLng(24.10, 121.31))),
+    (name: '嘉明湖 (Jiaming Lake)', bounds: LatLngBounds(const LatLng(23.33, 120.98), const LatLng(23.25, 121.06))),
+    (name: '北大武山 (Beidawu)', bounds: LatLngBounds(const LatLng(22.67, 120.71), const LatLng(22.59, 120.79))),
   ];
 
   @override
@@ -98,41 +83,55 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 2. 目前下載任務
-              if (provider.isDownloading)
-                Card(
-                  color: Colors.blue.shade50,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const SizedBox(width: 8),
-                            const Expanded(
-                              child: Text('正在下載地圖...', style: TextStyle(fontWeight: FontWeight.bold)),
+              // 2. 下載佇列
+              if (provider.downloadQueue.isNotEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Text('下載任務佇列', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 8),
+                ...provider.downloadQueue.map(
+                  (task) => Card(
+                    color: task.status == TaskStatus.downloading ? Colors.blue.shade50 : null,
+                    child: ListTile(
+                      title: Text(task.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          if (task.status == TaskStatus.pending)
+                            const Text('等待下載中...', style: TextStyle(color: Colors.orange))
+                          else if (task.status == TaskStatus.downloading) ...[
+                            Row(
+                              children: [
+                                Expanded(child: LinearProgressIndicator(value: task.progress)),
+                                const SizedBox(width: 8),
+                                Text('${(task.progress * 100).toStringAsFixed(1)}%'),
+                              ],
                             ),
-                            Text('${(provider.downloadProgress * 100).toStringAsFixed(1)}%'),
-                            IconButton(
+                            Text(
+                              'Tiles: ${task.successfulTiles} / Fail: ${task.failedTiles}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ] else if (task.status == TaskStatus.failed)
+                            const Text('下載失敗', style: TextStyle(color: Colors.red))
+                          else if (task.status == TaskStatus.completed)
+                            const Text('下載完成', style: TextStyle(color: Colors.green))
+                          else if (task.status == TaskStatus.cancelled)
+                            const Text('已取消', style: TextStyle(color: Colors.grey)),
+                        ],
+                      ),
+                      trailing: (task.status == TaskStatus.downloading || task.status == TaskStatus.pending)
+                          ? IconButton(
                               icon: const Icon(Icons.cancel, color: Colors.red),
-                              onPressed: () async {
-                                await provider.cancelDownload();
-                                _refreshStats(); // 取消後更新統計
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        LinearProgressIndicator(value: provider.downloadProgress),
-                        const SizedBox(height: 8),
-                        const Text('請勿強制關閉 App，可返回地圖繼續操作。', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
+                              onPressed: () => provider.cancelTask(task.id),
+                            )
+                          : const Icon(Icons.check_circle, color: Colors.green),
                     ),
                   ),
                 ),
-
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
 
               // 3. 推薦下載區域
               if (!provider.isDownloading) ...[
@@ -141,17 +140,19 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                   child: Text('推薦區域下載 (熱門百岳)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 8),
-                ..._presets.map((preset) => Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.terrain, color: Colors.green),
-                    title: Text(preset.name),
-                    subtitle: const Text('範圍: 約 10x10 km, Zoom 12-20'),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.download_for_offline_outlined, color: Colors.blue),
-                      onPressed: () => _confirmDownloadPreset(context, provider, preset),
+                ..._presets.map(
+                  (preset) => Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.terrain, color: Colors.green),
+                      title: Text(preset.name),
+                      subtitle: const Text('範圍: 約 10x10 km, Zoom 12-20'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.download_for_offline_outlined, color: Colors.blue),
+                        onPressed: () => _confirmDownloadPreset(context, provider, preset),
+                      ),
                     ),
                   ),
-                )),
+                ),
                 const SizedBox(height: 16),
               ],
 
@@ -219,19 +220,18 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('已在背景開始下載...')),
-              );
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已在背景開始下載...')));
               provider.downloadRegion(
                 bounds: preset.bounds,
                 minZoom: 12,
                 maxZoom: 20,
+                name: preset.name,
                 onProgress: null,
-              ).then((_) {
-                 if(mounted) _refreshStats();
-              });
+              );
+              // 下載加入佇列後 refresh stats (如果有立即變動) 但是通常要等下載
+              if (mounted) _refreshStats();
             },
-            child: const Text('開始下載'),
+            child: const Text('加入下載'),
           ),
         ],
       ),
