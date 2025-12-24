@@ -50,7 +50,7 @@ class _MapScreenState extends State<MapScreen> {
                   // 1. 底圖層 (OpenStreetMap + FMTC Cache)
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.dectecx.summitmate',
+                    userAgentPackageName: provider.packageName,
                     maxNativeZoom: 19, // 支援過度縮放到 20 (使用 level 19 tiles 放大)
                     // FMTC v10: 使用 FMTCTileProvider 攔截並快取
                     // 若 Store 尚未準備好，暫時使用預設 (NetworkTileProvider) 避免 Crash
