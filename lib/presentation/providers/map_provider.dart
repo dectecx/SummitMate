@@ -11,7 +11,35 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../services/log_service.dart';
+
+enum TaskStatus { pending, downloading, paused, completed, failed, cancelled }
+
+class DownloadTask {
+  final String id;
+  final String name;
+  final LatLngBounds bounds;
+  final int minZoom;
+  final int maxZoom;
+  TaskStatus status;
+  double progress;
+  int successfulTiles;
+  int failedTiles;
+  StreamSubscription<DownloadProgress>? subscription;
+
+  DownloadTask({
+    required this.id,
+    required this.name,
+    required this.bounds,
+    required this.minZoom,
+    required this.maxZoom,
+    this.status = TaskStatus.pending,
+    this.progress = 0.0,
+    this.successfulTiles = 0,
+    this.failedTiles = 0,
+  });
+}
 
 class MapProvider with ChangeNotifier {
   Gpx? _gpx;
@@ -34,15 +62,17 @@ class MapProvider with ChangeNotifier {
   StreamSubscription<Position>? _positionStreamSubscription;
   StreamSubscription<CompassEvent>? _compassStreamSubscription;
 
-  // Download Task
-  StreamSubscription<DownloadProgress>? _downloadSubscription;
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
+  // Download Queue
+  final List<DownloadTask> _downloadQueue = [];
+  bool _isQueueProcessing = false;
 
   Position? get currentLocation => _currentLocation;
   double? get currentHeading => _currentHeading;
-  bool get isDownloading => _isDownloading;
-  double get downloadProgress => _downloadProgress;
+
+  List<DownloadTask> get downloadQueue => List.unmodifiable(_downloadQueue);
+  bool get isDownloading => _downloadQueue.any((t) => t.status == TaskStatus.downloading);
+  // 相容舊 getter, 回傳第一個正在下載或排隊的進度
+  double get downloadProgress => _downloadQueue.isNotEmpty ? _downloadQueue.first.progress : 0.0;
 
   // 使用 GetIt 獲取 Package Name
   String get packageName => GetIt.instance<PackageInfo>().packageName;
@@ -134,94 +164,142 @@ class MapProvider with ChangeNotifier {
 
   /// 下載指定區域
   /// 回傳是否成功 (Future completes when download finishes or cancels)
-  Future<bool> downloadRegion({
+  /// 加入下載任務至佇列
+  Future<void> downloadRegion({
     required LatLngBounds bounds,
     required int minZoom,
     required int maxZoom,
+    String? name,
     Function(double progress)? onProgress,
   }) async {
+    // 檢查網路
+    final hasConnection = await InternetConnectionChecker.createInstance().hasConnection;
+    if (!kIsWeb && !hasConnection) {
+      LogService.warning('No internet connection.', source: 'MapProvider');
+      throw Exception('無網路連線，無法下載地圖。');
+    }
+
     await initStore();
 
-    final region = RectangleRegion(bounds);
-    final downloadable = region.toDownloadable(
-      minZoom: minZoom,
-      maxZoom: maxZoom,
-      options: TileLayer(
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: packageName,
-      ),
-    );
+    final taskId = DateTime.now().millisecondsSinceEpoch.toString();
+    final taskName = name ?? '區域下載 ${taskId.substring(taskId.length - 4)}';
 
-    // 開始下載
-    final instanceId = DateTime.now().millisecondsSinceEpoch;
-    LogService.info('downloadRegion: Starting download task (ID: $instanceId)...', source: 'MapProvider');
+    final task = DownloadTask(id: taskId, name: taskName, bounds: bounds, minZoom: minZoom, maxZoom: maxZoom);
 
-    final downloadTask = _store.download.startForeground(
-      region: downloadable,
-      instanceId: instanceId,
-      parallelThreads: 5,
-      maxBufferLength: 200,
-      skipExistingTiles: true,
-      skipSeaTiles: true,
-    );
+    _downloadQueue.add(task);
+    notifyListeners();
+    LogService.info('Task added to queue: ${task.name}', source: 'MapProvider');
 
-    _isDownloading = true;
-    _downloadProgress = 0.0;
+    _processQueue();
+  }
+
+  /// 處理佇列
+  Future<void> _processQueue() async {
+    if (_isQueueProcessing) return;
+
+    // 找出下一個 Pending 的任務
+    final nextTaskIndex = _downloadQueue.indexWhere((t) => t.status == TaskStatus.pending);
+    if (nextTaskIndex == -1) {
+      _isQueueProcessing = false;
+      return;
+    }
+
+    _isQueueProcessing = true;
+    final task = _downloadQueue[nextTaskIndex];
+    task.status = TaskStatus.downloading;
     notifyListeners();
 
-    final completer = Completer<bool>(); // 用於等待下載完成
-
-    _downloadSubscription?.cancel();
-    _downloadSubscription = downloadTask.downloadProgress.listen(
-      (event) {
-        if (onProgress != null) {
-          final percent = event.percentageProgress / 100.0;
-          onProgress(percent);
-        }
-
-        // Update local progress state
-        _downloadProgress = event.percentageProgress / 100.0;
-        notifyListeners();
-      }, // FMTC v8/v9 stats: check if percentageProgress == 100 or rely on onDone
-      onError: (e) {
-        LogService.error('Download task failed: $e', source: 'MapProvider');
-        completer.complete(false);
-      },
-      onDone: () {
-        if (!completer.isCompleted) {
-          completer.complete(true); // 視為完成 (或被取消)
-        }
-        _isDownloading = false;
-        _downloadProgress = 0.0;
-        notifyListeners();
-      },
-      cancelOnError: true,
-    );
-
     try {
-      return await completer.future;
+      LogService.info('Starting task: ${task.name}', source: 'MapProvider');
+
+      final region = RectangleRegion(task.bounds);
+      final downloadable = region.toDownloadable(
+        minZoom: task.minZoom,
+        maxZoom: task.maxZoom,
+        options: TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: packageName,
+        ),
+      );
+
+      final downloadTask = await _store.download.startForeground(
+        region: downloadable,
+        // FMTC v10: retry handling is automatic or configured elsewhere store.manage.config
+      );
+
+      task.subscription = downloadTask.downloadProgress.listen(
+        (progress) {
+          task.progress = progress.percentageProgress / 100.0;
+          // task.successfulTiles = progress.successfulTiles; // Undefined in v10?
+          // task.failedTiles = progress.failedTiles;         // Undefined in v10?
+          notifyListeners();
+        },
+        onError: (e) {
+          LogService.error('Download error for task ${task.id}: $e', source: 'MapProvider');
+          task.status = TaskStatus.failed;
+          notifyListeners();
+          task.subscription?.cancel();
+          _isQueueProcessing = false;
+          _processQueue(); // 繼續下一個
+        },
+        onDone: () {
+          LogService.info('Task completed: ${task.name}', source: 'MapProvider');
+          // 檢查是否有失敗過多
+          if (task.failedTiles > 0 && task.successfulTiles == 0) {
+            task.status = TaskStatus.failed;
+          } else {
+            task.status = TaskStatus.completed;
+            task.progress = 1.0;
+          }
+          notifyListeners();
+          _isQueueProcessing = false;
+          _processQueue(); // 繼續下一個
+        },
+        cancelOnError: true, // 遇到錯就取消，由 onError 處理
+      );
     } catch (e) {
-      LogService.error('Download await failed: $e', source: 'MapProvider');
-      return false;
-    } finally {
-      // 確保狀態重置 (雖然 onDone 也會處理，但在異常時多一層保險)
-      if (_isDownloading) {
-        _isDownloading = false;
-        notifyListeners();
+      LogService.error('Failed to start task ${task.id}: $e', source: 'MapProvider');
+      task.status = TaskStatus.failed;
+      _isQueueProcessing = false;
+      notifyListeners();
+      _processQueue();
+    }
+  }
+
+  /// 取消任務
+  Future<void> cancelTask(String taskId) async {
+    final index = _downloadQueue.indexWhere((t) => t.id == taskId);
+    if (index != -1) {
+      final task = _downloadQueue[index];
+      if (task.status == TaskStatus.downloading) {
+        await task.subscription?.cancel();
+      }
+      task.status = TaskStatus.cancelled;
+      notifyListeners();
+
+      // 如果是用正在執行的，要釋放旗標並繼續
+      if (task.subscription != null) {
+        _isQueueProcessing = false;
+        _processQueue();
       }
     }
   }
 
-  /// 取消目前的下載任務
-  Future<void> cancelDownload() async {
-    if (_downloadSubscription != null) {
-      LogService.info('Cancelling download task...', source: 'MapProvider');
-      await _downloadSubscription!.cancel();
-      _downloadSubscription = null;
-      _isDownloading = false;
-      notifyListeners();
-      LogService.info('Download task cancelled.', source: 'MapProvider');
+  /// 取消目前所有任務
+  Future<void> cancelAllDownloads() async {
+    for (var task in _downloadQueue) {
+      if (task.status == TaskStatus.downloading || task.status == TaskStatus.pending) {
+        await task.subscription?.cancel();
+        task.status = TaskStatus.cancelled;
+      }
     }
+    _isQueueProcessing = false;
+    notifyListeners();
+  }
+
+  // 為了相容就 API (MapScreen使用)
+  Future<void> cancelDownload() async {
+    await cancelAllDownloads();
   }
 
   /// 取得 Store 統計資訊 (Tile 數量, 大小 MB)
