@@ -174,8 +174,10 @@ class MapProvider with ChangeNotifier {
   }) async {
     // 檢查網路
     final hasConnection = await InternetConnectionChecker.createInstance().hasConnection;
+    LogService.info('Download requested. Connectivity: ${hasConnection ? "Online" : "Offline"}', source: 'MapProvider');
+    
     if (!kIsWeb && !hasConnection) {
-      LogService.warning('No internet connection.', source: 'MapProvider');
+      LogService.warning('No internet connection. Task rejected.', source: 'MapProvider');
       throw Exception('無網路連線，無法下載地圖。');
     }
 
@@ -230,6 +232,12 @@ class MapProvider with ChangeNotifier {
       task.subscription = downloadTask.downloadProgress.listen(
         (progress) {
           task.progress = progress.percentageProgress / 100.0;
+          
+          // Log progress every ~10%
+          if ((task.progress * 100).round() % 10 == 0 && task.progress > 0) {
+             LogService.debug('Task ${task.name} progress: ${(task.progress * 100).toStringAsFixed(0)}%', source: 'MapProvider');
+          }
+
           // task.successfulTiles = progress.successfulTiles; // Undefined in v10?
           // task.failedTiles = progress.failedTiles;         // Undefined in v10?
           notifyListeners();
