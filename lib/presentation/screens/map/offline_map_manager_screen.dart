@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../providers/map_provider.dart';
 
@@ -13,6 +15,31 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
   int _tileCount = 0;
   double _sizeMb = 0.0;
   bool _isLoadingStats = true;
+
+  // 預定義推薦區域 (約 10km x 10km)
+  // 經緯度約 0.1 度 ~ 11km
+  final List<({String name, LatLngBounds bounds})> _presets = [
+    (
+      name: '玉山主峰 (Mt. Jade)',
+      bounds: LatLngBounds(const LatLng(23.51, 120.91), const LatLng(23.43, 120.99)),
+    ),
+    (
+      name: '雪山主東 (Snow Mtn)',
+      bounds: LatLngBounds(const LatLng(24.42, 121.19), const LatLng(24.34, 121.27)),
+    ),
+    (
+      name: '合歡群峰 (Hehuan Mtn)',
+      bounds: LatLngBounds(const LatLng(24.18, 121.23), const LatLng(24.10, 121.31)),
+    ),
+    (
+      name: '嘉明湖 (Jiaming Lake)',
+      bounds: LatLngBounds(const LatLng(23.33, 120.98), const LatLng(23.25, 121.06)),
+    ),
+    (
+      name: '北大武山 (Beidawu)',
+      bounds: LatLngBounds(const LatLng(22.67, 120.71), const LatLng(22.59, 120.79)),
+    ),
+  ];
 
   @override
   void initState() {
@@ -107,6 +134,27 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
 
               const SizedBox(height: 16),
 
+              // 3. 推薦下載區域
+              if (!provider.isDownloading) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Text('推薦區域下載 (熱門百岳)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 8),
+                ..._presets.map((preset) => Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.terrain, color: Colors.green),
+                    title: Text(preset.name),
+                    subtitle: const Text('範圍: 約 10x10 km, Zoom 12-20'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.download_for_offline_outlined, color: Colors.blue),
+                      onPressed: () => _confirmDownloadPreset(context, provider, preset),
+                    ),
+                  ),
+                )),
+                const SizedBox(height: 16),
+              ],
+
               // 3. 管理操作
               ListTile(
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
@@ -154,6 +202,36 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
               }
             },
             child: const Text('確認清除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDownloadPreset(BuildContext context, MapProvider provider, ({String name, LatLngBounds bounds}) preset) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('下載 ${preset.name}?'),
+        content: const Text('將下載該區域 Zoom 12-20 之圖資。\n\n請確保網路連線穩定。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('已在背景開始下載...')),
+              );
+              provider.downloadRegion(
+                bounds: preset.bounds,
+                minZoom: 12,
+                maxZoom: 20,
+                onProgress: null,
+              ).then((_) {
+                 if(mounted) _refreshStats();
+              });
+            },
+            child: const Text('開始下載'),
           ),
         ],
       ),

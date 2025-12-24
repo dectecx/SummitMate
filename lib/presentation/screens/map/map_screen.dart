@@ -279,7 +279,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('目前縮放層級: ${zoom.toStringAsFixed(1)}'),
-            const Text('將下載縮放層級 12 ~ 16 的圖資 (適合登山使用)。'),
+            const Text('將下載縮放層級 12 ~ 20 的圖資 (最高解析度)。'),
             const SizedBox(height: 8),
             const Text('注意: 若範圍過大可能會佔用大量空間與流量。', style: TextStyle(color: Colors.red)),
           ],
@@ -334,7 +334,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         .downloadRegion(
           bounds: bounds,
           minZoom: 12,
-          maxZoom: 16,
+          maxZoom: 20,
           onProgress: null, // 進度由 Provider 內部狀態管理，UI 透過一般 Provider 監聽
         )
         .then((success) {
