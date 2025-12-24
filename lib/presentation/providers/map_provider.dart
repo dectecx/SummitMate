@@ -152,7 +152,7 @@ class MapProvider with ChangeNotifier {
 
     final downloadTask = _store.download.startForeground(
       region: downloadable,
-      instanceId: instanceId, // 修正 "ID 0 already exists"
+      instanceId: instanceId,
       parallelThreads: 5,
       maxBufferLength: 200,
       skipExistingTiles: true,
