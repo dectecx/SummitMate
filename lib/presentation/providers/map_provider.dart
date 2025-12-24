@@ -34,8 +34,15 @@ class MapProvider with ChangeNotifier {
   StreamSubscription<Position>? _positionStreamSubscription;
   StreamSubscription<CompassEvent>? _compassStreamSubscription;
 
+  // Download Task
+  StreamSubscription<DownloadProgress>? _downloadSubscription;
+  bool _isDownloading = false;
+  double _downloadProgress = 0.0;
+
   Position? get currentLocation => _currentLocation;
   double? get currentHeading => _currentHeading;
+  bool get isDownloading => _isDownloading;
+  double get downloadProgress => _downloadProgress;
 
   // 使用 GetIt 獲取 Package Name
   String get packageName => GetIt.instance<PackageInfo>().packageName;
@@ -126,7 +133,8 @@ class MapProvider with ChangeNotifier {
   }
 
   /// 下載指定區域
-  Future<void> downloadRegion({
+  /// 回傳是否成功 (Future completes when download finishes or cancels)
+  Future<bool> downloadRegion({
     required LatLngBounds bounds,
     required int minZoom,
     required int maxZoom,
@@ -145,8 +153,6 @@ class MapProvider with ChangeNotifier {
     );
 
     // 開始下載
-    // 每次下載使用獨立 ID (或固定 ID 1, 但需確保沒有並發)
-    // 這裡使用時間戳記作為 ID
     final instanceId = DateTime.now().millisecondsSinceEpoch;
     LogService.info('downloadRegion: Starting download task (ID: $instanceId)...', source: 'MapProvider');
 
@@ -159,13 +165,96 @@ class MapProvider with ChangeNotifier {
       skipSeaTiles: true,
     );
 
-    // 監聽進度
-    await for (final event in downloadTask.downloadProgress) {
-      if (onProgress != null) {
-        // 嘗試使用 percentageProgress
-        final percent = event.percentageProgress / 100.0;
-        onProgress(percent);
+    _isDownloading = true;
+    _downloadProgress = 0.0;
+    notifyListeners();
+
+    final completer = Completer<bool>(); // 用於等待下載完成
+
+    _downloadSubscription?.cancel();
+    _downloadSubscription = downloadTask.downloadProgress.listen(
+      (event) {
+        if (onProgress != null) {
+          final percent = event.percentageProgress / 100.0;
+          onProgress(percent);
+        }
+
+        // Update local progress state
+        _downloadProgress = event.percentageProgress / 100.0;
+        notifyListeners();
+      }, // FMTC v8/v9 stats: check if percentageProgress == 100 or rely on onDone
+      onError: (e) {
+        LogService.error('Download task failed: $e', source: 'MapProvider');
+        completer.complete(false);
+      },
+      onDone: () {
+        if (!completer.isCompleted) {
+          completer.complete(true); // 視為完成 (或被取消)
+        }
+        _isDownloading = false;
+        _downloadProgress = 0.0;
+        notifyListeners();
+      },
+      cancelOnError: true,
+    );
+
+    try {
+      return await completer.future;
+    } catch (e) {
+      LogService.error('Download await failed: $e', source: 'MapProvider');
+      return false;
+    } finally {
+      // 確保狀態重置 (雖然 onDone 也會處理，但在異常時多一層保險)
+      if (_isDownloading) {
+        _isDownloading = false;
+        notifyListeners();
       }
+    }
+  }
+
+  /// 取消目前的下載任務
+  Future<void> cancelDownload() async {
+    if (_downloadSubscription != null) {
+      LogService.info('Cancelling download task...', source: 'MapProvider');
+      await _downloadSubscription!.cancel();
+      _downloadSubscription = null;
+      _isDownloading = false;
+      notifyListeners();
+      LogService.info('Download task cancelled.', source: 'MapProvider');
+    }
+  }
+
+  /// 取得 Store 統計資訊 (Tile 數量, 大小 MB)
+  Future<({int tileCount, double sizeMb})> getStoreStats() async {
+    await initStore();
+    try {
+      final stats = await _store.stats.all;
+      final mb = stats.size / 1024 / 1024;
+      return (tileCount: stats.length, sizeMb: mb);
+    } catch (e) {
+      LogService.error('Error getting store stats: $e', source: 'MapProvider');
+      return (tileCount: 0, sizeMb: 0.0);
+    }
+  }
+
+  /// 清除所有離線圖資
+  Future<void> clearStore() async {
+    await initStore();
+    LogService.info('Clearing all tiles in store...', source: 'MapProvider');
+    try {
+      // 重置管理區塊 (這會清除該 Store 下的所有 Tiles)
+      // await _store.manage.reset(); // FMTC v9+ supports reset
+      // 替代方案: 刪除整個 Store 目錄 (如果 FMTC API 行為不同)
+      // 但標準做法是使用 manage.reset() 或 manage.delete() 再重建
+
+      // 注意: reset 可能是耗時操作
+      await _store.manage.delete();
+      await _store.manage.create(); // 重建
+
+      LogService.info('Store cleared and recreated.', source: 'MapProvider');
+      notifyListeners();
+    } catch (e) {
+      LogService.error('Error clearing store: $e', source: 'MapProvider');
     }
   }
 
