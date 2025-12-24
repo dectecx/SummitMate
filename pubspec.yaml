@@ -30,13 +30,18 @@ dependencies:
   # 工具套件
   intl: ^0.19.0
   uuid: ^4.5.0
-  package_info_plus: ^5.0.0
-  shared_preferences: 2.2.3
+  package_info_plus: ^8.0.0
+  shared_preferences: ^2.3.0
   url_launcher: ^6.3.0
 
   # 程式碼生成輔助
   json_annotation: ^4.9.0
   flutter_slidable: ^4.0.3
+  flutter_map: ^8.1.0
+  latlong2: ^0.9.1
+  gpx: ^2.3.0
+  file_picker: ^10.0.0
+  flutter_map_tile_caching: ^10.1.1
 
 dev_dependencies:
   flutter_test:

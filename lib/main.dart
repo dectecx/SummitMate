@@ -19,7 +19,8 @@ import 'presentation/providers/message_provider.dart';
 import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/meal_provider.dart';
 import 'providers/poll_provider.dart';
-import 'presentation/screens/map_viewer_screen.dart';
+import 'presentation/providers/map_provider.dart';
+import 'presentation/screens/map/map_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
 import 'presentation/screens/collaboration_tab.dart';
 import 'presentation/widgets/itinerary_edit_dialog.dart';
@@ -57,6 +58,7 @@ class SummitMateApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GearProvider()),
         ChangeNotifierProvider(create: (_) => MealProvider()),
         ChangeNotifierProvider(create: (_) => PollProvider()),
+        ChangeNotifierProvider(create: (_) => MapProvider()),
       ],
       child: _buildMaterialApp(),
     );
@@ -455,7 +457,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                       IconButton(
                         icon: const Icon(Icons.map_outlined),
                         tooltip: '查看地圖',
-                        onPressed: () => MapViewerScreen.show(context),
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
                       ),
                     ],
                   ],
@@ -1406,9 +1408,7 @@ class _GearTabState extends State<_GearTab> {
                             },
                           )
                         : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     filled: true,
                     fillColor: Theme.of(context).cardColor,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
@@ -1497,14 +1497,18 @@ class _GearTabState extends State<_GearTab> {
                     Card(
                       clipBehavior: Clip.antiAlias,
                       child: InkWell(
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Row(
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
                                 child: const Icon(Icons.bento, color: Colors.orange, size: 28),
                               ),
                               const SizedBox(width: 16),
@@ -1815,11 +1819,7 @@ class InfoTabState extends State<InfoTab> {
       children: [
         // 頂部視覺圖 (嘉明湖) - 可點擊放大
         GestureDetector(
-          onTap: () => ImageViewerDialog.show(
-            context,
-            assetPath: 'assets/images/jiaming_lake.jpg',
-            title: '嘉明湖',
-          ),
+          onTap: () => ImageViewerDialog.show(context, assetPath: 'assets/images/jiaming_lake.jpg', title: '嘉明湖'),
           child: SizedBox(
             height: 200,
             width: double.infinity,
@@ -1976,7 +1976,8 @@ class InfoTabState extends State<InfoTab> {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: () => MapViewerScreen.show(context),
+                          onPressed: () =>
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
                           icon: const Icon(Icons.map),
                           label: const Text('查看步道導覽地圖'),
                         ),
