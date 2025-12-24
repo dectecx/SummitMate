@@ -3,6 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+
+import '../../../services/log_service.dart';
 import '../../providers/map_provider.dart';
 
 class MapScreen extends StatefulWidget {
@@ -21,7 +23,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('[MapScreen] initState: Requesting store initialization...');
+    LogService.info('initState: Requesting store initialization...', source: 'MapScreen');
     // 確保 Store 已初始化
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MapProvider>().initStore();
@@ -78,6 +80,41 @@ class _MapScreenState extends State<MapScreen> {
                         Marker(
                           point: provider.trackPoints.last,
                           child: const Icon(Icons.flag, color: Colors.red, size: 32),
+                        ),
+                      ],
+
+                    ),
+
+                  // 4. 目前位置 (Blue Dot & Heading)
+                  if (provider.currentLocation != null)
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(provider.currentLocation!.latitude, provider.currentLocation!.longitude),
+                          width: 40,
+                          height: 40,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // 準心/方向箭頭 (如果有羅盤數據)
+                              if (provider.currentHeading != null)
+                                Transform.rotate(
+                                  angle: (provider.currentHeading! * (3.14159 / 180) * -1), // 修正旋轉方向
+                                  child: const Icon(Icons.navigation, color: Colors.blueAccent, size: 40),
+                                ),
+                              // 藍色圓點
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 2),
+                                  boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -137,6 +174,26 @@ class _MapScreenState extends State<MapScreen> {
                       onPressed: () => _showDownloadDialog(context, _mapController, provider),
                       child: const Icon(Icons.download_for_offline),
                       tooltip: '下載離線地圖',
+                    ),
+                    const SizedBox(height: 12),
+                    // 定位按鈕
+                    FloatingActionButton(
+                      heroTag: 'my_location',
+                      mini: true,
+                      onPressed: () {
+                        if (provider.currentLocation != null) {
+                          _mapController.move(
+                            LatLng(provider.currentLocation!.latitude, provider.currentLocation!.longitude),
+                            15.0,
+                          );
+                        } else {
+                          // 尚未取得定位，嘗試觸發初始化
+                           provider.initLocation();
+                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('定位中...')));
+                        }
+                      },
+                      child: const Icon(Icons.my_location),
+                      tooltip: '我的位置',
                     ),
                   ],
                 ),
@@ -214,7 +271,7 @@ class _MapScreenState extends State<MapScreen> {
 
   // 執行下載並顯示進度
   void _startDownload(BuildContext context, MapProvider provider, LatLngBounds bounds) {
-    debugPrint('[MapScreen] Starting download for bounds: $bounds');
+    LogService.info('Starting download for bounds: $bounds', source: 'MapScreen');
     showDialog(
       context: context,
       barrierDismissible: false,
