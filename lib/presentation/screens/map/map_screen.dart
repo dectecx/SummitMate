@@ -132,7 +132,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   polygons: [
                     Polygon(
                       points: _previewBounds!,
-                      color: Colors.red.withOpacity(0.2),
+                      color: Colors.red.withValues(alpha: 0.2),
                       borderColor: Colors.red,
                       borderStrokeWidth: 3,
                     ),
