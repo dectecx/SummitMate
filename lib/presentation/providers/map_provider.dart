@@ -229,7 +229,8 @@ class MapProvider with ChangeNotifier {
     await initStore();
     try {
       final stats = await _store.stats.all;
-      final mb = stats.size / 1024 / 1024;
+      // Note: stats.size is in KB
+      final mb = stats.size / 1024;
       return (tileCount: stats.length, sizeMb: mb);
     } catch (e) {
       LogService.error('Error getting store stats: $e', source: 'MapProvider');
