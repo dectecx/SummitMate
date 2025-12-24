@@ -1,11 +1,13 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class MapProvider with ChangeNotifier {
   Gpx? _gpx;
@@ -22,10 +24,14 @@ class MapProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isStoreReady => _isStoreReady;
 
+  // 使用 GetIt 獲取 Package Name
+  String get packageName => GetIt.instance<PackageInfo>().packageName;
+
   /// 初始化/確保 Store 存在
   Future<void> initStore() async {
     if (_isStoreReady) return;
     debugPrint('[MapProvider] initStore: Initializing FMTC store "osm_store"...');
+
     try {
       await _store.manage.create();
       debugPrint('[MapProvider] initStore: Store created/opened successfully.');
@@ -50,7 +56,10 @@ class MapProvider with ChangeNotifier {
     final downloadable = region.toDownloadable(
       minZoom: minZoom,
       maxZoom: maxZoom,
-      options: TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+      options: TileLayer(
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        userAgentPackageName: packageName,
+      ),
     );
 
     // 開始下載

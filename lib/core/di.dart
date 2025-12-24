@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/hive_service.dart';
@@ -22,6 +23,10 @@ Future<void> setupDependencies() async {
   // Singleton: SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(prefs);
+
+  // Singleton: PackageInfo
+  final packageInfo = await PackageInfo.fromPlatform();
+  getIt.registerSingleton<PackageInfo>(packageInfo);
 
   // Singleton: HiveService
   final hiveService = HiveService();
