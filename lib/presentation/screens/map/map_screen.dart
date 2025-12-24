@@ -14,11 +14,12 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   // 嘉明湖國家步道大致中心點
   static const LatLng _initialCenter = LatLng(23.29, 121.03);
   final MapController _mapController = MapController();
-  double _currentZoom = 13.0; // 追蹤目前縮放層級
+  // 追蹤目前縮放層級
+  double _currentZoom = 13.0;
 
   @override
   void initState() {
@@ -99,7 +100,7 @@ class _MapScreenState extends State<MapScreen> {
                               // 準心/方向箭頭 (如果有羅盤數據)
                               if (provider.currentHeading != null)
                                 Transform.rotate(
-                                  angle: (provider.currentHeading! * (3.14159 / 180) * -1), // 修正旋轉方向
+                                  angle: (provider.currentHeading! * (3.14159 / 180) * -1),
                                   child: const Icon(Icons.navigation, color: Colors.blueAccent, size: 40),
                                 ),
                               // 藍色圓點
@@ -182,7 +183,7 @@ class _MapScreenState extends State<MapScreen> {
                       mini: true,
                       onPressed: () {
                         if (provider.currentLocation != null) {
-                          _mapController.move(
+                          _animatedMapMove(
                             LatLng(provider.currentLocation!.latitude, provider.currentLocation!.longitude),
                             15.0,
                           );
@@ -321,5 +322,40 @@ class _MapScreenState extends State<MapScreen> {
         );
       },
     );
+  }
+
+  /// 平滑移動地圖視角
+  void _animatedMapMove(LatLng destLocation, double destZoom) {
+    // 建立 AnimationController (500ms 動畫)
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    // 起始位置與縮放
+    final latTween = Tween<double>(begin: _mapController.camera.center.latitude, end: destLocation.latitude);
+    final lngTween = Tween<double>(begin: _mapController.camera.center.longitude, end: destLocation.longitude);
+    final zoomTween = Tween<double>(begin: _mapController.camera.zoom, end: destZoom);
+
+    // 動畫執行過程
+    final animation = CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+
+    controller.addListener(() {
+      _mapController.move(
+        LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
+        zoomTween.evaluate(animation),
+      );
+    });
+
+    // 動畫結束後釋放 Controller
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.dispose();
+      } else if (status == AnimationStatus.dismissed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
   }
 }
