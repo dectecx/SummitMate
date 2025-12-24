@@ -4,14 +4,79 @@ import 'package:file_picker/file_picker.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
+import 'package:flutter_map/flutter_map.dart';
+
 class MapProvider with ChangeNotifier {
   Gpx? _gpx;
   List<LatLng> _trackPoints = [];
   bool _isLoading = false;
+  bool _isStoreReady = false;
+
+  // FMTC Store
+  final FMTCStore _store = FMTCStore('osm_store');
+  FMTCStore get store => _store;
 
   Gpx? get gpx => _gpx;
   List<LatLng> get trackPoints => _trackPoints;
   bool get isLoading => _isLoading;
+  bool get isStoreReady => _isStoreReady;
+
+  /// 初始化/確保 Store 存在
+  Future<void> initStore() async {
+    if (_isStoreReady) return;
+    debugPrint('[MapProvider] initStore: Initializing FMTC store "osm_store"...');
+    try {
+      await _store.manage.create();
+      debugPrint('[MapProvider] initStore: Store created/opened successfully.');
+    } catch (e) {
+      debugPrint('[MapProvider] initStore: Error creating store (ignoring if exists): $e');
+    }
+    _isStoreReady = true;
+    notifyListeners();
+    debugPrint('[MapProvider] initStore: State set to ready.');
+  }
+
+  /// 下載指定區域
+  Future<void> downloadRegion({
+    required LatLngBounds bounds,
+    required int minZoom,
+    required int maxZoom,
+    Function(double progress)? onProgress,
+  }) async {
+    await initStore();
+
+    final region = RectangleRegion(bounds);
+    final downloadable = region.toDownloadable(
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      options: TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+    );
+
+    // 開始下載
+    // 每次下載使用獨立 ID (或固定 ID 1, 但需確保沒有並發)
+    // 這裡使用時間戳記作為 ID
+    final instanceId = DateTime.now().millisecondsSinceEpoch;
+    debugPrint('[MapProvider] downloadRegion: Starting download task (ID: $instanceId)...');
+
+    final downloadTask = _store.download.startForeground(
+      region: downloadable,
+      instanceId: instanceId, // 修正 "ID 0 already exists"
+      parallelThreads: 5,
+      maxBufferLength: 200,
+      skipExistingTiles: true,
+      skipSeaTiles: true,
+    );
+
+    // 監聽進度
+    await for (final event in downloadTask.downloadProgress) {
+      if (onProgress != null) {
+        // 嘗試使用 percentageProgress
+        final percent = event.percentageProgress / 100.0;
+        onProgress(percent);
+      }
+    }
+  }
 
   /// 讀取並解析 GPX 檔案
   Future<void> loadGpxFile() async {

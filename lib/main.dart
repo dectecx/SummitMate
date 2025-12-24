@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -40,6 +41,14 @@ void main() async {
 
   // 初始化依賴注入
   await setupDependencies();
+
+  // 初始化離線地圖快取 (FMTC v10)
+  try {
+    // 依據 v10 文件，使用 FMTCObjectBoxBackend 進行初始化
+    await FMTCObjectBoxBackend().initialise();
+  } catch (e) {
+    debugPrint('FMTC Initialization Warning: $e');
+  }
 
   runApp(const SummitMateApp());
 }
