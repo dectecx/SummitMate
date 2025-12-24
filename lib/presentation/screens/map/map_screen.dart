@@ -136,7 +136,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 ],
               ),
 
-
               // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
 
@@ -297,7 +296,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             onPressed: () {
               Navigator.pop(ctx);
               setState(() => _previewBounds = null); // 開始下載後清除紅框 (或者可以保留直到下載開始)
-              _startDownload(context, provider, bounds);
+              _startDownload(bounds);
             },
             child: const Text('開始下載'),
           ),
@@ -312,7 +311,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   }
 
   // 執行下載 (背景)
-  void _startDownload(BuildContext context, MapProvider provider, LatLngBounds bounds) {
+  Future<void> _startDownload(LatLngBounds bounds) async {
+    final provider = Provider.of<MapProvider>(context, listen: false);
     LogService.info('Starting background download for bounds: $bounds', source: 'MapScreen');
 
     // 1. 顯示提示，告知已開始
@@ -330,26 +330,39 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
 
     // 2. 觸發 Provider 下載 (不等待結果，由 Manager 頁面或 Provider 狀態管理)
-    provider
-        .downloadRegion(
-          bounds: bounds,
-          minZoom: 12,
-          maxZoom: 20,
-          onProgress: null, // 進度由 Provider 內部狀態管理，UI 透過一般 Provider 監聽
-        )
-        .then((success) {
-          if (context.mounted) {
-            if (success) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('地圖下載完成!')));
-            } else {
-              // 若被取消通常不顯示錯誤，除非是異常
-              if (!provider.isDownloading) {
-                // 簡單檢查
-                // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('下載已取消或失敗')));
-              }
-            }
-          }
+    try {
+      await provider.downloadRegion(
+        bounds: bounds,
+        minZoom: 12,
+        maxZoom: 20,
+        name: '自訂區域 ${DateTime.now().hour}:${DateTime.now().minute}',
+        onProgress: null,
+      );
+
+      if (mounted) {
+        setState(() {
+          // Convert bounds to polygon points
+          _previewBounds = [bounds.northWest, bounds.northEast, bounds.southEast, bounds.southWest];
         });
+        Navigator.pop(context); // 關閉 dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('已加入下載佇列，將在背景下載...'),
+            action: SnackBarAction(
+              label: '查看進度',
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('下載失敗: $e'), backgroundColor: Colors.red));
+      }
+    }
   }
 
   /// 平滑移動地圖視角
