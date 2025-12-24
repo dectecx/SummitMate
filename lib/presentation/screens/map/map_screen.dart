@@ -120,24 +120,25 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
+
+                  // 5. 下載區域預覽框 (紅框)
+                  if (_previewBounds != null)
+                    PolygonLayer(
+                      polygons: [
+                        Polygon(
+                          points: _previewBounds!,
+                          color: Colors.red.withValues(alpha: 0.2),
+                          borderColor: Colors.red,
+                          borderStrokeWidth: 3,
+                        ),
+                      ],
+                    ),
                 ],
               ),
 
+
               // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
-
-              // 下載區域預覽框 (紅框)
-              if (_previewBounds != null)
-                PolygonLayer(
-                  polygons: [
-                    Polygon(
-                      points: _previewBounds!,
-                      color: Colors.red.withValues(alpha: 0.2),
-                      borderColor: Colors.red,
-                      borderStrokeWidth: 3,
-                    ),
-                  ],
-                ),
 
               // 資訊顯示 (左上角)
               Positioned(
