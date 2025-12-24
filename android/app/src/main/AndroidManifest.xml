@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- 網路權限：用於 Google Sheets API 同步 -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 定位權限：用於地圖定位與軌跡記錄 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="summitmate"
         android:name="${applicationName}"
