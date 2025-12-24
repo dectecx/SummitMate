@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../services/log_service.dart';
 import '../../providers/map_provider.dart';
+import 'offline_map_manager_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -20,6 +21,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   // 追蹤目前縮放層級
   double _currentZoom = 13.0;
+
+  // 下載預覽框 (呈現當前視窗範圍)
+  List<LatLng>? _previewBounds;
 
   @override
   void initState() {
@@ -122,6 +126,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
 
+              // 下載區域預覽框 (紅框)
+              if (_previewBounds != null)
+                PolygonLayer(
+                  polygons: [
+                    Polygon(
+                      points: _previewBounds!,
+                      color: Colors.red.withOpacity(0.2),
+                      borderColor: Colors.red,
+                      borderStrokeWidth: 3,
+                    ),
+                  ],
+                ),
+
               // 資訊顯示 (左上角)
               Positioned(
                 top: MediaQuery.of(context).padding.top + 10,
@@ -160,6 +177,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       },
                       tooltip: '匯入 GPX',
                       child: const Icon(Icons.file_upload_outlined),
+                    ),
+                    const SizedBox(height: 12),
+                    FloatingActionButton(
+                      heroTag: 'map_manager',
+                      mini: true,
+                      backgroundColor: Colors.blueGrey,
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
+                      },
+                      tooltip: '離線地圖管理',
+                      child: const Icon(Icons.folder_open),
                     ),
                     const SizedBox(height: 12),
                     FloatingActionButton(
@@ -236,6 +264,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final bounds = mapController.camera.visibleBounds;
     final zoom = mapController.camera.zoom;
 
+    // 設定預覽框 (顯示紅框)
+    setState(() {
+      _previewBounds = [bounds.northWest, bounds.northEast, bounds.southEast, bounds.southWest];
+    });
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -251,71 +284,71 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () {
+              // 取消時清除紅框
+              setState(() => _previewBounds = null);
+              Navigator.pop(ctx);
+            },
+            child: const Text('取消'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
+              setState(() => _previewBounds = null); // 開始下載後清除紅框 (或者可以保留直到下載開始)
               _startDownload(context, provider, bounds);
             },
             child: const Text('開始下載'),
           ),
         ],
       ),
-    );
+    ).then((_) {
+      // 確保對話框以任何方式關閉時 (點擊外部)，紅框都會消失
+      if (_previewBounds != null && mounted) {
+        setState(() => _previewBounds = null);
+      }
+    });
   }
 
-  // 執行下載並顯示進度
+  // 執行下載 (背景)
   void _startDownload(BuildContext context, MapProvider provider, LatLngBounds bounds) {
-    LogService.info('Starting download for bounds: $bounds', source: 'MapScreen');
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            double progress = 0.0;
+    LogService.info('Starting background download for bounds: $bounds', source: 'MapScreen');
 
-            // 啟動下載 (不 await，因為要在對話框內顯示進度)
-            provider
-                .downloadRegion(
-                  bounds: bounds,
-                  minZoom: 12,
-                  maxZoom: 16,
-                  onProgress: (p) {
-                    // 安全地更新 UI
-                    if (context.mounted) {
-                      setState(() => progress = p);
-                    }
-                  },
-                )
-                .then((_) {
-                  if (context.mounted) {
-                    Navigator.pop(context); // 關閉進度框
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('地圖下載完成!')));
-                  }
-                })
-                .catchError((e) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('下載失敗: $e')));
-                  }
-                });
-
-            return AlertDialog(
-              title: const Text('下載中...'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  LinearProgressIndicator(value: progress),
-                  const SizedBox(height: 8),
-                  Text('${(progress * 100).toStringAsFixed(1)}%'),
-                ],
-              ),
-            );
+    // 1. 顯示提示，告知已開始
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('地圖下載已在背景開始...'),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: '查看進度',
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
           },
-        );
-      },
+        ),
+      ),
     );
+
+    // 2. 觸發 Provider 下載 (不等待結果，由 Manager 頁面或 Provider 狀態管理)
+    provider
+        .downloadRegion(
+          bounds: bounds,
+          minZoom: 12,
+          maxZoom: 16,
+          onProgress: null, // 進度由 Provider 內部狀態管理，UI 透過一般 Provider 監聽
+        )
+        .then((success) {
+          if (context.mounted) {
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('地圖下載完成!')));
+            } else {
+              // 若被取消通常不顯示錯誤，除非是異常
+              if (!provider.isDownloading) {
+                // 簡單檢查
+                // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('下載已取消或失敗')));
+              }
+            }
+          }
+        });
   }
 
   /// 平滑移動地圖視角
