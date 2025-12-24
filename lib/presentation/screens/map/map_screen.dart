@@ -58,9 +58,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     // FMTC v10: 使用 FMTCTileProvider 攔截並快取
                     // 若 Store 尚未準備好，暫時使用預設 (NetworkTileProvider) 避免 Crash
                     tileProvider: provider.isStoreReady
-                        ? FMTCTileProvider(
-                            stores: {provider.store.storeName: BrowseStoreStrategy.readUpdateCreate},
-                          )
+                        ? FMTCTileProvider(stores: {provider.store.storeName: BrowseStoreStrategy.readUpdateCreate})
                         : null,
                   ),
 
@@ -83,7 +81,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           child: const Icon(Icons.flag, color: Colors.red, size: 32),
                         ),
                       ],
-
                     ),
 
                   // 4. 目前位置 (Blue Dot & Heading)
@@ -131,10 +128,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 left: 16,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
                   child: Text(
                     'Zoom: ${_currentZoom.toStringAsFixed(1)}',
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -164,8 +158,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           }
                         }
                       },
-                      child: const Icon(Icons.file_upload_outlined),
                       tooltip: '匯入 GPX',
+                      child: const Icon(Icons.file_upload_outlined),
                     ),
                     const SizedBox(height: 12),
                     FloatingActionButton(
@@ -173,8 +167,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       mini: true,
                       backgroundColor: Colors.orange,
                       onPressed: () => _showDownloadDialog(context, _mapController, provider),
-                      child: const Icon(Icons.download_for_offline),
                       tooltip: '下載離線地圖',
+                      child: const Icon(Icons.download_for_offline),
                     ),
                     const SizedBox(height: 12),
                     // 定位按鈕
@@ -189,12 +183,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                           );
                         } else {
                           // 尚未取得定位，嘗試觸發初始化
-                           provider.initLocation();
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('定位中...')));
+                          provider.initLocation();
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('定位中...')));
                         }
                       },
-                      child: const Icon(Icons.my_location),
                       tooltip: '我的位置',
+                      child: const Icon(Icons.my_location),
                     ),
                   ],
                 ),
@@ -327,10 +321,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   /// 平滑移動地圖視角
   void _animatedMapMove(LatLng destLocation, double destZoom) {
     // 建立 AnimationController (500ms 動畫)
-    final controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
+    final controller = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
 
     // 起始位置與縮放
     final latTween = Tween<double>(begin: _mapController.camera.center.latitude, end: destLocation.latitude);
