@@ -298,7 +298,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               setState(() => _previewBounds = null); // 開始下載後清除紅框 (或者可以保留直到下載開始)
               _startDownload(bounds);
             },
-            child: const Text('開始下載'),
+            child: const Text('加入下載'),
           ),
         ],
       ),
@@ -312,25 +312,15 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   // 執行下載 (背景)
   Future<void> _startDownload(LatLngBounds bounds) async {
+    // 先取得必要的參照，避免 async gap 後 context 無效
     final provider = Provider.of<MapProvider>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    
     LogService.info('Starting background download for bounds: $bounds', source: 'MapScreen');
 
-    // 1. 顯示提示，告知已開始
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('地圖下載已在背景開始...'),
-        duration: const Duration(seconds: 4),
-        action: SnackBarAction(
-          label: '查看進度',
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
-          },
-        ),
-      ),
-    );
-
-    // 2. 觸發 Provider 下載 (不等待結果，由 Manager 頁面或 Provider 狀態管理)
     try {
+      // 觸發 Provider 下載 (內部會檢查網路)
       await provider.downloadRegion(
         bounds: bounds,
         minZoom: 12,
@@ -339,28 +329,26 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         onProgress: null,
       );
 
+      // 如果 mounted，顯示成功提示
       if (mounted) {
-        setState(() {
-          // Convert bounds to polygon points
-          _previewBounds = [bounds.northWest, bounds.northEast, bounds.southEast, bounds.southWest];
-        });
-        Navigator.pop(context); // 關閉 dialog
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: const Text('已加入下載佇列，將在背景下載...'),
             action: SnackBarAction(
               label: '查看進度',
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
+                navigator.push(MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
               },
             ),
           ),
         );
       }
     } catch (e) {
+      // 顯示失敗提示 (包含網路錯誤)
       if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('下載失敗: $e'), backgroundColor: Colors.red));
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('下載失敗: $e'), backgroundColor: Colors.red),
+        );
       }
     }
   }
