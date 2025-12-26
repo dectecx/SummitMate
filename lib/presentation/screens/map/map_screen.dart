@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:twicon/twicon.dart';
 
 import '../../../services/log_service.dart';
 import '../../providers/map_provider.dart';
@@ -21,9 +22,16 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   // 追蹤目前縮放層級
   double _currentZoom = 13.0;
+  // 追蹤地圖旋轉角度 (for compass)
+  double _currentRotation = 0.0;
 
   // 下載預覽框 (呈現當前視窗範圍)
   List<LatLng>? _previewBounds;
+
+  // UI 狀態
+  bool _isMiniMapExpanded = true; // Mini-map 展開/收合
+  bool _isFabExpanded = true; // FAB 按鈕列展開/收合
+  bool _isMapReady = false; // 地圖是否已渲染完成
 
   @override
   void initState() {
@@ -50,7 +58,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                   maxZoom: 20.0, // 設定最大縮放層級為 20 (雖然圖資可能模糊，但方便閱讀)
                   interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
                   onPositionChanged: (pos, hasGesture) {
-                    setState(() => _currentZoom = pos.zoom);
+                    setState(() {
+                      _currentZoom = pos.zoom;
+                      _currentRotation = pos.rotation;
+                    });
+                  },
+                  onMapReady: () {
+                    setState(() => _isMapReady = true);
                   },
                 ),
                 children: [
@@ -139,60 +153,103 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
 
-              // Mini-map (左下角)
+              // Mini-map (左下角，可收合，長條形)
               Positioned(
                 bottom: 16,
                 left: 16,
-                child: GestureDetector(
-                  onTap: () {
-                    // 點擊小地圖 -> 重設視角至台灣
-                    _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
-                  },
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black54, width: 2),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2))],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: IgnorePointer(
-                      child: FlutterMap(
-                        options: const MapOptions(
-                          initialCenter: LatLng(23.5, 121.0), // 台灣中心
-                          initialZoom: 6.0, // 可看見整個台灣
-                          interactionOptions: InteractionOptions(flags: InteractiveFlag.none), // 禁止互動
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 收合/展開按鈕
+                    GestureDetector(
+                      onTap: () => setState(() => _isMiniMapExpanded = !_isMiniMapExpanded),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isMiniMapExpanded ? Icons.visibility_off : Icons.visibility,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _isMiniMapExpanded ? '隱藏' : '小地圖',
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                          ],
                         ),
-                        children: [
-                          TileLayer(
-                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: provider.packageName,
-                            // 使用快取 (如果 Store Ready)
-                            tileProvider: provider.isStoreReady
-                                ? FMTCTileProvider(stores: {provider.store.storeName: BrowseStoreStrategy.readUpdateCreate})
-                                : null,
-                          ),
-                          // 顯示目前視窗範圍的紅框
-                          PolygonLayer(
-                            polygons: [
-                              Polygon(
-                                points: [
-                                  _mapController.camera.visibleBounds.northWest,
-                                  _mapController.camera.visibleBounds.northEast,
-                                  _mapController.camera.visibleBounds.southEast,
-                                  _mapController.camera.visibleBounds.southWest,
-                                ],
-                                color: Colors.red.withValues(alpha: 0.3),
-                                borderColor: Colors.red,
-                                borderStrokeWidth: 2,
-                              ),
-                            ],
-                          ),
-                        ],
                       ),
                     ),
-                  ),
+                    // 可收合的 Mini-map
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: _isMiniMapExpanded
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: GestureDetector(
+                                onTap: () {
+                                  _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
+                                },
+                                child: Container(
+                                  width: 80, // 長條形：寬度較窄
+                                  height: 160, // 高度較高 (類似台灣形狀)
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.black54, width: 2),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: const [
+                                      BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2)),
+                                    ],
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: IgnorePointer(
+                                    child: FlutterMap(
+                                      options: const MapOptions(
+                                        initialCenter: LatLng(23.5, 121.0),
+                                        initialZoom: 6.0,
+                                        interactionOptions: InteractionOptions(flags: InteractiveFlag.none),
+                                      ),
+                                      children: [
+                                        TileLayer(
+                                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                          userAgentPackageName: provider.packageName,
+                                          tileProvider: provider.isStoreReady
+                                              ? FMTCTileProvider(
+                                                  stores: {
+                                                    provider.store.storeName: BrowseStoreStrategy.readUpdateCreate,
+                                                  },
+                                                )
+                                              : null,
+                                        ),
+                                        // 顯示目前視窗範圍的紅框 (只在 map ready 後)
+                                        if (_isMapReady)
+                                          PolygonLayer(
+                                            polygons: [
+                                              Polygon(
+                                                points: [
+                                                  _mapController.camera.visibleBounds.northWest,
+                                                  _mapController.camera.visibleBounds.northEast,
+                                                  _mapController.camera.visibleBounds.southEast,
+                                                  _mapController.camera.visibleBounds.southWest,
+                                                ],
+                                                color: Colors.red.withValues(alpha: 0.3),
+                                                borderColor: Colors.red,
+                                                borderStrokeWidth: 2,
+                                              ),
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
 
@@ -210,99 +267,168 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // 功能按鈕區 (右上角: 匯入 & 下載)
+              // 功能按鈕區 (右上角: 可收合)
               Positioned(
                 top: MediaQuery.of(context).padding.top + 10,
                 right: 16,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // 收合/展開按鈕
                     FloatingActionButton(
-                      heroTag: 'load_gpx',
+                      heroTag: 'toggle_fab',
                       mini: true,
-                      onPressed: () async {
-                        try {
-                          await provider.loadGpxFile();
-                          if (provider.trackPoints.isNotEmpty) {
-                            _mapController.move(provider.trackPoints.first, 15.0);
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('讀取 GPX 失敗: $e')));
-                          }
-                        }
-                      },
-                      tooltip: '匯入 GPX',
-                      child: const Icon(Icons.file_upload_outlined),
+                      backgroundColor: Colors.grey.shade700,
+                      onPressed: () => setState(() => _isFabExpanded = !_isFabExpanded),
+                      tooltip: _isFabExpanded ? '收合選單' : '展開選單',
+                      child: Icon(_isFabExpanded ? Icons.expand_less : Icons.expand_more),
                     ),
-                    const SizedBox(height: 12),
-                    FloatingActionButton(
-                      heroTag: 'map_manager',
-                      mini: true,
-                      backgroundColor: Colors.blueGrey,
-                      onPressed: () async {
-                        final result = await Navigator.push<LatLngBounds>(
-                          context,
-                          MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()),
-                        );
-                        // 如果返回了 bounds (預覽功能)，顯示紅框並移動視角
-                        if (result != null && mounted) {
-                          setState(() {
-                            _previewBounds = [result.northWest, result.northEast, result.southEast, result.southWest];
-                          });
-                          // 移動地圖視角到該區域中心
-                          final center = LatLng((result.north + result.south) / 2, (result.east + result.west) / 2);
-                          _animatedMapMove(center, 10.0); // Zoom 10 足以看見整個區域
-                        }
-                      },
-                      tooltip: '離線地圖管理',
-                      child: const Icon(Icons.folder_open),
-                    ),
-                    const SizedBox(height: 12),
-                    FloatingActionButton(
-                      heroTag: 'download_map',
-                      mini: true,
-                      backgroundColor: Colors.orange,
-                      onPressed: () => _showDownloadDialog(context, _mapController, provider),
-                      tooltip: '下載離線地圖',
-                      child: const Icon(Icons.download_for_offline),
-                    ),
-                    const SizedBox(height: 12),
-                    // 定位按鈕
-                    FloatingActionButton(
-                      heroTag: 'my_location',
-                      mini: true,
-                      onPressed: () {
-                        if (provider.currentLocation != null) {
-                          _animatedMapMove(
-                            LatLng(provider.currentLocation!.latitude, provider.currentLocation!.longitude),
-                            15.0,
-                          );
-                        } else {
-                          // 尚未取得定位，嘗試觸發初始化
-                          provider.initLocation();
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('定位中...')));
-                        }
-                      },
-                      tooltip: '我的位置',
-                      child: const Icon(Icons.my_location),
-                    ),
-                    const SizedBox(height: 12),
-                    // 回到台灣全島視角
-                    FloatingActionButton(
-                      heroTag: 'reset_taiwan',
-                      mini: true,
-                      backgroundColor: Colors.teal,
-                      onPressed: () {
-                        // 台灣中心點 (大約), Zoom 8 可看見整個台灣
-                        _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
-                      },
-                      tooltip: '回到台灣',
-                      child: const Icon(Icons.public),
+                    // 可收合的按鈕列表
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: _isFabExpanded
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(height: 12),
+                                FloatingActionButton(
+                                  heroTag: 'load_gpx',
+                                  mini: true,
+                                  onPressed: () async {
+                                    try {
+                                      await provider.loadGpxFile();
+                                      if (provider.trackPoints.isNotEmpty) {
+                                        _mapController.move(provider.trackPoints.first, 15.0);
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(SnackBar(content: Text('讀取 GPX 失敗: $e')));
+                                      }
+                                    }
+                                  },
+                                  tooltip: '匯入 GPX',
+                                  child: const Icon(Icons.file_upload_outlined),
+                                ),
+                                const SizedBox(height: 12),
+                                FloatingActionButton(
+                                  heroTag: 'map_manager',
+                                  mini: true,
+                                  backgroundColor: Colors.blueGrey,
+                                  onPressed: () async {
+                                    final result = await Navigator.push<LatLngBounds>(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()),
+                                    );
+                                    if (result != null && mounted) {
+                                      setState(() {
+                                        _previewBounds = [
+                                          result.northWest,
+                                          result.northEast,
+                                          result.southEast,
+                                          result.southWest,
+                                        ];
+                                      });
+                                      final center = LatLng(
+                                        (result.north + result.south) / 2,
+                                        (result.east + result.west) / 2,
+                                      );
+                                      _animatedMapMove(center, 10.0);
+                                    }
+                                  },
+                                  tooltip: '離線地圖管理',
+                                  child: const Icon(Icons.folder_open),
+                                ),
+                                const SizedBox(height: 12),
+                                FloatingActionButton(
+                                  heroTag: 'download_map',
+                                  mini: true,
+                                  backgroundColor: Colors.orange,
+                                  onPressed: () => _showDownloadDialog(context, _mapController, provider),
+                                  tooltip: '下載離線地圖',
+                                  child: const Icon(Icons.download_for_offline),
+                                ),
+                                const SizedBox(height: 12),
+                                FloatingActionButton(
+                                  heroTag: 'my_location',
+                                  mini: true,
+                                  onPressed: () {
+                                    if (provider.currentLocation != null) {
+                                      _animatedMapMove(
+                                        LatLng(provider.currentLocation!.latitude, provider.currentLocation!.longitude),
+                                        15.0,
+                                      );
+                                    } else {
+                                      provider.initLocation();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(const SnackBar(content: Text('定位中...')));
+                                    }
+                                  },
+                                  tooltip: '我的位置',
+                                  child: const Icon(Icons.my_location),
+                                ),
+                                const SizedBox(height: 12),
+                                // 回到台灣全島視角 (使用 Taiwan icon)
+                                FloatingActionButton(
+                                  heroTag: 'reset_taiwan',
+                                  mini: true,
+                                  backgroundColor: Colors.teal,
+                                  onPressed: () {
+                                    _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
+                                  },
+                                  tooltip: '回到台灣',
+                                  child: const Icon(Icons.public, size: 20), // fallback to native icon
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
               ),
+
+              // 指北針 (右上角偏左，只在非正北時顯示)
+              if (_currentRotation.abs() > 0.5) // 容許小誤差
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 10,
+                  right: 80, // FAB 旁邊
+                  child: GestureDetector(
+                    onTap: () {
+                      // 旋轉回正北 (rotation = 0)
+                      _mapController.rotate(0);
+                    },
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                      ),
+                      child: Transform.rotate(
+                        angle: _currentRotation * (3.14159 / 180), // 角度轉弧度
+                        child: const Icon(Icons.navigation, color: Colors.red, size: 28),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 預覽紅框取消按鈕 (右下角，只在有預覽時顯示)
+              if (_previewBounds != null)
+                Positioned(
+                  bottom: 150,
+                  right: 16,
+                  child: FloatingActionButton(
+                    heroTag: 'cancel_preview',
+                    mini: true,
+                    backgroundColor: Colors.red,
+                    onPressed: () => setState(() => _previewBounds = null),
+                    tooltip: '取消預覽',
+                    child: const Icon(Icons.close),
+                  ),
+                ),
 
               // 縮放按鈕區 (右中)
               Positioned(
