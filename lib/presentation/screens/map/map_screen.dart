@@ -139,6 +139,63 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
 
+              // Mini-map (左下角)
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    // 點擊小地圖 -> 重設視角至台灣
+                    _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
+                  },
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black54, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2))],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: IgnorePointer(
+                      child: FlutterMap(
+                        options: const MapOptions(
+                          initialCenter: LatLng(23.5, 121.0), // 台灣中心
+                          initialZoom: 6.0, // 可看見整個台灣
+                          interactionOptions: InteractionOptions(flags: InteractiveFlag.none), // 禁止互動
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: provider.packageName,
+                            // 使用快取 (如果 Store Ready)
+                            tileProvider: provider.isStoreReady
+                                ? FMTCTileProvider(stores: {provider.store.storeName: BrowseStoreStrategy.readUpdateCreate})
+                                : null,
+                          ),
+                          // 顯示目前視窗範圍的紅框
+                          PolygonLayer(
+                            polygons: [
+                              Polygon(
+                                points: [
+                                  _mapController.camera.visibleBounds.northWest,
+                                  _mapController.camera.visibleBounds.northEast,
+                                  _mapController.camera.visibleBounds.southEast,
+                                  _mapController.camera.visibleBounds.southWest,
+                                ],
+                                color: Colors.red.withValues(alpha: 0.3),
+                                borderColor: Colors.red,
+                                borderStrokeWidth: 2,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // 資訊顯示 (左上角)
               Positioned(
                 top: MediaQuery.of(context).padding.top + 10,
