@@ -31,20 +31,28 @@ class PollProvider with ChangeNotifier {
   List<Poll> get endedPolls => _polls.where((p) => !p.isActive).toList();
   List<Poll> get myPolls => _polls.where((p) => p.creatorId == _currentUserId).toList();
 
-  PollProvider() {
+  final PollService _pollService;
+  final IPollRepository _pollRepository;
+  final ISettingsRepository _settingsRepo;
+  final SharedPreferences _prefs;
+
+  PollProvider({
+    PollService? pollService,
+    IPollRepository? pollRepository,
+    ISettingsRepository? settingsRepo,
+    SharedPreferences? prefs,
+  })  : _pollService = pollService ?? getIt<PollService>(),
+        _pollRepository = pollRepository ?? getIt<IPollRepository>(),
+        _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>(),
+        _prefs = prefs ?? getIt<SharedPreferences>() {
     _loadUserId();
     _loadInitialData();
   }
 
-  PollService get _pollService => getIt<PollService>();
-  IPollRepository get _pollRepository => getIt<IPollRepository>();
-  ISettingsRepository get _settingsRepo => getIt<ISettingsRepository>();
-
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 
   Future<void> _loadUserId() async {
-    final prefs = getIt<SharedPreferences>();
-    _currentUserId = prefs.getString(PrefKeys.username);
+    _currentUserId = _prefs.getString(PrefKeys.username);
 
     if (_currentUserId == null || _currentUserId!.isEmpty) {
       _currentUserId = 'User_${DateTime.now().millisecondsSinceEpoch}'; // Fallback
@@ -102,8 +110,7 @@ class PollProvider with ChangeNotifier {
       LogService.info('開始同步投票...', source: _source);
 
       // Refresh User ID just in case
-      final prefs = getIt<SharedPreferences>();
-      final user = prefs.getString(PrefKeys.username);
+      final user = _prefs.getString(PrefKeys.username);
       if (user != null && user.isNotEmpty) _currentUserId = user;
 
       final fetchedPolls = await _pollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
