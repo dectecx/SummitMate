@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants.dart';
 import '../core/di.dart';
 import '../data/models/poll.dart';
-import '../data/repositories/poll_repository.dart';
-import '../data/repositories/settings_repository.dart';
+import '../data/repositories/interfaces/i_poll_repository.dart';
+import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../services/poll_service.dart';
 import '../services/log_service.dart';
 import '../services/toast_service.dart';
@@ -37,8 +37,8 @@ class PollProvider with ChangeNotifier {
   }
 
   PollService get _pollService => getIt<PollService>();
-  PollRepository get _pollRepository => getIt<PollRepository>();
-  SettingsRepository get _settingsRepo => getIt<SettingsRepository>();
+  IPollRepository get _pollRepository => getIt<IPollRepository>();
+  ISettingsRepository get _settingsRepo => getIt<ISettingsRepository>();
 
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
 

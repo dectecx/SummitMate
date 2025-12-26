@@ -2,13 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/models/message.dart';
-import 'package:summitmate/data/repositories/message_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/presentation/providers/message_provider.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/services/sync_service.dart';
 
 // Mocks
-class MockMessageRepository extends Mock implements MessageRepository {}
+class MockMessageRepository extends Mock implements IMessageRepository {}
 
 class MockSyncService extends Mock implements SyncService {}
 
@@ -23,7 +23,7 @@ void main() {
 
     // Reset GetIt
     await GetIt.I.reset();
-    GetIt.I.registerSingleton<MessageRepository>(mockRepository);
+    GetIt.I.registerSingleton<IMessageRepository>(mockRepository);
     GetIt.I.registerSingleton<SyncService>(mockSyncService);
 
     // Default mock behaviors

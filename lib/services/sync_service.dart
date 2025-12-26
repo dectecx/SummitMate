@@ -1,24 +1,24 @@
 import 'package:flutter/foundation.dart';
 import '../data/models/message.dart';
-import '../data/repositories/itinerary_repository.dart';
-import '../data/repositories/message_repository.dart';
+import '../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../data/repositories/interfaces/i_message_repository.dart';
+import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../services/log_service.dart';
 import 'google_sheets_service.dart';
-import '../data/repositories/settings_repository.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步
 class SyncService {
   final GoogleSheetsService _sheetsService;
-  final ItineraryRepository _itineraryRepo;
-  final MessageRepository _messageRepo;
-  final SettingsRepository _settingsRepo;
+  final IItineraryRepository _itineraryRepo;
+  final IMessageRepository _messageRepo;
+  final ISettingsRepository _settingsRepo;
 
   SyncService({
     required GoogleSheetsService sheetsService,
-    required ItineraryRepository itineraryRepo,
-    required MessageRepository messageRepo,
-    required SettingsRepository settingsRepo,
+    required IItineraryRepository itineraryRepo,
+    required IMessageRepository messageRepo,
+    required ISettingsRepository settingsRepo,
   }) : _sheetsService = sheetsService,
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,

@@ -3,14 +3,14 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/message.dart';
-import '../../data/repositories/message_repository.dart';
+import '../../data/repositories/interfaces/i_message_repository.dart';
 import '../../services/sync_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/log_service.dart';
 
 /// 留言狀態管理
 class MessageProvider extends ChangeNotifier {
-  final MessageRepository _repository;
+  final IMessageRepository _repository;
   final SyncService _syncService;
   final Uuid _uuid = const Uuid();
 
@@ -26,7 +26,9 @@ class MessageProvider extends ChangeNotifier {
   /// 同步完成回調 (供 UI 調用以更新 lastSyncTime)
   void Function(DateTime)? onSyncComplete;
 
-  MessageProvider() : _repository = getIt<MessageRepository>(), _syncService = getIt<SyncService>() {
+  MessageProvider({IMessageRepository? repository})
+    : _repository = repository ?? getIt<IMessageRepository>(),
+      _syncService = getIt<SyncService>() {
     _loadMessages();
   }
 
