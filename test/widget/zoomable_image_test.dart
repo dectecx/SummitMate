@@ -4,17 +4,77 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/presentation/widgets/zoomable_image.dart';
 
-
-
 class TestAssetBundle extends CachingAssetBundle {
   @override
   Future<ByteData> load(String key) async {
     final Uint8List transparentImage = Uint8List.fromList([
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
-      0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x60, 0x00, 0x00, 0x00,
-      0x02, 0x00, 0x01, 0xE5, 0x27, 0xDE, 0xFC, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
-      0x42, 0x60, 0x82
+      0x89,
+      0x50,
+      0x4E,
+      0x47,
+      0x0D,
+      0x0A,
+      0x1A,
+      0x0A,
+      0x00,
+      0x00,
+      0x00,
+      0x0D,
+      0x49,
+      0x48,
+      0x44,
+      0x52,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x08,
+      0x06,
+      0x00,
+      0x00,
+      0x00,
+      0x1F,
+      0x15,
+      0xC4,
+      0x89,
+      0x00,
+      0x00,
+      0x00,
+      0x0A,
+      0x49,
+      0x44,
+      0x41,
+      0x54,
+      0x78,
+      0x9C,
+      0x63,
+      0x60,
+      0x00,
+      0x00,
+      0x00,
+      0x02,
+      0x00,
+      0x01,
+      0xE5,
+      0x27,
+      0xDE,
+      0xFC,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x49,
+      0x45,
+      0x4E,
+      0x44,
+      0xAE,
+      0x42,
+      0x60,
+      0x82,
     ]);
     return ByteData.view(transparentImage.buffer);
   }
@@ -47,11 +107,7 @@ void main() {
         DefaultAssetBundle(
           bundle: TestAssetBundle(),
           child: const MaterialApp(
-            home: Scaffold(
-              body: ZoomableImage(
-                assetPath: 'assets/images/test.png',
-              ),
-            ),
+            home: Scaffold(body: ZoomableImage(assetPath: 'assets/images/test.png')),
           ),
         ),
       );
@@ -64,12 +120,7 @@ void main() {
         DefaultAssetBundle(
           bundle: TestAssetBundle(),
           child: const MaterialApp(
-            home: Scaffold(
-              body: ZoomableImage(
-                assetPath: 'assets/images/test.png',
-                showZoomHint: false,
-              ),
-            ),
+            home: Scaffold(body: ZoomableImage(assetPath: 'assets/images/test.png', showZoomHint: false)),
           ),
         ),
       );
@@ -86,10 +137,7 @@ void main() {
               body: SizedBox(
                 width: 300,
                 height: 300,
-                child: ZoomableImage(
-                  assetPath: 'assets/images/test.png',
-                  title: 'Test Image',
-                ),
+                child: ZoomableImage(assetPath: 'assets/images/test.png', title: 'Test Image'),
               ),
             ),
           ),

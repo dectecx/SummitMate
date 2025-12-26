@@ -183,8 +183,20 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       heroTag: 'map_manager',
                       mini: true,
                       backgroundColor: Colors.blueGrey,
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()));
+                      onPressed: () async {
+                        final result = await Navigator.push<LatLngBounds>(
+                          context,
+                          MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()),
+                        );
+                        // 如果返回了 bounds (預覽功能)，顯示紅框並移動視角
+                        if (result != null && mounted) {
+                          setState(() {
+                            _previewBounds = [result.northWest, result.northEast, result.southEast, result.southWest];
+                          });
+                          // 移動地圖視角到該區域中心
+                          final center = LatLng((result.north + result.south) / 2, (result.east + result.west) / 2);
+                          _animatedMapMove(center, 10.0); // Zoom 10 足以看見整個區域
+                        }
                       },
                       tooltip: '離線地圖管理',
                       child: const Icon(Icons.folder_open),
@@ -217,6 +229,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       },
                       tooltip: '我的位置',
                       child: const Icon(Icons.my_location),
+                    ),
+                    const SizedBox(height: 12),
+                    // 回到台灣全島視角
+                    FloatingActionButton(
+                      heroTag: 'reset_taiwan',
+                      mini: true,
+                      backgroundColor: Colors.teal,
+                      onPressed: () {
+                        // 台灣中心點 (大約), Zoom 8 可看見整個台灣
+                        _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
+                      },
+                      tooltip: '回到台灣',
+                      child: const Icon(Icons.public),
                     ),
                   ],
                 ),
@@ -316,7 +341,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final provider = Provider.of<MapProvider>(context, listen: false);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
-    
+
     LogService.info('Starting background download for bounds: $bounds', source: 'MapScreen');
 
     try {
@@ -346,9 +371,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     } catch (e) {
       // 顯示失敗提示 (包含網路錯誤)
       if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('下載失敗: $e'), backgroundColor: Colors.red),
-        );
+        scaffoldMessenger.showSnackBar(SnackBar(content: Text('下載失敗: $e'), backgroundColor: Colors.red));
       }
     }
   }

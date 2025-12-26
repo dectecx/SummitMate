@@ -43,12 +43,6 @@ class GearItem extends HiveObject {
 
   /// 轉換為 JSON
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'weight': weight,
-      'category': category,
-      'is_checked': isChecked,
-      'order_index': orderIndex,
-    };
+    return {'name': name, 'weight': weight, 'category': category, 'is_checked': isChecked, 'order_index': orderIndex};
   }
 }
