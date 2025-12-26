@@ -19,15 +19,17 @@ class GoogleSheetsService {
 
   /// 取得所有資料 (行程 + 留言)
   /// 回傳格式：{ itinerary: [...], messages: [...] }
-  Future<FetchAllResult> fetchAll() async {
+  /// [tripId] - 可選，篩選特定行程的資料
+  Future<FetchAllResult> fetchAll({String? tripId}) async {
     try {
-      LogService.info('API 請求: FetchAll', source: 'API');
+      LogService.info('API 請求: FetchAll${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
-      // Note: GasApiClient constructor handles baseUrl assignment.
-      // We check emptiness via EnvConfig usually, but here checking client functionality is tricky.
-      // Assuming EnvConfig.gasBaseUrl is correct if not null.
+      final queryParams = <String, String>{'action': ApiConfig.actionFetchAll};
+      if (tripId != null) {
+        queryParams['trip_id'] = tripId;
+      }
 
-      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchAll});
+      final response = await _apiClient.get(queryParams: queryParams);
       LogService.debug('API 回應: ${response.statusCode}', source: 'API');
 
       if (response.statusCode == 200) {
@@ -56,10 +58,17 @@ class GoogleSheetsService {
   }
 
   /// 僅取得行程資料
-  Future<FetchAllResult> fetchItinerary() async {
+  /// [tripId] - 可選，篩選特定行程的資料
+  Future<FetchAllResult> fetchItinerary({String? tripId}) async {
     try {
-      LogService.info('API 請求: FetchItinerary', source: 'API');
-      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchItinerary});
+      LogService.info('API 請求: FetchItinerary${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
+
+      final queryParams = <String, String>{'action': ApiConfig.actionFetchItinerary};
+      if (tripId != null) {
+        queryParams['trip_id'] = tripId;
+      }
+
+      final response = await _apiClient.get(queryParams: queryParams);
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -78,10 +87,17 @@ class GoogleSheetsService {
   }
 
   /// 僅取得留言資料
-  Future<FetchAllResult> fetchMessages() async {
+  /// [tripId] - 可選，篩選特定行程的資料
+  Future<FetchAllResult> fetchMessages({String? tripId}) async {
     try {
-      LogService.info('API 請求: FetchMessages', source: 'API');
-      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchMessages});
+      LogService.info('API 請求: FetchMessages${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
+
+      final queryParams = <String, String>{'action': ApiConfig.actionFetchMessages};
+      if (tripId != null) {
+        queryParams['trip_id'] = tripId;
+      }
+
+      final response = await _apiClient.get(queryParams: queryParams);
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
