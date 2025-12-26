@@ -146,9 +146,25 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                       leading: const Icon(Icons.terrain, color: Colors.green),
                       title: Text(preset.name),
                       subtitle: const Text('範圍: 約 10x10 km, Zoom 12-20'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.download_for_offline_outlined, color: Colors.blue),
-                        onPressed: () => _confirmDownloadPreset(context, provider, preset),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 預覽按鈕
+                          IconButton(
+                            icon: const Icon(Icons.visibility, color: Colors.teal),
+                            tooltip: '預覽範圍',
+                            onPressed: () {
+                              // 返回 MapScreen 並傳遞 bounds 進行預覽
+                              Navigator.pop(context, preset.bounds);
+                            },
+                          ),
+                          // 下載按鈕
+                          IconButton(
+                            icon: const Icon(Icons.download_for_offline_outlined, color: Colors.blue),
+                            tooltip: '加入下載',
+                            onPressed: () => _confirmDownloadPreset(context, provider, preset),
+                          ),
+                        ],
                       ),
                     ),
                   ),

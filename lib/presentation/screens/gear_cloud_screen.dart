@@ -297,9 +297,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                   },
                 )
               : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           filled: true,
           fillColor: Theme.of(context).cardColor,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
