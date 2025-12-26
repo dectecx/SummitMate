@@ -8,6 +8,7 @@ import '../core/env_config.dart';
 import '../core/constants.dart';
 import '../core/di.dart';
 import '../data/repositories/interfaces/i_settings_repository.dart';
+import 'interfaces/i_weather_service.dart';
 
 /// Weather Service
 /// Data Sources:
@@ -17,14 +18,19 @@ import '../data/repositories/interfaces/i_settings_repository.dart';
 /// 2. Township Weather: F-D0047-039 鄉鎮天氣預報-臺東縣未來1週天氣預報
 ///    - URL: https://opendata.cwa.gov.tw/dataset/all/F-D0047-039
 ///    - Accessed via Direct API (Mobile) or Netlify Proxy (Web)
-class WeatherService {
+class WeatherService implements IWeatherService {
   static const String _boxName = HiveBoxNames.weather;
   static const String _cacheKey = 'current_weather';
   static const String _apiKey = EnvConfig.cwaApiKey;
   String _targetLocation = '向陽山';
 
+  final ISettingsRepository _settingsRepo;
   Box<WeatherData>? _box;
 
+  WeatherService({ISettingsRepository? settingsRepo})
+    : _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>();
+
+  @override
   Future<void> init() async {
     if (!Hive.isBoxOpen(_boxName)) {
       _box = await Hive.openBox<WeatherData>(_boxName);
@@ -37,7 +43,7 @@ class WeatherService {
   Future<WeatherData?> getWeather({bool forceRefresh = false, String locationName = '向陽山'}) async {
     final dynamicCacheKey = 'weather_$locationName';
     final cached = _box?.get(dynamicCacheKey);
-    final isOffline = getIt<ISettingsRepository>().getSettings().isOfflineMode;
+    final isOffline = _settingsRepo.getSettings().isOfflineMode;
 
     if (isOffline) {
       if (cached != null) {
@@ -100,7 +106,7 @@ class WeatherService {
   }
 
   Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
-    final isOffline = getIt<ISettingsRepository>().getSettings().isOfflineMode;
+    final isOffline = _settingsRepo.getSettings().isOfflineMode;
     if (isOffline) {
       throw Exception('Offline Mode: Cannot fetch weather');
     }

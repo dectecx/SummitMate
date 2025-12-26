@@ -17,6 +17,7 @@ import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
 import '../data/repositories/interfaces/i_poll_repository.dart';
 import '../services/weather_service.dart';
+import '../services/interfaces/i_weather_service.dart';
 import '../services/poll_service.dart';
 
 /// 全域依賴注入容器
@@ -59,9 +60,10 @@ Future<void> setupDependencies() async {
   await gearRepo.init();
   getIt.registerSingleton<IGearRepository>(gearRepo);
 
+  // 天氣服務
   final weatherService = WeatherService();
   await weatherService.init();
-  getIt.registerSingleton<WeatherService>(weatherService);
+  getIt.registerSingleton<IWeatherService>(weatherService);
 
   // Poll Repository
   final pollRepo = PollRepository();

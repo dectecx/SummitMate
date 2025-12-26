@@ -14,6 +14,7 @@ import 'services/toast_service.dart';
 import 'services/log_service.dart';
 import 'services/sync_service.dart';
 import 'services/hive_service.dart';
+import 'services/interfaces/i_weather_service.dart';
 import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
@@ -28,7 +29,6 @@ import 'presentation/widgets/itinerary_edit_dialog.dart';
 import 'package:summitmate/presentation/widgets/tutorial_overlay.dart';
 import 'services/tutorial_service.dart';
 import 'package:intl/intl.dart';
-import 'services/weather_service.dart';
 import 'data/models/weather_data.dart';
 import 'data/models/gear_item.dart';
 import 'services/usage_tracking_service.dart';
@@ -1796,7 +1796,7 @@ class InfoTabState extends State<InfoTab> {
 
     setState(() => _loadingWeather = true);
     try {
-      final weather = await getIt<WeatherService>().getWeather(forceRefresh: force, locationName: _selectedLocation);
+      final weather = await getIt<IWeatherService>().getWeather(forceRefresh: force, locationName: _selectedLocation);
       if (mounted) {
         setState(() => _weather = weather);
         if (force) ToastService.success('天氣更新成功！');
