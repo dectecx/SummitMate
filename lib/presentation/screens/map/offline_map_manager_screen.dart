@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -57,6 +58,29 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
+              // Web 平台警告
+              if (kIsWeb)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Web 版本不支援離線地圖功能。\n請使用 Android/iOS App 以獲得完整離線體驗。',
+                          style: TextStyle(color: Colors.black87),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // 1. 儲存空間統計卡片
               Card(
                 elevation: 2,

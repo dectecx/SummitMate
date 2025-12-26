@@ -313,44 +313,46 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                   child: const Icon(Icons.file_upload_outlined),
                                 ),
                                 const SizedBox(height: 12),
-                                FloatingActionButton(
-                                  heroTag: 'map_manager',
-                                  mini: true,
-                                  backgroundColor: Colors.blueGrey,
-                                  onPressed: () async {
-                                    final result = await Navigator.push<LatLngBounds>(
-                                      context,
-                                      MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()),
-                                    );
-                                    if (result != null && mounted) {
-                                      setState(() {
-                                        _previewBounds = [
-                                          result.northWest,
-                                          result.northEast,
-                                          result.southEast,
-                                          result.southWest,
-                                        ];
-                                      });
-                                      final center = LatLng(
-                                        (result.north + result.south) / 2,
-                                        (result.east + result.west) / 2,
+                                // 離線地圖功能 (僅限非 Web 平台)
+                                if (!kIsWeb) ...[
+                                  FloatingActionButton(
+                                    heroTag: 'map_manager',
+                                    mini: true,
+                                    backgroundColor: Colors.blueGrey,
+                                    onPressed: () async {
+                                      final result = await Navigator.push<LatLngBounds>(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const OfflineMapManagerScreen()),
                                       );
-                                      _animatedMapMove(center, 10.0);
-                                    }
-                                  },
-                                  tooltip: '離線地圖管理',
-                                  child: const Icon(Icons.folder_open),
-                                ),
-                                const SizedBox(height: 12),
-                                FloatingActionButton(
-                                  heroTag: 'download_map',
-                                  mini: true,
-                                  backgroundColor: Colors.orange,
-                                  onPressed: () => _showDownloadDialog(context, _mapController, provider),
-                                  tooltip: '下載離線地圖',
-                                  child: const Icon(Icons.download_for_offline),
-                                ),
-                                const SizedBox(height: 12),
+                                      if (result != null && mounted) {
+                                        setState(() {
+                                          _previewBounds = [
+                                            result.northWest,
+                                            result.northEast,
+                                            result.southEast,
+                                            result.southWest,
+                                          ];
+                                        });
+                                        final center = LatLng(
+                                          (result.north + result.south) / 2,
+                                          (result.east + result.west) / 2,
+                                        );
+                                        _animatedMapMove(center, 10.0);
+                                      }
+                                    },
+                                    tooltip: '離線地圖管理',
+                                    child: const Icon(Icons.folder_open),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  FloatingActionButton(
+                                    heroTag: 'download_map',
+                                    mini: true,
+                                    backgroundColor: Colors.orange,
+                                    onPressed: () => _showDownloadDialog(context, _mapController, provider),
+                                    tooltip: '下載離線地圖',
+                                    child: const Icon(Icons.download_for_offline),
+                                  ),
+                                ],
                                 FloatingActionButton(
                                   heroTag: 'my_location',
                                   mini: true,
