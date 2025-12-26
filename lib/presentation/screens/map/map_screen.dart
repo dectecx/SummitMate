@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
@@ -73,9 +74,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: provider.packageName,
                     maxNativeZoom: 19, // 支援過度縮放到 20 (使用 level 19 tiles 放大)
-                    // FMTC v10: 使用 FMTCTileProvider 攔截並快取
-                    // 若 Store 尚未準備好，暫時使用預設 (NetworkTileProvider) 避免 Crash
-                    tileProvider: provider.isStoreReady
+                    // FMTC v10: 使用 FMTCTileProvider 攔截並快取 (僅限非 Web 平台)
+                    // Web 使用預設 NetworkTileProvider
+                    tileProvider: (!kIsWeb && provider.isStoreReady)
                         ? FMTCTileProvider(stores: {provider.store.storeName: BrowseStoreStrategy.readUpdateCreate})
                         : null,
                   ),
@@ -216,7 +217,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                         TileLayer(
                                           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                           userAgentPackageName: provider.packageName,
-                                          tileProvider: provider.isStoreReady
+                                          tileProvider: (!kIsWeb && provider.isStoreReady)
                                               ? FMTCTileProvider(
                                                   stores: {
                                                     provider.store.storeName: BrowseStoreStrategy.readUpdateCreate,
