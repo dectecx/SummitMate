@@ -405,3 +405,55 @@ Base URL: `macros/s/{DEPLOYMENT_ID}/exec`
 * **背景**: 投票資料頻繁變動，需快速同步。
 * **決策**: 每次進入投票頁面從雲端拉取最新資料，本地僅作快取。
 * **優點**: 確保資料一致性，避免版本衝突。
+
+---
+
+## 7. 依賴注入 (DI) 與可測試性
+
+透過 `get_it` 管理依賴注入，所有註冊位於 `lib/core/di.dart`。
+
+### 介面註冊 (可 Mock)
+
+| Interface | Implementation | 用途 |
+|-----------|----------------|------|
+| `IGearRepository` | `GearRepository` | 裝備資料存取 |
+| `ISettingsRepository` | `SettingsRepository` | 設定資料存取 |
+| `IItineraryRepository` | `ItineraryRepository` | 行程資料存取 |
+| `IMessageRepository` | `MessageRepository` | 留言資料存取 |
+| `IPollRepository` | `PollRepository` | 投票資料存取 |
+| `IWeatherService` | `WeatherService` | 天氣資料服務 |
+
+### 直接註冊 (不需 Mock)
+
+| Service | 原因 |
+|---------|------|
+| `HiveService` | 初始化協調器 |
+| `SyncService` | 已依賴 Repo 介面 |
+| `PollService` | 已支援 DI (apiClient) |
+
+### API 服務可測試性
+
+所有 API 相關服務皆支援建構子注入：
+
+```dart
+// GasApiClient - 可替換 http.Client
+GasApiClient({http.Client? client, required String baseUrl})
+
+// GoogleSheetsService - 可替換 GasApiClient
+GoogleSheetsService({GasApiClient? apiClient})
+
+// PollService - 可替換 GasApiClient  
+PollService({GasApiClient? apiClient})
+
+// WeatherService - 可替換 ISettingsRepository
+WeatherService({ISettingsRepository? settingsRepo})
+```
+
+### 測試策略
+
+| 測試類型 | 策略 |
+|----------|------|
+| **單元測試** | 透過 Repository Interface Mock |
+| **Service 測試** | 透過 API Client 建構子注入 Mock |
+| **Widget 測試** | 使用 `pumpWidget` + Mock Provider |
+| **整合測試** | 使用 Dev 環境 API |
