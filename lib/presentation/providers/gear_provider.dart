@@ -16,9 +16,17 @@ class GearProvider extends ChangeNotifier {
   bool _isLoading = true;
   String? _error;
 
-  GearProvider() : _repository = getIt<GearRepository>() {
+  /// 建構子 - 支援注入 Repository 以利測試
+  /// [repository] 若未提供則使用 DI 容器取得
+  GearProvider({GearRepository? repository}) : _repository = repository ?? getIt<GearRepository>() {
     LogService.info('GearProvider 初始化', source: 'Gear');
     _loadItems();
+  }
+
+  /// 用於測試的工廠方法 - 不自動載入資料
+  @visibleForTesting
+  GearProvider.forTest(this._repository) {
+    _isLoading = false;
   }
 
   /// 所有裝備
