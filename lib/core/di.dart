@@ -11,11 +11,13 @@ import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../data/repositories/gear_repository.dart';
 import '../data/repositories/poll_repository.dart';
+import '../data/repositories/trip_repository.dart';
 import '../data/repositories/interfaces/i_gear_repository.dart';
 import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
 import '../data/repositories/interfaces/i_poll_repository.dart';
+import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../services/weather_service.dart';
 import '../services/interfaces/i_weather_service.dart';
 import '../services/poll_service.dart';
@@ -69,6 +71,11 @@ Future<void> setupDependencies() async {
   final pollRepo = PollRepository();
   await pollRepo.init();
   getIt.registerSingleton<IPollRepository>(pollRepo);
+
+  // Trip Repository
+  final tripRepo = TripRepository();
+  await tripRepo.init();
+  getIt.registerSingleton<ITripRepository>(tripRepo);
 
   // PollService
   getIt.registerSingleton<PollService>(PollService());

@@ -37,6 +37,10 @@ class ItineraryItem extends HiveObject {
   @HiveField(7)
   String? imageAsset;
 
+  /// 關聯的行程 ID
+  @HiveField(8)
+  String tripId;
+
   ItineraryItem({
     this.day = '',
     this.name = '',
@@ -46,6 +50,7 @@ class ItineraryItem extends HiveObject {
     this.distance = 0.0,
     this.note = '',
     this.imageAsset,
+    this.tripId = '',
   });
 
   /// 是否已打卡
@@ -78,12 +83,14 @@ class ItineraryItem extends HiveObject {
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
       note: json['note']?.toString() ?? '',
       imageAsset: json['image_asset']?.toString(),
+      tripId: json['trip_id']?.toString() ?? '',
     );
   }
 
   /// 轉換為 JSON
   Map<String, dynamic> toJson() {
     return {
+      'trip_id': tripId,
       'day': day,
       'name': name,
       'est_time': estTime,
