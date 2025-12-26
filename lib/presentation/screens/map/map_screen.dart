@@ -379,7 +379,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                     _animatedMapMove(const LatLng(23.5, 121.0), 8.0);
                                   },
                                   tooltip: '回到台灣',
-                                  child: const Icon(Icons.public, size: 20), // fallback to native icon
+                                  child: const Icon(TaiwanIcons.taiwan_main_island, size: 20),
                                 ),
                               ],
                             )
