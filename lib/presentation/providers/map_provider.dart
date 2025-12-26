@@ -13,6 +13,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../services/log_service.dart';
+import '../../core/gpx_utils.dart';
 
 enum TaskStatus { pending, downloading, paused, completed, failed, cancelled }
 
@@ -383,21 +384,8 @@ class MapProvider with ChangeNotifier {
   }
 
   List<LatLng> _extractTrackPoints(Gpx gpx) {
-    List<LatLng> points = [];
-
-    // 遍歷所有的 Tracks
-    for (var trk in gpx.trks) {
-      // 遍歷 Track 中的所有 Segments
-      for (var seg in trk.trksegs) {
-        // 遍歷 Segment 中的所有 Points
-        for (var pt in seg.trkpts) {
-          if (pt.lat != null && pt.lon != null) {
-            points.add(LatLng(pt.lat!, pt.lon!));
-          }
-        }
-      }
-    }
-    return points;
+    // 使用 GpxUtils 工具類進行解析
+    return GpxUtils.extractTrackPoints(gpx);
   }
 
   void _setLoading(bool value) {

@@ -41,10 +41,10 @@ class PollProvider with ChangeNotifier {
     IPollRepository? pollRepository,
     ISettingsRepository? settingsRepo,
     SharedPreferences? prefs,
-  })  : _pollService = pollService ?? getIt<PollService>(),
-        _pollRepository = pollRepository ?? getIt<IPollRepository>(),
-        _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>(),
-        _prefs = prefs ?? getIt<SharedPreferences>() {
+  }) : _pollService = pollService ?? getIt<PollService>(),
+       _pollRepository = pollRepository ?? getIt<IPollRepository>(),
+       _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>(),
+       _prefs = prefs ?? getIt<SharedPreferences>() {
     _loadUserId();
     _loadInitialData();
   }
