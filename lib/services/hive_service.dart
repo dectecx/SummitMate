@@ -7,6 +7,7 @@ import '../data/models/message.dart';
 import '../data/models/gear_item.dart';
 import '../data/models/weather_data.dart';
 import '../data/models/poll.dart';
+import '../data/models/trip.dart';
 
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期
@@ -56,6 +57,9 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(7)) {
       Hive.registerAdapter(PollOptionAdapter());
+    }
+    if (!Hive.isAdapterRegistered(10)) {
+      Hive.registerAdapter(TripAdapter());
     }
 
     _isInitialized = true;

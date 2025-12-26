@@ -100,4 +100,5 @@ class HiveBoxNames {
   static const String weather = 'weather_cache';
   static const String logs = 'app_logs';
   static const String polls = 'polls';
+  static const String trips = 'trips';
 }
