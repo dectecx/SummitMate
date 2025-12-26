@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/providers/poll_provider.dart';
+import 'package:summitmate/presentation/providers/poll_provider.dart';
 import 'package:summitmate/services/poll_service.dart';
 import 'package:summitmate/data/models/poll.dart';
 import 'package:summitmate/data/repositories/interfaces/i_poll_repository.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/poll_provider.dart';
+import '../providers/poll_provider.dart';
 import '../../data/models/poll.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';

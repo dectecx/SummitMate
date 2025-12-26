@@ -20,7 +20,7 @@ import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/message_provider.dart';
 import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/meal_provider.dart';
-import 'providers/poll_provider.dart';
+import 'presentation/providers/poll_provider.dart';
 import 'presentation/providers/map_provider.dart';
 import 'presentation/screens/map/map_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
