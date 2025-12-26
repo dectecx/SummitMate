@@ -4,6 +4,7 @@ import '../../core/di.dart';
 import '../../data/models/itinerary_item.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_settings_repository.dart';
+import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/sync_service.dart';
@@ -11,6 +12,7 @@ import '../../services/sync_service.dart';
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {
   final IItineraryRepository _repository;
+  final ITripRepository _tripRepository;
 
   List<ItineraryItem> _items = [];
   String _selectedDay = ItineraryDay.d1; // 預設顯示 D1
@@ -18,10 +20,15 @@ class ItineraryProvider extends ChangeNotifier {
   bool _isEditMode = false;
   String? _error;
 
-  ItineraryProvider({IItineraryRepository? repository}) : _repository = repository ?? getIt<IItineraryRepository>() {
+  ItineraryProvider({IItineraryRepository? repository, ITripRepository? tripRepository})
+    : _repository = repository ?? getIt<IItineraryRepository>(),
+      _tripRepository = tripRepository ?? getIt<ITripRepository>() {
     LogService.info('ItineraryProvider 初始化', source: 'Itinerary');
     _loadItems();
   }
+
+  /// 當前行程 ID
+  String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
 
   /// 所有行程節點
   List<ItineraryItem> get allItems => _items;
@@ -68,8 +75,14 @@ class ItineraryProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _items = _repository.getAllItems();
-      LogService.debug('載入 ${_items.length} 個行程節點', source: 'Itinerary');
+      final allItems = _repository.getAllItems();
+      // 篩選當前行程的項目
+      if (_currentTripId != null) {
+        _items = allItems.where((item) => item.tripId == _currentTripId).toList();
+      } else {
+        _items = allItems;
+      }
+      LogService.debug('載入 ${_items.length} 個行程節點 (tripId: $_currentTripId)', source: 'Itinerary');
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -164,9 +177,10 @@ class ItineraryProvider extends ChangeNotifier {
         altitude: altitude,
         distance: distance,
         note: note,
+        tripId: _currentTripId ?? '',
       );
 
-      LogService.info('新增行程: $name ($day)', source: 'Itinerary');
+      LogService.info('新增行程: $name ($day) tripId: $_currentTripId', source: 'Itinerary');
       await _repository.addItem(newItem);
       _loadItems();
     } catch (e) {
