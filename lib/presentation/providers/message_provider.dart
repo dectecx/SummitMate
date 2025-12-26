@@ -4,6 +4,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/message.dart';
 import '../../data/repositories/interfaces/i_message_repository.dart';
+import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../services/sync_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/log_service.dart';
@@ -11,6 +12,7 @@ import '../../services/log_service.dart';
 /// 留言狀態管理
 class MessageProvider extends ChangeNotifier {
   final IMessageRepository _repository;
+  final ITripRepository _tripRepository;
   final SyncService _syncService;
   final Uuid _uuid = const Uuid();
 
@@ -26,11 +28,15 @@ class MessageProvider extends ChangeNotifier {
   /// 同步完成回調 (供 UI 調用以更新 lastSyncTime)
   void Function(DateTime)? onSyncComplete;
 
-  MessageProvider({IMessageRepository? repository})
+  MessageProvider({IMessageRepository? repository, ITripRepository? tripRepository})
     : _repository = repository ?? getIt<IMessageRepository>(),
+      _tripRepository = tripRepository ?? getIt<ITripRepository>(),
       _syncService = getIt<SyncService>() {
     _loadMessages();
   }
+
+  /// 當前行程 ID
+  String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
 
   /// 所有留言
   List<Message> get allMessages => _allMessages;
@@ -59,7 +65,13 @@ class MessageProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _allMessages = _repository.getAllMessages();
+      final allMessages = _repository.getAllMessages();
+      // 篩選當前行程的留言 (或全域留言 tripId == null)
+      if (_currentTripId != null) {
+        _allMessages = allMessages.where((msg) => msg.tripId == null || msg.tripId == _currentTripId).toList();
+      } else {
+        _allMessages = allMessages;
+      }
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -98,6 +110,7 @@ class MessageProvider extends ChangeNotifier {
         category: _selectedCategory,
         content: content,
         avatar: avatar,
+        tripId: _currentTripId,
         timestamp: DateTime.now(),
       );
 
