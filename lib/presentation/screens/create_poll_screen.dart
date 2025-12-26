@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/poll_provider.dart';
+import '../providers/poll_provider.dart';
 import '../../services/log_service.dart';
 
 class CreatePollScreen extends StatefulWidget {
