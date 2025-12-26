@@ -26,6 +26,7 @@ import 'presentation/providers/trip_provider.dart';
 import 'presentation/screens/map/map_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
 import 'presentation/screens/collaboration_tab.dart';
+import 'presentation/screens/trip_list_screen.dart';
 import 'presentation/widgets/itinerary_edit_dialog.dart';
 import 'package:summitmate/presentation/widgets/tutorial_overlay.dart';
 import 'services/tutorial_service.dart';
@@ -444,6 +445,13 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             final isLoading = messageProvider.isSyncing || pollProvider.isLoading;
             final scaffold = Scaffold(
               appBar: AppBar(
+                leading: Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    tooltip: '選單',
+                  ),
+                ),
                 title: const Text('SummitMate 山友'),
                 bottom: isLoading
                     ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
@@ -480,6 +488,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   ),
                 ],
               ),
+              drawer: _buildDrawer(context),
               body: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 transitionBuilder: (child, animation) {
@@ -557,6 +566,110 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
       default:
         return const _ItineraryTab(key: ValueKey(0));
     }
+  }
+
+  /// 建立側邊抽屜
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: Consumer<TripProvider>(
+        builder: (context, tripProvider, child) {
+          final activeTrip = tripProvider.activeTrip;
+          return ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Icon(
+                      Icons.terrain,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      activeTrip?.name ?? '選擇行程',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    if (activeTrip != null)
+                      Text(
+                        '${activeTrip.durationDays} 天行程',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.list),
+                title: const Text('管理行程'),
+                subtitle: Text('共 ${tripProvider.trips.length} 個行程'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context); // 關閉抽屜
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TripListScreen()),
+                  );
+                },
+              ),
+              const Divider(),
+              // 快速切換行程
+              if (tripProvider.trips.length > 1) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Text(
+                    '快速切換',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                  ),
+                ),
+                ...tripProvider.trips.take(5).map((trip) {
+                  final isActive = trip.id == tripProvider.activeTripId;
+                  return ListTile(
+                    leading: Icon(
+                      isActive ? Icons.radio_button_checked : Icons.radio_button_off,
+                      color: isActive ? Theme.of(context).colorScheme.primary : null,
+                    ),
+                    title: Text(
+                      trip.name,
+                      style: TextStyle(
+                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    selected: isActive,
+                    onTap: () async {
+                      if (!isActive) {
+                        await tripProvider.setActiveTrip(trip.id);
+                        // 重新載入相關 Provider
+                        if (context.mounted) {
+                          context.read<ItineraryProvider>().reload();
+                          context.read<MessageProvider>().reload();
+                          Navigator.pop(context); // 關閉抽屜
+                        }
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                  );
+                }),
+              ],
+            ],
+          );
+        },
+      ),
+    );
   }
 
   void _showAddItineraryDialog(BuildContext context, ItineraryProvider provider) async {
