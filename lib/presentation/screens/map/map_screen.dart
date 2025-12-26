@@ -389,15 +389,17 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // 指北針 (右上角偏左，只在非正北時顯示)
-              if (_currentRotation.abs() > 0.5) // 容許小誤差
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 10,
-                  right: 80, // FAB 旁邊
+              // 指北針 (右上角偏左，平滑淡入淡出)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 10,
+                right: 80, // FAB 旁邊
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: _currentRotation.abs() > 0.5 ? 1.0 : 0.0,
                   child: GestureDetector(
                     onTap: () {
-                      // 旋轉回正北 (rotation = 0)
-                      _mapController.rotate(0);
+                      // 平滑旋轉回正北
+                      _animatedRotateNorth();
                     },
                     child: Container(
                       width: 44,
@@ -414,6 +416,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+              ),
 
               // 預覽紅框取消按鈕 (右下角，只在有預覽時顯示)
               if (_previewBounds != null)
@@ -584,6 +587,32 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       if (status == AnimationStatus.completed) {
         controller.dispose();
       } else if (status == AnimationStatus.dismissed) {
+        controller.dispose();
+      }
+    });
+
+    controller.forward();
+  }
+
+  /// 平滑旋轉地圖至正北
+  void _animatedRotateNorth() {
+    final controller = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+
+    // 計算最短旋轉路徑
+    double startRotation = _currentRotation;
+    // 正規化至 -180 ~ 180
+    while (startRotation > 180) startRotation -= 360;
+    while (startRotation < -180) startRotation += 360;
+
+    final rotationTween = Tween<double>(begin: startRotation, end: 0);
+    final animation = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic);
+
+    controller.addListener(() {
+      _mapController.rotate(rotationTween.evaluate(animation));
+    });
+
+    animation.addStatusListener((status) {
+      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         controller.dispose();
       }
     });
