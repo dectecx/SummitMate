@@ -22,6 +22,7 @@ import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/meal_provider.dart';
 import 'presentation/providers/poll_provider.dart';
 import 'presentation/providers/map_provider.dart';
+import 'presentation/providers/trip_provider.dart';
 import 'presentation/screens/map/map_screen.dart';
 import 'presentation/screens/meal_planner_screen.dart';
 import 'presentation/screens/collaboration_tab.dart';
@@ -61,6 +62,7 @@ class SummitMateApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => TripProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ItineraryProvider()),
         ChangeNotifierProvider(create: (_) => MessageProvider()),
