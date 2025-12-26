@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/constants.dart';
-import '../core/di.dart';
-import '../data/models/poll.dart';
-import '../data/repositories/interfaces/i_poll_repository.dart';
-import '../data/repositories/interfaces/i_settings_repository.dart';
-import '../services/poll_service.dart';
-import '../services/log_service.dart';
-import '../services/toast_service.dart';
+import '../../core/constants.dart';
+import '../../core/di.dart';
+import '../../data/models/poll.dart';
+import '../../data/repositories/interfaces/i_poll_repository.dart';
+import '../../data/repositories/interfaces/i_settings_repository.dart';
+import '../../services/poll_service.dart';
+import '../../services/log_service.dart';
+import '../../services/toast_service.dart';
 
 class PollProvider with ChangeNotifier {
   static const String _source = 'PollProvider';

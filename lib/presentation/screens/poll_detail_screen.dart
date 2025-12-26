@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/poll.dart';
-import '../../providers/poll_provider.dart';
+import '../providers/poll_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
 import '../../services/toast_service.dart';
 
