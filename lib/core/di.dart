@@ -10,8 +10,13 @@ import '../data/repositories/settings_repository.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../data/repositories/gear_repository.dart';
-import '../services/weather_service.dart';
 import '../data/repositories/poll_repository.dart';
+import '../data/repositories/interfaces/i_gear_repository.dart';
+import '../data/repositories/interfaces/i_settings_repository.dart';
+import '../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../data/repositories/interfaces/i_message_repository.dart';
+import '../data/repositories/interfaces/i_poll_repository.dart';
+import '../services/weather_service.dart';
 import '../services/poll_service.dart';
 
 /// 全域依賴注入容器
@@ -37,22 +42,22 @@ Future<void> setupDependencies() async {
   await LogService.init();
   LogService.info('App 啟動', source: 'DI');
 
-  // Repositories (需要先初始化)
+  // Repositories
   final settingsRepo = SettingsRepository();
   await settingsRepo.init();
-  getIt.registerSingleton<SettingsRepository>(settingsRepo);
+  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
   final itineraryRepo = ItineraryRepository();
   await itineraryRepo.init();
-  getIt.registerSingleton<ItineraryRepository>(itineraryRepo);
+  getIt.registerSingleton<IItineraryRepository>(itineraryRepo);
 
   final messageRepo = MessageRepository();
   await messageRepo.init();
-  getIt.registerSingleton<MessageRepository>(messageRepo);
+  getIt.registerSingleton<IMessageRepository>(messageRepo);
 
   final gearRepo = GearRepository();
   await gearRepo.init();
-  getIt.registerSingleton<GearRepository>(gearRepo);
+  getIt.registerSingleton<IGearRepository>(gearRepo);
 
   final weatherService = WeatherService();
   await weatherService.init();
@@ -61,7 +66,7 @@ Future<void> setupDependencies() async {
   // Poll Repository
   final pollRepo = PollRepository();
   await pollRepo.init();
-  getIt.registerSingleton<PollRepository>(pollRepo);
+  getIt.registerSingleton<IPollRepository>(pollRepo);
 
   // PollService
   getIt.registerSingleton<PollService>(PollService());
@@ -71,9 +76,9 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<SyncService>(
     () => SyncService(
       sheetsService: getIt<GoogleSheetsService>(),
-      itineraryRepo: getIt<ItineraryRepository>(),
-      messageRepo: getIt<MessageRepository>(),
-      settingsRepo: getIt<SettingsRepository>(),
+      itineraryRepo: getIt<IItineraryRepository>(),
+      messageRepo: getIt<IMessageRepository>(),
+      settingsRepo: getIt<ISettingsRepository>(),
     ),
   );
 }

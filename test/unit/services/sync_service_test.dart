@@ -3,22 +3,22 @@ import 'package:mocktail/mocktail.dart';
 import 'package:hive/hive.dart';
 import 'package:summitmate/services/sync_service.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
-import 'package:summitmate/data/repositories/itinerary_repository.dart';
-import 'package:summitmate/data/repositories/message_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/data/models/itinerary_item.dart';
-import 'package:summitmate/data/repositories/settings_repository.dart';
 import 'package:summitmate/data/models/settings.dart';
 import 'package:summitmate/services/log_service.dart';
 
 // Mocks
 class MockGoogleSheetsService extends Mock implements GoogleSheetsService {}
 
-class MockItineraryRepository extends Mock implements ItineraryRepository {}
+class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
-class MockMessageRepository extends Mock implements MessageRepository {}
+class MockMessageRepository extends Mock implements IMessageRepository {}
 
-class MockSettingsRepository extends Mock implements SettingsRepository {}
+class MockSettingsRepository extends Mock implements ISettingsRepository {}
 
 class MockSettings extends Mock implements Settings {}
 

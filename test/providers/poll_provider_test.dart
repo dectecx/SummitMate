@@ -5,8 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/providers/poll_provider.dart';
 import 'package:summitmate/services/poll_service.dart';
 import 'package:summitmate/data/models/poll.dart';
-import 'package:summitmate/data/repositories/poll_repository.dart';
-import 'package:summitmate/data/repositories/settings_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_poll_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
 import 'package:summitmate/data/models/settings.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,9 +18,9 @@ class MockClient extends Mock implements http.Client {}
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
-class MockPollRepository extends Mock implements PollRepository {}
+class MockPollRepository extends Mock implements IPollRepository {}
 
-class MockSettingsRepository extends Mock implements SettingsRepository {}
+class MockSettingsRepository extends Mock implements ISettingsRepository {}
 
 class MockSettings extends Mock implements Settings {}
 
@@ -47,8 +47,8 @@ void main() {
 
     getIt.registerSingleton<SharedPreferences>(mockSharedPreferences);
     getIt.registerSingleton<PollService>(PollService(apiClient: gasApiClient));
-    getIt.registerSingleton<PollRepository>(mockPollRepository);
-    getIt.registerSingleton<SettingsRepository>(mockSettingsRepository);
+    getIt.registerSingleton<IPollRepository>(mockPollRepository);
+    getIt.registerSingleton<ISettingsRepository>(mockSettingsRepository);
 
     // Stub common calls
     when(() => mockSharedPreferences.getString(any())).thenReturn('test_user_1');

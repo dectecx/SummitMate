@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:summitmate/data/models/gear_item.dart';
-import 'package:summitmate/data/repositories/gear_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
 import 'package:summitmate/presentation/providers/gear_provider.dart';
 
 /// Mock GearRepository for testing
-/// 手動建立 Mock 以避免依賴 Hive
-class MockGearRepository implements GearRepository {
+/// 實作 IGearRepository 介面以供測試使用
+class MockGearRepository implements IGearRepository {
   List<GearItem> _items = [];
   bool _initCalled = false;
   bool _throwOnGetAllItems = false;
@@ -140,8 +140,8 @@ void main() {
 
     setUp(() {
       mockRepository = MockGearRepository();
-      // 使用 forTest 工廠方法避免自動載入
-      provider = GearProvider.forTest(mockRepository);
+      // 使用建構子注入 mock repository
+      provider = GearProvider(repository: mockRepository);
     });
 
     group('filteredItems', () {
