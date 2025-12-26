@@ -608,7 +608,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final animation = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic);
 
     controller.addListener(() {
-      _mapController.rotate(rotationTween.evaluate(animation));
+      final newRotation = rotationTween.evaluate(animation);
+      _mapController.rotate(newRotation);
+      // 同步更新 _currentRotation 讓指北針圖示即時旋轉
+      setState(() => _currentRotation = newRotation);
     });
 
     animation.addStatusListener((status) {
