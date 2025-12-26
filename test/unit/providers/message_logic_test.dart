@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/models/message.dart';
+import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/presentation/providers/message_provider.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/services/sync_service.dart';
@@ -12,22 +14,30 @@ class MockMessageRepository extends Mock implements IMessageRepository {}
 
 class MockSyncService extends Mock implements SyncService {}
 
+class MockTripRepository extends Mock implements ITripRepository {}
+
 void main() {
   late MessageProvider provider;
   late MockMessageRepository mockRepository;
   late MockSyncService mockSyncService;
+  late MockTripRepository mockTripRepository;
 
   setUp(() async {
     mockRepository = MockMessageRepository();
     mockSyncService = MockSyncService();
+    mockTripRepository = MockTripRepository();
 
     // Reset GetIt
     await GetIt.I.reset();
     GetIt.I.registerSingleton<IMessageRepository>(mockRepository);
     GetIt.I.registerSingleton<SyncService>(mockSyncService);
+    GetIt.I.registerSingleton<ITripRepository>(mockTripRepository);
 
     // Default mock behaviors
     when(() => mockRepository.getAllMessages()).thenReturn([]);
+    when(
+      () => mockTripRepository.getActiveTrip(),
+    ).thenReturn(Trip(id: 'test-trip-1', name: 'Test Trip', startDate: DateTime.now()));
     registerFallbackValue(
       Message(uuid: 'fallback', user: 'user', category: 'Chat', content: 'content', timestamp: DateTime.now()),
     );
