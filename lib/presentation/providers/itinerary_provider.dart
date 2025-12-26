@@ -2,15 +2,15 @@ import 'package:flutter/foundation.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/itinerary_item.dart';
-import '../../data/repositories/itinerary_repository.dart';
+import '../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../data/repositories/interfaces/i_settings_repository.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/sync_service.dart';
-import '../../data/repositories/settings_repository.dart';
 
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {
-  final ItineraryRepository _repository;
+  final IItineraryRepository _repository;
 
   List<ItineraryItem> _items = [];
   String _selectedDay = ItineraryDay.d1; // 預設顯示 D1
@@ -18,7 +18,7 @@ class ItineraryProvider extends ChangeNotifier {
   bool _isEditMode = false;
   String? _error;
 
-  ItineraryProvider() : _repository = getIt<ItineraryRepository>() {
+  ItineraryProvider({IItineraryRepository? repository}) : _repository = repository ?? getIt<IItineraryRepository>() {
     LogService.info('ItineraryProvider 初始化', source: 'Itinerary');
     _loadItems();
   }
@@ -220,7 +220,7 @@ class ItineraryProvider extends ChangeNotifier {
   Future<void> sync({bool isAuto = false}) async {
     try {
       // Check offline mode
-      final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
+      final isOffline = getIt<ISettingsRepository>().getSettings().isOfflineMode;
       if (isOffline) {
         if (!isAuto) ToastService.warning('離線模式無法同步');
         return;

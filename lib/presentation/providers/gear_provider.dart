@@ -2,12 +2,12 @@ import 'package:flutter/foundation.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_item.dart';
-import '../../data/repositories/gear_repository.dart';
+import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../services/log_service.dart';
 
 /// 裝備狀態管理
 class GearProvider extends ChangeNotifier {
-  final GearRepository _repository;
+  final IGearRepository _repository;
 
   List<GearItem> _items = [];
   String? _selectedCategory; // null 表示顯示全部
@@ -16,17 +16,9 @@ class GearProvider extends ChangeNotifier {
   bool _isLoading = true;
   String? _error;
 
-  /// 建構子 - 支援注入 Repository 以利測試
-  /// [repository] 若未提供則使用 DI 容器取得
-  GearProvider({GearRepository? repository}) : _repository = repository ?? getIt<GearRepository>() {
+  GearProvider({IGearRepository? repository}) : _repository = repository ?? getIt<IGearRepository>() {
     LogService.info('GearProvider 初始化', source: 'Gear');
     _loadItems();
-  }
-
-  /// 用於測試的工廠方法 - 不自動載入資料
-  @visibleForTesting
-  GearProvider.forTest(this._repository) {
-    _isLoading = false;
   }
 
   /// 所有裝備

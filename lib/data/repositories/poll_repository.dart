@@ -2,9 +2,10 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/poll.dart';
 import '../../core/constants.dart';
-import '../../core/di.dart'; // Import for getIt
+import '../../core/di.dart';
+import 'interfaces/i_poll_repository.dart';
 
-class PollRepository {
+class PollRepository implements IPollRepository {
   static const String _boxName = HiveBoxNames.polls;
   static const String _lastSyncKey = 'poll_last_sync_time';
 

@@ -7,7 +7,7 @@ import '../services/log_service.dart';
 import '../core/env_config.dart';
 import '../core/constants.dart';
 import '../core/di.dart';
-import '../data/repositories/settings_repository.dart';
+import '../data/repositories/interfaces/i_settings_repository.dart';
 
 /// Weather Service
 /// Data Sources:
@@ -37,7 +37,7 @@ class WeatherService {
   Future<WeatherData?> getWeather({bool forceRefresh = false, String locationName = '向陽山'}) async {
     final dynamicCacheKey = 'weather_$locationName';
     final cached = _box?.get(dynamicCacheKey);
-    final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
+    final isOffline = getIt<ISettingsRepository>().getSettings().isOfflineMode;
 
     if (isOffline) {
       if (cached != null) {
@@ -100,7 +100,7 @@ class WeatherService {
   }
 
   Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
-    final isOffline = getIt<SettingsRepository>().getSettings().isOfflineMode;
+    final isOffline = getIt<ISettingsRepository>().getSettings().isOfflineMode;
     if (isOffline) {
       throw Exception('Offline Mode: Cannot fetch weather');
     }

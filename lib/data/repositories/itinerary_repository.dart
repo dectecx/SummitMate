@@ -3,10 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../models/itinerary_item.dart';
+import 'interfaces/i_itinerary_repository.dart';
 
 /// Itinerary Repository
 /// 管理行程節點的 CRUD 操作
-class ItineraryRepository {
+class ItineraryRepository implements IItineraryRepository {
   static const String _boxName = HiveBoxNames.itinerary;
 
   Box<ItineraryItem>? _box;

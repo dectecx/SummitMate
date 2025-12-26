@@ -3,10 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../models/message.dart';
+import 'interfaces/i_message_repository.dart';
 
 /// Message Repository
 /// 管理留言的 CRUD 操作與同步
-class MessageRepository {
+class MessageRepository implements IMessageRepository {
   static const String _boxName = HiveBoxNames.messages;
 
   Box<Message>? _box;

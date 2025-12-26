@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/models/itinerary_item.dart';
-import 'package:summitmate/data/repositories/itinerary_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/presentation/providers/itinerary_provider.dart';
 
 // Mock
-class MockItineraryRepository extends Mock implements ItineraryRepository {}
+class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
 void main() {
   late ItineraryProvider provider;
@@ -15,7 +15,7 @@ void main() {
   setUp(() async {
     mockRepo = MockItineraryRepository();
     await GetIt.I.reset();
-    GetIt.I.registerSingleton<ItineraryRepository>(mockRepo);
+    GetIt.I.registerSingleton<IItineraryRepository>(mockRepo);
 
     // Default mock behavior
     when(() => mockRepo.getAllItems()).thenReturn([]);

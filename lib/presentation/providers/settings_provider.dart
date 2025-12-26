@@ -3,20 +3,22 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
-import '../../data/repositories/settings_repository.dart';
+import '../../data/repositories/interfaces/i_settings_repository.dart';
 import '../../data/models/settings.dart';
 import '../../services/log_service.dart';
 
 /// 設定狀態管理
 class SettingsProvider extends ChangeNotifier {
-  final SettingsRepository _repository;
+  final ISettingsRepository _repository;
   final SharedPreferences _prefs;
 
   Settings? _settings;
   bool _isLoading = true;
   String? _error;
 
-  SettingsProvider() : _repository = getIt<SettingsRepository>(), _prefs = getIt<SharedPreferences>() {
+  SettingsProvider({ISettingsRepository? repository})
+    : _repository = repository ?? getIt<ISettingsRepository>(),
+      _prefs = getIt<SharedPreferences>() {
     LogService.info('SettingsProvider 初始化', source: 'Settings');
     _loadSettings();
   }
