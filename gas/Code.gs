@@ -37,22 +37,25 @@ function getSpreadsheet() {
 
 function doGet(e) {
   const action = e.parameter.action;
+  const tripId = e.parameter.trip_id;
 
   try {
     switch (action) {
       case "fetch_all":
-        return createJsonResponse(fetchAll());
+        return createJsonResponse(fetchAll(tripId));
       case "fetch_itinerary":
         return createJsonResponse({
-          itinerary: getItineraryData(getSpreadsheet()),
+          itinerary: getItineraryData(getSpreadsheet(), tripId),
         });
       case "fetch_messages":
         return createJsonResponse({
-          messages: getMessagesData(getSpreadsheet()),
+          messages: getMessagesData(getSpreadsheet(), tripId),
         });
       case "fetch_weather":
         // 需搭配 weather_etl.gs 中的 getWeatherData()
         return createJsonResponse(getWeatherData());
+      case "fetch_trips":
+        return createJsonResponse(fetchTrips());
       case "poll":
         return createJsonResponse(
           handlePollAction(e.parameter.subAction, e.parameter)
@@ -85,7 +88,7 @@ function doPost(e) {
       case "upload_logs":
         return createJsonResponse(uploadLogs(data.logs, data.device_info));
       case "update_itinerary":
-        return createJsonResponse(updateItinerary(data.data));
+        return createJsonResponse(updateItinerary(data.data, data.trip_id));
       case "poll":
         // 處理投票相關請求 (請見 polls.gs)
         return createJsonResponse(handlePollAction(data.subAction, data));
@@ -107,6 +110,15 @@ function doPost(e) {
       case "delete_gear_set":
         // 刪除裝備組合
         return createJsonResponse(deleteGearSet(data.uuid, data.key));
+      // === 多行程 API ===
+      case "add_trip":
+        return createJsonResponse(addTrip(data));
+      case "update_trip":
+        return createJsonResponse(updateTrip(data));
+      case "delete_trip":
+        return createJsonResponse(deleteTrip(data.id));
+      case "set_active_trip":
+        return createJsonResponse(setActiveTrip(data.id));
       default:
         return createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
     }
@@ -127,20 +139,23 @@ function createJsonResponse(data, statusCode = 200) {
 
 /**
  * 取得所有資料 (行程 + 留言)
+ * @param {string} tripId - 可選，篩選特定行程的資料
  */
-function fetchAll() {
+function fetchAll(tripId) {
   const ss = getSpreadsheet();
 
   return {
-    itinerary: getItineraryData(ss),
-    messages: getMessagesData(ss),
+    itinerary: getItineraryData(ss, tripId),
+    messages: getMessagesData(ss, tripId),
   };
 }
 
 /**
  * 取得行程資料
+ * @param {Spreadsheet} ss - 試算表物件
+ * @param {string} tripId - 可選，篩選特定行程的資料
  */
-function getItineraryData(ss) {
+function getItineraryData(ss, tripId) {
   const sheet = ss.getSheetByName("Itinerary");
   if (!sheet) return [];
 
@@ -149,6 +164,7 @@ function getItineraryData(ss) {
 
   const headers = data[0];
   const rows = data.slice(1);
+  const tripIdIndex = headers.indexOf('trip_id');
 
   return rows
     .map((row) => {
@@ -160,13 +176,23 @@ function getItineraryData(ss) {
       });
       return item;
     })
-    .filter((item) => item.day && item.name); // 過濾空行
+    .filter((item) => {
+      // 過濾空行
+      if (!item.day || !item.name) return false;
+      // 若有指定 tripId，則只回傳該行程的資料
+      if (tripId && tripIdIndex !== -1) {
+        return item.trip_id === tripId;
+      }
+      return true;
+    });
 }
 
 /**
  * 取得留言資料
+ * @param {Spreadsheet} ss - 試算表物件
+ * @param {string} tripId - 可選，篩選特定行程的資料 (含全域留言)
  */
-function getMessagesData(ss) {
+function getMessagesData(ss, tripId) {
   const sheet = ss.getSheetByName("Messages");
   if (!sheet) return [];
 
@@ -175,6 +201,7 @@ function getMessagesData(ss) {
 
   const headers = data[0];
   const rows = data.slice(1);
+  const tripIdIndex = headers.indexOf('trip_id');
 
   return rows
     .map((row) => {
@@ -206,7 +233,14 @@ function getMessagesData(ss) {
 
       return msg;
     })
-    .filter((msg) => msg.uuid); // 過濾空行
+    .filter((msg) => {
+      if (!msg.uuid) return false;
+      // 若有指定 tripId，則只回傳該行程或全域 (trip_id 為空) 的留言
+      if (tripId && tripIdIndex !== -1) {
+        return !msg.trip_id || msg.trip_id === tripId;
+      }
+      return true;
+    });
 }
 
 /**
@@ -748,6 +782,162 @@ function deleteGearSet(uuid, key) {
 }
 
 // ============================================================
+// 多行程 API (Multi-Trip API)
+// ============================================================
+
+const TRIPS_SHEET_NAME = 'Trips';
+const TRIPS_HEADERS = ['id', 'name', 'start_date', 'end_date', 'description', 'cover_image', 'is_active', 'created_at'];
+
+/**
+ * 取得所有行程
+ */
+function fetchTrips() {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(TRIPS_SHEET_NAME);
+  
+  if (!sheet) {
+    return { success: true, trips: [] };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return { success: true, trips: [] };
+  }
+  
+  const headers = data[0];
+  const trips = data.slice(1).map(row => {
+    const trip = {};
+    headers.forEach((header, index) => {
+      let value = row[index];
+      // 處理日期
+      if ((header === 'start_date' || header === 'end_date' || header === 'created_at') && value instanceof Date) {
+        value = value.toISOString();
+      }
+      trip[header] = value;
+    });
+    return trip;
+  }).filter(trip => trip.id); // 過濾空行
+  
+  return { success: true, trips: trips };
+}
+
+/**
+ * 新增行程
+ */
+function addTrip(tripData) {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName(TRIPS_SHEET_NAME);
+  
+  if (!sheet) {
+    sheet = ss.insertSheet(TRIPS_SHEET_NAME);
+    sheet.appendRow(TRIPS_HEADERS);
+  }
+  
+  const id = tripData.id || Utilities.getUuid();
+  const now = new Date().toISOString();
+  
+  sheet.appendRow([
+    id,
+    tripData.name || '新行程',
+    tripData.start_date || now,
+    tripData.end_date || '',
+    tripData.description || '',
+    tripData.cover_image || '',
+    tripData.is_active || false,
+    now
+  ]);
+  
+  return { success: true, id: id };
+}
+
+/**
+ * 更新行程
+ */
+function updateTrip(tripData) {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(TRIPS_SHEET_NAME);
+  
+  if (!sheet) {
+    return { success: false, error: '找不到 Trips 工作表' };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idIndex = headers.indexOf('id');
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][idIndex] === tripData.id) {
+      // 更新該列
+      headers.forEach((header, colIndex) => {
+        if (tripData[header] !== undefined && header !== 'id' && header !== 'created_at') {
+          sheet.getRange(i + 1, colIndex + 1).setValue(tripData[header]);
+        }
+      });
+      return { success: true };
+    }
+  }
+  
+  return { success: false, error: '找不到該行程' };
+}
+
+/**
+ * 刪除行程
+ */
+function deleteTrip(tripId) {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(TRIPS_SHEET_NAME);
+  
+  if (!sheet) {
+    return { success: false, error: '找不到 Trips 工作表' };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idIndex = headers.indexOf('id');
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][idIndex] === tripId) {
+      sheet.deleteRow(i + 1);
+      return { success: true };
+    }
+  }
+  
+  return { success: false, error: '找不到該行程' };
+}
+
+/**
+ * 設定活動行程
+ */
+function setActiveTrip(tripId) {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(TRIPS_SHEET_NAME);
+  
+  if (!sheet) {
+    return { success: false, error: '找不到 Trips 工作表' };
+  }
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idIndex = headers.indexOf('id');
+  const activeIndex = headers.indexOf('is_active');
+  
+  // 先將所有行程設為非活動
+  for (let i = 1; i < data.length; i++) {
+    sheet.getRange(i + 1, activeIndex + 1).setValue(false);
+  }
+  
+  // 設定指定行程為活動
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][idIndex] === tripId) {
+      sheet.getRange(i + 1, activeIndex + 1).setValue(true);
+      return { success: true };
+    }
+  }
+  
+  return { success: false, error: '找不到該行程' };
+}
+
+// ============================================================
 // 初始化函式 (Setup Function) - 執行一次以建立初始工作表
 // ============================================================
 
@@ -766,6 +956,7 @@ function setupSheets() {
       "distance",
       "note",
       "image_asset",
+      "trip_id",  // 多行程支援
     ]);
 
     // 加入範例資料
@@ -1023,6 +1214,7 @@ function setupSheets() {
       "content",
       "timestamp",
       "avatar",
+      "trip_id",  // 多行程支援
     ]);
 
     // 加入歡迎訊息
@@ -1104,6 +1296,23 @@ function setupSheets() {
       "items_json",
     ]);
     Logger.log("GearSets 工作表已建立");
+  }
+
+  // 建立 Trips 工作表 (多行程管理)
+  let tripsSheet = ss.getSheetByName("Trips");
+  if (!tripsSheet) {
+    tripsSheet = ss.insertSheet("Trips");
+    tripsSheet.appendRow([
+      "id",
+      "name",
+      "start_date",
+      "end_date",
+      "description",
+      "cover_image",
+      "is_active",
+      "created_at",
+    ]);
+    Logger.log("Trips 工作表已建立");
   }
 
   Logger.log("初始化設定完成 (Setup complete)!");
