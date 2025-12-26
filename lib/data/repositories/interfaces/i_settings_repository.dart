@@ -25,6 +25,6 @@ abstract interface class ISettingsRepository {
   /// 監聽設定變更
   Stream<BoxEvent> watchSettings();
 
-  /// 重置設定 (Debug 用途)
+  /// 重置設定
   Future<void> resetSettings();
 }
