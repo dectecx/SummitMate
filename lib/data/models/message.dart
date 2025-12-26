@@ -36,6 +36,10 @@ class Message extends HiveObject {
   @HiveField(6, defaultValue: '🐻')
   String avatar;
 
+  /// 關聯的行程 ID (null = 全域留言)
+  @HiveField(7)
+  String? tripId;
+
   Message({
     this.uuid = '',
     this.parentId,
@@ -43,6 +47,7 @@ class Message extends HiveObject {
     this.category = '',
     this.content = '',
     this.avatar = '🐻',
+    this.tripId,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
@@ -58,6 +63,7 @@ class Message extends HiveObject {
       category: json['category']?.toString() ?? '',
       content: json['content']?.toString() ?? '',
       avatar: json['avatar']?.toString() ?? '🐻',
+      tripId: _nullIfEmpty(json['trip_id']?.toString()),
       timestamp: json['timestamp'] != null
           ? DateTime.tryParse(json['timestamp'].toString())?.toLocal() ?? DateTime.now()
           : DateTime.now(),
@@ -69,6 +75,7 @@ class Message extends HiveObject {
     return {
       'uuid': uuid,
       'parent_id': parentId,
+      'trip_id': tripId,
       'user': user,
       'category': category,
       'content': content,
