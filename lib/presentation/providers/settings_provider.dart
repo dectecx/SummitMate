@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
@@ -160,9 +159,8 @@ class SettingsProvider extends ChangeNotifier {
     try {
       LogService.info('重設使用者身分 (登出)', source: 'Settings');
 
-      // 清除 Hive settings box
-      final settingsBox = await Hive.openBox<Settings>(HiveBoxNames.settings);
-      await settingsBox.clear();
+      // 清除設定資料
+      await _repository.resetSettings();
 
       // 清除 SharedPreferences 中的暱稱
       await _prefs.remove(PrefKeys.username);
