@@ -27,8 +27,7 @@ class WeatherService implements IWeatherService {
   final ISettingsRepository _settingsRepo;
   Box<WeatherData>? _box;
 
-  WeatherService({ISettingsRepository? settingsRepo})
-    : _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>();
+  WeatherService({ISettingsRepository? settingsRepo}) : _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>();
 
   @override
   Future<void> init() async {

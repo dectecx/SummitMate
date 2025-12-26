@@ -124,13 +124,7 @@ GearItem createTestGearItem({
   bool isChecked = false,
   int? orderIndex,
 }) {
-  return GearItem(
-    name: name,
-    weight: weight,
-    category: category,
-    isChecked: isChecked,
-    orderIndex: orderIndex,
-  );
+  return GearItem(name: name, weight: weight, category: category, isChecked: isChecked, orderIndex: orderIndex);
 }
 
 void main() {
@@ -150,10 +144,7 @@ void main() {
       });
 
       test('設定 items 後返回全部項目', () {
-        mockRepository.setItems([
-          createTestGearItem(name: '外套'),
-          createTestGearItem(name: '背包'),
-        ]);
+        mockRepository.setItems([createTestGearItem(name: '外套'), createTestGearItem(name: '背包')]);
         provider.reload();
 
         expect(provider.filteredItems.length, 2);
@@ -292,9 +283,7 @@ void main() {
       });
 
       test('totalWeightKg 正確轉換', () {
-        mockRepository.setItems([
-          createTestGearItem(name: '外套', weight: 1500),
-        ]);
+        mockRepository.setItems([createTestGearItem(name: '外套', weight: 1500)]);
 
         expect(provider.totalWeightKg, 1.5);
       });
