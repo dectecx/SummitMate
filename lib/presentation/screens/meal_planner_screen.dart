@@ -80,7 +80,10 @@ class MealPlannerScreen extends StatelessWidget {
             Column(
               children: [
                 const Text('總熱量', style: TextStyle(fontSize: 12)),
-                Text('${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  '${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ],
             ),
           ],
@@ -120,7 +123,9 @@ class MealPlannerScreen extends StatelessWidget {
                   .map(
                     (item) => ListTile(
                       title: Text(item.name),
-                      subtitle: Text('${item.weight.toStringAsFixed(0)}g / ${item.calories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")}kcal'),
+                      subtitle: Text(
+                        '${item.weight.toStringAsFixed(0)}g / ${item.calories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")}kcal',
+                      ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
                         onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
