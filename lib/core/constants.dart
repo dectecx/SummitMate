@@ -93,12 +93,17 @@ class ApiConfig {
 
 /// Hive Box 名稱
 class HiveBoxNames {
-  static const String settings = 'settings';
+  // 核心資料
+  static const String trips = 'trips';
   static const String itinerary = 'itinerary';
   static const String messages = 'messages';
+
+  // 輔助功能
   static const String gear = 'gear';
-  static const String weather = 'weather_cache';
-  static const String logs = 'app_logs';
   static const String polls = 'polls';
-  static const String trips = 'trips';
+  static const String weather = 'weather_cache';
+
+  // 監控與設定
+  static const String logs = 'app_logs';
+  static const String settings = 'settings';
 }
