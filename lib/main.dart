@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:hive/hive.dart';
 
 import 'core/theme.dart';
 import 'core/di.dart';
@@ -38,23 +39,56 @@ import 'services/usage_tracking_service.dart';
 import 'presentation/screens/gear_cloud_screen.dart';
 import 'presentation/screens/gear_library_screen.dart';
 import 'presentation/widgets/zoomable_image.dart';
+import 'presentation/screens/error_screen.dart';
 
 void main() async {
   // 確保 Flutter Binding 初始化
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 初始化依賴注入
-  await setupDependencies();
+  // 全域錯誤處理：捕獲 Flutter 框架錯誤
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    LogService.error(
+      'Flutter Error: ${details.exception}',
+      source: 'FlutterError',
+    );
+  };
 
-  // 初始化離線地圖快取 (FMTC v10)
   try {
-    // 依據 v10 文件，使用 FMTCObjectBoxBackend 進行初始化
-    await FMTCObjectBoxBackend().initialise();
-  } catch (e) {
-    debugPrint('FMTC Initialization Warning: $e');
-  }
+    // 初始化依賴注入 (包含 Hive)
+    await setupDependencies();
 
-  runApp(const SummitMateApp());
+    // 初始化離線地圖快取 (FMTC v10)
+    try {
+      await FMTCObjectBoxBackend().initialise();
+    } catch (e) {
+      debugPrint('FMTC Initialization Warning: $e');
+    }
+
+    runApp(const SummitMateApp());
+  } catch (e, stackTrace) {
+    // 啟動失敗：顯示錯誤畫面
+    LogService.error('App 啟動失敗: $e', source: 'Main');
+
+    runApp(ErrorScreen(
+      title: '啟動失敗',
+      message: e.toString(),
+      stackTrace: stackTrace.toString(),
+      onClearData: () => _clearHiveAndRestart(),
+      onRetry: () => main(),
+    ));
+  }
+}
+
+/// 清除 Hive 資料並重啟
+Future<void> _clearHiveAndRestart() async {
+  try {
+    await Hive.deleteFromDisk();
+    debugPrint('[Main] Hive data cleared successfully');
+  } catch (e) {
+    debugPrint('[Main] Failed to clear Hive: $e');
+  }
+  main();
 }
 
 /// SummitMate 主應用程式
