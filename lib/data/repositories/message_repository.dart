@@ -13,6 +13,7 @@ class MessageRepository implements IMessageRepository {
   Box<Message>? _box;
 
   /// 開啟 Box
+  @override
   Future<void> init() async {
     _box = await Hive.openBox<Message>(_boxName);
   }
@@ -26,6 +27,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 取得所有留言
+  @override
   List<Message> getAllMessages() {
     final messages = box.values.toList();
     messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -33,6 +35,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 依分類取得留言
+  @override
   List<Message> getMessagesByCategory(String category) {
     final messages = box.values.where((m) => m.category == category).toList();
     messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -40,6 +43,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 取得主留言 (非回覆)
+  @override
   List<Message> getMainMessages({String? category}) {
     var messages = box.values.where((m) => m.parentId == null);
 
@@ -53,6 +57,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 取得子留言 (回覆)
+  @override
   List<Message> getReplies(String parentUuid) {
     final messages = box.values.where((m) => m.parentId == parentUuid).toList();
     messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -60,6 +65,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 依 UUID 取得留言
+  @override
   Message? getByUuid(String uuid) {
     try {
       return box.values.firstWhere((m) => m.uuid == uuid);
@@ -69,11 +75,13 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 新增留言
+  @override
   Future<void> addMessage(Message message) async {
     await box.add(message);
   }
 
   /// 刪除留言 (依 UUID)
+  @override
   Future<void> deleteByUuid(String uuid) async {
     final keyToDelete = box.keys.cast<dynamic>().firstWhere((key) => box.get(key)?.uuid == uuid, orElse: () => null);
     if (keyToDelete != null) {
@@ -82,6 +90,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 批次同步留言 (從雲端) - 完全覆蓋模式
+  @override
   Future<void> syncFromCloud(List<Message> cloudMessages) async {
     // 清除現有資料，用雲端資料完全覆蓋
     await box.clear();
@@ -93,22 +102,26 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 取得待上傳的本地留言 (尚未在雲端)
+  @override
   List<Message> getPendingMessages(Set<String> cloudUuids) {
     return box.values.where((m) => !cloudUuids.contains(m.uuid)).toList();
   }
 
   /// 監聽留言變更
+  @override
   Stream<BoxEvent> watchAllMessages() {
     return box.watch();
   }
 
   /// 儲存最後同步時間
+  @override
   Future<void> saveLastSyncTime(DateTime time) async {
     final prefs = getIt<SharedPreferences>();
     await prefs.setString('msg_last_sync_time', time.toIso8601String());
   }
 
   /// 取得最後同步時間
+  @override
   DateTime? getLastSyncTime() {
     final prefs = getIt<SharedPreferences>();
     final str = prefs.getString('msg_last_sync_time');
@@ -117,6 +130,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 清除所有留言 (Debug 用途)
+  @override
   Future<void> clearAll() async {
     await box.clear();
   }

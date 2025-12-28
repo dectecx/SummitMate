@@ -13,6 +13,7 @@ class ItineraryRepository implements IItineraryRepository {
   Box<ItineraryItem>? _box;
 
   /// 開啟 Box
+  @override
   Future<void> init() async {
     _box = await Hive.openBox<ItineraryItem>(_boxName);
   }
@@ -26,21 +27,25 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 取得所有行程節點
+  @override
   List<ItineraryItem> getAllItems() {
     return box.values.toList();
   }
 
   /// 依天數取得行程節點
+  @override
   List<ItineraryItem> getItemsByDay(String day) {
     return box.values.where((item) => item.day == day).toList();
   }
 
   /// 取得單一行程節點
+  @override
   ItineraryItem? getItemByKey(dynamic key) {
     return box.get(key);
   }
 
   /// 打卡 - 設定實際時間
+  @override
   Future<void> checkIn(dynamic key, DateTime time) async {
     final item = box.get(key);
     if (item == null) return;
@@ -50,6 +55,7 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 清除打卡
+  @override
   Future<void> clearCheckIn(dynamic key) async {
     final item = box.get(key);
     if (item == null) return;
@@ -60,6 +66,7 @@ class ItineraryRepository implements IItineraryRepository {
 
   /// 批次覆寫行程 (從 Google Sheets 同步)
   /// 保留 actualTime 本地資料
+  @override
   Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {
     // 取得現有資料以保留 actualTime
     final existing = box.values.toList();
@@ -81,11 +88,13 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 監聽行程變更
+  @override
   Stream<BoxEvent> watchAllItems() {
     return box.watch();
   }
 
   /// 重置所有打卡紀錄
+  @override
   Future<void> resetAllCheckIns() async {
     for (final item in box.values) {
       item.actualTime = null;
@@ -94,22 +103,26 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 新增行程節點
+  @override
   Future<void> addItem(ItineraryItem item) async {
     await box.add(item);
   }
 
   /// 更新行程節點
+  @override
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     await box.put(key, item);
   }
 
   /// 儲存最後同步時間
+  @override
   Future<void> saveLastSyncTime(DateTime time) async {
     final prefs = getIt<SharedPreferences>();
     await prefs.setString('itin_last_sync_time', time.toIso8601String());
   }
 
   /// 取得最後同步時間
+  @override
   DateTime? getLastSyncTime() {
     final prefs = getIt<SharedPreferences>();
     final str = prefs.getString('itin_last_sync_time');
@@ -118,6 +131,7 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 刪除行程節點
+  @override
   Future<void> deleteItem(dynamic key) async {
     await box.delete(key);
   }
