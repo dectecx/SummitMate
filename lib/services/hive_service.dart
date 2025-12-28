@@ -5,6 +5,7 @@ import '../data/models/settings.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 import '../data/models/gear_item.dart';
+import '../data/models/gear_library_item.dart';
 import '../data/models/weather_data.dart';
 import '../data/models/poll.dart';
 import '../data/models/trip.dart';
@@ -60,6 +61,9 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(10)) {
       Hive.registerAdapter(TripAdapter());
+    }
+    if (!Hive.isAdapterRegistered(11)) {
+      Hive.registerAdapter(GearLibraryItemAdapter());
     }
 
     _isInitialized = true;
