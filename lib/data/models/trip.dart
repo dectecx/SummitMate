@@ -1,17 +1,21 @@
 import 'package:hive/hive.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'trip.g.dart';
 
 /// 行程 (Trip) 模型
 /// 用於管理多個不同的登山計畫
 @HiveType(typeId: 10)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Trip extends HiveObject {
   /// 行程唯一識別碼 (UUID)
   @HiveField(0)
+  @JsonKey(readValue: _readId, name: 'trip_id')
   String id;
 
   /// 行程名稱，e.g., "2024 嘉明湖三日"
   @HiveField(1)
+  @JsonKey(defaultValue: '')
   String name;
 
   /// 行程開始日期
@@ -32,6 +36,7 @@ class Trip extends HiveObject {
 
   /// 是否為當前啟用的行程
   @HiveField(6)
+  @JsonKey(name: 'is_active', defaultValue: false, fromJson: _parseBool)
   bool isActive;
 
   /// 建立時間
@@ -55,37 +60,25 @@ class Trip extends HiveObject {
     return endDate!.difference(startDate).inDays + 1;
   }
 
-  /// 從 JSON 建立
-  factory Trip.fromJson(Map<String, dynamic> json) {
-    return Trip(
-      id: json['trip_id']?.toString() ?? json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      startDate: json['start_date'] != null
-          ? DateTime.tryParse(json['start_date'].toString())?.toLocal() ?? DateTime.now()
-          : DateTime.now(),
-      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date'].toString())?.toLocal() : null,
-      description: json['description']?.toString(),
-      coverImage: json['cover_image']?.toString(),
-      isActive: json['is_active'] == true || json['is_active'] == 'TRUE',
-      createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'].toString())?.toLocal() ?? DateTime.now()
-          : DateTime.now(),
-    );
+  /// 讀取 ID，支援 'trip_id' 或 'id'
+  static Object? _readId(Map map, String key) {
+    return map['trip_id'] ?? map['id'] ?? '';
   }
 
-  /// 轉換為 JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'trip_id': id,
-      'name': name,
-      'start_date': startDate.toUtc().toIso8601String(),
-      'end_date': endDate?.toUtc().toIso8601String(),
-      'description': description,
-      'cover_image': coverImage,
-      'is_active': isActive,
-      'created_at': createdAt.toUtc().toIso8601String(),
-    };
+  /// 解析布林值 (支援 'TRUE' 字串)
+  static bool _parseBool(dynamic value) {
+    if (value == true) return true;
+    if (value is String) {
+      return value.toUpperCase() == 'TRUE';
+    }
+    return false;
   }
+
+  /// 從 JSON 建立
+  factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
+
+  /// 轉換為 JSON
+  Map<String, dynamic> toJson() => _$TripToJson(this);
 
   @override
   String toString() => 'Trip(id: $id, name: $name, isActive: $isActive)';
