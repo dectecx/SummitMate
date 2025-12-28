@@ -45,37 +45,48 @@ Future<void> setupDependencies() async {
   await LogService.init();
   LogService.info('App 啟動', source: 'DI');
 
+  // ========================================
   // Repositories
-  final settingsRepo = SettingsRepository();
-  await settingsRepo.init();
-  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
+  // ========================================
 
+  // 1. Trip - 最上層容器
+  final tripRepo = TripRepository();
+  await tripRepo.init();
+  getIt.registerSingleton<ITripRepository>(tripRepo);
+
+  // 2. Itinerary - 行程節點
   final itineraryRepo = ItineraryRepository();
   await itineraryRepo.init();
   getIt.registerSingleton<IItineraryRepository>(itineraryRepo);
 
+  // 3. Messages - 留言
   final messageRepo = MessageRepository();
   await messageRepo.init();
   getIt.registerSingleton<IMessageRepository>(messageRepo);
 
+  // 4. Gear - 裝備
   final gearRepo = GearRepository();
   await gearRepo.init();
   getIt.registerSingleton<IGearRepository>(gearRepo);
 
-  // 天氣服務
-  final weatherService = WeatherService();
-  await weatherService.init();
-  getIt.registerSingleton<IWeatherService>(weatherService);
-
-  // Poll Repository
+  // 5. Polls - 投票
   final pollRepo = PollRepository();
   await pollRepo.init();
   getIt.registerSingleton<IPollRepository>(pollRepo);
 
-  // Trip Repository
-  final tripRepo = TripRepository();
-  await tripRepo.init();
-  getIt.registerSingleton<ITripRepository>(tripRepo);
+  // 6. Weather - 氣象服務
+  final weatherService = WeatherService();
+  await weatherService.init();
+  getIt.registerSingleton<IWeatherService>(weatherService);
+
+  // 7. Settings - 設定 (輔助)
+  final settingsRepo = SettingsRepository();
+  await settingsRepo.init();
+  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
+
+  // ========================================
+  // Services
+  // ========================================
 
   // PollService
   getIt.registerSingleton<PollService>(PollService());
