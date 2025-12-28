@@ -33,9 +33,10 @@ void main() {
       expect(item.isCheckedIn, isFalse);
     });
 
-    test('should report checked in when actualTime is set', () {
+    test('should report checked in when isCheckedIn is true', () {
       final item = ItineraryItem();
-      item.actualTime = DateTime.now();
+      item.isCheckedIn = true;
+      item.checkedInAt = DateTime.now();
 
       expect(item.isCheckedIn, isTrue);
     });
