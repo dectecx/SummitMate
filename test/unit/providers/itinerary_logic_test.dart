@@ -36,10 +36,33 @@ void main() {
     test('should calculate progress correctly', () {
       // Arrange
       final items = [
-        ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '', tripId: 'test-trip-1')
-          ..actualTime = DateTime.now(), // Checked
-        ItineraryItem(day: 'D1', name: 'B', estTime: '09:00', altitude: 200, distance: 2.0, note: '', tripId: 'test-trip-1'), // Unchecked
-        ItineraryItem(day: 'D2', name: 'C', estTime: '10:00', altitude: 300, distance: 3.0, note: '', tripId: 'test-trip-1'), // Unchecked
+        ItineraryItem(
+          day: 'D1',
+          name: 'A',
+          estTime: '08:00',
+          altitude: 100,
+          distance: 1.0,
+          note: '',
+          tripId: 'test-trip-1',
+        )..actualTime = DateTime.now(), // Checked
+        ItineraryItem(
+          day: 'D1',
+          name: 'B',
+          estTime: '09:00',
+          altitude: 200,
+          distance: 2.0,
+          note: '',
+          tripId: 'test-trip-1',
+        ), // Unchecked
+        ItineraryItem(
+          day: 'D2',
+          name: 'C',
+          estTime: '10:00',
+          altitude: 300,
+          distance: 3.0,
+          note: '',
+          tripId: 'test-trip-1',
+        ), // Unchecked
       ];
       when(() => mockRepo.getAllItems()).thenReturn(items);
 
@@ -61,11 +84,36 @@ void main() {
     test('currentTarget should return first unchecked item of selected day', () {
       // Arrange
       final d1Items = [
-        ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '', tripId: 'test-trip-1')
-          ..actualTime = DateTime.now(),
-        ItineraryItem(day: 'D1', name: 'B', estTime: '09:00', altitude: 200, distance: 2.0, note: '', tripId: 'test-trip-1'),
+        ItineraryItem(
+          day: 'D1',
+          name: 'A',
+          estTime: '08:00',
+          altitude: 100,
+          distance: 1.0,
+          note: '',
+          tripId: 'test-trip-1',
+        )..actualTime = DateTime.now(),
+        ItineraryItem(
+          day: 'D1',
+          name: 'B',
+          estTime: '09:00',
+          altitude: 200,
+          distance: 2.0,
+          note: '',
+          tripId: 'test-trip-1',
+        ),
       ];
-      final d2Items = [ItineraryItem(day: 'D2', name: 'C', estTime: '10:00', altitude: 300, distance: 3.0, note: '', tripId: 'test-trip-1')];
+      final d2Items = [
+        ItineraryItem(
+          day: 'D2',
+          name: 'C',
+          estTime: '10:00',
+          altitude: 300,
+          distance: 3.0,
+          note: '',
+          tripId: 'test-trip-1',
+        ),
+      ];
 
       when(() => mockRepo.getAllItems()).thenReturn([...d1Items, ...d2Items]);
 
@@ -81,7 +129,15 @@ void main() {
 
     test('checkIn should call repository and reload', () async {
       // Arrange
-      final item = ItineraryItem(day: 'D1', name: 'A', estTime: '08:00', altitude: 100, distance: 1.0, note: '', tripId: 'test-trip-1');
+      final item = ItineraryItem(
+        day: 'D1',
+        name: 'A',
+        estTime: '08:00',
+        altitude: 100,
+        distance: 1.0,
+        note: '',
+        tripId: 'test-trip-1',
+      );
       when(() => mockRepo.getAllItems()).thenReturn([item]);
       when(() => mockRepo.checkIn(any(), any())).thenAnswer((_) async {});
 
