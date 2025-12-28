@@ -44,7 +44,8 @@ void main() {
           distance: 1.0,
           note: '',
           tripId: 'test-trip-1',
-        )..actualTime = DateTime.now(), // Checked
+          isCheckedIn: true,
+        ),
         ItineraryItem(
           day: 'D1',
           name: 'B',
@@ -92,7 +93,8 @@ void main() {
           distance: 1.0,
           note: '',
           tripId: 'test-trip-1',
-        )..actualTime = DateTime.now(),
+          isCheckedIn: true,
+        ),
         ItineraryItem(
           day: 'D1',
           name: 'B',
