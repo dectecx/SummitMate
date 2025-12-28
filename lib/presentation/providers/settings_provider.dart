@@ -142,6 +142,28 @@ class SettingsProvider extends ChangeNotifier {
     await setOfflineMode(!isOfflineMode);
   }
 
+  /// 同時更新暱稱與頭像 (Profile)
+  Future<void> updateProfile(String name, String avatar) async {
+    try {
+      LogService.info('更新個人檔案: $name, $avatar', source: 'Settings');
+      await _repository.updateUsername(name);
+      await _repository.updateAvatar(avatar);
+
+      // Update local prefs
+      await _prefs.setString(PrefKeys.username, name);
+      // Avatar is stored in settings repository mostly, but if using prefs for avatar too, update here.
+      // Current implementation of 'avatar' getter uses _settings?.avatar.
+
+      _settings = _repository.getSettings();
+      _error = null;
+      notifyListeners();
+    } catch (e) {
+      LogService.error('更新個人檔案失敗: $e', source: 'Settings');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
   /// 設定離線模式
   Future<void> setOfflineMode(bool isOffline) async {
     try {
