@@ -48,10 +48,7 @@ void main() async {
   // 全域錯誤處理：捕獲 Flutter 框架錯誤
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    LogService.error(
-      'Flutter Error: ${details.exception}',
-      source: 'FlutterError',
-    );
+    LogService.error('Flutter Error: ${details.exception}', source: 'FlutterError');
   };
 
   try {
@@ -70,25 +67,33 @@ void main() async {
     // 啟動失敗：顯示錯誤畫面
     LogService.error('App 啟動失敗: $e', source: 'Main');
 
-    runApp(ErrorScreen(
-      title: '啟動失敗',
-      message: e.toString(),
-      stackTrace: stackTrace.toString(),
-      onClearData: () => _clearHiveAndRestart(),
-      onRetry: () => main(),
-    ));
+    runApp(
+      ErrorScreen(
+        title: '啟動失敗',
+        message: e.toString(),
+        stackTrace: stackTrace.toString(),
+        onClearData: () async {
+          await _clearAllDataAndExit();
+        },
+      ),
+    );
   }
 }
 
-/// 清除 Hive 資料並重啟
-Future<void> _clearHiveAndRestart() async {
+/// 清除所有本地資料並退出 App
+/// 清除資料後退出，用戶需手動重啟 App
+Future<void> _clearAllDataAndExit() async {
   try {
+    // 關閉 Hive
+    await Hive.close();
+    // 刪除 Hive 資料
     await Hive.deleteFromDisk();
     debugPrint('[Main] Hive data cleared successfully');
   } catch (e) {
     debugPrint('[Main] Failed to clear Hive: $e');
   }
-  main();
+  // 退出 App - 用戶需手動重新開啟
+  SystemNavigator.pop();
 }
 
 /// SummitMate 主應用程式

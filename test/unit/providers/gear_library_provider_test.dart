@@ -122,9 +122,7 @@ void main() {
     });
 
     test('filteredItems 初始狀態返回所有項目', () async {
-      mockRepo.setItems([
-        GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep'),
-      ]);
+      mockRepo.setItems([GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep')]);
 
       provider = GearLibraryProvider(repository: mockRepo);
       await Future.delayed(Duration.zero);
@@ -192,12 +190,7 @@ void main() {
       provider = GearLibraryProvider(repository: mockRepo);
       await Future.delayed(Duration.zero);
 
-      await provider.addItem(
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-        notes: '品牌備註',
-      );
+      await provider.addItem(name: '睡袋', weight: 1200, category: 'Sleep', notes: '品牌備註');
 
       expect(provider.allItems.length, equals(1));
       expect(provider.allItems.first.name, equals('睡袋'));
@@ -242,12 +235,7 @@ void main() {
     });
 
     test('getById 應找到正確項目', () async {
-      final item = GearLibraryItem(
-        uuid: 'test-uuid-123',
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-      );
+      final item = GearLibraryItem(uuid: 'test-uuid-123', name: '睡袋', weight: 1200, category: 'Sleep');
       mockRepo.setItems([item]);
 
       provider = GearLibraryProvider(repository: mockRepo);
@@ -262,12 +250,7 @@ void main() {
     });
 
     test('containsItem 判斷項目是否存在', () async {
-      final item = GearLibraryItem(
-        uuid: 'test-uuid-456',
-        name: '爐頭',
-        weight: 300,
-        category: 'Cook',
-      );
+      final item = GearLibraryItem(uuid: 'test-uuid-456', name: '爐頭', weight: 300, category: 'Cook');
       mockRepo.setItems([item]);
 
       provider = GearLibraryProvider(repository: mockRepo);
@@ -288,9 +271,7 @@ void main() {
     });
 
     test('reload 應重新載入資料', () async {
-      mockRepo.setItems([
-        GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep'),
-      ]);
+      mockRepo.setItems([GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep')]);
 
       provider = GearLibraryProvider(repository: mockRepo);
       await Future.delayed(Duration.zero);

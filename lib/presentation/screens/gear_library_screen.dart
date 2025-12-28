@@ -36,11 +36,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         title: const Text('🎒 我的裝備庫'),
         actions: [
           // 雲端備份按鈕
-          IconButton(
-            icon: const Icon(Icons.cloud_sync),
-            tooltip: '雲端備份',
-            onPressed: _showCloudSyncDialog,
-          ),
+          IconButton(icon: const Icon(Icons.cloud_sync), tooltip: '雲端備份', onPressed: _showCloudSyncDialog),
         ],
       ),
       body: Consumer<GearLibraryProvider>(
@@ -97,11 +93,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _StatItem(
-              icon: Icons.backpack,
-              label: '裝備數量',
-              value: '${provider.itemCount}',
-            ),
+            _StatItem(icon: Icons.backpack, label: '裝備數量', value: '${provider.itemCount}'),
             _StatItem(
               icon: Icons.fitness_center,
               label: '總重量',
@@ -151,10 +143,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         children: [
           Icon(Icons.backpack_outlined, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
-          Text(
-            isReallyEmpty ? '尚無裝備' : '找不到相關裝備',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-          ),
+          Text(isReallyEmpty ? '尚無裝備' : '找不到相關裝備', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
           if (isReallyEmpty) ...[
             const SizedBox(height: 8),
             Text('點擊右下角 + 新增裝備', style: TextStyle(color: Colors.grey.shade500)),
@@ -186,17 +175,10 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                   const SizedBox(width: 8),
                   Text(
                     category,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '(${items.length})',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
+                  Text('(${items.length})', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                 ],
               ),
             ),
@@ -300,10 +282,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   }
 
   void _showCloudSyncDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => const _CloudSyncDialog(),
-    );
+    showDialog(context: context, builder: (context) => const _CloudSyncDialog());
   }
 }
 
@@ -402,9 +381,7 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: const InputDecoration(labelText: '分類'),
-                items: GearCategory.all
-                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
-                    .toList(),
+                items: GearCategory.all.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
                 onChanged: (v) => setState(() => _selectedCategory = v!),
               ),
               const SizedBox(height: 12),
@@ -421,7 +398,9 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
         TextButton(onPressed: _isSaving ? null : () => Navigator.pop(context), child: const Text('取消')),
         FilledButton(
           onPressed: _isSaving ? null : _handleSave,
-          child: _isSaving ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : Text(isEdit ? '更新' : '新增'),
+          child: _isSaving
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(isEdit ? '更新' : '新增'),
         ),
       ],
     );
@@ -476,19 +455,12 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
           const SizedBox(height: 16),
           TextField(
             controller: _keyController,
-            decoration: const InputDecoration(
-              labelText: '密碼 (4 位數)',
-              hintText: '例如：1234',
-              counterText: '',
-            ),
+            decoration: const InputDecoration(labelText: '密碼 (4 位數)', hintText: '例如：1234', counterText: ''),
             maxLength: 4,
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 8),
-          Text(
-            '【未來規劃】會員機制上線後將自動識別帳號',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-          ),
+          Text('【未來規劃】會員機制上線後將自動識別帳號', style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
         ],
       ),
       actions: [
@@ -497,9 +469,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
           onPressed: () {
             // TODO: 實作下載
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('下載功能開發中...')),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('下載功能開發中...')));
           },
           icon: const Icon(Icons.download),
           label: const Text('下載'),
@@ -508,9 +478,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
           onPressed: () {
             // TODO: 實作上傳
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('上傳功能開發中...')),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('上傳功能開發中...')));
           },
           icon: const Icon(Icons.upload),
           label: const Text('上傳'),
