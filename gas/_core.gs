@@ -28,31 +28,40 @@ function doGet(e) {
 
   try {
     switch (action) {
-      case 'fetch_all':
+      // === 行程 (Trips) ===
+      case "fetch_trips":
+        return _createJsonResponse(fetchTrips());
+
+      // === 行程節點 + 留言 ===
+      case "fetch_all":
         return _createJsonResponse(fetchAll(tripId));
-      case 'fetch_itinerary':
+      case "fetch_itinerary":
         return _createJsonResponse({
           itinerary: getItineraryData(getSpreadsheet(), tripId),
         });
-      case 'fetch_messages':
+      case "fetch_messages":
         return _createJsonResponse({
           messages: getMessagesData(getSpreadsheet(), tripId),
         });
-      case 'fetch_trips':
-        return _createJsonResponse(fetchTrips());
-      case 'fetch_weather':
-        return _createJsonResponse(getWeatherData());
-      case 'poll':
+
+      // === 投票 (Polls) ===
+      case "poll":
         return _createJsonResponse(
           handlePollAction(e.parameter.subAction, e.parameter)
         );
-      case 'health':
+
+      // === 氣象 (Weather) ===
+      case "fetch_weather":
+        return _createJsonResponse(getWeatherData());
+
+      // === 健康檢查 ===
+      case "health":
         return _createJsonResponse({
-          status: 'ok',
+          status: "ok",
           timestamp: new Date().toISOString(),
         });
       default:
-        return _createJsonResponse({ error: '未知動作 (Unknown action)' }, 400);
+        return _createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
     }
   } catch (error) {
     return _createJsonResponse({ error: error.message }, 500);
@@ -70,50 +79,52 @@ function doPost(e) {
     const action = data.action;
 
     switch (action) {
-      // === 留言 ===
-      case 'add_message':
-        return _createJsonResponse(addMessage(data.data));
-      case 'batch_add_messages':
-        return _createJsonResponse(batchAddMessages(data.data));
-      case 'delete_message':
-        return _createJsonResponse(deleteMessage(data.uuid));
-        
-      // === 行程節點 ===
-      case 'update_itinerary':
-        return _createJsonResponse(updateItinerary(data.data, data.trip_id));
-        
-      // === 多行程 ===
-      case 'add_trip':
+      // === 行程 (Trips) ===
+      case "add_trip":
         return _createJsonResponse(addTrip(data));
-      case 'update_trip':
+      case "update_trip":
         return _createJsonResponse(updateTrip(data));
-      case 'delete_trip':
+      case "delete_trip":
         return _createJsonResponse(deleteTrip(data.id));
-      case 'set_active_trip':
+      case "set_active_trip":
         return _createJsonResponse(setActiveTrip(data.id));
-        
-      // === 裝備庫 ===
-      case 'fetch_gear_sets':
+
+      // === 行程節點 (Itinerary) ===
+      case "update_itinerary":
+        return _createJsonResponse(updateItinerary(data.data, data.trip_id));
+
+      // === 留言 (Messages) ===
+      case "add_message":
+        return _createJsonResponse(addMessage(data.data));
+      case "batch_add_messages":
+        return _createJsonResponse(batchAddMessages(data.data));
+      case "delete_message":
+        return _createJsonResponse(deleteMessage(data.uuid));
+
+      // === 裝備庫 (Gear) ===
+      case "fetch_gear_sets":
         return _createJsonResponse(fetchGearSets());
-      case 'fetch_gear_set_by_key':
+      case "fetch_gear_set_by_key":
         return _createJsonResponse(fetchGearSetByKey(data.key));
-      case 'download_gear_set':
+      case "download_gear_set":
         return _createJsonResponse(downloadGearSet(data.uuid, data.key));
-      case 'upload_gear_set':
+      case "upload_gear_set":
         return _createJsonResponse(uploadGearSet(data));
-      case 'delete_gear_set':
+      case "delete_gear_set":
         return _createJsonResponse(deleteGearSet(data.uuid, data.key));
-        
-      // === 其他 ===
-      case 'upload_logs':
-        return _createJsonResponse(uploadLogs(data.logs, data.device_info));
-      case 'heartbeat':
-        return _createJsonResponse(recordHeartbeat(data));
-      case 'poll':
+
+      // === 投票 (Polls) ===
+      case "poll":
         return _createJsonResponse(handlePollAction(data.subAction, data));
-        
+
+      // === 監控 (Logs/Heartbeat) ===
+      case "upload_logs":
+        return _createJsonResponse(uploadLogs(data.logs, data.device_info));
+      case "heartbeat":
+        return _createJsonResponse(recordHeartbeat(data));
+
       default:
-        return _createJsonResponse({ error: '未知動作 (Unknown action)' }, 400);
+        return _createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
     }
   } catch (error) {
     return _createJsonResponse({ error: error.message }, 500);
@@ -150,8 +161,8 @@ function _headerToKey(header) {
   return header
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_]/g, '');
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
 }
 
 /**
@@ -164,12 +175,12 @@ function _headerToKey(header) {
 function _getSheetOrCreate(name, headers) {
   const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(name);
-  
+
   if (!sheet) {
     sheet = ss.insertSheet(name);
     sheet.appendRow(headers);
   }
-  
+
   return sheet;
 }
 

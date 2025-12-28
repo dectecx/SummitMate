@@ -5,43 +5,57 @@ part 'itinerary_item.g.dart';
 /// 行程節點
 @HiveType(typeId: 1)
 class ItineraryItem extends HiveObject {
-  /// 行程天數，e.g., "D0", "D1", "D2"
+  /// 節點唯一識別碼 (PK)
   @HiveField(0)
+  String uuid;
+
+  /// 關聯的行程 ID (FK → Trip)
+  @HiveField(1)
+  String tripId;
+
+  /// 行程天數，e.g., "D0", "D1", "D2"
+  @HiveField(2)
   String day;
 
   /// 地標名稱，e.g., "向陽山屋"
-  @HiveField(1)
+  @HiveField(3)
   String name;
 
   /// 預計時間 (HH:mm 格式)
-  @HiveField(2)
+  @HiveField(4)
   String estTime;
 
   /// 實際打卡時間 (本地欄位)
-  @HiveField(3)
+  @HiveField(5)
   DateTime? actualTime;
 
   /// 海拔高度 (公尺)
-  @HiveField(4)
+  @HiveField(6)
   int altitude;
 
   /// 里程 (公里)
-  @HiveField(5)
+  @HiveField(7)
   double distance;
 
   /// 備註
-  @HiveField(6)
+  @HiveField(8)
   String note;
 
   /// 對應 assets 圖片檔名
-  @HiveField(7)
+  @HiveField(9)
   String? imageAsset;
 
-  /// 關聯的行程 ID
-  @HiveField(8)
-  String tripId;
+  /// 是否已打卡
+  @HiveField(10)
+  bool isCheckedIn;
+
+  /// 打卡時間
+  @HiveField(11)
+  DateTime? checkedInAt;
 
   ItineraryItem({
+    this.uuid = '',
+    this.tripId = '',
     this.day = '',
     this.name = '',
     this.estTime = '',
@@ -50,11 +64,9 @@ class ItineraryItem extends HiveObject {
     this.distance = 0.0,
     this.note = '',
     this.imageAsset,
-    this.tripId = '',
+    this.isCheckedIn = false,
+    this.checkedInAt,
   });
-
-  /// 是否已打卡
-  bool get isCheckedIn => actualTime != null;
 
   /// 從 JSON 建立
   factory ItineraryItem.fromJson(Map<String, dynamic> json) {
@@ -65,7 +77,7 @@ class ItineraryItem extends HiveObject {
       // 如果是 ISO 格式 (包含 T)，解析並提取時間
       if (str.contains('T')) {
         try {
-          final dt = DateTime.parse(str).toLocal(); // Convert UTC to Local to match Sheet's wall-clock time
+          final dt = DateTime.parse(str).toLocal();
           return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
         } catch (_) {
           return str;
@@ -75,6 +87,8 @@ class ItineraryItem extends HiveObject {
     }
 
     return ItineraryItem(
+      uuid: json['uuid']?.toString() ?? '',
+      tripId: json['trip_id']?.toString() ?? '',
       day: json['day']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       estTime: parseEstTime(json['est_time']),
@@ -83,13 +97,17 @@ class ItineraryItem extends HiveObject {
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
       note: json['note']?.toString() ?? '',
       imageAsset: json['image_asset']?.toString(),
-      tripId: json['trip_id']?.toString() ?? '',
+      isCheckedIn: json['is_checked_in'] == true,
+      checkedInAt: json['checked_in_at'] != null
+          ? DateTime.tryParse(json['checked_in_at'].toString())?.toLocal()
+          : null,
     );
   }
 
   /// 轉換為 JSON
   Map<String, dynamic> toJson() {
     return {
+      'uuid': uuid,
       'trip_id': tripId,
       'day': day,
       'name': name,
