@@ -9,7 +9,10 @@ import '../../data/models/gear_item.dart';
 class GearPreviewDialog extends StatefulWidget {
   final GearSet gearSet;
 
-  const GearPreviewDialog({super.key, required this.gearSet});
+  /// 可選：加入我的裝備庫 callback
+  final Future<void> Function(List<GearItem>)? onAddToLibrary;
+
+  const GearPreviewDialog({super.key, required this.gearSet, this.onAddToLibrary});
 
   @override
   State<GearPreviewDialog> createState() => _GearPreviewDialogState();
@@ -145,6 +148,18 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+                      // 加入我的庫按鈕 (如果有提供 callback)
+                      if (widget.onAddToLibrary != null) ...[
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            await widget.onAddToLibrary!(items);
+                            if (context.mounted) Navigator.pop(context, false);
+                          },
+                          icon: const Icon(Icons.backpack, size: 18),
+                          label: const Text('加入我的庫'),
+                        ),
+                      ],
                       const SizedBox(width: 8),
                       FilledButton.icon(
                         onPressed: () => Navigator.pop(context, true),

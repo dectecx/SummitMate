@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants.dart';
 import '../../data/models/gear_library_item.dart';
+import '../../services/gear_library_cloud_service.dart';
 import '../providers/gear_library_provider.dart';
 
 /// 個人裝備庫畫面
@@ -424,7 +425,7 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
 }
 
 // ============================================================
-// 雲端同步 Dialog (Placeholder)
+// 雲端同步 Dialog
 // ============================================================
 
 class _CloudSyncDialog extends StatefulWidget {
@@ -436,6 +437,10 @@ class _CloudSyncDialog extends StatefulWidget {
 
 class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   final _keyController = TextEditingController();
+  final _service = GearLibraryCloudService();
+  bool _isLoading = false;
+  String? _resultMessage;
+  bool? _isSuccess;
 
   @override
   void dispose() {
@@ -443,47 +448,176 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     super.dispose();
   }
 
+  bool get _isValidKey => _keyController.text.length == 4 && RegExp(r'^\d{4}$').hasMatch(_keyController.text);
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('☁️ 雲端備份'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('使用 4 位數密碼備份/還原裝備庫'),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _keyController,
-            decoration: const InputDecoration(labelText: '密碼 (4 位數)', hintText: '例如：1234', counterText: ''),
-            maxLength: 4,
-            keyboardType: TextInputType.number,
-          ),
-          const SizedBox(height: 8),
-          Text('【未來規劃】會員機制上線後將自動識別帳號', style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('使用 4 位數密碼備份/還原裝備庫'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _keyController,
+              decoration: const InputDecoration(labelText: '密碼 (4 位數)', hintText: '例如：1234', counterText: ''),
+              maxLength: 4,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+              enabled: !_isLoading,
+            ),
+            const SizedBox(height: 8),
+            Text('【同步說明】\n• 上傳：覆蓋雲端資料\n• 下載：覆蓋本地資料', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+            // 結果訊息
+            if (_resultMessage != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _isSuccess == true ? Colors.green.shade50 : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _isSuccess == true ? Colors.green.shade200 : Colors.red.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isSuccess == true ? Icons.check_circle : Icons.error,
+                      color: _isSuccess == true ? Colors.green : Colors.red,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _resultMessage!,
+                        style: TextStyle(
+                          color: _isSuccess == true ? Colors.green.shade800 : Colors.red.shade800,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+        TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('關閉')),
         OutlinedButton.icon(
-          onPressed: () {
-            // TODO: 實作下載
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('下載功能開發中...')));
-          },
-          icon: const Icon(Icons.download),
+          onPressed: _isLoading || !_isValidKey ? null : _handleDownload,
+          icon: _isLoading ? const SizedBox.shrink() : const Icon(Icons.download),
           label: const Text('下載'),
         ),
         FilledButton.icon(
-          onPressed: () {
-            // TODO: 實作上傳
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('上傳功能開發中...')));
-          },
-          icon: const Icon(Icons.upload),
+          onPressed: _isLoading || !_isValidKey ? null : _handleUpload,
+          icon: _isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.upload),
           label: const Text('上傳'),
         ),
       ],
     );
+  }
+
+  Future<void> _handleUpload() async {
+    if (!_isValidKey) return;
+
+    setState(() {
+      _isLoading = true;
+      _resultMessage = null;
+    });
+
+    try {
+      final provider = context.read<GearLibraryProvider>();
+      final items = provider.allItems;
+
+      if (items.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _isSuccess = false;
+          _resultMessage = '裝備庫是空的，無法上傳';
+        });
+        return;
+      }
+
+      final result = await _service.uploadLibrary(ownerKey: _keyController.text, items: items);
+
+      setState(() {
+        _isLoading = false;
+        _isSuccess = result.isSuccess;
+        _resultMessage = result.isSuccess ? '成功上傳 ${result.data} 個裝備' : '上傳失敗: ${result.error}';
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+        _resultMessage = '上傳失敗: $e';
+      });
+    }
+  }
+
+  Future<void> _handleDownload() async {
+    if (!_isValidKey) return;
+
+    // 確認覆蓋
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('確認下載'),
+        content: const Text('下載將覆蓋本地裝備庫所有資料。\n\n確定要繼續嗎？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+            child: const Text('確定下載'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isLoading = true;
+      _resultMessage = null;
+    });
+
+    try {
+      final result = await _service.downloadLibrary(ownerKey: _keyController.text);
+
+      if (!result.isSuccess) {
+        setState(() {
+          _isLoading = false;
+          _isSuccess = false;
+          _resultMessage = '下載失敗: ${result.error}';
+        });
+        return;
+      }
+
+      // 匯入到本地
+      final provider = context.read<GearLibraryProvider>();
+      await provider.importItems(result.data!);
+
+      setState(() {
+        _isLoading = false;
+        _isSuccess = true;
+        _resultMessage = '成功下載 ${result.data!.length} 個裝備';
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+        _resultMessage = '下載失敗: $e';
+      });
+    }
   }
 }
