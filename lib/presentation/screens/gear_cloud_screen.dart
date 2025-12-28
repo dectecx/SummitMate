@@ -9,6 +9,7 @@ import '../../services/gear_cloud_service.dart';
 import '../../services/toast_service.dart';
 import '../providers/settings_provider.dart';
 import '../providers/gear_provider.dart';
+import '../providers/gear_library_provider.dart';
 import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
@@ -158,11 +159,31 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => GearPreviewDialog(gearSet: gearSet),
+      builder: (context) => GearPreviewDialog(
+        gearSet: gearSet,
+        onAddToLibrary: (gearItems) async {
+          await _addToGearLibrary(gearItems);
+        },
+      ),
     );
 
     if (confirmed == true) {
       await _importGearItems(items);
+    }
+  }
+
+  /// 將裝備加入我的裝備庫
+  Future<void> _addToGearLibrary(List<GearItem> items) async {
+    try {
+      final libraryProvider = context.read<GearLibraryProvider>();
+      int added = 0;
+      for (final item in items) {
+        await libraryProvider.addItem(name: item.name, weight: item.weight, category: item.category);
+        added++;
+      }
+      ToastService.success('已加入 $added 件裝備到我的庫');
+    } catch (e) {
+      ToastService.error('加入失敗: $e');
     }
   }
 

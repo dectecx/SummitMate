@@ -241,4 +241,46 @@ class GearProvider extends ChangeNotifier {
     LogService.debug('裝備重新載入', source: 'Gear');
     _loadItems();
   }
+
+  // ========================================
+  // 裝備庫連動 (GearLibrary Integration)
+  // ========================================
+
+  /// 從裝備庫新增項目到行程
+  ///
+  /// 建立 GearItem 並連結到 GearLibraryItem (透過 libraryItemId)
+  Future<GearItem?> addItemFromLibrary({
+    required String libraryItemId,
+    required String name,
+    required double weight,
+    required String category,
+  }) async {
+    try {
+      final item = GearItem(
+        name: name,
+        weight: weight,
+        category: category,
+        isChecked: false,
+        libraryItemId: libraryItemId,
+      );
+
+      LogService.info('從裝備庫新增裝備: $name (連結: $libraryItemId)', source: 'Gear');
+      await _repository.addItem(item);
+      _loadItems();
+      return item;
+    } catch (e) {
+      LogService.error('從裝備庫新增裝備失敗: $e', source: 'Gear');
+      return null;
+    }
+  }
+
+  /// 檢查是否有項目連結到指定的裝備庫項目
+  bool hasItemFromLibrary(String libraryItemId) {
+    return _items.any((item) => item.libraryItemId == libraryItemId);
+  }
+
+  /// 取得連結到指定裝備庫項目的所有行程裝備
+  List<GearItem> getItemsFromLibrary(String libraryItemId) {
+    return _items.where((item) => item.libraryItemId == libraryItemId).toList();
+  }
 }
