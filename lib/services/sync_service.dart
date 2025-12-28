@@ -70,7 +70,10 @@ class SyncService {
     // Case 1: 兩者皆需要 -> 使用 fetchAll (節省一次請求)
     if (itinNeeded && msgNeeded) {
       final tripId = _activeTripId;
-      LogService.info('SyncAll: Fetching ALL (Itinerary + Messages)${tripId != null ? " for trip: $tripId" : ""}', source: 'SyncService');
+      LogService.info(
+        'SyncAll: Fetching ALL (Itinerary + Messages)${tripId != null ? " for trip: $tripId" : ""}',
+        source: 'SyncService',
+      );
       final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
 
       if (!fetchResult.success) {
@@ -220,8 +223,8 @@ class SyncService {
   /// 檢查行程衝突
   /// 回傳 true 表示有衝突 (雲端資料與本地不一致)
   Future<bool> checkItineraryConflict() async {
-      final tripId = _activeTripId;
-      final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
+    final tripId = _activeTripId;
+    final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
 
     if (!fetchResult.success) {
       // 若無法取得雲端資料，視為無衝突 (或拋出錯誤，這裡選擇保守策略: 讓用戶決定是否硬上傳)

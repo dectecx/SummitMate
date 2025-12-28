@@ -48,9 +48,9 @@ void main() {
     when(() => mockSettingsRepo.getSettings()).thenReturn(mockSettings);
 
     // Default: Active trip
-    when(() => mockTripRepo.getActiveTrip()).thenReturn(
-      Trip(id: 'test-trip-1', name: 'Test Trip', startDate: DateTime.now()),
-    );
+    when(
+      () => mockTripRepo.getActiveTrip(),
+    ).thenReturn(Trip(id: 'test-trip-1', name: 'Test Trip', startDate: DateTime.now()));
 
     // Default: No last sync time
     when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
