@@ -113,6 +113,13 @@ function doPost(e) {
       case "delete_gear_set":
         return _createJsonResponse(deleteGearSet(data.uuid, data.key));
 
+      // === 個人裝備庫 (GearLibrary) ===
+      // 【未來規劃】owner_key → user_id (會員機制上線後)
+      case "upload_gear_library":
+        return _createJsonResponse(uploadGearLibrary(data.owner_key, data.items));
+      case "download_gear_library":
+        return _createJsonResponse(downloadGearLibrary(data.owner_key));
+
       // === 投票 (Polls) ===
       case "poll":
         return _createJsonResponse(handlePollAction(data.subAction, data));
