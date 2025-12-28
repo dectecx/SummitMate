@@ -27,7 +27,7 @@ class GearLibraryProvider extends ChangeNotifier {
   String? _error;
 
   GearLibraryProvider({IGearLibraryRepository? repository})
-      : _repository = repository ?? getIt<IGearLibraryRepository>() {
+    : _repository = repository ?? getIt<IGearLibraryRepository>() {
     LogService.info('GearLibraryProvider 初始化', source: 'GearLibrary');
     _loadItems();
   }
@@ -141,12 +141,7 @@ class GearLibraryProvider extends ChangeNotifier {
     String? notes,
   }) async {
     try {
-      final item = GearLibraryItem(
-        name: name,
-        weight: weight,
-        category: category,
-        notes: notes,
-      );
+      final item = GearLibraryItem(name: name, weight: weight, category: category, notes: notes);
 
       LogService.info('新增裝備庫項目: $name (${weight}g)', source: 'GearLibrary');
       await _repository.addItem(item);

@@ -53,8 +53,8 @@ class GearLibraryItem extends HiveObject {
     this.notes,
     DateTime? createdAt,
     this.updatedAt,
-  })  : uuid = uuid ?? const Uuid().v4(),
-        createdAt = createdAt ?? DateTime.now();
+  }) : uuid = uuid ?? const Uuid().v4(),
+       createdAt = createdAt ?? DateTime.now();
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;
@@ -70,9 +70,7 @@ class GearLibraryItem extends HiveObject {
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
           : DateTime.now(),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.tryParse(json['updated_at'] as String)
-          : null,
+      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
     );
   }
 

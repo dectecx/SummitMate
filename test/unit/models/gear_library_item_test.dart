@@ -24,12 +24,7 @@ void main() {
 
     test('should use provided uuid', () {
       const customUuid = 'custom-uuid-12345';
-      final item = GearLibraryItem(
-        uuid: customUuid,
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-      );
+      final item = GearLibraryItem(uuid: customUuid, name: '睡袋', weight: 1200, category: 'Sleep');
 
       expect(item.uuid, equals(customUuid));
     });
@@ -76,13 +71,7 @@ void main() {
     });
 
     test('should convert to JSON correctly', () {
-      final item = GearLibraryItem(
-        uuid: 'test-uuid',
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-        notes: '品牌備註',
-      );
+      final item = GearLibraryItem(uuid: 'test-uuid', name: '睡袋', weight: 1200, category: 'Sleep', notes: '品牌備註');
 
       final json = item.toJson();
 
@@ -116,11 +105,7 @@ void main() {
     });
 
     test('should handle JSON with missing optional fields', () {
-      final json = {
-        'name': '爐頭',
-        'weight': 300,
-        'category': 'Cook',
-      };
+      final json = {'name': '爐頭', 'weight': 300, 'category': 'Cook'};
 
       final item = GearLibraryItem.fromJson(json);
 
@@ -132,12 +117,7 @@ void main() {
     });
 
     test('should round-trip JSON conversion', () {
-      final original = GearLibraryItem(
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-        notes: '測試備註',
-      );
+      final original = GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep', notes: '測試備註');
 
       final json = original.toJson();
       final restored = GearLibraryItem.fromJson(json);
