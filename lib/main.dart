@@ -36,6 +36,7 @@ import 'data/models/weather_data.dart';
 import 'data/models/gear_item.dart';
 import 'services/usage_tracking_service.dart';
 import 'presentation/screens/gear_cloud_screen.dart';
+import 'presentation/screens/gear_library_screen.dart';
 import 'presentation/widgets/zoomable_image.dart';
 
 void main() async {
@@ -1538,7 +1539,7 @@ class _GearTabState extends State<_GearTab> {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   children: [
-                    // 官方建議裝備 + 雲端裝備庫 (並排)
+                    // 官方建議裝備 + 雲端裝備庫 + 我的裝備庫 (並排)
                     Row(
                       children: [
                         // 官方建議裝備清單
@@ -1561,7 +1562,7 @@ class _GearTabState extends State<_GearTab> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // 雲端裝備庫
+                        // 雲端裝備庫 (分享用)
                         Expanded(
                           child: Card(
                             child: InkWell(
@@ -1575,6 +1576,27 @@ class _GearTabState extends State<_GearTab> {
                                     Icon(Icons.cloud, color: Colors.blue, size: 28),
                                     SizedBox(height: 8),
                                     Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // 我的裝備庫 (個人)
+                        Expanded(
+                          child: Card(
+                            child: InkWell(
+                              onTap: () =>
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GearLibraryScreen())),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.backpack, color: Colors.orange.shade700, size: 28),
+                                    const SizedBox(height: 8),
+                                    const Text('我的庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ),
