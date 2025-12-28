@@ -16,11 +16,7 @@ class TripListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('我的行程'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showCreateTripDialog(context),
-            tooltip: '新增行程',
-          ),
+          IconButton(icon: const Icon(Icons.add), onPressed: () => _showCreateTripDialog(context), tooltip: '新增行程'),
         ],
       ),
       body: Consumer<TripProvider>(
@@ -36,10 +32,7 @@ class TripListScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.hiking, size: 80, color: Colors.grey[400]),
                   const SizedBox(height: 16),
-                  Text(
-                    '尚無行程',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                  ),
+                  Text('尚無行程', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () => _showCreateTripDialog(context),
@@ -60,9 +53,7 @@ class TripListScreen extends StatelessWidget {
                 trip: trip,
                 isActive: trip.id == provider.activeTripId,
                 onTap: () => _onTripTap(context, provider, trip),
-                onDelete: provider.trips.length > 1
-                    ? () => _confirmDelete(context, provider, trip)
-                    : null,
+                onDelete: provider.trips.length > 1 ? () => _confirmDelete(context, provider, trip) : null,
               );
             },
           );
@@ -76,10 +67,7 @@ class TripListScreen extends StatelessWidget {
   }
 
   void _showCreateTripDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => const CreateTripDialog(),
-    );
+    showDialog(context: context, builder: (ctx) => const CreateTripDialog());
   }
 
   void _onTripTap(BuildContext context, TripProvider provider, Trip trip) async {
@@ -109,10 +97,7 @@ class TripListScreen extends StatelessWidget {
         title: const Text('刪除行程'),
         content: Text('確定要刪除「${trip.name}」嗎？\n此操作無法復原。'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
@@ -137,12 +122,7 @@ class _TripCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onDelete;
 
-  const _TripCard({
-    required this.trip,
-    required this.isActive,
-    required this.onTap,
-    this.onDelete,
-  });
+  const _TripCard({required this.trip, required this.isActive, required this.onTap, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -156,9 +136,7 @@ class _TripCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: isActive
-            ? BorderSide(color: Theme.of(context).colorScheme.primary, width: 2)
-            : BorderSide.none,
+        side: isActive ? BorderSide(color: Theme.of(context).colorScheme.primary, width: 2) : BorderSide.none,
       ),
       child: InkWell(
         onTap: onTap,
@@ -172,17 +150,13 @@ class _TripCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: isActive
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : Colors.grey[200],
+                  color: isActive ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.terrain,
                   size: 32,
-                  color: isActive
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey[600],
+                  color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
                 ),
               ),
               const SizedBox(width: 16),
@@ -199,50 +173,33 @@ class _TripCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isActive
-                                  ? Theme.of(context).colorScheme.primary
-                                  : null,
+                              color: isActive ? Theme.of(context).colorScheme.primary : null,
                             ),
                           ),
                         ),
                         if (isActive)
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.primary,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               '當前',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
+                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onPrimary),
                             ),
                           ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      dateText,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
+                    Text(dateText, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
                     if (trip.description?.isNotEmpty == true) ...[
                       const SizedBox(height: 4),
                       Text(
                         trip.description!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                       ),
                     ],
                   ],
@@ -338,16 +295,9 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_month),
                 title: const Text('結束日期'),
-                subtitle: Text(
-                  _endDate != null
-                      ? DateFormat('yyyy/MM/dd').format(_endDate!)
-                      : '未設定 (單日行程)',
-                ),
+                subtitle: Text(_endDate != null ? DateFormat('yyyy/MM/dd').format(_endDate!) : '未設定 (單日行程)'),
                 trailing: _endDate != null
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => setState(() => _endDate = null),
-                      )
+                    ? IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _endDate = null))
                     : null,
                 onTap: () => _selectDate(isStartDate: false),
               ),
@@ -366,18 +316,11 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
+        TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('取消')),
         ElevatedButton(
           onPressed: _isLoading ? null : _submit,
           child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
               : Text(isEditing ? '儲存' : '建立'),
         ),
       ],
@@ -424,9 +367,7 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
           name: _nameController.text.trim(),
           startDate: _startDate,
           endDate: _endDate,
-          description: _descriptionController.text.trim().isNotEmpty
-              ? _descriptionController.text.trim()
-              : null,
+          description: _descriptionController.text.trim().isNotEmpty ? _descriptionController.text.trim() : null,
           isActive: widget.tripToEdit!.isActive,
           createdAt: widget.tripToEdit!.createdAt,
         );
@@ -440,9 +381,7 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
           name: _nameController.text.trim(),
           startDate: _startDate,
           endDate: _endDate,
-          description: _descriptionController.text.trim().isNotEmpty
-              ? _descriptionController.text.trim()
-              : null,
+          description: _descriptionController.text.trim().isNotEmpty ? _descriptionController.text.trim() : null,
         );
         if (mounted) {
           ToastService.success('行程已建立');

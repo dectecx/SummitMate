@@ -578,18 +578,12 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                ),
+                decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Icon(
-                      Icons.terrain,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                    Icon(Icons.terrain, size: 48, color: Theme.of(context).colorScheme.primary),
                     const SizedBox(height: 8),
                     Text(
                       activeTrip?.name ?? '選擇行程',
@@ -617,10 +611,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.pop(context); // 關閉抽屜
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TripListScreen()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const TripListScreen()));
                 },
               ),
               const Divider(),
@@ -630,9 +621,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Text(
                     '快速切換',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ),
                 ...tripProvider.trips.take(5).map((trip) {
@@ -644,9 +633,7 @@ class _MainNavigationScreenState extends State<_MainNavigationScreen> {
                     ),
                     title: Text(
                       trip.name,
-                      style: TextStyle(
-                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                      ),
+                      style: TextStyle(fontWeight: isActive ? FontWeight.bold : FontWeight.normal),
                     ),
                     selected: isActive,
                     onTap: () async {

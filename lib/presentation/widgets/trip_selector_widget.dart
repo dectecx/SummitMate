@@ -12,11 +12,7 @@ class TripSelectorWidget extends StatelessWidget {
   /// 小型版本時的圖示大小
   final double iconSize;
 
-  const TripSelectorWidget({
-    super.key,
-    this.showFullVersion = true,
-    this.iconSize = 24,
-  });
+  const TripSelectorWidget({super.key, this.showFullVersion = true, this.iconSize = 24});
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +33,7 @@ class TripSelectorWidget extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.terrain,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                  Icon(Icons.terrain, size: 20, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(width: 8),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 150),
@@ -55,10 +47,7 @@ class TripSelectorWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_drop_down,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ],
               ),
             ),
@@ -76,10 +65,7 @@ class TripSelectorWidget extends StatelessWidget {
   }
 
   void _navigateToTripList(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const TripListScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const TripListScreen()));
   }
 }
 
@@ -89,11 +75,7 @@ class TripDropdownSelector extends StatelessWidget {
   final void Function(String tripId)? onChanged;
   final String? selectedTripId;
 
-  const TripDropdownSelector({
-    super.key,
-    this.onChanged,
-    this.selectedTripId,
-  });
+  const TripDropdownSelector({super.key, this.onChanged, this.selectedTripId});
 
   @override
   Widget build(BuildContext context) {
@@ -104,17 +86,11 @@ class TripDropdownSelector extends StatelessWidget {
 
         return DropdownButtonFormField<String>(
           value: currentId,
-          decoration: const InputDecoration(
-            labelText: '選擇行程',
-            prefixIcon: Icon(Icons.terrain),
-          ),
+          decoration: const InputDecoration(labelText: '選擇行程', prefixIcon: Icon(Icons.terrain)),
           items: trips.map((trip) {
             return DropdownMenuItem<String>(
               value: trip.id,
-              child: Text(
-                trip.name,
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: Text(trip.name, overflow: TextOverflow.ellipsis),
             );
           }).toList(),
           onChanged: onChanged != null
