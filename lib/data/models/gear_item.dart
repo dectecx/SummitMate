@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 part 'gear_item.g.dart';
@@ -13,6 +14,7 @@ part 'gear_item.g.dart';
 /// - 使用自身 name/weight/category
 /// - 適用於下載他人組合但不加入庫的情況
 @HiveType(typeId: 3)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class GearItem extends HiveObject {
   // ========================================
   // PK (Primary Key)
@@ -41,18 +43,22 @@ class GearItem extends HiveObject {
 
   /// 裝備名稱 (獨立模式用，連結模式為快取)
   @HiveField(3)
+  @JsonKey(defaultValue: '')
   String name;
 
   /// 重量 (公克，獨立模式用，連結模式為快取)
   @HiveField(4)
+  @JsonKey(defaultValue: 0.0)
   double weight;
 
   /// 裝備分類：Sleep, Cook, Wear, Other
   @HiveField(5)
+  @JsonKey(defaultValue: 'Other')
   String category;
 
   /// 打包狀態
   @HiveField(6)
+  @JsonKey(defaultValue: false)
   bool isChecked;
 
   /// 排序索引
@@ -69,7 +75,7 @@ class GearItem extends HiveObject {
     this.libraryItemId,
     this.name = '',
     this.weight = 0,
-    this.category = '',
+    this.category = 'Other',
     this.isChecked = false,
     this.orderIndex,
   }) : uuid = uuid?.isNotEmpty == true ? uuid! : const Uuid().v4();
@@ -89,30 +95,8 @@ class GearItem extends HiveObject {
   // ========================================
 
   /// 從 JSON 建立
-  factory GearItem.fromJson(Map<String, dynamic> json) {
-    return GearItem(
-      uuid: json['uuid']?.toString(),
-      tripId: json['trip_id']?.toString(),
-      libraryItemId: json['library_item_id']?.toString(),
-      name: json['name'] as String? ?? '',
-      weight: (json['weight'] as num?)?.toDouble() ?? 0,
-      category: json['category'] as String? ?? 'Other',
-      isChecked: json['is_checked'] as bool? ?? false,
-      orderIndex: json['order_index'] as int?,
-    );
-  }
+  factory GearItem.fromJson(Map<String, dynamic> json) => _$GearItemFromJson(json);
 
   /// 轉換為 JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'uuid': uuid,
-      'trip_id': tripId,
-      'library_item_id': libraryItemId,
-      'name': name,
-      'weight': weight,
-      'category': category,
-      'is_checked': isChecked,
-      'order_index': orderIndex,
-    };
-  }
+  Map<String, dynamic> toJson() => _$GearItemToJson(this);
 }

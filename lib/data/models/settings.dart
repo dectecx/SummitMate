@@ -1,12 +1,15 @@
 import 'package:hive/hive.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'settings.g.dart';
 
 /// 全域設定
 @HiveType(typeId: 0)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Settings extends HiveObject {
   /// 使用者暱稱 (用於留言識別)
   @HiveField(0, defaultValue: '')
+  @JsonKey(defaultValue: '')
   String username;
 
   /// 上次同步時間
@@ -15,10 +18,12 @@ class Settings extends HiveObject {
 
   /// 使用者頭像 (Emoji)
   @HiveField(2, defaultValue: '🐻')
+  @JsonKey(defaultValue: '🐻')
   String avatar;
 
   /// 是否為離線模式
   @HiveField(3, defaultValue: false)
+  @JsonKey(defaultValue: false)
   bool isOfflineMode;
 
   Settings({
@@ -32,4 +37,7 @@ class Settings extends HiveObject {
   factory Settings.withDefaults() {
     return Settings();
   }
+
+  factory Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);
+  Map<String, dynamic> toJson() => _$SettingsToJson(this);
 }

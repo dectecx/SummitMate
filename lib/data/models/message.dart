@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'message.g.dart';
 
@@ -7,29 +8,36 @@ String? _nullIfEmpty(String? value) => (value == null || value.isEmpty) ? null :
 
 /// 留言
 @HiveType(typeId: 2)
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Message extends HiveObject {
   /// 後端識別用 UUID (PK)
   @HiveField(0)
+  @JsonKey(readValue: _readUuid)
   String uuid;
 
   /// 關聯的行程 ID (FK → Trip，null = 全域留言)
   @HiveField(1)
+  @JsonKey(fromJson: _nullIfEmpty)
   String? tripId;
 
   /// 父留言 UUID (FK → Message，若為 null 則為主留言)
   @HiveField(2)
+  @JsonKey(fromJson: _nullIfEmpty)
   String? parentId;
 
   /// 發文者暱稱
   @HiveField(3)
+  @JsonKey(defaultValue: '')
   String user;
 
   /// 留言分類：Gear, Plan, Misc
   @HiveField(4)
+  @JsonKey(defaultValue: '')
   String category;
 
   /// 留言內容
   @HiveField(5)
+  @JsonKey(defaultValue: '')
   String content;
 
   /// 發文時間
@@ -38,6 +46,7 @@ class Message extends HiveObject {
 
   /// 使用者頭像
   @HiveField(7, defaultValue: '🐻')
+  @JsonKey(defaultValue: '🐻')
   String avatar;
 
   Message({
@@ -54,33 +63,14 @@ class Message extends HiveObject {
   /// 是否為回覆留言
   bool get isReply => parentId != null;
 
-  /// 從 JSON 建立
-  factory Message.fromJson(Map<String, dynamic> json) {
-    return Message(
-      uuid: json['uuid']?.toString() ?? json['message_id']?.toString() ?? '',
-      tripId: _nullIfEmpty(json['trip_id']?.toString()),
-      parentId: _nullIfEmpty(json['parent_id']?.toString()),
-      user: json['user']?.toString() ?? '',
-      category: json['category']?.toString() ?? '',
-      content: json['content']?.toString() ?? '',
-      avatar: json['avatar']?.toString() ?? '🐻',
-      timestamp: json['timestamp'] != null
-          ? DateTime.tryParse(json['timestamp'].toString())?.toLocal() ?? DateTime.now()
-          : DateTime.now(),
-    );
+  /// 讀取 UUID，支援 'uuid' 或 'message_id'
+  static Object? _readUuid(Map map, String key) {
+    return map['uuid'] ?? map['message_id'] ?? '';
   }
 
+  /// 從 JSON 建立
+  factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
+
   /// 轉換為 JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'uuid': uuid,
-      'trip_id': tripId,
-      'parent_id': parentId,
-      'user': user,
-      'category': category,
-      'content': content,
-      'timestamp': timestamp.toUtc().toIso8601String(),
-      'avatar': avatar,
-    };
-  }
+  Map<String, dynamic> toJson() => _$MessageToJson(this);
 }
