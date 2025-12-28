@@ -57,17 +57,22 @@ function setupSheets() {
   _setupSheet(ss, SHEET_GEAR, HEADERS_GEAR);
   Logger.log("✓ GearSets 工作表已建立");
 
-  // 5. 建立 Polls 工作表 (若 svc_polls.gs 存在)
+  // 5. 建立 GearLibrary 工作表 (個人裝備庫)
+  // 【未來規劃】owner_key → user_id (會員機制上線後)
+  _setupSheet(ss, SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
+  Logger.log("✓ GearLibrary 工作表已建立");
+
+  // 6. 建立 Polls 工作表 (若 svc_polls.gs 存在)
   if (typeof setupPollSheets === "function") {
     setupPollSheets();
     Logger.log("✓ Poll 工作表已建立");
   }
 
-  // 6. 建立 Logs 工作表
+  // 7. 建立 Logs 工作表
   _setupSheet(ss, SHEET_LOGS, HEADERS_LOGS);
   Logger.log("✓ Logs 工作表已建立");
 
-  // 7. 建立 Heartbeat 工作表
+  // 8. 建立 Heartbeat 工作表
   _setupSheet(ss, SHEET_HEARTBEAT, HEADERS_HEARTBEAT);
   Logger.log("✓ Heartbeat 工作表已建立");
 

@@ -18,6 +18,7 @@ const SHEET_MESSAGES = "Messages";
 
 // 輔助功能
 const SHEET_GEAR = "GearSets";
+const SHEET_GEAR_LIBRARY = "GearLibrary";
 const SHEET_POLLS = "Polls";
 const SHEET_POLL_OPTIONS = "PollOptions";
 const SHEET_POLL_VOTES = "PollVotes";
