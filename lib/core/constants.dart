@@ -100,6 +100,7 @@ class HiveBoxNames {
 
   // 輔助功能
   static const String gear = 'gear';
+  static const String gearLibrary = 'gear_library';
   static const String polls = 'polls';
   static const String weather = 'weather_cache';
 

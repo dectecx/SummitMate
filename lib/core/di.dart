@@ -10,9 +10,11 @@ import '../data/repositories/settings_repository.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../data/repositories/gear_repository.dart';
+import '../data/repositories/gear_library_repository.dart';
 import '../data/repositories/poll_repository.dart';
 import '../data/repositories/trip_repository.dart';
 import '../data/repositories/interfaces/i_gear_repository.dart';
+import '../data/repositories/interfaces/i_gear_library_repository.dart';
 import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
@@ -64,10 +66,15 @@ Future<void> setupDependencies() async {
   await messageRepo.init();
   getIt.registerSingleton<IMessageRepository>(messageRepo);
 
-  // 4. Gear - 裝備
+  // 4. Gear - 行程裝備
   final gearRepo = GearRepository();
   await gearRepo.init();
   getIt.registerSingleton<IGearRepository>(gearRepo);
+
+  // 5. GearLibrary - 個人裝備庫
+  final gearLibraryRepo = GearLibraryRepository();
+  await gearLibraryRepo.init();
+  getIt.registerSingleton<IGearLibraryRepository>(gearLibraryRepo);
 
   // 5. Polls - 投票
   final pollRepo = PollRepository();
