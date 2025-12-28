@@ -52,44 +52,54 @@
  * ============================================================
  *
  * GET 請求:
- *   ?action=fetch_all[&trip_id=xxx]    - 取得行程+留言
- *   ?action=fetch_itinerary[&trip_id]  - 僅取得行程
- *   ?action=fetch_messages[&trip_id]   - 僅取得留言
  *   ?action=fetch_trips                - 取得所有行程
+ *   ?action=fetch_all[&trip_id=xxx]    - 取得行程+留言
+ *   ?action=fetch_itinerary[&trip_id]  - 僅取得行程節點
+ *   ?action=fetch_messages[&trip_id]   - 僅取得留言
+ *   ?action=poll&subAction=...         - 投票功能
  *   ?action=fetch_weather              - 取得氣象資料
  *   ?action=health                     - 健康檢查
  *
  * POST 請求:
- *   { action: 'add_message', data: {...} }
- *   { action: 'batch_add_messages', data: [...] }
- *   { action: 'delete_message', uuid: '...' }
- *   { action: 'update_itinerary', data: [...], trip_id: '...' }
+ *   // 行程 (Trips)
  *   { action: 'add_trip', ... }
  *   { action: 'update_trip', id: '...', ... }
  *   { action: 'delete_trip', id: '...' }
  *   { action: 'set_active_trip', id: '...' }
- *   { action: 'upload_logs', logs: [...] }
- *   { action: 'heartbeat', ... }
+ *
+ *   // 行程節點 (Itinerary)
+ *   { action: 'update_itinerary', data: [...], trip_id: '...' }
+ *
+ *   // 留言 (Messages)
+ *   { action: 'add_message', data: {...} }
+ *   { action: 'batch_add_messages', data: [...] }
+ *   { action: 'delete_message', uuid: '...' }
+ *
+ *   // 裝備庫 (Gear)
  *   { action: 'fetch_gear_sets' }
  *   { action: 'upload_gear_set', ... }
  *   { action: 'download_gear_set', uuid: '...', key: '...' }
  *   { action: 'delete_gear_set', uuid: '...', key: '...' }
  *
- * ============================================================
- * 工作表結構
- * ============================================================
+ *   // 監控
+ *   { action: 'upload_logs', logs: [...] }
+ *   { action: 'heartbeat', ... }
  *
- * Itinerary:
- *   day, name, est_time, altitude, distance, note, image_asset, trip_id
- *
- * Messages:
- *   uuid, parent_id, user, category, content, timestamp, avatar, trip_id
+ * ============================================================
+ * 工作表結構 (欄位順序: PK → FK → 其他)
+ * ============================================================
  *
  * Trips:
  *   id, name, start_date, end_date, description, cover_image, is_active, created_at
  *
+ * Itinerary:
+ *   uuid, trip_id, day, name, est_time, altitude, distance, note, image_asset
+ *
+ * Messages:
+ *   uuid, trip_id, parent_id, user, category, content, timestamp, avatar
+ *
  * GearSets:
- *   uuid, title, author, total_weight, item_count, visibility, key, uploaded_at, items_json
+ *   uuid, title, author, visibility, key, total_weight, item_count, uploaded_at, items_json
  *
  * Logs:
  *   upload_time, device_id, device_name, timestamp, level, source, message
