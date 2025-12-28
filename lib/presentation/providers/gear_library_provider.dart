@@ -197,18 +197,35 @@ class GearLibraryProvider extends ChangeNotifier {
   }
 
   // ========================================
-  // Cloud Sync (placeholder)
+  // Cloud Sync
   // ========================================
 
-  /// 上傳裝備庫到雲端 (覆寫)
-  /// TODO: 實作 GearLibraryCloudService
-  Future<void> uploadToCloud(String ownerKey) async {
-    throw UnimplementedError('GearLibraryCloudService not implemented yet');
+  /// 匯入裝備項目 (覆寫本地全部資料)
+  ///
+  /// 用於雲端下載：清空本地資料後匯入雲端資料
+  Future<void> importItems(List<GearLibraryItem> items) async {
+    try {
+      LogService.warning('匯入裝備庫: ${items.length} 個項目 (覆寫模式)', source: 'GearLibrary');
+      await _repository.importItems(items);
+      _loadItems();
+    } catch (e) {
+      LogService.error('匯入裝備庫失敗: $e', source: 'GearLibrary');
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
   }
 
-  /// 從雲端下載裝備庫 (覆寫本地)
-  /// TODO: 實作 GearLibraryCloudService
-  Future<void> downloadFromCloud(String ownerKey) async {
-    throw UnimplementedError('GearLibraryCloudService not implemented yet');
+  /// 清空本地裝備庫
+  Future<void> clearAll() async {
+    try {
+      LogService.warning('清空本地裝備庫', source: 'GearLibrary');
+      await _repository.clearAll();
+      _loadItems();
+    } catch (e) {
+      LogService.error('清空裝備庫失敗: $e', source: 'GearLibrary');
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 }
