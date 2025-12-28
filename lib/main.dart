@@ -14,7 +14,7 @@ void main() async {
   // Map Tile Caching is handled lazily by MapProvider
 
   // Setup Dependencies
-  setupDependencies();
+  await setupDependencies();
 
   // Global Error Handling
   FlutterError.onError = (FlutterErrorDetails details) {

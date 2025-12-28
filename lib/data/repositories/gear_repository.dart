@@ -11,6 +11,7 @@ class GearRepository implements IGearRepository {
   Box<GearItem>? _box;
 
   /// 開啟 Box
+  @override
   Future<void> init() async {
     _box = await Hive.openBox<GearItem>(_boxName);
   }
@@ -24,6 +25,7 @@ class GearRepository implements IGearRepository {
   }
 
   /// 取得所有裝備 (依 orderIndex 排序)
+  @override
   List<GearItem> getAllItems() {
     final items = box.values.toList();
     items.sort((a, b) {
@@ -39,16 +41,19 @@ class GearRepository implements IGearRepository {
   }
 
   /// 依分類取得裝備
+  @override
   List<GearItem> getItemsByCategory(String category) {
     return box.values.where((item) => item.category == category).toList();
   }
 
   /// 取得未打包的裝備
+  @override
   List<GearItem> getUncheckedItems() {
     return box.values.where((item) => !item.isChecked).toList();
   }
 
   /// 新增裝備
+  @override
   Future<int> addItem(GearItem item) async {
     // 自動設定 orderIndex 為目前最大值 + 1
     if (item.orderIndex == null) {
@@ -66,16 +71,19 @@ class GearRepository implements IGearRepository {
   }
 
   /// 更新裝備
+  @override
   Future<void> updateItem(GearItem item) async {
     await item.save();
   }
 
   /// 刪除裝備
+  @override
   Future<void> deleteItem(dynamic key) async {
     await box.delete(key);
   }
 
   /// 切換打包狀態
+  @override
   Future<void> toggleChecked(dynamic key) async {
     final item = box.get(key);
     if (item == null) return;
@@ -85,16 +93,19 @@ class GearRepository implements IGearRepository {
   }
 
   /// 計算總重量 (克)
+  @override
   double getTotalWeight() {
     return box.values.fold<double>(0.0, (sum, item) => sum + item.weight);
   }
 
   /// 計算已打包重量 (克)
+  @override
   double getCheckedWeight() {
     return box.values.where((item) => item.isChecked).fold<double>(0.0, (sum, item) => sum + item.weight);
   }
 
   /// 依分類統計重量
+  @override
   Map<String, double> getWeightByCategory() {
     final result = <String, double>{};
 
@@ -106,11 +117,13 @@ class GearRepository implements IGearRepository {
   }
 
   /// 監聯裝備變更
+  @override
   Stream<BoxEvent> watchAllItems() {
     return box.watch();
   }
 
   /// 重置所有打包狀態
+  @override
   Future<void> resetAllChecked() async {
     for (final item in box.values) {
       item.isChecked = false;
@@ -119,6 +132,7 @@ class GearRepository implements IGearRepository {
   }
 
   /// 批量更新裝備順序
+  @override
   Future<void> updateItemsOrder(List<GearItem> items) async {
     for (int i = 0; i < items.length; i++) {
       final item = items[i];
@@ -130,6 +144,7 @@ class GearRepository implements IGearRepository {
   }
 
   /// 清除所有裝備 (Debug 用途)
+  @override
   Future<void> clearAll() async {
     await box.clear();
   }

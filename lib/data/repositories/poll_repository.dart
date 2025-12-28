@@ -12,6 +12,7 @@ class PollRepository implements IPollRepository {
   Box<Poll>? _box;
 
   /// 初始化 Box
+  @override
   Future<void> init() async {
     _box = await Hive.openBox<Poll>(_boxName);
   }
@@ -25,28 +26,33 @@ class PollRepository implements IPollRepository {
   }
 
   /// 取得所有投票
+  @override
   List<Poll> getAllPolls() {
     return box.values.toList();
   }
 
   /// 儲存所有投票 (清除舊資料並寫入新資料)
+  @override
   Future<void> savePolls(List<Poll> polls) async {
     await box.clear();
     await box.addAll(polls);
   }
 
   /// 清除所有投票
+  @override
   Future<void> clearAll() async {
     await box.clear();
   }
 
   /// 儲存最後同步時間
+  @override
   Future<void> saveLastSyncTime(DateTime time) async {
     final prefs = getIt<SharedPreferences>();
     await prefs.setString(_lastSyncKey, time.toIso8601String());
   }
 
   /// 取得最後同步時間
+  @override
   DateTime? getLastSyncTime() {
     final prefs = getIt<SharedPreferences>();
     final str = prefs.getString(_lastSyncKey);

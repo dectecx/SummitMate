@@ -12,6 +12,7 @@ class SettingsRepository implements ISettingsRepository {
   Box<Settings>? _box;
 
   /// 開啟 Box
+  @override
   Future<void> init() async {
     _box = await Hive.openBox<Settings>(_boxName);
   }
@@ -25,6 +26,7 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 取得設定 (若不存在則建立預設值)
+  @override
   Settings getSettings() {
     var settings = box.get(_settingsKey);
     if (settings == null) {
@@ -35,6 +37,7 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新使用者名稱
+  @override
   Future<void> updateUsername(String username) async {
     final settings = getSettings();
     settings.username = username;
@@ -42,6 +45,7 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新最後同步時間
+  @override
   Future<void> updateLastSyncTime(DateTime? time) async {
     final settings = getSettings();
     settings.lastSyncTime = time;
@@ -49,6 +53,7 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新頭像
+  @override
   Future<void> updateAvatar(String avatar) async {
     final settings = getSettings();
     settings.avatar = avatar;
@@ -56,6 +61,7 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新離線模式
+  @override
   Future<void> updateOfflineMode(bool isOffline) async {
     final settings = getSettings();
     settings.isOfflineMode = isOffline;
@@ -63,11 +69,13 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 監聽設定變更
+  @override
   Stream<BoxEvent> watchSettings() {
     return box.watch(key: _settingsKey);
   }
 
   /// 重置設定 (Debug 用途)
+  @override
   Future<void> resetSettings() async {
     await box.clear();
   }
