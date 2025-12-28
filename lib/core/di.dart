@@ -96,6 +96,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<SyncService>(
     () => SyncService(
       sheetsService: getIt<GoogleSheetsService>(),
+      tripRepo: getIt<ITripRepository>(),
       itineraryRepo: getIt<IItineraryRepository>(),
       messageRepo: getIt<IMessageRepository>(),
       settingsRepo: getIt<ISettingsRepository>(),

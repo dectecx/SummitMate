@@ -6,13 +6,17 @@ import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/data/models/itinerary_item.dart';
 import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/services/log_service.dart';
 
 // Mocks
 class MockGoogleSheetsService extends Mock implements GoogleSheetsService {}
+
+class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
@@ -25,6 +29,7 @@ class MockSettings extends Mock implements Settings {}
 void main() {
   late SyncService syncService;
   late MockGoogleSheetsService mockSheetsService;
+  late MockTripRepository mockTripRepo;
   late MockItineraryRepository mockItineraryRepo;
   late MockMessageRepository mockMessageRepo;
   late MockSettingsRepository mockSettingsRepo;
@@ -32,6 +37,7 @@ void main() {
 
   setUp(() {
     mockSheetsService = MockGoogleSheetsService();
+    mockTripRepo = MockTripRepository();
     mockItineraryRepo = MockItineraryRepository();
     mockMessageRepo = MockMessageRepository();
     mockSettingsRepo = MockSettingsRepository();
@@ -40,6 +46,11 @@ void main() {
     // Default: Online mode
     when(() => mockSettings.isOfflineMode).thenReturn(false);
     when(() => mockSettingsRepo.getSettings()).thenReturn(mockSettings);
+
+    // Default: Active trip
+    when(() => mockTripRepo.getActiveTrip()).thenReturn(
+      Trip(id: 'test-trip-1', name: 'Test Trip', startDate: DateTime.now()),
+    );
 
     // Default: No last sync time
     when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
@@ -51,6 +62,7 @@ void main() {
 
     syncService = SyncService(
       sheetsService: mockSheetsService,
+      tripRepo: mockTripRepo,
       itineraryRepo: mockItineraryRepo,
       messageRepo: mockMessageRepo,
       settingsRepo: mockSettingsRepo,
@@ -74,7 +86,7 @@ void main() {
       // Assert
       expect(result.success, isFalse);
       expect(result.errors, contains('目前為離線模式，無法同步'));
-      verifyNever(() => mockSheetsService.fetchAll());
+      verifyNever(() => mockSheetsService.fetchAll(tripId: any(named: 'tripId')));
     });
 
     test('syncAll should coordinate full sync successfully', () async {
@@ -87,7 +99,7 @@ void main() {
       ];
 
       when(
-        () => mockSheetsService.fetchAll(),
+        () => mockSheetsService.fetchAll(tripId: any(named: 'tripId')),
       ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: cloudItinerary, messages: cloudMessages));
 
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
@@ -99,7 +111,7 @@ void main() {
 
       // Assert
       expect(result.success, isTrue);
-      verify(() => mockSheetsService.fetchAll()).called(1);
+      verify(() => mockSheetsService.fetchAll(tripId: any(named: 'tripId'))).called(1);
       verify(() => mockItineraryRepo.syncFromCloud(cloudItinerary)).called(1);
       verify(() => mockMessageRepo.syncFromCloud(cloudMessages)).called(1);
     });
@@ -107,7 +119,7 @@ void main() {
     test('syncAll should NOT upload pending messages (cloud-only sync)', () async {
       // Arrange
       when(
-        () => mockSheetsService.fetchAll(),
+        () => mockSheetsService.fetchAll(tripId: any(named: 'tripId')),
       ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: [], messages: []));
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
@@ -123,7 +135,7 @@ void main() {
     test('syncAll should handle fetch failure', () async {
       // Arrange
       when(
-        () => mockSheetsService.fetchAll(),
+        () => mockSheetsService.fetchAll(tripId: any(named: 'tripId')),
       ).thenAnswer((_) async => FetchAllResult(success: false, errorMessage: 'Network Error'));
 
       // Act
