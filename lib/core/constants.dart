@@ -89,6 +89,11 @@ class ApiConfig {
   static const String actionDownloadGearSet = 'download_gear_set';
   static const String actionUploadGearSet = 'upload_gear_set';
   static const String actionDeleteGearSet = 'delete_gear_set';
+
+  // GearLibrary API Actions (個人裝備庫)
+  // 【未來規劃】owner_key → user_id (會員機制上線後)
+  static const String actionUploadGearLibrary = 'upload_gear_library';
+  static const String actionDownloadGearLibrary = 'download_gear_library';
 }
 
 /// Hive Box 名稱

@@ -78,6 +78,21 @@ const HEADERS_GEAR = [
   "items_json",
 ];
 
+// ============================================================
+// 個人裝備庫 (GearLibrary)
+// 【未來規劃】owner_key → user_id (會員機制上線後)
+// ============================================================
+const HEADERS_GEAR_LIBRARY = [
+  "uuid", // PK
+  "owner_key", // 擁有者識別碼 (未來改為 user_id)
+  "name",
+  "weight",
+  "category",
+  "notes",
+  "created_at",
+  "updated_at",
+];
+
 const HEADERS_LOGS = [
   "upload_time",
   "device_id",
