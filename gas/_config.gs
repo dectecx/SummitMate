@@ -67,6 +67,7 @@ const HEADERS_MESSAGES = [
 
 const HEADERS_GEAR = [
   "uuid", // PK
+  "trip_id", // FK → Trips
   "title",
   "author",
   "visibility",
