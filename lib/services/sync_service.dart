@@ -3,6 +3,7 @@ import '../data/models/message.dart';
 import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
 import '../data/repositories/interfaces/i_settings_repository.dart';
+import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../services/log_service.dart';
 import 'google_sheets_service.dart';
 
@@ -10,16 +11,19 @@ import 'google_sheets_service.dart';
 /// 管理本地資料與 Google Sheets 的雙向同步
 class SyncService {
   final GoogleSheetsService _sheetsService;
+  final ITripRepository _tripRepo;
   final IItineraryRepository _itineraryRepo;
   final IMessageRepository _messageRepo;
   final ISettingsRepository _settingsRepo;
 
   SyncService({
     required GoogleSheetsService sheetsService,
+    required ITripRepository tripRepo,
     required IItineraryRepository itineraryRepo,
     required IMessageRepository messageRepo,
     required ISettingsRepository settingsRepo,
   }) : _sheetsService = sheetsService,
+       _tripRepo = tripRepo,
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,
        _settingsRepo = settingsRepo {
@@ -32,6 +36,9 @@ class SyncService {
   }
 
   bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
+
+  /// 取得當前活動行程 ID
+  String? get _activeTripId => _tripRepo.getActiveTrip()?.id;
 
   DateTime? _lastItinerarySyncTime;
   DateTime? _lastMessagesSyncTime;
@@ -62,8 +69,9 @@ class SyncService {
 
     // Case 1: 兩者皆需要 -> 使用 fetchAll (節省一次請求)
     if (itinNeeded && msgNeeded) {
-      LogService.info('SyncAll: Fetching ALL (Itinerary + Messages)', source: 'SyncService');
-      final fetchResult = await _sheetsService.fetchAll();
+      final tripId = _activeTripId;
+      LogService.info('SyncAll: Fetching ALL (Itinerary + Messages)${tripId != null ? " for trip: $tripId" : ""}', source: 'SyncService');
+      final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
 
       if (!fetchResult.success) {
         return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: now);
@@ -129,7 +137,8 @@ class SyncService {
       return SyncResult(success: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
     }
 
-    final fetchResult = await _sheetsService.fetchItinerary();
+    final tripId = _activeTripId;
+    final fetchResult = await _sheetsService.fetchItinerary(tripId: tripId);
 
     if (!fetchResult.success) {
       return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
@@ -156,7 +165,8 @@ class SyncService {
       return SyncResult(success: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
     }
 
-    final fetchResult = await _sheetsService.fetchMessages();
+    final tripId = _activeTripId;
+    final fetchResult = await _sheetsService.fetchMessages(tripId: tripId);
 
     if (!fetchResult.success) {
       return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
@@ -210,7 +220,8 @@ class SyncService {
   /// 檢查行程衝突
   /// 回傳 true 表示有衝突 (雲端資料與本地不一致)
   Future<bool> checkItineraryConflict() async {
-    final fetchResult = await _sheetsService.fetchAll();
+      final tripId = _activeTripId;
+      final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
 
     if (!fetchResult.success) {
       // 若無法取得雲端資料，視為無衝突 (或拋出錯誤，這裡選擇保守策略: 讓用戶決定是否硬上傳)
@@ -254,7 +265,8 @@ class SyncService {
 
   /// 強制上傳行程 (覆寫雲端)
   Future<ApiResult> uploadItinerary() async {
-    final localItems = _itineraryRepo.getAllItems();
+    final tripId = _activeTripId;
+    final localItems = _itineraryRepo.getAllItems().where((item) => item.tripId == tripId).toList();
     return await _sheetsService.updateItinerary(localItems);
   }
 }
