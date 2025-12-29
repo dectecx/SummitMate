@@ -13,13 +13,13 @@
  * 上傳應用日誌
  * @param {Object[]} logs - 日誌條目陣列
  * @param {Object} deviceInfo - 裝置資訊
- * @returns {Object} { success: boolean, message?: string, count?: number, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function uploadLogs(logs, deviceInfo) {
   const sheet = _getSheetOrCreate(SHEET_LOGS, HEADERS_LOGS);
 
   if (!logs || logs.length === 0) {
-    return { success: false, error: "未提供日誌資料" };
+    return _error(API_CODES.INVALID_PARAMS, "未提供日誌資料");
   }
 
   const uploadTime = new Date().toISOString();
@@ -44,9 +44,5 @@ function uploadLogs(logs, deviceInfo) {
       .setValues(rows);
   }
 
-  return {
-    success: true,
-    message: `已上傳 ${logs.length} 條日誌`,
-    count: logs.length,
-  };
+  return _success({ count: logs.length }, `已上傳 ${logs.length} 條日誌`);
 }

@@ -17,13 +17,13 @@
  * 上傳個人裝備庫 (覆寫模式)
  * @param {string} ownerKey - 擁有者識別碼 (4 位數)
  * @param {Array} items - 裝備列表
- * @returns {Object} 操作結果
+ * @returns {Object} { code, data, message }
  */
 function uploadGearLibrary(ownerKey, items) {
   try {
     // 驗證 owner_key
     if (!ownerKey || ownerKey.length !== 4) {
-      return { success: false, error: "owner_key 必須為 4 位數" };
+      return _error(API_CODES.GEAR_LIBRARY_KEY_INVALID, "owner_key 必須為 4 位數");
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -72,38 +72,37 @@ function uploadGearLibrary(ownerKey, items) {
         .setValues(rows);
     }
 
-    return {
-      success: true,
-      message: `已上傳 ${items ? items.length : 0} 個裝備項目`,
-      count: items ? items.length : 0,
-    };
+    return _success(
+      { count: items ? items.length : 0 },
+      `已上傳 ${items ? items.length : 0} 個裝備項目`
+    );
   } catch (e) {
-    return { success: false, error: e.toString() };
+    return _error(API_CODES.SYSTEM_ERROR, e.toString());
   }
 }
 
 /**
  * 下載個人裝備庫
  * @param {string} ownerKey - 擁有者識別碼 (4 位數)
- * @returns {Object} 裝備列表
+ * @returns {Object} { code, data, message }
  */
 function downloadGearLibrary(ownerKey) {
   try {
     // 驗證 owner_key
     if (!ownerKey || ownerKey.length !== 4) {
-      return { success: false, error: "owner_key 必須為 4 位數" };
+      return _error(API_CODES.GEAR_LIBRARY_KEY_INVALID, "owner_key 必須為 4 位數");
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName("GearLibrary");
 
     if (!sheet) {
-      return { success: true, items: [], message: "裝備庫為空" };
+      return _success({ items: [], count: 0 }, "裝備庫為空");
     }
 
     const data = sheet.getDataRange().getValues();
     if (data.length <= 1) {
-      return { success: true, items: [], message: "裝備庫為空" };
+      return _success({ items: [], count: 0 }, "裝備庫為空");
     }
 
     const headers = data[0];
@@ -123,12 +122,8 @@ function downloadGearLibrary(ownerKey) {
       }
     }
 
-    return {
-      success: true,
-      items: items,
-      count: items.length,
-    };
+    return _success({ items, count: items.length }, "下載裝備庫成功");
   } catch (e) {
-    return { success: false, error: e.toString() };
+    return _error(API_CODES.SYSTEM_ERROR, e.toString());
   }
 }

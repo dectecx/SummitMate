@@ -11,14 +11,14 @@
 
 /**
  * 取得公開/保護的裝備組合列表 (不含 items 詳細資料)
- * @returns {Object} { success: boolean, gear_sets: Object[] }
+ * @returns {Object} { code, data, message }
  */
 function fetchGearSets() {
   const sheet = _initGearSheet();
   const data = sheet.getDataRange().getValues();
 
   if (data.length <= 1) {
-    return { success: true, gear_sets: [] };
+    return _success({ gear_sets: [] }, "尚無裝備組合");
   }
 
   const headers = data[0];
@@ -43,17 +43,17 @@ function fetchGearSets() {
     });
   }
 
-  return { success: true, gear_sets: gearSets };
+  return _success({ gear_sets: gearSets }, "取得裝備組合列表成功");
 }
 
 /**
  * 用 Key 取得特定裝備組合 (含 items)
  * @param {string} key - 4 位數 Key
- * @returns {Object} { success: boolean, gear_set?: Object, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function fetchGearSetByKey(key) {
   if (!key || key.length !== 4) {
-    return { success: false, error: "請輸入 4 位數 Key" };
+    return _error(API_CODES.GEAR_KEY_INVALID, "請輸入 4 位數 Key");
   }
 
   const sheet = _initGearSheet();
@@ -64,8 +64,7 @@ function fetchGearSetByKey(key) {
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][keyIndex]) === String(key)) {
       const row = data[i];
-      return {
-        success: true,
+      return _success({
         gear_set: {
           uuid: row[headers.indexOf("uuid")],
           title: row[headers.indexOf("title")],
@@ -76,22 +75,22 @@ function fetchGearSetByKey(key) {
           uploaded_at: row[headers.indexOf("uploaded_at")],
           items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
         },
-      };
+      }, "取得裝備組合成功");
     }
   }
 
-  return { success: false, error: "找不到符合的裝備組合" };
+  return _error(API_CODES.GEAR_NOT_FOUND, "找不到符合的裝備組合");
 }
 
 /**
  * 下載指定裝備組合
  * @param {string} uuid - 組合 UUID
  * @param {string} [key] - 可選，若為 protected 需要 key
- * @returns {Object} { success: boolean, gear_set?: Object, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function downloadGearSet(uuid, key) {
   if (!uuid) {
-    return { success: false, error: "缺少 UUID" };
+    return _error(API_CODES.INVALID_PARAMS, "缺少 UUID");
   }
 
   const sheet = _initGearSheet();
@@ -110,11 +109,10 @@ function downloadGearSet(uuid, key) {
         (visibility === "protected" || visibility === "private") &&
         String(storedKey) !== String(key)
       ) {
-        return { success: false, error: "需要正確的 Key 才能下載" };
+        return _error(API_CODES.GEAR_KEY_REQUIRED, "需要正確的 Key 才能下載");
       }
 
-      return {
-        success: true,
+      return _success({
         gear_set: {
           uuid: row[headers.indexOf("uuid")],
           title: row[headers.indexOf("title")],
@@ -125,24 +123,24 @@ function downloadGearSet(uuid, key) {
           uploaded_at: row[headers.indexOf("uploaded_at")],
           items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
         },
-      };
+      }, "下載裝備組合成功");
     }
   }
 
-  return { success: false, error: "找不到指定的裝備組合" };
+  return _error(API_CODES.GEAR_NOT_FOUND, "找不到指定的裝備組合");
 }
 
 /**
  * 上傳裝備組合
  * @param {Object} data - 上傳資料
- * @returns {Object} { success: boolean, gear_set?: Object, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function uploadGearSet(data) {
   const { title, author, visibility, key, total_weight, item_count, items } =
     data;
 
   if (!title || !author) {
-    return { success: false, error: "缺少必要欄位 (title, author)" };
+    return _error(API_CODES.GEAR_MISSING_FIELDS, "缺少必要欄位 (title, author)");
   }
 
   // Protected/Private 必須有 key
@@ -150,7 +148,7 @@ function uploadGearSet(data) {
     (visibility === "protected" || visibility === "private") &&
     (!key || key.length !== 4)
   ) {
-    return { success: false, error: "Protected/Private 模式需要 4 位數 Key" };
+    return _error(API_CODES.GEAR_KEY_INVALID, "Protected/Private 模式需要 4 位數 Key");
   }
 
   // 檢查 key 是否重複
@@ -162,7 +160,7 @@ function uploadGearSet(data) {
 
     for (let i = 1; i < existingData.length; i++) {
       if (String(existingData[i][keyIndex]) === String(key)) {
-        return { success: false, error: "Key 重複，請換一個 4 位數" };
+        return _error(API_CODES.GEAR_KEY_DUPLICATE, "Key 重複，請換一個 4 位數");
       }
     }
   }
@@ -186,8 +184,7 @@ function uploadGearSet(data) {
     itemsJson,
   ]);
 
-  return {
-    success: true,
+  return _success({
     gear_set: {
       uuid: uuid,
       title: title,
@@ -197,18 +194,18 @@ function uploadGearSet(data) {
       visibility: visibility || "public",
       uploaded_at: uploadedAt,
     },
-  };
+  }, "裝備組合已上傳");
 }
 
 /**
  * 刪除裝備組合
  * @param {string} uuid - 裝備組合 UUID
  * @param {string} key - 4 位數 Key (protected/private 需要驗證)
- * @returns {Object} { success: boolean, message?: string, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function deleteGearSet(uuid, key) {
   if (!uuid) {
-    return { success: false, error: "缺少 UUID" };
+    return _error(API_CODES.INVALID_PARAMS, "缺少 UUID");
   }
 
   const sheet = _initGearSheet();
@@ -227,20 +224,20 @@ function deleteGearSet(uuid, key) {
       // protected/private 需要驗證 Key
       if (visibility !== "public") {
         if (!key || key.length !== 4) {
-          return { success: false, error: "需要正確的 Key 才能刪除" };
+          return _error(API_CODES.GEAR_KEY_REQUIRED, "需要正確的 Key 才能刪除");
         }
         if (String(storedKey) !== String(key)) {
-          return { success: false, error: "Key 不正確，無法刪除" };
+          return _error(API_CODES.GEAR_KEY_REQUIRED, "Key 不正確，無法刪除");
         }
       }
 
       // 刪除該列
       sheet.deleteRow(i + 1);
-      return { success: true, message: "已刪除裝備組合" };
+      return _success(null, "已刪除裝備組合");
     }
   }
 
-  return { success: false, error: "找不到指定的裝備組合" };
+  return _error(API_CODES.GEAR_NOT_FOUND, "找不到指定的裝備組合");
 }
 
 // ============================================================

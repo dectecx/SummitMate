@@ -36,13 +36,13 @@ function doGet(e) {
       case "fetch_all":
         return _createJsonResponse(fetchAll(tripId));
       case "fetch_itinerary":
-        return _createJsonResponse({
-          itinerary: getItineraryData(getSpreadsheet(), tripId),
-        });
+        return _createJsonResponse(
+          _success({ itinerary: getItineraryData(getSpreadsheet(), tripId) })
+        );
       case "fetch_messages":
-        return _createJsonResponse({
-          messages: getMessagesData(getSpreadsheet(), tripId),
-        });
+        return _createJsonResponse(
+          _success({ messages: getMessagesData(getSpreadsheet(), tripId) })
+        );
 
       // === 投票 (Polls) ===
       case "poll":
@@ -56,15 +56,16 @@ function doGet(e) {
 
       // === 健康檢查 ===
       case "health":
-        return _createJsonResponse({
-          status: "ok",
-          timestamp: new Date().toISOString(),
-        });
+        return _createJsonResponse(
+          _success({ status: "ok", timestamp: new Date().toISOString() }, "服務正常")
+        );
       default:
-        return _createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
+        return _createJsonResponse(
+          _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)")
+        );
     }
   } catch (error) {
-    return _createJsonResponse({ error: error.message }, 500);
+    return _createJsonResponse(_error(API_CODES.SYSTEM_ERROR, error.message));
   }
 }
 
@@ -131,10 +132,12 @@ function doPost(e) {
         return _createJsonResponse(recordHeartbeat(data));
 
       default:
-        return _createJsonResponse({ error: "未知動作 (Unknown action)" }, 400);
+        return _createJsonResponse(
+          _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)")
+        );
     }
   } catch (error) {
-    return _createJsonResponse({ error: error.message }, 500);
+    return _createJsonResponse(_error(API_CODES.SYSTEM_ERROR, error.message));
   }
 }
 
@@ -153,6 +156,26 @@ function _createJsonResponse(data, statusCode = 200) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
     ContentService.MimeType.JSON
   );
+}
+
+/**
+ * 建立成功回應
+ * @param {Object|Array|null} data - 回傳資料
+ * @param {string} [message="操作成功"] - 成功訊息
+ * @returns {Object} { code: "0000", data, message }
+ */
+function _success(data, message = "操作成功") {
+  return { code: API_CODES.SUCCESS, data, message };
+}
+
+/**
+ * 建立錯誤回應
+ * @param {string} code - 錯誤代碼 (使用 API_CODES)
+ * @param {string} message - 錯誤訊息
+ * @returns {Object} { code, data: null, message }
+ */
+function _error(code, message) {
+  return { code, data: null, message };
 }
 
 /**
