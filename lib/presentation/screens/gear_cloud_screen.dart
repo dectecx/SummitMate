@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
-import '../../data/repositories/gear_repository.dart';
+import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../services/gear_cloud_service.dart';
 import '../../services/toast_service.dart';
 import '../providers/settings_provider.dart';
@@ -74,8 +74,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   Future<void> _showUploadDialog() async {
     final settingsProvider = context.read<SettingsProvider>();
-    final gearRepo = GearRepository();
-    await gearRepo.init();
+    final gearRepo = getIt<IGearRepository>();
 
     final items = gearRepo.getAllItems();
     if (items.isEmpty) {
@@ -192,7 +191,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   Future<void> _importGearItems(List<GearItem> items) async {
     try {
       // 使用 DI 容器中的 Repository
-      final gearRepo = getIt<GearRepository>();
+      final gearRepo = getIt<IGearRepository>();
 
       // 清除現有裝備
       await gearRepo.clearAll();
