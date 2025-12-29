@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
+import 'core/di.dart';
 import 'services/toast_service.dart';
 import 'presentation/providers/gear_library_provider.dart';
 import 'presentation/providers/gear_provider.dart';
@@ -25,7 +26,7 @@ class SummitMateApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ItineraryProvider()),
         ChangeNotifierProvider(create: (_) => MessageProvider()),
-        ChangeNotifierProvider(create: (_) => GearProvider()),
+        ChangeNotifierProvider(create: (_) => getIt<GearProvider>()),
         ChangeNotifierProvider(create: (_) => GearLibraryProvider()),
         ChangeNotifierProvider(create: (_) => MealProvider()),
         ChangeNotifierProvider(create: (_) => PollProvider()),
