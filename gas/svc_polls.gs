@@ -377,11 +377,32 @@ function deletePoll(data) {
 function getDataAsObjects(sheet) {
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return [];
+
   const headers = data[0];
+  const sheetName = sheet.getName();
+  // 取得該工作表的 Schema (若有)
+  const schema =
+    typeof SHEET_SCHEMA !== "undefined" ? SHEET_SCHEMA[sheetName] : null;
+
   return data.slice(1).map((row) => {
     const obj = {};
     headers.forEach((h, i) => {
-      obj[h] = row[i];
+      let val = row[i];
+
+      // 若有 Schema 定義，強制轉型
+      if (schema && schema[h]) {
+        const type = schema[h].type;
+        if (type === "text") {
+          // 強制轉為字串 (除了 null/undefined)
+          val = val === null || val === undefined ? "" : String(val);
+        } else if (type === "date" && val instanceof Date) {
+          // 日期維持 Date 物件或轉 ISO (視後續處理而定，這裡通常維持原始值或統一轉 ISO)
+          // 目前邏輯多半在後續處理 Date，這裡先不強制轉字串以免壞掉，
+          // 但若原始是字串，可能需要 parse。GAS 讀取通常是 Date 物件。
+        }
+      }
+
+      obj[h] = val;
     });
     return obj;
   });
