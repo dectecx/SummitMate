@@ -192,14 +192,26 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     try {
       // 使用 DI 容器中的 Repository
       final gearRepo = getIt<IGearRepository>();
+      final tripId = context.read<TripProvider>().activeTripId;
 
-      // 清除現有裝備
-      await gearRepo.clearAll();
+      if (tripId == null) {
+        ToastService.error('無法匯入：請先選擇行程');
+        return;
+      }
 
-      // 匯入新裝備
+      // 清除現有裝備 (只清除當前行程的)
+      await gearRepo.clearByTripId(tripId);
+
+      // 匯入新裝備 (帶入當前 tripId)
       for (final item in items) {
         await gearRepo.addItem(
-          GearItem(name: item.name, weight: item.weight, category: item.category, isChecked: false),
+          GearItem(
+            tripId: tripId,
+            name: item.name,
+            weight: item.weight,
+            category: item.category,
+            isChecked: false,
+          ),
         );
       }
 

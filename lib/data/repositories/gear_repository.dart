@@ -143,6 +143,15 @@ class GearRepository implements IGearRepository {
     }
   }
 
+  /// 清除指定行程的所有裝備
+  @override
+  Future<void> clearByTripId(String tripId) async {
+    final toDelete = box.values.where((item) => item.tripId == tripId).toList();
+    for (final item in toDelete) {
+      await item.delete();
+    }
+  }
+
   /// 清除所有裝備 (Debug 用途)
   @override
   Future<void> clearAll() async {

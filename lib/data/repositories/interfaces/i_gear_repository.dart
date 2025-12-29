@@ -46,6 +46,9 @@ abstract interface class IGearRepository {
   /// 批量更新裝備順序
   Future<void> updateItemsOrder(List<GearItem> items);
 
+  /// 清除指定行程的所有裝備
+  Future<void> clearByTripId(String tripId);
+
   /// 清除所有裝備 (Debug 用途)
   Future<void> clearAll();
 }
