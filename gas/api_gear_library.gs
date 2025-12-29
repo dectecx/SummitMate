@@ -23,7 +23,10 @@ function uploadGearLibrary(ownerKey, items) {
   try {
     // 驗證 owner_key
     if (!ownerKey || ownerKey.length !== 4) {
-      return _error(API_CODES.GEAR_LIBRARY_KEY_INVALID, "owner_key 必須為 4 位數");
+      return _error(
+        API_CODES.GEAR_LIBRARY_KEY_INVALID,
+        "owner_key 必須為 4 位數"
+      );
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -48,18 +51,18 @@ function uploadGearLibrary(ownerKey, items) {
       }
     }
 
-    // 寫入新資料 (用 ' 前綴強制字串格式)
+    // 寫入新資料 (文字格式由工作表的 @ 格式處理，不需要 ' 前綴)
     if (items && items.length > 0) {
       const now = new Date().toISOString();
       const rows = items.map((item) => [
-        "'" + String(item.uuid || Utilities.getUuid()),
-        "'" + String(ownerKey),
-        "'" + String(item.name || ""),
+        String(item.uuid || Utilities.getUuid()),
+        String(ownerKey),
+        String(item.name || ""),
         item.weight || 0,
-        "'" + String(item.category || "Other"),
-        item.notes ? "'" + String(item.notes) : "",
-        "'" + (item.created_at || now),
-        "'" + (item.updated_at || now),
+        String(item.category || "Other"),
+        String(item.notes || ""),
+        item.created_at || now,
+        item.updated_at || now,
       ]);
 
       sheet
@@ -90,7 +93,10 @@ function downloadGearLibrary(ownerKey) {
   try {
     // 驗證 owner_key
     if (!ownerKey || ownerKey.length !== 4) {
-      return _error(API_CODES.GEAR_LIBRARY_KEY_INVALID, "owner_key 必須為 4 位數");
+      return _error(
+        API_CODES.GEAR_LIBRARY_KEY_INVALID,
+        "owner_key 必須為 4 位數"
+      );
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();

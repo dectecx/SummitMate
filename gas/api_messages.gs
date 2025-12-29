@@ -86,16 +86,17 @@ function addMessage(messageData) {
     }
   }
 
-  // 新增資料列 (用 ' 前綴強制字串格式)
+  // 新增資料列 (順序需與 HEADERS_MESSAGES 一致)
+  // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   sheet.appendRow([
-    "'" + String(messageData.uuid || Utilities.getUuid()),
-    messageData.trip_id ? "'" + String(messageData.trip_id) : "",
-    messageData.parent_id ? "'" + String(messageData.parent_id) : "",
-    "'" + String(messageData.user || DEFAULT_USER),
-    "'" + String(messageData.category || DEFAULT_CATEGORY),
-    "'" + String(messageData.content || ""),
-    "'" + (messageData.timestamp || new Date().toISOString()),
-    "'" + String(messageData.avatar || DEFAULT_AVATAR),
+    String(messageData.uuid || Utilities.getUuid()),
+    String(messageData.trip_id || ""),
+    String(messageData.parent_id || ""),
+    String(messageData.user || DEFAULT_USER),
+    String(messageData.category || DEFAULT_CATEGORY),
+    String(messageData.content || ""),
+    messageData.timestamp || new Date().toISOString(),
+    String(messageData.avatar || DEFAULT_AVATAR),
   ]);
 
   return _success(null, "訊息已新增");
@@ -115,15 +116,17 @@ function batchAddMessages(messages) {
   _ensureColumn(sheet, "avatar");
   _ensureColumn(sheet, "trip_id");
 
+  // 順序需與 HEADERS_MESSAGES 一致
+  // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   const rows = messages.map((messageData) => [
-    "'" + String(messageData.uuid || Utilities.getUuid()),
-    messageData.trip_id ? "'" + String(messageData.trip_id) : "",
-    messageData.parent_id ? "'" + String(messageData.parent_id) : "",
-    "'" + String(messageData.user || DEFAULT_USER),
-    "'" + String(messageData.category || DEFAULT_CATEGORY),
-    "'" + String(messageData.content || ""),
-    "'" + (messageData.timestamp || new Date().toISOString()),
-    "'" + String(messageData.avatar || DEFAULT_AVATAR),
+    String(messageData.uuid || Utilities.getUuid()),
+    String(messageData.trip_id || ""),
+    String(messageData.parent_id || ""),
+    String(messageData.user || DEFAULT_USER),
+    String(messageData.category || DEFAULT_CATEGORY),
+    String(messageData.content || ""),
+    messageData.timestamp || new Date().toISOString(),
+    String(messageData.avatar || DEFAULT_AVATAR),
   ]);
 
   if (rows.length > 0) {
