@@ -341,7 +341,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       case 0:
         return const ItineraryTab(key: ValueKey(0));
       case 1:
-        return const GearTab(key: ValueKey(1));
+        final tripId = context.read<ItineraryProvider>().currentTripId;
+        return GearTab(key: const ValueKey(1), tripId: tripId);
       case 2:
         return CollaborationTab(key: const ValueKey(2), keyBtnSync: _keyBtnSync, keyTabPolls: _keyTabPolls);
       case 3:
