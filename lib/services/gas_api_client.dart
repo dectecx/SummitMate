@@ -29,6 +29,8 @@ class GasApiClient {
       stopwatch.stop();
 
       LogService.info('[GET] 完成 (${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}', source: _source);
+      // 詳細 Response Log
+      LogService.debug('[GET] Response Body: ${response.body}', source: _source);
       return response;
     } catch (e, stackTrace) {
       stopwatch.stop();
@@ -48,9 +50,12 @@ class GasApiClient {
       // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
       final headers = {'Content-Type': kIsWeb ? 'text/plain' : 'application/json'};
 
+      final jsonBody = jsonEncode(body);
       LogService.debug('[POST] 請求開始: action=$action', source: _source);
+      // 詳細 Request Log
+      LogService.debug('[POST] Request Body: $jsonBody', source: _source);
 
-      final response = await _client.post(uri, headers: headers, body: jsonEncode(body));
+      final response = await _client.post(uri, headers: headers, body: jsonBody);
 
       // [Web Compatibility] Browser follows redirects automatically.
       if (kIsWeb) {
@@ -59,6 +64,7 @@ class GasApiClient {
           '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
           source: _source,
         );
+        LogService.debug('[POST] Response Body: ${response.body}', source: _source);
         return response;
       }
 
@@ -74,6 +80,7 @@ class GasApiClient {
             '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${redirectResponse.statusCode}',
             source: _source,
           );
+          LogService.debug('[POST] Response Body: ${redirectResponse.body}', source: _source);
           return redirectResponse;
         }
       }
@@ -90,6 +97,7 @@ class GasApiClient {
             '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${redirectResponse.statusCode}',
             source: _source,
           );
+          LogService.debug('[POST] Response Body: ${redirectResponse.body}', source: _source);
           return redirectResponse;
         }
       }
@@ -99,6 +107,7 @@ class GasApiClient {
         '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
         source: _source,
       );
+      LogService.debug('[POST] Response Body: ${response.body}', source: _source);
       return response;
     } catch (e, stackTrace) {
       stopwatch.stop();
