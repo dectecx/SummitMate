@@ -33,6 +33,17 @@ function getMessagesData(ss, tripId) {
         const key = _headerToKey(header);
         let value = row[index];
 
+        // 強制型別轉換 (依據 SHEET_SCHEMA)
+        const schema =
+          typeof SHEET_SCHEMA !== "undefined"
+            ? SHEET_SCHEMA[SHEET_MESSAGES]
+            : null;
+        if (schema && schema[key]) {
+          if (schema[key].type === "text") {
+            value = value === null || value === undefined ? "" : String(value);
+          }
+        }
+
         // 處理時間戳記
         if (key === "timestamp" && value instanceof Date) {
           value = value.toISOString();

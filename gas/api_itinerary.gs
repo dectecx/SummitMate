@@ -48,7 +48,19 @@ function getItineraryData(ss, tripId) {
       const item = {};
       headers.forEach((header, index) => {
         const key = _headerToKey(header);
-        item[key] = row[index];
+        let value = row[index];
+
+        // 強制型別轉換
+        const schema =
+          typeof SHEET_SCHEMA !== "undefined"
+            ? SHEET_SCHEMA[SHEET_ITINERARY]
+            : null;
+        if (schema && schema[key]) {
+          if (schema[key].type === "text") {
+            value = value === null || value === undefined ? "" : String(value);
+          }
+        }
+        item[key] = value;
       });
       return item;
     })

@@ -32,12 +32,12 @@ function fetchGearSets() {
     if (visibility === "private") continue;
 
     gearSets.push({
-      uuid: row[headers.indexOf("uuid")],
-      title: row[headers.indexOf("title")],
-      author: row[headers.indexOf("author")],
+      uuid: String(row[headers.indexOf("uuid")]),
+      title: String(row[headers.indexOf("title")]),
+      author: String(row[headers.indexOf("author")]),
       total_weight: row[headers.indexOf("total_weight")],
       item_count: row[headers.indexOf("item_count")],
-      visibility: visibility,
+      visibility: String(visibility),
       uploaded_at: row[headers.indexOf("uploaded_at")],
       // 不包含 items，減少傳輸量
     });
@@ -67,12 +67,12 @@ function fetchGearSetByKey(key) {
       return _success(
         {
           gear_set: {
-            uuid: row[headers.indexOf("uuid")],
-            title: row[headers.indexOf("title")],
-            author: row[headers.indexOf("author")],
+            uuid: String(row[headers.indexOf("uuid")]),
+            title: String(row[headers.indexOf("title")]),
+            author: String(row[headers.indexOf("author")]),
             total_weight: row[headers.indexOf("total_weight")],
             item_count: row[headers.indexOf("item_count")],
-            visibility: row[headers.indexOf("visibility")],
+            visibility: String(row[headers.indexOf("visibility")]),
             uploaded_at: row[headers.indexOf("uploaded_at")],
             items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
           },
