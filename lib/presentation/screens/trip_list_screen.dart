@@ -44,18 +44,65 @@ class TripListScreen extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
+          final allTrips = provider.trips;
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+
+          final ongoingTrips = allTrips.where((t) {
+            if (t.endDate == null) return true;
+            return !t.endDate!.isBefore(today);
+          }).toList();
+
+          final archivedTrips = allTrips.where((t) {
+            if (t.endDate == null) return false;
+            return t.endDate!.isBefore(today);
+          }).toList();
+
+          return ListView(
             padding: const EdgeInsets.all(16),
-            itemCount: provider.trips.length,
-            itemBuilder: (context, index) {
-              final trip = provider.trips[index];
-              return _TripCard(
-                trip: trip,
-                isActive: trip.id == provider.activeTripId,
-                onTap: () => _onTripTap(context, provider, trip),
-                onDelete: provider.trips.length > 1 ? () => _confirmDelete(context, provider, trip) : null,
-              );
-            },
+            children: [
+              // 進行中行程
+              if (ongoingTrips.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8, left: 4),
+                  child: Text(
+                    '進行中 / 未來行程',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ...ongoingTrips.map(
+                  (trip) => _TripCard(
+                    trip: trip,
+                    isActive: trip.id == provider.activeTripId,
+                    onTap: () => _onTripTap(context, provider, trip),
+                    onDelete: provider.trips.length > 1 ? () => _confirmDelete(context, provider, trip) : null,
+                  ),
+                ),
+              ],
+
+              // 已封存行程
+              if (archivedTrips.isNotEmpty) ...[
+                if (ongoingTrips.isNotEmpty) const SizedBox(height: 24),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8, left: 4),
+                  child: Text(
+                    '已封存 / 結束行程',
+                    style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ...archivedTrips.map(
+                  (trip) => _TripCard(
+                    trip: trip,
+                    isActive: trip.id == provider.activeTripId,
+                    onTap: () => _onTripTap(context, provider, trip),
+                    onDelete: provider.trips.length > 1 ? () => _confirmDelete(context, provider, trip) : null,
+                  ),
+                ),
+              ],
+            ],
           );
         },
       ),
