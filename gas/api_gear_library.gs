@@ -48,18 +48,18 @@ function uploadGearLibrary(ownerKey, items) {
       }
     }
 
-    // 寫入新資料
+    // 寫入新資料 (用 ' 前綴強制字串格式)
     if (items && items.length > 0) {
       const now = new Date().toISOString();
       const rows = items.map((item) => [
-        item.uuid || Utilities.getUuid(),
-        ownerKey,
-        item.name || "",
+        "'" + String(item.uuid || Utilities.getUuid()),
+        "'" + String(ownerKey),
+        "'" + String(item.name || ""),
         item.weight || 0,
-        item.category || "Other",
-        item.notes || "",
-        item.created_at || now,
-        item.updated_at || now,
+        "'" + String(item.category || "Other"),
+        item.notes ? "'" + String(item.notes) : "",
+        "'" + (item.created_at || now),
+        "'" + (item.updated_at || now),
       ]);
 
       sheet

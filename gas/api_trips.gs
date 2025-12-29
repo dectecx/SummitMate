@@ -62,15 +62,16 @@ function addTrip(tripData) {
   const id = tripData.id || Utilities.getUuid();
   const now = new Date().toISOString();
 
+  // 用 ' 前綴強制字串格式
   sheet.appendRow([
     id,
-    tripData.name || "新行程",
-    tripData.start_date || now,
-    tripData.end_date || "",
-    tripData.description || "",
-    tripData.cover_image || "",
+    "'" + String(tripData.name || "新行程"),
+    "'" + String(tripData.start_date || now),
+    tripData.end_date ? "'" + String(tripData.end_date) : "",
+    tripData.description ? "'" + String(tripData.description) : "",
+    tripData.cover_image ? "'" + String(tripData.cover_image) : "",
     tripData.is_active || false,
-    now,
+    "'" + now,
   ]);
 
   return _success({ id }, "行程已新增");
