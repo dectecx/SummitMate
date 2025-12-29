@@ -49,6 +49,9 @@ class GearLibraryProvider extends ChangeNotifier {
   /// 所有裝備庫項目
   List<GearLibraryItem> get allItems => _items;
 
+  /// 取得未封存的可用項目 (Autocomplete 用)
+  List<GearLibraryItem> get availableItems => _items.where((i) => !i.isArchived).toList();
+
   /// 過濾後的裝備列表
   List<GearLibraryItem> get filteredItems {
     var result = _items;
@@ -182,11 +185,87 @@ class GearLibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// 刪除裝備
+  /// 切換封存狀態
+  Future<void> toggleArchive(String uuid) async {
+    try {
+      final item = _items.firstWhere((i) => i.uuid == uuid);
+      item.isArchived = !item.isArchived;
+      LogService.info('切換裝備庫封存狀態: ${item.name} -> ${item.isArchived}', source: 'GearLibrary');
+
+      await _repository.updateItem(item);
+      _loadItems();
+    } catch (e) {
+      LogService.error('切換封存狀態失敗: $e', source: 'GearLibrary');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 取得連結此裝備庫項目的所有行程資訊
+  /// 回傳格式: List of {tripName, tripDate, tripId}
+  List<Map<String, dynamic>> getLinkedTrips(String libraryItemId) {
+    try {
+      final allGear = _gearRepository.getAllItems();
+      final linkedGear = allGear.where((g) => g.libraryItemId == libraryItemId).toList();
+
+      if (linkedGear.isEmpty) return [];
+
+      final linkedTrips = <Map<String, dynamic>>[];
+      final processedTripIds = <String>{}; // Avoid duplicates
+
+      for (final gear in linkedGear) {
+        if (gear.tripId != null && !processedTripIds.contains(gear.tripId)) {
+          final trip = _tripRepository.getTripById(gear.tripId!);
+          if (trip != null) {
+            processedTripIds.add(trip.id);
+            linkedTrips.add({
+              'tripId': trip.id,
+              'tripName': trip.name,
+              'startDate': trip.startDate,
+              'endDate': trip.endDate, // for formatting
+            });
+          }
+        }
+      }
+
+      // Sort by date descending
+      linkedTrips.sort((a, b) {
+        final dA = a['startDate'] as DateTime;
+        final dB = b['startDate'] as DateTime;
+        return dB.compareTo(dA);
+      });
+
+      return linkedTrips;
+    } catch (e) {
+      LogService.error('查詢連結行程失敗: $e', source: 'GearLibrary');
+      return [];
+    }
+  }
+
+  /// 刪除裝備庫項目 (並解除所有行程裝備的連結)
   Future<void> deleteItem(String uuid) async {
     try {
       final item = _items.firstWhere((i) => i.uuid == uuid);
-      LogService.warning('刪除裝備庫項目: ${item.name}', source: 'GearLibrary');
+      LogService.warning('刪除裝備庫項目: ${item.name} (將解除連結)', source: 'GearLibrary');
+
+      // 1. Unlink all trip gear
+      final allGear = _gearRepository.getAllItems();
+      final linkedItems = allGear.where((g) => g.libraryItemId == uuid).toList();
+
+      if (linkedItems.isNotEmpty) {
+        LogService.info('解除 ${linkedItems.length} 個行程裝備的連結', source: 'GearLibrary');
+        for (final gear in linkedItems) {
+          gear.libraryItemId = null;
+          await gear.save();
+        }
+
+        // Notify GearProvider to refresh if active
+        if (getIt.isRegistered<GearProvider>()) {
+          getIt<GearProvider>().reload();
+        }
+      }
+
+      // 2. Delete from library
       await _repository.deleteItem(uuid);
       _loadItems();
     } catch (e) {
@@ -261,12 +340,14 @@ class GearLibraryProvider extends ChangeNotifier {
       final today = DateTime(now.year, now.month, now.day);
 
       for (final gear in linkedItems) {
-        // 3. Safety Check: Trip Status
         if (gear.tripId != null) {
           final trip = _tripRepository.getTripById(gear.tripId!);
           if (trip != null) {
-            // Check if archived: !isActive AND endDate < today
-            final isArchived = !trip.isActive && (trip.endDate != null && trip.endDate!.isBefore(today));
+            // Check if archived: End Date Passed OR Manually Inactive
+            // Align with AppDrawer logic: if endDate < today, it's archived.
+            // Also protect if isActive is explicitly false.
+            final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
+
             if (isArchived) {
               LogService.debug('跳過同步: ${trip.name} (已封存)', source: 'GearLibrary');
               continue;

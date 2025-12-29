@@ -39,6 +39,11 @@ class GearLibraryItem extends HiveObject {
   @HiveField(6)
   DateTime? updatedAt;
 
+  /// 是否封存 (Soft Delete) - 封存後不在 Autocomplete 顯示，但保留連結
+  @HiveField(7)
+  @JsonKey(defaultValue: false)
+  bool isArchived;
+
   GearLibraryItem({
     String? uuid,
     required this.name,
@@ -47,6 +52,7 @@ class GearLibraryItem extends HiveObject {
     this.notes,
     DateTime? createdAt,
     this.updatedAt,
+    this.isArchived = false,
   }) : uuid = uuid ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now();
 
