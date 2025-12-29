@@ -31,7 +31,7 @@ function fetchGearSets() {
     // 私人組合不顯示在列表中
     if (visibility === "private") continue;
 
-    const gearSet = {
+    gearSets.push({
       uuid: row[headers.indexOf("uuid")],
       title: row[headers.indexOf("title")],
       author: row[headers.indexOf("author")],
@@ -40,8 +40,7 @@ function fetchGearSets() {
       visibility: visibility,
       uploaded_at: row[headers.indexOf("uploaded_at")],
       // 不包含 items，減少傳輸量
-    };
-    gearSets.push(_formatData(gearSet, SHEET_GEAR));
+    });
   }
 
   return _success({ gear_sets: gearSets }, "取得裝備組合列表成功");
@@ -65,24 +64,18 @@ function fetchGearSetByKey(key) {
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][keyIndex]) === String(key)) {
       const row = data[i];
-      return _success(
-        {
-          gear_set: _formatData(
-            {
-              uuid: row[headers.indexOf("uuid")],
-              title: row[headers.indexOf("title")],
-              author: row[headers.indexOf("author")],
-              total_weight: row[headers.indexOf("total_weight")],
-              item_count: row[headers.indexOf("item_count")],
-              visibility: row[headers.indexOf("visibility")],
-              uploaded_at: row[headers.indexOf("uploaded_at")],
-              items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
-            },
-            SHEET_GEAR
-          ),
+      return _success({
+        gear_set: {
+          uuid: row[headers.indexOf("uuid")],
+          title: row[headers.indexOf("title")],
+          author: row[headers.indexOf("author")],
+          total_weight: row[headers.indexOf("total_weight")],
+          item_count: row[headers.indexOf("item_count")],
+          visibility: row[headers.indexOf("visibility")],
+          uploaded_at: row[headers.indexOf("uploaded_at")],
+          items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
         },
-        "取得裝備組合成功"
-      );
+      }, "取得裝備組合成功");
     }
   }
 
@@ -119,21 +112,18 @@ function downloadGearSet(uuid, key) {
         return _error(API_CODES.GEAR_KEY_REQUIRED, "需要正確的 Key 才能下載");
       }
 
-      return _success(
-        {
-          gear_set: {
-            uuid: row[headers.indexOf("uuid")],
-            title: row[headers.indexOf("title")],
-            author: row[headers.indexOf("author")],
-            total_weight: row[headers.indexOf("total_weight")],
-            item_count: row[headers.indexOf("item_count")],
-            visibility: visibility,
-            uploaded_at: row[headers.indexOf("uploaded_at")],
-            items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
-          },
+      return _success({
+        gear_set: {
+          uuid: row[headers.indexOf("uuid")],
+          title: row[headers.indexOf("title")],
+          author: row[headers.indexOf("author")],
+          total_weight: row[headers.indexOf("total_weight")],
+          item_count: row[headers.indexOf("item_count")],
+          visibility: visibility,
+          uploaded_at: row[headers.indexOf("uploaded_at")],
+          items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
         },
-        "下載裝備組合成功"
-      );
+      }, "下載裝備組合成功");
     }
   }
 
@@ -146,14 +136,10 @@ function downloadGearSet(uuid, key) {
  * @returns {Object} { code, data, message }
  */
 function uploadGearSet(data) {
-  const { title, author, visibility, key, total_weight, item_count, items } =
-    data;
+  const { trip_id, title, author, visibility, key, total_weight, item_count, items } = data;
 
   if (!title || !author) {
-    return _error(
-      API_CODES.GEAR_MISSING_FIELDS,
-      "缺少必要欄位 (title, author)"
-    );
+    return _error(API_CODES.GEAR_MISSING_FIELDS, "缺少必要欄位 (title, author)");
   }
 
   // Protected/Private 必須有 key
@@ -161,10 +147,7 @@ function uploadGearSet(data) {
     (visibility === "protected" || visibility === "private") &&
     (!key || key.length !== 4)
   ) {
-    return _error(
-      API_CODES.GEAR_KEY_INVALID,
-      "Protected/Private 模式需要 4 位數 Key"
-    );
+    return _error(API_CODES.GEAR_KEY_INVALID, "Protected/Private 模式需要 4 位數 Key");
   }
 
   // 檢查 key 是否重複
@@ -176,10 +159,7 @@ function uploadGearSet(data) {
 
     for (let i = 1; i < existingData.length; i++) {
       if (String(existingData[i][keyIndex]) === String(key)) {
-        return _error(
-          API_CODES.GEAR_KEY_DUPLICATE,
-          "Key 重複，請換一個 4 位數"
-        );
+        return _error(API_CODES.GEAR_KEY_DUPLICATE, "Key 重複，請換一個 4 位數");
       }
     }
   }
@@ -189,34 +169,36 @@ function uploadGearSet(data) {
   const uploadedAt = new Date().toISOString();
   const itemsJson = JSON.stringify(items || []);
 
-  // 寫入資料 (文字格式由工作表的 @ 格式處理，不需要 ' 前綴)
-  const sheet = _initGearSheet();
-  sheet.appendRow([
-    uuid,
-    String(title),
-    String(author),
-    total_weight || 0,
-    item_count || 0,
-    String(visibility || "public"),
-    String(key || ""),
-    uploadedAt,
-    itemsJson,
-  ]);
+  // 建立 row 物件 (key-value)
+  const rowData = {
+    uuid: uuid,
+    trip_id: trip_id || "",
+    title: title,
+    author: author,
+    visibility: visibility || "public",
+    key: key || "",
+    total_weight: total_weight || 0,
+    item_count: item_count || 0,
+    uploaded_at: uploadedAt,
+    items_json: itemsJson,
+  };
 
-  return _success(
-    {
-      gear_set: {
-        uuid: uuid,
-        title: title,
-        author: author,
-        total_weight: total_weight || 0,
-        item_count: item_count || 0,
-        visibility: visibility || "public",
-        uploaded_at: uploadedAt,
-      },
+  // 依 HEADERS_GEAR 順序自動轉成陣列 (不再依賴手動順序)
+  const sheet = _initGearSheet();
+  const row = HEADERS_GEAR.map(header => rowData[header] ?? "");
+  sheet.appendRow(row);
+
+  return _success({
+    gear_set: {
+      uuid: uuid,
+      title: title,
+      author: author,
+      total_weight: total_weight || 0,
+      item_count: item_count || 0,
+      visibility: visibility || "public",
+      uploaded_at: uploadedAt,
     },
-    "裝備組合已上傳"
-  );
+  }, "裝備組合已上傳");
 }
 
 /**

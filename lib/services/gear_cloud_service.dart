@@ -101,6 +101,7 @@ class GearCloudService {
 
   /// 上傳裝備組合
   Future<GearCloudResult<GearSet>> uploadGearSet({
+    required String tripId,
     required String title,
     required String author,
     required GearSetVisibility visibility,
@@ -119,6 +120,7 @@ class GearCloudService {
 
       final response = await _apiClient.post({
         'action': ApiConfig.actionUploadGearSet,
+        'trip_id': tripId,
         'title': title,
         'author': author,
         'visibility': visibility.name,
