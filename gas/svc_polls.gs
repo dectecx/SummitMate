@@ -35,19 +35,22 @@ function handlePollAction(subAction, data) {
 
 /**
  * 建立新投票
+ * @returns {Object} { code, data, message }
  */
 function createPoll(data) {
   const ss = getSpreadsheet();
   let sheet = ss.getSheetByName("Polls");
-  if (!sheet)
-    return {
-      success: false,
-      error: "缺少 Polls 工作表，請先執行 setupPollSheets()。",
-    };
+  if (!sheet) {
+    return _error(
+      API_CODES.POLL_SHEET_MISSING,
+      "缺少 Polls 工作表，請先執行 setupPollSheets()。"
+    );
+  }
 
   const optionsSheet = ss.getSheetByName("PollOptions");
-  if (!optionsSheet)
-    return { success: false, error: "缺少 PollOptions 工作表。" };
+  if (!optionsSheet) {
+    return _error(API_CODES.POLL_SHEET_MISSING, "缺少 PollOptions 工作表。");
+  }
 
   const pollId = data.poll_id || Utilities.getUuid();
   const createdAt = data.created_at || new Date().toISOString();
@@ -57,10 +60,9 @@ function createPoll(data) {
   const isAllowAdd = config.is_allow_add_option === true;
   const maxOptions = config.max_option_limit || 20;
   const allowMulti = config.allow_multiple_votes === true;
-  const displayType = config.result_display_type || "realtime"; // 'realtime' (即時), 'blind' (盲投)
+  const displayType = config.result_display_type || "realtime";
 
   // 新增投票主資料
-  // 欄位: poll_id, title, description, creator_id, created_at, deadline, is_allow_add_option, max_option_limit, allow_multiple_votes, result_display_type, status
   sheet.appendRow([
     pollId,
     data.title || "未命名投票",
@@ -72,7 +74,7 @@ function createPoll(data) {
     maxOptions,
     allowMulti,
     displayType,
-    "active", // 狀態: active, ended, archived
+    "active",
   ]);
 
   // 新增初始選項
@@ -84,16 +86,17 @@ function createPoll(data) {
         optText,
         data.creator_id,
         "'" + createdAt,
-        "", // image_url
+        "",
       ]);
     });
   }
 
-  return { success: true, message: "投票建立成功", poll_id: pollId };
+  return _success({ poll_id: pollId }, "投票建立成功");
 }
 
 /**
  * 取得投票列表 (包含選項與我的投票狀態)
+ * @returns {Object} { code, data, message }
  */
 function getPolls(userId) {
   const ss = getSpreadsheet();
@@ -101,19 +104,17 @@ function getPolls(userId) {
   const optSheet = ss.getSheetByName("PollOptions");
   const voteSheet = ss.getSheetByName("PollVotes");
 
-  if (!pollSheet || !optSheet || !voteSheet)
-    return { success: false, error: "相關工作表缺失" };
+  if (!pollSheet || !optSheet || !voteSheet) {
+    return _error(API_CODES.POLL_SHEET_MISSING, "相關工作表缺失");
+  }
 
   const polls = getDataAsObjects(pollSheet);
   const options = getDataAsObjects(optSheet);
   const votes = getDataAsObjects(voteSheet);
 
-  // Todo: 可在此過濾 archived (封存) 的投票
-
   // 建立投票對照表 Map
   const pollsMap = {};
   polls.forEach((p) => {
-    // 處理字串轉布林值 (Sheet 有時會存成 TRUE/FALSE 字串)
     p.is_allow_add_option =
       p.is_allow_add_option === true || p.is_allow_add_option === "TRUE";
     p.allow_multiple_votes =
@@ -125,10 +126,9 @@ function getPolls(userId) {
     pollsMap[p.poll_id] = p;
   });
 
-  // ... inside getPolls ...
   // 計算每個選項的票數與投票者
   const voteCounts = {};
-  const voteVoters = {}; // { optionId: [{user_id, user_name}] }
+  const voteVoters = {};
 
   votes.forEach((v) => {
     voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1;
@@ -153,11 +153,12 @@ function getPolls(userId) {
     }
   });
 
-  return { success: true, polls: Object.values(pollsMap) };
+  return _success({ polls: Object.values(pollsMap) }, "取得投票列表成功");
 }
 
 /**
  * 執行投票動作
+ * @returns {Object} { code, data, message }
  */
 function votePoll(data) {
   const ss = getSpreadsheet();
@@ -165,45 +166,42 @@ function votePoll(data) {
   const pollSheet = ss.getSheetByName("Polls");
 
   const pollId = data.poll_id;
-  const optionIds = data.option_ids || []; // 傳入選取的選項 ID 陣列
+  const optionIds = data.option_ids || [];
   const userId = data.user_id;
 
-  if (!pollId || !userId || optionIds.length === 0)
-    return { success: false, error: "資料不完整 (缺 ID 或選項)" };
+  if (!pollId || !userId || optionIds.length === 0) {
+    return _error(API_CODES.INVALID_PARAMS, "資料不完整 (缺 ID 或選項)");
+  }
 
-  // 1. 檢查投票狀態 (截止時間、是否開啟)
+  // 1. 檢查投票狀態
   const polls = getDataAsObjects(pollSheet);
   const poll = polls.find((p) => p.poll_id === pollId);
-  if (!poll) return { success: false, error: "找不到此投票" };
+  if (!poll) {
+    return _error(API_CODES.POLL_NOT_FOUND, "找不到此投票");
+  }
 
-  if (poll.status !== "active")
-    return { success: false, error: "此投票已關閉" };
+  if (poll.status !== "active") {
+    return _error(API_CODES.POLL_CLOSED, "此投票已關閉");
+  }
 
   if (poll.deadline) {
     const deadline = new Date(poll.deadline).getTime();
-    if (new Date().getTime() > deadline)
-      return { success: false, error: "此投票已過期" };
-  }
-
-  // 2. 處理投票邏輯
-  // 策略：直接刪除該使用者在此投票的所有舊紀錄，再新增新的選擇。
-  // 這樣同時支援「單選改票」與「多選重新選擇」。
-
-  const allVotes = voteSheet.getDataRange().getValues();
-  const toDelete = [];
-
-  // 找出需要刪除的舊票 (從後往前找，避免刪除列時索引跑掉)
-  // 假設欄位順序: vote_id, poll_id, option_id, user_id, user_name, created_at
-  // 對應索引: 0, 1, 2, 3, 4, 5
-  // 注意：我們會讀取全部資料，所以 row[1] 是 poll_id, row[3] 是 user_id
-  for (let i = allVotes.length - 1; i >= 1; i--) {
-    const row = allVotes[i];
-    if (row[1] === pollId && row[3] === userId) {
-      toDelete.push(i + 1); // sheet 的列號從 1 開始
+    if (new Date().getTime() > deadline) {
+      return _error(API_CODES.POLL_EXPIRED, "此投票已過期");
     }
   }
 
-  // 執行刪除
+  // 2. 刪除舊投票紀錄
+  const allVotes = voteSheet.getDataRange().getValues();
+  const toDelete = [];
+
+  for (let i = allVotes.length - 1; i >= 1; i--) {
+    const row = allVotes[i];
+    if (row[1] === pollId && row[3] === userId) {
+      toDelete.push(i + 1);
+    }
+  }
+
   toDelete.forEach((rowIndex) => voteSheet.deleteRow(rowIndex));
 
   // 3. 寫入新票
@@ -219,11 +217,12 @@ function votePoll(data) {
     ]);
   });
 
-  return { success: true, message: "投票成功" };
+  return _success(null, "投票成功");
 }
 
 /**
  * 新增投票選項
+ * @returns {Object} { code, data, message }
  */
 function addOption(data) {
   const ss = getSpreadsheet();
@@ -233,37 +232,39 @@ function addOption(data) {
   const pollId = data.poll_id;
   const text = data.text;
 
-  // 檢查權限設定
   const polls = getDataAsObjects(pollSheet);
   const poll = polls.find((p) => p.poll_id === pollId);
-  if (!poll) return { success: false, error: "找不到此投票" };
+  if (!poll) {
+    return _error(API_CODES.POLL_NOT_FOUND, "找不到此投票");
+  }
 
   const isAllowAdd =
     poll.is_allow_add_option === true || poll.is_allow_add_option === "TRUE";
-  if (!isAllowAdd) return { success: false, error: "此投票不允許新增選項" };
+  if (!isAllowAdd) {
+    return _error(API_CODES.POLL_ADD_OPTION_DISABLED, "此投票不允許新增選項");
+  }
 
-  // 檢查選項數量上限
   const opts = getDataAsObjects(optSheet);
   const currentCount = opts.filter((o) => o.poll_id === pollId).length;
   if (currentCount >= (poll.max_option_limit || 20)) {
-    return { success: false, error: "已達選項數量上限" };
+    return _error(API_CODES.POLL_OPTION_LIMIT, "已達選項數量上限");
   }
 
-  // 新增選項
   optSheet.appendRow([
     Utilities.getUuid(),
     pollId,
     text,
     data.creator_id,
     "'" + new Date().toISOString(),
-    "", // image_url
+    "",
   ]);
 
-  return { success: true, message: "選項已新增" };
+  return _success(null, "選項已新增");
 }
 
 /**
  * 刪除投票選項
+ * @returns {Object} { code, data, message }
  */
 function deleteOption(data) {
   const ss = getSpreadsheet();
@@ -271,29 +272,27 @@ function deleteOption(data) {
   const voteSheet = ss.getSheetByName("PollVotes");
 
   const optId = data.option_id;
-  const userId = data.user_id;
 
-  // 檢查是否有票數 (有票數不可刪除)
   const votes = getDataAsObjects(voteSheet);
   const hasVotes = votes.some((v) => v.option_id === optId);
-  if (hasVotes) return { success: false, error: "該選項已有票數，無法刪除" };
+  if (hasVotes) {
+    return _error(API_CODES.POLL_OPTION_HAS_VOTES, "該選項已有票數，無法刪除");
+  }
 
-  // Todo: 可增加檢查是否為建立者 (creator_id)
-
-  // 尋找並刪除
   const opts = optSheet.getDataRange().getValues();
   for (let i = 1; i < opts.length; i++) {
-    // option_id 在第 0 欄
     if (opts[i][0] === optId) {
       optSheet.deleteRow(i + 1);
-      return { success: true, message: "選項已刪除" };
+      return _success(null, "選項已刪除");
     }
   }
-  return { success: false, error: "找不到該選項" };
+
+  return _error(API_CODES.POLL_OPTION_NOT_FOUND, "找不到該選項");
 }
 
 /**
  * 關閉投票
+ * @returns {Object} { code, data, message }
  */
 function closePoll(data) {
   const ss = getSpreadsheet();
@@ -304,20 +303,21 @@ function closePoll(data) {
   const polls = pollSheet.getDataRange().getValues();
   for (let i = 1; i < polls.length; i++) {
     if (polls[i][0] === pollId) {
-      // Check creator (optional, strictly speaking only creator should close)
-      if (polls[i][3] !== userId)
-        return { success: false, error: "只有發起人可以關閉投票" };
+      if (polls[i][3] !== userId) {
+        return _error(API_CODES.POLL_CREATOR_ONLY, "只有發起人可以關閉投票");
+      }
 
-      // Update status to 'ended' (Column K -> index 10)
       pollSheet.getRange(i + 1, 11).setValue("ended");
-      return { success: true, message: "投票已關閉" };
+      return _success(null, "投票已關閉");
     }
   }
-  return { success: false, error: "找不到此投票" };
+
+  return _error(API_CODES.POLL_NOT_FOUND, "找不到此投票");
 }
 
 /**
  * 刪除投票 (Hard Delete)
+ * @returns {Object} { code, data, message }
  */
 function deletePoll(data) {
   const ss = getSpreadsheet();
@@ -333,17 +333,20 @@ function deletePoll(data) {
   let pollRowIndex = -1;
   for (let i = 1; i < polls.length; i++) {
     if (polls[i][0] === pollId) {
-      if (polls[i][3] !== userId)
-        return { success: false, error: "只有發起人可以刪除投票" };
+      if (polls[i][3] !== userId) {
+        return _error(API_CODES.POLL_CREATOR_ONLY, "只有發起人可以刪除投票");
+      }
       pollRowIndex = i + 1;
       break;
     }
   }
-  if (pollRowIndex === -1) return { success: false, error: "找不到此投票" };
+
+  if (pollRowIndex === -1) {
+    return _error(API_CODES.POLL_NOT_FOUND, "找不到此投票");
+  }
 
   // 2. Delete Votes
   const votes = voteSheet.getDataRange().getValues();
-  // Delete from bottom to top
   for (let i = votes.length - 1; i >= 1; i--) {
     if (votes[i][1] === pollId) voteSheet.deleteRow(i + 1);
   }
@@ -357,7 +360,7 @@ function deletePoll(data) {
   // 4. Delete Poll
   pollSheet.deleteRow(pollRowIndex);
 
-  return { success: true, message: "投票已刪除" };
+  return _success(null, "投票已刪除");
 }
 
 // ============================================================
@@ -387,7 +390,6 @@ function getDataAsObjects(sheet) {
 function setupPollSheets() {
   const ss = getSpreadsheet();
 
-  // 建立 Polls 工作表
   if (!ss.getSheetByName("Polls")) {
     const s = ss.insertSheet("Polls");
     s.appendRow([
@@ -405,7 +407,6 @@ function setupPollSheets() {
     ]);
   }
 
-  // 建立 PollOptions 工作表
   if (!ss.getSheetByName("PollOptions")) {
     const s = ss.insertSheet("PollOptions");
     s.appendRow([
@@ -418,7 +419,6 @@ function setupPollSheets() {
     ]);
   }
 
-  // 建立 PollVotes 工作表
   if (!ss.getSheetByName("PollVotes")) {
     const s = ss.insertSheet("PollVotes");
     s.appendRow([
