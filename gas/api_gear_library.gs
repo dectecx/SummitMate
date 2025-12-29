@@ -37,13 +37,13 @@ function uploadGearLibrary(ownerKey, items) {
         .setValues([HEADERS_GEAR_LIBRARY]);
     }
 
-    // 刪除該 owner_key 的所有舊資料
+    // 刪除該 owner_key 的所有舊資料 (轉字串比較)
     const existingData = sheet.getDataRange().getValues();
     const ownerKeyCol = HEADERS_GEAR_LIBRARY.indexOf("owner_key");
 
     // 從後往前刪除以避免索引問題
     for (let i = existingData.length - 1; i >= 1; i--) {
-      if (existingData[i][ownerKeyCol] === ownerKey) {
+      if (String(existingData[i][ownerKeyCol]) === String(ownerKey)) {
         sheet.deleteRow(i + 1);
       }
     }
@@ -108,10 +108,10 @@ function downloadGearLibrary(ownerKey) {
     const headers = data[0];
     const ownerKeyCol = headers.indexOf("owner_key");
 
-    // 篩選該 owner_key 的資料
+    // 篩選該 owner_key 的資料 (轉字串比較，避免數字 vs 字串問題)
     const items = [];
     for (let i = 1; i < data.length; i++) {
-      if (data[i][ownerKeyCol] === ownerKey) {
+      if (String(data[i][ownerKeyCol]) === String(ownerKey)) {
         const item = {};
         headers.forEach((header, index) => {
           if (header !== "owner_key") {

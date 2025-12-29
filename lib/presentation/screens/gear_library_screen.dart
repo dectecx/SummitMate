@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants.dart';
+import '../../core/gear_helpers.dart';
 import '../../data/models/gear_library_item.dart';
 import '../../services/gear_library_cloud_service.dart';
 import '../providers/gear_library_provider.dart';
@@ -197,7 +198,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
       child: ListTile(
         title: Text(item.name),
         subtitle: Text(
-          '${item.weight}g • ${item.category}',
+          '${item.weight}g • ${GearCategoryHelper.getName(item.category)}',
           style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
         ),
         trailing: Row(
