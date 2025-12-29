@@ -170,18 +170,18 @@ function uploadGearSet(data) {
   const uploadedAt = new Date().toISOString();
   const itemsJson = JSON.stringify(items || []);
 
-  // 寫入資料
+  // 寫入資料 (用 ' 前綴強制字串格式)
   const sheet = _initGearSheet();
   sheet.appendRow([
     uuid,
-    title,
-    author,
+    "'" + String(title),
+    "'" + String(author),
     total_weight || 0,
     item_count || 0,
-    visibility || "public",
-    key || "",
-    uploadedAt,
-    itemsJson,
+    "'" + String(visibility || "public"),
+    key ? "'" + String(key) : "",
+    "'" + uploadedAt,
+    "'" + itemsJson,
   ]);
 
   return _success({
