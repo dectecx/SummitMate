@@ -62,11 +62,13 @@ function createPoll(data) {
   const allowMulti = config.allow_multiple_votes === true;
   const displayType = config.result_display_type || "realtime";
 
-  // 新增投票主資料
+  // 新增投票主資料 (用 ' 前綴強制字串格式)
+  const description = data.description ? "'" + String(data.description) : "";
+
   sheet.appendRow([
     pollId,
     data.title || "未命名投票",
-    data.description || "",
+    description,
     data.creator_id || "anonymous",
     "'" + createdAt,
     data.deadline ? "'" + data.deadline : "",
