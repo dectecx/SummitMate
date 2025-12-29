@@ -11,19 +11,19 @@
 
 /**
  * 取得所有行程
- * @returns {Object} { success: boolean, trips: Object[] }
+ * @returns {Object} { code, data, message }
  */
 function fetchTrips() {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
 
   if (!sheet) {
-    return { success: true, trips: [] };
+    return _success({ trips: [] }, "尚無行程資料");
   }
 
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) {
-    return { success: true, trips: [] };
+    return _success({ trips: [] }, "尚無行程資料");
   }
 
   const headers = data[0];
@@ -48,13 +48,13 @@ function fetchTrips() {
     })
     .filter((trip) => trip.id); // 過濾空行
 
-  return { success: true, trips: trips };
+  return _success({ trips }, "取得行程列表成功");
 }
 
 /**
  * 新增行程
  * @param {Object} tripData - 行程資料
- * @returns {Object} { success: boolean, id?: string }
+ * @returns {Object} { code, data, message }
  */
 function addTrip(tripData) {
   const sheet = _getSheetOrCreate(SHEET_TRIPS, HEADERS_TRIPS);
@@ -73,20 +73,20 @@ function addTrip(tripData) {
     now,
   ]);
 
-  return { success: true, id: id };
+  return _success({ id }, "行程已新增");
 }
 
 /**
  * 更新行程
  * @param {Object} tripData - 行程資料 (必須包含 id)
- * @returns {Object} { success: boolean, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function updateTrip(tripData) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
 
   if (!sheet) {
-    return { success: false, error: "找不到 Trips 工作表" };
+    return _error(API_CODES.TRIP_SHEET_MISSING, "找不到 Trips 工作表");
   }
 
   const data = sheet.getDataRange().getValues();
@@ -105,24 +105,24 @@ function updateTrip(tripData) {
           sheet.getRange(i + 1, colIndex + 1).setValue(tripData[header]);
         }
       });
-      return { success: true };
+      return _success(null, "行程已更新");
     }
   }
 
-  return { success: false, error: "找不到該行程" };
+  return _error(API_CODES.TRIP_NOT_FOUND, "找不到該行程");
 }
 
 /**
  * 刪除行程
  * @param {string} tripId - 行程 ID
- * @returns {Object} { success: boolean, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function deleteTrip(tripId) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
 
   if (!sheet) {
-    return { success: false, error: "找不到 Trips 工作表" };
+    return _error(API_CODES.TRIP_SHEET_MISSING, "找不到 Trips 工作表");
   }
 
   const data = sheet.getDataRange().getValues();
@@ -132,24 +132,24 @@ function deleteTrip(tripId) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIndex] === tripId) {
       sheet.deleteRow(i + 1);
-      return { success: true };
+      return _success(null, "行程已刪除");
     }
   }
 
-  return { success: false, error: "找不到該行程" };
+  return _error(API_CODES.TRIP_NOT_FOUND, "找不到該行程");
 }
 
 /**
  * 設定活動行程
  * @param {string} tripId - 行程 ID
- * @returns {Object} { success: boolean, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function setActiveTrip(tripId) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
 
   if (!sheet) {
-    return { success: false, error: "找不到 Trips 工作表" };
+    return _error(API_CODES.TRIP_SHEET_MISSING, "找不到 Trips 工作表");
   }
 
   const data = sheet.getDataRange().getValues();
@@ -166,9 +166,9 @@ function setActiveTrip(tripId) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIndex] === tripId) {
       sheet.getRange(i + 1, activeIndex + 1).setValue(true);
-      return { success: true };
+      return _success(null, "已設定活動行程");
     }
   }
 
-  return { success: false, error: "找不到該行程" };
+  return _error(API_CODES.TRIP_NOT_FOUND, "找不到該行程");
 }

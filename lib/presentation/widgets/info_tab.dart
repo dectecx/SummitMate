@@ -605,11 +605,7 @@ class InfoTabState extends State<InfoTab> {
                         const SizedBox(height: 2),
                         Text(
                           displayTemp,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
                         ),
                         Text(displayCondition, style: const TextStyle(fontSize: 14)),
                       ],
