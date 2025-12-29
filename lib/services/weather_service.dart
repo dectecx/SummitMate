@@ -138,30 +138,22 @@ class WeatherService implements IWeatherService {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        // GAS returns List<Map>
-        final List<dynamic> jsonList = json.decode(utf8.decode(response.bodyBytes));
+        // Parse new GAS format: { code, data: { weather: [...] }, message }
+        final jsonMap = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
 
-        // --- OPTIMIZATION: Cache ALL locations from this response ---
-        // 1. Identify all unique locations
-        final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
-        LogService.info('GAS returned data for: ${uniqueLocations.join(', ')}', source: 'WeatherService');
+        // Check if it's the new format
+        if (jsonMap['code'] != '0000') {
+          throw Exception('GAS API Error: ${jsonMap['message']}');
+        }
+        // Extract weather array from data.weather
+        final data = jsonMap['data'] as Map<String, dynamic>? ?? {};
+        final List<dynamic> jsonList = data['weather'] as List<dynamic>? ?? [];
 
-        // 2. Parse and Cache each location
-        for (var loc in uniqueLocations) {
-          try {
-            final weather = _parseGasWeatherData(jsonList, loc);
-            final key = 'weather_$loc';
-            _box?.put(key, weather);
-            LogService.info('Cached bulk data for: $loc', source: 'WeatherService');
-          } catch (e) {
-            LogService.error('Failed to parse/cache bulk data for $loc: $e', source: 'WeatherService');
-          }
+        if (jsonList.isEmpty) {
+          throw Exception('No weather data returned from GAS');
         }
 
-        // 3. Return the requested location's data (now in cache) or parse directly if something failed above
-        // We will just return the parsed data for the requested location
-        // If it was cached above, we could technically re-read it, but parsing again is fine/safer return.
-        return _parseGasWeatherData(jsonList, locationName);
+        return _parseAndCacheWeatherData(jsonList, locationName);
       } else {
         throw Exception('GAS API Error: ${response.statusCode}');
       }
@@ -169,6 +161,29 @@ class WeatherService implements IWeatherService {
       LogService.error('GAS API Request failed: $e', source: 'WeatherService');
       rethrow;
     }
+  }
+
+  /// Parse weather data and cache all locations
+  WeatherData _parseAndCacheWeatherData(List<dynamic> jsonList, String locationName) {
+    // --- OPTIMIZATION: Cache ALL locations from this response ---
+    // 1. Identify all unique locations
+    final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
+    LogService.info('GAS returned data for: ${uniqueLocations.join(', ')}', source: 'WeatherService');
+
+    // 2. Parse and Cache each location
+    for (var loc in uniqueLocations) {
+      try {
+        final weather = _parseGasWeatherData(jsonList, loc);
+        final key = 'weather_$loc';
+        _box?.put(key, weather);
+        LogService.info('Cached bulk data for: $loc', source: 'WeatherService');
+      } catch (e) {
+        LogService.error('Failed to parse/cache bulk data for $loc: $e', source: 'WeatherService');
+      }
+    }
+
+    // 3. Return the requested location's data
+    return _parseGasWeatherData(jsonList, locationName);
   }
 
   Future<WeatherData> _fetchTownshipWeather(String locationName) async {
