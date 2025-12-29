@@ -34,17 +34,6 @@ function fetchTrips() {
       headers.forEach((header, index) => {
         let value = row[index];
 
-        // 強制型別轉換
-        const schema =
-          typeof SHEET_SCHEMA !== "undefined"
-            ? SHEET_SCHEMA[SHEET_TRIPS]
-            : null;
-        if (schema && schema[header]) {
-          if (schema[header].type === "text") {
-            value = value === null || value === undefined ? "" : String(value);
-          }
-        }
-
         // 處理日期
         if (
           (header === "start_date" ||
@@ -56,7 +45,7 @@ function fetchTrips() {
         }
         trip[header] = value;
       });
-      return trip;
+      return _formatData(trip, SHEET_TRIPS);
     })
     .filter((trip) => trip.id); // 過濾空行
 
