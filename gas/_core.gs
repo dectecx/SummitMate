@@ -57,7 +57,10 @@ function doGet(e) {
       // === 健康檢查 ===
       case "health":
         return _createJsonResponse(
-          _success({ status: "ok", timestamp: new Date().toISOString() }, "服務正常")
+          _success(
+            { status: "ok", timestamp: new Date().toISOString() },
+            "服務正常"
+          )
         );
       default:
         return _createJsonResponse(
@@ -117,7 +120,9 @@ function doPost(e) {
       // === 個人裝備庫 (GearLibrary) ===
       // 【未來規劃】owner_key → user_id (會員機制上線後)
       case "upload_gear_library":
-        return _createJsonResponse(uploadGearLibrary(data.owner_key, data.items));
+        return _createJsonResponse(
+          uploadGearLibrary(data.owner_key, data.items)
+        );
       case "download_gear_library":
         return _createJsonResponse(downloadGearLibrary(data.owner_key));
 
@@ -225,4 +230,33 @@ function _ensureColumn(sheet, columnName) {
   if (!headers.includes(columnName)) {
     sheet.getRange(1, headers.length + 1).setValue(columnName);
   }
+}
+
+/**
+ * 依據 Schema 格式化資料物件 (強制轉型)
+ * @private
+ * @param {Object} data - 資料物件
+ * @param {string} schemaName - Schema 名稱 (Sheet Name)
+ * @returns {Object} 格式化後的資料物件
+ */
+function _formatData(data, schemaName) {
+  if (!data || typeof data !== "object") return data;
+
+  const schema =
+    typeof SHEET_SCHEMA !== "undefined" ? SHEET_SCHEMA[schemaName] : null;
+  if (!schema) return data;
+
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key) && schema[key]) {
+      const type = schema[key].type;
+      if (type === "text") {
+        // 強制轉為字串 (除了 null/undefined)
+        data[key] =
+          data[key] === null || data[key] === undefined
+            ? ""
+            : String(data[key]);
+      }
+    }
+  }
+  return data;
 }
