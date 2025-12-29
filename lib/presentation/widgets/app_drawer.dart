@@ -15,6 +15,21 @@ class AppDrawer extends StatelessWidget {
       child: Consumer<TripProvider>(
         builder: (context, tripProvider, child) {
           final activeTrip = tripProvider.activeTrip;
+          final allTrips = tripProvider.trips;
+
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+
+          final ongoingTrips = allTrips.where((t) {
+            if (t.endDate == null) return true;
+            return !t.endDate!.isBefore(today);
+          }).toList();
+
+          final archivedTrips = allTrips.where((t) {
+            if (t.endDate == null) return false;
+            return t.endDate!.isBefore(today);
+          }).toList();
+
           return ListView(
             padding: EdgeInsets.zero,
             children: [
@@ -33,6 +48,8 @@ class AppDrawer extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (activeTrip != null)
                       Text(
@@ -48,7 +65,7 @@ class AppDrawer extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.list),
                 title: const Text('管理行程'),
-                subtitle: Text('共 ${tripProvider.trips.length} 個行程'),
+                subtitle: Text('共 ${allTrips.length} 個行程'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.pop(context); // 關閉抽屜
@@ -56,47 +73,79 @@ class AppDrawer extends StatelessWidget {
                 },
               ),
               const Divider(),
-              // 快速切換行程
-              if (tripProvider.trips.length > 1) ...[
+
+              // 進行中行程
+              if (ongoingTrips.isNotEmpty) ...[
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                   child: Text(
-                    '快速切換',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey[600]),
+                    '進行中 / 未來行程',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                ...tripProvider.trips.take(5).map((trip) {
-                  final isActive = trip.id == tripProvider.activeTripId;
-                  return ListTile(
-                    leading: Icon(
-                      isActive ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isActive ? Theme.of(context).colorScheme.primary : null,
-                    ),
-                    title: Text(
-                      trip.name,
-                      style: TextStyle(fontWeight: isActive ? FontWeight.bold : FontWeight.normal),
-                    ),
-                    selected: isActive,
-                    onTap: () async {
-                      if (!isActive) {
-                        await tripProvider.setActiveTrip(trip.id);
-                        // 重新載入相關 Provider
-                        if (context.mounted) {
-                          context.read<ItineraryProvider>().reload();
-                          context.read<MessageProvider>().reload();
-                          Navigator.pop(context); // 關閉抽屜
-                        }
-                      } else {
-                        Navigator.pop(context);
-                      }
-                    },
-                  );
-                }),
+                ...ongoingTrips.map((trip) => _buildTripTile(context, trip, tripProvider)),
+              ],
+
+              // 已封存行程
+              if (archivedTrips.isNotEmpty) ...[
+                if (ongoingTrips.isNotEmpty) const Divider(indent: 16, endIndent: 16),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Text(
+                    '已封存 / 結束行程',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey),
+                  ),
+                ),
+                ...archivedTrips.map((trip) => _buildTripTile(context, trip, tripProvider)),
               ],
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _buildTripTile(BuildContext context, dynamic trip, TripProvider provider) {
+    final isActive = trip.id == provider.activeTripId;
+    // Format date: "2024/05/20 - 2024/05/22"
+    final start = '${trip.startDate.year}/${trip.startDate.month}/${trip.startDate.day}';
+    String end = '';
+    if (trip.endDate != null) {
+      end = ' - ${trip.endDate!.year}/${trip.endDate!.month}/${trip.endDate!.day}';
+    }
+
+    return ListTile(
+      leading: Icon(
+        isActive ? Icons.radio_button_checked : Icons.radio_button_off,
+        color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
+      ),
+      title: Text(
+        trip.name,
+        style: TextStyle(
+          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          color: isActive ? Theme.of(context).colorScheme.primary : null,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text('$start$end', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      selected: isActive,
+      onTap: () async {
+        if (!isActive) {
+          await provider.setActiveTrip(trip.id);
+          // 重新載入相關 Provider
+          if (context.mounted) {
+            context.read<ItineraryProvider>().reload();
+            context.read<MessageProvider>().reload();
+            Navigator.pop(context); // 關閉抽屜
+          }
+        } else {
+          Navigator.pop(context);
+        }
+      },
     );
   }
 }
