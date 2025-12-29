@@ -64,7 +64,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     );
 
     if (date != null && mounted) {
-      final time = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 23, minute: 59));
+      final time = await showTimePicker(context: context, initialTime: const TimeOfDay(hour: 23, minute: 0));
 
       if (time != null && mounted) {
         setState(() {
