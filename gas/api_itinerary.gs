@@ -82,8 +82,10 @@ function updateItinerary(itineraryItems, tripId) {
     return _success(null, "行程已清空");
   }
 
-  // 準備資料列 (用 ' 前綴強制字串格式)
+  // 準備資料列
   const rows = itineraryItems.map((item) => [
+    item.uuid ? "'" + String(item.uuid) : Utilities.getUuid(),
+    tripId || item.trip_id ? "'" + String(tripId || item.trip_id) : "",
     item.day,
     "'" + String(item.name || ""),
     item.est_time || item.estTime ? "'" + String(item.est_time || item.estTime) : "",
@@ -91,7 +93,6 @@ function updateItinerary(itineraryItems, tripId) {
     item.distance,
     item.note ? "'" + String(item.note) : "",
     item.image_asset || item.imageAsset ? "'" + String(item.image_asset || item.imageAsset) : "",
-    tripId || item.trip_id ? "'" + String(tripId || item.trip_id) : "",
   ]);
 
   if (rows.length > 0) {
