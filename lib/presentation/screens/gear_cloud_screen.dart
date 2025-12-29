@@ -10,6 +10,7 @@ import '../../services/toast_service.dart';
 import '../providers/settings_provider.dart';
 import '../providers/gear_provider.dart';
 import '../providers/gear_library_provider.dart';
+import '../providers/trip_provider.dart';
 import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
@@ -95,6 +96,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         author: settingsProvider.username,
         onUpload: (title, visibility, key) async {
           final uploadResult = await _cloudService.uploadGearSet(
+            tripId: context.read<TripProvider>().activeTripId ?? '',
             title: title,
             author: settingsProvider.username,
             visibility: visibility,
