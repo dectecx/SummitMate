@@ -43,7 +43,9 @@ class GoogleSheetsService {
             [];
 
         final messagesList =
-            (gasResponse.data['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
+            (gasResponse.data['messages'] as List<dynamic>?)
+                ?.map((e) => Message.fromJson(e as Map<String, dynamic>))
+                .toList() ??
             [];
 
         LogService.debug('解析成功: 行程=${itineraryList.length}, 留言=${messagesList.length}', source: 'API');
@@ -72,11 +74,11 @@ class GoogleSheetsService {
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJsonString(response.body);
-        
+
         if (!gasResponse.isSuccess) {
           return FetchAllResult(success: false, errorMessage: gasResponse.message);
         }
-        
+
         final itineraryList =
             (gasResponse.data['itinerary'] as List<dynamic>?)
                 ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
@@ -105,13 +107,15 @@ class GoogleSheetsService {
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJsonString(response.body);
-        
+
         if (!gasResponse.isSuccess) {
           return FetchAllResult(success: false, errorMessage: gasResponse.message);
         }
-        
+
         final messagesList =
-            (gasResponse.data['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
+            (gasResponse.data['messages'] as List<dynamic>?)
+                ?.map((e) => Message.fromJson(e as Map<String, dynamic>))
+                .toList() ??
             [];
         return FetchAllResult(messages: messagesList, success: true);
       } else {

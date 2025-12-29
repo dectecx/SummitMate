@@ -28,11 +28,14 @@ class PollService {
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJsonString(utf8.decode(response.bodyBytes));
+        LogService.debug('Response parsed: code=${gasResponse.code}, message=${gasResponse.message}', source: _source);
+
         if (gasResponse.isSuccess) {
           final List<dynamic> pollsJson = gasResponse.data['polls'] ?? [];
+          LogService.info('Fetched ${pollsJson.length} polls successfully', source: _source);
           return pollsJson.map((e) => Poll.fromJson(e)).toList();
         } else {
-          LogService.error('Fetch polls failed: ${gasResponse.message}', source: _source);
+          LogService.error('Fetch polls failed: [${gasResponse.code}] ${gasResponse.message}', source: _source);
           throw Exception(gasResponse.message);
         }
       } else {
