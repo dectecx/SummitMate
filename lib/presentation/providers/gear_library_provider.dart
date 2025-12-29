@@ -4,6 +4,9 @@ import '../../core/di.dart';
 import '../../data/models/gear_library_item.dart';
 import '../../data/repositories/interfaces/i_gear_library_repository.dart';
 import '../../services/log_service.dart';
+import '../providers/gear_provider.dart';
+import '../../data/repositories/interfaces/i_gear_repository.dart';
+import '../../data/repositories/interfaces/i_trip_repository.dart';
 
 /// 裝備庫狀態管理
 ///
@@ -19,6 +22,8 @@ import '../../services/log_service.dart';
 /// - 移除 owner_key 機制，自動識別帳號
 class GearLibraryProvider extends ChangeNotifier {
   final IGearLibraryRepository _repository;
+  final IGearRepository _gearRepository;
+  final ITripRepository _tripRepository;
 
   List<GearLibraryItem> _items = [];
   String? _selectedCategory;
@@ -26,8 +31,13 @@ class GearLibraryProvider extends ChangeNotifier {
   bool _isLoading = true;
   String? _error;
 
-  GearLibraryProvider({IGearLibraryRepository? repository})
-    : _repository = repository ?? getIt<IGearLibraryRepository>() {
+  GearLibraryProvider({
+    IGearLibraryRepository? repository,
+    IGearRepository? gearRepository,
+    ITripRepository? tripRepository,
+  }) : _repository = repository ?? getIt<IGearLibraryRepository>(),
+       _gearRepository = gearRepository ?? getIt<IGearRepository>(),
+       _tripRepository = tripRepository ?? getIt<ITripRepository>() {
     LogService.info('GearLibraryProvider 初始化', source: 'GearLibrary');
     _loadItems();
   }
@@ -160,6 +170,10 @@ class GearLibraryProvider extends ChangeNotifier {
     try {
       LogService.info('更新裝備庫項目: ${item.name}', source: 'GearLibrary');
       await _repository.updateItem(item);
+
+      // 同步更新連動的行程裝備
+      await _syncLinkedGear(item);
+
       _loadItems();
     } catch (e) {
       LogService.error('更新裝備庫項目失敗: $e', source: 'GearLibrary');
@@ -226,6 +240,70 @@ class GearLibraryProvider extends ChangeNotifier {
       LogService.error('清空裝備庫失敗: $e', source: 'GearLibrary');
       _error = e.toString();
       notifyListeners();
+    }
+  }
+
+  /// 同步更新連動的行程裝備
+  /// 只更新 Active 或 未結束的行程
+  Future<void> _syncLinkedGear(GearLibraryItem libItem) async {
+    try {
+      // 1. Get all gear items (Global scope)
+      final allGear = _gearRepository.getAllItems();
+
+      // 2. Filter by libraryItemId
+      final linkedItems = allGear.where((g) => g.libraryItemId == libItem.uuid).toList();
+
+      if (linkedItems.isEmpty) return;
+
+      int updatedCount = 0;
+      bool anyChanged = false;
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      for (final gear in linkedItems) {
+        // 3. Safety Check: Trip Status
+        if (gear.tripId != null) {
+          final trip = _tripRepository.getTripById(gear.tripId!);
+          if (trip != null) {
+            // Check if archived: !isActive AND endDate < today
+            final isArchived = !trip.isActive && (trip.endDate != null && trip.endDate!.isBefore(today));
+            if (isArchived) {
+              LogService.debug('跳過同步: ${trip.name} (已封存)', source: 'GearLibrary');
+              continue;
+            }
+          }
+        }
+
+        bool changed = false;
+        if (gear.name != libItem.name) {
+          gear.name = libItem.name;
+          changed = true;
+        }
+        if (gear.weight != libItem.weight) {
+          gear.weight = libItem.weight;
+          changed = true;
+        }
+        if (gear.category != libItem.category) {
+          gear.category = libItem.category;
+          changed = true;
+        }
+
+        if (changed) {
+          await gear.save();
+          anyChanged = true;
+          updatedCount++;
+        }
+      }
+
+      if (anyChanged) {
+        LogService.info('同步更新 $updatedCount 個連結裝備', source: 'GearLibrary');
+        // Notify GearProvider to reload IF it's active
+        if (getIt.isRegistered<GearProvider>()) {
+          getIt<GearProvider>().reload();
+        }
+      }
+    } catch (e) {
+      LogService.error('同步更新失敗: $e', source: 'GearLibrary');
     }
   }
 }
