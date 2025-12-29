@@ -89,13 +89,13 @@ function addMessage(messageData) {
   // 新增資料列 (用 ' 前綴強制字串格式)
   sheet.appendRow([
     "'" + String(messageData.uuid || Utilities.getUuid()),
+    messageData.trip_id ? "'" + String(messageData.trip_id) : "",
     messageData.parent_id ? "'" + String(messageData.parent_id) : "",
     "'" + String(messageData.user || DEFAULT_USER),
     "'" + String(messageData.category || DEFAULT_CATEGORY),
     "'" + String(messageData.content || ""),
     "'" + (messageData.timestamp || new Date().toISOString()),
     "'" + String(messageData.avatar || DEFAULT_AVATAR),
-    messageData.trip_id ? "'" + String(messageData.trip_id) : "",
   ]);
 
   return _success(null, "訊息已新增");
@@ -117,13 +117,13 @@ function batchAddMessages(messages) {
 
   const rows = messages.map((messageData) => [
     "'" + String(messageData.uuid || Utilities.getUuid()),
+    messageData.trip_id ? "'" + String(messageData.trip_id) : "",
     messageData.parent_id ? "'" + String(messageData.parent_id) : "",
     "'" + String(messageData.user || DEFAULT_USER),
     "'" + String(messageData.category || DEFAULT_CATEGORY),
     "'" + String(messageData.content || ""),
     "'" + (messageData.timestamp || new Date().toISOString()),
     "'" + String(messageData.avatar || DEFAULT_AVATAR),
-    messageData.trip_id ? "'" + String(messageData.trip_id) : "",
   ]);
 
   if (rows.length > 0) {
