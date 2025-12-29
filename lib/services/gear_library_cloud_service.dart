@@ -46,12 +46,12 @@ class GearLibraryCloudService {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        return GearLibraryCloudResult.failure(data['error'] ?? '上傳失敗');
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return GearLibraryCloudResult.failure(gasResponse.message);
       }
 
-      final count = data['count'] as int? ?? items.length;
+      final count = gasResponse.data['count'] as int? ?? items.length;
       LogService.info('成功上傳 $count 個裝備項目', source: _source);
       return GearLibraryCloudResult.success(count);
     } catch (e) {
@@ -78,13 +78,13 @@ class GearLibraryCloudService {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        return GearLibraryCloudResult.failure(data['error'] ?? '下載失敗');
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return GearLibraryCloudResult.failure(gasResponse.message);
       }
 
       final items =
-          (data['items'] as List<dynamic>?)
+          (gasResponse.data['items'] as List<dynamic>?)
               ?.map((item) => GearLibraryItem.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [];

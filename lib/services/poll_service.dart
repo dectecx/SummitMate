@@ -27,13 +27,13 @@ class PollService {
       LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
 
       if (response.statusCode == 200) {
-        final jsonResponse = json.decode(utf8.decode(response.bodyBytes));
-        if (jsonResponse['success'] == true) {
-          final List<dynamic> pollsJson = jsonResponse['polls'];
+        final gasResponse = GasApiResponse.fromJsonString(utf8.decode(response.bodyBytes));
+        if (gasResponse.isSuccess) {
+          final List<dynamic> pollsJson = gasResponse.data['polls'] ?? [];
           return pollsJson.map((e) => Poll.fromJson(e)).toList();
         } else {
-          LogService.error('Fetch polls failed: ${jsonResponse['error']}', source: _source);
-          throw Exception(jsonResponse['error']);
+          LogService.error('Fetch polls failed: ${gasResponse.message}', source: _source);
+          throw Exception(gasResponse.message);
         }
       } else {
         LogService.error('Fetch polls HTTP error: ${response.statusCode}', source: _source);
@@ -78,9 +78,9 @@ class PollService {
       final response = await _apiClient.post(payload);
       LogService.debug('Create response: ${response.body}', source: _source);
 
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['success'] != true) {
-        throw Exception(jsonResponse['error']);
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
       }
     } catch (e) {
       LogService.error('Error creating poll: $e', source: _source);
@@ -109,9 +109,9 @@ class PollService {
       final response = await _apiClient.post(payload);
       LogService.debug('Vote response: ${response.body}', source: _source);
 
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['success'] != true) {
-        throw Exception(jsonResponse['error']);
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
       }
     } catch (e) {
       LogService.error('Error voting: $e', source: _source);
@@ -134,9 +134,9 @@ class PollService {
       final response = await _apiClient.post(payload);
       LogService.debug('Add option response: ${response.body}', source: _source);
 
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['success'] != true) {
-        throw Exception(jsonResponse['error']);
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
       }
       LogService.info('Option added successfully to poll $pollId.', source: _source);
     } catch (e) {
@@ -154,9 +154,9 @@ class PollService {
       final response = await _apiClient.post(payload);
       LogService.debug('Close response: ${response.body}', source: _source);
 
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['success'] != true) {
-        throw Exception(jsonResponse['error']);
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
       }
       LogService.info('Poll $pollId closed successfully.', source: _source);
     } catch (e) {
@@ -174,9 +174,9 @@ class PollService {
       final response = await _apiClient.post(payload);
       LogService.debug('Delete response: ${response.body}', source: _source);
 
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['success'] != true) {
-        throw Exception(jsonResponse['error']);
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
       }
       LogService.info('Poll $pollId deleted successfully.', source: _source);
     } catch (e) {
@@ -199,9 +199,9 @@ class PollService {
       final response = await _apiClient.post(payload);
       LogService.debug('Delete option response: ${response.body}', source: _source);
 
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['success'] != true) {
-        throw Exception(jsonResponse['error']);
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
       }
       LogService.info('Option $optionId deleted successfully.', source: _source);
     } catch (e) {

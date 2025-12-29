@@ -115,3 +115,41 @@ class GasApiClient {
     _client.close();
   }
 }
+
+/// 成功代碼常數
+const String kGasCodeSuccess = '0000';
+
+/// GAS API 回應解析器
+///
+/// 格式: { code: "0000", data: {...}, message: "..." }
+class GasApiResponse {
+  final Map<String, dynamic> _json;
+
+  GasApiResponse(this._json);
+
+  /// 從 JSON 字串建立
+  factory GasApiResponse.fromJsonString(String jsonString) {
+    return GasApiResponse(jsonDecode(jsonString) as Map<String, dynamic>);
+  }
+
+  /// 回應是否成功 (code == "0000")
+  bool get isSuccess => _json['code'] == kGasCodeSuccess;
+
+  /// 取得資料區塊
+  Map<String, dynamic> get data {
+    final dataField = _json['data'];
+    if (dataField is Map<String, dynamic>) {
+      return dataField;
+    }
+    return {};
+  }
+
+  /// 取得訊息
+  String get message => _json['message']?.toString() ?? '';
+
+  /// 取得錯誤代碼
+  String get code => _json['code']?.toString() ?? '';
+
+  /// 取得原始 JSON
+  Map<String, dynamic> get raw => _json;
+}
