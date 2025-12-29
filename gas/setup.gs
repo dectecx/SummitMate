@@ -76,6 +76,9 @@ function setupSheets() {
   _setupSheet(ss, SHEET_HEARTBEAT, HEADERS_HEARTBEAT);
   Logger.log("✓ Heartbeat 工作表已建立");
 
+  // 9. 套用文字欄位格式到所有工作表 (確保已存在的工作表也有正確格式)
+  applyTextFormatToAll();
+
   Logger.log("========================================");
   Logger.log("初始化設定完成 (Setup complete)!");
   Logger.log("預設行程: 嘉明湖三天兩夜");
