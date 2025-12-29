@@ -197,20 +197,61 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         title: Text(item.name),
-        subtitle: Text(
-          '${item.weight}g • ${GearCategoryHelper.getName(item.category)}',
-          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconButton(
-              icon: const Icon(Icons.edit_outlined, size: 20),
-              onPressed: () => _showEditDialog(context, item),
+            Text(
+              '${item.weight.toStringAsFixed(0)}g • ${GearCategoryHelper.getName(item.category)}',
+              style: TextStyle(color: item.isArchived ? Colors.grey : Colors.grey.shade600, fontSize: 12),
             ),
-            IconButton(
-              icon: Icon(Icons.delete_outline, size: 20, color: Colors.red.shade400),
-              onPressed: () => _confirmDelete(context, item, provider),
+            if (item.isArchived)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4)),
+                child: const Text('已封存', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              ),
+          ],
+        ),
+        trailing: PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert),
+          onSelected: (value) {
+            switch (value) {
+              case 'edit':
+                _showEditDialog(context, item);
+                break;
+              case 'archive':
+                provider.toggleArchive(item.uuid);
+                break;
+              case 'delete':
+                _showDeleteImpactDialog(context, item, provider);
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 'edit',
+              child: Row(children: [Icon(Icons.edit, size: 20), SizedBox(width: 8), Text('編輯')]),
+            ),
+            PopupMenuItem(
+              value: 'archive',
+              child: Row(
+                children: [
+                  Icon(item.isArchived ? Icons.unarchive : Icons.archive, size: 20),
+                  const SizedBox(width: 8),
+                  Text(item.isArchived ? '解除封存' : '封存'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text('刪除', style: TextStyle(color: Colors.red)),
+                ],
+              ),
             ),
           ],
         ),
@@ -262,12 +303,87 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     );
   }
 
+  void _showDeleteImpactDialog(BuildContext context, GearLibraryItem item, GearLibraryProvider provider) async {
+    // 1. Analyze Impact
+    final linkedTrips = provider.getLinkedTrips(item.uuid);
+
+    if (linkedTrips.isEmpty) {
+      // Safe to delete (No links)
+      _confirmDelete(context, item, provider);
+      return;
+    }
+
+    // 2. Show Impact Dialog
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('刪除警告'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '此項目目前被連結至 ${linkedTrips.length} 個行程中。刪除將會解除這些連結（行程中的裝備會保留，但變為獨立項目）。',
+                style: const TextStyle(height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              const Text('受影響的行程：', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: linkedTrips.length > 5 ? 5 : linkedTrips.length,
+                  itemBuilder: (ctx, index) {
+                    final trip = linkedTrips[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.terrain, size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Text('${trip['tripName']}'),
+                          const Spacer(),
+                          Text(
+                            (trip['startDate'] as DateTime).toString().split(' ')[0],
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              if (linkedTrips.length > 5)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('...以及其他 ${linkedTrips.length - 5} 個行程', style: const TextStyle(color: Colors.grey)),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await provider.deleteItem(item.uuid);
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('刪除並解除連結'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _confirmDelete(BuildContext context, GearLibraryItem item, GearLibraryProvider provider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('確認刪除'),
-        content: Text('確定要刪除「${item.name}」嗎？'),
+        content: Text('確定要刪除「${item.name}」嗎？\n(此項目目前未被任何行程連結)'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
