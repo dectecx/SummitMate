@@ -266,17 +266,33 @@ class _GearTabState extends State<GearTab> {
                                       value: item.isChecked,
                                       onChanged: (_) => provider.toggleChecked(item.key),
                                     ),
-                                    title: Text(
-                                      item.name,
-                                      style: TextStyle(
-                                        decoration: item.isChecked ? TextDecoration.lineThrough : null,
-                                        color: item.isChecked ? Colors.grey : null,
-                                      ),
+                                    title: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            item.name,
+                                            style: TextStyle(
+                                              decoration: item.isChecked ? TextDecoration.lineThrough : null,
+                                              color: item.isChecked ? Colors.grey : null,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (item.libraryItemId != null) ...[
+                                          const SizedBox(width: 4),
+                                          const Icon(Icons.link, size: 16, color: Colors.blue),
+                                        ],
+                                      ],
                                     ),
                                     subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, size: 20, color: Colors.blueGrey),
+                                          onPressed: () => _showEditGearDialog(context, provider, item),
+                                        ),
                                         IconButton(
                                           icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
                                           onPressed: () => _confirmDeleteGearItem(context, provider, item),
@@ -393,7 +409,7 @@ class _GearTabState extends State<GearTab> {
                       focusNode: focusNode,
                       optionsBuilder: (textValue) {
                         if (textValue.text.isEmpty) return const Iterable.empty();
-                        return libraryProvider.allItems.where(
+                        return libraryProvider.availableItems.where(
                           (e) => e.name.toLowerCase().contains(textValue.text.toLowerCase()),
                         );
                       },
@@ -415,9 +431,17 @@ class _GearTabState extends State<GearTab> {
                             hintText: '輸入名稱搜尋裝備庫...',
                             // 顯示連結狀態圖示
                             suffixIcon: linkedItem != null
-                                ? Tooltip(
-                                    message: '已連結至裝備庫: ${linkedItem!.name}',
-                                    child: const Icon(Icons.link, color: Colors.blue),
+                                ? IconButton(
+                                    icon: const Icon(Icons.link_off, color: Colors.red),
+                                    tooltip: '解除連結',
+                                    onPressed: () {
+                                      setState(() {
+                                        linkedItem = null;
+                                        nameController
+                                            .clear(); // Option: clear or keep name? User usually wants to keep but unlink.
+                                        // Let's keep name/weight but unlock.
+                                      });
+                                    },
                                   )
                                 : null,
                           ),
@@ -461,10 +485,12 @@ class _GearTabState extends State<GearTab> {
                       },
                     ),
                     const SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: weightController,
                       decoration: const InputDecoration(labelText: '重量 (公克)', hintText: '例如：1200'),
                       keyboardType: TextInputType.number,
+                      enabled: linkedItem == null, // Lock if linked
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
@@ -476,7 +502,9 @@ class _GearTabState extends State<GearTab> {
                         DropdownMenuItem(value: 'Wear', child: Text('穿著')),
                         DropdownMenuItem(value: 'Other', child: Text('其他')),
                       ],
-                      onChanged: (value) => setState(() => selectedCategory = value!),
+                      onChanged: linkedItem == null
+                          ? (value) => setState(() => selectedCategory = value!)
+                          : null, // Lock if linked
                     ),
                   ],
                 ),
@@ -515,7 +543,13 @@ class _GearTabState extends State<GearTab> {
                           );
 
                           if (wantLink == true) {
-                            linkedItem = match;
+                            setState(() {
+                              linkedItem = match;
+                              nameController.text = match.name; // Normalize name
+                              weightController.text = match.weight.toStringAsFixed(0);
+                              selectedCategory = match.category;
+                            });
+                            return; // Stop here to let user review data
                           }
                         } catch (_) {
                           // No match found
@@ -538,6 +572,121 @@ class _GearTabState extends State<GearTab> {
                 ),
               ],
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showEditGearDialog(BuildContext context, GearProvider provider, GearItem item) {
+    final nameController = TextEditingController(text: item.name);
+    final weightController = TextEditingController(text: item.weight.toStringAsFixed(0));
+    String selectedCategory = item.category;
+    String? libraryItemId = item.libraryItemId;
+    final libraryProvider = context.read<GearLibraryProvider>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (innerContext, setState) {
+          // Check if currently linked to a valid library item
+          final isLinked = libraryItemId != null && libraryProvider.containsItem(libraryItemId!);
+
+          return AlertDialog(
+            title: const Text('編輯裝備'),
+            content: SizedBox(
+              width: 400,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isLinked)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.link, size: 20, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text('已連結至裝備庫。規格欄位鎖定，解除連結後可編輯。', style: TextStyle(fontSize: 12, color: Colors.blue)),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() => libraryItemId = null);
+                            },
+                            child: const Text('解除連結'),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: '名稱'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: weightController,
+                    decoration: const InputDecoration(labelText: '重量 (公克)'),
+                    keyboardType: TextInputType.number,
+                    enabled: !isLinked, // Strict Lock
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    decoration: const InputDecoration(labelText: '分類'),
+                    items: const [
+                      DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
+                      DropdownMenuItem(value: 'Cook', child: Text('炊具與飲食')),
+                      DropdownMenuItem(value: 'Wear', child: Text('穿著')),
+                      DropdownMenuItem(value: 'Other', child: Text('其他')),
+                    ],
+                    onChanged: !isLinked ? (value) => setState(() => selectedCategory = value!) : null, // Strict Lock
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+              FilledButton(
+                onPressed: () async {
+                  final name = nameController.text.trim();
+                  final weight = double.tryParse(weightController.text) ?? 0;
+
+                  if (name.isNotEmpty && weight > 0) {
+                    // Update Local Item
+                    item.name = name;
+                    // Only update specs if not linked (though UI locks them, safety check)
+                    if (libraryItemId == null) {
+                      item.weight = weight;
+                      item.category = selectedCategory;
+                    }
+                    // If linked, we trust the weight/category is already correct from DB or untouched.
+                    // But actually, we should just save whatever is in the controller IF unlinked.
+                    // If linked, we might want to ensure they match library?
+                    // No, "Copy" philosophy means we modify local checks.
+                    // Simply:
+                    item.weight = weight; // If locked, controller text didn't change.
+                    item.category = selectedCategory;
+
+                    item.libraryItemId = libraryItemId;
+                    await item.save(); // Hive save
+
+                    // NO Sync Back to library (Strict Mode)
+
+                    provider.reload(); // Refresh UI
+                    if (dialogContext.mounted) Navigator.pop(dialogContext);
+                  }
+                },
+                child: const Text('儲存'),
+              ),
+            ],
           );
         },
       ),
