@@ -29,16 +29,7 @@ function uploadGearLibrary(ownerKey, items) {
       );
     }
 
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName("GearLibrary");
-
-    // 如果工作表不存在，建立它
-    if (!sheet) {
-      sheet = ss.insertSheet("GearLibrary");
-      sheet
-        .getRange(1, 1, 1, HEADERS_GEAR_LIBRARY.length)
-        .setValues([HEADERS_GEAR_LIBRARY]);
-    }
+    const sheet = _getSheetOrCreate(SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
 
     // 刪除該 owner_key 的所有舊資料 (轉字串比較)
     const existingData = sheet.getDataRange().getValues();
@@ -100,7 +91,7 @@ function downloadGearLibrary(ownerKey) {
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("GearLibrary");
+    const sheet = ss.getSheetByName(SHEET_GEAR_LIBRARY);
 
     if (!sheet) {
       return _success({ items: [], count: 0 }, "裝備庫為空");
@@ -124,7 +115,7 @@ function downloadGearLibrary(ownerKey) {
             item[header] = data[i][index];
           }
         });
-        items.push(_formatData(item, "GearLibrary"));
+        items.push(_formatData(item, SHEET_GEAR_LIBRARY));
       }
     }
 
