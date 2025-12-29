@@ -54,7 +54,12 @@ class UsageTrackingService {
       });
 
       if (response.statusCode == 200) {
-        LogService.info('心跳發送成功', source: _source);
+        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        if (gasResponse.isSuccess) {
+          LogService.info('心跳發送成功', source: _source);
+        } else {
+          LogService.warning('心跳發送失敗: ${gasResponse.message}', source: _source);
+        }
       } else {
         LogService.warning('心跳發送失敗: HTTP ${response.statusCode}', source: _source);
       }

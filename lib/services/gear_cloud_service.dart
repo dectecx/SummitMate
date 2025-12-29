@@ -26,13 +26,13 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        return GearCloudResult.failure(data['error'] ?? '取得失敗');
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return GearCloudResult.failure(gasResponse.message);
       }
 
       final gearSets =
-          (data['gear_sets'] as List<dynamic>?)
+          (gasResponse.data['gear_sets'] as List<dynamic>?)
               ?.map((item) => GearSet.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [];
@@ -56,12 +56,12 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        return GearCloudResult.failure(data['error'] ?? '取得失敗');
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return GearCloudResult.failure(gasResponse.message);
       }
 
-      final gearSet = GearSet.fromJson(data['gear_set'] as Map<String, dynamic>);
+      final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
       LogService.info('成功取得: ${gearSet.title}', source: _source);
       return GearCloudResult.success(gearSet);
     } catch (e) {
@@ -85,12 +85,12 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        return GearCloudResult.failure(data['error'] ?? '下載失敗');
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return GearCloudResult.failure(gasResponse.message);
       }
 
-      final gearSet = GearSet.fromJson(data['gear_set'] as Map<String, dynamic>);
+      final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
       LogService.info('下載成功: ${gearSet.title} (${gearSet.itemCount} items)', source: _source);
       return GearCloudResult.success(gearSet);
     } catch (e) {
@@ -132,17 +132,17 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        final errorMsg = data['error'] ?? '上傳失敗';
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        final errorMsg = gasResponse.message;
         // 檢查是否為 Key 重複錯誤
-        if (errorMsg.toString().contains('duplicate') || errorMsg.toString().contains('重複')) {
+        if (errorMsg.contains('duplicate') || errorMsg.contains('重複')) {
           return GearCloudResult.failure('Key 已存在，請換一個 4 位數');
         }
         return GearCloudResult.failure(errorMsg);
       }
 
-      final gearSet = GearSet.fromJson(data['gear_set'] as Map<String, dynamic>);
+      final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
       LogService.info('上傳成功: ${gearSet.uuid}', source: _source);
       return GearCloudResult.success(gearSet);
     } catch (e) {
@@ -158,9 +158,9 @@ class GearCloudService {
 
       final response = await _apiClient.post({'action': ApiConfig.actionDeleteGearSet, 'uuid': uuid, 'key': key});
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true) {
-        return GearCloudResult.failure(data['error'] ?? '刪除失敗');
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return GearCloudResult.failure(gasResponse.message);
       }
 
       LogService.info('刪除成功', source: _source);
