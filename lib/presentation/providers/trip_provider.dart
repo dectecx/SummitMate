@@ -31,7 +31,7 @@ class TripProvider extends ChangeNotifier {
   bool get hasTrips => _trips.isNotEmpty;
 
   /// 載入所有行程
-  void _loadTrips() {
+  Future<void> _loadTrips() async {
     try {
       _isLoading = true;
       _error = null;
@@ -46,7 +46,7 @@ class TripProvider extends ChangeNotifier {
 
       // 如果沒有行程，建立預設行程
       if (_trips.isEmpty) {
-        _createDefaultTrip();
+        await _createDefaultTrip();
       } else if (_activeTrip == null && _trips.isNotEmpty) {
         // 如果沒有啟用的行程，啟用第一個
         _setActiveTrip(_trips.first.id);
