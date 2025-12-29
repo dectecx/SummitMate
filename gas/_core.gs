@@ -249,12 +249,16 @@ function _formatData(data, schemaName) {
   for (const key in data) {
     if (Object.prototype.hasOwnProperty.call(data, key) && schema[key]) {
       const type = schema[key].type;
-      if (type === "text") {
+      const value = data[key];
+
+      if (type === 'text') {
         // 強制轉為字串 (除了 null/undefined)
-        data[key] =
-          data[key] === null || data[key] === undefined
-            ? ""
-            : String(data[key]);
+        data[key] = (value === null || value === undefined) ? "" : String(value);
+      } else if (type === 'date') {
+        // 日期統一轉為 ISO 8601 字串
+        if (value instanceof Date) {
+          data[key] = value.toISOString();
+        }
       }
     }
   }

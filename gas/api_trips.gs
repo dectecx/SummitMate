@@ -33,16 +33,6 @@ function fetchTrips() {
       const trip = {};
       headers.forEach((header, index) => {
         let value = row[index];
-
-        // 處理日期
-        if (
-          (header === "start_date" ||
-            header === "end_date" ||
-            header === "created_at") &&
-          value instanceof Date
-        ) {
-          value = value.toISOString();
-        }
         trip[header] = value;
       });
       return _formatData(trip, SHEET_TRIPS);

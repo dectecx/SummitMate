@@ -33,10 +33,6 @@ function getMessagesData(ss, tripId) {
         const key = _headerToKey(header);
         let value = row[index];
 
-        // 處理時間戳記
-        if (key === "timestamp" && value instanceof Date) {
-          value = value.toISOString();
-        }
         // 處理空的 parent_id
         if (key === "parent_id") {
           value = value || null;
