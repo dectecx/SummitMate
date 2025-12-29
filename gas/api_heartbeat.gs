@@ -12,7 +12,7 @@
 /**
  * 記錄使用狀態心跳
  * @param {Object} data - 心跳資料 { username, timestamp, platform, view }
- * @returns {Object} { success: boolean, message?: string }
+ * @returns {Object} { code, data, message }
  */
 function recordHeartbeat(data) {
   const sheet = _getSheetOrCreate(SHEET_HEARTBEAT, HEADERS_HEARTBEAT);
@@ -26,5 +26,5 @@ function recordHeartbeat(data) {
     data.platform || "unknown",
   ]);
 
-  return { success: true, message: "心跳已記錄" };
+  return _success(null, "心跳已記錄");
 }

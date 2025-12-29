@@ -12,15 +12,18 @@
 /**
  * 取得所有資料 (行程 + 留言)
  * @param {string} [tripId] - 可選，篩選特定行程的資料
- * @returns {Object} { itinerary: [], messages: [] }
+ * @returns {Object} { code, data, message }
  */
 function fetchAll(tripId) {
-  const ss = getSpreadsheet();
-
-  return {
-    itinerary: getItineraryData(ss, tripId),
-    messages: getMessagesData(ss, tripId),
-  };
+  try {
+    const ss = getSpreadsheet();
+    return _success({
+      itinerary: getItineraryData(ss, tripId),
+      messages: getMessagesData(ss, tripId),
+    });
+  } catch (e) {
+    return _error(API_CODES.SYSTEM_ERROR, e.message);
+  }
 }
 
 /**
@@ -64,7 +67,7 @@ function getItineraryData(ss, tripId) {
  * 更新行程 (覆寫模式)
  * @param {Object[]} itineraryItems - 行程資料列表
  * @param {string} [tripId] - 可選，指定行程 ID
- * @returns {Object} { success: boolean, message?: string }
+ * @returns {Object} { code, data, message }
  */
 function updateItinerary(itineraryItems, tripId) {
   const sheet = _getSheetOrCreate(SHEET_ITINERARY, HEADERS_ITINERARY);
@@ -76,7 +79,7 @@ function updateItinerary(itineraryItems, tripId) {
   }
 
   if (!itineraryItems || itineraryItems.length === 0) {
-    return { success: true, message: "行程已清空" };
+    return _success(null, "行程已清空");
   }
 
   // 準備資料列
@@ -95,5 +98,5 @@ function updateItinerary(itineraryItems, tripId) {
     sheet.getRange(2, 1, rows.length, HEADERS_ITINERARY.length).setValues(rows);
   }
 
-  return { success: true, message: "行程已更新" };
+  return _success(null, "行程已更新");
 }

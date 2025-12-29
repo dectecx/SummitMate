@@ -631,7 +631,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: TextButton.icon(
-                      onPressed: () async {
+                        onPressed: () async {
                           final confirm = await showDialog<bool>(
                             context: dialogContext,
                             builder: (c) => AlertDialog(

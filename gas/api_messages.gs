@@ -69,7 +69,7 @@ function getMessagesData(ss, tripId) {
 /**
  * 新增留言
  * @param {Object} messageData - 留言資料
- * @returns {Object} { success: boolean, message?: string }
+ * @returns {Object} { code, data, message }
  */
 function addMessage(messageData) {
   const sheet = _getSheetOrCreate(SHEET_MESSAGES, HEADERS_MESSAGES);
@@ -82,7 +82,7 @@ function addMessage(messageData) {
   const existingData = sheet.getDataRange().getValues();
   for (let i = 1; i < existingData.length; i++) {
     if (existingData[i][0] === messageData.uuid) {
-      return { success: true, message: "訊息已存在 (Message already exists)" };
+      return _success(null, "訊息已存在 (Message already exists)");
     }
   }
 
@@ -98,17 +98,17 @@ function addMessage(messageData) {
     messageData.trip_id || "",
   ]);
 
-  return { success: true, message: "訊息已新增 (Message added)" };
+  return _success(null, "訊息已新增");
 }
 
 /**
  * 批次新增留言
  * @param {Object[]} messages - 留言陣列
- * @returns {Object} { success: boolean, message?: string }
+ * @returns {Object} { code, data, message }
  */
 function batchAddMessages(messages) {
   if (!messages || messages.length === 0) {
-    return { success: true, message: "無訊息可新增" };
+    return _success(null, "無訊息可新增");
   }
 
   const sheet = _getSheetOrCreate(SHEET_MESSAGES, HEADERS_MESSAGES);
@@ -132,20 +132,20 @@ function batchAddMessages(messages) {
       .setValues(rows);
   }
 
-  return { success: true, message: `批次新增了 ${rows.length} 則訊息` };
+  return _success({ count: rows.length }, `批次新增了 ${rows.length} 則訊息`);
 }
 
 /**
  * 刪除留言
  * @param {string} uuid - 留言 UUID
- * @returns {Object} { success: boolean, message?: string, error?: string }
+ * @returns {Object} { code, data, message }
  */
 function deleteMessage(uuid) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_MESSAGES);
 
   if (!sheet) {
-    return { success: false, error: "找不到 Messages 工作表" };
+    return _error(API_CODES.MESSAGE_SHEET_MISSING, "找不到 Messages 工作表");
   }
 
   const data = sheet.getDataRange().getValues();
@@ -153,9 +153,9 @@ function deleteMessage(uuid) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === uuid) {
       sheet.deleteRow(i + 1);
-      return { success: true, message: "訊息已刪除" };
+      return _success(null, "訊息已刪除");
     }
   }
 
-  return { success: false, error: "找不到該訊息" };
+  return _error(API_CODES.MESSAGE_NOT_FOUND, "找不到該訊息");
 }

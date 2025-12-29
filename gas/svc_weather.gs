@@ -369,26 +369,33 @@ function updateSheet(sheetName, data) {
 
 /**
  * [API 接口] 供 Code.gs 呼叫
+ * @returns {Object} { code, data, message }
  */
 function getWeatherData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Weather_Hiking_App");
 
-  if (!sheet) return { error: "Weather data not ready (氣象資料尚未準備好)" };
+  if (!sheet) {
+    return _error(API_CODES.WEATHER_NOT_READY, "氣象資料尚未準備好");
+  }
 
   const data = sheet.getDataRange().getValues();
-  if (data.length <= 1) return [];
+  if (data.length <= 1) {
+    return _success({ weather: [] }, "尚無氣象資料");
+  }
 
   const headers = data[0];
   const rows = data.slice(1);
 
-  return rows.map((row) => {
+  const weatherData = rows.map((row) => {
     const item = {};
     headers.forEach((h, i) => {
       item[h] = row[i];
     });
     return item;
   });
+
+  return _success({ weather: weatherData }, "取得氣象資料成功");
 }
 
 /**

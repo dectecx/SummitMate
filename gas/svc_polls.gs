@@ -6,6 +6,7 @@
  * 處理投票相關的操作請求
  * @param {string} subAction - 子動作：'create', 'get', 'vote', 'add_option', 'delete_option'
  * @param {Object} data - 請求資料 payload
+ * @returns {Object} { code, data, message }
  */
 function handlePollAction(subAction, data) {
   switch (subAction) {
@@ -24,7 +25,7 @@ function handlePollAction(subAction, data) {
     case "delete":
       return deletePoll(data);
     default:
-      return { error: "未知的投票子動作: " + subAction };
+      return _error(API_CODES.UNKNOWN_ACTION, "未知的投票子動作: " + subAction);
   }
 }
 
