@@ -28,7 +28,8 @@ class ItineraryProvider extends ChangeNotifier {
   }
 
   /// 當前行程 ID
-  String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
+  String? get currentTripId => _tripRepository.getActiveTrip()?.id;
+  String? get _currentTripId => currentTripId;
 
   /// 所有行程節點
   List<ItineraryItem> get allItems => _items;

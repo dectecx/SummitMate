@@ -15,9 +15,18 @@ class GearProvider extends ChangeNotifier {
   bool _showUncheckedOnly = false;
   bool _isLoading = true;
   String? _error;
+  String? _currentTripId; // 當前行程 ID
 
   GearProvider({IGearRepository? repository}) : _repository = repository ?? getIt<IGearRepository>() {
     LogService.info('GearProvider 初始化', source: 'Gear');
+    // Note: Delay load until tripId is set
+  }
+
+  /// 設定當前行程Context
+  void setTripId(String tripId) {
+    if (_currentTripId == tripId) return;
+    _currentTripId = tripId;
+    LogService.debug('GearProvider 切換行程: $tripId', source: 'Gear');
     _loadItems();
   }
 
@@ -98,6 +107,15 @@ class GearProvider extends ChangeNotifier {
       notifyListeners();
 
       _items = _repository.getAllItems();
+
+      // Filter by tripId if set
+      if (_currentTripId != null) {
+        _items = _items.where((i) => i.tripId == _currentTripId).toList();
+      } else {
+        // If no trip selected, maybe show nothing or all?
+        // Safe bet: show nothing to avoid mixing
+        _items = [];
+      }
       LogService.debug('載入 ${_items.length} 個裝備', source: 'Gear');
       _isLoading = false;
       notifyListeners();
@@ -128,11 +146,29 @@ class GearProvider extends ChangeNotifier {
   }
 
   /// 新增裝備
-  Future<void> addItem({required String name, required double weight, required String category}) async {
-    try {
-      final item = GearItem(name: name, weight: weight, category: category, isChecked: false);
+  Future<void> addItem({
+    required String name,
+    required double weight,
+    required String category,
+    String? libraryItemId,
+  }) async {
+    if (_currentTripId == null) {
+      _error = '未選擇行程，無法新增裝備';
+      notifyListeners();
+      return;
+    }
 
-      LogService.info('新增裝備: $name (${weight}g)', source: 'Gear');
+    try {
+      final item = GearItem(
+        name: name,
+        weight: weight,
+        category: category,
+        isChecked: false,
+        libraryItemId: libraryItemId,
+        tripId: _currentTripId, // Auto set tripId
+      );
+
+      LogService.info('新增裝備: $name (${weight}g)${libraryItemId != null ? ' [Linked]' : ''}', source: 'Gear');
       await _repository.addItem(item);
       _loadItems();
     } catch (e) {

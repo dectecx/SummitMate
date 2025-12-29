@@ -10,10 +10,13 @@ import '../screens/gear_cloud_screen.dart';
 import '../screens/gear_library_screen.dart';
 import '../screens/meal_planner_screen.dart';
 import '../../data/models/gear_item.dart';
+import '../../data/models/gear_library_item.dart';
+import '../providers/gear_library_provider.dart';
 
 /// Tab 3: 裝備頁 (獨立頁籤)
 class GearTab extends StatefulWidget {
-  const GearTab({super.key});
+  final String? tripId;
+  const GearTab({super.key, this.tripId});
 
   @override
   State<GearTab> createState() => _GearTabState();
@@ -21,6 +24,24 @@ class GearTab extends StatefulWidget {
 
 class _GearTabState extends State<GearTab> {
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.tripId != null) {
+        context.read<GearProvider>().setTripId(widget.tripId!);
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(GearTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.tripId != oldWidget.tripId && widget.tripId != null) {
+      context.read<GearProvider>().setTripId(widget.tripId!);
+    }
+  }
 
   @override
   void dispose() {
@@ -319,7 +340,11 @@ class _GearTabState extends State<GearTab> {
   void _showAddGearDialog(BuildContext context, GearProvider provider) {
     final nameController = TextEditingController();
     final weightController = TextEditingController();
+    final focusNode = FocusNode();
     String selectedCategory = 'Other';
+    // 獲取 GearLibraryProvider
+    final libraryProvider = context.read<GearLibraryProvider>();
+    GearLibraryItem? linkedItem;
 
     showDialog(
       context: context,
@@ -362,10 +387,78 @@ class _GearTabState extends State<GearTab> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: const InputDecoration(labelText: '裝備名稱', hintText: '例如：睡袋'),
-                      autofocus: true,
+                    // 名稱輸入 (支援 Autocomplete)
+                    RawAutocomplete<GearLibraryItem>(
+                      textEditingController: nameController,
+                      focusNode: focusNode,
+                      optionsBuilder: (textValue) {
+                        if (textValue.text.isEmpty) return const Iterable.empty();
+                        return libraryProvider.allItems.where(
+                          (e) => e.name.toLowerCase().contains(textValue.text.toLowerCase()),
+                        );
+                      },
+                      displayStringForOption: (item) => item.name,
+                      onSelected: (item) {
+                        setState(() {
+                          weightController.text = item.weight.toStringAsFixed(0);
+                          selectedCategory = item.category;
+                          linkedItem = item;
+                        });
+                      },
+                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                        return TextField(
+                          controller: controller, // 這裡其實就是 nameController
+                          focusNode: focusNode,
+                          onSubmitted: (val) => onFieldSubmitted(),
+                          decoration: InputDecoration(
+                            labelText: '裝備名稱',
+                            hintText: '輸入名稱搜尋裝備庫...',
+                            // 顯示連結狀態圖示
+                            suffixIcon: linkedItem != null
+                                ? Tooltip(
+                                    message: '已連結至裝備庫: ${linkedItem!.name}',
+                                    child: const Icon(Icons.link, color: Colors.blue),
+                                  )
+                                : null,
+                          ),
+                          autofocus: true,
+                          onChanged: (val) {
+                            // 如果手動修改名稱且與連結項目不符，解除連結
+                            if (linkedItem != null && val != linkedItem!.name) {
+                              setState(() => linkedItem = null);
+                            }
+                          },
+                        );
+                      },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 4,
+                            child: SizedBox(
+                              width: 300,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 200),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder: (context, index) {
+                                    final item = options.elementAt(index);
+                                    return ListTile(
+                                      title: Text(item.name),
+                                      subtitle: Text(
+                                        '${item.weight.toStringAsFixed(0)}g - ${GearCategoryHelper.getName(item.category)}',
+                                      ),
+                                      onTap: () => onSelected(item),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextField(
@@ -397,11 +490,46 @@ class _GearTabState extends State<GearTab> {
                   child: const Text('取消'),
                 ),
                 FilledButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final name = nameController.text.trim();
                     final weight = double.tryParse(weightController.text) ?? 0;
+
                     if (name.isNotEmpty && weight > 0) {
-                      provider.addItem(name: name, weight: weight, category: selectedCategory);
+                      // 檢查：如果未連結，但裝備庫有完全名稱相同的項目
+                      if (linkedItem == null) {
+                        try {
+                          final match = libraryProvider.allItems.firstWhere(
+                            (item) => item.name.toLowerCase() == name.toLowerCase(),
+                          );
+                          // 提示用戶是否連結
+                          final wantLink = await showDialog<bool>(
+                            context: dialogContext,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('發現庫存裝備'),
+                              content: Text('裝備庫中已有「${match.name}」(${match.weight}g)。\n是否直接連結此項目？'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('建立獨立裝備')),
+                                FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('連結')),
+                              ],
+                            ),
+                          );
+
+                          if (wantLink == true) {
+                            linkedItem = match;
+                          }
+                        } catch (_) {
+                          // No match found
+                        }
+                      }
+
+                      // 新增裝備 (帶入 libraryItemId)
+                      provider.addItem(
+                        name: name,
+                        weight: weight,
+                        category: selectedCategory,
+                        libraryItemId: linkedItem?.uuid,
+                      );
+
                       if (context.mounted) ToastService.success('已新增：$name');
                       if (dialogContext.mounted) Navigator.pop(dialogContext);
                     }
