@@ -276,9 +276,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // 資訊顯示 (左上角)
+              // 資訊顯示 (左上角 - 移到返回按鈕下方)
               Positioned(
-                top: MediaQuery.of(context).padding.top + 10,
+                top: MediaQuery.of(context).padding.top + 60,
                 left: 16,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
