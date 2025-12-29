@@ -7,22 +7,16 @@ import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 import 'log_service.dart';
 
-/// 成功代碼
-const String kApiCodeSuccess = '0000';
-
 /// Google Sheets API 服務
 /// 透過 Google Apps Script 作為 API Gateway
 class GoogleSheetsService {
   final GasApiClient _apiClient;
 
   /// 建構子
-  /// [apiClient] - 統一的 GAS API Client (包含 redirect 處理)
   GoogleSheetsService({GasApiClient? apiClient})
     : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
 
   /// 取得所有資料 (行程 + 留言)
-  /// 回傳格式：{ code: "0000", data: { itinerary: [...], messages: [...] }, message: "..." }
-  /// [tripId] - 可選，篩選特定行程的資料
   Future<FetchAllResult> fetchAll({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchAll${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
@@ -36,23 +30,20 @@ class GoogleSheetsService {
       LogService.debug('API 回應: ${response.statusCode}', source: 'API');
 
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final gasResponse = GasApiResponse.fromJsonString(response.body);
 
-        // 解析標準化 GAS 回應格式 { code, data, message }
-        if (!_isSuccess(json)) {
-          return FetchAllResult(success: false, errorMessage: _getErrorMessage(json));
+        if (!gasResponse.isSuccess) {
+          return FetchAllResult(success: false, errorMessage: gasResponse.message);
         }
 
-        final data = _getData(json);
-
         final itineraryList =
-            (data['itinerary'] as List<dynamic>?)
+            (gasResponse.data['itinerary'] as List<dynamic>?)
                 ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [];
 
         final messagesList =
-            (data['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
+            (gasResponse.data['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
             [];
 
         LogService.debug('解析成功: 行程=${itineraryList.length}, 留言=${messagesList.length}', source: 'API');
@@ -68,7 +59,6 @@ class GoogleSheetsService {
   }
 
   /// 僅取得行程資料
-  /// [tripId] - 可選，篩選特定行程的資料
   Future<FetchAllResult> fetchItinerary({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchItinerary${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
@@ -81,15 +71,14 @@ class GoogleSheetsService {
       final response = await _apiClient.get(queryParams: queryParams);
 
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-
-        if (!_isSuccess(json)) {
-          return FetchAllResult(success: false, errorMessage: _getErrorMessage(json));
+        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        
+        if (!gasResponse.isSuccess) {
+          return FetchAllResult(success: false, errorMessage: gasResponse.message);
         }
-
-        final data = _getData(json);
+        
         final itineraryList =
-            (data['itinerary'] as List<dynamic>?)
+            (gasResponse.data['itinerary'] as List<dynamic>?)
                 ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [];
@@ -103,7 +92,6 @@ class GoogleSheetsService {
   }
 
   /// 僅取得留言資料
-  /// [tripId] - 可選，篩選特定行程的資料
   Future<FetchAllResult> fetchMessages({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchMessages${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
@@ -116,15 +104,14 @@ class GoogleSheetsService {
       final response = await _apiClient.get(queryParams: queryParams);
 
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-
-        if (!_isSuccess(json)) {
-          return FetchAllResult(success: false, errorMessage: _getErrorMessage(json));
+        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        
+        if (!gasResponse.isSuccess) {
+          return FetchAllResult(success: false, errorMessage: gasResponse.message);
         }
-
-        final data = _getData(json);
+        
         final messagesList =
-            (data['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
+            (gasResponse.data['messages'] as List<dynamic>?)?.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList() ??
             [];
         return FetchAllResult(messages: messagesList, success: true);
       } else {
@@ -202,15 +189,14 @@ class GoogleSheetsService {
 
       final result = _handleResponse(response);
 
-      // 解析 GAS 可能回傳的計數 (如果成功)
+      // 解析 GAS 回傳的計數
       if (result.success && response.body.isNotEmpty) {
         try {
-          final json = jsonDecode(response.body);
-          final data = _getData(json);
-          if (_isSuccess(json) && data['count'] != null) {
-            return ApiResult(success: true, message: '已上傳 ${data['count']} 條日誌');
+          final gasResponse = GasApiResponse.fromJsonString(response.body);
+          if (gasResponse.isSuccess && gasResponse.data['count'] != null) {
+            return ApiResult(success: true, message: '已上傳 ${gasResponse.data['count']} 條日誌');
           }
-        } catch (_) {} // 忽略解析錯誤，僅回傳成功
+        } catch (_) {}
       }
 
       return result;
@@ -219,52 +205,15 @@ class GoogleSheetsService {
     }
   }
 
-  // ============================================================
-  // === INTERNAL HELPERS ===
-  // ============================================================
-
-  /// 檢查回應是否成功
-  /// 支援新格式 { code: "0000" } 和舊格式 { success: true }
-  bool _isSuccess(Map<String, dynamic> json) {
-    // 新格式: code == "0000"
-    if (json.containsKey('code')) {
-      return json['code'] == kApiCodeSuccess;
-    }
-    // 舊格式向後兼容: success == true
-    return json['success'] == true;
-  }
-
-  /// 取得資料區塊
-  /// 支援新格式 { data: {...} } 和舊格式直接包含資料
-  Map<String, dynamic> _getData(Map<String, dynamic> json) {
-    final data = json['data'];
-    if (data is Map<String, dynamic>) {
-      return data;
-    }
-    // 舊格式向後兼容: 資料直接在 root
-    return json;
-  }
-
-  /// 取得錯誤訊息
-  String _getErrorMessage(Map<String, dynamic> json) {
-    // 新格式: message
-    if (json.containsKey('message')) {
-      return json['message']?.toString() ?? 'Unknown error';
-    }
-    // 舊格式: error
-    return json['error']?.toString() ?? 'Unknown GAS error';
-  }
-
   /// 統一處理回應
   ApiResult _handleResponse(http.Response response) {
     if (response.statusCode == 200) {
       try {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        if (_isSuccess(json)) {
-          final message = json['message']?.toString();
-          return ApiResult(success: true, message: message);
+        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        if (gasResponse.isSuccess) {
+          return ApiResult(success: true, message: gasResponse.message);
         } else {
-          return ApiResult(success: false, errorMessage: _getErrorMessage(json));
+          return ApiResult(success: false, errorMessage: gasResponse.message);
         }
       } catch (_) {
         return ApiResult(success: true);
