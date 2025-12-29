@@ -24,6 +24,7 @@ import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../services/weather_service.dart';
 import '../services/interfaces/i_weather_service.dart';
 import '../services/poll_service.dart';
+import '../presentation/providers/gear_provider.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -110,6 +111,9 @@ Future<void> setupDependencies() async {
       settingsRepo: getIt<ISettingsRepository>(),
     ),
   );
+
+  // Providers (Singletons for access outside logic)
+  getIt.registerLazySingleton<GearProvider>(() => GearProvider());
 }
 
 /// 重置依賴注入 (用於測試)
