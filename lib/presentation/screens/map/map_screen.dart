@@ -154,6 +154,28 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
 
+              // 返回按鈕 (左上角)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 16,
+                child: SafeArea(
+                  top: false,
+                  child: Material(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    elevation: 4,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Icon(Icons.arrow_back, color: Colors.black87, size: 24),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               // Mini-map (左下角，可收合，長條形)
               Positioned(
                 bottom: 16,
