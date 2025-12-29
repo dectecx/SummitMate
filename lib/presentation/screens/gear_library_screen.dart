@@ -176,7 +176,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                   Icon(_getCategoryIcon(category), size: 20, color: Colors.grey.shade600),
                   const SizedBox(width: 8),
                   Text(
-                    category,
+                    GearCategoryHelper.getName(category),
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
                   ),
                   const SizedBox(width: 8),
@@ -383,7 +383,9 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: const InputDecoration(labelText: '分類'),
-                items: GearCategory.all.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                items: GearCategory.all
+                    .map((cat) => DropdownMenuItem(value: cat, child: Text(GearCategoryHelper.getName(cat))))
+                    .toList(),
                 onChanged: (v) => setState(() => _selectedCategory = v!),
               ),
               const SizedBox(height: 12),
