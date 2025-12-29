@@ -83,29 +83,45 @@ class HiveService {
   /// 選擇性清除資料
   /// 使用 deleteBoxFromDisk 避免 type conflict
   Future<void> clearSelectedData({
+    bool clearTrips = false,
     bool clearItinerary = false,
     bool clearMessages = false,
     bool clearGear = false,
+    bool clearGearLibrary = false,
+    bool clearPolls = false,
     bool clearWeather = false,
     bool clearSettings = false,
     bool clearLogs = false,
-    bool clearPolls = false,
   }) async {
     // 先關閉所有 box 以避免 type conflict
     await Hive.close();
 
+    // 1. Core Data (最重要)
+    if (clearTrips) {
+      await Hive.deleteBoxFromDisk(HiveBoxNames.trips);
+    }
     if (clearItinerary) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.itinerary);
     }
     if (clearMessages) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.messages);
     }
+
+    // 2. Feature Data (功能性資料)
     if (clearGear) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.gear);
+    }
+    if (clearGearLibrary) {
+      await Hive.deleteBoxFromDisk(HiveBoxNames.gearLibrary);
+    }
+    if (clearPolls) {
+      await Hive.deleteBoxFromDisk(HiveBoxNames.polls);
     }
     if (clearWeather) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.weather);
     }
+
+    // 3. System & Logs (系統與日誌)
     if (clearSettings) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.settings);
       final prefs = await SharedPreferences.getInstance();
@@ -113,9 +129,6 @@ class HiveService {
     }
     if (clearLogs) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.logs);
-    }
-    if (clearPolls) {
-      await Hive.deleteBoxFromDisk(HiveBoxNames.polls);
     }
   }
 }

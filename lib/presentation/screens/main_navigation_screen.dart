@@ -374,8 +374,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     bool clearItinerary = true;
     bool clearMessages = true;
     bool clearGear = true;
+    bool clearGearLibrary = true;
     bool clearWeather = true;
-    bool clearSettings = false; // 預設不清除設定
+    bool clearSettings = false;
     bool clearLogs = false;
     bool clearPolls = true;
 
@@ -392,6 +393,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 const SizedBox(height: 8),
                 CheckboxListTile(
                   title: const Text('行程資料'),
+                  subtitle: const Text('包含所有行程與內容', style: TextStyle(fontSize: 11)),
                   value: clearItinerary,
                   onChanged: (v) => setState(() => clearItinerary = v ?? false),
                 ),
@@ -402,8 +404,14 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 ),
                 CheckboxListTile(
                   title: const Text('裝備清單'),
+                  subtitle: const Text('公開/標準裝備組合', style: TextStyle(fontSize: 11)),
                   value: clearGear,
                   onChanged: (v) => setState(() => clearGear = v ?? false),
+                ),
+                CheckboxListTile(
+                  title: const Text('個人裝備庫'),
+                  value: clearGearLibrary,
+                  onChanged: (v) => setState(() => clearGearLibrary = v ?? false),
                 ),
                 CheckboxListTile(
                   title: const Text('天氣快取'),
@@ -442,9 +450,11 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
                 // 執行選擇性清除
                 await getIt<HiveService>().clearSelectedData(
+                  clearTrips: clearItinerary,
                   clearItinerary: clearItinerary,
                   clearMessages: clearMessages,
                   clearGear: clearGear,
+                  clearGearLibrary: clearGearLibrary,
                   clearWeather: clearWeather,
                   clearSettings: clearSettings,
                   clearLogs: clearLogs,
