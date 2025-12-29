@@ -14,7 +14,7 @@ class Poll {
   final String title;
 
   @HiveField(2)
-  @JsonKey(defaultValue: '')
+  @JsonKey(defaultValue: '', fromJson: _parseString)
   final String description;
 
   @HiveField(3)
@@ -85,6 +85,10 @@ class Poll {
   static int _parseInt(dynamic value) {
     if (value is int) return value;
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static String _parseString(dynamic value) {
+    return value?.toString() ?? '';
   }
 
   static List<String> _parseStringList(dynamic value) {

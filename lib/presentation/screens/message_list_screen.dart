@@ -231,14 +231,13 @@ class _MessageListScreenState extends State<MessageListScreen> {
   ) {
     final contentController = TextEditingController();
     final isReply = parentId != null;
+    bool isSubmitting = false;
 
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) => StatefulBuilder(
         builder: (innerContext, setState) {
-          bool isSubmitting = false;
-
           Future<bool> checkDismiss() async {
             if (contentController.text.trim().isEmpty) return true;
             final confirm = await showDialog<bool>(
@@ -345,7 +344,13 @@ class _MessageListScreenState extends State<MessageListScreen> {
                             }
                           }
                         },
-                  child: const Text('發送'),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('發送'),
                 ),
               ],
             ),
