@@ -121,22 +121,10 @@ function downloadGearLibrary(ownerKey) {
         const item = {};
         headers.forEach((header, index) => {
           if (header !== "owner_key") {
-            let value = data[i][index];
-            // 強制型別轉換
-            const schema =
-              typeof SHEET_SCHEMA !== "undefined"
-                ? SHEET_SCHEMA["GearLibrary"]
-                : null;
-            if (schema && schema[header]) {
-              if (schema[header].type === "text") {
-                value =
-                  value === null || value === undefined ? "" : String(value);
-              }
-            }
-            item[header] = value;
+            item[header] = data[i][index];
           }
         });
-        items.push(item);
+        items.push(_formatData(item, "GearLibrary"));
       }
     }
 
