@@ -195,3 +195,143 @@ const API_CODES = {
   /** owner_key 格式錯誤 */
   GEAR_LIBRARY_KEY_INVALID: "0701",
 };
+
+// ============================================================
+// 工作表欄位 Schema 定義
+// type: 'text' | 'number' | 'boolean' | 'date'
+// ============================================================
+
+/**
+ * 工作表欄位 Schema 定義
+ * @description 定義每個工作表的欄位名稱與型別，用於設定欄位格式
+ * @readonly
+ */
+const SHEET_SCHEMA = {
+  Trips: {
+    id: { type: "text" },
+    name: { type: "text" },
+    start_date: { type: "date" },
+    end_date: { type: "date" },
+    description: { type: "text" },
+    cover_image: { type: "text" },
+    is_active: { type: "boolean" },
+    created_at: { type: "date" },
+  },
+
+  Itinerary: {
+    uuid: { type: "text" },
+    trip_id: { type: "text" },
+    day: { type: "text" },
+    name: { type: "text" },
+    est_time: { type: "text" },
+    altitude: { type: "number" },
+    distance: { type: "number" },
+    note: { type: "text" },
+    image_asset: { type: "text" },
+  },
+
+  Messages: {
+    uuid: { type: "text" },
+    trip_id: { type: "text" },
+    parent_id: { type: "text" },
+    user: { type: "text" },
+    category: { type: "text" },
+    content: { type: "text" },
+    timestamp: { type: "date" },
+    avatar: { type: "text" },
+  },
+
+  GearSets: {
+    uuid: { type: "text" },
+    title: { type: "text" },
+    author: { type: "text" },
+    total_weight: { type: "number" },
+    item_count: { type: "number" },
+    visibility: { type: "text" },
+    key: { type: "text" },
+    uploaded_at: { type: "date" },
+    items_json: { type: "text" },
+  },
+
+  GearLibrary: {
+    uuid: { type: "text" },
+    owner_key: { type: "text" },
+    name: { type: "text" },
+    weight: { type: "number" },
+    category: { type: "text" },
+    notes: { type: "text" },
+    created_at: { type: "date" },
+    updated_at: { type: "date" },
+  },
+
+  Polls: {
+    poll_id: { type: "text" },
+    title: { type: "text" },
+    description: { type: "text" },
+    creator_id: { type: "text" },
+    created_at: { type: "date" },
+    deadline: { type: "date" },
+    is_allow_add_option: { type: "boolean" },
+    max_option_limit: { type: "number" },
+    allow_multiple_votes: { type: "boolean" },
+    result_display_type: { type: "text" },
+    status: { type: "text" },
+  },
+
+  PollOptions: {
+    option_id: { type: "text" },
+    poll_id: { type: "text" },
+    text: { type: "text" },
+    creator_id: { type: "text" },
+    created_at: { type: "date" },
+    votes: { type: "text" },
+  },
+
+  PollVotes: {
+    vote_id: { type: "text" },
+    poll_id: { type: "text" },
+    option_id: { type: "text" },
+    user_id: { type: "text" },
+    user_name: { type: "text" },
+    created_at: { type: "date" },
+  },
+
+  Logs: {
+    upload_time: { type: "date" },
+    device_id: { type: "text" },
+    device_name: { type: "text" },
+    timestamp: { type: "date" },
+    level: { type: "text" },
+    source: { type: "text" },
+    message: { type: "text" },
+  },
+
+  Heartbeat: {
+    user: { type: "text" },
+    avatar: { type: "text" },
+    last_seen: { type: "date" },
+    view: { type: "text" },
+    platform: { type: "text" },
+  },
+};
+
+/**
+ * 取得指定工作表的文字欄位索引 (1-based)
+ * @param {string} sheetName - 工作表名稱
+ * @returns {number[]} 需要設定為文字格式的欄位索引
+ */
+function getTextColumnIndices(sheetName) {
+  const schema = SHEET_SCHEMA[sheetName];
+  if (!schema) return [];
+
+  const indices = [];
+  let index = 1;
+  for (const field in schema) {
+    // text 和 date 類型都需要設定為純文字格式，避免自動轉型
+    if (schema[field].type === "text" || schema[field].type === "date") {
+      indices.push(index);
+    }
+    index++;
+  }
+  return indices;
+}

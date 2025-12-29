@@ -82,17 +82,18 @@ function updateItinerary(itineraryItems, tripId) {
     return _success(null, "行程已清空");
   }
 
-  // 準備資料列
+  // 準備資料列 (順序需與 HEADERS_ITINERARY 一致)
+  // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   const rows = itineraryItems.map((item) => [
-    item.uuid ? "'" + String(item.uuid) : Utilities.getUuid(),
-    tripId || item.trip_id ? "'" + String(tripId || item.trip_id) : "",
+    String(item.uuid || Utilities.getUuid()),
+    String(tripId || item.trip_id || ""),
     item.day,
-    "'" + String(item.name || ""),
-    item.est_time || item.estTime ? "'" + String(item.est_time || item.estTime) : "",
+    String(item.name || ""),
+    String(item.est_time || item.estTime || ""),
     item.altitude,
     item.distance,
-    item.note ? "'" + String(item.note) : "",
-    item.image_asset || item.imageAsset ? "'" + String(item.image_asset || item.imageAsset) : "",
+    String(item.note || ""),
+    String(item.image_asset || item.imageAsset || ""),
   ]);
 
   if (rows.length > 0) {

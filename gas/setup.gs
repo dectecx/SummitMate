@@ -135,6 +135,9 @@ function _setupSheet(ss, name, headers, sampleData) {
     sheet = ss.insertSheet(name);
     sheet.appendRow(headers);
 
+    // 設定文字欄位格式為純文字 (@)
+    _applyTextFormat(sheet, name);
+
     if (sampleData && sampleData.length > 0) {
       sampleData.forEach((row) => sheet.appendRow(row));
     }
@@ -151,6 +154,45 @@ function _setupSheet(ss, name, headers, sampleData) {
       }
     });
   }
+}
+
+/**
+ * 設定工作表的文字欄位格式為純文字 (@)
+ * @private
+ * @param {Sheet} sheet - 工作表
+ * @param {string} sheetName - 工作表名稱
+ */
+function _applyTextFormat(sheet, sheetName) {
+  const textCols = getTextColumnIndices(sheetName);
+  if (!textCols || textCols.length === 0) return;
+
+  const maxRows = Math.max(sheet.getMaxRows(), 1000);
+  textCols.forEach((col) => {
+    // 從第 2 列開始設定 (排除標題列)
+    sheet.getRange(2, col, maxRows - 1, 1).setNumberFormat("@");
+  });
+}
+
+/**
+ * 對所有工作表套用文字格式
+ * @description 用於現有工作表，在部署後執行一次即可
+ */
+function applyTextFormatToAll() {
+  const ss = getSpreadsheet();
+  const sheetNames = Object.keys(SHEET_SCHEMA);
+
+  sheetNames.forEach((sheetName) => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (sheet) {
+      _applyTextFormat(sheet, sheetName);
+      Logger.log(`✓ ${sheetName} 文字格式已設定`);
+    } else {
+      Logger.log(`⚠ ${sheetName} 工作表不存在，跳過`);
+    }
+  });
+
+  Logger.log("========================================");
+  Logger.log("所有工作表文字格式設定完成");
 }
 
 /**

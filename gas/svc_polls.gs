@@ -62,18 +62,18 @@ function createPoll(data) {
   const allowMulti = config.allow_multiple_votes === true;
   const displayType = config.result_display_type || "realtime";
 
-  // 新增投票主資料 (用 ' 前綴強制字串格式，避免純數字被轉為 number)
-  const title = "'" + String(data.title || "未命名投票");
-  const description = data.description ? "'" + String(data.description) : "";
-  const creatorId = "'" + String(data.creator_id || "anonymous");
+  // 新增投票主資料 (文字格式由工作表的 @ 格式處理，不需要 ' 前綴)
+  const title = String(data.title || "未命名投票");
+  const description = String(data.description || "");
+  const creatorId = String(data.creator_id || "anonymous");
 
   sheet.appendRow([
     pollId,
     title,
     description,
     creatorId,
-    "'" + createdAt,
-    data.deadline ? "'" + data.deadline : "",
+    createdAt,
+    data.deadline || "",
     isAllowAdd,
     maxOptions,
     allowMulti,
@@ -87,9 +87,9 @@ function createPoll(data) {
       optionsSheet.appendRow([
         Utilities.getUuid(),
         pollId,
-        "'" + String(optText),
-        "'" + String(data.creator_id || ""),
-        "'" + createdAt,
+        String(optText),
+        String(data.creator_id || ""),
+        createdAt,
         "",
       ]);
     });
@@ -216,8 +216,8 @@ function votePoll(data) {
       pollId,
       optId,
       userId,
-      "'" + String(data.user_name || "Anonymous"),
-      "'" + createdAt,
+      String(data.user_name || "Anonymous"),
+      createdAt,
     ]);
   });
 
@@ -257,9 +257,9 @@ function addOption(data) {
   optSheet.appendRow([
     Utilities.getUuid(),
     pollId,
-    "'" + String(text || ""),
-    "'" + String(data.creator_id || ""),
-    "'" + new Date().toISOString(),
+    String(text || ""),
+    String(data.creator_id || ""),
+    new Date().toISOString(),
     "",
   ]);
 
