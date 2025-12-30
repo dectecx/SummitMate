@@ -21,7 +21,7 @@ class GearItem extends HiveObject {
   // ========================================
 
   /// 裝備唯一識別碼 (PK)
-  @HiveField(0)
+  @HiveField(0, defaultValue: '')
   String uuid;
 
   // ========================================
@@ -42,22 +42,22 @@ class GearItem extends HiveObject {
   // ========================================
 
   /// 裝備名稱 (獨立模式用，連結模式為快取)
-  @HiveField(3)
+  @HiveField(3, defaultValue: '')
   @JsonKey(defaultValue: '')
   String name;
 
   /// 重量 (公克，獨立模式用，連結模式為快取)
-  @HiveField(4)
+  @HiveField(4, defaultValue: 0.0)
   @JsonKey(defaultValue: 0.0)
   double weight;
 
   /// 裝備分類：Sleep, Cook, Wear, Other
-  @HiveField(5)
+  @HiveField(5, defaultValue: 'Other')
   @JsonKey(defaultValue: 'Other')
   String category;
 
   /// 打包狀態
-  @HiveField(6)
+  @HiveField(6, defaultValue: false)
   @JsonKey(defaultValue: false)
   bool isChecked;
 
@@ -89,7 +89,7 @@ class GearItem extends HiveObject {
   double get weightInKg => weight / 1000;
 
   /// 數量 (預設 1)
-  @HiveField(8)
+  @HiveField(8, defaultValue: 1)
   @JsonKey(defaultValue: 1)
   int quantity;
 
