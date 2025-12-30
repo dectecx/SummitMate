@@ -75,6 +75,7 @@ function fetchGearSetByKey(key) {
           visibility: row[headers.indexOf("visibility")],
           uploaded_at: row[headers.indexOf("uploaded_at")],
           items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
+          meals: JSON.parse(row[headers.indexOf("meals_json")] || "[]"),
         }, SHEET_GEAR),
       }, "取得裝備組合成功");
     }
@@ -123,6 +124,7 @@ function downloadGearSet(uuid, key) {
           visibility: visibility,
           uploaded_at: row[headers.indexOf("uploaded_at")],
           items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
+          meals: JSON.parse(row[headers.indexOf("meals_json")] || "[]"),
         },
       }, "下載裝備組合成功");
     }
@@ -137,7 +139,7 @@ function downloadGearSet(uuid, key) {
  * @returns {Object} { code, data, message }
  */
 function uploadGearSet(data) {
-  const { trip_id, title, author, visibility, key, total_weight, item_count, items } = data;
+  const { trip_id, title, author, visibility, key, total_weight, item_count, items, meals } = data;
 
   if (!title || !author) {
     return _error(API_CODES.GEAR_MISSING_FIELDS, "缺少必要欄位 (title, author)");
@@ -169,6 +171,7 @@ function uploadGearSet(data) {
   const uuid = Utilities.getUuid();
   const uploadedAt = new Date().toISOString();
   const itemsJson = JSON.stringify(items || []);
+  const mealsJson = JSON.stringify(meals || []);
 
   // 建立 row 物件 (key-value)
   const rowData = {
@@ -182,6 +185,7 @@ function uploadGearSet(data) {
     item_count: item_count || 0,
     uploaded_at: uploadedAt,
     items_json: itemsJson,
+    meals_json: mealsJson,
   };
 
   // 依 HEADERS_GEAR 順序自動轉成陣列 (不再依賴手動順序)

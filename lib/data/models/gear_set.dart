@@ -1,4 +1,5 @@
 import 'gear_item.dart';
+import 'meal_item.dart';
 
 /// 裝備組合可見性
 enum GearSetVisibility {
@@ -38,6 +39,9 @@ class GearSet {
   /// 裝備列表 (下載時才有完整資料)
   final List<GearItem>? items;
 
+  /// 糧食計畫 (下載時才有完整資料)
+  final List<DailyMealPlan>? meals;
+
   GearSet({
     required this.uuid,
     required this.title,
@@ -47,6 +51,7 @@ class GearSet {
     required this.visibility,
     required this.uploadedAt,
     this.items,
+    this.meals,
   });
 
   /// 從 JSON 建立 (API 回應)
@@ -60,6 +65,7 @@ class GearSet {
       visibility: _parseVisibility(json['visibility'] as String?),
       uploadedAt: DateTime.tryParse(json['uploaded_at'] as String? ?? '') ?? DateTime.now(),
       items: (json['items'] as List<dynamic>?)?.map((item) => GearItem.fromJson(item as Map<String, dynamic>)).toList(),
+      meals: (json['meals'] as List<dynamic>?)?.map((m) => DailyMealPlan.fromJson(m as Map<String, dynamic>)).toList(),
     );
   }
 
@@ -74,6 +80,7 @@ class GearSet {
       'visibility': visibility.name,
       'uploaded_at': uploadedAt.toIso8601String(),
       if (items != null) 'items': items!.map((item) => item.toJson()).toList(),
+      if (meals != null) 'meals': meals!.map((m) => m.toJson()).toList(),
     };
   }
 

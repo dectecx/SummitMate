@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
+import '../../data/models/meal_item.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../services/gear_cloud_service.dart';
 import '../../services/toast_service.dart';
@@ -11,6 +12,7 @@ import '../providers/settings_provider.dart';
 import '../providers/gear_provider.dart';
 import '../providers/gear_library_provider.dart';
 import '../providers/trip_provider.dart';
+import '../providers/meal_provider.dart';
 import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
@@ -108,6 +110,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             author: settingsProvider.username,
             visibility: visibility,
             items: items,
+            meals: context.read<MealProvider>().dailyPlans,
             key: key,
           );
 
@@ -178,6 +181,18 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     if (confirmed == true) {
       await _importGearItems(items);
+      if (gearSet.meals != null && gearSet.meals!.isNotEmpty) {
+        _importMeals(gearSet.meals!);
+      }
+    }
+  }
+
+  Future<void> _importMeals(List<DailyMealPlan> meals) async {
+    try {
+      context.read<MealProvider>().setDailyPlans(meals);
+      ToastService.success('已匯入糧食計畫');
+    } catch (e) {
+      ToastService.error('匯入糧食失敗: $e');
     }
   }
 
