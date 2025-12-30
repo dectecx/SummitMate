@@ -230,14 +230,18 @@ class MapProvider with ChangeNotifier {
         // FMTC v10: retry handling is automatic or configured elsewhere store.manage.config
       );
 
+      int lastLoggedPercent = -1;
+
       task.subscription = downloadTask.downloadProgress.listen(
         (progress) {
           task.progress = progress.percentageProgress / 100.0;
 
-          // Log progress every ~10%
-          if ((task.progress * 100).round() % 10 == 0 && task.progress > 0) {
+          // Log progress every 10% (avoid spamming 0%)
+          final currentPercent = (task.progress * 100).floor();
+          if (currentPercent % 10 == 0 && currentPercent != lastLoggedPercent) {
+            lastLoggedPercent = currentPercent;
             LogService.debug(
-              'Task ${task.name} progress: ${(task.progress * 100).toStringAsFixed(0)}%',
+              'Task ${task.name} progress: $currentPercent%',
               source: 'MapProvider',
             );
           }
