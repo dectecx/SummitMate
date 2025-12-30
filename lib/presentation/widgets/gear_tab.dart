@@ -13,7 +13,12 @@ import '../../data/models/gear_item.dart';
 import '../../data/models/gear_library_item.dart';
 import '../providers/gear_library_provider.dart';
 
+
+enum GearListMode { view, edit, sort }
+
 /// Tab 3: 裝備頁 (獨立頁籤)
+
+
 class GearTab extends StatefulWidget {
   final String? tripId;
   const GearTab({super.key, this.tripId});
@@ -24,6 +29,8 @@ class GearTab extends StatefulWidget {
 
 class _GearTabState extends State<GearTab> {
   final TextEditingController _searchController = TextEditingController();
+  GearListMode _mode = GearListMode.view;
+
 
   @override
   void initState() {
@@ -88,6 +95,33 @@ class _GearTabState extends State<GearTab> {
                   },
                 ),
               ),
+
+              // 模式切換器
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<GearListMode>(
+                    segments: const [
+                      ButtonSegment(value: GearListMode.view, icon: Icon(Icons.visibility_outlined), label: Text('檢視')),
+                      ButtonSegment(value: GearListMode.edit, icon: Icon(Icons.edit_outlined), label: Text('編輯')),
+                      ButtonSegment(value: GearListMode.sort, icon: Icon(Icons.sort), label: Text('排序')),
+                    ],
+                    selected: {_mode},
+                    onSelectionChanged: (Set<GearListMode> newSelection) {
+                      setState(() {
+                        _mode = newSelection.first;
+                      });
+                    },
+                    showSelectedIcon: false,
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
 
               // 列表內容
               Expanded(
@@ -254,6 +288,7 @@ class _GearTabState extends State<GearTab> {
                             ),
                             children: [
                               ReorderableListView(
+                                buildDefaultDragHandles: false, // 手動控制 Drag Handle
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 onReorder: (oldIndex, newIndex) {
@@ -262,10 +297,13 @@ class _GearTabState extends State<GearTab> {
                                 children: entry.value.map((item) {
                                   return ListTile(
                                     key: ValueKey(item.key),
-                                    leading: Checkbox(
-                                      value: item.isChecked,
-                                      onChanged: (_) => provider.toggleChecked(item.key),
-                                    ),
+                                    // View 模式才顯示 Checkbox
+                                    leading: _mode == GearListMode.view
+                                        ? Checkbox(
+                                            value: item.isChecked,
+                                            onChanged: (_) => provider.toggleChecked(item.key),
+                                          )
+                                        : null,
                                     title: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -275,7 +313,9 @@ class _GearTabState extends State<GearTab> {
                                             style: TextStyle(
                                               decoration: item.isChecked ? TextDecoration.lineThrough : null,
                                               color: item.isChecked ? Colors.grey : null,
+                                              fontSize: 16, // Ensure font size
                                             ),
+                                            // View 模式下給予最大寬度，所以 overflow ellipsis
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -289,62 +329,72 @@ class _GearTabState extends State<GearTab> {
                                             ),
                                             child: Text(
                                               'x${item.quantity}',
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.blue,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),
                                             ),
                                           ),
                                         ],
-                                        if (item.libraryItemId != null) ...[
+                                        // View 模式: 顯示連結圖示 (放在 title 旁確保可見)
+                                        if (item.libraryItemId != null && _mode == GearListMode.view) ...[
                                           const SizedBox(width: 4),
                                           const Icon(Icons.link, size: 16, color: Colors.blue),
                                         ],
                                       ],
                                     ),
-                                    subtitle: Text(
-                                      '${item.totalWeight.toStringAsFixed(0)}g${item.quantity > 1 ? ' (${item.weight.toStringAsFixed(0)}g×${item.quantity})' : ''}',
-                                    ),
+                                    subtitle: _mode == GearListMode.view
+                                        ? Text(
+                                            '${item.totalWeight.toStringAsFixed(0)}g${item.quantity > 1 ? ' (${item.weight.toStringAsFixed(0)}g×${item.quantity})' : ''}',
+                                          )
+                                        : null,
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        // Quantity -/+ buttons
-                                        IconButton(
-                                          icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.grey),
-                                          onPressed: item.quantity > 1
-                                              ? () => provider.updateQuantity(item, item.quantity - 1)
-                                              : null,
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                        SizedBox(
-                                          width: 28,
-                                          child: Text(
-                                            '${item.quantity}',
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                        // Edit 模式: 數量調整 + 編輯/刪除
+                                        if (_mode == GearListMode.edit) ...[
+                                          IconButton(
+                                            icon: const Icon(Icons.remove_circle_outline, size: 24, color: Colors.grey),
+                                            onPressed: item.quantity > 1
+                                                ? () => provider.updateQuantity(item, item.quantity - 1)
+                                                : null,
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
                                           ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue),
-                                          onPressed: () => provider.updateQuantity(item, item.quantity + 1),
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, size: 20, color: Colors.blueGrey),
-                                          onPressed: () => _showEditGearDialog(context, provider, item),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                                          onPressed: () => _confirmDeleteGearItem(context, provider, item),
-                                        ),
-                                        const Icon(Icons.drag_handle, color: Colors.grey),
+                                          SizedBox(
+                                            width: 32,
+                                            child: Text(
+                                              '${item.quantity}',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.add_circle_outline, size: 24, color: Colors.blue),
+                                            onPressed: () => provider.updateQuantity(item, item.quantity + 1),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, size: 24, color: Colors.blueGrey),
+                                            onPressed: () => _showEditGearDialog(context, provider, item),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete_outline, size: 24, color: Colors.red),
+                                            onPressed: () => _confirmDeleteGearItem(context, provider, item),
+                                          ),
+                                        ],
+                                        
+                                        // Sort 模式: 拖曳把手
+                                        if (_mode == GearListMode.sort)
+                                          ReorderableDragStartListener(
+                                            index: entry.value.indexOf(item),
+                                            child: const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Icon(Icons.drag_handle, color: Colors.grey, size: 28),
+                                            ),
+                                          ),
                                       ],
                                     ),
-                                    onTap: () => provider.toggleChecked(item.key),
+                                    onTap: _mode == GearListMode.view ? () => provider.toggleChecked(item.key) : null,
                                   );
                                 }).toList(),
                               ),
