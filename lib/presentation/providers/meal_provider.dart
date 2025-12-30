@@ -43,4 +43,20 @@ class MealProvider extends ChangeNotifier {
     _dailyPlans[planIndex].meals[type]?.removeWhere((item) => item.id == itemId);
     notifyListeners();
   }
+
+  // 更新餐點數量
+  void updateMealItemQuantity(String day, MealType type, String itemId, int quantity) {
+    if (quantity < 1) quantity = 1;
+    final planIndex = _dailyPlans.indexWhere((p) => p.day == day);
+    if (planIndex == -1) return;
+
+    final items = _dailyPlans[planIndex].meals[type];
+    if (items == null) return;
+
+    final itemIndex = items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+
+    items[itemIndex] = items[itemIndex].copyWith(quantity: quantity);
+    notifyListeners();
+  }
 }

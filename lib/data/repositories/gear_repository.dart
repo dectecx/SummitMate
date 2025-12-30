@@ -92,16 +92,16 @@ class GearRepository implements IGearRepository {
     await item.save();
   }
 
-  /// 計算總重量 (克)
+  /// 計算總重量 (克) - 含數量乘積
   @override
   double getTotalWeight() {
-    return box.values.fold<double>(0.0, (sum, item) => sum + item.weight);
+    return box.values.fold<double>(0.0, (sum, item) => sum + item.totalWeight);
   }
 
-  /// 計算已打包重量 (克)
+  /// 計算已打包重量 (克) - 含數量乘積
   @override
   double getCheckedWeight() {
-    return box.values.where((item) => item.isChecked).fold<double>(0.0, (sum, item) => sum + item.weight);
+    return box.values.where((item) => item.isChecked).fold<double>(0.0, (sum, item) => sum + item.totalWeight);
   }
 
   /// 依分類統計重量
