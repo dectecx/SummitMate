@@ -633,7 +633,7 @@ class _GearTabState extends State<GearTab> {
   void _showEditGearDialog(BuildContext context, GearProvider provider, GearItem item) {
     final nameController = TextEditingController(text: item.name);
     final weightController = TextEditingController(text: item.weight.toStringAsFixed(0));
-    final quantityController = TextEditingController(text: item.quantity.toString());
+    int editQuantity = item.quantity;
     String selectedCategory = item.category;
     String? libraryItemId = item.libraryItemId;
     final libraryProvider = context.read<GearLibraryProvider>();
@@ -703,10 +703,28 @@ class _GearTabState extends State<GearTab> {
                     onChanged: !isLinked ? (value) => setState(() => selectedCategory = value!) : null, // Strict Lock
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: quantityController,
-                    decoration: const InputDecoration(labelText: '數量'),
-                    keyboardType: TextInputType.number,
+                  // Quantity with +/- buttons
+                  Row(
+                    children: [
+                      const Text('數量', style: TextStyle(fontSize: 16)),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                        onPressed: editQuantity > 1 ? () => setState(() => editQuantity--) : null,
+                      ),
+                      SizedBox(
+                        width: 40,
+                        child: Text(
+                          '$editQuantity',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+                        onPressed: () => setState(() => editQuantity++),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -733,7 +751,7 @@ class _GearTabState extends State<GearTab> {
                     // Simply:
                     item.weight = weight; // If locked, controller text didn't change.
                     item.category = selectedCategory;
-                    item.quantity = int.tryParse(quantityController.text) ?? 1;
+                    item.quantity = editQuantity;
 
                     item.libraryItemId = libraryItemId;
                     await item.save(); // Hive save
