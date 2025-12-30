@@ -55,29 +55,12 @@ class GearSet {
       uuid: json['uuid'] as String,
       title: json['title'] as String,
       author: json['author'] as String? ?? 'Unknown',
-      totalWeight: _parseDouble(json['total_weight']),
-      itemCount: _parseInt(json['item_count']),
+      totalWeight: (json['total_weight'] as num?)?.toDouble() ?? 0,
+      itemCount: json['item_count'] as int? ?? 0,
       visibility: _parseVisibility(json['visibility'] as String?),
       uploadedAt: DateTime.tryParse(json['uploaded_at'] as String? ?? '') ?? DateTime.now(),
       items: (json['items'] as List<dynamic>?)?.map((item) => GearItem.fromJson(item as Map<String, dynamic>)).toList(),
     );
-  }
-
-  /// 解析數字 (支援 String 或 num)
-  static double _parseDouble(dynamic value) {
-    if (value == null) return 0;
-    if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0;
-    return 0;
-  }
-
-  /// 解析整數 (支援 String 或 num)
-  static int _parseInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
   }
 
   /// 轉換為 JSON (上傳用)

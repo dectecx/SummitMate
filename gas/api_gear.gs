@@ -31,7 +31,7 @@ function fetchGearSets() {
     // 私人組合不顯示在列表中
     if (visibility === "private") continue;
 
-    gearSets.push({
+    const gearSet = {
       uuid: row[headers.indexOf("uuid")],
       title: row[headers.indexOf("title")],
       author: row[headers.indexOf("author")],
@@ -40,7 +40,8 @@ function fetchGearSets() {
       visibility: visibility,
       uploaded_at: row[headers.indexOf("uploaded_at")],
       // 不包含 items，減少傳輸量
-    });
+    };
+    gearSets.push(_formatData(gearSet, SHEET_GEAR));
   }
 
   return _success({ gear_sets: gearSets }, "取得裝備組合列表成功");
@@ -65,7 +66,7 @@ function fetchGearSetByKey(key) {
     if (String(data[i][keyIndex]) === String(key)) {
       const row = data[i];
       return _success({
-        gear_set: {
+        gear_set: _formatData({
           uuid: row[headers.indexOf("uuid")],
           title: row[headers.indexOf("title")],
           author: row[headers.indexOf("author")],
@@ -74,7 +75,7 @@ function fetchGearSetByKey(key) {
           visibility: row[headers.indexOf("visibility")],
           uploaded_at: row[headers.indexOf("uploaded_at")],
           items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
-        },
+        }, SHEET_GEAR),
       }, "取得裝備組合成功");
     }
   }
