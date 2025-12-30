@@ -205,13 +205,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       // 匯入新裝備 (帶入當前 tripId)
       for (final item in items) {
         await gearRepo.addItem(
-          GearItem(
-            tripId: tripId,
-            name: item.name,
-            weight: item.weight,
-            category: item.category,
-            isChecked: false,
-          ),
+          GearItem(tripId: tripId, name: item.name, weight: item.weight, category: item.category, isChecked: false),
         );
       }
 

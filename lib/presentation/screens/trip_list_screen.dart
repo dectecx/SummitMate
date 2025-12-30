@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../providers/trip_provider.dart';
 import '../../data/models/trip.dart';
 import '../../services/toast_service.dart';
+import 'trip_cloud_screen.dart';
 
 /// 行程列表畫面
 /// 管理多個登山計畫
@@ -16,6 +17,11 @@ class TripListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('我的行程'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_sync),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripCloudScreen())),
+            tooltip: '雲端同步',
+          ),
           IconButton(icon: const Icon(Icons.add), onPressed: () => _showCreateTripDialog(context), tooltip: '新增行程'),
         ],
       ),
