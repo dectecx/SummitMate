@@ -39,6 +39,21 @@ class MealItem {
       note: note ?? this.note,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'weight': weight, 'calories': calories, 'quantity': quantity, 'note': note};
+  }
+
+  factory MealItem.fromJson(Map<String, dynamic> json) {
+    return MealItem(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? 'Unknown',
+      weight: (json['weight'] as num?)?.toDouble() ?? 0,
+      calories: (json['calories'] as num?)?.toDouble() ?? 0,
+      quantity: json['quantity'] as int? ?? 1,
+      note: json['note'] as String?,
+    );
+  }
 }
 
 class DailyMealPlan {
@@ -53,4 +68,24 @@ class DailyMealPlan {
 
   double get totalCalories =>
       meals.values.expand((items) => items).fold(0, (sum, item) => sum + (item.calories * item.quantity));
+
+  Map<String, dynamic> toJson() {
+    return {
+      'day': day,
+      'meals': meals.map((type, items) => MapEntry(type.name, items.map((e) => e.toJson()).toList())),
+    };
+  }
+
+  factory DailyMealPlan.fromJson(Map<String, dynamic> json) {
+    final day = json['day'] as String;
+    final mealsJson = json['meals'] as Map<String, dynamic>? ?? {};
+
+    final Map<MealType, List<MealItem>> parsedMeals = {};
+    for (var type in MealType.values) {
+      final itemsJson = mealsJson[type.name] as List<dynamic>? ?? [];
+      parsedMeals[type] = itemsJson.map((e) => MealItem.fromJson(e as Map<String, dynamic>)).toList();
+    }
+
+    return DailyMealPlan(day: day, meals: parsedMeals);
+  }
 }

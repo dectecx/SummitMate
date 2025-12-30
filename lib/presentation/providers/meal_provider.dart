@@ -59,4 +59,11 @@ class MealProvider extends ChangeNotifier {
     items[itemIndex] = items[itemIndex].copyWith(quantity: quantity);
     notifyListeners();
   }
+
+  // 設定每日餐點 (用於匯入)
+  void setDailyPlans(List<DailyMealPlan> newPlans) {
+    _dailyPlans.clear();
+    _dailyPlans.addAll(newPlans);
+    notifyListeners();
+  }
 }

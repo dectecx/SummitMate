@@ -77,6 +77,7 @@ const HEADERS_GEAR = [
   "item_count",
   "uploaded_at",
   "items_json",
+  "meals_json",
 ];
 
 // ============================================================
@@ -251,6 +252,7 @@ const SHEET_SCHEMA = {
     key: { type: "text" },
     uploaded_at: { type: "date" },
     items_json: { type: "text" },
+    meals_json: { type: "text" },
   },
 
   GearLibrary: {

@@ -4,6 +4,7 @@ import '../core/constants.dart';
 import '../core/env_config.dart';
 import '../data/models/gear_set.dart';
 import '../data/models/gear_item.dart';
+import '../data/models/meal_item.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
 
@@ -106,6 +107,7 @@ class GearCloudService {
     required String author,
     required GearSetVisibility visibility,
     required List<GearItem> items,
+    List<DailyMealPlan>? meals,
     String? key,
   }) async {
     try {
@@ -127,6 +129,7 @@ class GearCloudService {
         'total_weight': totalWeight,
         'item_count': items.length,
         'items': items.map((item) => item.toJson()).toList(),
+        if (meals != null) 'meals': meals.map((m) => m.toJson()).toList(),
         if (key != null) 'key': key,
       });
 

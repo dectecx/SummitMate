@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/data/models/gear_set.dart';
 import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/data/models/meal_item.dart';
 
 void main() {
   group('GearSet', () {
@@ -41,6 +42,35 @@ void main() {
       expect(gearSet.itemCount, 0);
       expect(gearSet.visibility, GearSetVisibility.public); // Default
       expect(gearSet.items, null);
+      expect(gearSet.meals, null);
+    });
+
+    test('fromJson handles meals correctly', () {
+      final json = {
+        'uuid': 'uuid-123',
+        'title': 'Test Set',
+        'author': 'User',
+        'total_weight': 10.0,
+        'item_count': 1,
+        'visibility': 'public',
+        'uploaded_at': '2025-01-01T10:00:00.000Z',
+        'meals': [
+          {
+            'day': 'D1',
+            'meals': {
+              'breakfast': [
+                {'name': 'Bread', 'weight': 100, 'calories': 300},
+              ],
+            },
+          },
+        ],
+      };
+
+      final gearSet = GearSet.fromJson(json);
+      expect(gearSet.meals, isNotNull);
+      expect(gearSet.meals!.length, 1);
+      expect(gearSet.meals![0].day, 'D1');
+      expect(gearSet.meals![0].meals[MealType.breakfast]!.first.name, 'Bread');
     });
 
     test('toJson converts correctly', () {
