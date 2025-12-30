@@ -94,6 +94,12 @@ class ApiConfig {
   // 【未來規劃】owner_key → user_id (會員機制上線後)
   static const String actionUploadGearLibrary = 'upload_gear_library';
   static const String actionDownloadGearLibrary = 'download_gear_library';
+
+  // Trip Cloud API Actions (行程雲端同步)
+  static const String actionFetchTrips = 'fetch_trips';
+  static const String actionAddTrip = 'add_trip';
+  static const String actionUpdateTrip = 'update_trip';
+  static const String actionDeleteTrip = 'delete_trip';
 }
 
 /// Hive Box 名稱
