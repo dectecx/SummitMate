@@ -151,6 +151,7 @@ class GearProvider extends ChangeNotifier {
     required double weight,
     required String category,
     String? libraryItemId,
+    int quantity = 1,
   }) async {
     if (_currentTripId == null) {
       _error = '未選擇行程，無法新增裝備';
@@ -165,10 +166,11 @@ class GearProvider extends ChangeNotifier {
         category: category,
         isChecked: false,
         libraryItemId: libraryItemId,
-        tripId: _currentTripId, // Auto set tripId
+        tripId: _currentTripId,
+        quantity: quantity,
       );
 
-      LogService.info('新增裝備: $name (${weight}g)${libraryItemId != null ? ' [Linked]' : ''}', source: 'Gear');
+      LogService.info('新增裝備: $name (${weight}g x$quantity)${libraryItemId != null ? ' [Linked]' : ''}', source: 'Gear');
       await _repository.addItem(item);
       _loadItems();
     } catch (e) {
@@ -186,6 +188,21 @@ class GearProvider extends ChangeNotifier {
       _loadItems();
     } catch (e) {
       LogService.error('更新裝備失敗: $e', source: 'Gear');
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  /// 更新裝備數量
+  Future<void> updateQuantity(GearItem item, int quantity) async {
+    if (quantity < 1) quantity = 1;
+    try {
+      item.quantity = quantity;
+      LogService.info('更新裝備數量: ${item.name} x$quantity', source: 'Gear');
+      await item.save();
+      _loadItems();
+    } catch (e) {
+      LogService.error('更新數量失敗: $e', source: 'Gear');
       _error = e.toString();
       notifyListeners();
     }
