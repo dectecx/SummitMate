@@ -228,7 +228,22 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     final isOffline = context.watch<SettingsProvider>().isOfflineMode;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('☁️ 雲端裝備庫')),
+      appBar: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('☁️ 雲端裝備庫'),
+            if (isOffline) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(12)),
+                child: const Text('離線', style: TextStyle(fontSize: 12, color: Colors.white)),
+              ),
+            ],
+          ],
+        ),
+      ),
       body: _buildBody(isOffline),
     );
   }
