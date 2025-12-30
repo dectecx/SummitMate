@@ -22,11 +22,19 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
   bool _isLoading = false;
   List<Trip> _cloudTrips = [];
   String? _errorMessage;
+  bool _hasFetched = false;
 
   @override
-  void initState() {
-    super.initState();
-    _fetchCloudTrips();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Only fetch once and not in offline mode
+    if (!_hasFetched) {
+      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      if (!isOffline) {
+        _hasFetched = true;
+        _fetchCloudTrips();
+      }
+    }
   }
 
   Future<void> _fetchCloudTrips() async {

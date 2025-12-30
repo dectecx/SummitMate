@@ -5,7 +5,9 @@ import '../../core/constants.dart';
 import '../../core/gear_helpers.dart';
 import '../../data/models/gear_library_item.dart';
 import '../../services/gear_library_cloud_service.dart';
+import '../../services/toast_service.dart';
 import '../providers/gear_library_provider.dart';
+import '../providers/settings_provider.dart';
 
 /// 個人裝備庫畫面
 ///
@@ -649,6 +651,13 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   Future<void> _handleUpload() async {
     if (!_isValidKey) return;
 
+    // Check offline mode
+    final isOffline = context.read<SettingsProvider>().isOfflineMode;
+    if (isOffline) {
+      ToastService.warning('離線模式，無法上傳');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _resultMessage = null;
@@ -685,6 +694,13 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
 
   Future<void> _handleDownload() async {
     if (!_isValidKey) return;
+
+    // Check offline mode
+    final isOffline = context.read<SettingsProvider>().isOfflineMode;
+    if (isOffline) {
+      ToastService.warning('離線模式，無法下載');
+      return;
+    }
 
     // 確認覆蓋
     final confirm = await showDialog<bool>(
