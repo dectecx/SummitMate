@@ -261,6 +261,14 @@ function _formatData(data, schemaName) {
         if (value instanceof Date) {
           data[key] = value.toISOString();
         }
+      } else if (type === "number") {
+        // 強制轉為數字
+        if (value === null || value === undefined || value === "") {
+          data[key] = 0;
+        } else {
+          data[key] = Number(value);
+          if (isNaN(data[key])) data[key] = 0;
+        }
       }
     }
   }
