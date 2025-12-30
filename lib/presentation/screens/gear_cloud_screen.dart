@@ -42,10 +42,18 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     }).toList();
   }
 
+  bool _hasFetched = false;
+
   @override
-  void initState() {
-    super.initState();
-    _fetchGearSets();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasFetched) {
+      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      if (!isOffline) {
+        _hasFetched = true;
+        _fetchGearSets();
+      }
+    }
   }
 
   @override
@@ -312,7 +320,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           return _GearSetCard(
             gearSet: gearSet,
             isLoading: isBusy,
-            onDownload: isBusy ? null : () => _onDownloadPressed(gearSet),
+            onDownload: isBusy || isOffline ? null : () => _onDownloadPressed(gearSet),
             onDelete: gearSet.visibility == GearSetVisibility.public && !isBusy
                 ? () => _confirmDeletePublicGearSet(gearSet)
                 : null,
@@ -365,7 +373,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
               children: [
                 // 同步按鈕
                 Expanded(
-                  child: _ToolButton(icon: Icons.refresh, label: '同步', onTap: _fetchGearSets),
+                  child: _ToolButton(
+                    icon: Icons.refresh,
+                    label: '同步',
+                    onTap: isOffline ? null : _fetchGearSets,
+                    disabled: isOffline,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 // 上傳
@@ -390,7 +403,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                 const SizedBox(width: 8),
                 // 用 Key 下載
                 Expanded(
-                  child: _ToolButton(icon: Icons.download, label: '用 Key 下載', onTap: _showKeyInputDialog),
+                  child: _ToolButton(
+                    icon: Icons.download,
+                    label: '用 Key 下載',
+                    onTap: isOffline ? null : _showKeyInputDialog,
+                    disabled: isOffline,
+                  ),
                 ),
               ],
             ),
