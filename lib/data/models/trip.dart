@@ -20,10 +20,12 @@ class Trip extends HiveObject {
 
   /// 行程開始日期
   @HiveField(2)
+  @JsonKey(fromJson: _parseDate)
   DateTime startDate;
 
   /// 行程結束日期 (可選)
   @HiveField(3)
+  @JsonKey(fromJson: _parseDateNullable)
   DateTime? endDate;
 
   /// 行程描述/備註
@@ -41,6 +43,7 @@ class Trip extends HiveObject {
 
   /// 建立時間
   @HiveField(7)
+  @JsonKey(fromJson: _parseDateWithDefault)
   DateTime createdAt;
 
   Trip({
@@ -72,6 +75,27 @@ class Trip extends HiveObject {
       return value.toUpperCase() == 'TRUE';
     }
     return false;
+  }
+
+  /// 解析日期 (必填，空字串預設為 now)
+  static DateTime _parseDate(dynamic value) {
+    if (value == null || value == '') return DateTime.now();
+    if (value is DateTime) return value;
+    return DateTime.parse(value.toString());
+  }
+
+  /// 解析日期 (可選，空字串返回 null)
+  static DateTime? _parseDateNullable(dynamic value) {
+    if (value == null || value == '') return null;
+    if (value is DateTime) return value;
+    return DateTime.tryParse(value.toString());
+  }
+
+  /// 解析日期 (預設為 now)
+  static DateTime _parseDateWithDefault(dynamic value) {
+    if (value == null || value == '') return DateTime.now();
+    if (value is DateTime) return value;
+    return DateTime.tryParse(value.toString()) ?? DateTime.now();
   }
 
   /// 從 JSON 建立
