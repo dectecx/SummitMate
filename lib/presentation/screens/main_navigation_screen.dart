@@ -226,6 +226,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         return Consumer2<MessageProvider, PollProvider>(
           builder: (context, messageProvider, pollProvider, child) {
             final isLoading = messageProvider.isSyncing || pollProvider.isLoading;
+            final isOffline = context.watch<SettingsProvider>().isOfflineMode;
             final scaffold = Scaffold(
               appBar: AppBar(
                 leading: Builder(
@@ -235,7 +236,27 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                     tooltip: '選單',
                   ),
                 ),
-                title: const Text('SummitMate 山友'),
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('SummitMate 山友'),
+                    if (isOffline) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(10)),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.cloud_off, size: 12, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text('離線', style: TextStyle(fontSize: 11, color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
                 bottom: isLoading
                     ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
                     : null,
