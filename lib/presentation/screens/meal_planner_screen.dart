@@ -124,13 +124,59 @@ class MealPlannerScreen extends StatelessWidget {
             : items
                   .map(
                     (item) => ListTile(
-                      title: Text(item.name),
-                      subtitle: Text(
-                        '${item.weight.toStringAsFixed(0)}g / ${item.calories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")}kcal',
+                      title: Row(
+                        children: [
+                          Flexible(child: Text(item.name, overflow: TextOverflow.ellipsis)),
+                          if (item.quantity > 1) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'x${item.quantity}',
+                                style: const TextStyle(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                        onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
+                      subtitle: Text(
+                        '${(item.weight * item.quantity).toStringAsFixed(0)}g / ${(item.calories * item.quantity).toStringAsFixed(0)}kcal',
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.grey),
+                            onPressed: item.quantity > 1
+                                ? () => provider.updateMealItemQuantity(day, type, item.id, item.quantity - 1)
+                                : null,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          SizedBox(
+                            width: 24,
+                            child: Text(
+                              '${item.quantity}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue),
+                            onPressed: () => provider.updateMealItemQuantity(day, type, item.id, item.quantity + 1),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
+                            onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
+                          ),
+                        ],
                       ),
                     ),
                   )
