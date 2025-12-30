@@ -248,7 +248,7 @@ class _GearTabState extends State<GearTab> {
                             title: Text('${GearCategoryHelper.getName(entry.key)} (${entry.value.length}件)'),
                             subtitle: Text(
                               WeightFormatter.format(
-                                entry.value.fold<double>(0, (sum, item) => sum + item.weight),
+                                entry.value.fold<double>(0, (sum, item) => sum + item.totalWeight),
                                 decimals: 0,
                               ),
                             ),
@@ -279,16 +279,60 @@ class _GearTabState extends State<GearTab> {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
+                                        if (item.quantity > 1) ...[
+                                          const SizedBox(width: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              'x${item.quantity}',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.blue,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                         if (item.libraryItemId != null) ...[
                                           const SizedBox(width: 4),
                                           const Icon(Icons.link, size: 16, color: Colors.blue),
                                         ],
                                       ],
                                     ),
-                                    subtitle: Text('${item.weight.toStringAsFixed(0)}g'),
+                                    subtitle: Text(
+                                      '${item.totalWeight.toStringAsFixed(0)}g${item.quantity > 1 ? ' (${item.weight.toStringAsFixed(0)}g×${item.quantity})' : ''}',
+                                    ),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        // Quantity -/+ buttons
+                                        IconButton(
+                                          icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.grey),
+                                          onPressed: item.quantity > 1
+                                              ? () => provider.updateQuantity(item, item.quantity - 1)
+                                              : null,
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                        SizedBox(
+                                          width: 28,
+                                          child: Text(
+                                            '${item.quantity}',
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue),
+                                          onPressed: () => provider.updateQuantity(item, item.quantity + 1),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                        const SizedBox(width: 8),
                                         IconButton(
                                           icon: const Icon(Icons.edit, size: 20, color: Colors.blueGrey),
                                           onPressed: () => _showEditGearDialog(context, provider, item),
@@ -356,6 +400,7 @@ class _GearTabState extends State<GearTab> {
   void _showAddGearDialog(BuildContext context, GearProvider provider) {
     final nameController = TextEditingController();
     final weightController = TextEditingController();
+    final quantityController = TextEditingController(text: '1');
     final focusNode = FocusNode();
     String selectedCategory = 'Other';
     // 獲取 GearLibraryProvider
@@ -506,6 +551,12 @@ class _GearTabState extends State<GearTab> {
                           ? (value) => setState(() => selectedCategory = value!)
                           : null, // Lock if linked
                     ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: quantityController,
+                      decoration: const InputDecoration(labelText: '數量', hintText: '1'),
+                      keyboardType: TextInputType.number,
+                    ),
                   ],
                 ),
               ),
@@ -562,6 +613,7 @@ class _GearTabState extends State<GearTab> {
                         weight: weight,
                         category: selectedCategory,
                         libraryItemId: linkedItem?.uuid,
+                        quantity: int.tryParse(quantityController.text) ?? 1,
                       );
 
                       if (context.mounted) ToastService.success('已新增：$name');
@@ -581,6 +633,7 @@ class _GearTabState extends State<GearTab> {
   void _showEditGearDialog(BuildContext context, GearProvider provider, GearItem item) {
     final nameController = TextEditingController(text: item.name);
     final weightController = TextEditingController(text: item.weight.toStringAsFixed(0));
+    final quantityController = TextEditingController(text: item.quantity.toString());
     String selectedCategory = item.category;
     String? libraryItemId = item.libraryItemId;
     final libraryProvider = context.read<GearLibraryProvider>();
@@ -649,6 +702,12 @@ class _GearTabState extends State<GearTab> {
                     ],
                     onChanged: !isLinked ? (value) => setState(() => selectedCategory = value!) : null, // Strict Lock
                   ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: quantityController,
+                    decoration: const InputDecoration(labelText: '數量'),
+                    keyboardType: TextInputType.number,
+                  ),
                 ],
               ),
             ),
@@ -674,6 +733,7 @@ class _GearTabState extends State<GearTab> {
                     // Simply:
                     item.weight = weight; // If locked, controller text didn't change.
                     item.category = selectedCategory;
+                    item.quantity = int.tryParse(quantityController.text) ?? 1;
 
                     item.libraryItemId = libraryItemId;
                     await item.save(); // Hive save

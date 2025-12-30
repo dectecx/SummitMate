@@ -111,7 +111,9 @@ class MealPlannerScreen extends StatelessWidget {
         leading: Icon(_getMealIcon(type), color: _getMealColor(type)),
         title: Text(type.label, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: items.isNotEmpty
-            ? Text('${items.length} 項 • ${items.fold<double>(0, (sum, i) => sum + i.weight).toStringAsFixed(0)}g')
+            ? Text(
+                '${items.length} 項 • ${items.fold<double>(0, (sum, i) => sum + i.weight * i.quantity).toStringAsFixed(0)}g • ${items.fold<double>(0, (sum, i) => sum + i.calories * i.quantity).toStringAsFixed(0)}kcal',
+              )
             : const Text('尚未規劃', style: TextStyle(color: Colors.grey, fontSize: 12)),
         trailing: IconButton(
           icon: const Icon(Icons.add_circle_outline),
