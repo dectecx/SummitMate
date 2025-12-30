@@ -78,6 +78,7 @@ class GearItem extends HiveObject {
     this.category = 'Other',
     this.isChecked = false,
     this.orderIndex,
+    this.quantity = 1,
   }) : uuid = uuid?.isNotEmpty == true ? uuid! : const Uuid().v4();
 
   // ========================================
@@ -86,6 +87,14 @@ class GearItem extends HiveObject {
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;
+
+  /// 數量 (預設 1)
+  @HiveField(8)
+  @JsonKey(defaultValue: 1)
+  int quantity;
+
+  /// 總重量 (重量 × 數量)
+  double get totalWeight => weight * quantity;
 
   /// 是否連結到裝備庫
   bool get isLinkedToLibrary => libraryItemId != null;
