@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_item.dart';
@@ -27,7 +27,8 @@ class GearProvider extends ChangeNotifier {
     if (_currentTripId == tripId) return;
     _currentTripId = tripId;
     LogService.debug('GearProvider 切換行程: $tripId', source: 'Gear');
-    _loadItems();
+    // Defer to avoid calling notifyListeners during build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadItems());
   }
 
   /// 所有裝備
