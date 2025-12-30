@@ -13,11 +13,9 @@ import '../../data/models/gear_item.dart';
 import '../../data/models/gear_library_item.dart';
 import '../providers/gear_library_provider.dart';
 
-
 enum GearListMode { view, edit, sort }
 
 /// Tab 3: 裝備頁 (獨立頁籤)
-
 
 class GearTab extends StatefulWidget {
   final String? tripId;
@@ -30,7 +28,6 @@ class GearTab extends StatefulWidget {
 class _GearTabState extends State<GearTab> {
   final TextEditingController _searchController = TextEditingController();
   GearListMode _mode = GearListMode.view;
-
 
   @override
   void initState() {
@@ -329,7 +326,11 @@ class _GearTabState extends State<GearTab> {
                                             ),
                                             child: Text(
                                               'x${item.quantity}',
-                                              style: const TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.bold),
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.blue,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -382,7 +383,7 @@ class _GearTabState extends State<GearTab> {
                                             onPressed: () => _confirmDeleteGearItem(context, provider, item),
                                           ),
                                         ],
-                                        
+
                                         // Sort 模式: 拖曳把手
                                         if (_mode == GearListMode.sort)
                                           ReorderableDragStartListener(

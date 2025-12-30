@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
 import 'app.dart';
 import 'core/di.dart';
@@ -11,7 +12,7 @@ void main() async {
   await HiveService().init();
 
   // Initialize Map Tile Caching
-  // Map Tile Caching is handled lazily by MapProvider
+  await FMTCObjectBoxBackend().initialise();
 
   // Setup Dependencies
   await setupDependencies();
