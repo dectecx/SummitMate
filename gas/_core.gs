@@ -84,12 +84,14 @@ function doPost(e) {
 
     switch (action) {
       // === 行程 (Trips) ===
+      case "fetch_trips":
+        return _createJsonResponse(fetchTrips());
       case "add_trip":
         return _createJsonResponse(addTrip(data));
       case "update_trip":
         return _createJsonResponse(updateTrip(data));
       case "delete_trip":
-        return _createJsonResponse(deleteTrip(data.id));
+        return _createJsonResponse(deleteTrip(data.trip_id || data.id));
       case "set_active_trip":
         return _createJsonResponse(setActiveTrip(data.id));
 
@@ -251,10 +253,10 @@ function _formatData(data, schemaName) {
       const type = schema[key].type;
       const value = data[key];
 
-      if (type === 'text') {
+      if (type === "text") {
         // 強制轉為字串 (除了 null/undefined)
-        data[key] = (value === null || value === undefined) ? "" : String(value);
-      } else if (type === 'date') {
+        data[key] = value === null || value === undefined ? "" : String(value);
+      } else if (type === "date") {
         // 日期統一轉為 ISO 8601 字串
         if (value instanceof Date) {
           data[key] = value.toISOString();
