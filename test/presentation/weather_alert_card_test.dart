@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:summitmate/core/di.dart';
+
 import 'package:summitmate/data/models/weather_data.dart';
 import 'package:summitmate/presentation/widgets/weather/weather_alert_card.dart';
 import 'package:summitmate/services/interfaces/i_weather_service.dart';
@@ -36,22 +36,15 @@ class FakeWeatherService implements IWeatherService {
   }
 
   @override
-  Future<WeatherData?> getWeatherByCoordinates(double lat, double lon) async {
-    return _mockResponse;
-  }
-
-  // Implement other methods if required by interface, returning null or throw
-  @override
   Future<void> init() async {}
 
   @override
-  Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
-    if (_mockResponse != null) return _mockResponse!;
-    throw Exception('Mock response not set');
+  Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
+    return _mockResponse;
   }
 
   @override
-  Future<WeatherData?> getWeather({bool forceRefresh = false, String locationName = '向陽山'}) async {
+  Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
     return _mockResponse;
   }
 }

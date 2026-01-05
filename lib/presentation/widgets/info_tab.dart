@@ -49,7 +49,7 @@ class InfoTabState extends State<InfoTab> {
 
     setState(() => _loadingWeather = true);
     try {
-      final weather = await getIt<IWeatherService>().getWeather(forceRefresh: force, locationName: _selectedLocation);
+      final weather = await getIt<IWeatherService>().getWeatherByName(_selectedLocation, forceRefresh: force);
       if (mounted) {
         setState(() => _weather = weather);
         if (force) ToastService.success('天氣更新成功！');

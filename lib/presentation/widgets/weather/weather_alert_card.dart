@@ -38,7 +38,7 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
 
       // 3. Get Weather
       final weatherService = getIt<IWeatherService>();
-      final weather = await weatherService.getWeatherByCoordinates(position.latitude, position.longitude);
+      final weather = await weatherService.getWeatherByLocation(position.latitude, position.longitude);
 
       if (mounted) {
         setState(() {

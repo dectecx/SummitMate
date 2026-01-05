@@ -15,7 +15,6 @@ import '../data/cwa/cwa_weather_source.dart';
 
 class WeatherService implements IWeatherService {
   static const String _boxName = HiveBoxNames.weather;
-  static const String _cacheKey = 'current_weather';
 
   final ISettingsRepository _settingsRepo;
   Box<WeatherData>? _box;
@@ -38,7 +37,7 @@ class WeatherService implements IWeatherService {
 
   // Get cached weather. Only fetch new if forceRefresh is true or cache is missing.
   @override
-  Future<WeatherData?> getWeather({bool forceRefresh = false, String locationName = '向陽山'}) async {
+  Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
     final dynamicCacheKey = 'weather_$locationName';
     final cached = _box?.get(dynamicCacheKey);
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
@@ -71,7 +70,7 @@ class WeatherService implements IWeatherService {
       }
 
       try {
-        final weather = await fetchWeather(locationName: locationName);
+        final weather = await _fetchWeatherInternal(locationName: locationName);
         _box?.put(dynamicCacheKey, weather);
         return weather;
       } catch (e) {
@@ -94,7 +93,7 @@ class WeatherService implements IWeatherService {
     // No cache and not force refresh -> Auto-fetch
     try {
       LogService.info('Cache miss for $locationName, fetching...', source: 'WeatherService');
-      final weather = await fetchWeather(locationName: locationName);
+      final weather = await _fetchWeatherInternal(locationName: locationName);
       _box?.put(dynamicCacheKey, weather);
       return weather;
     } catch (e) {
@@ -103,20 +102,15 @@ class WeatherService implements IWeatherService {
     }
   }
 
-  @override
-  Future<WeatherData> fetchWeather({String locationName = '向陽山'}) async {
+  /// Internal fetch method (formerly fetchWeather)
+  Future<WeatherData> _fetchWeatherInternal({required String locationName}) async {
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
     if (isOffline) {
       throw Exception('Offline Mode: Cannot fetch weather');
     }
 
-    // Check cache
-    if (_box != null && _box!.containsKey(_cacheKey)) {
-      final cached = _box!.get(_cacheKey) as WeatherData;
-      if (!cached.isStale && cached.locationName == locationName) {
-        return cached;
-      }
-    }
+    // Check cache (double check within fetch if needed, but redundant here if logic is above)
+    // Keeping logic simple: Always fetch fresh here.
 
     // Determine if we should use CWA or GAS
     // Logic: If resolved location looks like a Township/District (contains 縣, 市, 區, 鄉, 鎮), try CWA.
@@ -384,7 +378,7 @@ class WeatherService implements IWeatherService {
   }
 
   @override
-  Future<WeatherData?> getWeatherByCoordinates(double lat, double lon) async {
+  Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
 
     // Resolve location
@@ -398,7 +392,7 @@ class WeatherService implements IWeatherService {
     final dynamicCacheKey = 'weather_$locationName';
 
     // Check cache
-    if (_box != null && _box!.containsKey(dynamicCacheKey)) {
+    if (!forceRefresh && _box != null && _box!.containsKey(dynamicCacheKey)) {
       final cached = _box!.get(dynamicCacheKey);
       if (cached != null && !cached.isStale) {
         LogService.info(
@@ -421,10 +415,6 @@ class WeatherService implements IWeatherService {
       return null;
     }
 
-    // 3. Query params: locationName = Distroct (e.g. "信義區")
-
-    // Actually _fetchCwaWeather takes locationName (e.g. "臺北市信義區").
-
     // Determine if we should use CWA or GAS
     // Logic: If resolved location looks like a Township/District (contains 縣, 市, 區, 鄉, 鎮), try CWA.
     if (locationName.contains('縣') ||
@@ -442,11 +432,7 @@ class WeatherService implements IWeatherService {
       }
     }
 
-    // Fallback to what? GAS? The LocationResolver returns likely a precise location.
-    // If it's a mountain, we might want GAS. But resolving coordinates usually yields township in current implementation.
-    // So if it fails CWA, maybe returns null.
-    // Assuming generic fallback logic isn't needed if we trust resolver.
-
+    // Fallback if resolver returns something else ??
     return null;
   }
 }
