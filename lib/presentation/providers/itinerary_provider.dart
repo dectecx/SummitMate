@@ -81,7 +81,8 @@ class ItineraryProvider extends ChangeNotifier {
       if (_currentTripId != null) {
         _items = allItems.where((item) => item.tripId == _currentTripId).toList();
       } else {
-        _items = allItems;
+        // 若無 Active Trip，不顯示任何行程 (避免顯示混合資料)
+        _items = [];
       }
       LogService.debug('載入 ${_items.length} 個行程節點 (tripId: $_currentTripId)', source: 'Itinerary');
       _isLoading = false;

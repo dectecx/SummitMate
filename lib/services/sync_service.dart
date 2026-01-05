@@ -272,6 +272,14 @@ class SyncService {
     final localItems = _itineraryRepo.getAllItems().where((item) => item.tripId == tripId).toList();
     return await _sheetsService.updateItinerary(localItems);
   }
+
+  /// 取得雲端行程列表
+  Future<FetchTripsResult> fetchCloudTrips() async {
+    if (_isOffline) {
+      return FetchTripsResult(success: false, errorMessage: '離線模式無法取得行程列表');
+    }
+    return await _sheetsService.fetchTrips();
+  }
 }
 
 /// 同步結果
