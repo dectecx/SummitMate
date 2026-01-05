@@ -41,7 +41,7 @@ function fetchGearSets() {
       uploaded_at: row[headers.indexOf("uploaded_at")],
       // 不包含 items，減少傳輸量
     };
-    gearSets.push(_formatData(gearSet, SHEET_GEAR));
+    gearSets.push(_formatData(gearSet, SHEET_GEAR_SETS));
   }
 
   return _success({ gear_sets: gearSets }, "取得裝備組合列表成功");
@@ -76,7 +76,7 @@ function fetchGearSetByKey(key) {
           uploaded_at: row[headers.indexOf("uploaded_at")],
           items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
           meals: JSON.parse(row[headers.indexOf("meals_json")] || "[]"),
-        }, SHEET_GEAR),
+        }, SHEET_GEAR_SETS),
       }, "取得裝備組合成功");
     }
   }
@@ -259,5 +259,5 @@ function deleteGearSet(uuid, key) {
  * @returns {Sheet} 工作表物件
  */
 function _initGearSheet() {
-  return _getSheetOrCreate(SHEET_GEAR, HEADERS_GEAR);
+  return _getSheetOrCreate(SHEET_GEAR_SETS, HEADERS_GEAR);
 }

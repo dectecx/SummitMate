@@ -4,6 +4,9 @@ import '../../core/di.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../services/log_service.dart';
+import '../../services/trip_cloud_service.dart';
+import '../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../data/repositories/interfaces/i_gear_repository.dart';
 
 /// 行程 (Trip) 狀態管理
 /// 負責管理多個不同的登山計畫
@@ -137,6 +140,52 @@ class TripProvider extends ChangeNotifier {
       _error = e.toString();
       LogService.error('更新行程失敗: $e', source: _source);
       notifyListeners();
+    }
+  }
+
+  /// 完整上傳行程到雲端 (包含行程表與裝備)
+  Future<bool> uploadFullTrip(Trip trip) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // 1. 蒐集資料
+      final itineraryRepo = getIt<IItineraryRepository>();
+      final gearRepo = getIt<IGearRepository>();
+
+      // Note: Repository 目前沒有針對 Trip ID 的 filter API，因此先取全部再 Filter
+      // 若資料量大需優化 Repository 介面
+      final allItineraries = itineraryRepo.getAllItems();
+      final allGear = gearRepo.getAllItems();
+
+      final tripItineraries = allItineraries.where((i) => i.tripId == trip.id).toList();
+      final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
+
+      // 2. 呼叫雲端服務
+      final cloudService = TripCloudService();
+      final result = await cloudService.uploadFullTrip(
+        trip: trip,
+        itineraryItems: tripItineraries,
+        gearItems: tripGear,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+
+      if (result.isSuccess) {
+        LogService.info('上傳行程成功: ${trip.name}', source: _source);
+        return true;
+      } else {
+        _error = result.errorMessage;
+        LogService.error('上傳行程失敗: ${result.errorMessage}', source: _source);
+        return false;
+      }
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      LogService.error('上傳行程例外: $e', source: _source);
+      notifyListeners();
+      return false;
     }
   }
 
