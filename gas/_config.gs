@@ -17,7 +17,8 @@ const SHEET_ITINERARY = "Itinerary";
 const SHEET_MESSAGES = "Messages";
 
 // 輔助功能
-const SHEET_GEAR = "GearSets";
+const SHEET_GEAR_SETS = "GearSets";
+const SHEET_TRIP_GEAR = "TripGear";
 const SHEET_GEAR_LIBRARY = "GearLibrary";
 const SHEET_POLLS = "Polls";
 const SHEET_POLL_OPTIONS = "PollOptions";
@@ -53,6 +54,8 @@ const HEADERS_ITINERARY = [
   "distance",
   "note",
   "image_asset",
+  "is_checked_in",
+  "checked_in_at",
 ];
 
 const HEADERS_MESSAGES = [
@@ -78,6 +81,16 @@ const HEADERS_GEAR = [
   "uploaded_at",
   "items_json",
   "meals_json",
+];
+
+const HEADERS_TRIP_GEAR = [
+  "uuid", // PK
+  "trip_id", // FK → Trips
+  "name",
+  "weight",
+  "category",
+  "is_checked",
+  "quantity",
 ];
 
 // ============================================================
@@ -143,6 +156,16 @@ const API_CODES = {
   TRIP_NOT_FOUND: "0101",
   /** Trips 工作表不存在 */
   TRIP_SHEET_MISSING: "0102",
+  /** 缺少行程 ID */
+  TRIP_ID_REQUIRED: "0103",
+  /** 日期格式錯誤 */
+  TRIP_INVALID_DATE: "0104",
+  /** 行程建立失敗 */
+  TRIP_CREATE_FAILED: "0105",
+  /** 行程更新失敗 */
+  TRIP_UPDATE_FAILED: "0106",
+  /** 行程同步失敗 */
+  TRIP_SYNC_FAILED: "0107",
 
   // ========== 02XX - Itinerary API ==========
   /** Itinerary 工作表不存在 */
@@ -229,6 +252,8 @@ const SHEET_SCHEMA = {
     distance: { type: "number" },
     note: { type: "text" },
     image_asset: { type: "text" },
+    is_checked_in: { type: "boolean" },
+    checked_in_at: { type: "date" },
   },
 
   Messages: {
@@ -253,6 +278,16 @@ const SHEET_SCHEMA = {
     uploaded_at: { type: "date" },
     items_json: { type: "text" },
     meals_json: { type: "text" },
+  },
+
+  TripGear: {
+    uuid: { type: "text" },
+    trip_id: { type: "text" },
+    name: { type: "text" },
+    weight: { type: "number" },
+    category: { type: "text" },
+    is_checked: { type: "boolean" },
+    quantity: { type: "number" },
   },
 
   GearLibrary: {

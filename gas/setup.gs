@@ -54,10 +54,14 @@ function setupSheets() {
   Logger.log("✓ Messages 工作表已建立");
 
   // 4. 建立 GearSets 工作表
-  _setupSheet(ss, SHEET_GEAR, HEADERS_GEAR);
+  _setupSheet(ss, SHEET_GEAR_SETS, HEADERS_GEAR);
   Logger.log("✓ GearSets 工作表已建立");
 
-  // 5. 建立 GearLibrary 工作表 (個人裝備庫)
+  // 5. 建立 TripGear 工作表 (隨行程裝備)
+  _setupSheet(ss, SHEET_TRIP_GEAR, HEADERS_TRIP_GEAR);
+  Logger.log("✓ TripGear 工作表已建立");
+
+  // 6. 建立 GearLibrary 工作表 (個人裝備庫)
   // 【未來規劃】owner_key → user_id (會員機制上線後)
   _setupSheet(ss, SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
   Logger.log("✓ GearLibrary 工作表已建立");

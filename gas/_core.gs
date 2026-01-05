@@ -94,6 +94,8 @@ function doPost(e) {
         return _createJsonResponse(deleteTrip(data.trip_id || data.id));
       case "set_active_trip":
         return _createJsonResponse(setActiveTrip(data.id));
+      case "sync_trip_full":
+        return _createJsonResponse(handleSyncTripFull(data));
 
       // === 行程節點 (Itinerary) ===
       case "update_itinerary":
@@ -203,6 +205,33 @@ function _headerToKey(header) {
 }
 
 /**
+ * 將各種日期格式轉為標準 ISO 8601 字串
+ * @private
+ * @param {string|Date} value - 輸入的日期
+ * @returns {string} ISO 8601 字串 (如 "2023-01-01T12:00:00.000Z")，若無效則回傳 ""
+ */
+function _toIsoString(value) {
+  if (!value) return "";
+
+  // 已經是 Date 物件
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  // 嘗試解析字串
+  if (typeof value === "string") {
+    // 簡單判斷是否已經是 ISO 格式 (避免重複處理)
+    // 但為了確保標準化，還是 parse 一次較保險
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+
+  return "";
+}
+
+/**
  * 取得或建立工作表
  * @private
  * @param {string} name - 工作表名稱
@@ -260,6 +289,12 @@ function _formatData(data, schemaName) {
         // 日期統一轉為 ISO 8601 字串
         if (value instanceof Date) {
           data[key] = value.toISOString();
+        } else if (typeof value === "string" && value.trim() !== "") {
+          // 嘗試解析字串日期
+          const parsedDate = new Date(value);
+          if (!isNaN(parsedDate.getTime())) {
+            data[key] = parsedDate.toISOString();
+          }
         }
       } else if (type === "number") {
         // 強制轉為數字

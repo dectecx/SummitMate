@@ -15,13 +15,7 @@ class TripListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的行程'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.cloud_sync),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripCloudScreen())),
-            tooltip: '雲端同步',
-          ),
           IconButton(icon: const Icon(Icons.add), onPressed: () => _showCreateTripDialog(context), tooltip: '新增行程'),
         ],
       ),
@@ -29,25 +23,6 @@ class TripListScreen extends StatelessWidget {
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
-          }
-
-          if (provider.trips.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.hiking, size: 80, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text('尚無行程', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () => _showCreateTripDialog(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('新增行程'),
-                  ),
-                ],
-              ),
-            );
           }
 
           final allTrips = provider.trips;
@@ -64,50 +39,104 @@ class TripListScreen extends StatelessWidget {
             return t.endDate!.isBefore(today);
           }).toList();
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          return Column(
             children: [
-              // 進行中行程
-              if (ongoingTrips.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, left: 4),
-                  child: Text(
-                    '進行中 / 未來行程',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
+              // 雲端同步管理按鈕 (仿造 GearTab 樣式)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: InkWell(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripCloudScreen())),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.cloud_sync, size: 28, color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 12),
+                          const Text('雲端同步管理', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                ...ongoingTrips.map(
-                  (trip) => _TripCard(
-                    trip: trip,
-                    isActive: trip.id == provider.activeTripId,
-                    onTap: () => _onTripTap(context, provider, trip),
-                    onDelete: provider.trips.length > 1 ? () => _confirmDelete(context, provider, trip) : null,
-                  ),
-                ),
-              ],
+              ),
 
-              // 已封存行程
-              if (archivedTrips.isNotEmpty) ...[
-                if (ongoingTrips.isNotEmpty) const SizedBox(height: 24),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 8, left: 4),
-                  child: Text(
-                    '已封存 / 結束行程',
-                    style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                ...archivedTrips.map(
-                  (trip) => _TripCard(
-                    trip: trip,
-                    isActive: trip.id == provider.activeTripId,
-                    onTap: () => _onTripTap(context, provider, trip),
-                    onDelete: provider.trips.length > 1 ? () => _confirmDelete(context, provider, trip) : null,
-                  ),
-                ),
-              ],
+              // 列表內容
+              Expanded(
+                child: provider.trips.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.hiking, size: 80, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            Text('尚無行程', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: () => _showCreateTripDialog(context),
+                              icon: const Icon(Icons.add),
+                              label: const Text('新增行程'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        children: [
+                          // 進行中行程
+                          if (ongoingTrips.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8, left: 4),
+                              child: Text(
+                                '進行中 / 未來行程',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            ...ongoingTrips.map(
+                              (trip) => _TripCard(
+                                trip: trip,
+                                isActive: trip.id == provider.activeTripId,
+                                onTap: () => _onTripTap(context, provider, trip),
+                                onDelete: provider.trips.length > 1
+                                    ? () => _confirmDelete(context, provider, trip)
+                                    : null,
+                                onUpload: () => _handleFullUpload(context, provider, trip),
+                              ),
+                            ),
+                          ],
+
+                          // 已封存行程
+                          if (archivedTrips.isNotEmpty) ...[
+                            if (ongoingTrips.isNotEmpty) const SizedBox(height: 24),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 8, left: 4),
+                              child: Text(
+                                '已封存 / 結束行程',
+                                style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            ...archivedTrips.map(
+                              (trip) => _TripCard(
+                                trip: trip,
+                                isActive: trip.id == provider.activeTripId,
+                                onTap: () => _onTripTap(context, provider, trip),
+                                onDelete: provider.trips.length > 1
+                                    ? () => _confirmDelete(context, provider, trip)
+                                    : null,
+                                onUpload: () => _handleFullUpload(context, provider, trip),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+              ),
             ],
           );
         },
@@ -166,6 +195,31 @@ class TripListScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _handleFullUpload(BuildContext context, TripProvider provider, Trip trip) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('上傳/同步行程'),
+        content: Text('確定要將「${trip.name}」的所有資料(含裝備、行程)同步到雲端嗎？\n若雲端已有相同 ID，將會覆蓋舊資料。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('確認上傳')),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    if (context.mounted) {
+      final success = await provider.uploadFullTrip(trip);
+      if (success) {
+        ToastService.success('行程「${trip.name}」同步成功！');
+      } else {
+        ToastService.error('同步失敗，請稍後再試');
+      }
+    }
+  }
 }
 
 /// 行程卡片 Widget
@@ -174,8 +228,9 @@ class _TripCard extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
   final VoidCallback? onDelete;
+  final VoidCallback? onUpload;
 
-  const _TripCard({required this.trip, required this.isActive, required this.onTap, this.onDelete});
+  const _TripCard({required this.trip, required this.isActive, required this.onTap, this.onDelete, this.onUpload});
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +238,7 @@ class _TripCard extends StatelessWidget {
     final dateText = trip.endDate != null
         ? '${dateFormat.format(trip.startDate)} - ${dateFormat.format(trip.endDate!)}'
         : dateFormat.format(trip.startDate);
+    final shortId = trip.id.length > 8 ? trip.id.substring(0, 8) : trip.id;
 
     return Card(
       elevation: isActive ? 4 : 1,
@@ -196,76 +252,101 @@ class _TripCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
             children: [
-              // 封面圖或圖示
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: isActive ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.terrain,
-                  size: 32,
-                  color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // 行程資訊
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 封面圖或圖示
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: isActive ? Theme.of(context).colorScheme.primaryContainer : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.terrain,
+                      size: 32,
+                      color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // 行程資訊
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            trip.name,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isActive ? Theme.of(context).colorScheme.primary : null,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                trip.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isActive ? Theme.of(context).colorScheme.primary : null,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (isActive)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '當前',
+                                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onPrimary),
+                                ),
+                              ),
+                          ],
                         ),
-                        if (isActive)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '當前',
-                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onPrimary),
-                            ),
+                        const SizedBox(height: 4),
+                        Text(dateText, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                        const SizedBox(height: 2),
+                        Text(
+                          'ID: $shortId...',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[400], fontFamily: 'monospace'),
+                        ),
+                        if (trip.description?.isNotEmpty == true) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            trip.description!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                           ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(dateText, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                    if (trip.description?.isNotEmpty == true) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        trip.description!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
               ),
-              // 刪除按鈕
-              if (onDelete != null)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  color: Colors.red[300],
-                  onPressed: onDelete,
-                  tooltip: '刪除行程',
-                ),
+              const SizedBox(height: 8),
+              const Divider(height: 1),
+              // Action Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (onDelete != null)
+                    TextButton.icon(
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      label: const Text('刪除'),
+                      style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                      onPressed: onDelete,
+                    ),
+                  if (onUpload != null) ...[
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      icon: const Icon(Icons.cloud_upload_outlined, size: 18),
+                      label: const Text('上傳/同步'),
+                      onPressed: onUpload,
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
@@ -364,6 +445,29 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
                 ),
                 maxLines: 2,
               ),
+              if (isEditing) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.key, size: 16, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SelectableText(
+                          'Trip ID: ${widget.tripToEdit!.id}',
+                          style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),

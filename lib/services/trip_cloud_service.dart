@@ -76,6 +76,48 @@ class TripCloudService {
     }
   }
 
+  /// 完整上傳行程 (包含行程表與裝備)
+  ///
+  /// 使用 `sync_trip_full` 動作
+  Future<TripCloudResult<String>> uploadFullTrip({
+    required Trip trip,
+    required List<dynamic> itineraryItems,
+    required List<dynamic> gearItems,
+  }) async {
+    try {
+      LogService.info('完整上傳行程: ${trip.name} (含 ${itineraryItems.length} 行程, ${gearItems.length} 裝備)', source: _source);
+
+      // 建構完整 Payload
+      // 注意: List內的物件應已是 toJson() 後的 Map 或其模型物件 (若 apiClient 支援 msgpack/json encode)
+      // 這裡假設傳入的是 Model List，需轉為 Json List
+      final itineraryJson = itineraryItems.map((e) => e.toJson()).toList();
+      final gearJson = gearItems.map((e) => e.toJson()).toList();
+      final tripJson = trip.toJson();
+
+      final response = await _apiClient.post({
+        'action': 'sync_trip_full',
+        'trip': tripJson,
+        'itinerary': itineraryJson,
+        'gear': gearJson,
+      });
+
+      if (response.statusCode != 200) {
+        return TripCloudResult.failure('HTTP ${response.statusCode}');
+      }
+
+      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      if (!gasResponse.isSuccess) {
+        return TripCloudResult.failure(gasResponse.message);
+      }
+
+      LogService.info('完整上傳成功', source: _source);
+      return TripCloudResult.success(trip.id);
+    } catch (e) {
+      LogService.error('完整上傳行程失敗: $e', source: _source);
+      return TripCloudResult.failure('$e');
+    }
+  }
+
   /// 更新雲端行程
   Future<TripCloudResult<void>> updateTrip(Trip trip) async {
     try {
