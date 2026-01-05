@@ -40,11 +40,6 @@ class MainNavigationScreen extends StatefulWidget {
 class MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // 導覽目標 Keys (用於 AppBar/Navigation)
-  final GlobalKey _keyBtnEdit = GlobalKey();
-  final GlobalKey _keyBtnUpload = GlobalKey();
-  final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
-
   UsageTrackingService? _usageTrackingService;
 
   @override
@@ -176,14 +171,12 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                   // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
                   if (_currentIndex == 0) ...[
                     IconButton(
-                      key: _keyBtnEdit,
                       icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
                       tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
                       onPressed: () => itineraryProvider.toggleEditMode(),
                     ),
                     if (itineraryProvider.isEditMode)
                       IconButton(
-                        key: _keyBtnUpload,
                         icon: const Icon(Icons.cloud_upload_outlined),
                         tooltip: '上傳至雲端',
                         onPressed: () => _handleCloudUpload(context, itineraryProvider),
@@ -372,7 +365,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       case 2:
         return const CollaborationTab(key: ValueKey(2));
       case 3:
-        return InfoTab(key: _keyInfoTab);
+        return const InfoTab(key: ValueKey(3));
       default:
         return const ItineraryTab(key: ValueKey(0));
     }
