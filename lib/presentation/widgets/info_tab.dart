@@ -13,10 +13,7 @@ import 'zoomable_image.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
 class InfoTab extends StatefulWidget {
-  final Key? keyElevation;
-  final Key? keyTimeMap;
-
-  const InfoTab({super.key, this.keyElevation, this.keyTimeMap});
+  const InfoTab({super.key});
 
   @override
   State<InfoTab> createState() => InfoTabState();
@@ -157,7 +154,6 @@ class InfoTabState extends State<InfoTab> {
                             Icons.landscape,
                             '海拔 (點擊展開高度圖)',
                             '2320~3603m',
-                            key: widget.keyElevation,
                             onTap: () => setState(() {
                               _isElevationExpanded = !_isElevationExpanded;
                               if (_isElevationExpanded) _isTimeMapExpanded = false;
@@ -169,7 +165,6 @@ class InfoTabState extends State<InfoTab> {
                             Icons.timer,
                             '路程時間',
                             '點擊查看參考圖',
-                            key: widget.keyTimeMap,
                             onTap: () => setState(() {
                               _isTimeMapExpanded = !_isTimeMapExpanded;
                               if (_isTimeMapExpanded) _isElevationExpanded = false;

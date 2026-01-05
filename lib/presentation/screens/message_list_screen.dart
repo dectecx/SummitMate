@@ -7,9 +7,7 @@ import '../../presentation/providers/message_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
 
 class MessageListScreen extends StatefulWidget {
-  final GlobalKey? keyBtnSync;
-
-  const MessageListScreen({super.key, this.keyBtnSync});
+  const MessageListScreen({super.key});
 
   @override
   State<MessageListScreen> createState() => _MessageListScreenState();
@@ -75,7 +73,6 @@ class _MessageListScreenState extends State<MessageListScreen> {
                           color: Colors.grey.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                           child: InkWell(
-                            key: widget.keyBtnSync,
                             onTap: () => messageProvider.sync(),
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
