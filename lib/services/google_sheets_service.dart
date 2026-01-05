@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'gas_api_client.dart';
 import '../core/constants.dart';
