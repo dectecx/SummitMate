@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import '../../../services/interfaces/i_geolocator_service.dart';
 import '../../../core/di.dart';
 import '../../../services/interfaces/i_weather_service.dart';
 import '../../../services/log_service.dart';
@@ -32,33 +32,9 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
     });
 
     try {
-      // 1. Check Permissions
-      bool serviceEnabled;
-      LocationPermission permission;
-
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw Exception('Location services are disabled.');
-      }
-
-      permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('Location permissions are denied');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('Location permissions are permanently denied.');
-      }
-
-      // 2. Get Position
-      // Use low accuracy for speed/battery as we only need township level
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low,
-        timeLimit: const Duration(seconds: 10),
-      );
+      // 1. Get Position (Permission handled in service)
+      final geoService = getIt<IGeolocatorService>();
+      final position = await geoService.getCurrentPosition();
 
       // 3. Get Weather
       final weatherService = getIt<IWeatherService>();
