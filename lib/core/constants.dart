@@ -5,7 +5,7 @@ library;
 class AppInfo {
   static const String appName = 'SummitMate';
   static const String appNameChinese = '山友';
-  static const String version = '0.0.4';
+  static const String version = '0.0.6';
 }
 
 /// 顏色常數 (遵循 Dark Mode 設計)
