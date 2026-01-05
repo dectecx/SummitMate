@@ -44,11 +44,8 @@ class TripProvider extends ChangeNotifier {
       // 找出當前啟用的行程
       _activeTrip = _repository.getActiveTrip();
 
-      // 如果沒有行程，建立預設行程
-      if (_trips.isEmpty) {
-        await _createDefaultTrip();
-      } else if (_activeTrip == null && _trips.isNotEmpty) {
-        // 如果沒有啟用的行程，啟用第一個
+      // 若有行程但無 active，則預設選第一個；若無行程則 active 為 null
+      if (_activeTrip == null && _trips.isNotEmpty) {
         _setActiveTrip(_trips.first.id);
       }
 
@@ -64,7 +61,7 @@ class TripProvider extends ChangeNotifier {
   }
 
   /// 建立預設行程
-  Future<void> _createDefaultTrip() async {
+  Future<void> createDefaultTrip() async {
     final defaultTrip = Trip(
       id: _uuid.v4(),
       name: '我的登山行程',
@@ -76,6 +73,7 @@ class TripProvider extends ChangeNotifier {
     _trips = [defaultTrip];
     _activeTrip = defaultTrip;
     LogService.info('建立預設行程: ${defaultTrip.name}', source: _source);
+    notifyListeners();
   }
 
   /// 新增行程
@@ -114,6 +112,21 @@ class TripProvider extends ChangeNotifier {
     }
   }
 
+  /// 匯入行程 (保持原有 ID)
+  Future<void> importTrip(Trip trip) async {
+    try {
+      await _repository.addTrip(trip);
+      LogService.info('匯入行程: ${trip.name} (${trip.id})', source: _source);
+      // 不要自動設為 Active，由 caller 決定
+      await _loadTrips();
+    } catch (e) {
+      _error = e.toString();
+      LogService.error('匯入行程失敗: $e', source: _source);
+      notifyListeners();
+      rethrow; // 讓 caller 處理錯誤
+    }
+  }
+
   /// 更新行程
   Future<void> updateTrip(Trip trip) async {
     try {
@@ -130,16 +143,14 @@ class TripProvider extends ChangeNotifier {
   /// 刪除行程
   Future<bool> deleteTrip(String tripId) async {
     try {
-      // 不能刪除唯一的行程
-      if (_trips.length <= 1) {
-        LogService.warning('無法刪除唯一的行程', source: _source);
-        return false;
-      }
-
-      // 如果刪除的是當前行程，先切換到其他行程
+      // 如果刪除的是當前行程，先嘗試切換到其他行程
       if (_activeTrip?.id == tripId) {
-        final otherTrip = _trips.firstWhere((t) => t.id != tripId);
-        await setActiveTrip(otherTrip.id);
+        final otherTrips = _trips.where((t) => t.id != tripId);
+        if (otherTrips.isNotEmpty) {
+          await setActiveTrip(otherTrips.first.id);
+        } else {
+          _activeTrip = null; // 變為無 Active 狀態
+        }
       }
 
       await _repository.deleteTrip(tripId);

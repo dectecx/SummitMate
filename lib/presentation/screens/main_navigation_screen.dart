@@ -11,8 +11,11 @@ import '../../services/toast_service.dart';
 import '../../services/usage_tracking_service.dart';
 import '../../services/tutorial_service.dart';
 import '../../services/hive_service.dart';
+import '../../data/models/trip.dart';
+import '../../services/sync_service.dart';
 
 import '../providers/itinerary_provider.dart';
+import '../providers/trip_provider.dart';
 import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/poll_provider.dart';
@@ -78,9 +81,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) _showTutorial(context);
         });
-      } else {
-        // 若無需導覽，直接檢查同步
-        _checkFirstTimeSync(context, settingsProvider);
       }
 
       // 啟動使用狀態追蹤 (Web only)
@@ -97,6 +97,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _showTutorial(BuildContext context) {
     if (_tutorialEntry != null) return;
+
+    // 若無行程，暫不顯示主要導覽 (避免找不到 Key)
+    if (!context.read<TripProvider>().hasTrips) return;
 
     _tutorialEntry = OverlayEntry(
       builder: (context) => TutorialOverlay(
@@ -170,8 +173,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         onSkip: () {
           context.read<SettingsProvider>().completeOnboarding();
           _removeTutorial();
-          // Check sync after skip
-          _checkFirstTimeSync(context, context.read<SettingsProvider>());
         },
       ),
     );
@@ -187,34 +188,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     // Reset to first tab
     if (mounted) {
       setState(() => _currentIndex = 0);
-      _checkFirstTimeSync(context, context.read<SettingsProvider>());
-    }
-  }
-
-  void _checkFirstTimeSync(BuildContext context, SettingsProvider settings) {
-    if (settings.lastSyncTime == null && !settings.isOfflineMode) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('歡迎來到 SummitMate'),
-          content: const Text(
-            '為了讓您有最佳體驗，建議您先同步最新的行程與留言資料。\n\n'
-            '這只需要一點點時間。',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('稍後')),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<MessageProvider>().sync();
-                context.read<ItineraryProvider>().sync();
-                context.read<PollProvider>().fetchPolls();
-              },
-              child: const Text('立即同步'),
-            ),
-          ],
-        ),
-      );
     }
   }
 
@@ -225,8 +198,43 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (context, itineraryProvider, child) {
         return Consumer2<MessageProvider, PollProvider>(
           builder: (context, messageProvider, pollProvider, child) {
-            final isLoading = messageProvider.isSyncing || pollProvider.isLoading;
+            final tripProvider = context.watch<TripProvider>();
+            final hasTrips = tripProvider.hasTrips;
+
+            final isLoading = messageProvider.isSyncing || pollProvider.isLoading || tripProvider.isLoading;
             final isOffline = context.watch<SettingsProvider>().isOfflineMode;
+
+            // 如果沒有行程，顯示空狀態 (Import / Create)
+            if (!hasTrips && !tripProvider.isLoading) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('SummitMate 山友')),
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.hiking, size: 80, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text('歡迎使用 SummitMate', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 32),
+                      FilledButton.icon(
+                        onPressed: () => _showTripSelectionDialog(context),
+                        icon: const Icon(Icons.cloud_download),
+                        label: const Text('從雲端匯入行程'),
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        onPressed: () => tripProvider.createDefaultTrip(),
+                        icon: const Icon(Icons.add),
+                        label: const Text('建立新行程'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
             final scaffold = Scaffold(
               appBar: AppBar(
                 leading: Builder(
@@ -239,7 +247,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 title: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('SummitMate 山友'),
+                    Flexible(
+                      child: Text(tripProvider.activeTrip?.name ?? 'SummitMate 山友', overflow: TextOverflow.ellipsis),
+                    ),
                     if (isOffline) ...[
                       const SizedBox(width: 8),
                       Container(
@@ -261,7 +271,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                     ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
                     : null,
                 actions: [
-                  // Tab 0: 行程編輯與地圖
+                  // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
                   if (_currentIndex == 0) ...[
                     IconButton(
                       key: _keyBtnEdit,
@@ -354,6 +364,104 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         );
       },
     );
+  }
+
+  /// 顯示行程選擇對話框 (從雲端匯入)
+  Future<void> _showTripSelectionDialog(BuildContext context) async {
+    final syncService = getIt<SyncService>();
+
+    // 1. 顯示 Loading 並取得 Trip List
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (c) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await syncService.fetchCloudTrips();
+    if (!context.mounted) return;
+    Navigator.pop(context); // Close Loading
+
+    if (!result.success) {
+      ToastService.error(result.errorMessage ?? '無法取得雲端行程列表');
+      return;
+    }
+
+    final cloudTrips = result.trips;
+    if (cloudTrips.isEmpty) {
+      ToastService.info('雲端目前沒有行程資料');
+      return;
+    }
+
+    // 2. 顯示選擇列表
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('選擇要匯入的行程'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: cloudTrips.length,
+            itemBuilder: (itemContext, index) {
+              final trip = cloudTrips[index];
+              return ListTile(
+                leading: const Icon(Icons.map),
+                title: Text(trip.name),
+                subtitle: Text(trip.startDate.toIso8601String().split('T').first),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  // 使用最外層穩定的 context
+                  _importAndSwitchTrip(context, trip);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('取消'),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _importAndSwitchTrip(BuildContext context, Trip cloudTrip) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (c) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final tripProvider = context.read<TripProvider>();
+      final messageProvider = context.read<MessageProvider>();
+      final itineraryProvider = context.read<ItineraryProvider>();
+
+      // 1. 新增/更新 Trip Meta 到本地
+      // 先檢查本地是否已有此 ID
+      final existing = tripProvider.getTripById(cloudTrip.id);
+      if (existing != null) {
+        await tripProvider.updateTrip(cloudTrip);
+      } else {
+        await tripProvider.importTrip(cloudTrip);
+      }
+
+      // 2. 切換為 Active
+      await tripProvider.setActiveTrip(cloudTrip.id);
+
+      // 3. 觸發 Sync (下載該 Trip 的 itinerary/messages)
+      // 注意：SyncService 會抓 activeTripId
+      await messageProvider.sync();
+      await itineraryProvider.sync();
+
+      if (mounted) Navigator.pop(context); // Close Loading
+      ToastService.success('行程匯入成功');
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      ToastService.error('匯入失敗: $e');
+    }
   }
 
   /// 建立對應頁籤內容 (帶 key 以支援 AnimatedSwitcher)

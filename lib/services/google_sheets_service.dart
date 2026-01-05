@@ -4,6 +4,7 @@ import '../core/constants.dart';
 import '../core/env_config.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
+import '../data/models/trip.dart';
 import 'log_service.dart';
 
 /// Google Sheets API 服務
@@ -178,6 +179,33 @@ class GoogleSheetsService {
     }
   }
 
+  /// 取得雲端行程列表
+  Future<FetchTripsResult> fetchTrips() async {
+    try {
+      LogService.info('API 請求: FetchTrips', source: 'API');
+      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchTrips});
+
+      if (response.statusCode == 200) {
+        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        if (!gasResponse.isSuccess) {
+          return FetchTripsResult(success: false, errorMessage: gasResponse.message);
+        }
+
+        final trips =
+            (gasResponse.data['trips'] as List<dynamic>?)
+                ?.map((e) => Trip.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
+
+        return FetchTripsResult(success: true, trips: trips);
+      } else {
+        return FetchTripsResult(success: false, errorMessage: 'HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      return FetchTripsResult(success: false, errorMessage: e.toString());
+    }
+  }
+
   /// 上傳日誌
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {
@@ -242,4 +270,9 @@ class FetchAllResult extends ApiResult {
   final List<Message> messages;
 
   FetchAllResult({this.itinerary = const [], this.messages = const [], required super.success, super.errorMessage});
+}
+
+class FetchTripsResult extends ApiResult {
+  final List<Trip> trips;
+  FetchTripsResult({this.trips = const [], required super.success, super.errorMessage});
 }
