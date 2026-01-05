@@ -23,6 +23,8 @@ import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../services/weather_service.dart';
 import '../services/interfaces/i_weather_service.dart';
 import '../services/poll_service.dart';
+import '../services/geolocator_service.dart';
+import '../services/interfaces/i_geolocator_service.dart';
 import '../presentation/providers/gear_provider.dart';
 import '../core/location/i_location_resolver.dart';
 import '../core/location/township_location_resolver.dart';
@@ -91,6 +93,9 @@ Future<void> setupDependencies() async {
 
   // 7. Location Resolver
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
+
+  // 7.5 Geolocator Service
+  getIt.registerLazySingleton<IGeolocatorService>(() => GeolocatorService());
 
   // 8. Weather - 氣象服務 (依賴 ISettingsRepository & ILocationResolver)
   final weatherService = WeatherService();
