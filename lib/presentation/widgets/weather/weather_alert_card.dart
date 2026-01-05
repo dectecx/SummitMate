@@ -61,92 +61,148 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
   Widget build(BuildContext context) {
     if (!_isVisible) return const SizedBox.shrink();
 
-    // Hide if loading takes too long or just show nothing?
-    // Show nothing if loading to avoid clutter, or a small loader?
-    // User requested "Alert", so maybe only show if there IS an alert or data?
-    // Let's show a compact card.
-
-    // Debugging: Show Loading and Error states
+    // 載入中狀態
     if (_isLoading) {
       return const Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.symmetric(vertical: 16.0),
         child: Center(
-          child: Text('取得天氣資訊中...', style: TextStyle(color: Colors.grey)),
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
         ),
       );
     }
 
+    // 錯誤狀態
     if (_error != null) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: Text('⚠️ 天氣載入失敗: $_error', style: const TextStyle(color: Colors.red)),
-        ),
-      );
+      // 錯誤時隱藏，或顯示重試 (這裡選擇隱藏以免干擾)
+      return const SizedBox.shrink();
     }
 
     if (_weather == null) {
-      return const Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Center(child: Text('無天氣資料')),
-      );
+      return const SizedBox.shrink();
     }
 
-    final isRainy = _weather!.rainProbability >= 60 || _weather!.condition.contains('雨');
+    // 樣式邏輯
     final isHighAlert = _weather!.rainProbability >= 80;
+    final isRainy = _weather!.rainProbability >= 60 || _weather!.condition.contains('雨');
 
-    // Logic: Only show if there is something "interesting"?
-    // Or show "Current Location Weather" always?
-    // Let's show always for MVP verification, but style it differently.
+    Color statusColor;
+    IconData statusIcon;
+    String? badgeText;
 
-    final alertColor = isHighAlert ? Colors.red : (isRainy ? Colors.orange : Colors.blueGrey);
-    final icon = isRainy ? Icons.umbrella : Icons.wb_sunny;
+    if (isHighAlert) {
+      statusColor = Colors.redAccent;
+      statusIcon = Icons.warning_amber_rounded;
+      badgeText = '豪雨特報';
+    } else if (isRainy) {
+      statusColor = Colors.orange;
+      statusIcon = Icons.umbrella;
+      badgeText = '攜帶雨具';
+    } else {
+      statusColor = Colors.blue;
+      statusIcon = Icons.wb_sunny_outlined;
+      badgeText = null;
+    }
 
     return Dismissible(
       key: const Key('weather_alert'),
       direction: DismissDirection.horizontal,
       onDismissed: (_) {
-        // Allow user to dismiss for session
         setState(() => _isVisible = false);
       },
-      child: Card(
+      child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        color: alertColor.withValues(alpha: 0.1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: alertColor.withValues(alpha: 0.5)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Icon(icon, color: alertColor, size: 32),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '目前位置: ${_weather!.locationName}',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: alertColor),
-                    ),
-                    Text(
-                      '${_weather!.condition}  |  降雨機率 ${_weather!.rainProbability}%',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: statusColor, width: 6),
               ),
-              if (isRainy)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: alertColor, borderRadius: BorderRadius.circular(12)),
-                  child: const Text(
-                    '注意',
-                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Icon
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(statusIcon, color: statusColor, size: 28),
                   ),
-                ),
-            ],
+                  const SizedBox(width: 16),
+                  
+                  // Text Content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _weather!.locationName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              _weather!.condition,
+                              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '降雨率 ${_weather!.rainProbability}%',
+                              style: TextStyle(
+                                color: isRainy ? statusColor : Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Badge
+                  if (badgeText != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
