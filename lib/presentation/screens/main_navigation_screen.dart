@@ -9,7 +9,6 @@ import '../../core/di.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/usage_tracking_service.dart';
-import '../../services/tutorial_service.dart';
 import '../../services/hive_service.dart';
 import '../../data/models/trip.dart';
 import '../../services/sync_service.dart';
@@ -24,11 +23,11 @@ import '../widgets/app_drawer.dart';
 import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
 import '../widgets/info_tab.dart';
-import '../widgets/tutorial_overlay.dart';
 import '../widgets/itinerary_edit_dialog.dart';
 
 import 'collaboration_tab.dart'; // Ensure this file exists, otherwise adapt
 import 'map/map_screen.dart';
+import 'tutorial_screen.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -41,20 +40,11 @@ class MainNavigationScreen extends StatefulWidget {
 class MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // 導覽目標 Keys
-  final GlobalKey _keyTabItinerary = GlobalKey();
-  final GlobalKey _keyTabMessage = GlobalKey();
-  final GlobalKey _keyTabGear = GlobalKey();
-  final GlobalKey _keyTabInfo = GlobalKey();
+  // 導覽目標 Keys (用於 AppBar/Navigation)
   final GlobalKey _keyBtnEdit = GlobalKey();
-  final GlobalKey _keyBtnSync = GlobalKey();
   final GlobalKey _keyBtnUpload = GlobalKey();
-  final GlobalKey _keyInfoElevation = GlobalKey();
-  final GlobalKey _keyInfoTimeMap = GlobalKey();
   final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
-  final GlobalKey _keyTabPolls = GlobalKey();
 
-  OverlayEntry? _tutorialEntry;
   UsageTrackingService? _usageTrackingService;
 
   @override
@@ -96,99 +86,11 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _showTutorial(BuildContext context) {
-    if (_tutorialEntry != null) return;
-
-    // 若無行程，暫不顯示主要導覽 (避免找不到 Key)
-    if (!context.read<TripProvider>().hasTrips) return;
-
-    _tutorialEntry = OverlayEntry(
-      builder: (context) => TutorialOverlay(
-        targets: TutorialService.initTargets(
-          keyTabItinerary: _keyTabItinerary,
-          keyTabMessage: _keyTabMessage,
-          keyTabGear: _keyTabGear,
-          keyTabInfo: _keyTabInfo,
-          keyBtnEdit: _keyBtnEdit,
-          keyBtnUpload: _keyBtnUpload,
-          keyBtnSync: _keyBtnSync,
-          keyTabPolls: _keyTabPolls,
-          keyInfoElevation: _keyInfoElevation,
-          keyInfoTimeMap: _keyInfoTimeMap,
-          onSwitchToItinerary: () async {
-            // 延遲切換以讓光圈先移動
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentIndex = 0);
-            });
-            if (context.read<ItineraryProvider>().isEditMode) {
-              context.read<ItineraryProvider>().toggleEditMode();
-            }
-          },
-          onFocusUpload: () async {
-            setState(() => _currentIndex = 0);
-            if (!context.read<ItineraryProvider>().isEditMode) {
-              context.read<ItineraryProvider>().toggleEditMode();
-            }
-          },
-          onFocusSync: () async {
-            // 離開上傳步驟後，關閉編輯模式
-            if (context.read<ItineraryProvider>().isEditMode) {
-              context.read<ItineraryProvider>().toggleEditMode();
-            }
-          },
-          onSwitchToGear: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentIndex = 1);
-            });
-          },
-          onSwitchToMessage: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentIndex = 2);
-            });
-          },
-          onSwitchToInfo: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentIndex = 3);
-            });
-          },
-          onFocusElevation: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentIndex = 3);
-            });
-            // 等待光圈移動到位後展開
-            Future.delayed(const Duration(milliseconds: 800), () {
-              _keyInfoTab.currentState?.expandElevation();
-            });
-          },
-          onFocusTimeMap: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentIndex = 3);
-            });
-            // 等待光圈移動到位後展開
-            Future.delayed(const Duration(milliseconds: 800), () {
-              _keyInfoTab.currentState?.expandTimeMap();
-            });
-          },
-        ),
-        onFinish: _removeTutorial,
-        onSkip: () {
-          context.read<SettingsProvider>().completeOnboarding();
-          _removeTutorial();
-        },
-      ),
+    // 導航到獨立的教學畫面，使用假資料和假 UI
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const TutorialScreen()),
     );
-
-    Overlay.of(context).insert(_tutorialEntry!);
-  }
-
-  void _removeTutorial() {
-    _tutorialEntry?.remove();
-    _tutorialEntry = null;
-    context.read<SettingsProvider>().completeOnboarding();
-
-    // Reset to first tab
-    if (mounted) {
-      setState(() => _currentIndex = 0);
-    }
   }
 
   @override
@@ -320,29 +222,24 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                   }
                 },
                 destinations: [
-                  NavigationDestination(
-                    key: _keyTabItinerary,
-                    icon: const Icon(Icons.schedule),
-                    selectedIcon: const Icon(Icons.schedule),
+                  const NavigationDestination(
+                    icon: Icon(Icons.schedule),
+                    selectedIcon: Icon(Icons.schedule),
                     label: '行程',
                   ),
-
-                  NavigationDestination(
-                    key: _keyTabGear,
-                    icon: const Icon(Icons.backpack_outlined),
-                    selectedIcon: const Icon(Icons.backpack),
+                  const NavigationDestination(
+                    icon: Icon(Icons.backpack_outlined),
+                    selectedIcon: Icon(Icons.backpack),
                     label: '裝備',
                   ),
-                  NavigationDestination(
-                    key: _keyTabMessage,
-                    icon: const Icon(Icons.forum_outlined),
-                    selectedIcon: const Icon(Icons.forum),
+                  const NavigationDestination(
+                    icon: Icon(Icons.forum_outlined),
+                    selectedIcon: Icon(Icons.forum),
                     label: '互動',
                   ),
-                  NavigationDestination(
-                    key: _keyTabInfo,
-                    icon: const Icon(Icons.info_outline),
-                    selectedIcon: const Icon(Icons.info),
+                  const NavigationDestination(
+                    icon: Icon(Icons.info_outline),
+                    selectedIcon: Icon(Icons.info),
                     label: '資訊',
                   ),
                 ],
@@ -473,9 +370,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         final tripId = context.read<ItineraryProvider>().currentTripId;
         return GearTab(key: const ValueKey(1), tripId: tripId);
       case 2:
-        return CollaborationTab(key: const ValueKey(2), keyBtnSync: _keyBtnSync, keyTabPolls: _keyTabPolls);
+        return const CollaborationTab(key: ValueKey(2));
       case 3:
-        return InfoTab(key: _keyInfoTab, keyElevation: _keyInfoElevation, keyTimeMap: _keyInfoTimeMap);
+        return InfoTab(key: _keyInfoTab);
       default:
         return const ItineraryTab(key: ValueKey(0));
     }
