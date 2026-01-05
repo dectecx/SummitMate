@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hive/hive.dart';
 
 import '../services/hive_service.dart';
 import '../services/google_sheets_service.dart';
@@ -25,6 +24,8 @@ import '../services/weather_service.dart';
 import '../services/interfaces/i_weather_service.dart';
 import '../services/poll_service.dart';
 import '../presentation/providers/gear_provider.dart';
+import '../core/location/i_location_resolver.dart';
+import '../core/location/township_location_resolver.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -88,7 +89,10 @@ Future<void> setupDependencies() async {
   await settingsRepo.init();
   getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
-  // 7. Weather - 氣象服務 (依賴 ISettingsRepository)
+  // 7. Location Resolver
+  getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
+
+  // 8. Weather - 氣象服務 (依賴 ISettingsRepository & ILocationResolver)
   final weatherService = WeatherService();
   await weatherService.init();
   getIt.registerSingleton<IWeatherService>(weatherService);

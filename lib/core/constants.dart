@@ -102,6 +102,44 @@ class ApiConfig {
   static const String actionDeleteTrip = 'delete_trip';
 }
 
+/// CWA 開放資料 ID
+class CwaDataId {
+  /// 鄉鎮天氣預報-未來1週
+  static const String townshipForecast = 'F-D0047-093';
+
+  /// 鄉鎮天氣預報-臺東縣未來1週
+  static const String townshipForecastTaitung = 'F-D0047-039';
+
+  /// 育樂天氣預報資料-登山一週日夜天氣預報
+  static const String hikingForecast = 'F-B0053-031';
+
+  /// 縣市鄉鎮預報 ID 對照表 (1週預報)
+  static const Map<String, String> countyForecastIds = {
+    '宜蘭縣': 'F-D0047-003',
+    '桃園市': 'F-D0047-007',
+    '新竹縣': 'F-D0047-011',
+    '苗栗縣': 'F-D0047-015',
+    '彰化縣': 'F-D0047-019',
+    '南投縣': 'F-D0047-023',
+    '雲林縣': 'F-D0047-027',
+    '嘉義縣': 'F-D0047-031',
+    '屏東縣': 'F-D0047-035',
+    '臺東縣': 'F-D0047-039',
+    '花蓮縣': 'F-D0047-043',
+    '澎湖縣': 'F-D0047-047',
+    '基隆市': 'F-D0047-051',
+    '新竹市': 'F-D0047-055',
+    '嘉義市': 'F-D0047-059',
+    '臺北市': 'F-D0047-063',
+    '高雄市': 'F-D0047-067',
+    '新北市': 'F-D0047-071',
+    '臺中市': 'F-D0047-075',
+    '臺南市': 'F-D0047-079',
+    '連江縣': 'F-D0047-083',
+    '金門縣': 'F-D0047-087',
+  };
+}
+
 /// Hive Box 名稱
 class HiveBoxNames {
   // 核心資料
