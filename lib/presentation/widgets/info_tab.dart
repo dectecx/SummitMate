@@ -10,6 +10,7 @@ import '../../data/models/weather_data.dart';
 import '../providers/settings_provider.dart';
 import '../screens/map/map_screen.dart';
 import 'zoomable_image.dart';
+import 'weather/weather_alert_card.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
 class InfoTab extends StatefulWidget {
@@ -137,6 +138,10 @@ class InfoTabState extends State<InfoTab> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // 目前位置天氣警報
+              const WeatherAlertCard(),
+              const SizedBox(height: 16),
+
               // 步道概況
               Card(
                 child: Padding(

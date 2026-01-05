@@ -7,7 +7,6 @@ import '../../services/toast_service.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/settings_provider.dart';
 import 'itinerary_edit_dialog.dart';
-import 'weather/weather_alert_card.dart';
 
 /// Tab 1: 行程頁
 class ItineraryTab extends StatefulWidget {
@@ -67,7 +66,6 @@ class _ItineraryTabState extends State<ItineraryTab> {
           content = CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              const SliverToBoxAdapter(child: WeatherAlertCard()),
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Column(
@@ -85,10 +83,6 @@ class _ItineraryTabState extends State<ItineraryTab> {
         } else {
           content = Column(
             children: [
-              // 天氣警報卡片 (僅在 D0 或 最上方顯示?)
-              // 顯示目前位置天氣，隨時可見
-              const WeatherAlertCard(),
-
               // 天數切換與狀態列
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
