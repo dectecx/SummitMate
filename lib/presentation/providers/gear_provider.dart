@@ -19,7 +19,6 @@ class GearProvider extends ChangeNotifier {
 
   GearProvider({IGearRepository? repository}) : _repository = repository ?? getIt<IGearRepository>() {
     LogService.info('GearProvider 初始化', source: 'Gear');
-    // Note: Delay load until tripId is set
   }
 
   /// 設定當前行程Context
@@ -109,12 +108,12 @@ class GearProvider extends ChangeNotifier {
 
       _items = _repository.getAllItems();
 
-      // Filter by tripId if set
+      // Filter by tripId
       if (_currentTripId != null) {
         _items = _items.where((i) => i.tripId == _currentTripId).toList();
       } else {
         // If no trip selected, maybe show nothing or all?
-        // Safe bet: show nothing to avoid mixing
+        // No active trip, clear list
         _items = [];
       }
       LogService.debug('載入 ${_items.length} 個裝備', source: 'Gear');

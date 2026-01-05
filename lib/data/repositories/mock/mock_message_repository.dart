@@ -52,19 +52,15 @@ class MockMessageRepository implements IMessageRepository {
       _mockMessages.where((msg) => msg.category == category).toList();
 
   @override
-  List<Message> getMainMessages({String? category}) => _mockMessages
-      .where((msg) => msg.parentId == null && (category == null || msg.category == category))
-      .toList();
+  List<Message> getMainMessages({String? category}) =>
+      _mockMessages.where((msg) => msg.parentId == null && (category == null || msg.category == category)).toList();
 
   @override
-  List<Message> getReplies(String parentUuid) =>
-      _mockMessages.where((msg) => msg.parentId == parentUuid).toList();
+  List<Message> getReplies(String parentUuid) => _mockMessages.where((msg) => msg.parentId == parentUuid).toList();
 
   @override
-  Message? getByUuid(String uuid) => _mockMessages.cast<Message?>().firstWhere(
-        (msg) => msg?.uuid == uuid,
-        orElse: () => null,
-      );
+  Message? getByUuid(String uuid) =>
+      _mockMessages.cast<Message?>().firstWhere((msg) => msg?.uuid == uuid, orElse: () => null);
 
   @override
   Future<void> addMessage(Message message) async {}

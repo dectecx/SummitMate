@@ -70,15 +70,11 @@ class MockItineraryRepository implements IItineraryRepository {
   List<ItineraryItem> getAllItems() => List.unmodifiable(_mockItems);
 
   @override
-  List<ItineraryItem> getItemsByDay(String day) =>
-      _mockItems.where((item) => item.day == day).toList();
+  List<ItineraryItem> getItemsByDay(String day) => _mockItems.where((item) => item.day == day).toList();
 
   @override
   ItineraryItem? getItemByKey(dynamic key) =>
-      _mockItems.cast<ItineraryItem?>().firstWhere(
-        (item) => item?.uuid == key,
-        orElse: () => null,
-      );
+      _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.uuid == key, orElse: () => null);
 
   @override
   Future<void> checkIn(dynamic key, DateTime time) async {}

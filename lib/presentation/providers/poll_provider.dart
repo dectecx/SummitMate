@@ -64,7 +64,6 @@ class PollProvider with ChangeNotifier {
     _polls = _pollRepository.getAllPolls();
     _lastSyncTime = _pollRepository.getLastSyncTime();
 
-    // Sort logic from fetchPolls
     _polls.sort((a, b) {
       if (a.isActive && !b.isActive) return -1;
       if (!a.isActive && b.isActive) return 1;
@@ -85,7 +84,7 @@ class PollProvider with ChangeNotifier {
   /// [isAuto] 為 true 時會套用 5 分鐘節流
   Future<void> fetchPolls({bool isAuto = false}) async {
     // 節流：自動同步時檢查冷卻時間
-    // Load last sync time from repo if not set in memory (double check)
+    // Ensure loaded
     _lastSyncTime ??= _pollRepository.getLastSyncTime();
 
     // 離線模式檢查
@@ -109,13 +108,13 @@ class PollProvider with ChangeNotifier {
     try {
       LogService.info('開始同步投票...', source: _source);
 
-      // Refresh User ID just in case
+      // Refresh User ID
       final user = _prefs.getString(PrefKeys.username);
       if (user != null && user.isNotEmpty) _currentUserId = user;
 
       final fetchedPolls = await _pollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
 
-      // Sort: Active first, then by date desc
+      // Sort: Active first, then date desc
       fetchedPolls.sort((a, b) {
         if (a.isActive && !b.isActive) return -1;
         if (!a.isActive && b.isActive) return 1;
@@ -156,7 +155,7 @@ class PollProvider with ChangeNotifier {
     _setLoading(true);
     try {
       await action();
-      await fetchPolls(); // Refresh list after successful action
+      await fetchPolls();
       return true;
     } catch (e) {
       _error = e.toString();

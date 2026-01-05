@@ -92,7 +92,6 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
       );
     }
 
-    // Check Alert Conditions
     final isRainy = _weather!.rainProbability >= 60 || _weather!.condition.contains('雨');
     final isHighAlert = _weather!.rainProbability >= 80;
 

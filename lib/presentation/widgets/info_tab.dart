@@ -515,7 +515,7 @@ class InfoTabState extends State<InfoTab> {
                   if (newValue != null && newValue != _selectedLocation) {
                     setState(() {
                       _selectedLocation = newValue;
-                      _weather = null; // Clear old data visually
+                      _weather = null;
                       _selectedForecastIndex = -1; // Reset selection
                       _refreshWeather(force: false);
                     });

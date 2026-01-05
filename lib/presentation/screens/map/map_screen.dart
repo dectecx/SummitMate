@@ -151,7 +151,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 ],
               ),
 
-              // Loading Indicator
               if (provider.isLoading) const Center(child: CircularProgressIndicator()),
 
               // 返回按鈕 (左上角)

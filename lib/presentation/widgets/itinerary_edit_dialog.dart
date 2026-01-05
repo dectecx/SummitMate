@@ -140,7 +140,6 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
   }
 
   Future<bool> _checkDismiss() async {
-    // Check if any field has content
     final hasContent =
         _nameCtrl.text.isNotEmpty ||
         _noteCtrl.text.isNotEmpty ||

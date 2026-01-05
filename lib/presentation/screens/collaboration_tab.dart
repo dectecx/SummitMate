@@ -20,14 +20,7 @@ class CollaborationTab extends StatelessWidget {
               ],
             ),
           ),
-          const Expanded(
-            child: TabBarView(
-              children: [
-                MessageListScreen(),
-                PollListScreen(),
-              ],
-            ),
-          ),
+          const Expanded(child: TabBarView(children: [MessageListScreen(), PollListScreen()])),
         ],
       ),
     );

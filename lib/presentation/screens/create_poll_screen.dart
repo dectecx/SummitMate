@@ -81,7 +81,6 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
       return;
     }
 
-    // Filter empty options
     final options = _optionControllers.map((c) => c.text.trim()).where((t) => t.isNotEmpty).toList();
 
     if (options.length < 2) {
@@ -158,7 +157,6 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Settings
             SwitchListTile(
               title: const Text('允許新增'),
               subtitle: const Text('允許其他成員新增選項'),

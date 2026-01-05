@@ -211,7 +211,7 @@ class GearLibraryProvider extends ChangeNotifier {
       if (linkedGear.isEmpty) return [];
 
       final linkedTrips = <Map<String, dynamic>>[];
-      final processedTripIds = <String>{}; // Avoid duplicates
+      final processedTripIds = <String>{};
 
       for (final gear in linkedGear) {
         if (gear.tripId != null && !processedTripIds.contains(gear.tripId)) {
@@ -343,7 +343,7 @@ class GearLibraryProvider extends ChangeNotifier {
         if (gear.tripId != null) {
           final trip = _tripRepository.getTripById(gear.tripId!);
           if (trip != null) {
-            // Check if archived: End Date Passed OR Manually Inactive
+            // 檢查是否封存：結束日期已過或手動停用
             // Align with AppDrawer logic: if endDate < today, it's archived.
             // Also protect if isActive is explicitly false.
             final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
