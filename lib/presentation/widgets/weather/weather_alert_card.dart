@@ -65,24 +65,59 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
     if (_isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16.0),
-        child: Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
+        child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
       );
     }
 
     // 錯誤狀態
     if (_error != null) {
-      // 錯誤時隱藏，或顯示重試 (這裡選擇隱藏以免干擾)
-      return const SizedBox.shrink();
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('無法取得天氣資訊: $_error', style: const TextStyle(color: Colors.red)),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.red),
+              onPressed: _fetchWeather,
+            ),
+          ],
+        ),
+      );
     }
 
     if (_weather == null) {
-      return const SizedBox.shrink();
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_off, color: Colors.grey),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('暫無天氣資料', style: TextStyle(color: Colors.grey)),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.grey),
+              onPressed: _fetchWeather,
+            ),
+          ],
+        ),
+      );
     }
 
     // 樣式邏輯
@@ -119,20 +154,14 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Container(
             decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: statusColor, width: 6),
-              ),
+              border: Border(left: BorderSide(color: statusColor, width: 6)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -141,33 +170,21 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
                   // Icon
                   Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), shape: BoxShape.circle),
                     child: Icon(statusIcon, color: statusColor, size: 28),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Text Content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _weather!.locationName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                        Text(_weather!.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Text(
-                              _weather!.condition,
-                              style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                            ),
+                            Text(_weather!.condition, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                             const SizedBox(width: 8),
                             Text(
                               '降雨率 ${_weather!.rainProbability}%',
@@ -182,22 +199,15 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
                       ],
                     ),
                   ),
-                  
+
                   // Badge
                   if (badgeText != null)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                      decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(20)),
                       child: Text(
                         badgeText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ),
                 ],
