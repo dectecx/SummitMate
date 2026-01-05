@@ -149,7 +149,7 @@ class SettingsProvider extends ChangeNotifier {
       await _repository.updateUsername(name);
       await _repository.updateAvatar(avatar);
 
-      // Update local prefs
+      // 更新本地 prefs
       await _prefs.setString(PrefKeys.username, name);
       // Avatar is stored in settings repository mostly, but if using prefs for avatar too, update here.
       // Current implementation of 'avatar' getter uses _settings?.avatar.

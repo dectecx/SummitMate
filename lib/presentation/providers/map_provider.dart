@@ -320,7 +320,7 @@ class MapProvider with ChangeNotifier {
     await initStore();
     try {
       final stats = await _store.stats.all;
-      // Note: stats.size is in KB
+      // 註：stats.size 單位是 KB
       final mb = stats.size / 1024;
       return (tileCount: stats.length, sizeMb: mb);
     } catch (e) {

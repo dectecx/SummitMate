@@ -207,7 +207,6 @@ class _PollListScreenState extends State<PollListScreen> {
         return Scaffold(
           body: Column(
             children: [
-              // Filter Bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(

@@ -105,14 +105,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
     // 使用 Mock Repository 創建 Provider
     _mockTripProvider = TripProvider(repository: _mockTripRepo);
-    _mockItineraryProvider = ItineraryProvider(
-      repository: _mockItineraryRepo,
-      tripRepository: _mockTripRepo,
-    );
-    _mockMessageProvider = MessageProvider(
-      repository: _mockMessageRepo,
-      tripRepository: _mockTripRepo,
-    );
+    _mockItineraryProvider = ItineraryProvider(repository: _mockItineraryRepo, tripRepository: _mockTripRepo);
+    _mockMessageProvider = MessageProvider(repository: _mockMessageRepo, tripRepository: _mockTripRepo);
     _mockGearProvider = GearProvider(repository: _mockGearRepo);
     _mockGearLibraryProvider = GearLibraryProvider(
       repository: _mockGearLibraryRepo,
@@ -257,10 +251,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
               title: const Text('SummitMate 山友'),
               actions: _buildAppBarActions(context),
             ),
-            body: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: _buildTabContent(_currentTab),
-            ),
+            body: AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: _buildTabContent(_currentTab)),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _currentTab,
               onDestinationSelected: (_) {}, // 教學模式：禁止手動切換
@@ -345,10 +336,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
       case 0:
         return const ItineraryTab(key: ValueKey('tutorial_itinerary'));
       case 1:
-        return GearTab(
-          key: const ValueKey('tutorial_gear'),
-          tripId: MockItineraryRepository.mockTripId,
-        );
+        return GearTab(key: const ValueKey('tutorial_gear'), tripId: MockItineraryRepository.mockTripId);
       case 2:
         return const CollaborationTab(key: ValueKey('tutorial_collab'));
       case 3:

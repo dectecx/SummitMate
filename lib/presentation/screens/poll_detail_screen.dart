@@ -29,9 +29,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   @override
   void didUpdateWidget(PollDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update local selection if poll data updates (e.g. after refresh)
+    // 若資料已更新，同步本地狀態
     // Only update if myVotes changed, to avoid overwriting user's current unsaved selection
-    // Note: This logic assumes poll.myVotes is the source of truth for "saved" state.
+    // 假設 poll.myVotes 為可信來源
     if (widget.poll.myVotes.length != oldWidget.poll.myVotes.length ||
         !widget.poll.myVotes.every((element) => oldWidget.poll.myVotes.contains(element))) {
       // Ideally we might want to sync, but if user is editing, it's tricky.
@@ -126,10 +126,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         final isOffline = context.select<SettingsProvider, bool>((s) => s.isOfflineMode);
 
         // Find the fresh poll object from provider
-        final freshPoll = provider.polls.firstWhere(
-          (p) => p.id == widget.poll.id,
-          orElse: () => widget.poll, // Fallback
-        );
+        final freshPoll = provider.polls.firstWhere((p) => p.id == widget.poll.id, orElse: () => widget.poll);
 
         return Scaffold(
           appBar: AppBar(title: const Text('投票詳情')),
@@ -334,7 +331,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                             style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
                                           ),
                                           const Spacer(),
-                                          // Delete Option Button (Only if 0 votes AND active)
+
                                           if (freshPoll.isActive && option.voteCount == 0 && !isOffline)
                                             InkWell(
                                               onTap: () async {

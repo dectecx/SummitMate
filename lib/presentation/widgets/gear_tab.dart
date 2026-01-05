@@ -694,7 +694,7 @@ class _GearTabState extends State<GearTab> {
       barrierDismissible: false,
       builder: (dialogContext) => StatefulBuilder(
         builder: (innerContext, setState) {
-          // Check if currently linked to a valid library item
+          // 驗證連結項目是否存在
           final isLinked = libraryItemId != null && libraryProvider.containsItem(libraryItemId!);
 
           return AlertDialog(
@@ -788,7 +788,6 @@ class _GearTabState extends State<GearTab> {
                   final weight = double.tryParse(weightController.text) ?? 0;
 
                   if (name.isNotEmpty && weight > 0) {
-                    // Update Local Item
                     item.name = name;
                     // Only update specs if not linked (though UI locks them, safety check)
                     if (libraryItemId == null) {
@@ -809,7 +808,7 @@ class _GearTabState extends State<GearTab> {
 
                     // NO Sync Back to library (Strict Mode)
 
-                    provider.reload(); // Refresh UI
+                    provider.reload();
                     if (dialogContext.mounted) Navigator.pop(dialogContext);
                   }
                 },

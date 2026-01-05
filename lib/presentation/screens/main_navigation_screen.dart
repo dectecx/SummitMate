@@ -82,10 +82,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _showTutorial(BuildContext context) {
     // 導航到獨立的教學畫面，使用假資料和假 UI
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const TutorialScreen()),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen()));
   }
 
   @override
@@ -307,12 +304,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             },
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('取消'),
-          )
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消'))],
       ),
     );
   }

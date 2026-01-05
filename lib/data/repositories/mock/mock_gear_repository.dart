@@ -57,12 +57,10 @@ class MockGearRepository implements IGearRepository {
   List<GearItem> getAllItems() => List.unmodifiable(_mockItems);
 
   @override
-  List<GearItem> getItemsByCategory(String category) =>
-      _mockItems.where((item) => item.category == category).toList();
+  List<GearItem> getItemsByCategory(String category) => _mockItems.where((item) => item.category == category).toList();
 
   @override
-  List<GearItem> getUncheckedItems() =>
-      _mockItems.where((item) => !item.isChecked).toList();
+  List<GearItem> getUncheckedItems() => _mockItems.where((item) => !item.isChecked).toList();
 
   @override
   Future<int> addItem(GearItem item) async => 0;
@@ -77,13 +75,11 @@ class MockGearRepository implements IGearRepository {
   Future<void> toggleChecked(dynamic key) async {}
 
   @override
-  double getTotalWeight() =>
-      _mockItems.fold(0, (sum, item) => sum + item.weight * item.quantity);
+  double getTotalWeight() => _mockItems.fold(0, (sum, item) => sum + item.weight * item.quantity);
 
   @override
-  double getCheckedWeight() => _mockItems
-      .where((item) => item.isChecked)
-      .fold(0, (sum, item) => sum + item.weight * item.quantity);
+  double getCheckedWeight() =>
+      _mockItems.where((item) => item.isChecked).fold(0, (sum, item) => sum + item.weight * item.quantity);
 
   @override
   Map<String, double> getWeightByCategory() {

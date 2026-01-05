@@ -310,7 +310,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     final linkedTrips = provider.getLinkedTrips(item.uuid);
 
     if (linkedTrips.isEmpty) {
-      // Safe to delete (No links)
+      // 沒連結，直接刪除
       _confirmDelete(context, item, provider);
       return;
     }
@@ -651,7 +651,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   Future<void> _handleUpload() async {
     if (!_isValidKey) return;
 
-    // Check offline mode
+    // 檢查離線模式
     final isOffline = context.read<SettingsProvider>().isOfflineMode;
     if (isOffline) {
       ToastService.warning('離線模式，無法上傳');
@@ -695,7 +695,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   Future<void> _handleDownload() async {
     if (!_isValidKey) return;
 
-    // Check offline mode
+    // 檢查離線模式
     final isOffline = context.read<SettingsProvider>().isOfflineMode;
     if (isOffline) {
       ToastService.warning('離線模式，無法下載');
