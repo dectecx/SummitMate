@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 /// Root Response
 class CwaApiResponse {
   final String success;
@@ -8,10 +6,7 @@ class CwaApiResponse {
   CwaApiResponse({required this.success, required this.records});
 
   factory CwaApiResponse.fromJson(Map<String, dynamic> json) {
-    return CwaApiResponse(
-      success: json['success'] ?? 'false',
-      records: CwaRecords.fromJson(json['records'] ?? {}),
-    );
+    return CwaApiResponse(success: json['success'] ?? 'false', records: CwaRecords.fromJson(json['records'] ?? {}));
   }
 }
 
@@ -24,9 +19,7 @@ class CwaRecords {
   factory CwaRecords.fromJson(Map<String, dynamic> json) {
     // Handle "Locations" vs "locations"
     final list = json['Locations'] ?? json['locations'] ?? [];
-    return CwaRecords(
-      locationsList: (list as List).map((e) => CwaLocations.fromJson(e)).toList(),
-    );
+    return CwaRecords(locationsList: (list as List).map((e) => CwaLocations.fromJson(e)).toList());
   }
 }
 
@@ -36,11 +29,7 @@ class CwaLocations {
   final String locationsName;
   final List<CwaLocation> location;
 
-  CwaLocations({
-    required this.datasetDescription,
-    required this.locationsName,
-    required this.location,
-  });
+  CwaLocations({required this.datasetDescription, required this.locationsName, required this.location});
 
   factory CwaLocations.fromJson(Map<String, dynamic> json) {
     // Handle "Location" vs "location"
@@ -84,10 +73,7 @@ class CwaWeatherElement {
     final name = json['ElementName'] ?? json['elementName'] ?? '';
     // Handle "Time" vs "time"
     final t = json['Time'] ?? json['time'] ?? [];
-    return CwaWeatherElement(
-      elementName: name,
-      time: (t as List).map((e) => CwaTime.fromJson(e)).toList(),
-    );
+    return CwaWeatherElement(elementName: name, time: (t as List).map((e) => CwaTime.fromJson(e)).toList());
   }
 }
 
@@ -116,7 +102,7 @@ class CwaTime {
   String getValue(List<String> keyPreferences) {
     if (elementValue.isEmpty) return '';
     final first = elementValue[0];
-    
+
     for (final key in keyPreferences) {
       if (first.containsKey(key)) {
         return first[key].toString();
@@ -124,10 +110,10 @@ class CwaTime {
     }
     // Fallback: return first value if keys don't match (for simple 'value' case)
     if (first.isNotEmpty) {
-       // but maybe it's not what we want. Safer to return empty if not found?
-       // Let's stick to key preference.
-       // Check if 'value' exists as implicit fallback
-       if (first.containsKey('value')) return first['value'].toString();
+      // but maybe it's not what we want. Safer to return empty if not found?
+      // Let's stick to key preference.
+      // Check if 'value' exists as implicit fallback
+      if (first.containsKey('value')) return first['value'].toString();
     }
     return '';
   }

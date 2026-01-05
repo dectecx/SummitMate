@@ -1,15 +1,15 @@
-import '../core/constants.dart';
+import 'cwa_constants.dart';
 
 class CwaApiFactory {
   /// Determines the correct CWA Dataset ID based on the county name.
   /// Falls back to the global "All Townships" dataset if no specific county map is found.
   static String getTownshipForecastId(String countyName) {
     // 7-day forecast mapping
-    if (CwaDataId.countyForecastIds.containsKey(countyName)) {
-      return CwaDataId.countyForecastIds[countyName]!;
+    if (CwaConstants.countyForecastIds.containsKey(countyName)) {
+      return CwaConstants.countyForecastIds[countyName]!;
     }
     // Fallback to All Taiwan (F-D0047-093)
-    return CwaDataId.townshipForecastAll;
+    return CwaConstants.townshipForecastAll;
   }
 
   /// Returns a list of possible JSON keys for a given weather element concept.
@@ -42,16 +42,26 @@ class CwaApiFactory {
   /// Returns the preferred key for extracting value from ElementValue map.
   static String getElementValueKey(String concept) {
     switch (concept) {
-      case 'Temperature': return 'Temperature';
-      case 'PoP': return 'ProbabilityOfPrecipitation';
-      case 'Wx': return 'Weather';
-      case 'MinT': return 'MinTemperature';
-      case 'MaxT': return 'MaxTemperature';
-      case 'RH': return 'RelativeHumidity';
-      case 'WS': return 'WindSpeed';
-      case 'MaxAT': return 'MaxApparentTemperature';
-      case 'MinAT': return 'MinApparentTemperature';
-      default: return 'value';
+      case 'Temperature':
+        return 'Temperature';
+      case 'PoP':
+        return 'ProbabilityOfPrecipitation';
+      case 'Wx':
+        return 'Weather';
+      case 'MinT':
+        return 'MinTemperature';
+      case 'MaxT':
+        return 'MaxTemperature';
+      case 'RH':
+        return 'RelativeHumidity';
+      case 'WS':
+        return 'WindSpeed';
+      case 'MaxAT':
+        return 'MaxApparentTemperature';
+      case 'MinAT':
+        return 'MinApparentTemperature';
+      default:
+        return 'value';
     }
   }
 }
