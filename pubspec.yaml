@@ -1,7 +1,7 @@
 name: summitmate
 description: "SummitMate (山友) - 嘉明湖登山行程助手"
 publish_to: 'none'
-version: 0.0.5+1
+version: 0.0.6+1
 
 environment:
   sdk: ^3.10.4
