@@ -13,4 +13,9 @@ abstract interface class IWeatherService {
 
   /// 從 API 取得最新天氣
   Future<WeatherData> fetchWeather({String locationName = '向陽山'});
+
+  /// 根據座標取得天氣 (使用鄉鎮預報 F-D0047-093)
+  /// [lat] 緯度
+  /// [lon] 經度
+  Future<WeatherData?> getWeatherByCoordinates(double lat, double lon);
 }

@@ -240,10 +240,7 @@ class MapProvider with ChangeNotifier {
           final currentPercent = (task.progress * 100).floor();
           if (currentPercent % 10 == 0 && currentPercent != lastLoggedPercent) {
             lastLoggedPercent = currentPercent;
-            LogService.debug(
-              'Task ${task.name} progress: $currentPercent%',
-              source: 'MapProvider',
-            );
+            LogService.debug('Task ${task.name} progress: $currentPercent%', source: 'MapProvider');
           }
 
           // task.successfulTiles = progress.successfulTiles; // Undefined in v10?
