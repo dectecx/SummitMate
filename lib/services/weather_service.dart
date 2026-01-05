@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
@@ -11,6 +11,8 @@ import '../data/repositories/interfaces/i_settings_repository.dart';
 
 import 'interfaces/i_weather_service.dart';
 import '../core/location/i_location_resolver.dart';
+import '../data/models/cwa/cwa_response_models.dart';
+import '../services/cwa_api_factory.dart';
 
 class WeatherService implements IWeatherService {
   static const String _boxName = HiveBoxNames.weather;
@@ -115,8 +117,10 @@ class WeatherService implements IWeatherService {
       }
     }
 
-    if (locationName == '池上') {
-      return _fetchTownshipWeather(locationName);
+    // Determine if we should use CWA or GAS
+    // Logic: If resolved location looks like a Township/District (contains 縣, 市, 區, 鄉, 鎮), try CWA.
+    if (locationName.contains('縣') || locationName.contains('市') || locationName.contains('區') || locationName.contains('鄉') || locationName.contains('鎮')) {
+      return _fetchCwaWeather(locationName);
     } else {
       return _fetchHikingWeather(locationName);
     }
@@ -132,9 +136,14 @@ class WeatherService implements IWeatherService {
     try {
       final response = await http.get(url);
 
+      LogService.info('GAS API Status: ${response.statusCode}', source: 'WeatherService');
+
       if (response.statusCode == 200) {
         // Parse new GAS format: { code, data: { weather: [...] }, message }
-        final jsonMap = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+        final bodyMsgs = utf8.decode(response.bodyBytes);
+        LogService.debug('GAS API Response (Length: ${bodyMsgs.length})', source: 'WeatherService');
+        
+        final jsonMap = json.decode(bodyMsgs) as Map<String, dynamic>;
 
         // Check if it's the new format
         if (jsonMap['code'] != '0000') {
@@ -181,31 +190,187 @@ class WeatherService implements IWeatherService {
     return _parseGasWeatherData(jsonList, locationName);
   }
 
-  Future<WeatherData> _fetchTownshipWeather(String locationName) async {
-    // F-D0047-039 (Taitung)
-    final target = '池上鄉'; // Map '池上' to '池上鄉'
+  Future<WeatherData> _fetchCwaWeather(String locationName) async {
+    String countyName = '';
+    if (locationName.length >= 3) {
+      countyName = locationName.substring(0, 3);
+    }
+    
+    final dataId = CwaApiFactory.getTownshipForecastId(countyName);
+    var queryName = locationName;
+    if (countyName.isNotEmpty && locationName.length > 3) {
+       queryName = locationName.substring(3);
+    }
 
-    final baseUrl = '${EnvConfig.cwaApiHost}/api/v1/rest/datastore/${CwaDataId.townshipForecastTaitung}';
-
-    final url = Uri.parse(
-      '$baseUrl?Authorization=$_apiKey&locationName=$target&elementName=MaxT,MinT,PoP12h,Wx,T,RH,WS,MaxAT,MinAT',
-    );
-
-    LogService.info('Fetching town weather: $target (Host: ${EnvConfig.cwaApiHost})', source: 'WeatherService');
+    // We query with specific elements to reduce payload size
+    final url =
+        '${EnvConfig.cwaApiHost}/api/v1/rest/datastore/$dataId?Authorization=$_apiKey&locationName=$queryName&elementName=PoP12h,T,Wx,MinT,MaxT,MinAT,MaxAT,RH,WS';
+    
+    LogService.debug('CWA API URL: $url', source: 'WeatherService');
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(Uri.parse(url));
+
+      LogService.info('CWA API Status: ${response.statusCode}', source: 'WeatherService');
 
       if (response.statusCode == 200) {
-        final data = json.decode(utf8.decode(response.bodyBytes));
-        return _parseTownshipWeatherData(data, locationName, target);
+         final bodyStr = utf8.decode(response.bodyBytes);
+         LogService.debug('CWA API Response (Length: ${bodyStr.length})', source: 'WeatherService');
+         
+         final decoded = jsonDecode(bodyStr);
+         final cwaResponse = CwaApiResponse.fromJson(decoded);
+         
+         if (cwaResponse.success == 'true') {
+            final weather = _parseTownshipData(cwaResponse, locationName, queryName);
+            if (weather != null) return weather;
+            throw Exception('Parsed weather is null');
+         } else {
+            throw Exception('CWA API Error: Result was not success');
+         }
       } else {
-        throw Exception('API Error: ${response.statusCode}');
+         if (response.statusCode == 401 || response.statusCode == 403) {
+           throw Exception('CWA API Auth Failed. Check API Key.');
+         }
+         throw Exception('CWA API Failed with status ${response.statusCode}');
       }
     } catch (e) {
-      LogService.error('Town API Request failed: $e', source: 'WeatherService');
+      LogService.error('CWA API Request failed: $e', source: 'WeatherService');
       rethrow;
     }
+  }
+
+  WeatherData? _parseTownshipData(CwaApiResponse response, String displayName, String queryName) {
+    // 1. Find Location
+    // Flatten all locations from all records (usually just 1 record but hierarchy exists)
+    final allLocs = response.records.locationsList.expand((l) => l.location).toList();
+    
+    var location = allLocs.firstWhere(
+      (l) => l.locationName == queryName,
+      orElse: () => CwaLocation(locationName: '', weatherElement: []), 
+    );
+    
+    // Fallback to displayName
+    if (location.locationName.isEmpty) {
+       location = allLocs.firstWhere(
+        (l) => l.locationName == displayName,
+        orElse: () => CwaLocation(locationName: '', weatherElement: []),
+      );
+    }
+
+    if (location.locationName.isEmpty) {
+       LogService.warning('Location $queryName not found in response', source: 'WeatherService');
+       return null;
+    }
+
+    // 2. Helper to get Time Series for a concept
+    List<CwaTime> getTimeSeries(String concept) {
+       final possibleKeys = CwaApiFactory.getElementKeys(concept);
+       final element = location.weatherElement.firstWhere(
+         (e) => possibleKeys.contains(e.elementName),
+         orElse: () => CwaWeatherElement(elementName: '', time: []),
+       );
+       return element.time;
+    }
+    
+    // 3. Helper to get Current Value safely
+    String getCurrentValue(String concept) {
+       final series = getTimeSeries(concept);
+       if (series.isEmpty) return '';
+       final prefKey = CwaApiFactory.getElementValueKey(concept);
+       return series[0].getValue([prefKey]);
+    }
+
+    final temp = double.tryParse(getCurrentValue('Temperature')) ?? 0.0;
+    final hum = double.tryParse(getCurrentValue('RH')) ?? 0.0;
+    final pop = int.tryParse(getCurrentValue('PoP')) ?? 0;
+    final wx = getCurrentValue('Wx');
+    final ws = double.tryParse(getCurrentValue('WS')) ?? 0.0;
+    
+    // Apparent Temp
+    final maxAT = double.tryParse(getCurrentValue('MaxAT')) ?? 0.0;
+    final minAT = double.tryParse(getCurrentValue('MinAT')) ?? 0.0;
+    final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
+
+    // Issue Time (Current approx)
+    final issueTime = DateTime.now(); 
+
+    // 4. Build Daily Forecast
+    final dailyMap = <String, Map<String, dynamic>>{};
+
+    // Wx
+    final wxSeries = getTimeSeries('Wx');
+    for (var item in wxSeries) {
+       final dateKey = "${item.startTime.year}-${item.startTime.month.toString().padLeft(2, '0')}-${item.startTime.day.toString().padLeft(2, '0')}";
+       dailyMap.putIfAbsent(dateKey, () => {'day': '', 'night': '', 'maxTemp': -100.0, 'minTemp': 100.0, 'pop': 0, 'maxAT': -100.0, 'minAT': 100.0});
+       final val = item.getValue(['Weather', 'value']);
+       if (item.startTime.hour >= 6 && item.startTime.hour < 18) {
+         dailyMap[dateKey]!['day'] = val;
+       } else {
+         dailyMap[dateKey]!['night'] = val;
+       }
+    }
+
+    void processMinMax(String concept, String mapKey, bool isMax) {
+       final series = getTimeSeries(concept);
+       final prefKey = CwaApiFactory.getElementValueKey(concept);
+       for (var item in series) {
+          final dateKey = "${item.startTime.year}-${item.startTime.month.toString().padLeft(2, '0')}-${item.startTime.day.toString().padLeft(2, '0')}";
+          if (!dailyMap.containsKey(dateKey)) continue;
+          final val = double.tryParse(item.getValue([prefKey, 'value'])) ?? 0.0;
+          if (isMax) {
+             if (val > dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
+          } else {
+             if (val < dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
+          }
+       }
+    }
+
+    processMinMax('MaxT', 'maxTemp', true);
+    processMinMax('MinT', 'minTemp', false);
+    processMinMax('MaxAT', 'maxAT', true);
+    processMinMax('MinAT', 'minAT', false);
+    
+    // PoP
+    final popSeries = getTimeSeries('PoP');
+    for (var item in popSeries) {
+        final dateKey = "${item.startTime.year}-${item.startTime.month.toString().padLeft(2, '0')}-${item.startTime.day.toString().padLeft(2, '0')}";
+        if (!dailyMap.containsKey(dateKey)) continue;
+        final val = int.tryParse(item.getValue(['ProbabilityOfPrecipitation', 'value'])) ?? 0;
+        if (val > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = val;
+    }
+
+    final dailyForecasts = dailyMap.entries.map((e) {
+      final d = e.value;
+      return DailyForecast(
+        date: DateTime.parse(e.key),
+        dayCondition: d['day'] == '' ? d['night'] : d['day'],
+        nightCondition: d['night'] == '' ? d['day'] : d['night'],
+        maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
+        minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
+        rainProbability: d['pop'],
+        maxApparentTemp: d['maxAT'] == -100.0 ? 0.0 : d['maxAT'],
+        minApparentTemp: d['minAT'] == 100.0 ? 0.0 : d['minAT'],
+      );
+    }).toList();
+    
+    dailyForecasts.sort((a, b) => a.date.compareTo(b.date));
+    
+    final sunTimes = _calculateSunTimes(DateTime.now(), 23.5, 121.0); // Approx
+
+    return WeatherData(
+      temperature: temp,
+      humidity: hum,
+      rainProbability: pop,
+      windSpeed: ws,
+      condition: wx,
+      sunrise: sunTimes['sunrise']!,
+      sunset: sunTimes['sunset']!,
+      timestamp: DateTime.now(),
+      locationName: displayName,
+      dailyForecasts: dailyForecasts,
+      apparentTemperature: apparentTemp,
+      issueTime: issueTime,
+    );
   }
 
   WeatherData _parseGasWeatherData(List<dynamic> list, String locationName) {
@@ -343,158 +508,6 @@ class WeatherService implements IWeatherService {
     );
   }
 
-  // Custom Parser for Township API (List-based ElementValue)
-  WeatherData _parseTownshipWeatherData(Map<String, dynamic> json, String diffName, String targetLoc) {
-    final records = json['records'];
-    final locations = records['Locations'][0]['Location'] as List;
-    final loc = locations.firstWhere((l) => l['LocationName'] == targetLoc);
-    final elements = loc['WeatherElement'] as List;
-
-    List<dynamic> getTimeList(String elName) {
-      final e = elements.firstWhere((el) => el['ElementName'] == elName, orElse: () => null);
-      return e?['Time'] ?? [];
-    }
-
-    String getValue(String elName, String key, {int index = 0}) {
-      final list = getTimeList(elName);
-      if (list.length <= index) return '';
-      // ElementValue is List<Map>
-      final evList = list[index]['ElementValue'] as List;
-      if (evList.isEmpty) return '';
-      final map = evList[0] as Map; // { "Temperature": "20" }
-      return map[key]?.toString() ?? '';
-    }
-
-    // Current (Index 0)
-    // F-D0047-039 uses T, RH, Wx, WS? Check URL params
-    // I requested: MaxT,MinT,PoP12h,Wx,T,RH,WS
-    // But T is '平均溫度'? No, in F-D0047 usually 'T' stands for '平均溫度' IF requested as 'T'.
-    // But wait, the JSON output I saw earlier had '平均溫度'. So I should use Chinese names if I requested or default.
-    // In fetch_township.py I requested EN names `MinT...`. The output `township_utf8.json` had "ElementName": "平均溫度".
-    // CWA returns Chinese ElementName even if EN requested? Yes.
-    // Mapping:
-    // T -> 平均溫度
-    // RH -> 平均相對濕度 (or 相對濕度?)
-    // Wx -> 天氣現象
-
-    final temp = double.tryParse(getValue('平均溫度', 'Temperature')) ?? 0.0;
-    final hum = double.tryParse(getValue('平均相對濕度', 'RelativeHumidity')) ?? 0.0;
-    final pop = int.tryParse(getValue('12小時降雨機率', 'ProbabilityOfPrecipitation')) ?? 0;
-    final wx = getValue('天氣現象', 'Weather');
-    final ws = double.tryParse(getValue('風速', 'WindSpeed')) ?? 0.0; // If available
-
-    // Issue Time (Township)
-    DateTime? issueTime;
-    try {
-      final locationsRoot = json['records']['Locations'][0];
-      if (locationsRoot['DatasetInfo'] != null) {
-        final info = locationsRoot['DatasetInfo'];
-        if (info['IssueTime'] != null) {
-          issueTime = DateTime.parse(info['IssueTime'].toString());
-        }
-      }
-    } catch (_) {}
-
-    // Apparent Temp
-    final maxAT = double.tryParse(getValue('最高體感溫度', 'MaxApparentTemperature')) ?? 0.0;
-    final minAT = double.tryParse(getValue('最低體感溫度', 'MinApparentTemperature')) ?? 0.0;
-    final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
-
-    // Daily Forecast
-    final dailyMap = <String, Map<String, dynamic>>{};
-
-    // Wx
-    final wxList = getTimeList('天氣現象');
-    for (var item in wxList) {
-      final start = DateTime.parse(item['StartTime']);
-      final dateKey = "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
-      dailyMap.putIfAbsent(
-        dateKey,
-        () => {
-          'dayCondition': '',
-          'nightCondition': '',
-          'maxTemp': -100.0,
-          'minTemp': 100.0,
-          'maxAT': -100.0,
-          'minAT': 100.0,
-          'pop': 0,
-        },
-      );
-      final val = item['ElementValue'][0]['Weather'].toString();
-      if (start.hour >= 6 && start.hour < 18) {
-        dailyMap[dateKey]!['dayCondition'] = val;
-      } else {
-        dailyMap[dateKey]!['nightCondition'] = val;
-      }
-    }
-
-    void processTemp(String elName, String key, String mapKey, bool isMax) {
-      final list = getTimeList(elName);
-      for (var item in list) {
-        final start = DateTime.parse(item['StartTime']);
-        final dateKey =
-            "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
-        if (!dailyMap.containsKey(dateKey)) continue;
-        final val = double.tryParse(item['ElementValue'][0][key].toString()) ?? 0.0;
-        if (isMax) {
-          if (val > dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
-        } else {
-          if (val < dailyMap[dateKey]![mapKey]) dailyMap[dateKey]![mapKey] = val;
-        }
-      }
-    }
-
-    processTemp('最高溫度', 'MaxTemperature', 'maxTemp', true);
-    processTemp('最低溫度', 'MinTemperature', 'minTemp', false);
-    processTemp('最高體感溫度', 'MaxApparentTemperature', 'maxAT', true);
-    processTemp('最低體感溫度', 'MinApparentTemperature', 'minAT', false);
-
-    // PoP
-    final popList = getTimeList('12小時降雨機率');
-    for (var item in popList) {
-      final start = DateTime.parse(item['StartTime']);
-      final dateKey = "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
-      if (!dailyMap.containsKey(dateKey)) continue;
-      final val = int.tryParse(item['ElementValue'][0]['ProbabilityOfPrecipitation'].toString()) ?? 0;
-      if (val > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = val;
-    }
-
-    final dailyForecasts = dailyMap.entries.map((e) {
-      final d = e.value;
-      return DailyForecast(
-        date: DateTime.parse(e.key),
-        dayCondition: d['dayCondition'] == '' ? d['nightCondition'] : d['dayCondition'],
-        nightCondition: d['nightCondition'] == '' ? d['dayCondition'] : d['nightCondition'],
-        maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
-        minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
-        rainProbability: d['pop'],
-        maxApparentTemp: d['maxAT'] == -100.0 ? 0.0 : d['maxAT'],
-        minApparentTemp: d['minAT'] == 100.0 ? 0.0 : d['minAT'],
-      );
-    }).toList();
-    dailyForecasts.sort((a, b) => a.date.compareTo(b.date));
-
-    final now = DateTime.now();
-    final sunTimes = _calculateSunTimes(now, 23.12, 121.22); // Chishang approx
-
-    final weather = WeatherData(
-      temperature: temp,
-      humidity: hum,
-      rainProbability: pop,
-      windSpeed: ws,
-      condition: wx,
-      sunrise: sunTimes['sunrise']!,
-      sunset: sunTimes['sunset']!,
-      timestamp: DateTime.now(),
-      locationName: diffName,
-      dailyForecasts: dailyForecasts,
-      apparentTemperature: apparentTemp,
-      issueTime: issueTime,
-    );
-
-    return weather;
-  }
-
   // Simple local Sunrise/Sunset calculation
   // Source: General algorithms approx (offline friendly)
   Map<String, DateTime> _calculateSunTimes(DateTime date, double lat, double lng) {
@@ -556,10 +569,11 @@ class WeatherService implements IWeatherService {
     if (_box != null && _box!.containsKey(dynamicCacheKey)) {
       final cached = _box!.get(dynamicCacheKey);
       if (cached != null && !cached.isStale) {
+        LogService.info('Returning cached weather for $locationName (Freshness: ${DateTime.now().difference(cached.timestamp).inMinutes}m)', source: 'WeatherService');
         return cached;
       }
       if (isOffline && cached != null) {
-        // In offline mode, return cached data even if stale
+        LogService.warning('Offline Mode: Returning cached (stale) weather for $locationName', source: 'WeatherService');
         return cached;
       }
     }
@@ -575,253 +589,29 @@ class WeatherService implements IWeatherService {
     // 2. Lookup Data ID (e.g. F-D0047-063)
     // 3. Query params: locationName = Distroct (e.g. "信義區")
 
-    String queryName = locationName;
-    String countyName = '';
-    String dataId = CwaDataId.townshipForecast; // Default fallback to "All"
+    // 3. Query params: locationName = Distroct (e.g. "信義區")
 
-    if (locationName.length >= 3) {
-      // Extract county (first 3 chars)
-      countyName = locationName.substring(0, 3);
-      if (CwaDataId.countyForecastIds.containsKey(countyName)) {
-        dataId = CwaDataId.countyForecastIds[countyName]!;
-        // Remove county prefix for query
-        queryName = locationName.substring(3);
-        LogService.info(
-          'Mapped $countyName to DataID: $dataId. Querying district: $queryName',
-          source: 'WeatherService',
-        );
-      } else {
-        LogService.warning(
-          'County "$countyName" not found in map. Falling back to global ID ($dataId)',
-          source: 'WeatherService',
-        );
-        // If fallback to global, queryName might need to be full name or short name depending on global API.
-        // Usually global API expects "信義區" if you query "臺北市" dataId? No, global API contains ALL.
-        // Let's stick to short name query for now as it worked partially before.
-        if (locationName.length > 3) queryName = locationName.substring(3);
-      }
+    // Actually _fetchCwaWeather takes locationName (e.g. "臺北市信義區").
+    
+    // Determine if we should use CWA or GAS
+    // Logic: If resolved location looks like a Township/District (contains 縣, 市, 區, 鄉, 鎮), try CWA.
+    if (locationName.contains('縣') || locationName.contains('市') || locationName.contains('區') || locationName.contains('鄉') || locationName.contains('鎮')) {
+       try {
+          final weather = await _fetchCwaWeather(locationName);
+          _box?.put(dynamicCacheKey, weather);
+          return weather;
+       } catch (e) {
+          LogService.error('Failed to fetch CWA weather for $locationName: $e', source: 'WeatherService');
+          return null;
+       }
     }
-
-    final url =
-        '${EnvConfig.cwaApiHost}/api/v1/rest/datastore/$dataId?Authorization=$_apiKey&locationName=$queryName&elementName=PoP12h,T,Wx,MinT,MaxT';
-
-    LogService.debug('CWA API URL: $url', source: 'WeatherService');
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      LogService.debug('CWA API Status: ${response.statusCode}', source: 'WeatherService');
-
-      if (response.statusCode == 200) {
-        // Log first 200 chars to debug
-        final bodyStart = response.body.length > 500 ? response.body.substring(0, 500) : response.body;
-        LogService.debug('CWA API Body (Partial): $bodyStart', source: 'WeatherService');
-
-        final jsonMap = jsonDecode(response.body);
-        if (jsonMap['success'] == 'true') {
-          // We pass the Original Name (displayName) and the queryName used
-          final weather = _parseCwaResponse(jsonMap, locationName, queryName);
-          if (weather != null) {
-            _box?.put(dynamicCacheKey, weather);
-            return weather;
-          } else {
-            LogService.error('Parsed weather is null for $locationName', source: 'WeatherService');
-          }
-        } else {
-          LogService.error('CWA API Result Error: ${jsonMap['result']}', source: 'WeatherService');
-        }
-      } else {
-        LogService.error('CWA API Failed: ${response.statusCode} | ${response.body}', source: 'WeatherService');
-        // Specific hint for user debugging
-        if (response.statusCode == 401 || response.statusCode == 403) {
-          throw Exception('CWA API Auth Failed. Check API Key.');
-        }
-        throw Exception('CWA API Failed with status ${response.statusCode}');
-      }
-    } catch (e) {
-      LogService.error('Exception fetching weather for $locationName: $e', source: 'WeatherService');
-      // Rethrow to let UI show the error
-      rethrow;
-    }
-
+    
+    // Fallback to what? GAS? The LocationResolver returns likely a precise location.
+    // If it's a mountain, we might want GAS. But resolving coordinates usually yields township in current implementation.
+    // So if it fails CWA, maybe returns null.
+    // Assuming generic fallback logic isn't needed if we trust resolver.
+    
     return null;
   }
 
-  WeatherData? _parseCwaResponse(Map<String, dynamic> json, String displayName, String queryName) {
-    try {
-      if (!json.containsKey('records')) {
-        LogService.error('JSON missing "records" key', source: 'WeatherService');
-        LogService.debug('JSON Keys: ${json.keys.toList()}', source: 'WeatherService');
-        return null;
-      }
-
-      final records = json['records'];
-      // Handle Case Sensitivity: "Locations" vs "locations"
-      var locationsRaw;
-      if (records is Map) {
-        if (records.containsKey('Locations')) {
-          locationsRaw = records['Locations'];
-        } else if (records.containsKey('locations')) {
-          locationsRaw = records['locations'];
-        } else {
-          LogService.error('Records missing "Locations" or "locations" key', source: 'WeatherService');
-          LogService.debug('Records Keys: ${records.keys.toList()}', source: 'WeatherService');
-          return null;
-        }
-      } else {
-        LogService.error('Records is not a Map', source: 'WeatherService');
-        return null;
-      }
-
-      final locationsList = locationsRaw[0]['Location'] ?? locationsRaw[0]['location'];
-      if (locationsList == null || (locationsList as List).isEmpty) {
-        LogService.warning('No location list found (checked Location/location)', source: 'WeatherService');
-        return null;
-      }
-
-      // Match against queryName (short)
-      var location = locationsList.firstWhere(
-        (loc) => loc['locationName'] == queryName || loc['LocationName'] == queryName,
-        orElse: () => null,
-      );
-
-      // Fallback: Try match full name just in case
-      if (location == null) {
-        location = locationsList.firstWhere(
-          (loc) => loc['locationName'] == displayName || loc['LocationName'] == displayName,
-          orElse: () => null,
-        );
-      }
-
-      if (location == null) {
-        LogService.warning('Location "$queryName" (or "$displayName") not found in response', source: 'WeatherService');
-        // Log available names for debugging
-        final names = locationsList.map((e) => e['locationName'] ?? e['LocationName']).toList();
-        LogService.debug('Available locations: $names', source: 'WeatherService');
-        return null;
-      }
-
-      final elements = (location['weatherElement'] ?? location['WeatherElement']) as List;
-
-      // Helper to handle multiple potential ElementNames (e.g. "T" vs "平均溫度")
-      List<dynamic> getElementValues(List<String> possibleNames) {
-        final el = elements.firstWhere(
-          (e) => possibleNames.contains(e['elementName']) || possibleNames.contains(e['ElementName']),
-          orElse: () => null,
-        );
-        if (el == null) return [];
-        return el['time'] ?? el['Time'] ?? [];
-      }
-
-      final pops = getElementValues(['PoP12h', '12小時降雨機率']);
-      final temps = getElementValues(['T', '平均溫度']);
-      final wxs = getElementValues(['Wx', '天氣現象']);
-      final minTs = getElementValues(['MinT', '最低溫度']);
-      final maxTs = getElementValues(['MaxT', '最高溫度']);
-
-      if (temps.isEmpty) {
-        LogService.warning('No temperature data found (checked T, 平均溫度)', source: 'WeatherService');
-        // Log available elements for debugging
-        final available = elements.map((e) => e['elementName'] ?? e['ElementName']).toList();
-        LogService.debug('Available elements: $available', source: 'WeatherService');
-        return null;
-      }
-
-      // Helper to extract value from element structure
-      // Structure A: { startTime:..., elementValue: [{ value: "20", measures: "C" }] }
-      // Structure B: { StartTime:..., ElementValue: [{ ProbabilityOfPrecipitation: "20" }] } (Township specific sometimes)
-      String extractVal(dynamic item, String keyPreference) {
-        final ev = item['elementValue'] ?? item['ElementValue'];
-        if (ev is List && ev.isNotEmpty) {
-          final first = ev[0];
-          // If simple structure with 'value'
-          if (first is Map && first.containsKey('value')) return first['value'].toString();
-          // If simple structure with 'Temperature', 'Weather', etc.
-          if (first is Map && first.containsKey(keyPreference)) return first[keyPreference].toString();
-          // Fallback: return first value
-          if (first is Map && first.values.isNotEmpty) return first.values.first.toString();
-        }
-        return '';
-      }
-
-      // Current (Most recent forecast)
-      // Note: "T" element typically has "Temperature" key if structure B, or "value" if structure A
-      final currentT = double.tryParse(extractVal(temps[0], 'Temperature')) ?? 0.0;
-      final currentWx = wxs.isNotEmpty ? extractVal(wxs[0], 'Weather') : '';
-      final currentPop = pops.isNotEmpty ? int.tryParse(extractVal(pops[0], 'ProbabilityOfPrecipitation')) ?? 0 : 0;
-
-      // Map builder for Daily Forecasts
-      final builderMap = <String, Map<String, dynamic>>{};
-
-      void updateBuilder(List<dynamic> list, String valKey, Function(Map<String, dynamic>, dynamic, bool) updater) {
-        for (var item in list) {
-          final st = item['startTime'] ?? item['StartTime'];
-          final start = DateTime.parse(st);
-          final dateKey =
-              "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
-
-          builderMap.putIfAbsent(
-            dateKey,
-            () => {'dayCondition': '', 'nightCondition': '', 'maxTemp': -100.0, 'minTemp': 100.0, 'pop': 0},
-          );
-          // 簡單判斷：6:00~18:00 為白天
-          updater(builderMap[dateKey]!, item, start.hour >= 6 && start.hour < 18);
-        }
-      }
-
-      updateBuilder(wxs, 'Weather', (map, item, isDay) {
-        final val = extractVal(item, 'Weather'); // Wx usually has 'value' or 'Weather' depending on API
-        if (isDay)
-          map['dayCondition'] = val;
-        else
-          map['nightCondition'] = val;
-      });
-
-      updateBuilder(maxTs, 'MaxTemperature', (map, item, isDay) {
-        final val = double.tryParse(extractVal(item, 'MaxTemperature')) ?? 0.0;
-        if (val > map['maxTemp']) map['maxTemp'] = val;
-      });
-
-      updateBuilder(minTs, 'MinTemperature', (map, item, isDay) {
-        final val = double.tryParse(extractVal(item, 'MinTemperature')) ?? 0.0;
-        if (val < map['minTemp']) map['minTemp'] = val;
-      });
-
-      updateBuilder(pops, 'ProbabilityOfPrecipitation', (map, item, isDay) {
-        final val = int.tryParse(extractVal(item, 'ProbabilityOfPrecipitation')) ?? 0;
-        if (val > map['pop']) map['pop'] = val;
-      });
-
-      final dailyForecasts = builderMap.entries.map((e) {
-        final d = e.value;
-        return DailyForecast(
-          date: DateTime.parse(e.key),
-          dayCondition: d['dayCondition'] == '' ? d['nightCondition'] : d['dayCondition'],
-          nightCondition: d['nightCondition'] == '' ? d['dayCondition'] : d['nightCondition'],
-          maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
-          minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
-          rainProbability: d['pop'],
-        );
-      }).toList();
-
-      dailyForecasts.sort((a, b) => a.date.compareTo(b.date));
-
-      return WeatherData(
-        locationName: displayName,
-        temperature: currentT,
-        humidity: 0.0, // Not available in this subset
-        rainProbability: currentPop,
-        windSpeed: 0.0, // Not fetched
-        condition: currentWx,
-        sunrise: DateTime.now(), // Not fetched
-        sunset: DateTime.now(), // Not fetched
-        timestamp: DateTime.now(),
-        dailyForecasts: dailyForecasts,
-      );
-    } catch (e, stack) {
-      LogService.error('Error parsing CWA data logic: $e', source: 'WeatherService');
-      LogService.debug('Stack trace: $stack', source: 'WeatherService');
-      return null;
-    }
-  }
 }
