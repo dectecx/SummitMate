@@ -689,38 +689,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                       ],
                     ),
-                    const Divider(height: 32),
 
-                    // ====== 登出 / 重設身分 ======
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton.icon(
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: dialogContext,
-                            builder: (c) => AlertDialog(
-                              title: const Text('重設身分'),
-                              content: const Text('確定要清除所有身分資料並回到初始畫面嗎？\n(這不會刪除已儲存的行程與留言)'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
-                                FilledButton(
-                                  onPressed: () => Navigator.pop(c, true),
-                                  style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                                  child: const Text('重設'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (confirm == true && innerContext.mounted) {
-                            Navigator.pop(innerContext);
-                            await settingsProvider.resetIdentity();
-                          }
-                        },
-                        icon: const Icon(Icons.logout, size: 18, color: Colors.red),
-                        label: const Text('重設身分 (登出)', style: TextStyle(color: Colors.red)),
-                      ),
-                    ),
                   ],
                 ),
               ),
