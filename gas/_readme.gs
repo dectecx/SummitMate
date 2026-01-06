@@ -112,19 +112,21 @@
  *   id, name, start_date, end_date, description, cover_image, is_active, created_at
  *
  * Itinerary:
- *   uuid, trip_id, day, name, est_time, altitude, distance, note, image_asset
+ *   uuid, trip_id, day, name, est_time, altitude, distance, note, image_asset,
+ *   is_checked_in, checked_in_at
  *
  * Messages:
  *   uuid, trip_id, parent_id, user, category, content, timestamp, avatar
  *
  * GearSets:
- *   uuid, title, author, visibility, key, total_weight, item_count, uploaded_at, items_json
+ *   uuid, trip_id, title, author, visibility, key, total_weight, item_count,
+ *   uploaded_at, items_json, meals_json
  *
- * GearLibrary:
- *   uuid, user_id, items_json, updated_at
+ * TripGear (每筆裝備為一列):
+ *   uuid, trip_id, name, weight, category, is_checked, quantity
  *
- * TripGear:
- *   uuid, trip_id, user_id, items_json, updated_at
+ * GearLibrary (每筆裝備為一列):
+ *   uuid, owner_key, name, weight, category, notes, created_at, updated_at
  *
  * Logs:
  *   upload_time, device_id, device_name, timestamp, level, source, message

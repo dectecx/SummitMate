@@ -148,16 +148,35 @@ lib/
 
 行程節點，支援雲端下載與本地修改。
 
-| Field      | Type      | Description                         |
-| ---------- | --------- | ----------------------------------- |
-| day        | String    | 行程天數 (D0, D1, D2)               |
-| name       | String    | 地標名稱                            |
-| estTime    | String    | 預計時間 (HH:mm) - **Display Time** |
-| actualTime | DateTime? | 實際打卡時間 - **Timestamp**        |
-| altitude   | int       | 海拔 (m)                            |
-| distance   | double    | 里程 (K)                            |
-| note       | String    | 備註                                |
-| imageAsset | String?   | 對應 assets 圖片檔名                |
+| Field       | Type      | Description                         |
+| ----------- | --------- | ----------------------------------- |
+| uuid        | String    | 唯一識別碼 (PK)                     |
+| tripId      | String    | 關聯行程 ID (FK)                    |
+| day         | String    | 行程天數 (D0, D1, D2)               |
+| name        | String    | 地標名稱                            |
+| estTime     | String    | 預計時間 (HH:mm) - **Display Time** |
+| actualTime  | DateTime? | 實際打卡時間 - **Timestamp**        |
+| altitude    | int       | 海拔 (m)                            |
+| distance    | double    | 里程 (K)                            |
+| note        | String    | 備註                                |
+| imageAsset  | String?   | 對應 assets 圖片檔名                |
+| isCheckedIn | bool      | 是否已打卡                          |
+| checkedInAt | DateTime? | 打卡時間                            |
+
+### Box: `trips` (TypeId: 10)
+
+行程管理，支援多行程。
+
+| Field       | Type      | Description         |
+| ----------- | --------- | ------------------- |
+| id          | String    | 行程唯一識別碼 (PK) |
+| name        | String    | 行程名稱            |
+| startDate   | DateTime  | 開始日期            |
+| endDate     | DateTime? | 結束日期            |
+| description | String?   | 行程描述            |
+| coverImage  | String?   | 封面圖片            |
+| isActive    | bool      | 是否為當前行程      |
+| createdAt   | DateTime  | 建立時間            |
 
 ### Box: `messages` (TypeId: 2)
 
@@ -293,9 +312,9 @@ lib/
 
 行程節點表（下載至本地）。
 
-| uuid | trip_id   | day | name     | est_time | altitude | distance | note | image_asset |
-| ---- | --------- | --- | -------- | -------- | -------- | -------- | ---- | ----------- |
-| uuid | trip-uuid | D1  | 向陽山屋 | '11:30   | 2850     | 4.3      | ...  | ...         |
+| uuid | trip_id   | day | name     | est_time | altitude | distance | note | image_asset | is_checked_in | checked_in_at |
+| ---- | --------- | --- | -------- | -------- | -------- | -------- | ---- | ----------- | ------------- | ------------- |
+| uuid | trip-uuid | D1  | 向陽山屋 | '11:30   | 2850     | 4.3      | ...  | ...         | TRUE          | ISO8601       |
 
 _(注意: `est_time` 在 GAS 寫入時強制加 `'` 前綴以保持字串格式)_
 
@@ -325,16 +344,34 @@ ETL 處理後的應用端氣象資料。
 
 ### Sheet: `GearSets`
 
-雲端裝備庫。
+雲端裝備組合庫。
 
-| uuid | title    | author | visibility | key  | total_weight | item_count | uploaded_at | items_json |
-| ---- | -------- | ------ | ---------- | ---- | ------------ | ---------- | ----------- | ---------- |
-| uuid | 輕量組合 | Alice  | public     |      | 5000         | 15         | ISO8601     | [...]      |
-| uuid | 私人組合 | Bob    | protected  | 1234 | 8000         | 20         | ISO8601     | [...]      |
+| uuid | trip_id   | title    | author | visibility | key  | total_weight | item_count | uploaded_at | items_json | meals_json |
+| ---- | --------- | -------- | ------ | ---------- | ---- | ------------ | ---------- | ----------- | ---------- | ---------- |
+| uuid | trip-uuid | 輕量組合 | Alice  | public     |      | 5000         | 15         | ISO8601     | [...]      | [...]      |
 
 - `visibility`: `public` / `protected` / `private`
 - `key`: 4 位數密碼 (protected/private 專用)
 - `items_json`: JSON 序列化的 GearItem 陣列
+- `meals_json`: JSON 序列化的 MealItem 陣列
+
+### Sheet: `TripGear`
+
+行程裝備清單（每筆裝備為一列）。
+
+| uuid | trip_id   | name   | weight | category | is_checked | quantity |
+| ---- | --------- | ------ | ------ | -------- | ---------- | -------- |
+| uuid | trip-uuid | 睡袋   | 800    | Sleep    | TRUE       | 1        |
+
+### Sheet: `GearLibrary`
+
+個人裝備庫（每筆裝備為一列）。
+
+| uuid | owner_key | name   | weight | category | notes | created_at | updated_at |
+| ---- | --------- | ------ | ------ | -------- | ----- | ---------- | ---------- |
+| uuid | user-key  | 睡袋   | 800    | Sleep    | ...   | ISO8601    | ISO8601    |
+
+- `owner_key`: 用戶識別碼 (未來改為 user_id)
 
 ### Sheet: `Polls`
 
