@@ -16,7 +16,7 @@ class MockGasApiClient extends GasApiClient {
   int statusCode = 200;
 
   @override
-  Future<http.Response> post(Map<String, dynamic> body) async {
+  Future<http.Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     if (shouldFail) {
       return http.Response('Error', 500);
     }
