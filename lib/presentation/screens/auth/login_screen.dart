@@ -208,8 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Skip Login (Guest Mode)
                 TextButton(
                   onPressed: () {
-                    // TODO: Implement guest mode if needed
-                    // For now, just show a dialog
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
