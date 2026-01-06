@@ -63,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -209,8 +210,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           FilledButton(
                             onPressed: () {
-                              Navigator.pop(ctx);
-                              // TODO: Navigate to main app
+                              Navigator.pop(ctx); // Close dialog
+                              Navigator.pop(context); // Return to previous screen
                             },
                             child: const Text('繼續'),
                           ),
