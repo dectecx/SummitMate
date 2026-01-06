@@ -54,9 +54,58 @@ function authRegister(payload) {
   }
 
   // 檢查 Email 是否已存在
-  const existingUser = _findUserByEmail(sheet, email);
-  if (existingUser) {
-    return buildResponse(API_CODES.AUTH_EMAIL_EXISTS, null, "此信箱已被註冊");
+  const existingResult = _findUserByEmail(sheet, email);
+  if (existingResult) {
+    const existingUser = existingResult.user;
+    const rowIndex = existingResult.rowIndex;
+
+    // 如果帳號已驗證，阻擋重複註冊
+    if (
+      existingUser.is_verified === true ||
+      existingUser.is_verified === "TRUE"
+    ) {
+      return buildResponse(API_CODES.AUTH_EMAIL_EXISTS, null, "此信箱已被註冊");
+    }
+
+    // 帳號未驗證：更新密碼/資料並重發驗證碼
+    const verificationCode = _generateVerificationCode();
+    const verificationExpiry = new Date(
+      Date.now() + 30 * 60 * 1000
+    ).toISOString();
+    const now = new Date().toISOString();
+    const passwordHash = _hashPassword(password);
+    const userAvatar = avatar || existingUser.avatar || DEFAULT_AVATAR;
+
+    // 更新現有列
+    const dataRange = sheet.getRange(rowIndex, 1, 1, HEADERS_USERS.length);
+    const rowData = dataRange.getValues()[0];
+
+    // 更新欄位 (保留 uuid, email, role, is_active)
+    rowData[HEADERS_USERS.indexOf("password_hash")] = passwordHash;
+    rowData[HEADERS_USERS.indexOf("display_name")] = displayName.trim();
+    rowData[HEADERS_USERS.indexOf("avatar")] = userAvatar;
+    rowData[HEADERS_USERS.indexOf("verification_code")] = verificationCode;
+    rowData[HEADERS_USERS.indexOf("verification_expiry")] = verificationExpiry;
+    rowData[HEADERS_USERS.indexOf("updated_at")] = now;
+
+    dataRange.setValues([rowData]);
+
+    // 發送驗證信
+    _sendVerificationEmail(email, verificationCode);
+
+    // 回傳使用者資料 (不含 authToken，因為註冊後需重新登入)
+    const userData = {
+      uuid: existingUser.uuid,
+      email: email.toLowerCase().trim(),
+      displayName: displayName.trim(),
+      avatar: userAvatar,
+      role: existingUser.role,
+      isVerified: false,
+    };
+
+    return buildResponse(API_CODES.SUCCESS, {
+      user: userData,
+    });
   }
 
   // 建立新使用者
