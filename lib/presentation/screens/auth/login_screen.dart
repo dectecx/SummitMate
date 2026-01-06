@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
+import 'verification_screen.dart';
 
 /// Login Screen
 /// Allows users to login with email and password.
@@ -52,8 +53,23 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
+    } else {
+      // Login successful, check verification status
+      if (result.user?.isVerified == false) {
+        if (!mounted) return;
+
+        final verified = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(builder: (context) => VerificationScreen(email: _emailController.text.trim())),
+        );
+
+        if (verified == true && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('驗證成功！歡迎回來')));
+          await authProvider.validateSession();
+        }
+      }
+      // If verified, AuthProvider already updated state to authenticated, app will switch
     }
-    // On success, AuthProvider will update state and parent widget will navigate
   }
 
   @override

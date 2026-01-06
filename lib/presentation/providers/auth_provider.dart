@@ -70,7 +70,9 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       _isOffline = false;
-      _state = AuthState.authenticated;
+      _user = result.user;
+      _isOffline = false;
+      _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
     } else {
       _state = AuthState.unauthenticated;
     }
@@ -86,7 +88,9 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       _isOffline = result.isOffline;
-      _state = AuthState.authenticated;
+      _user = result.user;
+      _isOffline = result.isOffline;
+      _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
     } else {
       _state = AuthState.unauthenticated;
     }
@@ -120,13 +124,13 @@ class AuthProvider extends ChangeNotifier {
 
   /// Validate current session with server (call periodically or on app resume)
   Future<void> validateSession() async {
-    if (_state != AuthState.authenticated) return;
-
     final result = await _authService.validateSession();
 
     if (result.isSuccess) {
       _user = result.user;
       _isOffline = result.isOffline;
+      // Only authenticate if verified
+      _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
     } else {
       // Session invalidated (e.g., account deleted by admin)
       if (result.errorCode == '0803' || result.errorCode == '0804') {
@@ -162,7 +166,9 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       _isOffline = result.isOffline;
-      _state = AuthState.authenticated;
+      _user = result.user;
+      _isOffline = result.isOffline;
+      _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
       LogService.info('Session 恢復成功${result.isOffline ? " (離線模式)" : ""}', source: _source);
     } else {
       // Cached credentials are invalid
