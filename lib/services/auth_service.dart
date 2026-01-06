@@ -17,11 +17,9 @@ class AuthService {
   final GasApiClient _apiClient;
   final FlutterSecureStorage _secureStorage;
 
-  AuthService({
-    GasApiClient? apiClient,
-    FlutterSecureStorage? secureStorage,
-  })  : _apiClient = apiClient ?? getIt<GasApiClient>(),
-        _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  AuthService({GasApiClient? apiClient, FlutterSecureStorage? secureStorage})
+    : _apiClient = apiClient ?? getIt<GasApiClient>(),
+      _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   // ============================================================
   // === PUBLIC API ===
@@ -68,18 +66,11 @@ class AuthService {
   }
 
   /// Login with email and password
-  Future<AuthResult> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthResult> login({required String email, required String password}) async {
     try {
       LogService.info('嘗試登入: $email', source: _source);
 
-      final response = await _apiClient.post({
-        'action': 'auth_login',
-        'email': email,
-        'password': password,
-      });
+      final response = await _apiClient.post({'action': 'auth_login', 'email': email, 'password': password});
 
       final apiResponse = GasApiResponse.fromJsonString(response.body);
 
@@ -110,10 +101,7 @@ class AuthService {
     }
 
     try {
-      final response = await _apiClient.post({
-        'action': 'auth_validate',
-        'authToken': token,
-      });
+      final response = await _apiClient.post({'action': 'auth_validate', 'authToken': token});
 
       final apiResponse = GasApiResponse.fromJsonString(response.body);
 
@@ -146,10 +134,7 @@ class AuthService {
     }
 
     try {
-      final response = await _apiClient.post({
-        'action': 'auth_delete_user',
-        'authToken': token,
-      });
+      final response = await _apiClient.post({'action': 'auth_delete_user', 'authToken': token});
 
       final apiResponse = GasApiResponse.fromJsonString(response.body);
 

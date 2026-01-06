@@ -57,7 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
-      // Pop back to login (or auto-navigate to main app)
+      // Registration successful - pop back, HomeScreen will show OnboardingScreen
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('註冊成功！歡迎加入 SummitMate')),
@@ -89,11 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Avatar Selection
-                Text(
-                  '選擇頭像',
-                  style: theme.textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
+                Text('選擇頭像', style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
                 const SizedBox(height: 12),
                 Wrap(
                   alignment: WrapAlignment.center,
@@ -107,13 +103,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? theme.colorScheme.primaryContainer
-                              : Colors.grey.shade100,
+                          color: isSelected ? theme.colorScheme.primaryContainer : Colors.grey.shade100,
                           shape: BoxShape.circle,
-                          border: isSelected
-                              ? Border.all(color: theme.colorScheme.primary, width: 2)
-                              : null,
+                          border: isSelected ? Border.all(color: theme.colorScheme.primary, width: 2) : null,
                         ),
                         child: Text(avatar, style: const TextStyle(fontSize: 28)),
                       ),
@@ -137,10 +129,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(color: Colors.red.shade700),
-                          ),
+                          child: Text(_errorMessage!, style: TextStyle(color: Colors.red.shade700)),
                         ),
                       ],
                     ),
@@ -246,10 +235,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Info Box
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
                   child: Row(
                     children: [
                       Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
@@ -268,9 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Register Button
                 FilledButton(
                   onPressed: _isLoading ? null : _handleRegister,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
+                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
@@ -286,10 +270,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('已經有帳號？'),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('返回登入'),
-                    ),
+                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('返回登入')),
                   ],
                 ),
               ],

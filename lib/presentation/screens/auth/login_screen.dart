@@ -38,10 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final authProvider = context.read<AuthProvider>();
-    final result = await authProvider.login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
-    );
+    final result = await authProvider.login(email: _emailController.text.trim(), password: _passwordController.text);
 
     if (!mounted) return;
 
@@ -100,10 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: TextStyle(color: Colors.red.shade700),
-                          ),
+                          child: Text(_errorMessage!, style: TextStyle(color: Colors.red.shade700)),
                         ),
                       ],
                     ),
@@ -161,9 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Login Button
                 FilledButton(
                   onPressed: _isLoading ? null : _handleLogin,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
+                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
@@ -181,10 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text('還沒有帳號？'),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                        );
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
                       },
                       child: const Text('立即註冊'),
                     ),
@@ -204,10 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         title: const Text('訪客模式'),
                         content: const Text('訪客模式下，您的資料將不會同步到雲端。\n\n是否繼續？'),
                         actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('取消'),
-                          ),
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
                           FilledButton(
                             onPressed: () {
                               Navigator.pop(ctx); // Close dialog

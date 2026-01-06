@@ -20,8 +20,7 @@ class AuthProvider extends ChangeNotifier {
   UserProfile? _user;
   bool _isOffline = false;
 
-  AuthProvider({AuthService? authService})
-      : _authService = authService ?? getIt<AuthService>() {
+  AuthProvider({AuthService? authService}) : _authService = authService ?? getIt<AuthService>() {
     _initSession();
   }
 
@@ -84,10 +83,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Login with email and password
-  Future<AuthResult> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthResult> login({required String email, required String password}) async {
     _state = AuthState.loading;
     notifyListeners();
 

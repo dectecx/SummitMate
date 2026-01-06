@@ -125,19 +125,10 @@ class AppDrawer extends StatelessWidget {
               ListTile(
                 leading: CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(
-                    authProvider.avatar,
-                    style: const TextStyle(fontSize: 20),
-                  ),
+                  child: Text(authProvider.avatar, style: const TextStyle(fontSize: 20)),
                 ),
-                title: Text(
-                  authProvider.displayName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  authProvider.user?.email ?? '',
-                  style: const TextStyle(fontSize: 12),
-                ),
+                title: Text(authProvider.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(authProvider.user?.email ?? '', style: const TextStyle(fontSize: 12)),
               ),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
@@ -155,10 +146,7 @@ class AppDrawer extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.pop(context); // Close drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
           );
         }
@@ -189,10 +177,7 @@ class AppDrawer extends StatelessWidget {
               '確定要登出嗎？',
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('取消'),
-              ),
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -210,9 +195,7 @@ class AppDrawer extends StatelessWidget {
     await authProvider.logout();
     if (context.mounted) {
       Navigator.pop(context); // Close drawer
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已登出')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已登出')));
     }
   }
 

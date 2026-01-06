@@ -5,7 +5,7 @@ part 'user_profile.g.dart';
 
 /// User Profile Model
 /// Represents the authenticated user's profile data.
-/// 
+///
 /// Role values (預留擴充):
 /// - 'member': 一般會員 (預設)
 /// - 'leader': 團長 (TODO: 未來開發)
