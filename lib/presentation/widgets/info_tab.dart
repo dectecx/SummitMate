@@ -98,7 +98,7 @@ class InfoTabState extends State<InfoTab> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
                       stops: const [0.6, 1.0],
                     ),
                   ),
@@ -110,7 +110,7 @@ class InfoTabState extends State<InfoTab> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Icon(Icons.zoom_in, color: Colors.white, size: 18),
@@ -161,7 +161,7 @@ class InfoTabState extends State<InfoTab> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.2), shape: BoxShape.circle),
+                          decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.2), shape: BoxShape.circle),
                           child: const Icon(Icons.wb_sunny, color: Colors.orange, size: 28),
                         ),
                         const SizedBox(width: 16),
@@ -412,9 +412,9 @@ class InfoTabState extends State<InfoTab> {
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: highlight
               ? BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5)),
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
                 )
               : null,
           child: Row(

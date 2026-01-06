@@ -76,7 +76,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [activePage.bgColor.withOpacity(0.8), Colors.blueGrey.shade900],
+                    colors: [activePage.bgColor.withValues(alpha: 0.8), Colors.blueGrey.shade900],
                   ),
                 ),
               );
@@ -183,9 +183,9 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, spreadRadius: 2)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, spreadRadius: 2)],
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -238,9 +238,9 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -289,7 +289,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
       ),
@@ -300,7 +300,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: category.color.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: category.color.withValues(alpha: 0.1), shape: BoxShape.circle),
                 child: Icon(Icons.terrain, color: category.color, size: 32),
               ),
               const SizedBox(width: 16),
@@ -419,7 +419,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.08),
+                    color: Colors.amber.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -478,9 +478,9 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         text,
