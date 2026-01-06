@@ -136,10 +136,7 @@ Future<void> setupDependencies() async {
 
   // GasApiClient - Core API Client with auth token injection
   getIt.registerLazySingleton<GasApiClient>(
-    () => GasApiClient(
-      baseUrl: EnvConfig.gasBaseUrl,
-      authTokenProvider: () => getIt<AuthService>().getAuthToken(),
-    ),
+    () => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, authTokenProvider: () => getIt<AuthService>().getAuthToken()),
   );
 }
 

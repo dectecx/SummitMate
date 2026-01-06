@@ -13,15 +13,13 @@ class GasApiClient {
 
   final http.Client _client;
   final String _baseUrl;
-  
+
   /// Optional callback to get the current auth token for authenticated requests
   AuthTokenProvider? authTokenProvider;
 
-  GasApiClient({
-    http.Client? client,
-    required String baseUrl,
-    this.authTokenProvider,
-  }) : _client = client ?? http.Client(), _baseUrl = baseUrl;
+  GasApiClient({http.Client? client, required String baseUrl, this.authTokenProvider})
+    : _client = client ?? http.Client(),
+      _baseUrl = baseUrl;
 
   /// GET request
   Future<http.Response> get({Map<String, String>? queryParams}) async {

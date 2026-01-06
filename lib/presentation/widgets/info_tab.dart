@@ -161,7 +161,10 @@ class InfoTabState extends State<InfoTab> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.2), shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
                           child: const Icon(Icons.wb_sunny, color: Colors.orange, size: 28),
                         ),
                         const SizedBox(width: 16),
