@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'interfaces/i_auth_token_provider.dart';
 import 'log_service.dart';
-
-/// Callback type for getting the current auth token
-typedef AuthTokenProvider = Future<String?> Function();
 
 /// Client related to Google Apps Script API calls
 /// Handles common logic like Redirects (302), Web compatibility, etc.
@@ -13,13 +11,17 @@ class GasApiClient {
 
   final http.Client _client;
   final String _baseUrl;
+  
+  /// Optional provider to get the current auth token for authenticated requests
+  final IAuthTokenProvider? _tokenProvider;
 
-  /// Optional callback to get the current auth token for authenticated requests
-  AuthTokenProvider? authTokenProvider;
-
-  GasApiClient({http.Client? client, required String baseUrl, this.authTokenProvider})
-    : _client = client ?? http.Client(),
-      _baseUrl = baseUrl;
+  GasApiClient({
+    http.Client? client,
+    required String baseUrl,
+    IAuthTokenProvider? tokenProvider,
+  }) : _client = client ?? http.Client(), 
+       _baseUrl = baseUrl,
+       _tokenProvider = tokenProvider;
 
   /// GET request
   Future<http.Response> get({Map<String, String>? queryParams}) async {
@@ -48,7 +50,7 @@ class GasApiClient {
   }
 
   /// POST request with automated redirect handling
-  /// Automatically injects authToken if authTokenProvider is set
+  /// Automatically injects authToken if tokenProvider is set
   Future<http.Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     final stopwatch = Stopwatch()..start();
     final action = body['action'] ?? 'unknown';
@@ -61,8 +63,8 @@ class GasApiClient {
 
       // Inject auth token if provider is available and user is logged in
       final requestBody = Map<String, dynamic>.from(body);
-      if (authTokenProvider != null) {
-        final token = await authTokenProvider!();
+      if (_tokenProvider != null) {
+        final token = await _tokenProvider.getAuthToken();
         if (token != null && token.isNotEmpty) {
           requestBody['authToken'] = token;
           LogService.debug('[POST] Auth token injected', source: _source);
