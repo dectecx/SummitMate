@@ -1,6 +1,5 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:summitmate/data/models/gear_set.dart';
 import 'package:summitmate/data/models/gear_item.dart';
@@ -16,9 +15,13 @@ class MockGasApiClient extends GasApiClient {
   int statusCode = 200;
 
   @override
-  Future<http.Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     if (shouldFail) {
-      return http.Response('Error', 500);
+      return Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        statusMessage: 'Error',
+      );
     }
 
     final responseBody = {
@@ -27,7 +30,11 @@ class MockGasApiClient extends GasApiClient {
       'data': expectedResponseData ?? {},
     };
 
-    return http.Response(jsonEncode(responseBody), statusCode);
+    return Response(
+      requestOptions: RequestOptions(path: ''),
+      data: responseBody,
+      statusCode: statusCode,
+    );
   }
 }
 

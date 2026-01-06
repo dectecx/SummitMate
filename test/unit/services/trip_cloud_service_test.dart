@@ -1,6 +1,5 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/services/gas_api_client.dart';
@@ -15,19 +14,27 @@ class MockGasApiClient extends GasApiClient {
   int statusCode = 200;
 
   @override
-  Future<http.Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     if (shouldFail) {
-      return http.Response('Error', 500);
+      return Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        statusMessage: 'Error',
+      );
     }
 
     // Simulate GAS response structure
-    final responseBody = {
+    final responseData = {
       'code': statusCode == 200 ? '0000' : '9999',
       'message': 'Mock Message',
       'data': expectedResponseData ?? {},
     };
 
-    return http.Response(jsonEncode(responseBody), statusCode);
+    return Response(
+      requestOptions: RequestOptions(path: ''),
+      data: responseData,
+      statusCode: statusCode,
+    );
   }
 }
 

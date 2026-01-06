@@ -1,4 +1,4 @@
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'gas_api_client.dart';
 import '../core/constants.dart';
 import '../core/env_config.dart';
@@ -30,7 +30,7 @@ class GoogleSheetsService {
       LogService.debug('API 回應: ${response.statusCode}', source: 'API');
 
       if (response.statusCode == 200) {
-        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
         if (!gasResponse.isSuccess) {
           return FetchAllResult(success: false, errorMessage: gasResponse.message);
@@ -52,7 +52,7 @@ class GoogleSheetsService {
 
         return FetchAllResult(itinerary: itineraryList, messages: messagesList, success: true);
       } else {
-        return FetchAllResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}');
+        return FetchAllResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } catch (e) {
       LogService.error('API 異常: $e', source: 'API');
@@ -73,7 +73,7 @@ class GoogleSheetsService {
       final response = await _apiClient.get(queryParams: queryParams);
 
       if (response.statusCode == 200) {
-        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
         if (!gasResponse.isSuccess) {
           return FetchAllResult(success: false, errorMessage: gasResponse.message);
@@ -106,7 +106,7 @@ class GoogleSheetsService {
       final response = await _apiClient.get(queryParams: queryParams);
 
       if (response.statusCode == 200) {
-        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
         if (!gasResponse.isSuccess) {
           return FetchAllResult(success: false, errorMessage: gasResponse.message);
@@ -186,7 +186,7 @@ class GoogleSheetsService {
       final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchTrips});
 
       if (response.statusCode == 200) {
-        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
         if (!gasResponse.isSuccess) {
           return FetchTripsResult(success: false, errorMessage: gasResponse.message);
         }
@@ -221,9 +221,9 @@ class GoogleSheetsService {
       final result = _handleResponse(response);
 
       // 解析 GAS 回傳的計數
-      if (result.success && response.body.isNotEmpty) {
+      if (result.success && response.data != null) {
         try {
-          final gasResponse = GasApiResponse.fromJsonString(response.body);
+          final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
           if (gasResponse.isSuccess && gasResponse.data['count'] != null) {
             return ApiResult(success: true, message: '已上傳 ${gasResponse.data['count']} 條日誌');
           }
@@ -237,10 +237,10 @@ class GoogleSheetsService {
   }
 
   /// 統一處理回應
-  ApiResult _handleResponse(http.Response response) {
+  ApiResult _handleResponse(Response response) {
     if (response.statusCode == 200) {
       try {
-        final gasResponse = GasApiResponse.fromJsonString(response.body);
+        final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
         if (gasResponse.isSuccess) {
           return ApiResult(success: true, message: gasResponse.message);
         } else {
@@ -250,7 +250,7 @@ class GoogleSheetsService {
         return ApiResult(success: true);
       }
     } else {
-      return ApiResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.reasonPhrase}');
+      return ApiResult(success: false, errorMessage: 'HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 }

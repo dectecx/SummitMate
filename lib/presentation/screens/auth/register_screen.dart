@@ -59,9 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (result.isSuccess) {
       // Registration successful - pop back, HomeScreen will show OnboardingScreen
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('註冊成功！歡迎加入 SummitMate')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('註冊成功！歡迎加入 SummitMate')));
         Navigator.pop(context);
       }
     } else {

@@ -15,6 +15,7 @@ import '../data/repositories/poll_repository.dart';
 import '../data/repositories/trip_repository.dart';
 import '../data/repositories/interfaces/i_gear_repository.dart';
 import '../data/repositories/interfaces/i_gear_library_repository.dart';
+import '../data/repositories/interfaces/i_auth_session_repository.dart';
 import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
@@ -30,7 +31,10 @@ import '../core/location/i_location_resolver.dart';
 import '../core/location/township_location_resolver.dart';
 import '../services/gas_api_client.dart';
 import '../services/auth_service.dart';
+import '../data/repositories/auth_session_repository.dart';
 import '../core/env_config.dart';
+import 'package:dio/dio.dart';
+import '../services/interceptors/auth_interceptor.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -109,6 +113,14 @@ Future<void> setupDependencies() async {
   // Services
   // ========================================
 
+  // 9. Auth Session - Manages local session (moved to Repository level)
+  final authSessionRepo = AuthSessionRepository();
+  getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
+
+  // ========================================
+  // Services
+  // ========================================
+
   // PollService
   getIt.registerSingleton<PollService>(PollService());
 
@@ -131,16 +143,25 @@ Future<void> setupDependencies() async {
   // Auth Services
   // ========================================
 
-  // AuthService - Authentication (register first, used by GasApiClient)
-  getIt.registerLazySingleton<AuthService>(() => AuthService());
+  // Auth Services
+  // ========================================
 
-  // GasApiClient - Core API Client with auth token injection
-  getIt.registerLazySingleton<GasApiClient>(
-    () => GasApiClient(
-      baseUrl: EnvConfig.gasBaseUrl,
-      tokenProvider: getIt<AuthService>(),
-    ),
-  );
+  // AuthService - Coordinates Auth actions
+  // Note: AuthService depends on GasApiClient AND AuthSessionRepository
+  getIt.registerLazySingleton<AuthService>(() => AuthService(sessionRepository: getIt<IAuthSessionRepository>()));
+
+  // Dio & Interceptors
+  // Inject IAuthSessionRepository as IAuthTokenProvider into Interceptor
+  getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));
+
+  getIt.registerLazySingleton<Dio>(() {
+    final dio = Dio();
+    dio.interceptors.add(getIt<AuthInterceptor>());
+    return dio;
+  });
+
+  // GasApiClient - Core API Client with auth token injection (via Interceptor)
+  getIt.registerLazySingleton<GasApiClient>(() => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()));
 }
 
 /// 重置依賴注入 (用於測試)

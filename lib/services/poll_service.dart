@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'gas_api_client.dart';
 import '../core/env_config.dart';
 import '../core/constants.dart';
@@ -26,7 +25,7 @@ class PollService {
       LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
 
       if (response.statusCode == 200) {
-        final gasResponse = GasApiResponse.fromJsonString(utf8.decode(response.bodyBytes));
+        final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
         LogService.debug('Response parsed: code=${gasResponse.code}, message=${gasResponse.message}', source: _source);
 
         if (gasResponse.isSuccess) {
@@ -78,9 +77,9 @@ class PollService {
     try {
       LogService.info('Creating poll: $title', source: _source);
       final response = await _apiClient.post(payload);
-      LogService.debug('Create response: ${response.body}', source: _source);
+      LogService.debug('Create response: ${response.data}', source: _source);
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         throw Exception(gasResponse.message);
       }
@@ -109,9 +108,9 @@ class PollService {
     try {
       LogService.info('Voting on poll: $pollId, options: $optionIds', source: _source);
       final response = await _apiClient.post(payload);
-      LogService.debug('Vote response: ${response.body}', source: _source);
+      LogService.debug('Vote response: ${response.data}', source: _source);
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         throw Exception(gasResponse.message);
       }
@@ -134,9 +133,9 @@ class PollService {
     try {
       LogService.info('Adding option "$text" to poll $pollId by creator $creatorId', source: _source);
       final response = await _apiClient.post(payload);
-      LogService.debug('Add option response: ${response.body}', source: _source);
+      LogService.debug('Add option response: ${response.data}', source: _source);
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         throw Exception(gasResponse.message);
       }
@@ -154,9 +153,9 @@ class PollService {
     try {
       LogService.info('Closing poll: $pollId by user: $userId', source: _source);
       final response = await _apiClient.post(payload);
-      LogService.debug('Close response: ${response.body}', source: _source);
+      LogService.debug('Close response: ${response.data}', source: _source);
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         throw Exception(gasResponse.message);
       }
@@ -174,9 +173,9 @@ class PollService {
     try {
       LogService.info('Deleting poll: $pollId by user: $userId', source: _source);
       final response = await _apiClient.post(payload);
-      LogService.debug('Delete response: ${response.body}', source: _source);
+      LogService.debug('Delete response: ${response.data}', source: _source);
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         throw Exception(gasResponse.message);
       }
@@ -199,9 +198,9 @@ class PollService {
     try {
       LogService.info('Deleting option: $optionId by user: $userId', source: _source);
       final response = await _apiClient.post(payload);
-      LogService.debug('Delete option response: ${response.body}', source: _source);
+      LogService.debug('Delete option response: ${response.data}', source: _source);
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         throw Exception(gasResponse.message);
       }

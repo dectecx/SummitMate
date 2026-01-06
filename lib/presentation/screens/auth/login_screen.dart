@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _scrollController = ScrollController();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -26,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -46,6 +48,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!result.isSuccess) {
       setState(() => _errorMessage = result.errorMessage);
+      // Scroll to top to show error
+      if (mounted) {
+        _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
     }
     // On success, AuthProvider will update state and parent widget will navigate
   }
@@ -57,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,

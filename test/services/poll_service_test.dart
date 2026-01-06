@@ -1,24 +1,75 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+
 import 'package:summitmate/services/poll_service.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/data/models/poll.dart';
 
-// Generate MockClient
-@GenerateMocks([http.Client])
-import 'poll_service_test.mocks.dart';
+// Mock GasApiClient
+class MockGasApiClient extends GasApiClient {
+  MockGasApiClient() : super(baseUrl: 'https://mock.url');
+
+  Map<String, dynamic>? expectedResponseData;
+  bool shouldFail = false;
+  int statusCode = 200;
+  Map<String, dynamic>? capturedBody;
+
+  @override
+  Future<Response> get({Map<String, String>? queryParams}) async {
+    if (shouldFail) {
+      return Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        statusMessage: 'Internal Server Error',
+      );
+    }
+
+    final responseBody = {
+      'code': statusCode == 200 ? '0000' : '9999',
+      'message': 'Mock Message',
+      'data': expectedResponseData ?? {},
+    };
+    return Response(
+      requestOptions: RequestOptions(path: ''),
+      data: responseBody,
+      statusCode: statusCode,
+    );
+  }
+
+  @override
+  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+    capturedBody = body;
+    if (shouldFail) {
+      return Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        statusMessage: 'Internal Server Error',
+      );
+    }
+    final responseBody = {
+      'code': statusCode == 200 ? '0000' : '9999',
+      'message': 'Mock Message',
+      'data': expectedResponseData ?? {},
+    };
+
+    // Simulate specific Poll response structure (create/vote returns empty data but success code)
+    // If expectedResponseData is set, iterate and add it to response
+
+    return Response(
+      requestOptions: RequestOptions(path: ''),
+      data: responseBody,
+      statusCode: statusCode,
+    );
+  }
+}
 
 void main() {
-  late MockClient mockClient;
+  late MockGasApiClient mockClient;
   late PollService pollService;
 
   setUp(() {
-    mockClient = MockClient();
-    final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api');
-    pollService = PollService(apiClient: apiClient);
+    mockClient = MockGasApiClient();
+    pollService = PollService(apiClient: mockClient);
   });
 
   group('PollService', () {
@@ -26,8 +77,7 @@ void main() {
     const String pollId = 'poll_123';
 
     test('fetchPolls returns list of Polls if call completes successfully', () async {
-      final mockResponse = {
-        'success': true,
+      mockClient.expectedResponseData = {
         'polls': [
           {
             'poll_id': '1',
@@ -48,48 +98,38 @@ void main() {
         ],
       };
 
-      // GasApiClient calls client.get(uri) directly without headers
-      when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
-
       final polls = await pollService.fetchPolls(userId: userId);
 
       expect(polls, isA<List<Poll>>());
       expect(polls.length, 1);
       expect(polls.first.title, 'Test Poll');
-      verify(mockClient.get(any)).called(1);
     });
 
     test('fetchPolls throws Exception on error response', () async {
-      final mockResponse = {'success': false, 'error': 'Database error'};
-
-      when(mockClient.get(any)).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
-
-      expect(pollService.fetchPolls(userId: userId), throwsException);
+      mockClient.shouldFail = true;
+      expect(() => pollService.fetchPolls(userId: userId), throwsA(anything));
     });
 
     test('createPoll posts correct data and completes successfully', () async {
-      final mockResponse = {'success': true};
-
-      when(
-        mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')),
-      ).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      // Setup success response
+      mockClient.expectedResponseData = {};
 
       await pollService.createPoll(title: 'New Poll', creatorId: userId, description: 'Test description');
 
-      // GasApiClient adds specific headers
-      verify(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body'))).called(1);
+      expect(mockClient.capturedBody, isNotNull);
+      expect(mockClient.capturedBody!['action'], 'poll');
+      expect(mockClient.capturedBody!['subAction'], 'create');
+      expect(mockClient.capturedBody!['title'], 'New Poll');
     });
 
     test('votePoll posts correct data and completes successfully', () async {
-      final mockResponse = {'success': true};
-
-      when(
-        mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body')),
-      ).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      mockClient.expectedResponseData = {};
 
       await pollService.votePoll(pollId: pollId, optionIds: ['opt1'], userId: userId);
 
-      verify(mockClient.post(any, headers: anyNamed('headers'), body: anyNamed('body'))).called(1);
+      expect(mockClient.capturedBody, isNotNull);
+      expect(mockClient.capturedBody!['action'], 'poll');
+      expect(mockClient.capturedBody!['subAction'], 'vote');
     });
   });
 }

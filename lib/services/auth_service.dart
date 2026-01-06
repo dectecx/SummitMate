@@ -1,33 +1,27 @@
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/di.dart';
 import '../data/models/user_profile.dart';
+import '../data/repositories/interfaces/i_auth_session_repository.dart';
 import 'gas_api_client.dart';
-import 'interfaces/i_auth_token_provider.dart';
 import 'log_service.dart';
 
 /// Authentication Service
-/// Handles login, registration, token storage, and session management.
-class AuthService implements IAuthTokenProvider {
+/// Handles high-level auth logic (API calls + Session coordination).
+/// Delegates storage to [IAuthSessionRepository].
+class AuthService {
   static const String _source = 'AuthService';
 
-  // Secure Storage Keys
-  static const String _keyAuthToken = 'auth_token';
-  static const String _keyUserProfile = 'user_profile';
-
   final GasApiClient _apiClient;
-  final FlutterSecureStorage _secureStorage;
+  final IAuthSessionRepository _sessionRepo;
 
-  AuthService({GasApiClient? apiClient, FlutterSecureStorage? secureStorage})
+  AuthService({GasApiClient? apiClient, required IAuthSessionRepository sessionRepository})
     : _apiClient = apiClient ?? getIt<GasApiClient>(),
-      _secureStorage = secureStorage ?? const FlutterSecureStorage();
+      _sessionRepo = sessionRepository;
 
   // ============================================================
   // === PUBLIC API ===
   // ============================================================
 
   /// Register a new user
-  /// Returns [AuthResult] with success/failure and user data.
   Future<AuthResult> register({
     required String email,
     required String password,
@@ -37,6 +31,7 @@ class AuthService implements IAuthTokenProvider {
     try {
       LogService.info('嘗試註冊: $email', source: _source);
 
+      // 1. Call API
       final response = await _apiClient.post({
         'action': 'auth_register',
         'email': email,
@@ -45,14 +40,14 @@ class AuthService implements IAuthTokenProvider {
         'avatar': avatar,
       });
 
-      final apiResponse = GasApiResponse.fromJsonString(response.body);
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
         final token = apiResponse.data['authToken'] as String;
 
-        // Store credentials
-        await _saveSession(token, user);
+        // 2. Save Session
+        await _sessionRepo.saveSession(token, user);
 
         LogService.info('註冊成功: ${user.email}', source: _source);
         return AuthResult.success(user: user, token: token);
@@ -71,15 +66,17 @@ class AuthService implements IAuthTokenProvider {
     try {
       LogService.info('嘗試登入: $email', source: _source);
 
+      // 1. Call API
       final response = await _apiClient.post({'action': 'auth_login', 'email': email, 'password': password});
 
-      final apiResponse = GasApiResponse.fromJsonString(response.body);
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
         final token = apiResponse.data['authToken'] as String;
 
-        await _saveSession(token, user);
+        // 2. Save Session
+        await _sessionRepo.saveSession(token, user);
 
         LogService.info('登入成功: ${user.email}', source: _source);
         return AuthResult.success(user: user, token: token);
@@ -94,30 +91,35 @@ class AuthService implements IAuthTokenProvider {
   }
 
   /// Validate current session with server
-  /// Returns true if session is valid, false otherwise.
   Future<AuthResult> validateSession() async {
-    final token = await getAuthToken();
+    final token = await _sessionRepo.getAuthToken();
     if (token == null) {
       return AuthResult.failure(code: 'NO_TOKEN', message: '未登入');
     }
 
     try {
-      final response = await _apiClient.post({'action': 'auth_validate', 'authToken': token});
+      // 1. Call API
+      final response = await _apiClient.post({
+        'action': 'auth_validate',
+        'authToken': token, // Explicitly passed in body here, though interceptor would also inject it
+      });
 
-      final apiResponse = GasApiResponse.fromJsonString(response.body);
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
-        // Refresh stored profile with latest from server
-        await _saveSession(token, user);
+
+        // 2. Refresh Session
+        await _sessionRepo.saveSession(token, user);
+
         return AuthResult.success(user: user, token: token);
       } else {
-        // Token is invalid or account disabled - clear local session
+        // Token invalid -> Clear Session
         await logout();
         return AuthResult.failure(code: apiResponse.code, message: apiResponse.message);
       }
     } catch (e) {
-      // Network error - keep local session (offline mode)
+      // Network error -> Check local cache (Offline Support)
       LogService.warning('驗證 Token 失敗 (可能離線): $e', source: _source);
       final cachedUser = await getCachedUserProfile();
       if (cachedUser != null) {
@@ -129,15 +131,15 @@ class AuthService implements IAuthTokenProvider {
 
   /// Delete user account (soft delete)
   Future<AuthResult> deleteAccount() async {
-    final token = await getAuthToken();
+    final token = await _sessionRepo.getAuthToken();
     if (token == null) {
       return AuthResult.failure(code: 'NO_TOKEN', message: '未登入');
     }
 
     try {
-      final response = await _apiClient.post({'action': 'auth_delete_user', 'authToken': token});
+      final response = await _apiClient.post({'action': 'auth_delete_user'});
 
-      final apiResponse = GasApiResponse.fromJsonString(response.body);
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
         await logout();
@@ -151,45 +153,20 @@ class AuthService implements IAuthTokenProvider {
     }
   }
 
-  /// Logout - clear all stored credentials
+  /// Logout
   Future<void> logout() async {
-    await _secureStorage.delete(key: _keyAuthToken);
-    await _secureStorage.delete(key: _keyUserProfile);
+    await _sessionRepo.clearSession();
     LogService.info('已登出', source: _source);
   }
 
   /// Get stored auth token
-  Future<String?> getAuthToken() async {
-    return await _secureStorage.read(key: _keyAuthToken);
-  }
+  Future<String?> getAuthToken() => _sessionRepo.getAuthToken();
 
-  /// Get cached user profile from secure storage
-  Future<UserProfile?> getCachedUserProfile() async {
-    final json = await _secureStorage.read(key: _keyUserProfile);
-    if (json == null) return null;
+  /// Get cached user profile
+  Future<UserProfile?> getCachedUserProfile() => _sessionRepo.getUserProfile();
 
-    try {
-      return UserProfile.fromJson(jsonDecode(json) as Map<String, dynamic>);
-    } catch (e) {
-      LogService.warning('無法解析快取使用者資料: $e', source: _source);
-      return null;
-    }
-  }
-
-  /// Check if user is logged in (has cached credentials)
-  Future<bool> isLoggedIn() async {
-    final token = await getAuthToken();
-    return token != null && token.isNotEmpty;
-  }
-
-  // ============================================================
-  // === PRIVATE HELPERS ===
-  // ============================================================
-
-  Future<void> _saveSession(String token, UserProfile user) async {
-    await _secureStorage.write(key: _keyAuthToken, value: token);
-    await _secureStorage.write(key: _keyUserProfile, value: jsonEncode(user.toJson()));
-  }
+  /// Check if user is logged in
+  Future<bool> isLoggedIn() => _sessionRepo.hasSession();
 }
 
 /// Result of an authentication operation

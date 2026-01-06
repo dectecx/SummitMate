@@ -676,12 +676,12 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
         return;
       }
 
-      final result = await _service.uploadLibrary(ownerKey: _keyController.text, items: items);
+      final result = await _service.syncLibrary(_keyController.text, items);
 
       setState(() {
         _isLoading = false;
-        _isSuccess = result.isSuccess;
-        _resultMessage = result.isSuccess ? '成功上傳 ${result.data} 個裝備' : '上傳失敗: ${result.error}';
+        _isSuccess = result.success;
+        _resultMessage = result.success ? '成功上傳 ${result.data} 個裝備' : '上傳失敗: ${result.errorMessage}';
       });
     } catch (e) {
       setState(() {
@@ -727,13 +727,13 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     });
 
     try {
-      final result = await _service.downloadLibrary(ownerKey: _keyController.text);
+      final result = await _service.fetchLibrary(_keyController.text);
 
-      if (!result.isSuccess) {
+      if (!result.success) {
         setState(() {
           _isLoading = false;
           _isSuccess = false;
-          _resultMessage = '下載失敗: ${result.error}';
+          _resultMessage = '下載失敗: ${result.errorMessage}';
         });
         return;
       }

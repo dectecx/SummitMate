@@ -22,11 +22,7 @@ class HomeScreen extends StatelessWidget {
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('載入中...'),
-                ],
+                children: [CircularProgressIndicator(), SizedBox(height: 16), Text('載入中...')],
               ),
             ),
           );
