@@ -131,13 +131,16 @@ Future<void> setupDependencies() async {
   // Auth Services
   // ========================================
 
-  // GasApiClient - Core API Client
-  getIt.registerLazySingleton<GasApiClient>(
-    () => GasApiClient(baseUrl: EnvConfig.gasBaseUrl),
-  );
-
-  // AuthService - Authentication
+  // AuthService - Authentication (register first, used by GasApiClient)
   getIt.registerLazySingleton<AuthService>(() => AuthService());
+
+  // GasApiClient - Core API Client with auth token injection
+  getIt.registerLazySingleton<GasApiClient>(
+    () => GasApiClient(
+      baseUrl: EnvConfig.gasBaseUrl,
+      authTokenProvider: () => getIt<AuthService>().getAuthToken(),
+    ),
+  );
 }
 
 /// 重置依賴注入 (用於測試)

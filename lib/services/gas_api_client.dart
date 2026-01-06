@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'log_service.dart';
 
+/// Callback type for getting the current auth token
+typedef AuthTokenProvider = Future<String?> Function();
+
 /// Client related to Google Apps Script API calls
 /// Handles common logic like Redirects (302), Web compatibility, etc.
 class GasApiClient {
@@ -10,8 +13,15 @@ class GasApiClient {
 
   final http.Client _client;
   final String _baseUrl;
+  
+  /// Optional callback to get the current auth token for authenticated requests
+  AuthTokenProvider? authTokenProvider;
 
-  GasApiClient({http.Client? client, required String baseUrl}) : _client = client ?? http.Client(), _baseUrl = baseUrl;
+  GasApiClient({
+    http.Client? client,
+    required String baseUrl,
+    this.authTokenProvider,
+  }) : _client = client ?? http.Client(), _baseUrl = baseUrl;
 
   /// GET request
   Future<http.Response> get({Map<String, String>? queryParams}) async {
@@ -40,7 +50,8 @@ class GasApiClient {
   }
 
   /// POST request with automated redirect handling
-  Future<http.Response> post(Map<String, dynamic> body) async {
+  /// Automatically injects authToken if authTokenProvider is set
+  Future<http.Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     final stopwatch = Stopwatch()..start();
     final action = body['action'] ?? 'unknown';
 
@@ -50,7 +61,19 @@ class GasApiClient {
       // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
       final headers = {'Content-Type': kIsWeb ? 'text/plain' : 'application/json'};
 
-      final jsonBody = jsonEncode(body);
+      // Inject auth token if provider is available and user is logged in
+      final requestBody = Map<String, dynamic>.from(body);
+      if (authTokenProvider != null) {
+        final token = await authTokenProvider!();
+        if (token != null && token.isNotEmpty) {
+          requestBody['authToken'] = token;
+          LogService.debug('[POST] Auth token injected', source: _source);
+        } else if (requiresAuth) {
+          LogService.warning('[POST] Auth required but no token available', source: _source);
+        }
+      }
+
+      final jsonBody = jsonEncode(requestBody);
       LogService.debug('[POST] 請求開始: action=$action', source: _source);
       // 詳細 Request Log
       LogService.debug('[POST] Request Body: $jsonBody', source: _source);
