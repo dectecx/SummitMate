@@ -70,8 +70,6 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       _isOffline = false;
-      _user = result.user;
-      _isOffline = false;
       _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
     } else {
       _state = AuthState.unauthenticated;
@@ -86,8 +84,6 @@ class AuthProvider extends ChangeNotifier {
     final result = await _authService.login(email: email, password: password);
 
     if (result.isSuccess) {
-      _user = result.user;
-      _isOffline = result.isOffline;
       _user = result.user;
       _isOffline = result.isOffline;
       _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
