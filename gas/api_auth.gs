@@ -30,7 +30,11 @@ function authRegister(payload) {
 
   // 參數驗證
   if (!email || !password || !displayName) {
-    return buildResponse(API_CODES.INVALID_PARAMS, null, "缺少必要欄位: email, password, displayName");
+    return buildResponse(
+      API_CODES.INVALID_PARAMS,
+      null,
+      "缺少必要欄位: email, password, displayName"
+    );
   }
 
   // Email 格式簡易驗證
@@ -42,7 +46,11 @@ function authRegister(payload) {
   const sheet = ss.getSheetByName(SHEET_USERS);
 
   if (!sheet) {
-    return buildResponse(API_CODES.AUTH_SHEET_MISSING, null, "Users 工作表不存在，請先執行 setupSheets()");
+    return buildResponse(
+      API_CODES.AUTH_SHEET_MISSING,
+      null,
+      "Users 工作表不存在，請先執行 setupSheets()"
+    );
   }
 
   // 檢查 Email 是否已存在
@@ -58,6 +66,12 @@ function authRegister(payload) {
   const userAvatar = avatar || DEFAULT_AVATAR;
   const defaultRole = "member"; // 預設角色
 
+  // 生成驗證資料
+  const verificationCode = _generateVerificationCode();
+  const verificationExpiry = new Date(
+    Date.now() + 30 * 60 * 1000
+  ).toISOString(); // 30分鐘後過期
+
   const newRow = [
     userId,
     email.toLowerCase().trim(),
@@ -66,12 +80,18 @@ function authRegister(payload) {
     userAvatar,
     defaultRole,
     true, // is_active
-    now,  // created_at
-    now,  // updated_at
-    now,  // last_login_at
+    false, // is_verified (預設未驗證)
+    verificationCode,
+    verificationExpiry,
+    now, // created_at
+    now, // updated_at
+    now, // last_login_at
   ];
 
   sheet.appendRow(newRow);
+
+  // 發送驗證信
+  _sendVerificationEmail(email, verificationCode);
 
   // 回傳使用者資料 (不含密碼)
   const userData = {
@@ -80,12 +100,17 @@ function authRegister(payload) {
     displayName: displayName.trim(),
     avatar: userAvatar,
     role: defaultRole,
+    isVerified: false,
   };
 
-  return buildResponse(API_CODES.SUCCESS, {
-    user: userData,
-    authToken: userId, // 簡易 Token (使用 userId 作為 Token)
-  }, "註冊成功");
+  return buildResponse(
+    API_CODES.SUCCESS,
+    {
+      user: userData,
+      authToken: userId, // 簡易 Token (使用 userId 作為 Token)
+    },
+    "註冊成功"
+  );
 }
 
 /**
@@ -97,20 +122,32 @@ function authLogin(payload) {
   const { email, password } = payload;
 
   if (!email || !password) {
-    return buildResponse(API_CODES.INVALID_PARAMS, null, "缺少必要欄位: email, password");
+    return buildResponse(
+      API_CODES.INVALID_PARAMS,
+      null,
+      "缺少必要欄位: email, password"
+    );
   }
 
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_USERS);
 
   if (!sheet) {
-    return buildResponse(API_CODES.AUTH_SHEET_MISSING, null, "Users 工作表不存在");
+    return buildResponse(
+      API_CODES.AUTH_SHEET_MISSING,
+      null,
+      "Users 工作表不存在"
+    );
   }
 
   // 查找使用者
   const result = _findUserByEmail(sheet, email);
   if (!result) {
-    return buildResponse(API_CODES.AUTH_INVALID_CREDENTIALS, null, "信箱或密碼錯誤");
+    return buildResponse(
+      API_CODES.AUTH_INVALID_CREDENTIALS,
+      null,
+      "信箱或密碼錯誤"
+    );
   }
 
   const { user, rowIndex } = result;
@@ -118,7 +155,11 @@ function authLogin(payload) {
   // 檢查密碼
   const inputHash = _hashPassword(password);
   if (inputHash !== user.password_hash) {
-    return buildResponse(API_CODES.AUTH_INVALID_CREDENTIALS, null, "信箱或密碼錯誤");
+    return buildResponse(
+      API_CODES.AUTH_INVALID_CREDENTIALS,
+      null,
+      "信箱或密碼錯誤"
+    );
   }
 
   // 檢查帳號狀態
@@ -141,12 +182,17 @@ function authLogin(payload) {
     displayName: user.display_name,
     avatar: user.avatar,
     role: user.role,
+    isVerified: user.is_verified,
   };
 
-  return buildResponse(API_CODES.SUCCESS, {
-    user: userData,
-    authToken: user.uuid, // 簡易 Token
-  }, "登入成功");
+  return buildResponse(
+    API_CODES.SUCCESS,
+    {
+      user: userData,
+      authToken: user.uuid, // 簡易 Token
+    },
+    "登入成功"
+  );
 }
 
 /**
@@ -165,13 +211,21 @@ function authValidate(payload) {
   const sheet = ss.getSheetByName(SHEET_USERS);
 
   if (!sheet) {
-    return buildResponse(API_CODES.AUTH_SHEET_MISSING, null, "Users 工作表不存在");
+    return buildResponse(
+      API_CODES.AUTH_SHEET_MISSING,
+      null,
+      "Users 工作表不存在"
+    );
   }
 
   // 以 Token (= userId) 查找使用者
   const result = _findUserById(sheet, authToken);
   if (!result) {
-    return buildResponse(API_CODES.AUTH_TOKEN_INVALID, null, "Token 無效或已過期");
+    return buildResponse(
+      API_CODES.AUTH_TOKEN_INVALID,
+      null,
+      "Token 無效或已過期"
+    );
   }
 
   const { user } = result;
@@ -187,6 +241,7 @@ function authValidate(payload) {
     displayName: user.display_name,
     avatar: user.avatar,
     role: user.role,
+    isVerified: user.is_verified,
   };
 
   return buildResponse(API_CODES.SUCCESS, { user: userData }, "驗證成功");
@@ -208,7 +263,11 @@ function authDeleteUser(payload) {
   const sheet = ss.getSheetByName(SHEET_USERS);
 
   if (!sheet) {
-    return buildResponse(API_CODES.AUTH_SHEET_MISSING, null, "Users 工作表不存在");
+    return buildResponse(
+      API_CODES.AUTH_SHEET_MISSING,
+      null,
+      "Users 工作表不存在"
+    );
   }
 
   const result = _findUserById(sheet, authToken);
@@ -233,6 +292,146 @@ function authDeleteUser(payload) {
   return buildResponse(API_CODES.SUCCESS, null, "帳號已刪除");
 }
 
+/**
+ * 驗證 Email (輸入驗證碼)
+ * @param {Object} payload - { email, code }
+ * @returns {Object}
+ */
+function authVerifyEmail(payload) {
+  const { email, code } = payload;
+
+  if (!email || !code) {
+    return buildResponse(API_CODES.INVALID_PARAMS, null, "缺少必要欄位");
+  }
+
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_USERS);
+  const result = _findUserByEmail(sheet, email);
+
+  if (!result) {
+    return buildResponse(
+      API_CODES.AUTH_INVALID_CREDENTIALS,
+      null,
+      "找不到此信箱"
+    );
+  }
+
+  const { user, rowIndex } = result;
+
+  // 檢查是否已驗證
+  if (user.is_verified) {
+    return buildResponse(API_CODES.SUCCESS, null, "信箱已驗證");
+  }
+
+  // 檢查驗證碼
+  if (String(user.verification_code) !== String(code)) {
+    return buildResponse(API_CODES.AUTH_CODE_INVALID, null, "驗證碼錯誤");
+  }
+
+  // 檢查過期
+  if (new Date(user.verification_expiry) < new Date()) {
+    return buildResponse(
+      API_CODES.AUTH_CODE_EXPIRED,
+      null,
+      "驗證碼已過期，請重新發送"
+    );
+  }
+
+  // 更新狀態
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const isVerifiedCol = headers.indexOf("is_verified") + 1;
+  const verifiedCodeCol = headers.indexOf("verification_code") + 1; // 清空 code
+
+  if (isVerifiedCol > 0) {
+    sheet.getRange(rowIndex, isVerifiedCol).setValue(true);
+    // 選擇性清空驗證碼，避免重複使用
+    if (verifiedCodeCol > 0)
+      sheet.getRange(rowIndex, verifiedCodeCol).setValue("");
+  }
+
+  return buildResponse(API_CODES.SUCCESS, { isVerified: true }, "驗證成功");
+}
+
+/**
+ * 重發驗證碼
+ * @param {Object} payload - { email }
+ * @returns {Object}
+ */
+function authResendCode(payload) {
+  const { email } = payload;
+
+  if (!email)
+    return buildResponse(API_CODES.INVALID_PARAMS, null, "缺少 Email");
+
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_USERS);
+  const result = _findUserByEmail(sheet, email);
+
+  if (!result) {
+    return buildResponse(
+      API_CODES.AUTH_INVALID_CREDENTIALS,
+      null,
+      "找不到此信箱"
+    );
+  }
+
+  const { user, rowIndex } = result;
+
+  if (user.is_verified) {
+    return buildResponse(API_CODES.SUCCESS, null, "信箱已驗證，無需重發");
+  }
+
+  // 生成新碼
+  const code = _generateVerificationCode();
+  const expiry = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const codeCol = headers.indexOf("verification_code") + 1;
+  const expiryCol = headers.indexOf("verification_expiry") + 1;
+
+  if (codeCol > 0 && expiryCol > 0) {
+    sheet.getRange(rowIndex, codeCol).setValue(code);
+    sheet.getRange(rowIndex, expiryCol).setValue(expiry);
+  }
+
+  _sendVerificationEmail(email, code);
+
+  return buildResponse(API_CODES.SUCCESS, null, "驗證碼已發送");
+}
+
+/**
+ * 生成 6 碼數字
+ */
+function _generateVerificationCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * 發送驗證信 (使用 MailApp)
+ */
+function _sendVerificationEmail(email, code) {
+  const subject = "[SummitMate] 您的驗證碼: " + code;
+  const body = `
+    親愛的用戶您好，
+
+    您的 SummitMate 驗證碼為：${code} (30分鐘內有效)。
+    若非本人操作，請忽略此信。
+
+    SummitMate 團隊
+  `;
+
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: subject,
+      body: body,
+    });
+  } catch (e) {
+    console.error("Email 發送失敗: " + e.toString());
+    // 不阻擋流程，但需記錄 Log
+  }
+}
+
 // ============================================================
 // === INTERNAL HELPERS ===
 // ============================================================
@@ -244,8 +443,13 @@ function authDeleteUser(payload) {
  * @returns {string} 雜湊後的密碼 (Hex)
  */
 function _hashPassword(password) {
-  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password);
-  return rawHash.map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join('');
+  const rawHash = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    password
+  );
+  return rawHash
+    .map((byte) => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**
@@ -276,7 +480,10 @@ function _findUserByEmail(sheet, email) {
   const normalizedEmail = email.toLowerCase().trim();
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][emailCol] && data[i][emailCol].toString().toLowerCase().trim() === normalizedEmail) {
+    if (
+      data[i][emailCol] &&
+      data[i][emailCol].toString().toLowerCase().trim() === normalizedEmail
+    ) {
       const user = _rowToUser(headers, data[i]);
       return { user, rowIndex: i + 1 };
     }

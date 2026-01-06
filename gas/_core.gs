@@ -147,6 +147,10 @@ function doPost(e) {
         return _createJsonResponse(authLogin(data));
       case "auth_validate":
         return _createJsonResponse(authValidate(data));
+      case "auth_verify_email":
+        return _createJsonResponse(authVerifyEmail(data));
+      case "auth_resend_code":
+        return _createJsonResponse(authResendCode(data));
       case "auth_delete_user":
         return _createJsonResponse(authDeleteUser(data));
 

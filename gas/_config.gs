@@ -116,13 +116,16 @@ const HEADERS_GEAR_LIBRARY = [
 // role: 預留欄位供未來權限擴充 (團長/團員/管理員)
 // ============================================================
 const HEADERS_USERS = [
-  "uuid",           // PK
-  "email",          // Unique, 作為登入帳號
-  "password_hash",  // 密碼雜湊 (SHA-256)
-  "display_name",   // 顯示名稱
-  "avatar",         // 頭像 Emoji
-  "role",           // 角色: member, leader, admin (預留)
-  "is_active",      // 帳號狀態 (false = 假刪除)
+  "uuid", // PK
+  "email", // Unique, 作為登入帳號
+  "password_hash", // 密碼雜湊 (SHA-256)
+  "display_name", // 顯示名稱
+  "avatar", // 頭像 Emoji
+  "role", // 角色: member, leader, admin (預留)
+  "is_active", // 帳號狀態 (false = 假刪除)
+  "is_verified", // Email 驗證狀態
+  "verification_code",
+  "verification_expiry",
   "created_at",
   "updated_at",
   "last_login_at",
@@ -252,6 +255,10 @@ const API_CODES = {
   AUTH_REQUIRED: "0805",
   /** Users 工作表不存在 */
   AUTH_SHEET_MISSING: "0806",
+  /** 驗證碼錯誤 */
+  AUTH_CODE_INVALID: "0807",
+  /** 驗證碼已過期 */
+  AUTH_CODE_EXPIRED: "0808",
 };
 
 // ============================================================
@@ -393,6 +400,9 @@ const SHEET_SCHEMA = {
     avatar: { type: "text" },
     role: { type: "text" },
     is_active: { type: "boolean" },
+    is_verified: { type: "boolean" }, // Email 驗證狀態
+    verification_code: { type: "text" }, // 驗證碼 (6碼)
+    verification_expiry: { type: "date" }, // 驗證碼過期時間
     created_at: { type: "date" },
     updated_at: { type: "date" },
     last_login_at: { type: "date" },

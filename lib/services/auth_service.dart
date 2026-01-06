@@ -90,6 +90,55 @@ class AuthService {
     }
   }
 
+  /// Verify email with code
+  Future<AuthResult> verifyEmail({required String email, required String code}) async {
+    try {
+      LogService.info('嘗試驗證 Email: $email', source: _source);
+
+      // 1. Call API
+      final response = await _apiClient.post({'action': 'auth_verify_email', 'email': email, 'code': code});
+
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+
+      if (apiResponse.isSuccess) {
+        LogService.info('Email 驗證成功', source: _source);
+        // 如果目前有 Session，嘗試更新本地 User Profile (例如 isVerified = true)
+        // 但 API 目前只回傳 isVerified: true，沒有回傳完整 User。
+        // 所以可能需要再呼叫一次 validateSession 來更新完整資料。
+        await validateSession();
+
+        return AuthResult.success();
+      } else {
+        LogService.warning('Email 驗證失敗: ${apiResponse.message}', source: _source);
+        return AuthResult.failure(code: apiResponse.code, message: apiResponse.message);
+      }
+    } catch (e, stackTrace) {
+      LogService.error('Email 驗證例外: $e', source: _source, stackTrace: stackTrace);
+      return AuthResult.failure(code: 'NETWORK_ERROR', message: '網路錯誤');
+    }
+  }
+
+  /// Resend verification code
+  Future<AuthResult> resendVerificationCode({required String email}) async {
+    try {
+      LogService.info('嘗試重發驗證碼: $email', source: _source);
+
+      final response = await _apiClient.post({'action': 'auth_resend_code', 'email': email});
+
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+
+      if (apiResponse.isSuccess) {
+        LogService.info('驗證碼已發送', source: _source);
+        return AuthResult.success();
+      } else {
+        return AuthResult.failure(code: apiResponse.code, message: apiResponse.message);
+      }
+    } catch (e, stackTrace) {
+      LogService.error('重發驗證碼例外: $e', source: _source, stackTrace: stackTrace);
+      return AuthResult.failure(code: 'NETWORK_ERROR', message: '網路錯誤');
+    }
+  }
+
   /// Validate current session with server
   Future<AuthResult> validateSession() async {
     final token = await _sessionRepo.getAuthToken();

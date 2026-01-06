@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import 'verification_screen.dart';
 
 /// Register Screen
 /// Allows new users to create an account.
@@ -57,10 +58,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
-      // Registration successful - pop back, HomeScreen will show OnboardingScreen
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('註冊成功！歡迎加入 SummitMate')));
-        Navigator.pop(context);
+      if (!mounted) return;
+
+      // 註冊成功，跳轉至驗證頁面
+      final verified = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (context) => VerificationScreen(email: _emailController.text.trim())),
+      );
+
+      if (verified == true && mounted) {
+        // 驗證成功，重整 Session 以更新狀態 (變為 Authenticated)
+        await authProvider.validateSession();
+
+        if (mounted && authProvider.isAuthenticated) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('註冊並驗證成功！歡迎加入 SummitMate')));
+          // App should auto-switch to Home, but we can pop just in case/to be clean
+          // Navigator.pop(context);
+        }
       }
     } else {
       setState(() => _errorMessage = result.errorMessage);
@@ -230,23 +244,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Info Box
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '目前為測試版本，Email 驗證功能將於未來版本推出。',
-                          style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 24),
 
                 // Register Button

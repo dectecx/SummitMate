@@ -29,12 +29,16 @@ class UserProfile extends HiveObject {
   @HiveField(4)
   final String role;
 
+  @HiveField(5)
+  final bool isVerified;
+
   UserProfile({
     required this.uuid,
     required this.email,
     required this.displayName,
     this.avatar = '🐻',
     this.role = 'member',
+    this.isVerified = false,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
