@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           FilledButton(
                             onPressed: () {
                               Navigator.pop(ctx); // Close dialog
-                              Navigator.pop(context); // Return to previous screen
+                              context.read<AuthProvider>().skipLogin(); // Enter guest mode
                             },
                             child: const Text('繼續'),
                           ),
