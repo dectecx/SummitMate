@@ -3,11 +3,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/di.dart';
 import '../data/models/user_profile.dart';
 import 'gas_api_client.dart';
+import 'interfaces/i_auth_token_provider.dart';
 import 'log_service.dart';
 
 /// Authentication Service
 /// Handles login, registration, token storage, and session management.
-class AuthService {
+class AuthService implements IAuthTokenProvider {
   static const String _source = 'AuthService';
 
   // Secure Storage Keys
