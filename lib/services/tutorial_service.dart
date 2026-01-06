@@ -140,6 +140,16 @@ class TutorialService {
       ),
     );
 
+    // 10. Tutorial Complete
+    targets.add(
+      TutorialTarget(
+        identify: "Target Complete",
+        keyTarget: null, // No target, full screen overlay
+        align: ContentAlign.center,
+        content: "教學完成 🎉\n恭喜你已熟悉所有功能\n點擊畫面開始你的旅程吧！",
+      ),
+    );
+
     return targets;
   }
 }
