@@ -11,6 +11,7 @@ import '../providers/settings_provider.dart';
 import '../screens/map/map_screen.dart';
 import 'zoomable_image.dart';
 import 'weather/weather_alert_card.dart';
+import '../screens/beginner_peaks_screen.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
 class InfoTab extends StatefulWidget {
@@ -141,6 +142,46 @@ class InfoTabState extends State<InfoTab> {
               // 目前位置天氣警報
               const WeatherAlertCard(),
               const SizedBox(height: 16),
+
+              // 新手百岳推薦入口
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BeginnerPeaksScreen())),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.orange.shade100, Colors.white],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.2), shape: BoxShape.circle),
+                          child: const Icon(Icons.wb_sunny, color: Colors.orange, size: 28),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('新手入門：絕美日出百岳', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 4),
+                              Text('精選適合新手的日出路線，按風格分類', style: TextStyle(fontSize: 12, color: Colors.black87)),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
 
               // 步道概況
               Card(
