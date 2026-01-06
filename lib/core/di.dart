@@ -28,6 +28,9 @@ import '../services/interfaces/i_geolocator_service.dart';
 import '../presentation/providers/gear_provider.dart';
 import '../core/location/i_location_resolver.dart';
 import '../core/location/township_location_resolver.dart';
+import '../services/gas_api_client.dart';
+import '../services/auth_service.dart';
+import '../core/env_config.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -123,6 +126,18 @@ Future<void> setupDependencies() async {
 
   // Providers (Singletons for access outside logic)
   getIt.registerLazySingleton<GearProvider>(() => GearProvider());
+
+  // ========================================
+  // Auth Services
+  // ========================================
+
+  // GasApiClient - Core API Client
+  getIt.registerLazySingleton<GasApiClient>(
+    () => GasApiClient(baseUrl: EnvConfig.gasBaseUrl),
+  );
+
+  // AuthService - Authentication
+  getIt.registerLazySingleton<AuthService>(() => AuthService());
 }
 
 /// 重置依賴注入 (用於測試)

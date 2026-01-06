@@ -24,6 +24,9 @@ const SHEET_POLLS = "Polls";
 const SHEET_POLL_OPTIONS = "PollOptions";
 const SHEET_POLL_VOTES = "PollVotes";
 
+// 會員系統
+const SHEET_USERS = "Users";
+
 // 監控與外部服務
 const SHEET_LOGS = "Logs";
 const SHEET_HEARTBEAT = "Heartbeat";
@@ -106,6 +109,23 @@ const HEADERS_GEAR_LIBRARY = [
   "notes",
   "created_at",
   "updated_at",
+];
+
+// ============================================================
+// 會員系統 (Users)
+// role: 預留欄位供未來權限擴充 (團長/團員/管理員)
+// ============================================================
+const HEADERS_USERS = [
+  "uuid",           // PK
+  "email",          // Unique, 作為登入帳號
+  "password_hash",  // 密碼雜湊 (SHA-256)
+  "display_name",   // 顯示名稱
+  "avatar",         // 頭像 Emoji
+  "role",           // 角色: member, leader, admin (預留)
+  "is_active",      // 帳號狀態 (false = 假刪除)
+  "created_at",
+  "updated_at",
+  "last_login_at",
 ];
 
 const HEADERS_LOGS = [
@@ -218,6 +238,20 @@ const API_CODES = {
   // ========== 07XX - GearLibrary API ==========
   /** owner_key 格式錯誤 */
   GEAR_LIBRARY_KEY_INVALID: "0701",
+
+  // ========== 08XX - Auth API ==========
+  /** 信箱已被註冊 */
+  AUTH_EMAIL_EXISTS: "0801",
+  /** 信箱或密碼錯誤 */
+  AUTH_INVALID_CREDENTIALS: "0802",
+  /** 帳號已停用或刪除 */
+  AUTH_ACCOUNT_DISABLED: "0803",
+  /** 認證 Token 無效 */
+  AUTH_TOKEN_INVALID: "0804",
+  /** 缺少認證資訊 */
+  AUTH_REQUIRED: "0805",
+  /** Users 工作表不存在 */
+  AUTH_SHEET_MISSING: "0806",
 };
 
 // ============================================================
@@ -349,6 +383,19 @@ const SHEET_SCHEMA = {
     last_seen: { type: "date" },
     view: { type: "text" },
     platform: { type: "text" },
+  },
+
+  Users: {
+    uuid: { type: "text" },
+    email: { type: "text" },
+    password_hash: { type: "text" },
+    display_name: { type: "text" },
+    avatar: { type: "text" },
+    role: { type: "text" },
+    is_active: { type: "boolean" },
+    created_at: { type: "date" },
+    updated_at: { type: "date" },
+    last_login_at: { type: "date" },
   },
 };
 

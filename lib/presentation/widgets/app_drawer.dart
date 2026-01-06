@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import '../providers/auth_provider.dart';
 import '../providers/trip_provider.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/message_provider.dart';
+import '../screens/auth/login_screen.dart';
 import '../screens/trip_list_screen.dart';
 
 /// 應用程式側邊欄 (Drawer)
@@ -56,7 +59,7 @@ class AppDrawer extends StatelessWidget {
                         '${activeTrip.durationDays} 天行程',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                          color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
                         ),
                       ),
                   ],
@@ -101,11 +104,116 @@ class AppDrawer extends StatelessWidget {
                 ),
                 ...archivedTrips.map((trip) => _buildTripTile(context, trip, tripProvider)),
               ],
+
+              // Auth Section
+              const Divider(),
+              _buildAuthSection(context),
             ],
           );
         },
       ),
     );
+  }
+
+  Widget _buildAuthSection(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        if (authProvider.isAuthenticated) {
+          // Logged in - show user info and logout
+          return Column(
+            children: [
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  child: Text(
+                    authProvider.avatar,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+                title: Text(
+                  authProvider.displayName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  authProvider.user?.email ?? '',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text('登出', style: TextStyle(color: Colors.red)),
+                onTap: () => _handleLogout(context, authProvider),
+              ),
+            ],
+          );
+        } else {
+          // Not logged in - show login button
+          return ListTile(
+            leading: const Icon(Icons.login),
+            title: const Text('登入 / 註冊'),
+            subtitle: const Text('同步您的行程資料'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Future<void> _handleLogout(BuildContext context, AuthProvider authProvider) async {
+    // Check network status
+    final hasConnection = await InternetConnectionChecker.instance.hasConnection;
+
+    if (!hasConnection) {
+      // Offline - show warning
+      if (context.mounted) {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber, color: Colors.orange),
+                SizedBox(width: 8),
+                Text('離線模式'),
+              ],
+            ),
+            content: const Text(
+              '您目前處於離線狀態。\n\n'
+              '如果現在登出，在恢復網路連線前，您將無法重新登入。\n\n'
+              '確定要登出嗎？',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('確定登出'),
+              ),
+            ],
+          ),
+        );
+
+        if (confirmed != true) return;
+      }
+    }
+
+    // Proceed with logout
+    await authProvider.logout();
+    if (context.mounted) {
+      Navigator.pop(context); // Close drawer
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已登出')),
+      );
+    }
   }
 
   Widget _buildTripTile(BuildContext context, dynamic trip, TripProvider provider) {
