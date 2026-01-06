@@ -67,15 +67,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (verified == true && mounted) {
-        // 驗證成功，重整 Session 以更新狀態 (變為 Authenticated)
-        await authProvider.validateSession();
-
-        if (mounted && authProvider.isAuthenticated) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('註冊並驗證成功！歡迎加入 SummitMate')));
-          // App should auto-switch to Home, but we can pop just in case/to be clean
-          // Navigator.pop(context);
+        // 驗證成功，返回登入畫面讓使用者自行登入
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('註冊成功！請登入您的帳號')),
+        );
+        if (context.mounted) {
+          Navigator.pop(context); // 返回登入畫面
         }
       }
+      // 用戶取消或未完成驗證時，保持在註冊畫面方便重試
     } else {
       setState(() => _errorMessage = result.errorMessage);
     }
