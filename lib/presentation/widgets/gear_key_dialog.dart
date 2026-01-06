@@ -46,7 +46,7 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (result.success && result.data != null) {
+    if (result.isSuccess && result.data != null) {
       Navigator.pop(context, result.data);
     } else {
       ToastService.error(result.errorMessage ?? '找不到組合');

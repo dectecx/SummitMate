@@ -84,7 +84,7 @@ void main() {
       final result = await syncService.syncAll();
 
       // Assert
-      expect(result.success, isFalse);
+      expect(result.isSuccess, isFalse);
       expect(result.errors, contains('目前為離線模式，無法同步'));
       verifyNever(() => mockSheetsService.fetchAll(tripId: any(named: 'tripId')));
     });
@@ -100,7 +100,7 @@ void main() {
 
       when(
         () => mockSheetsService.fetchAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: cloudItinerary, messages: cloudMessages));
+      ).thenAnswer((_) async => FetchAllResult(isSuccess: true, itinerary: cloudItinerary, messages: cloudMessages));
 
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
@@ -110,7 +110,7 @@ void main() {
       final result = await syncService.syncAll();
 
       // Assert
-      expect(result.success, isTrue);
+      expect(result.isSuccess, isTrue);
       verify(() => mockSheetsService.fetchAll(tripId: any(named: 'tripId'))).called(1);
       verify(() => mockItineraryRepo.syncFromCloud(cloudItinerary)).called(1);
       verify(() => mockMessageRepo.syncFromCloud(cloudMessages)).called(1);
@@ -120,7 +120,7 @@ void main() {
       // Arrange
       when(
         () => mockSheetsService.fetchAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => FetchAllResult(success: true, itinerary: [], messages: []));
+      ).thenAnswer((_) async => FetchAllResult(isSuccess: true, itinerary: [], messages: []));
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
 
@@ -136,13 +136,13 @@ void main() {
       // Arrange
       when(
         () => mockSheetsService.fetchAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => FetchAllResult(success: false, errorMessage: 'Network Error'));
+      ).thenAnswer((_) async => FetchAllResult(isSuccess: false, errorMessage: 'Network Error'));
 
       // Act
       final result = await syncService.syncAll();
 
       // Assert
-      expect(result.success, isFalse);
+      expect(result.isSuccess, isFalse);
       expect(result.errors, contains('Network Error'));
       verifyNever(() => mockItineraryRepo.syncFromCloud(any()));
     });
@@ -152,13 +152,13 @@ void main() {
       final newMsg = Message(uuid: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
 
       when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
-      when(() => mockSheetsService.addMessage(any())).thenAnswer((_) async => ApiResult(success: true));
+      when(() => mockSheetsService.addMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
 
       // Act
       final result = await syncService.addMessageAndSync(newMsg);
 
       // Assert
-      expect(result.success, isTrue);
+      expect(result.isSuccess, isTrue);
       verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
       verify(() => mockSheetsService.addMessage(newMsg)).called(1);
     });
@@ -168,13 +168,13 @@ void main() {
       const uuid = 'delete-me';
 
       when(() => mockMessageRepo.deleteByUuid(any())).thenAnswer((_) async {});
-      when(() => mockSheetsService.deleteMessage(any())).thenAnswer((_) async => ApiResult(success: true));
+      when(() => mockSheetsService.deleteMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
 
       // Act
       final result = await syncService.deleteMessageAndSync(uuid);
 
       // Assert
-      expect(result.success, isTrue);
+      expect(result.isSuccess, isTrue);
       verify(() => mockMessageRepo.deleteByUuid(uuid)).called(1);
       verify(() => mockSheetsService.deleteMessage(uuid)).called(1);
     });

@@ -54,7 +54,7 @@ void main() {
         mockClient.expectedResponseData = {'count': 1};
 
         final result = await service.syncLibrary('test_pcode', items);
-        expect(result.success, isTrue);
+        expect(result.isSuccess, isTrue);
         expect(result.data, 1);
       });
 
@@ -64,8 +64,9 @@ void main() {
         final result = await service.syncLibrary('test_pcode', [
           GearLibraryItem(name: 'Test', weight: 100, category: 'Other'),
         ]);
-        expect(result.success, isTrue);
-        expect(result.data, 5);
+        // 驗證
+        expect(result.isSuccess, isTrue);
+        expect(result.data, equals(5));
       });
 
       test('API 失敗時返回錯誤訊息', () async {
@@ -74,8 +75,9 @@ void main() {
         final result = await service.syncLibrary('test_pcode', [
           GearLibraryItem(name: 'Test', weight: 100, category: 'Other'),
         ]);
-        expect(result.success, isFalse);
-        expect(result.errorMessage, contains('500'));
+        // 驗證
+        expect(result.isSuccess, isFalse);
+        expect(result.errorMessage, contains('HTTP 500'));
       });
     });
 
@@ -88,9 +90,11 @@ void main() {
         };
 
         final result = await service.fetchLibrary('test_pcode');
-        expect(result.success, isTrue);
+        // 驗證
+        expect(result.isSuccess, isTrue);
         expect(result.data, isNotNull);
-        expect(result.data!.length, 1);
+        expect(result.data, hasLength(1));
+
         expect(result.data!.first.name, 'Downloaded Item');
       });
 
@@ -98,7 +102,8 @@ void main() {
         mockClient.expectedResponseData = {'items': []};
 
         final result = await service.fetchLibrary('test_pcode');
-        expect(result.success, isTrue);
+        // 驗證
+        expect(result.isSuccess, isTrue);
         expect(result.data, isEmpty);
       });
     });

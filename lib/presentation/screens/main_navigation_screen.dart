@@ -310,7 +310,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!context.mounted) return;
     Navigator.pop(context); // Close Loading
 
-    if (!result.success) {
+    if (!result.isSuccess) {
       ToastService.error(result.errorMessage ?? '無法取得雲端行程列表');
       return;
     }
@@ -826,8 +826,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       TextButton.icon(
                         onPressed: () async {
                           ToastService.info('正在上傳...');
-                          final (success, message) = await LogService.uploadToCloud();
-                          if (success) {
+                          final (isSuccess, message) = await LogService.uploadToCloud();
+                          if (isSuccess) {
                             ToastService.success(message);
                           } else {
                             ToastService.error(message);

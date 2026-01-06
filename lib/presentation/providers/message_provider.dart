@@ -145,7 +145,7 @@ class MessageProvider extends ChangeNotifier {
       // 只同步留言
       final result = await _syncService.syncMessages(isAuto: isAuto);
 
-      if (result.success) {
+      if (result.isSuccess) {
         if (result.messagesSynced) {
           LogService.info('留言同步成功', source: 'Message');
           ToastService.success('留言同步成功！');
@@ -163,7 +163,7 @@ class MessageProvider extends ChangeNotifier {
       LogService.debug('載入 ${_allMessages.length} 則留言', source: 'Message');
 
       // 通知同步完成以更新 lastSyncTime
-      if (result.success && onSyncComplete != null) {
+      if (result.isSuccess && onSyncComplete != null) {
         onSyncComplete!(result.syncedAt);
       }
 

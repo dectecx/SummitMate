@@ -72,14 +72,19 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     final result = await _cloudService.fetchGearSets();
 
-    setState(() {
-      _isLoading = false;
-      if (result.success) {
-        _gearSets = result.data ?? [];
-      } else {
+    if (!mounted) return;
+
+    if (result.isSuccess && result.data != null) {
+      setState(() {
+        _gearSets = result.data!;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
         _errorMessage = result.errorMessage;
-      }
-    });
+      });
+    }
   }
 
   Future<void> _showUploadDialog() async {
@@ -114,7 +119,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             key: key,
           );
 
-          if (uploadResult.success) {
+          if (uploadResult.isSuccess) {
             uploadedKey = key;
             uploadedTitle = title;
             uploadedVisibility = visibility;
@@ -158,7 +163,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     if (!mounted) return;
     setState(() => _busyGearSetId = null);
 
-    if (!result.success || result.data?.items == null) {
+    if (!result.isSuccess || result.data?.items == null) {
       ToastService.error(result.errorMessage ?? '查詢失敗');
       return;
     }
@@ -510,7 +515,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   Future<void> _deleteGearSet(GearKeyRecord record) async {
     // 嘗試從雲端刪除 (需要透過 key 查詢 uuid)
     final fetchResult = await _cloudService.fetchGearSetByKey(record.key);
-    if (!fetchResult.success || fetchResult.data == null) {
+    if (!fetchResult.isSuccess || fetchResult.data == null) {
       ToastService.error('找不到此組合或已被刪除');
       return;
     }
@@ -518,7 +523,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     final gearSet = fetchResult.data!;
     final deleteResult = await _cloudService.deleteGearSet(gearSet.uuid, record.key);
 
-    if (deleteResult.success) {
+    if (deleteResult.isSuccess) {
       // 從本地儲存中也刪除記錄
       await GearKeyStorage.removeUploadedKey(record.key);
       ToastService.success('已刪除裝備組合');
@@ -560,7 +565,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     if (confirmed == true) {
       // public 組合不需要 key
       final deleteResult = await _cloudService.deleteGearSet(gearSet.uuid, '');
-      if (deleteResult.success) {
+      if (deleteResult.isSuccess) {
         ToastService.success('已刪除裝備組合');
         _fetchGearSets(); // 刷新列表
       } else {

@@ -237,7 +237,7 @@ class LogService {
       final sheetsService = getIt<GoogleSheetsService>();
       final result = await sheetsService.uploadLogs(logs, deviceName: deviceName);
 
-      if (result.success) {
+      if (result.isSuccess) {
         info('日誌上傳成功', source: 'LogUpload');
         return (true, result.errorMessage ?? '上傳成功');
       } else {

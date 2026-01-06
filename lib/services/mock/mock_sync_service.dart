@@ -13,27 +13,27 @@ class MockSyncService extends SyncService {
   // Override to prevent real sync calls
   @override
   Future<SyncResult> syncAll({bool isAuto = false}) async {
-    return SyncResult(success: true, syncedAt: DateTime.now());
+    return SyncResult(isSuccess: true, syncedAt: DateTime.now());
   }
 
   @override
   Future<SyncResult> syncItinerary({bool isAuto = false}) async {
-    return SyncResult(success: true, itinerarySynced: true, syncedAt: DateTime.now());
+    return SyncResult(isSuccess: true, itinerarySynced: true, syncedAt: DateTime.now());
   }
 
   @override
   Future<SyncResult> syncMessages({bool isAuto = false}) async {
-    return SyncResult(success: true, messagesSynced: true, syncedAt: DateTime.now());
+    return SyncResult(isSuccess: true, messagesSynced: true, syncedAt: DateTime.now());
   }
 
   @override
   Future<FetchTripsResult> fetchCloudTrips() async {
-    return FetchTripsResult(success: true, trips: []);
+    return FetchTripsResult(isSuccess: true, trips: []);
   }
 
   @override
   Future<bool> checkItineraryConflict() async => false;
 
   @override
-  Future<ApiResult> uploadItinerary() async => ApiResult(success: true);
+  Future<ApiResult> uploadItinerary() async => ApiResult(isSuccess: true);
 }

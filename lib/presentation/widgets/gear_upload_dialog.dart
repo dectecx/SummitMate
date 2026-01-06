@@ -50,7 +50,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
 
     setState(() => _isUploading = true);
 
-    final success = await widget.onUpload(
+    final isSuccess = await widget.onUpload(
       _titleController.text.trim(),
       _visibility,
       _needsKey ? _keyController.text : null,
@@ -58,7 +58,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
 
     if (mounted) {
       setState(() => _isUploading = false);
-      if (success) {
+      if (isSuccess) {
         Navigator.pop(context, true);
       }
     }

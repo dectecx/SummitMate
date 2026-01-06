@@ -680,8 +680,8 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
 
       setState(() {
         _isLoading = false;
-        _isSuccess = result.success;
-        _resultMessage = result.success ? '成功上傳 ${result.data} 個裝備' : '上傳失敗: ${result.errorMessage}';
+        _isSuccess = result.isSuccess;
+        _resultMessage = result.isSuccess ? '成功上傳 ${result.data} 個裝備' : '上傳失敗: ${result.errorMessage}';
       });
     } catch (e) {
       setState(() {
@@ -729,7 +729,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     try {
       final result = await _service.fetchLibrary(_keyController.text);
 
-      if (!result.success) {
+      if (!result.isSuccess) {
         setState(() {
           _isLoading = false;
           _isSuccess = false;

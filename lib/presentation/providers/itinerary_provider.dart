@@ -253,7 +253,7 @@ class ItineraryProvider extends ChangeNotifier {
       final syncService = getIt<SyncService>();
       final result = await syncService.syncItinerary(isAuto: isAuto);
 
-      if (result.success) {
+      if (result.isSuccess) {
         if (result.itinerarySynced) {
           LogService.info('行程與雲端同步完成', source: 'Itinerary');
           if (!isAuto) ToastService.success('行程同步成功');
@@ -286,7 +286,7 @@ class ItineraryProvider extends ChangeNotifier {
       final syncService = getIt<SyncService>();
       final result = await syncService.uploadItinerary();
 
-      if (result.success) {
+      if (result.isSuccess) {
         LogService.info('行程上傳成功', source: 'Itinerary');
         ToastService.success('行程上傳成功');
       } else {

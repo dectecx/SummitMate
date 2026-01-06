@@ -163,6 +163,23 @@ void main() {
   });
 
   test('Integration: Create Trip, Switch Context, Add Gear', () async {
+    // Setup initial data since MockRepo starts empty
+    final initialTrip = Trip(
+      id: 'default_trip',
+      name: '我的登山行程',
+      startDate: DateTime.now(),
+      isActive: true,
+      createdAt: DateTime.now(),
+    );
+    await tripRepo.addTrip(initialTrip);
+    await tripRepo.setActiveTrip(initialTrip.id);
+
+    // Create provider and wait for initial load
+    testTripProvider = TripProvider(repository: tripRepo);
+
+    // Re-initialize gear provider to match context if needed (though it's independent)
+    testGearProvider = GearProvider(repository: gearRepo);
+
     // 1. Initial State
     expect(testTripProvider.trips.isNotEmpty, true);
     final defaultTrip = testTripProvider.activeTrip!;
