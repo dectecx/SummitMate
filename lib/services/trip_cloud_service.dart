@@ -23,7 +23,7 @@ class TripCloudService {
         return TripCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return TripCloudResult.failure(gasResponse.message);
       }
@@ -62,7 +62,7 @@ class TripCloudService {
         return TripCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return TripCloudResult.failure(gasResponse.message);
       }
@@ -105,7 +105,7 @@ class TripCloudService {
         return TripCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return TripCloudResult.failure(gasResponse.message);
       }
@@ -138,7 +138,7 @@ class TripCloudService {
         return TripCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return TripCloudResult.failure(gasResponse.message);
       }
@@ -162,7 +162,7 @@ class TripCloudService {
         return TripCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return TripCloudResult.failure(gasResponse.message);
       }

@@ -25,7 +25,7 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return GearCloudResult.failure(gasResponse.message);
       }
@@ -55,7 +55,7 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return GearCloudResult.failure(gasResponse.message);
       }
@@ -84,7 +84,7 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return GearCloudResult.failure(gasResponse.message);
       }
@@ -135,7 +135,7 @@ class GearCloudService {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
       }
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         final errorMsg = gasResponse.message;
         // 檢查是否為 Key 重複錯誤
@@ -161,7 +161,7 @@ class GearCloudService {
 
       final response = await _apiClient.post({'action': ApiConfig.actionDeleteGearSet, 'uuid': uuid, 'key': key});
 
-      final gasResponse = GasApiResponse.fromJsonString(response.body);
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
         return GearCloudResult.failure(gasResponse.message);
       }

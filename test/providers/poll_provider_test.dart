@@ -1,20 +1,17 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/presentation/providers/poll_provider.dart';
 import 'package:summitmate/services/poll_service.dart';
-import 'package:summitmate/data/models/poll.dart';
 import 'package:summitmate/data/repositories/interfaces/i_poll_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
 import 'package:summitmate/data/models/settings.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:summitmate/services/gas_api_client.dart';
 
 // Mocks
-class MockClient extends Mock implements http.Client {}
+class MockDio extends Mock implements Dio {}
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -25,7 +22,7 @@ class MockSettingsRepository extends Mock implements ISettingsRepository {}
 class MockSettings extends Mock implements Settings {}
 
 void main() {
-  late MockClient mockClient;
+  late MockDio mockDio;
   late MockSharedPreferences mockSharedPreferences;
   late MockPollRepository mockPollRepository;
   late MockSettingsRepository mockSettingsRepository;
@@ -33,7 +30,7 @@ void main() {
   late PollProvider provider;
 
   setUp(() async {
-    mockClient = MockClient();
+    mockDio = MockDio();
     mockSharedPreferences = MockSharedPreferences();
     mockPollRepository = MockPollRepository();
     mockSettingsRepository = MockSettingsRepository();
@@ -43,7 +40,7 @@ void main() {
     final getIt = GetIt.instance;
     await getIt.reset();
 
-    final gasApiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api');
+    final gasApiClient = GasApiClient(dio: mockDio, baseUrl: 'https://mock.api');
 
     getIt.registerSingleton<SharedPreferences>(mockSharedPreferences);
     getIt.registerSingleton<PollService>(PollService(apiClient: gasApiClient));
@@ -62,7 +59,9 @@ void main() {
     when(() => mockPollRepository.saveLastSyncTime(any())).thenAnswer((_) async {});
 
     // Register fallback values
-    registerFallbackValue(Uri());
+    registerFallbackValue(RequestOptions(path: ''));
+    registerFallbackValue(Options());
+    registerFallbackValue(<String, dynamic>{});
 
     provider = PollProvider();
   });
@@ -78,10 +77,18 @@ void main() {
     });
 
     testWidgets('fetchPolls success', (tester) async {
-      final mockResponse = {'success': true, 'polls': []};
+      final mockResponseData = {
+        'code': '0000',
+        'data': {'polls': []},
+      };
 
-      // PollService uses GasApiClient which calls _client.get(uri) WITHOUT headers
-      when(() => mockClient.get(any())).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(() => mockDio.get(any(), queryParameters: any(named: 'queryParameters'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          data: mockResponseData,
+          statusCode: 200,
+        ),
+      );
 
       await provider.fetchPolls();
       expect(provider.polls.length, 0);
@@ -89,45 +96,65 @@ void main() {
     });
 
     testWidgets('fetchPolls sets error on failure', (tester) async {
-      final mockResponse = {'success': false, 'error': 'Database error'};
+      final mockResponseData = {'code': '9999', 'message': 'Database error'};
 
-      when(() => mockClient.get(any())).thenAnswer((_) async => http.Response(json.encode(mockResponse), 200));
+      when(() => mockDio.get(any(), queryParameters: any(named: 'queryParameters'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          data: mockResponseData,
+          statusCode: 200,
+        ),
+      );
 
       await provider.fetchPolls();
 
       expect(provider.isLoading, false);
       expect(provider.polls.isEmpty, true);
-      // Note: PollProvider catches error and sets it, but also shows toast.
-      // ToastService is static, assume it handles itself or we might need to mock it if it crashes.
-      // But PollProvider code: _error = e.toString();
       expect(provider.error, contains('Database error'));
     });
 
     testWidgets('createPoll calls service and refreshes polls', (tester) async {
       // Setup fetch mocks for the refresh call
-      final mockFetchResponse = {'success': true, 'polls': []};
-      when(() => mockClient.get(any())).thenAnswer((_) async => http.Response(json.encode(mockFetchResponse), 200));
+      final mockFetchResponse = {
+        'code': '0000',
+        'data': {'polls': []},
+      };
+      when(() => mockDio.get(any(), queryParameters: any(named: 'queryParameters'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          data: mockFetchResponse,
+          statusCode: 200,
+        ),
+      );
 
       // Setup create match
       when(
-        () => mockClient.post(
+        () => mockDio.post(
           any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
         ),
-      ).thenAnswer((_) async => http.Response(json.encode({'success': true}), 200));
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          data: {'code': '0000', 'message': 'Success'},
+          statusCode: 200,
+        ),
+      );
 
       final result = await provider.createPoll(title: 'New');
 
       expect(result, true);
       verify(
-        () => mockClient.post(
+        () => mockDio.post(
           any(),
-          headers: any(named: 'headers'),
-          body: any(named: 'body'),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
         ),
       ).called(1);
-      verify(() => mockClient.get(any())).called(1); // Should call fetchPolls
+      verify(
+        () => mockDio.get(any(), queryParameters: any(named: 'queryParameters')),
+      ).called(1); // Should call fetchPolls
     });
   });
 }

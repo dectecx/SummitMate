@@ -1,7 +1,6 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
-import 'interfaces/i_auth_token_provider.dart';
 import 'log_service.dart';
 
 /// Client related to Google Apps Script API calls
@@ -9,38 +8,22 @@ import 'log_service.dart';
 class GasApiClient {
   static const String _source = 'GasApiClient';
 
-  final http.Client _client;
+  final Dio _dio;
   final String _baseUrl;
-  
-  /// Optional provider to get the current auth token for authenticated requests
-  final IAuthTokenProvider? _tokenProvider;
 
-  GasApiClient({
-    http.Client? client,
-    required String baseUrl,
-    IAuthTokenProvider? tokenProvider,
-  }) : _client = client ?? http.Client(), 
-       _baseUrl = baseUrl,
-       _tokenProvider = tokenProvider;
+  GasApiClient({Dio? dio, required String baseUrl}) : _dio = dio ?? Dio(), _baseUrl = baseUrl;
 
   /// GET request
-  Future<http.Response> get({Map<String, String>? queryParams}) async {
+  Future<Response> get({Map<String, String>? queryParams}) async {
     final stopwatch = Stopwatch()..start();
     try {
-      Uri uri = Uri.parse(_baseUrl);
-      if (queryParams != null && queryParams.isNotEmpty) {
-        final newParams = Map<String, String>.from(uri.queryParameters);
-        newParams.addAll(queryParams);
-        uri = uri.replace(queryParameters: newParams);
-      }
+      LogService.debug('[GET] 請求開始: $_baseUrl', source: _source);
 
-      LogService.debug('[GET] 請求開始: $uri', source: _source);
-      final response = await _client.get(uri);
+      final response = await _dio.get(_baseUrl, queryParameters: queryParams);
+
       stopwatch.stop();
-
       LogService.info('[GET] 完成 (${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}', source: _source);
-      // 詳細 Response Log
-      LogService.debug('[GET] Response Body: ${response.body}', source: _source);
+      LogService.debug('[GET] Response Body: ${response.data}', source: _source);
       return response;
     } catch (e, stackTrace) {
       stopwatch.stop();
@@ -50,87 +33,84 @@ class GasApiClient {
   }
 
   /// POST request with automated redirect handling
-  /// Automatically injects authToken if tokenProvider is set
-  Future<http.Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     final stopwatch = Stopwatch()..start();
     final action = body['action'] ?? 'unknown';
 
     try {
-      final uri = Uri.parse(_baseUrl);
       // [Web Compatibility]
       // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
-      final headers = {'Content-Type': kIsWeb ? 'text/plain' : 'application/json'};
+      final options = Options(
+        contentType: kIsWeb ? 'text/plain' : 'application/json',
+        extra: {'requiresAuth': requiresAuth},
+        // We need to handle 302 manually for HTML body redirects common in GAS
+        followRedirects: !kIsWeb,
+        validateStatus: (status) => status != null && status < 500,
+      );
 
-      // Inject auth token if provider is available and user is logged in
-      final requestBody = Map<String, dynamic>.from(body);
-      if (_tokenProvider != null) {
-        final token = await _tokenProvider.getAuthToken();
-        if (token != null && token.isNotEmpty) {
-          requestBody['authToken'] = token;
-          LogService.debug('[POST] Auth token injected', source: _source);
-        } else if (requiresAuth) {
-          LogService.warning('[POST] Auth required but no token available', source: _source);
-        }
-      }
-
-      final jsonBody = jsonEncode(requestBody);
+      final jsonBody = jsonEncode(body);
       LogService.debug('[POST] 請求開始: action=$action', source: _source);
-      // 詳細 Request Log
       LogService.debug('[POST] Request Body: $jsonBody', source: _source);
 
-      final response = await _client.post(uri, headers: headers, body: jsonBody);
+      // Warning: Dio automatically encodes based on contentType.
+      // If 'text/plain', we must send string. If 'application/json', we can send Map.
+      // But here we might want to consistently send string to avoid Dio's auto-json logic messing with GAS?
+      // Actually GAS handles JSON text payload fine in doPost(e).
+      final data = kIsWeb ? jsonBody : body;
 
-      // [Web Compatibility] Browser follows redirects automatically.
-      if (kIsWeb) {
-        stopwatch.stop();
-        LogService.info(
-          '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
-          source: _source,
-        );
-        LogService.debug('[POST] Response Body: ${response.body}', source: _source);
-        return response;
-      }
+      final response = await _dio.post(_baseUrl, data: data, options: options);
 
       // [Mobile Compatibility]
-      // 1. Standard 302 Redirect
+      // 1. Standard 302 Redirect (Dio handles this automatically if followRedirects is true,
+      //    but we might have manual redirect logic desire for specific GAS behavior)
       if (response.statusCode == 302) {
-        final location = response.headers['location'];
+        final location = response.headers.value('location');
         if (location != null && location.isNotEmpty) {
           LogService.debug('[POST] 追蹤 302 重導向', source: _source);
-          final redirectResponse = await _client.get(Uri.parse(location));
+          final redirectResponse = await _dio.get(location);
           stopwatch.stop();
           LogService.info(
             '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${redirectResponse.statusCode}',
             source: _source,
           );
-          LogService.debug('[POST] Response Body: ${redirectResponse.body}', source: _source);
           return redirectResponse;
         }
       }
 
       // 2. HTML Body Redirect (Common in GAS)
-      if (response.body.contains('<HTML>') && (response.body.contains('HREF=') || response.body.contains('href='))) {
-        final hrefMatch = RegExp(r'HREF="([^"]+)"', caseSensitive: false).firstMatch(response.body);
+      if (response.data is String &&
+          response.data.toString().contains('<HTML>') &&
+          (response.data.toString().contains('HREF=') || response.data.toString().contains('href='))) {
+        final hrefMatch = RegExp(r'HREF="([^"]+)"', caseSensitive: false).firstMatch(response.data.toString());
         if (hrefMatch != null) {
           final redirectUrl = hrefMatch.group(1)!.replaceAll('&amp;', '&');
           LogService.debug('[POST] 追蹤 HTML 重導向', source: _source);
-          final redirectResponse = await _client.get(Uri.parse(redirectUrl));
+          final redirectResponse = await _dio.get(redirectUrl);
           stopwatch.stop();
           LogService.info(
             '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${redirectResponse.statusCode}',
             source: _source,
           );
-          LogService.debug('[POST] Response Body: ${redirectResponse.body}', source: _source);
+          LogService.debug('[POST] Response Body: ${redirectResponse.data}', source: _source);
           return redirectResponse;
         }
       }
 
       stopwatch.stop();
+      // Ensure data is Map for consistency
+      if (response.data is String) {
+        try {
+          response.data = jsonDecode(response.data);
+        } catch (e) {
+          LogService.warning('[POST] JSON 解析失敗 (可能為非標準回應): $e', source: _source);
+        }
+      }
+
       LogService.info(
         '[POST] 完成 ($action, ${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}',
         source: _source,
       );
-      LogService.debug('[POST] Response Body: ${response.body}', source: _source);
+      LogService.debug('[POST] Response Body: ${response.data}', source: _source);
       return response;
     } catch (e, stackTrace) {
       stopwatch.stop();
@@ -144,7 +124,7 @@ class GasApiClient {
   }
 
   void dispose() {
-    _client.close();
+    _dio.close();
   }
 }
 
@@ -158,6 +138,11 @@ class GasApiResponse {
   final Map<String, dynamic> _json;
 
   GasApiResponse(this._json);
+
+  /// 從 Map 建立
+  factory GasApiResponse.fromJson(Map<String, dynamic> json) {
+    return GasApiResponse(json);
+  }
 
   /// 從 JSON 字串建立
   factory GasApiResponse.fromJsonString(String jsonString) {

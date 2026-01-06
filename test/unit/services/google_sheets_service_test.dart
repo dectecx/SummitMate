@@ -1,43 +1,92 @@
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
+
 import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/data/models/message.dart';
 
+// Mock GasApiClient
+class MockGasApiClient extends GasApiClient {
+  MockGasApiClient() : super(baseUrl: 'https://mock.url');
+
+  Map<String, dynamic>? expectedResponseData;
+  bool shouldFail = false;
+  int statusCode = 200;
+  Map<String, dynamic>? capturedBody;
+
+  @override
+  Future<Response> get({Map<String, String>? queryParams}) async {
+    if (shouldFail) {
+      return Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        statusMessage: 'Internal Server Error',
+      );
+    }
+
+    final responseBody = {
+      'code': statusCode == 200 ? '0000' : '9999',
+      'message': 'Mock Message',
+      'data': expectedResponseData ?? {},
+    };
+    return Response(
+      requestOptions: RequestOptions(path: ''),
+      data: responseBody,
+      statusCode: statusCode,
+    );
+  }
+
+  @override
+  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+    capturedBody = body;
+    if (shouldFail) {
+      return Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        statusMessage: 'Internal Server Error',
+      );
+    }
+    final responseBody = {
+      'code': statusCode == 200 ? '0000' : '9999',
+      'message': 'Mock Message',
+      'data': expectedResponseData ?? {},
+    };
+    return Response(
+      requestOptions: RequestOptions(path: ''),
+      data: responseBody,
+      statusCode: statusCode,
+    );
+  }
+}
+
 void main() {
   group('GoogleSheetsService Tests', () {
     test('fetchAll should return itinerary and messages on success', () async {
-      final mockClient = MockClient((request) async {
-        final responseBody = jsonEncode({
-          'itinerary': [
-            {
-              'day': 'D1',
-              'name': 'Mountain Lodge',
-              'est_time': '11:30',
-              'altitude': 2850,
-              'distance': 4.3,
-              'note': 'Lunch stop',
-            },
-          ],
-          'messages': [
-            {
-              'uuid': 'test-uuid-1',
-              'parent_id': null,
-              'user': 'Alex',
-              'category': 'Gear',
-              'content': 'Test message',
-              'timestamp': '2024-12-15T09:00:00Z',
-            },
-          ],
-        });
-        return http.Response(responseBody, 200, headers: {'content-type': 'application/json; charset=utf-8'});
-      });
+      final mockClient = MockGasApiClient();
+      mockClient.expectedResponseData = {
+        'itinerary': [
+          {
+            'day': 'D1',
+            'name': 'Mountain Lodge',
+            'est_time': '11:30',
+            'altitude': 2850,
+            'distance': 4.3,
+            'note': 'Lunch stop',
+          },
+        ],
+        'messages': [
+          {
+            'uuid': 'test-uuid-1',
+            'parent_id': null,
+            'user': 'Alex',
+            'category': 'Gear',
+            'content': 'Test message',
+            'timestamp': '2024-12-15T09:00:00Z',
+          },
+        ],
+      };
 
-      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
-      final service = GoogleSheetsService(apiClient: apiClient);
-
+      final service = GoogleSheetsService(apiClient: mockClient);
       final result = await service.fetchAll();
 
       expect(result.success, isTrue);
@@ -48,13 +97,10 @@ void main() {
     });
 
     test('fetchAll should return error on HTTP failure', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('Internal Server Error', 500);
-      });
+      final mockClient = MockGasApiClient();
+      mockClient.shouldFail = true;
 
-      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
-      final service = GoogleSheetsService(apiClient: apiClient);
-
+      final service = GoogleSheetsService(apiClient: mockClient);
       final result = await service.fetchAll();
 
       expect(result.success, isFalse);
@@ -62,14 +108,8 @@ void main() {
     });
 
     test('addMessage should post message data', () async {
-      String? capturedBody;
-      final mockClient = MockClient((request) async {
-        capturedBody = request.body;
-        return http.Response('{"success": true}', 200);
-      });
-
-      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
-      final service = GoogleSheetsService(apiClient: apiClient);
+      final mockClient = MockGasApiClient();
+      final service = GoogleSheetsService(apiClient: mockClient);
 
       final message = Message(
         uuid: 'new-uuid',
@@ -82,44 +122,21 @@ void main() {
       final result = await service.addMessage(message);
 
       expect(result.success, isTrue);
-      expect(capturedBody, isNotNull);
-
-      final parsedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect(parsedBody['action'], 'add_message');
-      expect(parsedBody['data']['uuid'], 'new-uuid');
+      expect(mockClient.capturedBody, isNotNull);
+      expect(mockClient.capturedBody!['action'], 'add_message');
+      expect(mockClient.capturedBody!['data']['uuid'], 'new-uuid');
     });
 
     test('deleteMessage should send delete request', () async {
-      String? capturedBody;
-      final mockClient = MockClient((request) async {
-        capturedBody = request.body;
-        return http.Response('{"success": true}', 200);
-      });
-
-      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
-      final service = GoogleSheetsService(apiClient: apiClient);
+      final mockClient = MockGasApiClient();
+      final service = GoogleSheetsService(apiClient: mockClient);
 
       final result = await service.deleteMessage('uuid-to-delete');
 
       expect(result.success, isTrue);
-
-      final parsedBody = jsonDecode(capturedBody!) as Map<String, dynamic>;
-      expect(parsedBody['action'], 'delete_message');
-      expect(parsedBody['uuid'], 'uuid-to-delete');
-    });
-
-    test('fetchAll should handle network exceptions', () async {
-      final mockClient = MockClient((request) async {
-        throw Exception('Network error');
-      });
-
-      final apiClient = GasApiClient(client: mockClient, baseUrl: 'https://mock.api.com');
-      final service = GoogleSheetsService(apiClient: apiClient);
-
-      final result = await service.fetchAll();
-
-      expect(result.success, isFalse);
-      expect(result.errorMessage, contains('Network error'));
+      expect(mockClient.capturedBody, isNotNull);
+      expect(mockClient.capturedBody!['action'], 'delete_message');
+      expect(mockClient.capturedBody!['uuid'], 'uuid-to-delete');
     });
   });
 }

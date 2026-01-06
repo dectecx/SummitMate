@@ -60,9 +60,6 @@ class AuthProvider extends ChangeNotifier {
     required String displayName,
     String? avatar,
   }) async {
-    _state = AuthState.loading;
-    notifyListeners();
-
     final result = await _authService.register(
       email: email,
       password: password,
@@ -84,9 +81,6 @@ class AuthProvider extends ChangeNotifier {
 
   /// Login with email and password
   Future<AuthResult> login({required String email, required String password}) async {
-    _state = AuthState.loading;
-    notifyListeners();
-
     final result = await _authService.login(email: email, password: password);
 
     if (result.isSuccess) {
