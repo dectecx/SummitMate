@@ -116,7 +116,7 @@ void main() {
     test('addMessage should call syncService and reload', () async {
       // Arrange
       when(() => mockRepository.getAllMessages()).thenReturn([]);
-      when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => ApiResult(success: true));
+      when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
 
       provider = MessageProvider();
 
@@ -132,7 +132,7 @@ void main() {
     test('deleteMessage should call syncService and reload', () async {
       // Arrange
       when(() => mockRepository.getAllMessages()).thenReturn([]);
-      when(() => mockSyncService.deleteMessageAndSync(any())).thenAnswer((_) async => ApiResult(success: true));
+      when(() => mockSyncService.deleteMessageAndSync(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
 
       provider = MessageProvider();
 

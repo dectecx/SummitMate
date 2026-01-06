@@ -52,9 +52,9 @@ class _PollListScreenState extends State<PollListScreen> {
     );
 
     if (confirm == true && context.mounted) {
-      final success = await provider.deletePoll(pollId: poll.id);
+      final isSuccess = await provider.deletePoll(pollId: poll.id);
       if (context.mounted) {
-        if (success) {
+        if (isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已刪除')));
         } else {
           ScaffoldMessenger.of(
@@ -149,9 +149,9 @@ class _PollListScreenState extends State<PollListScreen> {
     );
 
     if (confirm == true && context.mounted) {
-      final success = await provider.closePoll(pollId: poll.id);
+      final isSuccess = await provider.closePoll(pollId: poll.id);
       if (context.mounted) {
-        if (success) {
+        if (isSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已結束')));
         } else {
           ScaffoldMessenger.of(

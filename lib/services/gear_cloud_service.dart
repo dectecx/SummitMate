@@ -177,13 +177,13 @@ class GearCloudService {
 
 /// 雲端裝備操作結果
 class GearCloudResult<T> {
-  final bool success;
+  final bool isSuccess;
   final T? data;
   final String? errorMessage;
 
-  GearCloudResult._({required this.success, this.data, this.errorMessage});
+  GearCloudResult._({required this.isSuccess, this.data, this.errorMessage});
 
-  factory GearCloudResult.success(T data) => GearCloudResult._(success: true, data: data);
+  factory GearCloudResult.success(T data) => GearCloudResult._(isSuccess: true, data: data);
 
-  factory GearCloudResult.failure(String message) => GearCloudResult._(success: false, errorMessage: message);
+  factory GearCloudResult.failure(String message) => GearCloudResult._(isSuccess: false, errorMessage: message);
 }

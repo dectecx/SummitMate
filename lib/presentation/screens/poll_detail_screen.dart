@@ -64,9 +64,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     final provider = context.read<PollProvider>();
 
     try {
-      final success = await provider.votePoll(pollId: widget.poll.id, optionIds: _selectedOptionIds.toList());
+      final isSuccess = await provider.votePoll(pollId: widget.poll.id, optionIds: _selectedOptionIds.toList());
 
-      if (success) {
+      if (isSuccess) {
         ToastService.success('投票成功');
         if (mounted) Navigator.pop(context); // Optional: go back or stay to see results
       } else {
@@ -99,8 +99,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
       setState(() => _isSubmitting = true);
       final provider = context.read<PollProvider>();
       try {
-        final success = await provider.addOption(pollId: widget.poll.id, text: result);
-        if (success) {
+        final isSuccess = await provider.addOption(pollId: widget.poll.id, text: result);
+        if (isSuccess) {
           ToastService.success('已新增選項: $result');
           // No need to pop, UI will update via Consumer/Parent
         } else {

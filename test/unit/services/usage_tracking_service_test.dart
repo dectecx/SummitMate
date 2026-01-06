@@ -27,7 +27,7 @@ void main() {
       ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
-          data: {'success': true},
+          data: {'code': '0000', 'message': 'Success'},
           statusCode: 200,
         ),
       );

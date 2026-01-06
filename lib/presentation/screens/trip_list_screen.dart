@@ -183,8 +183,8 @@ class TripListScreen extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final success = await provider.deleteTrip(trip.id);
-              if (success) {
+              final isSuccess = await provider.deleteTrip(trip.id);
+              if (isSuccess) {
                 ToastService.success('已刪除「${trip.name}」');
               }
             },
@@ -212,8 +212,8 @@ class TripListScreen extends StatelessWidget {
     if (confirm != true) return;
 
     if (context.mounted) {
-      final success = await provider.uploadFullTrip(trip);
-      if (success) {
+      final isSuccess = await provider.uploadFullTrip(trip);
+      if (isSuccess) {
         ToastService.success('行程「${trip.name}」同步成功！');
       } else {
         ToastService.error('同步失敗，請稍後再試');

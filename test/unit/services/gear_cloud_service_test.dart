@@ -64,10 +64,10 @@ void main() {
       };
 
       final result = await service.fetchGearSets();
-
-      expect(result.success, true);
-      expect(result.data, isA<List<GearSet>>());
-      expect(result.data!.length, 1);
+      // 驗證
+      expect(result.isSuccess, isTrue);
+      expect(result.data, hasLength(1));
+      expect(result.data!.first.title, 'Set 1');
     });
 
     test('uploadGearSet returns uploaded GearSet', () async {
@@ -93,7 +93,7 @@ void main() {
         items: items,
       );
 
-      expect(result.success, true);
+      expect(result.isSuccess, true);
       expect(result.data!.uuid, 'new_uuid');
     });
 
@@ -109,7 +109,7 @@ void main() {
         key: '123', // Invalid key length
       );
 
-      expect(result.success, false);
+      expect(result.isSuccess, false);
       expect(result.errorMessage, contains('4 位數 Key'));
     });
 
@@ -129,7 +129,7 @@ void main() {
 
       final result = await service.downloadGearSet('uuid1');
 
-      expect(result.success, true);
+      expect(result.isSuccess, true);
       expect(result.data, isNotNull);
     });
   });

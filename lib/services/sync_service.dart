@@ -64,7 +64,7 @@ class SyncService {
     // Case 0: 兩者皆不需要 (被節流)
     if (!itinNeeded && !msgNeeded) {
       LogService.info('Auto-sync throttled (All cool)', source: 'SyncService');
-      return SyncResult(success: true, itinerarySynced: false, messagesSynced: false, syncedAt: now);
+      return SyncResult(isSuccess: true, itinerarySynced: false, messagesSynced: false, syncedAt: now);
     }
 
     // Case 1: 兩者皆需要 -> 使用 fetchAll (節省一次請求)
@@ -76,8 +76,8 @@ class SyncService {
       );
       final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
 
-      if (!fetchResult.success) {
-        return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: now);
+      if (!fetchResult.isSuccess) {
+        return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: now);
       }
 
       var itinSuccess = false;
@@ -105,7 +105,7 @@ class SyncService {
       }
 
       return SyncResult(
-        success: errors.isEmpty,
+        isSuccess: errors.isEmpty,
         itinerarySynced: itinSuccess,
         messagesSynced: msgSuccess,
         errors: errors,
@@ -126,7 +126,7 @@ class SyncService {
     }
 
     // 理論上不會執行到這裡
-    return SyncResult(success: true, syncedAt: now);
+    return SyncResult(isSuccess: true, syncedAt: now);
   }
 
   /// 僅同步行程
@@ -137,23 +137,23 @@ class SyncService {
     if (isAuto && _lastItinerarySyncTime != null && now.difference(_lastItinerarySyncTime!) < _kAutoSyncCooldown) {
       final remaining = (_kAutoSyncCooldown - now.difference(_lastItinerarySyncTime!)).inSeconds;
       LogService.info('行程同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
-      return SyncResult(success: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
+      return SyncResult(isSuccess: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
     }
 
     final tripId = _activeTripId;
     final fetchResult = await _sheetsService.fetchItinerary(tripId: tripId);
 
-    if (!fetchResult.success) {
-      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
+    if (!fetchResult.isSuccess) {
+      return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
     }
 
     try {
       await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
       _lastItinerarySyncTime = DateTime.now();
       await _itineraryRepo.saveLastSyncTime(_lastItinerarySyncTime!);
-      return SyncResult(success: true, itinerarySynced: true, syncedAt: _lastItinerarySyncTime!);
+      return SyncResult(isSuccess: true, itinerarySynced: true, syncedAt: _lastItinerarySyncTime!);
     } catch (e) {
-      return SyncResult(success: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
+      return SyncResult(isSuccess: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
     }
   }
 
@@ -165,23 +165,23 @@ class SyncService {
     if (isAuto && _lastMessagesSyncTime != null && now.difference(_lastMessagesSyncTime!) < _kAutoSyncCooldown) {
       final remaining = (_kAutoSyncCooldown - now.difference(_lastMessagesSyncTime!)).inSeconds;
       LogService.info('留言同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
-      return SyncResult(success: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
+      return SyncResult(isSuccess: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
     }
 
     final tripId = _activeTripId;
     final fetchResult = await _sheetsService.fetchMessages(tripId: tripId);
 
-    if (!fetchResult.success) {
-      return SyncResult(success: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
+    if (!fetchResult.isSuccess) {
+      return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
     }
 
     try {
       await _syncMessages(fetchResult.messages);
       _lastMessagesSyncTime = DateTime.now();
       await _messageRepo.saveLastSyncTime(_lastMessagesSyncTime!);
-      return SyncResult(success: true, messagesSynced: true, syncedAt: _lastMessagesSyncTime!);
+      return SyncResult(isSuccess: true, messagesSynced: true, syncedAt: _lastMessagesSyncTime!);
     } catch (e) {
-      return SyncResult(success: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());
+      return SyncResult(isSuccess: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());
     }
   }
 
@@ -204,13 +204,13 @@ class SyncService {
   }
 
   SyncResult _offlineSyncResult() {
-    return SyncResult(success: false, errors: ['目前為離線模式，無法同步'], syncedAt: DateTime.now());
+    return SyncResult(isSuccess: false, errors: ['目前為離線模式，無法同步'], syncedAt: DateTime.now());
   }
 
-  ApiResult returnApiResult({required bool success, String? message}) {
+  ApiResult returnApiResult({required bool isSuccess, String? message}) {
     // Helper to return ApiResult since it's defined in google_sheets_service.dart
     // Assuming ApiResult constructor is public
-    return ApiResult(success: success, errorMessage: success ? null : message);
+    return ApiResult(isSuccess: isSuccess, errorMessage: isSuccess ? null : message);
   }
 
   /// 內部方法：單向同步留言 (雲端覆蓋本地)
@@ -226,7 +226,7 @@ class SyncService {
     final tripId = _activeTripId;
     final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
 
-    if (!fetchResult.success) {
+    if (!fetchResult.isSuccess) {
       // 若無法取得雲端資料，視為無衝突 (或拋出錯誤，這裡選擇保守策略: 讓用戶決定是否硬上傳)
       // 但為了安全，若連線失敗應無法上傳，故回傳 false 讓上傳流程繼續但因為連線失敗而報錯
       // 這裡僅做比對。若 fetch 失敗，通常後續上傳也會失敗。
@@ -276,7 +276,7 @@ class SyncService {
   /// 取得雲端行程列表
   Future<FetchTripsResult> fetchCloudTrips() async {
     if (_isOffline) {
-      return FetchTripsResult(success: false, errorMessage: '離線模式無法取得行程列表');
+      return FetchTripsResult(isSuccess: false, errorMessage: '離線模式無法取得行程列表');
     }
     return await _sheetsService.fetchTrips();
   }
@@ -284,7 +284,7 @@ class SyncService {
 
 /// 同步結果
 class SyncResult {
-  final bool success;
+  final bool isSuccess;
   final bool itinerarySynced;
   final bool messagesSynced;
   final bool pollsSynced;
@@ -292,7 +292,7 @@ class SyncResult {
   final DateTime syncedAt;
 
   SyncResult({
-    required this.success,
+    required this.isSuccess,
     this.itinerarySynced = false,
     this.messagesSynced = false,
     this.pollsSynced = false,
@@ -302,7 +302,7 @@ class SyncResult {
 
   @override
   String toString() {
-    if (success) {
+    if (isSuccess) {
       return '同步成功 (${syncedAt.toIso8601String()})';
     } else {
       return '同步失敗: ${errors.join(', ')}';

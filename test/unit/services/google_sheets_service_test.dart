@@ -89,7 +89,7 @@ void main() {
       final service = GoogleSheetsService(apiClient: mockClient);
       final result = await service.fetchAll();
 
-      expect(result.success, isTrue);
+      expect(result.isSuccess, isTrue);
       expect(result.itinerary.length, 1);
       expect(result.itinerary.first.name, 'Mountain Lodge');
       expect(result.messages.length, 1);
@@ -103,7 +103,7 @@ void main() {
       final service = GoogleSheetsService(apiClient: mockClient);
       final result = await service.fetchAll();
 
-      expect(result.success, isFalse);
+      expect(result.isSuccess, isFalse);
       expect(result.errorMessage, contains('500'));
     });
 
@@ -121,7 +121,7 @@ void main() {
 
       final result = await service.addMessage(message);
 
-      expect(result.success, isTrue);
+      expect(result.isSuccess, isTrue);
       expect(mockClient.capturedBody, isNotNull);
       expect(mockClient.capturedBody!['action'], 'add_message');
       expect(mockClient.capturedBody!['data']['uuid'], 'new-uuid');
@@ -133,7 +133,7 @@ void main() {
 
       final result = await service.deleteMessage('uuid-to-delete');
 
-      expect(result.success, isTrue);
+      expect(result.isSuccess, isTrue);
       expect(mockClient.capturedBody, isNotNull);
       expect(mockClient.capturedBody!['action'], 'delete_message');
       expect(mockClient.capturedBody!['uuid'], 'uuid-to-delete');
