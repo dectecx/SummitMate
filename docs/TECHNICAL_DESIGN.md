@@ -35,3 +35,38 @@ if (options.method == 'POST' && options.data is Map<String, dynamic>) {
 **影響 (Implication)**：
 - 所有需要驗證的 GAS 端點 (Endpoint) 都必須設計為從 JSON Payload (`doPost(e)` 的內容) 中接收 `authToken` 參數。
 - **切勿**嘗試重構為使用 HTTP Header 傳遞 Token，除非已確認 Google 更新了 GAS 以支援 Web Apps 的標準 CORS 預檢請求。
+
+---
+
+## 2. Email 驗證流程 (Email Verification Flow)
+
+### 2.1 流程概覽
+
+1.  **註冊 (Register)**：用戶提交 `email`, `password`, `displayName`。
+2.  **生成驗證碼**：GAS 生成 6 位數隨機碼，設定 30 分鐘有效期。
+3.  **發送 Email**：透過 `MailApp.sendEmail` 發送驗證碼。
+4.  **用戶輸入**：App 顯示 `VerificationScreen`，用戶輸入驗證碼。
+5.  **驗證 (Verify)**：App 呼叫 `auth_verify_email`，GAS 比對驗證碼與有效期。
+6.  **更新狀態**：成功後 `is_verified = true`，用戶進入 App。
+
+### 2.2 資料欄位
+
+`Users` Sheet 新增欄位：
+- `is_verified` (Boolean): 是否已驗證
+- `verification_code` (String): 6 位數驗證碼
+- `verification_expiry` (DateTime): 驗證碼過期時間
+
+### 2.3 API 端點
+
+| Action              | Payload         | Description                 |
+| ------------------- | --------------- | --------------------------- |
+| `auth_verify_email` | `{email, code}` | 驗證碼確認，更新 is_verified |
+| `auth_resend_code`  | `{email}`       | 重新生成並發送驗證碼         |
+
+### 2.4 Flutter 元件
+
+- **`AuthService.verifyEmail`**: 呼叫驗證 API。
+- **`AuthService.resendVerificationCode`**: 呼叫重發 API。
+- **`VerificationScreen`**: 6 位數輸入介面，30 秒倒數重發。
+- **`AuthProvider`**: 檢查 `user.isVerified`，未驗證則不設為 `authenticated`。
+

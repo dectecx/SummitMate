@@ -73,13 +73,15 @@ lib/
 │   │   ├── weather_data.dart    # [TypeId: 4,5] 氣象資料
 │   │   ├── poll.dart            # [TypeId: 6,7] 投票
 │   │   ├── gear_set.dart        # 雲端裝備組合 (非 Hive)
-│   │   └── meal_item.dart       # 菜單項目 (非 Hive, 記憶體)
+│   │   ├── meal_item.dart       # 菜單項目 (非 Hive, 記憶體)
+│   │   └── user_profile.dart    # 用戶資料 (非 Hive, Secure Storage)
 │   └── repositories/            # 資料存取層
 │       ├── settings_repository.dart
 │       ├── itinerary_repository.dart
 │       ├── message_repository.dart
 │       ├── gear_repository.dart
-│       └── poll_repository.dart
+│       ├── poll_repository.dart
+│       └── auth_session_repository.dart  # Session/Token 持久化
 ├── services/                    # 服務層
 │   ├── hive_service.dart        # Hive 資料庫初始化
 │   ├── google_sheets_service.dart # 主 API Gateway
@@ -91,14 +93,16 @@ lib/
 │   ├── log_service.dart         # 日誌與上傳
 │   ├── toast_service.dart       # UI 通知
 │   ├── tutorial_service.dart    # 教學導覽步驟
-│   └── usage_tracking_service.dart # Web 使用追蹤
+│   ├── usage_tracking_service.dart # Web 使用追蹤
+│   └── auth_service.dart         # 身份驗證服務
 ├── presentation/
 │   ├── providers/               # 狀態管理 (MVVM)
 │   │   ├── settings_provider.dart
 │   │   ├── itinerary_provider.dart
 │   │   ├── message_provider.dart
 │   │   ├── gear_provider.dart
-│   │   └── meal_provider.dart
+│   │   ├── meal_provider.dart
+│   │   └── auth_provider.dart    # 全域認證狀態
 │   ├── screens/                 # 畫面
 │   │   ├── collaboration_tab.dart
 │   │   ├── gear_cloud_screen.dart
@@ -108,7 +112,11 @@ lib/
 │   │   ├── meal_planner_screen.dart
 │   │   ├── food_reference_screen.dart
 │   │   ├── map_viewer_screen.dart
-│   │   └── message_list_screen.dart
+│   │   ├── message_list_screen.dart
+│   │   └── auth/                 # 認證相關畫面
+│   │       ├── login_screen.dart
+│   │       ├── register_screen.dart
+│   │       └── verification_screen.dart
 │   └── widgets/                 # 可重用元件
 │       ├── gear_preview_dialog.dart
 │       ├── gear_upload_dialog.dart
@@ -261,6 +269,18 @@ lib/
 
 > **欄位順序原則**: PK (主鍵) → FK (外鍵) → 其他欄位
 
+### Sheet: `Users`
+
+會員資料表。
+
+| uuid | email           | password_hash | display_name | avatar | role   | is_active | is_verified | verification_code | verification_expiry | created_at | updated_at | last_login_at |
+| ---- | --------------- | ------------- | ------------ | ------ | ------ | --------- | ----------- | ----------------- | ------------------- | ---------- | ---------- | ------------- |
+| uuid | alice@email.com | sha256...     | Alice        | 🐻     | member | TRUE      | TRUE        |                   |                     | ISO8601    | ISO8601    | ISO8601       |
+
+- `role`: `member` / `leader` / `admin`
+- `is_verified`: Email 驗證狀態
+- `verification_code`: 6 位數驗證碼 (30 分鐘有效)
+
 ### Sheet: `Trips`
 
 行程管理（多行程支援）。
@@ -366,6 +386,17 @@ Base URL: `macros/s/{DEPLOYMENT_ID}/exec`
 | `health`                | 健康檢查        | `{status, timestamp}`       |
 
 ### POST Actions
+
+#### 會員驗證 (Auth)
+
+| Action              | Payload                                        | Description        |
+| ------------------- | ---------------------------------------------- | ------------------ |
+| `auth_register`     | `{email, password, displayName, avatar?}`      | 註冊新會員         |
+| `auth_login`        | `{email, password}`                            | 登入               |
+| `auth_validate`     | `{authToken}`                                  | 驗證 Token         |
+| `auth_delete_user`  | `{authToken}`                                  | 假刪除會員         |
+| `auth_verify_email` | `{email, code}`                                | Email 驗證碼確認   |
+| `auth_resend_code`  | `{email}`                                      | 重發驗證碼         |
 
 #### 留言相關
 
