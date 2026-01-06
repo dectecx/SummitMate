@@ -61,10 +61,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         settingsProvider.updateLastSyncTime(syncedAt);
       };
 
-      // 初次啟動顯示導覽
+      // 初次啟動顯示歡迎畫面 (選擇是否進入教學)
       if (!settingsProvider.hasSeenOnboarding) {
-        Future.delayed(const Duration(seconds: 1), () {
-          if (mounted) _showTutorial(context);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) _showWelcomeDialog(context);
         });
       }
 
@@ -78,6 +78,39 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   void dispose() {
     _usageTrackingService?.dispose();
     super.dispose();
+  }
+
+  void _showWelcomeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('歡迎來到 SummitMate'),
+        content: const Text('為了讓您快速上手，我們準備了簡易的教學引導。\n您想要現在觀看嗎？'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              // 略過教學：標記完成
+              context.read<SettingsProvider>().completeOnboarding();
+            },
+            child: const Text('直接開始 (略過)'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              // 進入教學 -> 結束後顯示匯入行程
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen()));
+              if (mounted) {
+                // 教學結束後，自動跳出匯入選單
+                _showTripSelectionDialog(context);
+              }
+            },
+            child: const Text('教學引導'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showTutorial(BuildContext context) {
@@ -101,7 +134,16 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             // 如果沒有行程，顯示空狀態 (Import / Create)
             if (!hasTrips && !tripProvider.isLoading) {
               return Scaffold(
-                appBar: AppBar(title: const Text('SummitMate 山友')),
+                appBar: AppBar(
+                  title: const Text('SummitMate 山友'),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.info_outline),
+                      tooltip: '歡迎訊息 / 教學',
+                      onPressed: () => _showWelcomeDialog(context),
+                    ),
+                  ],
+                ),
                 body: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -10,6 +10,17 @@ import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
 import '../widgets/info_tab.dart';
 import 'collaboration_tab.dart';
+import '../../services/sync_service.dart';
+import '../../services/mock/mock_weather_service.dart';
+import '../../services/mock/mock_geolocator_service.dart';
+import '../../services/mock/mock_sync_service.dart';
+import '../../services/google_sheets_service.dart';
+import '../../services/interfaces/i_weather_service.dart';
+import '../../services/interfaces/i_geolocator_service.dart';
+import '../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../data/repositories/interfaces/i_message_repository.dart';
+import '../../data/repositories/interfaces/i_settings_repository.dart';
 
 // Mock Repositories
 import '../../data/repositories/mock/mock_itinerary_repository.dart';
@@ -84,17 +95,24 @@ class _TutorialScreenState extends State<TutorialScreen> {
   @override
   void initState() {
     super.initState();
-    _initMockProviders();
 
-    // 進入畫面後啟動教學導覽
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startTutorial();
-    });
-  }
+    // 1. Push a new scope to override services
+    getIt.pushNewScope(scopeName: 'tutorial_scope');
 
-  /// 初始化 Mock Repositories 與 Providers
-  void _initMockProviders() {
-    // 初始化 Mock Repository
+    // 2. Register Mock Services
+    getIt.registerSingleton<IWeatherService>(MockWeatherService());
+    getIt.registerSingleton<IGeolocatorService>(MockGeolocatorService());
+    getIt.registerSingleton<SyncService>(
+      MockSyncService(
+        sheetsService: getIt<GoogleSheetsService>(),
+        tripRepo: getIt<ITripRepository>(),
+        itineraryRepo: getIt<IItineraryRepository>(),
+        messageRepo: getIt<IMessageRepository>(),
+        settingsRepo: getIt<ISettingsRepository>(),
+      ),
+    );
+
+    // 3. Setup Providers with Mocks
     _mockItineraryRepo = MockItineraryRepository();
     _mockMessageRepo = MockMessageRepository();
     _mockTripRepo = MockTripRepository();
@@ -103,7 +121,6 @@ class _TutorialScreenState extends State<TutorialScreen> {
     _mockPollRepo = MockPollRepository();
     _mockSettingsRepo = MockSettingsRepository();
 
-    // 使用 Mock Repository 創建 Provider
     _mockTripProvider = TripProvider(repository: _mockTripRepo);
     _mockItineraryProvider = ItineraryProvider(repository: _mockItineraryRepo, tripRepository: _mockTripRepo);
     _mockMessageProvider = MessageProvider(repository: _mockMessageRepo, tripRepository: _mockTripRepo);
@@ -120,13 +137,19 @@ class _TutorialScreenState extends State<TutorialScreen> {
       pollService: getIt<PollService>(),
     );
     _mockSettingsProvider = SettingsProvider(repository: _mockSettingsRepo);
-
-    // 設定 GearProvider 的 tripId
     _mockGearProvider.setTripId(MockItineraryRepository.mockTripId);
+
+    // 4. Start Tutorial after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startTutorial();
+    });
   }
 
   @override
   void dispose() {
+    // Pop the scope to restore real services
+    getIt.popScope();
+
     _tutorialEntry?.remove();
     // Dispose mock providers
     _mockTripProvider.dispose();
@@ -189,18 +212,18 @@ class _TutorialScreenState extends State<TutorialScreen> {
             });
           },
           onFocusElevation: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) setState(() => _currentTab = 3);
             });
-            Future.delayed(const Duration(milliseconds: 800), () {
+            Future.delayed(const Duration(milliseconds: 500), () {
               _keyInfoTab.currentState?.expandElevation();
             });
           },
           onFocusTimeMap: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
+            Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) setState(() => _currentTab = 3);
             });
-            Future.delayed(const Duration(milliseconds: 800), () {
+            Future.delayed(const Duration(milliseconds: 500), () {
               _keyInfoTab.currentState?.expandTimeMap();
             });
           },
