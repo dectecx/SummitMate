@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'services/toast_service.dart';
+import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/gear_library_provider.dart';
 import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
@@ -22,6 +23,8 @@ class SummitMateApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Auth Provider (優先載入)
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TripProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ItineraryProvider()),

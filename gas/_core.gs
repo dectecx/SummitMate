@@ -140,6 +140,16 @@ function doPost(e) {
       case "heartbeat":
         return _createJsonResponse(recordHeartbeat(data));
 
+      // === 會員 (Auth) ===
+      case "auth_register":
+        return _createJsonResponse(authRegister(data));
+      case "auth_login":
+        return _createJsonResponse(authLogin(data));
+      case "auth_validate":
+        return _createJsonResponse(authValidate(data));
+      case "auth_delete_user":
+        return _createJsonResponse(authDeleteUser(data));
+
       default:
         return _createJsonResponse(
           _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)")
@@ -185,6 +195,17 @@ function _success(data, message = "操作成功") {
  */
 function _error(code, message) {
   return { code, data: null, message };
+}
+
+/**
+ * 建立標準 API 回應 (公開給 api_*.gs 使用)
+ * @param {string} code - 回應代碼 (API_CODES)
+ * @param {Object|null} data - 回傳資料
+ * @param {string} [message=""] - 訊息
+ * @returns {Object} { code, data, message }
+ */
+function buildResponse(code, data, message = "") {
+  return { code, data, message };
 }
 
 /**
