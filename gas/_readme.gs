@@ -5,28 +5,30 @@
  * ============================================================
  *
  * @fileoverview 專案說明文件 (README)
- * @version 2.0.0
- * @lastModified 2024-12
+ * @version 3.0.0
+ * @lastModified 2026-01
  *
  * ============================================================
  * 檔案結構
  * ============================================================
  *
- * _readme.gs        - 專案說明 (本檔案)
- * _config.gs        - 常數與設定
- * _core.gs          - Router (doGet/doPost) + 工具函式
+ * _readme.gs          - 專案說明 (本檔案)
+ * _config.gs          - 常數與設定
+ * _core.gs            - Router (doGet/doPost) + 工具函式
  *
- * api_itinerary.gs  - 行程節點 CRUD
- * api_messages.gs   - 留言板 CRUD
- * api_trips.gs      - 多行程管理 CRUD
- * api_gear.gs       - 雲端裝備庫 CRUD
- * api_logs.gs       - 日誌上傳
- * api_heartbeat.gs  - 使用狀態追蹤
+ * api_auth.gs         - 會員驗證 (註冊、登入、驗證碼)
+ * api_itinerary.gs    - 行程節點 CRUD
+ * api_messages.gs     - 留言板 CRUD
+ * api_trips.gs        - 多行程管理 CRUD
+ * api_gear.gs         - 雲端裝備組合 CRUD
+ * api_gear_library.gs - 個人裝備庫 CRUD
+ * api_logs.gs         - 日誌上傳
+ * api_heartbeat.gs    - 使用狀態追蹤
  *
- * svc_weather.gs    - 氣象 ETL (中央氣象署)
- * svc_polls.gs      - 投票功能
+ * svc_weather.gs      - 氣象 ETL (中央氣象署)
+ * svc_polls.gs        - 投票功能
  *
- * setup.gs          - 初始化工作表 (首次執行)
+ * setup.gs            - 初始化工作表 (首次執行)
  *
  * ============================================================
  * 命名慣例
@@ -44,6 +46,7 @@
  *   addXxx          - 新增資料
  *   updateXxx       - 更新資料
  *   deleteXxx       - 刪除資料
+ *   authXxx         - 認證相關
  *   _xxx            - 內部輔助函式 (不應手動執行)
  *   testXxx         - 測試函式
  *
@@ -61,6 +64,14 @@
  *   ?action=health                     - 健康檢查
  *
  * POST 請求:
+ *   // 會員驗證 (Auth)
+ *   { action: 'auth_register', email, password, displayName, avatar? }
+ *   { action: 'auth_login', email, password }
+ *   { action: 'auth_validate', authToken }
+ *   { action: 'auth_delete_user', authToken }
+ *   { action: 'auth_verify_email', email, code }
+ *   { action: 'auth_resend_code', email }
+ *
  *   // 行程 (Trips)
  *   { action: 'add_trip', ... }
  *   { action: 'update_trip', id: '...', ... }
@@ -75,11 +86,14 @@
  *   { action: 'batch_add_messages', data: [...] }
  *   { action: 'delete_message', uuid: '...' }
  *
- *   // 裝備庫 (Gear)
+ *   // 裝備組合 (Gear Sets)
  *   { action: 'fetch_gear_sets' }
  *   { action: 'upload_gear_set', ... }
  *   { action: 'download_gear_set', uuid: '...', key: '...' }
  *   { action: 'delete_gear_set', uuid: '...', key: '...' }
+ *
+ *   // 個人裝備庫 (Gear Library)
+ *   { action: 'sync_gear_library', ... }
  *
  *   // 監控
  *   { action: 'upload_logs', logs: [...] }
@@ -88,6 +102,11 @@
  * ============================================================
  * 工作表結構
  * ============================================================
+ *
+ * Users:
+ *   uuid, email, password_hash, display_name, avatar, role,
+ *   is_active, is_verified, verification_code, verification_expiry,
+ *   created_at, updated_at, last_login_at
  *
  * Trips:
  *   id, name, start_date, end_date, description, cover_image, is_active, created_at
@@ -100,6 +119,12 @@
  *
  * GearSets:
  *   uuid, title, author, visibility, key, total_weight, item_count, uploaded_at, items_json
+ *
+ * GearLibrary:
+ *   uuid, user_id, items_json, updated_at
+ *
+ * TripGear:
+ *   uuid, trip_id, user_id, items_json, updated_at
  *
  * Logs:
  *   upload_time, device_id, device_name, timestamp, level, source, message
@@ -124,3 +149,4 @@
  */
 
 // 此檔案僅供文件說明，不包含可執行程式碼
+

@@ -139,6 +139,36 @@
 
 ---
 
+## Phase 22: 會員系統 (Authentication) ✅
+
+### 目標
+讓使用者能夠註冊、登入，並將個人資料與行程同步至雲端。
+
+### 任務
+- [x] `Users` Sheet Schema 設計
+- [x] `AuthSessionRepository` (Secure Storage)
+- [x] `AuthService` (Register, Login, Validate, Delete)
+- [x] `AuthProvider` (全域認證狀態管理)
+- [x] `LoginScreen` / `RegisterScreen` UI
+- [x] `AuthInterceptor` (Token 注入 Request Body)
+- [x] Drawer 登入/登出整合
+
+---
+
+## Phase 23: Email 驗證 (Email Verification) ✅
+
+### 目標
+新會員需透過 Email 驗證碼確認身分，提升帳號安全性。
+
+### 任務
+- [x] GAS 驗證碼生成與發送 (MailApp)
+- [x] `authVerifyEmail` / `authResendCode` API
+- [x] `VerificationScreen` UI (6 位數輸入)
+- [x] `AuthProvider` 驗證狀態檢查 (`isVerified`)
+- [x] 登入/註冊流程整合
+
+---
+
 ## Phase 20: 進階功能 (Future Plans) 🚀
 
 ### 目標
