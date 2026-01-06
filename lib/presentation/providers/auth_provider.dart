@@ -144,6 +144,16 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Skip login and continue as guest
+  /// Guest mode allows limited functionality without cloud sync
+  void skipLogin() {
+    LogService.info('略過登入，以訪客身分繼續', source: _source);
+    _user = null;
+    _isOffline = true;
+    _state = AuthState.authenticated; // Allow guest to access app
+    notifyListeners();
+  }
+
   // ============================================================
   // === PRIVATE METHODS ===
   // ============================================================
