@@ -20,7 +20,7 @@ class GoogleSheetsService {
     try {
       LogService.info('API 請求: FetchAll${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
-      final queryParams = <String, String>{'action': ApiConfig.actionFetchAll};
+      final queryParams = <String, String>{'action': ApiConfig.actionTripGetFull};
       if (tripId != null) {
         queryParams['trip_id'] = tripId;
       }
@@ -64,7 +64,7 @@ class GoogleSheetsService {
     try {
       LogService.info('API 請求: FetchItinerary${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
-      final queryParams = <String, String>{'action': ApiConfig.actionFetchItinerary};
+      final queryParams = <String, String>{'action': ApiConfig.actionItineraryList};
       if (tripId != null) {
         queryParams['trip_id'] = tripId;
       }
@@ -97,7 +97,7 @@ class GoogleSheetsService {
     try {
       LogService.info('API 請求: FetchMessages${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
-      final queryParams = <String, String>{'action': ApiConfig.actionFetchMessages};
+      final queryParams = <String, String>{'action': ApiConfig.actionMessageList};
       if (tripId != null) {
         queryParams['trip_id'] = tripId;
       }
@@ -128,7 +128,7 @@ class GoogleSheetsService {
   /// 新增留言
   Future<ApiResult> addMessage(Message message) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionAddMessage, 'data': message.toJson()});
+      final response = await _apiClient.post({'action': ApiConfig.actionMessageCreate, 'data': message.toJson()});
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(isSuccess: false, errorMessage: e.toString());
@@ -138,7 +138,7 @@ class GoogleSheetsService {
   /// 刪除留言
   Future<ApiResult> deleteMessage(String uuid) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionDeleteMessage, 'uuid': uuid});
+      final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'uuid': uuid});
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(isSuccess: false, errorMessage: e.toString());
@@ -149,7 +149,7 @@ class GoogleSheetsService {
   Future<ApiResult> batchAddMessages(List<Message> messages) async {
     try {
       final response = await _apiClient.post({
-        'action': 'batch_add_messages',
+        'action': ApiConfig.actionMessageCreateBatch,
         'data': messages.map((m) => m.toJson()).toList(),
       });
       return _handleResponse(response);
@@ -162,7 +162,7 @@ class GoogleSheetsService {
   Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
     try {
       final response = await _apiClient.post({
-        'action': 'update_itinerary',
+        'action': ApiConfig.actionItineraryUpdate,
         'data': items.map((e) {
           final json = e.toJson();
           // Force est_time to be string in Google Sheets by prepending '
@@ -182,7 +182,7 @@ class GoogleSheetsService {
   Future<FetchTripsResult> fetchTrips() async {
     try {
       LogService.info('API 請求: FetchTrips', source: 'API');
-      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionFetchTrips});
+      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionTripList});
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -209,7 +209,7 @@ class GoogleSheetsService {
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {
       final response = await _apiClient.post({
-        'action': 'upload_logs',
+        'action': ApiConfig.actionLogUpload,
         'logs': logs.map((e) => e.toJson()).toList(),
         'device_info': {
           'device_id': DateTime.now().millisecondsSinceEpoch.toString(),

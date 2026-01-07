@@ -164,44 +164,51 @@ const DEFAULT_CATEGORY = "Misc";
  */
 const API_ACTIONS = {
   // === 行程 (Trips) ===
-  FETCH_TRIPS: "fetch_trips",
-  ADD_TRIP: "add_trip",
-  UPDATE_TRIP: "update_trip",
-  DELETE_TRIP: "delete_trip",
-  SET_ACTIVE_TRIP: "set_active_trip",
-  SYNC_TRIP_FULL: "sync_trip_full",
+  TRIP_LIST: "trip_list",
+  TRIP_CREATE: "trip_create",
+  TRIP_UPDATE: "trip_update",
+  TRIP_DELETE: "trip_delete",
+  TRIP_SET_ACTIVE: "trip_set_active",
+  TRIP_SYNC: "trip_sync",
 
   // === 行程節點 (Itinerary) ===
-  FETCH_ALL: "fetch_all",
-  FETCH_ITINERARY: "fetch_itinerary",
-  UPDATE_ITINERARY: "update_itinerary",
+  TRIP_GET_FULL: "trip_get_full",
+  ITINERARY_LIST: "itinerary_list",
+  ITINERARY_UPDATE: "itinerary_update",
 
   // === 留言 (Messages) ===
-  FETCH_MESSAGES: "fetch_messages",
-  ADD_MESSAGE: "add_message",
-  BATCH_ADD_MESSAGES: "batch_add_messages",
-  DELETE_MESSAGE: "delete_message",
+  MESSAGE_LIST: "message_list",
+  MESSAGE_CREATE: "message_create",
+  MESSAGE_CREATE_BATCH: "message_create_batch",
+  MESSAGE_DELETE: "message_delete",
 
   // === 裝備組合 (Gear Sets) ===
-  FETCH_GEAR_SETS: "fetch_gear_sets",
-  FETCH_GEAR_SET_BY_KEY: "fetch_gear_set_by_key",
-  DOWNLOAD_GEAR_SET: "download_gear_set",
-  UPLOAD_GEAR_SET: "upload_gear_set",
-  DELETE_GEAR_SET: "delete_gear_set",
+  GEAR_SET_LIST: "gear_set_list",
+  GEAR_SET_GET: "gear_set_get",
+  GEAR_SET_DOWNLOAD: "gear_set_download",
+  GEAR_SET_UPLOAD: "gear_set_upload",
+  GEAR_SET_DELETE: "gear_set_delete",
 
   // === 個人裝備庫 (Gear Library) ===
-  UPLOAD_GEAR_LIBRARY: "upload_gear_library",
-  DOWNLOAD_GEAR_LIBRARY: "download_gear_library",
+  GEAR_LIBRARY_UPLOAD: "gear_library_upload",
+  GEAR_LIBRARY_DOWNLOAD: "gear_library_download",
 
   // === 投票 (Polls) ===
-  POLL: "poll",
+  POLL_LIST: "poll_list",
+  POLL_CREATE: "poll_create",
+  POLL_VOTE: "poll_vote",
+  POLL_ADD_OPTION: "poll_add_option",
+  POLL_DELETE_OPTION: "poll_delete_option",
+  POLL_CLOSE: "poll_close",
+  POLL_DELETE: "poll_delete",
 
   // === 氣象 (Weather) ===
-  FETCH_WEATHER: "fetch_weather",
+  WEATHER_GET: "weather_get",
 
   // === 監控 (Logs/Heartbeat) ===
-  UPLOAD_LOGS: "upload_logs",
-  HEARTBEAT: "heartbeat",
+  LOG_UPLOAD: "log_upload",
+  SYSTEM_HEARTBEAT: "system_heartbeat",
+  SYSTEM_HEALTH: "system_health",
 
   // === 會員 (Auth) ===
   AUTH_REGISTER: "auth_register",
@@ -211,9 +218,6 @@ const API_ACTIONS = {
   AUTH_RESEND_CODE: "auth_resend_code",
   AUTH_DELETE_USER: "auth_delete_user",
   AUTH_REFRESH_TOKEN: "auth_refresh_token",
-
-  // === 系統 ===
-  HEALTH: "health",
 };
 
 /**

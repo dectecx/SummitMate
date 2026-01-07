@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/data/models/message.dart';
@@ -123,7 +124,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(mockClient.capturedBody, isNotNull);
-      expect(mockClient.capturedBody!['action'], 'add_message');
+      expect(mockClient.capturedBody!['action'], ApiConfig.actionMessageCreate);
       expect(mockClient.capturedBody!['data']['uuid'], 'new-uuid');
     });
 
@@ -135,7 +136,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(mockClient.capturedBody, isNotNull);
-      expect(mockClient.capturedBody!['action'], 'delete_message');
+      expect(mockClient.capturedBody!['action'], ApiConfig.actionMessageDelete);
       expect(mockClient.capturedBody!['uuid'], 'uuid-to-delete');
     });
   });

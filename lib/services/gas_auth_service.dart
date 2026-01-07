@@ -1,3 +1,4 @@
+import '../core/constants.dart';
 import '../core/constants/gas_error_codes.dart';
 import '../core/di.dart';
 import '../data/models/user_profile.dart';
@@ -45,7 +46,7 @@ class GasAuthService implements IAuthService {
       LogService.info('嘗試註冊: $email', source: _source);
 
       final response = await _apiClient.post({
-        'action': 'auth_register',
+        'action': ApiConfig.actionAuthRegister,
         'email': email,
         'password': password,
         'displayName': displayName,
@@ -74,7 +75,7 @@ class GasAuthService implements IAuthService {
       LogService.info('嘗試登入: $email', source: _source);
       _isOfflineMode = false;
 
-      final response = await _apiClient.post({'action': 'auth_login', 'email': email, 'password': password});
+      final response = await _apiClient.post({'action': ApiConfig.actionAuthLogin, 'email': email, 'password': password});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -109,7 +110,7 @@ class GasAuthService implements IAuthService {
     try {
       LogService.info('嘗試驗證 Email: $email', source: _source);
 
-      final response = await _apiClient.post({'action': 'auth_verify_email', 'email': email, 'code': code});
+      final response = await _apiClient.post({'action': ApiConfig.actionAuthVerifyEmail, 'email': email, 'code': code});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -132,7 +133,7 @@ class GasAuthService implements IAuthService {
     try {
       LogService.info('嘗試重發驗證碼: $email', source: _source);
 
-      final response = await _apiClient.post({'action': 'auth_resend_code', 'email': email});
+      final response = await _apiClient.post({'action': ApiConfig.actionAuthResendCode, 'email': email});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -170,7 +171,7 @@ class GasAuthService implements IAuthService {
 
     try {
       // Use accessToken in request
-      final response = await _apiClient.post({'action': 'auth_validate', 'accessToken': token});
+      final response = await _apiClient.post({'action': ApiConfig.actionAuthValidate, 'accessToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -235,7 +236,7 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({'action': 'auth_refresh_token', 'refreshToken': refreshToken});
+      final response = await _apiClient.post({'action': ApiConfig.actionAuthRefreshToken, 'refreshToken': refreshToken});
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
@@ -273,7 +274,7 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({'action': 'auth_delete_user', 'accessToken': token});
+      final response = await _apiClient.post({'action': ApiConfig.actionAuthDeleteUser, 'accessToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 

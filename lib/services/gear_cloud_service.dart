@@ -19,7 +19,7 @@ class GearCloudService {
     try {
       LogService.info('取得雲端裝備組合列表...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionFetchGearSets});
+      final response = await _apiClient.post({'action': ApiConfig.actionGearSetList});
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -49,7 +49,7 @@ class GearCloudService {
     try {
       LogService.info('用 Key 取得裝備組合...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionFetchGearSetByKey, 'key': key});
+      final response = await _apiClient.post({'action': ApiConfig.actionGearSetGet, 'key': key});
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -75,7 +75,7 @@ class GearCloudService {
       LogService.info('下載裝備組合: $uuid', source: _source);
 
       final response = await _apiClient.post({
-        'action': ApiConfig.actionDownloadGearSet,
+        'action': ApiConfig.actionGearSetDownload,
         'uuid': uuid,
         if (key != null) 'key': key,
       });
@@ -119,7 +119,7 @@ class GearCloudService {
       final totalWeight = items.fold<double>(0, (sum, item) => sum + item.weight);
 
       final response = await _apiClient.post({
-        'action': ApiConfig.actionUploadGearSet,
+        'action': ApiConfig.actionGearSetUpload,
         'trip_id': tripId,
         'title': title,
         'author': author,
@@ -159,7 +159,7 @@ class GearCloudService {
     try {
       LogService.info('刪除裝備組合: $uuid', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionDeleteGearSet, 'uuid': uuid, 'key': key});
+      final response = await _apiClient.post({'action': ApiConfig.actionGearSetDelete, 'uuid': uuid, 'key': key});
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {

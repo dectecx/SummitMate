@@ -123,8 +123,9 @@ GearItem createTestGearItem({
   String category = '衣物',
   bool isChecked = false,
   int? orderIndex,
+  String tripId = 'test_trip',
 }) {
-  return GearItem(name: name, weight: weight, category: category, isChecked: isChecked, orderIndex: orderIndex);
+  return GearItem(name: name, weight: weight, category: category, isChecked: isChecked, orderIndex: orderIndex, tripId: tripId);
 }
 
 void main() {
@@ -133,9 +134,12 @@ void main() {
     late GearProvider provider;
 
     setUp(() {
+      TestWidgetsFlutterBinding.ensureInitialized();
       mockRepository = MockGearRepository();
       // 使用建構子注入 mock repository
       provider = GearProvider(repository: mockRepository);
+      provider.setTripId('test_trip');
+      provider.reload(); // Manually load since setTripId uses postFrameCallback
     });
 
     group('filteredItems', () {

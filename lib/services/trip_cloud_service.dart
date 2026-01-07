@@ -17,7 +17,7 @@ class TripCloudService {
     try {
       LogService.info('取得雲端行程列表...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionFetchTrips});
+      final response = await _apiClient.post({'action': ApiConfig.actionTripList});
 
       if (response.statusCode != 200) {
         return TripCloudResult.failure('HTTP ${response.statusCode}');
@@ -48,7 +48,7 @@ class TripCloudService {
       LogService.info('上傳行程: ${trip.name}', source: _source);
 
       final response = await _apiClient.post({
-        'action': ApiConfig.actionAddTrip,
+        'action': ApiConfig.actionTripCreate,
         'id': trip.id,
         'name': trip.name,
         'start_date': trip.startDate.toIso8601String(),
@@ -95,7 +95,7 @@ class TripCloudService {
       final tripJson = trip.toJson();
 
       final response = await _apiClient.post({
-        'action': 'sync_trip_full',
+        'action': ApiConfig.actionTripSync,
         'trip': tripJson,
         'itinerary': itineraryJson,
         'gear': gearJson,
@@ -124,7 +124,7 @@ class TripCloudService {
       LogService.info('更新行程: ${trip.name}', source: _source);
 
       final response = await _apiClient.post({
-        'action': ApiConfig.actionUpdateTrip,
+        'action': ApiConfig.actionTripUpdate,
         'id': trip.id,
         'name': trip.name,
         'start_date': trip.startDate.toIso8601String(),
@@ -156,7 +156,7 @@ class TripCloudService {
     try {
       LogService.info('刪除行程: $tripId', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionDeleteTrip, 'trip_id': tripId});
+      final response = await _apiClient.post({'action': ApiConfig.actionTripDelete, 'trip_id': tripId});
 
       if (response.statusCode != 200) {
         return TripCloudResult.failure('HTTP ${response.statusCode}');

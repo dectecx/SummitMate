@@ -19,7 +19,7 @@ class PollService {
     try {
       LogService.info('Fetching polls for user: $userId', source: _source);
       final response = await _apiClient.get(
-        queryParams: {'action': ApiConfig.actionPoll, 'subAction': 'get', 'user_id': userId},
+        queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId},
       );
 
       LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
@@ -58,8 +58,7 @@ class PollService {
     List<String> initialOptions = const [],
   }) async {
     final payload = {
-      'action': ApiConfig.actionPoll,
-      'subAction': 'create',
+      'action': ApiConfig.actionPollCreate,
       'title': title,
       'description': description,
       'creator_id': creatorId,
@@ -97,8 +96,7 @@ class PollService {
     String userName = 'Anonymous',
   }) async {
     final payload = {
-      'action': ApiConfig.actionPoll,
-      'subAction': 'vote',
+      'action': ApiConfig.actionPollVote,
       'poll_id': pollId,
       'option_ids': optionIds,
       'user_id': userId,
@@ -123,8 +121,7 @@ class PollService {
   /// Add a new option
   Future<void> addOption({required String pollId, required String text, required String creatorId}) async {
     final payload = {
-      'action': ApiConfig.actionPoll,
-      'subAction': 'add_option',
+      'action': ApiConfig.actionPollAddOption,
       'poll_id': pollId,
       'text': text,
       'creator_id': creatorId,
@@ -148,7 +145,7 @@ class PollService {
 
   /// Close a poll (mark as ended)
   Future<void> closePoll({required String pollId, required String userId}) async {
-    final payload = {'action': ApiConfig.actionPoll, 'subAction': 'close', 'poll_id': pollId, 'user_id': userId};
+    final payload = {'action': ApiConfig.actionPollClose, 'poll_id': pollId, 'user_id': userId};
 
     try {
       LogService.info('Closing poll: $pollId by user: $userId', source: _source);
@@ -168,7 +165,7 @@ class PollService {
 
   /// Delete a poll
   Future<void> deletePoll({required String pollId, required String userId}) async {
-    final payload = {'action': ApiConfig.actionPoll, 'subAction': 'delete', 'poll_id': pollId, 'user_id': userId};
+    final payload = {'action': ApiConfig.actionPollDelete, 'poll_id': pollId, 'user_id': userId};
 
     try {
       LogService.info('Deleting poll: $pollId by user: $userId', source: _source);
@@ -189,8 +186,7 @@ class PollService {
   /// Delete an option
   Future<void> deleteOption({required String optionId, required String userId}) async {
     final payload = {
-      'action': ApiConfig.actionPoll,
-      'subAction': 'delete_option',
+      'action': ApiConfig.actionPollDeleteOption,
       'option_id': optionId,
       'user_id': userId,
     };
