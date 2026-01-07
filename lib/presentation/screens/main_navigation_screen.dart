@@ -12,6 +12,7 @@ import '../../services/usage_tracking_service.dart';
 import '../../services/hive_service.dart';
 import '../../data/models/trip.dart';
 import '../../services/sync_service.dart';
+import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
 import '../providers/itinerary_provider.dart';
 import '../providers/trip_provider.dart';
@@ -70,7 +71,12 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
       // 啟動使用狀態追蹤 (Web only)
       _usageTrackingService = UsageTrackingService();
-      _usageTrackingService!.start(settingsProvider.username);
+      // Async fetch user profile
+      getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
+        if (mounted) {
+          _usageTrackingService!.start(settingsProvider.username, userId: profile?.uuid);
+        }
+      });
     });
   }
 

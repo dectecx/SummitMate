@@ -13,11 +13,13 @@ void main() {
   });
 
   group('UsageTrackingService 測試', () {
-    test('start() 應發送初始心跳', () async {
-      // 安排 - 建立 Mock Dio
+    test('start() with userId should send member heartbeat', () async {
+      // 安排
       final mockDio = MockDio();
+      
+      // Capture the sent data
+      Map<String, dynamic>? capturedData;
 
-      // Stub post request just in case
       when(
         () => mockDio.post(
           any(),
@@ -25,23 +27,66 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: {'code': '0000', 'message': 'Success'},
-          statusCode: 200,
-        ),
+        (invocation) async {
+          capturedData = invocation.namedArguments[#data] as Map<String, dynamic>;
+          return Response(
+            requestOptions: RequestOptions(path: ''),
+            data: {'code': '0000', 'message': 'Success'},
+            statusCode: 200,
+          );
+        },
       );
 
       final apiClient = GasApiClient(dio: mockDio, baseUrl: 'https://mock.api');
-      final service = UsageTrackingService(apiClient: apiClient);
+      final service = UsageTrackingService(apiClient: apiClient, forceWeb: true);
 
-      // 執行 - 啟動追蹤
-      service.start('test_user');
+      // 執行 - 啟動追蹤 (Member)
+      service.start('MemberUser', userId: 'user-123');
 
-      // 驗證 - 服務應正確建立
-      expect(service, isNotNull);
+      // 驗證
+      expect(capturedData, isNotNull);
+      expect(capturedData!['user_name'], 'MemberUser');
+      expect(capturedData!['user_id'], 'user-123');
+      expect(capturedData!['user_type'], 'member');
+      
+      service.dispose();
+    });
 
-      // 清理
+    test('start() without userId should send guest heartbeat', () async {
+      // 安排
+      final mockDio = MockDio();
+      
+      Map<String, dynamic>? capturedData;
+
+      when(
+        () => mockDio.post(
+          any(),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
+        (invocation) async {
+          capturedData = invocation.namedArguments[#data] as Map<String, dynamic>;
+          return Response(
+            requestOptions: RequestOptions(path: ''),
+            data: {'code': '0000', 'message': 'Success'},
+            statusCode: 200,
+          );
+        },
+      );
+
+      final apiClient = GasApiClient(dio: mockDio, baseUrl: 'https://mock.api');
+      final service = UsageTrackingService(apiClient: apiClient, forceWeb: true);
+
+      // 執行 - 啟動追蹤 (Guest)
+      service.start('GuestUser');
+
+      // 驗證
+      expect(capturedData, isNotNull);
+      expect(capturedData!['user_name'], 'GuestUser');
+      expect(capturedData!['user_id'], isNull); // ID is explicitly null for guests in flutter, GAS handles logic
+      expect(capturedData!['user_type'], 'guest');
+      
       service.dispose();
     });
 

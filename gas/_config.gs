@@ -141,7 +141,15 @@ const HEADERS_LOGS = [
   "message",
 ];
 
-const HEADERS_HEARTBEAT = ["user", "avatar", "last_seen", "view", "platform"];
+const HEADERS_HEARTBEAT = [
+  "user_id",
+  "user_type",
+  "user_name",
+  "avatar",
+  "last_seen",
+  "view",
+  "platform",
+];
 
 // ============================================================
 // 預設值
@@ -445,7 +453,9 @@ const SHEET_SCHEMA = {
   },
 
   Heartbeat: {
-    user: { type: "text" },
+    user_id: { type: "text" },
+    user_type: { type: "text" },
+    user_name: { type: "text" },
     avatar: { type: "text" },
     last_seen: { type: "date" },
     view: { type: "text" },
