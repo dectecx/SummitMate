@@ -8,7 +8,7 @@ void main() {
 
       expect(item.name, isEmpty);
       expect(item.weight, equals(0));
-      expect(item.category, isEmpty);
+      expect(item.category, equals('Other')); // Default category is 'Other'
       expect(item.isChecked, isFalse);
     });
 
