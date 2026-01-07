@@ -13,16 +13,18 @@ class GearLibraryCloudService {
   GearLibraryCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 同步個人裝備庫 (上傳全部)
-  Future<GearLibraryCloudResult<int>> syncLibrary(String ownerKey, List<GearLibraryItem> items) async {
+  Future<GearLibraryCloudResult<int>> syncLibrary(List<GearLibraryItem> items) async {
     try {
-      LogService.info('同步裝備庫: ${items.length} items (key=$ownerKey)', source: _source);
+      LogService.info('同步裝備庫: ${items.length} items (User Auth)', source: _source);
 
       // GAS expects generic item structure, ensure GearLibraryItem.toJson matches
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionGearLibraryUpload,
-        'items': items.map((i) => i.toJson()).toList(),
-        'owner_key': ownerKey,
-      });
+      final response = await _apiClient.post(
+        {
+          'action': ApiConfig.actionGearLibraryUpload,
+          'items': items.map((i) => i.toJson()).toList(),
+        },
+        requiresAuth: true,
+      );
 
       if (response.statusCode != 200) {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');
@@ -43,11 +45,14 @@ class GearLibraryCloudService {
   }
 
   /// 取得雲端個人裝備庫
-  Future<GearLibraryCloudResult<List<GearLibraryItem>>> fetchLibrary(String ownerKey) async {
+  Future<GearLibraryCloudResult<List<GearLibraryItem>>> fetchLibrary() async {
     try {
-      LogService.info('取得雲端個人裝備庫 (key=$ownerKey)...', source: _source);
+      LogService.info('取得雲端個人裝備庫 (User Auth)...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionGearLibraryDownload, 'owner_key': ownerKey});
+      final response = await _apiClient.post(
+        {'action': ApiConfig.actionGearLibraryDownload},
+        requiresAuth: true,
+      );
 
       if (response.statusCode != 200) {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');

@@ -53,7 +53,7 @@ void main() {
         final items = [GearLibraryItem(name: 'Test Item', weight: 100, category: 'Other')];
         mockClient.expectedResponseData = {'count': 1};
 
-        final result = await service.syncLibrary('test_pcode', items);
+        final result = await service.syncLibrary(items);
         expect(result.isSuccess, isTrue);
         expect(result.data, 1);
       });
@@ -61,7 +61,7 @@ void main() {
       test('API 成功時返回 count', () async {
         mockClient.expectedResponseData = {'count': 5};
 
-        final result = await service.syncLibrary('test_pcode', [
+        final result = await service.syncLibrary([
           GearLibraryItem(name: 'Test', weight: 100, category: 'Other'),
         ]);
         // 驗證
@@ -72,7 +72,7 @@ void main() {
       test('API 失敗時返回錯誤訊息', () async {
         mockClient.shouldFail = true;
 
-        final result = await service.syncLibrary('test_pcode', [
+        final result = await service.syncLibrary([
           GearLibraryItem(name: 'Test', weight: 100, category: 'Other'),
         ]);
         // 驗證
@@ -89,7 +89,7 @@ void main() {
           ],
         };
 
-        final result = await service.fetchLibrary('test_pcode');
+        final result = await service.fetchLibrary();
         // 驗證
         expect(result.isSuccess, isTrue);
         expect(result.data, isNotNull);
@@ -101,7 +101,7 @@ void main() {
       test('下載空列表時返回空 List', () async {
         mockClient.expectedResponseData = {'items': []};
 
-        final result = await service.fetchLibrary('test_pcode');
+        final result = await service.fetchLibrary();
         // 驗證
         expect(result.isSuccess, isTrue);
         expect(result.data, isEmpty);

@@ -93,8 +93,8 @@
  *   { action: 'gear_set_delete', uuid: '...', key: '...' }
  *
  *   // 個人裝備庫 (Gear Library)
- *   { action: 'gear_library_upload', ... }
- *   { action: 'gear_library_download', ... }
+ *   { action: 'gear_library_upload', accessToken: '...', items: [...] }
+ *   { action: 'gear_library_download', accessToken: '...' }
  *
  *   // 投票 (Polls)
  *   { action: 'poll_create', ... }
@@ -132,7 +132,7 @@
  *   uuid, trip_id, name, weight, category, is_checked, quantity
  *
  * GearLibrary (每筆裝備為一列):
- *   uuid, owner_key, name, weight, category, notes, created_at, updated_at
+ *   uuid, user_id, name, weight, category, notes, created_at, updated_at
  *
  * Logs:
  *   upload_time, device_id, device_name, timestamp, level, source, message
