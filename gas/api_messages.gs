@@ -15,7 +15,7 @@
  * @param {string} [tripId] - 可選，篩選特定行程的資料 (含全域留言)
  * @returns {Object[]} 留言陣列
  */
-function getMessagesData(ss, tripId) {
+function getMessages(ss, tripId) {
   const sheet = ss.getSheetByName(SHEET_MESSAGES);
   if (!sheet) return [];
 
@@ -68,7 +68,7 @@ function getMessagesData(ss, tripId) {
  * @param {Object} messageData - 留言資料
  * @returns {Object} { code, data, message }
  */
-function addMessage(messageData) {
+function createMessage(messageData) {
   const sheet = _getSheetOrCreate(SHEET_MESSAGES, HEADERS_MESSAGES);
 
   // 確保有 avatar 欄位
@@ -104,7 +104,7 @@ function addMessage(messageData) {
  * @param {Object[]} messages - 留言陣列
  * @returns {Object} { code, data, message }
  */
-function batchAddMessages(messages) {
+function batchCreateMessages(messages) {
   if (!messages || messages.length === 0) {
     return _success(null, "無訊息可新增");
   }

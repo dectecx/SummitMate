@@ -42,11 +42,11 @@
  *
  * 函式命名:
  *   doGet/doPost    - HTTP 入口點
- *   fetchXxx        - 取得資料
- *   addXxx          - 新增資料
+ *   get[Plural]     - 取得列表資料
+ *   createXxx       - 新增資料
  *   updateXxx       - 更新資料
  *   deleteXxx       - 刪除資料
- *   authXxx         - 認證相關
+ *   [verb]Xxx       - 其他操作 (e.g. loginUser)
  *   _xxx            - 內部輔助函式 (不應手動執行)
  *   testXxx         - 測試函式
  *

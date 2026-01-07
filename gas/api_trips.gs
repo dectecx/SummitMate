@@ -13,7 +13,7 @@
  * 取得所有行程
  * @returns {Object} { code, data, message }
  */
-function fetchTrips() {
+function getTrips() {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
 
@@ -47,7 +47,7 @@ function fetchTrips() {
  * @param {Object} tripData - 行程資料
  * @returns {Object} { code, data, message }
  */
-function addTrip(tripData) {
+function createTrip(tripData) {
   const sheet = _getSheetOrCreate(SHEET_TRIPS, HEADERS_TRIPS);
 
   const id = tripData.id || Utilities.getUuid();
@@ -154,7 +154,7 @@ function deleteTrip(tripId) {
  * @param {string} tripId - 行程 ID
  * @returns {Object} { code, data, message }
  */
-function setActiveTrip(tripId) {
+function setTripActive(tripId) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
 
@@ -188,7 +188,7 @@ function setActiveTrip(tripId) {
  * @param {Object} data - 包含 trip, itinerary, gear 的物件
  * @returns {Object} { code, data, message }
  */
-function handleSyncTripFull(data) {
+function syncTripFull(data) {
   var lock = LockService.getScriptLock();
   // 最多等待 30 秒
   if (!lock.tryLock(30000)) {

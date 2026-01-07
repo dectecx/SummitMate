@@ -25,7 +25,7 @@
  * @param {Object} payload - { email, password, displayName, avatar? }
  * @returns {Object} 標準 API 回應
  */
-function authRegister(payload) {
+function registerUser(payload) {
   const { email, password, displayName, avatar } = payload;
 
   // 參數驗證
@@ -167,7 +167,7 @@ function authRegister(payload) {
  * @param {Object} payload - { email, password }
  * @returns {Object} 標準 API 回應
  */
-function authLogin(payload) {
+function loginUser(payload) {
   const { email, password } = payload;
 
   if (!email || !password) {
@@ -254,7 +254,7 @@ function authLogin(payload) {
  * @param {Object} payload - { accessToken }
  * @returns {Object} 標準 API 回應
  */
-function authValidate(payload) {
+function validateSession(payload) {
   const { accessToken } = payload;
 
   if (!accessToken) {
@@ -326,7 +326,7 @@ function authValidate(payload) {
  * @param {Object} payload - { accessToken }
  * @returns {Object} 標準 API 回應
  */
-function authDeleteUser(payload) {
+function deleteUser(payload) {
   const { accessToken } = payload;
 
   if (!accessToken) {
@@ -386,7 +386,7 @@ function authDeleteUser(payload) {
  * @param {Object} payload - { refreshToken }
  * @returns {Object} 標準 API 回應
  */
-function authRefreshToken(payload) {
+function refreshSession(payload) {
   const { refreshToken } = payload;
 
   if (!refreshToken) {
@@ -450,7 +450,7 @@ function authRefreshToken(payload) {
  * @param {Object} payload - { email, code }
  * @returns {Object}
  */
-function authVerifyEmail(payload) {
+function verifyEmail(payload) {
   const { email, code } = payload;
 
   if (!email || !code) {
@@ -510,7 +510,7 @@ function authVerifyEmail(payload) {
  * @param {Object} payload - { email }
  * @returns {Object}
  */
-function authResendCode(payload) {
+function resendCode(payload) {
   const { email } = payload;
 
   if (!email)

@@ -13,7 +13,7 @@
  * 取得公開/保護的裝備組合列表 (不含 items 詳細資料)
  * @returns {Object} { code, data, message }
  */
-function fetchGearSets() {
+function getGearSets() {
   const sheet = _initGearSheet();
   const data = sheet.getDataRange().getValues();
 
@@ -52,7 +52,7 @@ function fetchGearSets() {
  * @param {string} key - 4 位數 Key
  * @returns {Object} { code, data, message }
  */
-function fetchGearSetByKey(key) {
+function getGearSet(key) {
   if (!key || key.length !== 4) {
     return _error(API_CODES.GEAR_KEY_INVALID, "請輸入 4 位數 Key");
   }
