@@ -138,7 +138,7 @@
  *   upload_time, device_id, device_name, timestamp, level, source, message
  *
  * Heartbeat:
- *   user, avatar, last_seen, view, platform
+ *   user_id, user_type, user_name, avatar, last_seen, view, platform
  *
  * ============================================================
  * 部署步驟
