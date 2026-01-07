@@ -75,7 +75,11 @@ class GasAuthService implements IAuthService {
       LogService.info('嘗試登入: $email', source: _source);
       _isOfflineMode = false;
 
-      final response = await _apiClient.post({'action': ApiConfig.actionAuthLogin, 'email': email, 'password': password});
+      final response = await _apiClient.post({
+        'action': ApiConfig.actionAuthLogin,
+        'email': email,
+        'password': password,
+      });
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -236,7 +240,10 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionAuthRefreshToken, 'refreshToken': refreshToken});
+      final response = await _apiClient.post({
+        'action': ApiConfig.actionAuthRefreshToken,
+        'refreshToken': refreshToken,
+      });
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {

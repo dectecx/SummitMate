@@ -573,8 +573,10 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
           children: [
             const Text('將個人裝備庫與您的帳號同步。'),
             const SizedBox(height: 16),
-            const Text('【同步說明】\n• 上傳：覆蓋雲端資料 (以您的帳號儲存)\n• 下載：覆蓋本地資料',
-                style: TextStyle(fontSize: 11, color: Colors.grey)),
+            const Text(
+              '【同步說明】\n• 上傳：覆蓋雲端資料 (以您的帳號儲存)\n• 下載：覆蓋本地資料',
+              style: TextStyle(fontSize: 11, color: Colors.grey),
+            ),
             // 結果訊息
             if (_resultMessage != null) ...[
               const SizedBox(height: 16),

@@ -125,7 +125,14 @@ GearItem createTestGearItem({
   int? orderIndex,
   String tripId = 'test_trip',
 }) {
-  return GearItem(name: name, weight: weight, category: category, isChecked: isChecked, orderIndex: orderIndex, tripId: tripId);
+  return GearItem(
+    name: name,
+    weight: weight,
+    category: category,
+    isChecked: isChecked,
+    orderIndex: orderIndex,
+    tripId: tripId,
+  );
 }
 
 void main() {
