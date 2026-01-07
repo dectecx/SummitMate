@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'gas_api_client.dart';
 import '../core/constants.dart';
-import '../core/env_config.dart';
+import '../core/di.dart';
 import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 import '../data/models/trip.dart';
@@ -14,7 +14,7 @@ class GoogleSheetsService {
 
   /// 建構子
   GoogleSheetsService({GasApiClient? apiClient})
-    : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+    : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 取得所有資料 (行程 + 留言)
   Future<FetchAllResult> fetchAll({String? tripId}) async {

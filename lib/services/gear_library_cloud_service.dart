@@ -1,5 +1,5 @@
 import '../core/constants.dart';
-import '../core/env_config.dart';
+import '../core/di.dart';
 import '../data/models/gear_library_item.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
@@ -11,7 +11,7 @@ class GearLibraryCloudService {
   final GasApiClient _apiClient;
 
   GearLibraryCloudService({GasApiClient? apiClient})
-    : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+    : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 同步個人裝備庫 (上傳全部)
   Future<GearLibraryCloudResult<int>> syncLibrary(String ownerKey, List<GearLibraryItem> items) async {
