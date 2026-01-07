@@ -158,7 +158,7 @@ Future<void> setupDependencies() async {
   );
 
   // Dio & Interceptors
-  // Inject IAuthSessionRepository as IAuthTokenProvider into Interceptor
+  // Inject IAuthSessionRepository directly into Interceptor
   getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));
 
   getIt.registerLazySingleton<Dio>(() {

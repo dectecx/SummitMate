@@ -7,7 +7,7 @@
 ### 1.1 架構概覽
 身份驗證系統的設計旨在解決循環依賴問題，並提供整潔、穩健的架構。
 - **資料層 (Data Layer - `AuthSessionRepository`)**: 使用 `FlutterSecureStorage` 管理會話資料 (Token, 用戶個人資料) 的持久化。
-- **網路層 (Network Layer - `GasApiClient`)**: 依賴 `IAuthTokenProvider` 介面 (由 Repository 實作) 來獲取 Token。
+- **網路層 (Network Layer - `GasApiClient`)**: 依賴 `IAuthSessionRepository` 介面來獲取 Token。
 - **服務層 (Service Layer - `AuthService`)**: 協調高層級的驗證動作 (登入、註冊) 並更新 Repository。
 
 ### 1.2 限制：GAS CORS 與 Auth Token 位置
@@ -22,18 +22,18 @@
 2.  **預檢請求失敗 (Preflight Failures)**：發送帶有自定義標頭的請求會觸發瀏覽器的 `OPTIONS` 預檢請求。GAS Web Apps 歷來難以正確或一致地處理這些請求，導致客戶端出現 CORS 錯誤。
 
 **解決方案 (Solution)**：
-我們使用 **`AuthInterceptor`** 將 `authToken` 注入到每一個 `POST` 請求的 Body 中。
+我們使用 **`AuthInterceptor`** 將 `accessToken` 注入到每一個 `POST` 請求的 Body 中。
 
 ```dart
 // lib/services/interceptors/auth_interceptor.dart
 if (options.method == 'POST' && options.data is Map<String, dynamic>) {
   // 注入到 Body
-  (options.data as Map<String, dynamic>)['authToken'] = token;
+  (options.data as Map<String, dynamic>)['accessToken'] = token;
 }
 ```
 
 **影響 (Implication)**：
-- 所有需要驗證的 GAS 端點 (Endpoint) 都必須設計為從 JSON Payload (`doPost(e)` 的內容) 中接收 `authToken` 參數。
+- 所有需要驗證的 GAS 端點 (Endpoint) 都必須設計為從 JSON Payload (`doPost(e)` 的內容) 中接收 `accessToken` 參數。
 - **切勿**嘗試重構為使用 HTTP Header 傳遞 Token，除非已確認 Google 更新了 GAS 以支援 Web Apps 的標準 CORS 預檢請求。
 
 ---

@@ -430,8 +430,8 @@ Base URL: `macros/s/{DEPLOYMENT_ID}/exec`
 | ------------------- | ---------------------------------------------- | ------------------ |
 | `auth_register`     | `{email, password, displayName, avatar?}`      | 註冊新會員         |
 | `auth_login`        | `{email, password}`                            | 登入               |
-| `auth_validate`     | `{authToken}`                                  | 驗證 Token         |
-| `auth_delete_user`  | `{authToken}`                                  | 假刪除會員         |
+| `auth_validate`     | `{accessToken}`                                | 驗證 Token         |
+| `auth_delete_user`  | `{accessToken}`                                | 假刪除會員         |
 | `auth_verify_email` | `{email, code}`                                | Email 驗證碼確認   |
 | `auth_resend_code`  | `{email}`                                      | 重發驗證碼         |
 

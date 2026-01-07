@@ -1,3 +1,4 @@
+import '../core/constants/gas_error_codes.dart';
 import '../core/di.dart';
 import '../data/models/user_profile.dart';
 import '../data/repositories/interfaces/i_auth_session_repository.dart';
@@ -149,7 +150,7 @@ class GasAuthService implements IAuthService {
 
   @override
   Future<AuthResult> validateSession() async {
-    final token = await _sessionRepo.getAuthToken();
+    final token = await _sessionRepo.getAccessToken();
     if (token == null) {
       return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '未登入');
     }
@@ -192,9 +193,8 @@ class GasAuthService implements IAuthService {
         _isOfflineMode = false;
         return AuthResult.success(user: user, accessToken: token);
       } else {
-        // If token expired/invalid, try refresh one last time if we haven't already?
-        // Or just fail.
-        if (apiResponse.code == '0809') {
+        // If token expired/invalid, try refresh one last time
+        if (apiResponse.code == GasErrorCodes.authAccessTokenExpired) {
           // AUTH_TOKEN_EXPIRED
           final refreshResult = await refreshToken();
           if (refreshResult.isSuccess) {
@@ -252,7 +252,8 @@ class GasAuthService implements IAuthService {
         }
       } else {
         LogService.warning('刷新 Token 失敗: ${apiResponse.message}', source: _source);
-        if (apiResponse.code == '0809' || apiResponse.code == '0804') {
+        if (apiResponse.code == GasErrorCodes.authAccessTokenExpired ||
+            apiResponse.code == GasErrorCodes.authAccessTokenInvalid) {
           // Refresh token expired or invalid -> logout
           await logout();
         }
@@ -266,7 +267,7 @@ class GasAuthService implements IAuthService {
 
   @override
   Future<AuthResult> deleteAccount() async {
-    final token = await _sessionRepo.getAuthToken();
+    final token = await _sessionRepo.getAccessToken();
     if (token == null) {
       return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '未登入');
     }
@@ -296,7 +297,7 @@ class GasAuthService implements IAuthService {
   }
 
   @override
-  Future<String?> getAccessToken() => _sessionRepo.getAuthToken();
+  Future<String?> getAccessToken() => _sessionRepo.getAccessToken();
 
   @override
   Future<String?> getRefreshToken() => _sessionRepo.getRefreshToken();

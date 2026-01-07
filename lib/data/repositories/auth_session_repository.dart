@@ -9,7 +9,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
   static const String _source = 'AuthSessionRepository';
 
   // Secure Storage Keys
-  static const String _keyAuthToken = 'auth_token';
+  static const String _keyAccessToken = 'access_token';
   static const String _keyRefreshToken = 'refresh_token';
   static const String _keyUserProfile = 'user_profile';
 
@@ -21,7 +21,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
   @override
   Future<void> saveSession(String accessToken, UserProfile user, {String? refreshToken}) async {
     try {
-      await _secureStorage.write(key: _keyAuthToken, value: accessToken);
+      await _secureStorage.write(key: _keyAccessToken, value: accessToken);
       if (refreshToken != null) {
         await _secureStorage.write(key: _keyRefreshToken, value: refreshToken);
       }
@@ -36,7 +36,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
   @override
   Future<void> clearSession() async {
     try {
-      await _secureStorage.delete(key: _keyAuthToken);
+      await _secureStorage.delete(key: _keyAccessToken);
       await _secureStorage.delete(key: _keyRefreshToken);
       await _secureStorage.delete(key: _keyUserProfile);
       LogService.debug('Session cleared', source: _source);
@@ -47,11 +47,11 @@ class AuthSessionRepository implements IAuthSessionRepository {
   }
 
   @override
-  Future<String?> getAuthToken() async {
+  Future<String?> getAccessToken() async {
     try {
-      return await _secureStorage.read(key: _keyAuthToken);
+      return await _secureStorage.read(key: _keyAccessToken);
     } catch (e) {
-      LogService.error('Failed to read auth token: $e', source: _source);
+      LogService.error('Failed to read access token: $e', source: _source);
       return null;
     }
   }
@@ -80,7 +80,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<bool> hasSession() async {
-    final token = await getAuthToken();
+    final token = await getAccessToken();
     return token != null && token.isNotEmpty;
   }
 }

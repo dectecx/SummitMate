@@ -6,6 +6,7 @@ import 'package:summitmate/data/repositories/interfaces/i_auth_session_repositor
 import 'package:summitmate/services/gas_auth_service.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/services/interfaces/i_token_validator.dart';
+import 'package:summitmate/core/constants/gas_error_codes.dart';
 
 // ============================================================
 // === MOCKS ===
@@ -41,14 +42,14 @@ class MockGasApiClient extends GasApiClient {
 
 /// Mock AuthSessionRepository for testing session persistence
 class MockAuthSessionRepository implements IAuthSessionRepository {
-  String? storedToken;
+  String? storedAccessToken;
   String? storedRefreshToken;
   UserProfile? storedUser;
   bool hasValidSession = false;
 
   @override
   Future<void> saveSession(String accessToken, UserProfile user, {String? refreshToken}) async {
-    storedToken = accessToken;
+    storedAccessToken = accessToken;
     storedUser = user;
     if (refreshToken != null) {
       storedRefreshToken = refreshToken;
@@ -58,14 +59,14 @@ class MockAuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<void> clearSession() async {
-    storedToken = null;
+    storedAccessToken = null;
     storedRefreshToken = null;
     storedUser = null;
     hasValidSession = false;
   }
 
   @override
-  Future<String?> getAuthToken() async => storedToken;
+  Future<String?> getAccessToken() async => storedAccessToken;
 
   @override
   Future<String?> getRefreshToken() async => storedRefreshToken;
@@ -174,7 +175,7 @@ void main() {
     });
 
     test('returns failure on API error', () async {
-      mockApiClient.mockResponseCode = '0801';
+      mockApiClient.mockResponseCode = GasErrorCodes.authEmailExists; // '0801'
       mockApiClient.mockResponseMessage = '此信箱已被註冊';
 
       final result = await authService.register(
@@ -184,7 +185,7 @@ void main() {
       );
 
       expect(result.isSuccess, isFalse);
-      expect(result.errorCode, '0801');
+      expect(result.errorCode, GasErrorCodes.authEmailExists);
       expect(result.errorMessage, '此信箱已被註冊');
     });
   });
@@ -203,14 +204,14 @@ void main() {
       expect(result.user?.email, 'test@example.com');
       expect(result.accessToken, 'login-access-token');
       expect(result.refreshToken, 'login-refresh-token');
-      expect(mockSessionRepo.storedToken, 'login-access-token');
+      expect(mockSessionRepo.storedAccessToken, 'login-access-token');
       expect(mockSessionRepo.storedRefreshToken, 'login-refresh-token');
     });
   });
 
   group('GasAuthService.validateSession', () {
     test('returns failure when no token exists', () async {
-      mockSessionRepo.storedToken = null;
+      mockSessionRepo.storedAccessToken = null;
 
       final result = await authService.validateSession();
 
@@ -218,19 +219,21 @@ void main() {
       expect(result.errorCode, 'NO_TOKEN');
     });
 
-    test('returns success on valid token', () async {
-      mockSessionRepo.storedToken = 'valid-token';
-      mockApiClient.mockResponseData = {'user': createUserJson()};
+    test('clears session and returns failure on invalid token', () async {
+      mockSessionRepo.storedAccessToken = 'invalid-token';
+      mockSessionRepo.hasValidSession = true;
+      mockApiClient.mockResponseCode = GasErrorCodes.authAccessTokenInvalid; // '0804'
+      mockApiClient.mockResponseMessage = 'Token 無效';
 
       final result = await authService.validateSession();
 
-      expect(result.isSuccess, isTrue);
-      expect(result.user?.email, 'test@example.com');
-      expect(result.isOffline, isFalse);
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, GasErrorCodes.authAccessTokenInvalid);
+      expect(mockSessionRepo.hasValidSession, isFalse); // Session cleared
     });
 
     test('refreshes token if expiring soon', () async {
-      mockSessionRepo.storedToken = 'expiring-token';
+      mockSessionRepo.storedAccessToken = 'expiring-token';
       mockSessionRepo.storedRefreshToken = 'valid-refresh-token';
       mockTokenValidator.shouldBeExpiringSoon = true;
 
@@ -250,7 +253,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(result.accessToken, 'new-access-token');
-      expect(mockSessionRepo.storedToken, 'new-access-token');
+      expect(mockSessionRepo.storedAccessToken, 'new-access-token');
     });
   });
 
@@ -265,7 +268,7 @@ void main() {
 
       expect(result.isSuccess, isTrue);
       expect(result.accessToken, 'brand-new-token');
-      expect(mockSessionRepo.storedToken, 'brand-new-token');
+      expect(mockSessionRepo.storedAccessToken, 'brand-new-token');
     });
 
     test('returns failure if no refresh token', () async {
@@ -275,6 +278,16 @@ void main() {
 
       expect(result.isSuccess, isFalse);
       expect(result.errorCode, 'NO_REFRESH_TOKEN');
+    });
+  });
+
+  group('GasAuthService helper methods', () {
+    test('getAccessToken returns stored token', () async {
+      mockSessionRepo.storedAccessToken = 'my-token';
+
+      final token = await authService.getAccessToken();
+
+      expect(token, 'my-token');
     });
   });
 }
