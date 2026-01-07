@@ -68,9 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (verified == true && mounted) {
         // 驗證成功，返回登入畫面讓使用者自行登入
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('註冊成功！請登入您的帳號')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('註冊成功！請登入您的帳號')));
         if (context.mounted) {
           Navigator.pop(context); // 返回登入畫面
         }

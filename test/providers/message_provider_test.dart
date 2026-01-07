@@ -24,8 +24,7 @@ class MockMessageRepository implements IMessageRepository {
   List<Message> getAllMessages() => messages;
 
   @override
-  List<Message> getMessagesByCategory(String category) =>
-      messages.where((msg) => msg.category == category).toList();
+  List<Message> getMessagesByCategory(String category) => messages.where((msg) => msg.category == category).toList();
 
   @override
   List<Message> getMainMessages({String? category}) {
@@ -37,8 +36,7 @@ class MockMessageRepository implements IMessageRepository {
   }
 
   @override
-  List<Message> getReplies(String parentUuid) =>
-      messages.where((msg) => msg.parentId == parentUuid).toList();
+  List<Message> getReplies(String parentUuid) => messages.where((msg) => msg.parentId == parentUuid).toList();
 
   @override
   Message? getByUuid(String uuid) {
@@ -146,13 +144,7 @@ Message createTestMessage({
 }
 
 Trip createTestTrip({String id = 'trip-1', String name = 'Test Trip'}) {
-  return Trip(
-    id: id,
-    name: name,
-    startDate: DateTime.now(),
-    isActive: true,
-    createdAt: DateTime.now(),
-  );
+  return Trip(id: id, name: name, startDate: DateTime.now(), isActive: true, createdAt: DateTime.now());
 }
 
 // ============================================================
@@ -171,10 +163,7 @@ void main() {
     });
 
     test('getAllMessages returns all stored messages', () {
-      repo.messages = [
-        createTestMessage(uuid: 'msg-1'),
-        createTestMessage(uuid: 'msg-2'),
-      ];
+      repo.messages = [createTestMessage(uuid: 'msg-1'), createTestMessage(uuid: 'msg-2')];
 
       expect(repo.getAllMessages(), hasLength(2));
     });
@@ -250,20 +239,14 @@ void main() {
     test('syncFromCloud replaces all messages', () async {
       repo.messages = [createTestMessage(uuid: 'old')];
 
-      await repo.syncFromCloud([
-        createTestMessage(uuid: 'new-1'),
-        createTestMessage(uuid: 'new-2'),
-      ]);
+      await repo.syncFromCloud([createTestMessage(uuid: 'new-1'), createTestMessage(uuid: 'new-2')]);
 
       expect(repo.messages, hasLength(2));
       expect(repo.messages.any((m) => m.uuid == 'old'), isFalse);
     });
 
     test('getPendingMessages returns messages not in cloud', () {
-      repo.messages = [
-        createTestMessage(uuid: 'local-1'),
-        createTestMessage(uuid: 'synced-1'),
-      ];
+      repo.messages = [createTestMessage(uuid: 'local-1'), createTestMessage(uuid: 'synced-1')];
 
       final pending = repo.getPendingMessages({'synced-1'});
 
@@ -272,10 +255,7 @@ void main() {
     });
 
     test('clearAll removes all messages', () async {
-      repo.messages = [
-        createTestMessage(uuid: 'msg-1'),
-        createTestMessage(uuid: 'msg-2'),
-      ];
+      repo.messages = [createTestMessage(uuid: 'msg-1'), createTestMessage(uuid: 'msg-2')];
 
       await repo.clearAll();
 
@@ -326,9 +306,7 @@ void main() {
         createTestMessage(uuid: 'msg-3', tripId: null), // Global
       ];
 
-      final trip1Messages = messages.where((m) => 
-        m.tripId == null || m.tripId == 'trip-1'
-      ).toList();
+      final trip1Messages = messages.where((m) => m.tripId == null || m.tripId == 'trip-1').toList();
 
       expect(trip1Messages, hasLength(2));
       expect(trip1Messages.any((m) => m.uuid == 'msg-1'), isTrue);

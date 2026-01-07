@@ -10,8 +10,7 @@ class GearLibraryCloudService {
 
   final GasApiClient _apiClient;
 
-  GearLibraryCloudService({GasApiClient? apiClient})
-    : _apiClient = apiClient ?? getIt<GasApiClient>();
+  GearLibraryCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 同步個人裝備庫 (上傳全部)
   Future<GearLibraryCloudResult<int>> syncLibrary(String ownerKey, List<GearLibraryItem> items) async {

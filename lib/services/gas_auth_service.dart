@@ -22,9 +22,9 @@ class GasAuthService implements IAuthService {
     GasApiClient? apiClient,
     required IAuthSessionRepository sessionRepository,
     ITokenValidator? tokenValidator,
-  })  : _apiClient = apiClient ?? getIt<GasApiClient>(),
-        _sessionRepo = sessionRepository,
-        _tokenValidator = tokenValidator ?? JwtTokenValidator();
+  }) : _apiClient = apiClient ?? getIt<GasApiClient>(),
+       _sessionRepo = sessionRepository,
+       _tokenValidator = tokenValidator ?? JwtTokenValidator();
 
   @override
   bool get isOfflineMode => _isOfflineMode;
@@ -56,39 +56,24 @@ class GasAuthService implements IAuthService {
       if (apiResponse.isSuccess) {
         // Registration requires email verification, don't save session yet
         LogService.info('註冊成功，需驗證 Email', source: _source);
-        return AuthResult.requiresVerification(
-          errorMessage: '請檢查 Email 完成驗證',
-        );
+        return AuthResult.requiresVerification(errorMessage: '請檢查 Email 完成驗證');
       } else {
         LogService.warning('註冊失敗: ${apiResponse.message}', source: _source);
-        return AuthResult.failure(
-          errorCode: apiResponse.code,
-          errorMessage: apiResponse.message,
-        );
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e, stackTrace) {
       LogService.error('註冊例外: $e', source: _source, stackTrace: stackTrace);
-      return AuthResult.failure(
-        errorCode: 'NETWORK_ERROR',
-        errorMessage: '網路錯誤，請稍後再試',
-      );
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
     }
   }
 
   @override
-  Future<AuthResult> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthResult> login({required String email, required String password}) async {
     try {
       LogService.info('嘗試登入: $email', source: _source);
       _isOfflineMode = false;
 
-      final response = await _apiClient.post({
-        'action': 'auth_login',
-        'email': email,
-        'password': password,
-      });
+      final response = await _apiClient.post({'action': 'auth_login', 'email': email, 'password': password});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -101,50 +86,30 @@ class GasAuthService implements IAuthService {
         await _sessionRepo.saveSession(accessToken, user);
 
         LogService.info('登入成功: ${user.email}', source: _source);
-        return AuthResult.success(
-          user: user,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        );
+        return AuthResult.success(user: user, accessToken: accessToken, refreshToken: refreshToken);
       } else {
         LogService.warning('登入失敗: ${apiResponse.message}', source: _source);
-        return AuthResult.failure(
-          errorCode: apiResponse.code,
-          errorMessage: apiResponse.message,
-        );
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e, stackTrace) {
       LogService.error('登入例外: $e', source: _source, stackTrace: stackTrace);
-      return AuthResult.failure(
-        errorCode: 'NETWORK_ERROR',
-        errorMessage: '網路錯誤，請稍後再試',
-      );
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
     }
   }
 
   @override
-  Future<AuthResult> loginWithProvider(AuthProvider provider) async {
+  Future<AuthResult> loginWithProvider(OAuthProvider provider) async {
     // TODO: Implement OAuth providers in future
     LogService.warning('OAuth login not implemented: $provider', source: _source);
-    return AuthResult.failure(
-      errorCode: 'NOT_IMPLEMENTED',
-      errorMessage: 'OAuth 登入尚未實作',
-    );
+    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: 'OAuth 登入尚未實作');
   }
 
   @override
-  Future<AuthResult> verifyEmail({
-    required String email,
-    required String code,
-  }) async {
+  Future<AuthResult> verifyEmail({required String email, required String code}) async {
     try {
       LogService.info('嘗試驗證 Email: $email', source: _source);
 
-      final response = await _apiClient.post({
-        'action': 'auth_verify_email',
-        'email': email,
-        'code': code,
-      });
+      final response = await _apiClient.post({'action': 'auth_verify_email', 'email': email, 'code': code});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -154,17 +119,11 @@ class GasAuthService implements IAuthService {
         return AuthResult.success(user: null);
       } else {
         LogService.warning('Email 驗證失敗: ${apiResponse.message}', source: _source);
-        return AuthResult.failure(
-          errorCode: apiResponse.code,
-          errorMessage: apiResponse.message,
-        );
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e, stackTrace) {
       LogService.error('Email 驗證例外: $e', source: _source, stackTrace: stackTrace);
-      return AuthResult.failure(
-        errorCode: 'NETWORK_ERROR',
-        errorMessage: '網路錯誤',
-      );
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤');
     }
   }
 
@@ -173,10 +132,7 @@ class GasAuthService implements IAuthService {
     try {
       LogService.info('嘗試重發驗證碼: $email', source: _source);
 
-      final response = await _apiClient.post({
-        'action': 'auth_resend_code',
-        'email': email,
-      });
+      final response = await _apiClient.post({'action': 'auth_resend_code', 'email': email});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -184,17 +140,11 @@ class GasAuthService implements IAuthService {
         LogService.info('驗證碼已發送', source: _source);
         return AuthResult.success(user: null);
       } else {
-        return AuthResult.failure(
-          errorCode: apiResponse.code,
-          errorMessage: apiResponse.message,
-        );
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e, stackTrace) {
       LogService.error('重發驗證碼例外: $e', source: _source, stackTrace: stackTrace);
-      return AuthResult.failure(
-        errorCode: 'NETWORK_ERROR',
-        errorMessage: '網路錯誤',
-      );
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤');
     }
   }
 
@@ -216,10 +166,7 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({
-        'action': 'auth_validate',
-        'authToken': token,
-      });
+      final response = await _apiClient.post({'action': 'auth_validate', 'authToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -231,10 +178,7 @@ class GasAuthService implements IAuthService {
         return AuthResult.success(user: user, accessToken: token);
       } else {
         await logout();
-        return AuthResult.failure(
-          errorCode: apiResponse.code,
-          errorMessage: apiResponse.message,
-        );
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e) {
       // Network error -> Check local cache (Offline Support)
@@ -253,10 +197,7 @@ class GasAuthService implements IAuthService {
         }
       }
 
-      return AuthResult.failure(
-        errorCode: 'NETWORK_ERROR',
-        errorMessage: '無法連線伺服器',
-      );
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '無法連線伺服器');
     }
   }
 
@@ -265,10 +206,7 @@ class GasAuthService implements IAuthService {
     // TODO: Implement refresh token when GAS supports it
     // For now, return failure to fall back to regular validation
     LogService.debug('Refresh token not yet supported by GAS', source: _source);
-    return AuthResult.failure(
-      errorCode: 'NOT_SUPPORTED',
-      errorMessage: 'Refresh token 尚未支援',
-    );
+    return AuthResult.failure(errorCode: 'NOT_SUPPORTED', errorMessage: 'Refresh token 尚未支援');
   }
 
   @override
@@ -288,16 +226,10 @@ class GasAuthService implements IAuthService {
         LogService.info('帳號已刪除', source: _source);
         return AuthResult.success(user: null);
       } else {
-        return AuthResult.failure(
-          errorCode: apiResponse.code,
-          errorMessage: apiResponse.message,
-        );
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e) {
-      return AuthResult.failure(
-        errorCode: 'NETWORK_ERROR',
-        errorMessage: '網路錯誤',
-      );
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤');
     }
   }
 

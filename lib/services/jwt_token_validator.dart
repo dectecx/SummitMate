@@ -75,10 +75,7 @@ class JwtTokenValidator implements ITokenValidator {
   }
 
   @override
-  bool isExpiringSoon(
-    String token, {
-    Duration threshold = const Duration(minutes: 5),
-  }) {
+  bool isExpiringSoon(String token, {Duration threshold = const Duration(minutes: 5)}) {
     final payload = decode(token);
     if (payload == null) return true; // Treat malformed as expiring
 

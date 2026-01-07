@@ -25,8 +25,7 @@ class MockItineraryRepository implements IItineraryRepository {
   List<ItineraryItem> getAllItems() => items;
 
   @override
-  List<ItineraryItem> getItemsByDay(String day) =>
-      items.where((item) => item.day == day).toList();
+  List<ItineraryItem> getItemsByDay(String day) => items.where((item) => item.day == day).toList();
 
   @override
   ItineraryItem? getItemByKey(dynamic key) {
@@ -208,13 +207,7 @@ ItineraryItem createTestItem({
 }
 
 Trip createTestTrip({String id = 'trip-1', String name = 'Test Trip'}) {
-  return Trip(
-    id: id,
-    name: name,
-    startDate: DateTime.now(),
-    isActive: true,
-    createdAt: DateTime.now(),
-  );
+  return Trip(id: id, name: name, startDate: DateTime.now(), isActive: true, createdAt: DateTime.now());
 }
 
 // ============================================================
@@ -233,15 +226,9 @@ void main() {
 
   group('ItineraryProvider initialization', () {
     test('loads items on initialization', () async {
-      mockItineraryRepo.items = [
-        createTestItem(uuid: 'item-1'),
-        createTestItem(uuid: 'item-2'),
-      ];
+      mockItineraryRepo.items = [createTestItem(uuid: 'item-1'), createTestItem(uuid: 'item-2')];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
 
       // Wait for async _loadItems
       await Future.delayed(const Duration(milliseconds: 50));
@@ -251,10 +238,7 @@ void main() {
     });
 
     test('sets selectedDay to D1 by default', () async {
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
 
       await Future.delayed(const Duration(milliseconds: 50));
 
@@ -264,10 +248,7 @@ void main() {
 
   group('ItineraryProvider.selectDay', () {
     test('changes selected day', () async {
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       provider.selectDay(ItineraryDay.d2);
@@ -284,10 +265,7 @@ void main() {
         createTestItem(uuid: 'item-3', day: 'D1', name: 'Another D1 Item'),
       ];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentDayItems, hasLength(2));
@@ -301,10 +279,7 @@ void main() {
         createTestItem(uuid: 'item-3', day: 'D1', estTime: '09:00'),
       ];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentDayItems[0].estTime, '08:00');
@@ -313,10 +288,8 @@ void main() {
     });
   });
 
-
   // Note: checkIn and clearCheckIn tests are skipped because the provider
   // uses item.key (Hive key) which is null without real Hive initialization.
-
 
   group('ItineraryProvider.progress', () {
     test('calculates progress correctly', () async {
@@ -327,10 +300,7 @@ void main() {
         createTestItem(uuid: 'item-4', isCheckedIn: false),
       ];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.progress, 0.5); // 2/4 = 50%
@@ -339,10 +309,7 @@ void main() {
     test('returns 0 when no items', () async {
       mockItineraryRepo.items = [];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.progress, 0);
@@ -357,10 +324,7 @@ void main() {
         createTestItem(uuid: 'item-3', day: 'D1', estTime: '10:00', isCheckedIn: false),
       ];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentTarget?.uuid, 'item-2');
@@ -372,10 +336,7 @@ void main() {
         createTestItem(uuid: 'item-2', day: 'D1', isCheckedIn: true),
       ];
 
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.currentTarget, isNull);
@@ -384,10 +345,7 @@ void main() {
 
   group('ItineraryProvider.toggleEditMode', () {
     test('toggles edit mode', () async {
-      final provider = ItineraryProvider(
-        repository: mockItineraryRepo,
-        tripRepository: mockTripRepo,
-      );
+      final provider = ItineraryProvider(repository: mockItineraryRepo, tripRepository: mockTripRepo);
       await Future.delayed(const Duration(milliseconds: 50));
 
       expect(provider.isEditMode, isFalse);
