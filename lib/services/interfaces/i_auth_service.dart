@@ -10,6 +10,7 @@ class AuthResult {
   final String? accessToken;
   final String? refreshToken;
   final bool requiresVerification;
+  final bool isOffline;
 
   const AuthResult({
     required this.isSuccess,
@@ -19,30 +20,21 @@ class AuthResult {
     this.accessToken,
     this.refreshToken,
     this.requiresVerification = false,
+    this.isOffline = false,
   });
 
-  factory AuthResult.success({
-    UserProfile? user,
-    String? accessToken,
-    String? refreshToken,
-  }) {
+  factory AuthResult.success({UserProfile? user, String? accessToken, String? refreshToken, bool isOffline = false}) {
     return AuthResult(
       isSuccess: true,
       user: user,
       accessToken: accessToken,
       refreshToken: refreshToken,
+      isOffline: isOffline,
     );
   }
 
-  factory AuthResult.failure({
-    required String errorCode,
-    String? errorMessage,
-  }) {
-    return AuthResult(
-      isSuccess: false,
-      errorCode: errorCode,
-      errorMessage: errorMessage,
-    );
+  factory AuthResult.failure({required String errorCode, String? errorMessage}) {
+    return AuthResult(isSuccess: false, errorCode: errorCode, errorMessage: errorMessage);
   }
 
   factory AuthResult.requiresVerification({String? errorMessage}) {
@@ -55,13 +47,8 @@ class AuthResult {
   }
 }
 
-/// Third-party authentication provider
-enum AuthProvider {
-  google,
-  facebook,
-  apple,
-  line,
-}
+/// Third-party authentication provider for OAuth SSO
+enum OAuthProvider { google, facebook, apple, line }
 
 /// Abstract Authentication Service Interface
 /// All authentication backends implement this interface.
@@ -80,19 +67,13 @@ abstract class IAuthService {
   });
 
   /// Login with email and password
-  Future<AuthResult> login({
-    required String email,
-    required String password,
-  });
+  Future<AuthResult> login({required String email, required String password});
 
   /// Login with third-party OAuth provider
-  Future<AuthResult> loginWithProvider(AuthProvider provider);
+  Future<AuthResult> loginWithProvider(OAuthProvider provider);
 
   /// Verify email with verification code
-  Future<AuthResult> verifyEmail({
-    required String email,
-    required String code,
-  });
+  Future<AuthResult> verifyEmail({required String email, required String code});
 
   /// Resend verification code
   Future<AuthResult> resendVerificationCode({required String email});

@@ -23,7 +23,7 @@ class MockGasApiClient extends GasApiClient {
   @override
   Future<Response> get({Map<String, String>? queryParams}) async {
     lastGetParams = queryParams;
-    
+
     if (shouldThrowError) {
       throw DioException(
         requestOptions: RequestOptions(path: ''),
@@ -31,11 +31,7 @@ class MockGasApiClient extends GasApiClient {
       );
     }
 
-    final responseBody = {
-      'code': mockResponseCode,
-      'message': mockResponseMessage,
-      'data': mockResponseData ?? {},
-    };
+    final responseBody = {'code': mockResponseCode, 'message': mockResponseMessage, 'data': mockResponseData ?? {}};
 
     return Response(
       requestOptions: RequestOptions(path: ''),
@@ -47,7 +43,7 @@ class MockGasApiClient extends GasApiClient {
   @override
   Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     lastPostBody = body;
-    
+
     if (shouldThrowError) {
       throw DioException(
         requestOptions: RequestOptions(path: ''),
@@ -55,11 +51,7 @@ class MockGasApiClient extends GasApiClient {
       );
     }
 
-    final responseBody = {
-      'code': mockResponseCode,
-      'message': mockResponseMessage,
-      'data': mockResponseData ?? {},
-    };
+    final responseBody = {'code': mockResponseCode, 'message': mockResponseMessage, 'data': mockResponseData ?? {}};
 
     return Response(
       requestOptions: RequestOptions(path: ''),
@@ -73,11 +65,7 @@ class MockGasApiClient extends GasApiClient {
 // === TEST DATA ===
 // ============================================================
 
-Map<String, dynamic> createPollJson({
-  String id = 'poll-1',
-  String title = 'Test Poll',
-  String status = 'active',
-}) {
+Map<String, dynamic> createPollJson({String id = 'poll-1', String title = 'Test Poll', String status = 'active'}) {
   return {
     'poll_id': id,
     'title': title,
@@ -112,10 +100,7 @@ void main() {
   group('PollService.fetchPolls', () {
     test('returns list of polls on success', () async {
       mockClient.mockResponseData = {
-        'polls': [
-          createPollJson(id: 'poll-1', title: 'Poll 1'),
-          createPollJson(id: 'poll-2', title: 'Poll 2'),
-        ],
+        'polls': [createPollJson(id: 'poll-1', title: 'Poll 1'), createPollJson(id: 'poll-2', title: 'Poll 2')],
       };
 
       final polls = await pollService.fetchPolls(userId: 'user-1');
@@ -138,19 +123,13 @@ void main() {
       mockClient.mockResponseCode = '9999';
       mockClient.mockResponseMessage = 'Server error';
 
-      expect(
-        () => pollService.fetchPolls(userId: 'user-1'),
-        throwsException,
-      );
+      expect(() => pollService.fetchPolls(userId: 'user-1'), throwsException);
     });
 
     test('throws exception on network error', () async {
       mockClient.shouldThrowError = true;
 
-      expect(
-        () => pollService.fetchPolls(userId: 'user-1'),
-        throwsA(isA<DioException>()),
-      );
+      expect(() => pollService.fetchPolls(userId: 'user-1'), throwsA(isA<DioException>()));
     });
   });
 
@@ -175,13 +154,7 @@ void main() {
       mockClient.mockResponseCode = '9999';
       mockClient.mockResponseMessage = 'Creation failed';
 
-      expect(
-        () => pollService.createPoll(
-          title: 'New Poll',
-          creatorId: 'user-1',
-        ),
-        throwsException,
-      );
+      expect(() => pollService.createPoll(title: 'New Poll', creatorId: 'user-1'), throwsException);
     });
   });
 
@@ -189,12 +162,7 @@ void main() {
     test('votes successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.votePoll(
-        pollId: 'poll-1',
-        optionIds: ['opt-1', 'opt-2'],
-        userId: 'user-1',
-        userName: 'Alice',
-      );
+      await pollService.votePoll(pollId: 'poll-1', optionIds: ['opt-1', 'opt-2'], userId: 'user-1', userName: 'Alice');
 
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
       expect(mockClient.lastPostBody?['option_ids'], ['opt-1', 'opt-2']);
@@ -206,14 +174,7 @@ void main() {
       mockClient.mockResponseCode = '4001';
       mockClient.mockResponseMessage = 'Already voted';
 
-      expect(
-        () => pollService.votePoll(
-          pollId: 'poll-1',
-          optionIds: ['opt-1'],
-          userId: 'user-1',
-        ),
-        throwsException,
-      );
+      expect(() => pollService.votePoll(pollId: 'poll-1', optionIds: ['opt-1'], userId: 'user-1'), throwsException);
     });
   });
 
@@ -221,11 +182,7 @@ void main() {
     test('adds option successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.addOption(
-        pollId: 'poll-1',
-        text: 'New Option',
-        creatorId: 'user-1',
-      );
+      await pollService.addOption(pollId: 'poll-1', text: 'New Option', creatorId: 'user-1');
 
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
       expect(mockClient.lastPostBody?['text'], 'New Option');
@@ -236,14 +193,7 @@ void main() {
       mockClient.mockResponseCode = '4002';
       mockClient.mockResponseMessage = 'Option limit exceeded';
 
-      expect(
-        () => pollService.addOption(
-          pollId: 'poll-1',
-          text: 'New Option',
-          creatorId: 'user-1',
-        ),
-        throwsException,
-      );
+      expect(() => pollService.addOption(pollId: 'poll-1', text: 'New Option', creatorId: 'user-1'), throwsException);
     });
   });
 
@@ -261,10 +211,7 @@ void main() {
       mockClient.mockResponseCode = '4003';
       mockClient.mockResponseMessage = 'Not authorized';
 
-      expect(
-        () => pollService.closePoll(pollId: 'poll-1', userId: 'user-2'),
-        throwsException,
-      );
+      expect(() => pollService.closePoll(pollId: 'poll-1', userId: 'user-2'), throwsException);
     });
   });
 
@@ -282,10 +229,7 @@ void main() {
       mockClient.mockResponseCode = '4004';
       mockClient.mockResponseMessage = 'Poll not found';
 
-      expect(
-        () => pollService.deletePoll(pollId: 'invalid', userId: 'user-1'),
-        throwsException,
-      );
+      expect(() => pollService.deletePoll(pollId: 'invalid', userId: 'user-1'), throwsException);
     });
   });
 

@@ -13,8 +13,7 @@ class GoogleSheetsService {
   final GasApiClient _apiClient;
 
   /// 建構子
-  GoogleSheetsService({GasApiClient? apiClient})
-    : _apiClient = apiClient ?? getIt<GasApiClient>();
+  GoogleSheetsService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 取得所有資料 (行程 + 留言)
   Future<FetchAllResult> fetchAll({String? tripId}) async {

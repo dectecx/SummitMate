@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/di.dart';
 import '../../../core/theme.dart';
-import '../../../services/auth_service.dart';
+import '../../../services/interfaces/i_auth_service.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String email;
@@ -16,7 +16,7 @@ class VerificationScreen extends StatefulWidget {
 class _VerificationScreenState extends State<VerificationScreen> {
   final _codeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _authService = getIt<AuthService>();
+  final _authService = getIt<IAuthService>();
 
   bool _isLoading = false;
   bool _canResend = false;

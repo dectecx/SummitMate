@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../core/di.dart';
 import '../../data/models/user_profile.dart';
-import '../../services/auth_service.dart';
+import '../../services/interfaces/i_auth_service.dart';
 import '../../services/log_service.dart';
 
 /// Auth Provider
@@ -14,13 +14,13 @@ import '../../services/log_service.dart';
 class AuthProvider extends ChangeNotifier {
   static const String _source = 'AuthProvider';
 
-  final AuthService _authService;
+  final IAuthService _authService;
 
   AuthState _state = AuthState.loading;
   UserProfile? _user;
   bool _isOffline = false;
 
-  AuthProvider({AuthService? authService}) : _authService = authService ?? getIt<AuthService>() {
+  AuthProvider({IAuthService? authService}) : _authService = authService ?? getIt<IAuthService>() {
     _initSession();
   }
 
@@ -47,7 +47,7 @@ class AuthProvider extends ChangeNotifier {
   String get avatar => _user?.avatar ?? '🐻';
 
   /// Current user's auth token
-  Future<String?> get authToken => _authService.getAuthToken();
+  Future<String?> get authToken => _authService.getAccessToken();
 
   // ============================================================
   // === PUBLIC METHODS ===

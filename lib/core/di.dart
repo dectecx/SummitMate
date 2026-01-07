@@ -30,7 +30,6 @@ import '../presentation/providers/gear_provider.dart';
 import '../core/location/i_location_resolver.dart';
 import '../core/location/township_location_resolver.dart';
 import '../services/gas_api_client.dart';
-import '../services/auth_service.dart';
 import '../services/gas_auth_service.dart';
 import '../services/interfaces/i_auth_service.dart';
 import '../services/interfaces/i_token_validator.dart';
@@ -153,15 +152,9 @@ Future<void> setupDependencies() async {
   // Token Validator
   getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
 
-  // AuthService (Legacy) - for backward compatibility during migration
-  getIt.registerLazySingleton<AuthService>(() => AuthService(sessionRepository: getIt<IAuthSessionRepository>()));
-
-  // IAuthService - New pluggable interface (use GasAuthService implementation)
+  // IAuthService - Pluggable auth interface (GasAuthService implementation)
   getIt.registerLazySingleton<IAuthService>(
-    () => GasAuthService(
-      sessionRepository: getIt<IAuthSessionRepository>(),
-      tokenValidator: getIt<ITokenValidator>(),
-    ),
+    () => GasAuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
   );
 
   // Dio & Interceptors

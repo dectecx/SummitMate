@@ -48,39 +48,22 @@ class TokenValidationResult {
   /// Decoded token payload (only present if valid or expired but decodable)
   final TokenPayload? payload;
 
-  const TokenValidationResult({
-    required this.isValid,
-    this.errorCode,
-    this.payload,
-  });
+  const TokenValidationResult({required this.isValid, this.errorCode, this.payload});
 
   factory TokenValidationResult.valid(TokenPayload payload) {
-    return TokenValidationResult(
-      isValid: true,
-      payload: payload,
-    );
+    return TokenValidationResult(isValid: true, payload: payload);
   }
 
   factory TokenValidationResult.expired(TokenPayload payload) {
-    return TokenValidationResult(
-      isValid: false,
-      errorCode: 'EXPIRED',
-      payload: payload,
-    );
+    return TokenValidationResult(isValid: false, errorCode: 'EXPIRED', payload: payload);
   }
 
   factory TokenValidationResult.invalid(String errorCode) {
-    return TokenValidationResult(
-      isValid: false,
-      errorCode: errorCode,
-    );
+    return TokenValidationResult(isValid: false, errorCode: errorCode);
   }
 
   factory TokenValidationResult.missing() {
-    return const TokenValidationResult(
-      isValid: false,
-      errorCode: 'MISSING',
-    );
+    return const TokenValidationResult(isValid: false, errorCode: 'MISSING');
   }
 }
 
@@ -101,10 +84,7 @@ abstract class ITokenValidator {
 
   /// Check if token is expiring soon
   /// [threshold] - Time before expiration to consider "expiring soon"
-  bool isExpiringSoon(
-    String token, {
-    Duration threshold = const Duration(minutes: 5),
-  });
+  bool isExpiringSoon(String token, {Duration threshold = const Duration(minutes: 5)});
 
   /// Check if token is expired
   bool isExpired(String token);

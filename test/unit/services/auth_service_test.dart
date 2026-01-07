@@ -28,11 +28,7 @@ class MockGasApiClient extends GasApiClient {
       );
     }
 
-    final responseBody = {
-      'code': mockResponseCode,
-      'message': mockResponseMessage,
-      'data': mockResponseData ?? {},
-    };
+    final responseBody = {'code': mockResponseCode, 'message': mockResponseMessage, 'data': mockResponseData ?? {}};
 
     return Response(
       requestOptions: RequestOptions(path: ''),
@@ -83,13 +79,7 @@ UserProfile createTestUser({
   String avatar = '🐻',
   bool isVerified = true,
 }) {
-  return UserProfile(
-    uuid: uuid,
-    email: email,
-    displayName: displayName,
-    avatar: avatar,
-    isVerified: isVerified,
-  );
+  return UserProfile(uuid: uuid, email: email, displayName: displayName, avatar: avatar, isVerified: isVerified);
 }
 
 Map<String, dynamic> createUserJson({
@@ -121,18 +111,12 @@ void main() {
   setUp(() {
     mockApiClient = MockGasApiClient();
     mockSessionRepo = MockAuthSessionRepository();
-    authService = AuthService(
-      apiClient: mockApiClient,
-      sessionRepository: mockSessionRepo,
-    );
+    authService = AuthService(apiClient: mockApiClient, sessionRepository: mockSessionRepo);
   });
 
   group('AuthService.register', () {
     test('returns success and saves session on valid registration', () async {
-      mockApiClient.mockResponseData = {
-        'user': createUserJson(isVerified: false),
-        'authToken': 'new-token-123',
-      };
+      mockApiClient.mockResponseData = {'user': createUserJson(isVerified: false), 'authToken': 'new-token-123'};
 
       final result = await authService.register(
         email: 'new@example.com',
@@ -177,15 +161,9 @@ void main() {
 
   group('AuthService.login', () {
     test('returns success and saves session on valid login', () async {
-      mockApiClient.mockResponseData = {
-        'user': createUserJson(),
-        'authToken': 'login-token-456',
-      };
+      mockApiClient.mockResponseData = {'user': createUserJson(), 'authToken': 'login-token-456'};
 
-      final result = await authService.login(
-        email: 'test@example.com',
-        password: 'password123',
-      );
+      final result = await authService.login(email: 'test@example.com', password: 'password123');
 
       expect(result.isSuccess, isTrue);
       expect(result.user?.email, 'test@example.com');
@@ -197,10 +175,7 @@ void main() {
       mockApiClient.mockResponseCode = '0802';
       mockApiClient.mockResponseMessage = '帳號或密碼錯誤';
 
-      final result = await authService.login(
-        email: 'test@example.com',
-        password: 'wrongpassword',
-      );
+      final result = await authService.login(email: 'test@example.com', password: 'wrongpassword');
 
       expect(result.isSuccess, isFalse);
       expect(result.errorCode, '0802');
@@ -209,10 +184,7 @@ void main() {
     test('returns network error on exception', () async {
       mockApiClient.shouldThrowError = true;
 
-      final result = await authService.login(
-        email: 'test@example.com',
-        password: 'password123',
-      );
+      final result = await authService.login(email: 'test@example.com', password: 'password123');
 
       expect(result.isSuccess, isFalse);
       expect(result.errorCode, 'NETWORK_ERROR');
@@ -223,14 +195,9 @@ void main() {
     test('returns success on valid code', () async {
       // Set up session first for validateSession call
       mockSessionRepo.storedToken = 'existing-token';
-      mockApiClient.mockResponseData = {
-        'user': createUserJson(isVerified: true),
-      };
+      mockApiClient.mockResponseData = {'user': createUserJson(isVerified: true)};
 
-      final result = await authService.verifyEmail(
-        email: 'test@example.com',
-        code: '123456',
-      );
+      final result = await authService.verifyEmail(email: 'test@example.com', code: '123456');
 
       expect(result.isSuccess, isTrue);
     });
@@ -239,10 +206,7 @@ void main() {
       mockApiClient.mockResponseCode = '0805';
       mockApiClient.mockResponseMessage = '驗證碼無效';
 
-      final result = await authService.verifyEmail(
-        email: 'test@example.com',
-        code: '000000',
-      );
+      final result = await authService.verifyEmail(email: 'test@example.com', code: '000000');
 
       expect(result.isSuccess, isFalse);
       expect(result.errorCode, '0805');
@@ -253,9 +217,7 @@ void main() {
     test('returns success on valid request', () async {
       mockApiClient.mockResponseData = {};
 
-      final result = await authService.resendVerificationCode(
-        email: 'test@example.com',
-      );
+      final result = await authService.resendVerificationCode(email: 'test@example.com');
 
       expect(result.isSuccess, isTrue);
     });
@@ -263,9 +225,7 @@ void main() {
     test('returns network error on exception', () async {
       mockApiClient.shouldThrowError = true;
 
-      final result = await authService.resendVerificationCode(
-        email: 'test@example.com',
-      );
+      final result = await authService.resendVerificationCode(email: 'test@example.com');
 
       expect(result.isSuccess, isFalse);
       expect(result.errorCode, 'NETWORK_ERROR');
@@ -284,9 +244,7 @@ void main() {
 
     test('returns success and refreshes session on valid token', () async {
       mockSessionRepo.storedToken = 'valid-token';
-      mockApiClient.mockResponseData = {
-        'user': createUserJson(),
-      };
+      mockApiClient.mockResponseData = {'user': createUserJson()};
 
       final result = await authService.validateSession();
 

@@ -12,11 +12,7 @@ import 'package:summitmate/services/gas_api_client.dart';
 void main() {
   group('GasApiResponse', () {
     test('isSuccess returns true for code 0000', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0000',
-        'message': 'Success',
-        'data': {},
-      });
+      final response = GasApiResponse.fromJson({'code': '0000', 'message': 'Success', 'data': {}});
 
       expect(response.isSuccess, isTrue);
       expect(response.code, '0000');
@@ -24,51 +20,32 @@ void main() {
     });
 
     test('isSuccess returns false for error codes', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0801',
-        'message': 'Email already exists',
-        'data': {},
-      });
+      final response = GasApiResponse.fromJson({'code': '0801', 'message': 'Email already exists', 'data': {}});
 
       expect(response.isSuccess, isFalse);
       expect(response.code, '0801');
     });
 
     test('message is extracted correctly', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0000',
-        'message': 'Custom message here',
-        'data': {},
-      });
+      final response = GasApiResponse.fromJson({'code': '0000', 'message': 'Custom message here', 'data': {}});
 
       expect(response.message, 'Custom message here');
     });
 
     test('data returns empty map when data field is missing', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0000',
-        'message': 'Success',
-      });
+      final response = GasApiResponse.fromJson({'code': '0000', 'message': 'Success'});
 
       expect(response.data, isEmpty);
     });
 
     test('data returns empty map when data field is null', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0000',
-        'message': 'Success',
-        'data': null,
-      });
+      final response = GasApiResponse.fromJson({'code': '0000', 'message': 'Success', 'data': null});
 
       expect(response.data, isEmpty);
     });
 
     test('data returns empty map when data field is non-map', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0000',
-        'message': 'Success',
-        'data': 'string data',
-      });
+      final response = GasApiResponse.fromJson({'code': '0000', 'message': 'Success', 'data': 'string data'});
 
       expect(response.data, isEmpty);
     });
@@ -104,20 +81,14 @@ void main() {
     });
 
     test('code returns empty string when code is null', () {
-      final response = GasApiResponse.fromJson({
-        'message': 'No code',
-        'data': {},
-      });
+      final response = GasApiResponse.fromJson({'message': 'No code', 'data': {}});
 
       expect(response.code, '');
       expect(response.isSuccess, isFalse);
     });
 
     test('message returns empty string when message is null', () {
-      final response = GasApiResponse.fromJson({
-        'code': '0000',
-        'data': {},
-      });
+      final response = GasApiResponse.fromJson({'code': '0000', 'data': {}});
 
       expect(response.message, '');
     });
