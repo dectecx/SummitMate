@@ -46,7 +46,7 @@ class UsageTrackingService {
     try {
       LogService.info('發送心跳...', source: _source);
       final response = await _apiClient.post({
-        'action': ApiConfig.actionHeartbeat,
+        'action': ApiConfig.actionSystemHeartbeat,
         'username': _username,
         'timestamp': DateTime.now().toIso8601String(),
         'platform': 'web',

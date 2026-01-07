@@ -19,7 +19,7 @@ class GearLibraryCloudService {
 
       // GAS expects generic item structure, ensure GearLibraryItem.toJson matches
       final response = await _apiClient.post({
-        'action': ApiConfig.actionUploadGearLibrary,
+        'action': ApiConfig.actionGearLibraryUpload,
         'items': items.map((i) => i.toJson()).toList(),
         'owner_key': ownerKey,
       });
@@ -47,7 +47,7 @@ class GearLibraryCloudService {
     try {
       LogService.info('取得雲端個人裝備庫 (key=$ownerKey)...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionDownloadGearLibrary, 'owner_key': ownerKey});
+      final response = await _apiClient.post({'action': ApiConfig.actionGearLibraryDownload, 'owner_key': ownerKey});
 
       if (response.statusCode != 200) {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');

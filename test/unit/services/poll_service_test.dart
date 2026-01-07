@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/services/poll_service.dart';
 
@@ -204,7 +205,7 @@ void main() {
       await pollService.closePoll(pollId: 'poll-1', userId: 'user-1');
 
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
-      expect(mockClient.lastPostBody?['subAction'], 'close');
+      expect(mockClient.lastPostBody?['action'], ApiConfig.actionPollClose);
     });
 
     test('throws exception on unauthorized', () async {
@@ -222,7 +223,7 @@ void main() {
       await pollService.deletePoll(pollId: 'poll-1', userId: 'user-1');
 
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
-      expect(mockClient.lastPostBody?['subAction'], 'delete');
+      expect(mockClient.lastPostBody?['action'], ApiConfig.actionPollDelete);
     });
 
     test('throws exception on not found', () async {
@@ -240,7 +241,7 @@ void main() {
       await pollService.deleteOption(optionId: 'opt-1', userId: 'user-1');
 
       expect(mockClient.lastPostBody?['option_id'], 'opt-1');
-      expect(mockClient.lastPostBody?['subAction'], 'delete_option');
+      expect(mockClient.lastPostBody?['action'], ApiConfig.actionPollDeleteOption);
     });
   });
 }

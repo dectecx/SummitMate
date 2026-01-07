@@ -55,13 +55,13 @@
  * ============================================================
  *
  * GET 請求:
- *   ?action=fetch_trips                - 取得所有行程
- *   ?action=fetch_all[&trip_id=xxx]    - 取得行程+留言
- *   ?action=fetch_itinerary[&trip_id]  - 僅取得行程節點
- *   ?action=fetch_messages[&trip_id]   - 僅取得留言
- *   ?action=poll&subAction=...         - 投票功能
- *   ?action=fetch_weather              - 取得氣象資料
- *   ?action=health                     - 健康檢查
+ *   ?action=trip_list                - 取得所有行程
+ *   ?action=trip_get_full[&trip_id]  - 取得行程+留言
+ *   ?action=itinerary_list[&trip_id] - 僅取得行程節點
+ *   ?action=message_list[&trip_id]   - 僅取得留言
+ *   ?action=poll_list                - 取得投票列表
+ *   ?action=weather_get              - 取得氣象資料
+ *   ?action=system_health            - 健康檢查
  *
  * POST 請求:
  *   // 會員驗證 (Auth)
@@ -73,31 +73,37 @@
  *   { action: 'auth_resend_code', email }
  *
  *   // 行程 (Trips)
- *   { action: 'add_trip', ... }
- *   { action: 'update_trip', id: '...', ... }
- *   { action: 'delete_trip', id: '...' }
- *   { action: 'set_active_trip', id: '...' }
+ *   { action: 'trip_create', ... }
+ *   { action: 'trip_update', id: '...', ... }
+ *   { action: 'trip_delete', id: '...' }
+ *   { action: 'trip_set_active', id: '...' }
  *
  *   // 行程節點 (Itinerary)
- *   { action: 'update_itinerary', data: [...], trip_id: '...' }
+ *   { action: 'itinerary_update', data: [...], trip_id: '...' }
  *
  *   // 留言 (Messages)
- *   { action: 'add_message', data: {...} }
- *   { action: 'batch_add_messages', data: [...] }
- *   { action: 'delete_message', uuid: '...' }
+ *   { action: 'message_create', data: {...} }
+ *   { action: 'message_create_batch', data: [...] }
+ *   { action: 'message_delete', uuid: '...' }
  *
  *   // 裝備組合 (Gear Sets)
- *   { action: 'fetch_gear_sets' }
- *   { action: 'upload_gear_set', ... }
- *   { action: 'download_gear_set', uuid: '...', key: '...' }
- *   { action: 'delete_gear_set', uuid: '...', key: '...' }
+ *   { action: 'gear_set_list' }
+ *   { action: 'gear_set_upload', ... }
+ *   { action: 'gear_set_download', uuid: '...', key: '...' }
+ *   { action: 'gear_set_delete', uuid: '...', key: '...' }
  *
  *   // 個人裝備庫 (Gear Library)
- *   { action: 'sync_gear_library', ... }
+ *   { action: 'gear_library_upload', ... }
+ *   { action: 'gear_library_download', ... }
+ *
+ *   // 投票 (Polls)
+ *   { action: 'poll_create', ... }
+ *   { action: 'poll_vote', ... }
+ *   { action: 'poll_close', ... }
  *
  *   // 監控
- *   { action: 'upload_logs', logs: [...] }
- *   { action: 'heartbeat', ... }
+ *   { action: 'log_upload', logs: [...] }
+ *   { action: 'system_heartbeat', ... }
  *
  * ============================================================
  * 工作表結構

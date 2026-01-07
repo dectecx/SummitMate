@@ -40,6 +40,7 @@ void main() {
   });
 
   setUp(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
     await getIt.reset();
 
     mockGearRepo = MockIGearRepository();

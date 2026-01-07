@@ -128,7 +128,7 @@ class WeatherService implements IWeatherService {
   Future<WeatherData> _fetchHikingWeather(String locationName) async {
     // Call GAS API
     final baseUrl = EnvConfig.getApiUrl();
-    final url = Uri.parse('$baseUrl?action=${ApiConfig.actionFetchWeather}');
+    final url = Uri.parse('$baseUrl?action=${ApiConfig.actionWeatherGet}');
 
     LogService.info('Fetching hiking weather from GAS for: $locationName', source: 'WeatherService');
 
