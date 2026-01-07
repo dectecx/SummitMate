@@ -123,10 +123,10 @@ function doPost(e) {
       // === 個人裝備庫 (GearLibrary) ===
       case API_ACTIONS.GEAR_LIBRARY_UPLOAD:
         return _createJsonResponse(
-          uploadGearLibrary(data.owner_key, data.items)
+          uploadGearLibrary(data.accessToken, data.items)
         );
       case API_ACTIONS.GEAR_LIBRARY_DOWNLOAD:
-        return _createJsonResponse(downloadGearLibrary(data.owner_key));
+        return _createJsonResponse(downloadGearLibrary(data.accessToken));
 
       // === 投票 (Polls) ===
       case API_ACTIONS.POLL_LIST:

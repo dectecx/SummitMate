@@ -557,19 +557,10 @@ class _CloudSyncDialog extends StatefulWidget {
 }
 
 class _CloudSyncDialogState extends State<_CloudSyncDialog> {
-  final _keyController = TextEditingController();
   final _service = GearLibraryCloudService();
   bool _isLoading = false;
   String? _resultMessage;
   bool? _isSuccess;
-
-  @override
-  void dispose() {
-    _keyController.dispose();
-    super.dispose();
-  }
-
-  bool get _isValidKey => _keyController.text.length == 4 && RegExp(r'^\d{4}$').hasMatch(_keyController.text);
 
   @override
   Widget build(BuildContext context) {
@@ -580,18 +571,10 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('使用 4 位數密碼備份/還原裝備庫'),
+            const Text('將個人裝備庫與您的帳號同步。'),
             const SizedBox(height: 16),
-            TextField(
-              controller: _keyController,
-              decoration: const InputDecoration(labelText: '密碼 (4 位數)', hintText: '例如：1234', counterText: ''),
-              maxLength: 4,
-              keyboardType: TextInputType.number,
-              onChanged: (_) => setState(() {}),
-              enabled: !_isLoading,
-            ),
-            const SizedBox(height: 8),
-            Text('【同步說明】\n• 上傳：覆蓋雲端資料\n• 下載：覆蓋本地資料', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+            const Text('【同步說明】\n• 上傳：覆蓋雲端資料 (以您的帳號儲存)\n• 下載：覆蓋本地資料',
+                style: TextStyle(fontSize: 11, color: Colors.grey)),
             // 結果訊息
             if (_resultMessage != null) ...[
               const SizedBox(height: 16),
@@ -629,12 +612,12 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
       actions: [
         TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('關閉')),
         OutlinedButton.icon(
-          onPressed: _isLoading || !_isValidKey ? null : _handleDownload,
+          onPressed: _isLoading ? null : _handleDownload,
           icon: _isLoading ? const SizedBox.shrink() : const Icon(Icons.download),
           label: const Text('下載'),
         ),
         FilledButton.icon(
-          onPressed: _isLoading || !_isValidKey ? null : _handleUpload,
+          onPressed: _isLoading ? null : _handleUpload,
           icon: _isLoading
               ? const SizedBox(
                   width: 16,
@@ -649,8 +632,6 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   }
 
   Future<void> _handleUpload() async {
-    if (!_isValidKey) return;
-
     // 檢查離線模式
     final isOffline = context.read<SettingsProvider>().isOfflineMode;
     if (isOffline) {
@@ -676,7 +657,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
         return;
       }
 
-      final result = await _service.syncLibrary(_keyController.text, items);
+      final result = await _service.syncLibrary(items);
 
       setState(() {
         _isLoading = false;
@@ -693,8 +674,6 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   }
 
   Future<void> _handleDownload() async {
-    if (!_isValidKey) return;
-
     // 檢查離線模式
     final isOffline = context.read<SettingsProvider>().isOfflineMode;
     if (isOffline) {
@@ -727,7 +706,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     });
 
     try {
-      final result = await _service.fetchLibrary(_keyController.text);
+      final result = await _service.fetchLibrary();
 
       if (!result.isSuccess) {
         setState(() {

@@ -102,7 +102,7 @@ const HEADERS_TRIP_GEAR = [
 // ============================================================
 const HEADERS_GEAR_LIBRARY = [
   "uuid", // PK
-  "owner_key", // 擁有者識別碼 (未來改為 user_id)
+  "user_id", // 擁有者識別碼 (對應 Users.uuid)
   "name",
   "weight",
   "category",
@@ -299,8 +299,6 @@ const API_CODES = {
   WEATHER_NOT_READY: "0601",
 
   // ========== 07XX - GearLibrary API ==========
-  /** owner_key 格式錯誤 */
-  GEAR_LIBRARY_KEY_INVALID: "0701",
 
   // ========== 08XX - Auth API ==========
   /** 信箱已被註冊 */
@@ -395,7 +393,7 @@ const SHEET_SCHEMA = {
 
   GearLibrary: {
     uuid: { type: "text" },
-    owner_key: { type: "text" },
+    user_id: { type: "text" },
     name: { type: "text" },
     weight: { type: "number" },
     category: { type: "text" },

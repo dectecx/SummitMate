@@ -5,39 +5,42 @@
  * @fileoverview 個人裝備庫雲端備份 API
  *
  * 【存取方式】
- * - 現階段: 使用 owner_key (4 位數) 識別
- * - 未來規劃: 會員機制上線後改用 user_id
+ * - 使用 accessToken 驗證身份
+ * - 資料以 user_id 隔離
  *
  * 【操作模式】
- * - 上傳: 覆寫雲端 (以 owner_key 識別)
- * - 下載: 覆寫本地 (取得 owner_key 對應的所有資料)
+ * - 上傳: 覆寫雲端 (以 user_id 識別)
+ * - 下載: 覆寫本地 (取得 user_id 對應的所有資料)
  */
 
 /**
  * 上傳個人裝備庫 (覆寫模式)
- * @param {string} ownerKey - 擁有者識別碼 (4 位數)
+ * @param {string} accessToken - 認證 Token
  * @param {Array} items - 裝備列表
  * @returns {Object} { code, data, message }
  */
-function uploadGearLibrary(ownerKey, items) {
+function uploadGearLibrary(accessToken, items) {
   try {
-    // 驗證 owner_key
-    if (!ownerKey || ownerKey.length !== 4) {
-      return _error(
-        API_CODES.GEAR_LIBRARY_KEY_INVALID,
-        "owner_key 必須為 4 位數"
-      );
+    // 驗證 Token
+    if (!accessToken) {
+      return _error(API_CODES.AUTH_REQUIRED, "缺少認證 Token");
     }
 
+    const validation = validateToken(accessToken);
+    if (!validation.isValid) {
+      return _error(API_CODES.AUTH_ACCESS_TOKEN_INVALID, "Token 無效或已過期");
+    }
+
+    const userId = validation.payload.uid;
     const sheet = _getSheetOrCreate(SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
 
-    // 刪除該 owner_key 的所有舊資料 (轉字串比較)
+    // 刪除該 user_id 的所有舊資料
     const existingData = sheet.getDataRange().getValues();
-    const ownerKeyCol = HEADERS_GEAR_LIBRARY.indexOf("owner_key");
+    const userIdCol = HEADERS_GEAR_LIBRARY.indexOf("user_id");
 
     // 從後往前刪除以避免索引問題
     for (let i = existingData.length - 1; i >= 1; i--) {
-      if (String(existingData[i][ownerKeyCol]) === String(ownerKey)) {
+      if (String(existingData[i][userIdCol]) === String(userId)) {
         sheet.deleteRow(i + 1);
       }
     }
@@ -47,7 +50,7 @@ function uploadGearLibrary(ownerKey, items) {
       const now = new Date().toISOString();
       const rows = items.map((item) => [
         String(item.uuid || Utilities.getUuid()),
-        String(ownerKey),
+        String(userId),
         String(item.name || ""),
         item.weight || 0,
         String(item.category || "Other"),
@@ -77,19 +80,22 @@ function uploadGearLibrary(ownerKey, items) {
 
 /**
  * 下載個人裝備庫
- * @param {string} ownerKey - 擁有者識別碼 (4 位數)
+ * @param {string} accessToken - 認證 Token
  * @returns {Object} { code, data, message }
  */
-function downloadGearLibrary(ownerKey) {
+function downloadGearLibrary(accessToken) {
   try {
-    // 驗證 owner_key
-    if (!ownerKey || ownerKey.length !== 4) {
-      return _error(
-        API_CODES.GEAR_LIBRARY_KEY_INVALID,
-        "owner_key 必須為 4 位數"
-      );
+    // 驗證 Token
+    if (!accessToken) {
+      return _error(API_CODES.AUTH_REQUIRED, "缺少認證 Token");
     }
 
+    const validation = validateToken(accessToken);
+    if (!validation.isValid) {
+      return _error(API_CODES.AUTH_ACCESS_TOKEN_INVALID, "Token 無效或已過期");
+    }
+
+    const userId = validation.payload.uid;
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_GEAR_LIBRARY);
 
@@ -103,15 +109,15 @@ function downloadGearLibrary(ownerKey) {
     }
 
     const headers = data[0];
-    const ownerKeyCol = headers.indexOf("owner_key");
+    const userIdCol = headers.indexOf("user_id");
 
-    // 篩選該 owner_key 的資料 (轉字串比較，避免數字 vs 字串問題)
+    // 篩選該 user_id 的資料
     const items = [];
     for (let i = 1; i < data.length; i++) {
-      if (String(data[i][ownerKeyCol]) === String(ownerKey)) {
+      if (String(data[i][userIdCol]) === String(userId)) {
         const item = {};
         headers.forEach((header, index) => {
-          if (header !== "owner_key") {
+          if (header !== "user_id") {
             item[header] = data[i][index];
           }
         });
