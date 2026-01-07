@@ -16,7 +16,7 @@ void main() {
     test('start() with userId should send member heartbeat', () async {
       // 安排
       final mockDio = MockDio();
-      
+
       // Capture the sent data
       Map<String, dynamic>? capturedData;
 
@@ -26,16 +26,14 @@ void main() {
           data: any(named: 'data'),
           options: any(named: 'options'),
         ),
-      ).thenAnswer(
-        (invocation) async {
-          capturedData = invocation.namedArguments[#data] as Map<String, dynamic>;
-          return Response(
-            requestOptions: RequestOptions(path: ''),
-            data: {'code': '0000', 'message': 'Success'},
-            statusCode: 200,
-          );
-        },
-      );
+      ).thenAnswer((invocation) async {
+        capturedData = invocation.namedArguments[#data] as Map<String, dynamic>;
+        return Response(
+          requestOptions: RequestOptions(path: ''),
+          data: {'code': '0000', 'message': 'Success'},
+          statusCode: 200,
+        );
+      });
 
       final apiClient = GasApiClient(dio: mockDio, baseUrl: 'https://mock.api');
       final service = UsageTrackingService(apiClient: apiClient, forceWeb: true);
@@ -48,14 +46,14 @@ void main() {
       expect(capturedData!['user_name'], 'MemberUser');
       expect(capturedData!['user_id'], 'user-123');
       expect(capturedData!['user_type'], 'member');
-      
+
       service.dispose();
     });
 
     test('start() without userId should send guest heartbeat', () async {
       // 安排
       final mockDio = MockDio();
-      
+
       Map<String, dynamic>? capturedData;
 
       when(
@@ -64,16 +62,14 @@ void main() {
           data: any(named: 'data'),
           options: any(named: 'options'),
         ),
-      ).thenAnswer(
-        (invocation) async {
-          capturedData = invocation.namedArguments[#data] as Map<String, dynamic>;
-          return Response(
-            requestOptions: RequestOptions(path: ''),
-            data: {'code': '0000', 'message': 'Success'},
-            statusCode: 200,
-          );
-        },
-      );
+      ).thenAnswer((invocation) async {
+        capturedData = invocation.namedArguments[#data] as Map<String, dynamic>;
+        return Response(
+          requestOptions: RequestOptions(path: ''),
+          data: {'code': '0000', 'message': 'Success'},
+          statusCode: 200,
+        );
+      });
 
       final apiClient = GasApiClient(dio: mockDio, baseUrl: 'https://mock.api');
       final service = UsageTrackingService(apiClient: apiClient, forceWeb: true);
@@ -86,7 +82,7 @@ void main() {
       expect(capturedData!['user_name'], 'GuestUser');
       expect(capturedData!['user_id'], isNull); // ID is explicitly null for guests in flutter, GAS handles logic
       expect(capturedData!['user_type'], 'guest');
-      
+
       service.dispose();
     });
 

@@ -226,6 +226,7 @@ const API_ACTIONS = {
   AUTH_RESEND_CODE: "auth_resend_code",
   AUTH_DELETE_USER: "auth_delete_user",
   AUTH_REFRESH_TOKEN: "auth_refresh_token",
+  AUTH_UPDATE_PROFILE: "auth_update_profile",
 };
 
 /**

@@ -446,6 +446,93 @@ function refreshSession(payload) {
 }
 
 /**
+ * 更新使用者資料 (暱稱、頭像)
+ * @param {Object} payload - { accessToken, displayName, avatar }
+ * @returns {Object} 標準 API 回應
+ */
+function updateProfile(payload) {
+  const { accessToken, displayName, avatar } = payload;
+
+  if (!accessToken) {
+    return buildResponse(API_CODES.AUTH_REQUIRED, null, "缺少認證 Token");
+  }
+
+  // 驗證 Token
+  const validation = validateToken(accessToken);
+  if (!validation.isValid) {
+    if (validation.errorCode === "EXPIRED") {
+      return buildResponse(
+        API_CODES.AUTH_ACCESS_TOKEN_EXPIRED,
+        null,
+        "Token 已過期，請重新登入"
+      );
+    }
+    return buildResponse(
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
+      null,
+      "Token 無效"
+    );
+  }
+
+  const userId = validation.payload.uid;
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_USERS);
+
+  // 查找使用者
+  const result = _findUserById(sheet, userId);
+  if (!result) {
+    return buildResponse(
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
+      null,
+      "使用者不存在"
+    );
+  }
+
+  const { user, rowIndex } = result;
+
+  // 檢查帳號狀態
+  if (!user.is_active) {
+    return buildResponse(API_CODES.AUTH_ACCOUNT_DISABLED, null, "此帳號已停用");
+  }
+
+  // 準備更新
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const nameCol = headers.indexOf("display_name") + 1;
+  const avatarCol = headers.indexOf("avatar") + 1;
+  const updateCol = headers.indexOf("updated_at") + 1;
+
+  if (nameCol > 0 && displayName) {
+    sheet.getRange(rowIndex, nameCol).setValue(displayName.trim());
+    user.display_name = displayName.trim();
+  }
+
+  if (avatarCol > 0 && avatar) {
+    sheet.getRange(rowIndex, avatarCol).setValue(avatar);
+    user.avatar = avatar;
+  }
+
+  if (updateCol > 0) {
+    sheet.getRange(rowIndex, updateCol).setValue(new Date().toISOString());
+  }
+
+  // 回傳更新後的資料
+  const userData = {
+    uuid: user.uuid,
+    email: user.email,
+    displayName: user.display_name,
+    avatar: user.avatar,
+    role: user.role,
+    isVerified: user.is_verified,
+  };
+
+  return buildResponse(
+    API_CODES.SUCCESS,
+    { user: userData },
+    "個人資料更新成功"
+  );
+}
+
+/**
  * 驗證 Email (輸入驗證碼)
  * @param {Object} payload - { email, code }
  * @returns {Object}

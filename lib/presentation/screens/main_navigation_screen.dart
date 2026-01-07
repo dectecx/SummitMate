@@ -19,6 +19,7 @@ import '../providers/trip_provider.dart';
 import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/poll_provider.dart';
+import '../providers/auth_provider.dart';
 
 import '../widgets/app_drawer.dart';
 import '../widgets/itinerary_tab.dart';
@@ -558,7 +559,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _showSettingsDialog(BuildContext context) async {
     final settingsProvider = context.read<SettingsProvider>();
+    final authProvider = context.read<AuthProvider>();
+
     final controller = TextEditingController(text: settingsProvider.username);
+
+    // Avatar 選擇邏輯
+    final List<String> avatarOptions = ['🐻', '🦊', '🐼', '🐨', '🦁', '🐸', '🐢', '🐙'];
+    String selectedAvatar = settingsProvider.avatar;
 
     PackageInfo? packageInfo;
     try {
@@ -595,34 +602,105 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ====== 暱稱區塊 ======
+                    // ====== 暱稱與頭像區塊 ======
+                    Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          // 點擊切換頭像 (簡單循環或選單)
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (ctx) => Container(
+                              padding: const EdgeInsets.all(16),
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 16,
+                                runSpacing: 16,
+                                children: avatarOptions.map((icon) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() => selectedAvatar = icon);
+                                      Navigator.pop(ctx);
+                                    },
+                                    child: CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: selectedAvatar == icon
+                                          ? Theme.of(context).colorScheme.primaryContainer
+                                          : Colors.grey.shade100,
+                                      child: Text(icon, style: const TextStyle(fontSize: 24)),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          );
+                        },
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                              radius: 36,
+                              child: Text(selectedAvatar, style: const TextStyle(fontSize: 32)),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(dialogContext).colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.edit, size: 12, color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: controller,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: '暱稱',
-                        prefixIcon: const Icon(Icons.person),
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: CircleAvatar(
-                            backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
-                            radius: 16,
-                            child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 16)),
-                          ),
-                        ),
+                        prefixIcon: Icon(Icons.person),
+                        border: OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () {
+                        onPressed: () async {
                           final newName = controller.text.trim();
                           if (newName.isNotEmpty) {
-                            settingsProvider.updateUsername(newName);
-                            ToastService.success('暱稱已更新');
+                            // 1. 同步到雲端 (如果已登入)
+                            if (authProvider.isAuthenticated && !authProvider.isOffline) {
+                              try {
+                                final result = await authProvider.updateProfile(
+                                  displayName: newName,
+                                  avatar: selectedAvatar,
+                                );
+                                if (!result.isSuccess) {
+                                  ToastService.error('雲端同步失敗: ${result.errorMessage}');
+                                  // 雖然雲端失敗，但仍允許更新本地? 或者阻擋?
+                                  // User request: "要能夠update雲端"
+                                  // Let's warn but proceed with local update for UX
+                                } else {
+                                  ToastService.success('個人資料已同步更新');
+                                }
+                              } catch (e) {
+                                ToastService.error('更新失敗: $e');
+                              }
+                            }
+
+                            // 2. 更新本地設定 (SettingsProvider)
+                            // 確保本地 UI (App Bar 等) 也能即時更新
+                            settingsProvider.updateProfile(newName, selectedAvatar);
+
+                            if (context.mounted) Navigator.pop(context);
                           }
                         },
-                        child: const Text('儲存暱稱'),
+                        child: const Text('儲存設定'),
                       ),
                     ),
                     const Divider(height: 32),

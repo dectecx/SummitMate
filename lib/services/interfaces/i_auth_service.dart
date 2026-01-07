@@ -66,6 +66,9 @@ abstract class IAuthService {
     String? avatar,
   });
 
+  /// Update user profile (display name, avatar)
+  Future<AuthResult> updateProfile({String? displayName, String? avatar});
+
   /// Login with email and password
   Future<AuthResult> login({required String email, required String password});
 

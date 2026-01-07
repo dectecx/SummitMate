@@ -165,6 +165,8 @@ function doPost(e) {
         return _createJsonResponse(deleteUser(data));
       case API_ACTIONS.AUTH_REFRESH_TOKEN:
         return _createJsonResponse(refreshSession(data));
+      case API_ACTIONS.AUTH_UPDATE_PROFILE:
+        return _createJsonResponse(updateProfile(data));
 
       default:
         return _createJsonResponse(
