@@ -159,17 +159,6 @@ const DEFAULT_AVATAR = "🐻";
 const DEFAULT_USER = "Anonymous";
 const DEFAULT_CATEGORY = "Misc";
 
-// ============================================================
-// API 回應代碼 (XXYY 格式)
-// XX: API 分類 (00=通用, 01=Trips, 02=Itinerary...)
-// YY: 錯誤編號 (可跳號)
-// ============================================================
-
-/**
- * API 回應代碼常數
- * @readonly
- * @enum {string}
- */
 const API_ACTIONS = {
   // === 行程 (Trips) ===
   TRIP_LIST: "trip_list",
@@ -229,8 +218,17 @@ const API_ACTIONS = {
   AUTH_UPDATE_PROFILE: "auth_update_profile",
 };
 
+// ============================================================
+// API 回應代碼 (XXYY 格式)
+// XX: API 分類 (00=通用, 01=Trips, 02=Itinerary...)
+// YY: 錯誤編號 (可跳號)
+// ============================================================
+
 /**
  * API 回應代碼常數
+ * @readonly
+ * @enum {string}
+ */
 const API_CODES = {
   /** 操作成功 */
   SUCCESS: "0000",
