@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../core/constants.dart';
 import 'gas_api_client.dart';
-import '../core/env_config.dart';
+import '../core/di.dart';
 import 'log_service.dart';
 
 /// 使用狀態追蹤服務 (僅 Web)
@@ -16,7 +16,7 @@ class UsageTrackingService {
   final GasApiClient _apiClient;
 
   UsageTrackingService({GasApiClient? apiClient})
-    : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+    : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 啟動追蹤 (僅 Web 平台)
   void start(String username) {

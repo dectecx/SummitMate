@@ -1,5 +1,5 @@
 import '../core/constants.dart';
-import '../core/env_config.dart';
+import '../core/di.dart';
 import '../data/models/trip.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
@@ -10,7 +10,7 @@ class TripCloudService {
 
   final GasApiClient _apiClient;
 
-  TripCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+  TripCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 取得所有雲端行程
   Future<TripCloudResult<List<Trip>>> fetchTrips() async {

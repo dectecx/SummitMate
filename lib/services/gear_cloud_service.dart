@@ -1,5 +1,5 @@
 import '../core/constants.dart';
-import '../core/env_config.dart';
+import '../core/di.dart';
 import '../data/models/gear_set.dart';
 import '../data/models/gear_item.dart';
 import '../data/models/meal_item.dart';
@@ -12,7 +12,7 @@ class GearCloudService {
 
   final GasApiClient _apiClient;
 
-  GearCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.gasBaseUrl);
+  GearCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// 取得公開/保護的裝備組合列表
   Future<GearCloudResult<List<GearSet>>> fetchGearSets() async {

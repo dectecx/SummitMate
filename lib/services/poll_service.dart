@@ -1,5 +1,5 @@
 import 'gas_api_client.dart';
-import '../core/env_config.dart';
+import '../core/di.dart';
 import '../core/constants.dart';
 import '../data/models/poll.dart';
 import 'log_service.dart';
@@ -12,7 +12,7 @@ class PollService {
 
   final GasApiClient _apiClient;
 
-  PollService({GasApiClient? apiClient}) : _apiClient = apiClient ?? GasApiClient(baseUrl: EnvConfig.getApiUrl());
+  PollService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
 
   /// Fetch all polls
   Future<List<Poll>> fetchPolls({required String userId}) async {
