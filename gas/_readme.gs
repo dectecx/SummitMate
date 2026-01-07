@@ -67,8 +67,8 @@
  *   // 會員驗證 (Auth)
  *   { action: 'auth_register', email, password, displayName, avatar? }
  *   { action: 'auth_login', email, password }
- *   { action: 'auth_validate', authToken }
- *   { action: 'auth_delete_user', authToken }
+ *   { action: 'auth_validate', accessToken }
+ *   { action: 'auth_delete_user', accessToken }
  *   { action: 'auth_verify_email', email, code }
  *   { action: 'auth_resend_code', email }
  *

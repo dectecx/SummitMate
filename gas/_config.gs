@@ -250,7 +250,7 @@ const API_CODES = {
   /** 帳號已停用或刪除 */
   AUTH_ACCOUNT_DISABLED: "0803",
   /** 認證 Token 無效 */
-  AUTH_TOKEN_INVALID: "0804",
+  AUTH_ACCESS_TOKEN_INVALID: "0804",
   /** 缺少認證資訊 */
   AUTH_REQUIRED: "0805",
   /** Users 工作表不存在 */
@@ -260,7 +260,7 @@ const API_CODES = {
   /** 驗證碼已過期 */
   AUTH_CODE_EXPIRED: "0808",
   /** Token 已過期 */
-  AUTH_TOKEN_EXPIRED: "0809",
+  AUTH_ACCESS_TOKEN_EXPIRED: "0809",
 };
 
 // ============================================================

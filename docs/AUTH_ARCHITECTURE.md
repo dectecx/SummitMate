@@ -76,7 +76,7 @@ sequenceDiagram
     Note over App: Token 過期前
 
     App->>Auth: validateSession()
-    Auth->>Session: getAuthToken()
+    Auth->>Session: getAccessToken()
     Auth->>Validator: isExpiringSoon(token)
 
     alt Token 即將過期
@@ -153,7 +153,7 @@ abstract class IAuthService {
   Future<AuthResult> deleteAccount();
 
   /// 取得目前 Token
-  Future<String?> getAuthToken();
+  Future<String?> getAccessToken();
 
   /// 取得快取的用戶資料
   Future<UserProfile?> getCachedUserProfile();

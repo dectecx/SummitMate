@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
-import '../interfaces/i_auth_token_provider.dart';
+import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 import '../log_service.dart';
 
 /// Interceptor to handle authentication logic for GAS API
 class AuthInterceptor extends Interceptor {
   static const String _source = 'AuthInterceptor';
-  final IAuthTokenProvider _tokenProvider;
+  final IAuthSessionRepository _sessionRepo;
 
-  AuthInterceptor(this._tokenProvider);
+  AuthInterceptor(this._sessionRepo);
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -23,10 +23,10 @@ class AuthInterceptor extends Interceptor {
     // as GAS Web Apps do not support handling OPTIONS requests.
     if (options.method == 'POST' && options.data is Map<String, dynamic>) {
       try {
-        final token = await _tokenProvider.getAuthToken();
+        final token = await _sessionRepo.getAccessToken();
         if (token != null && token.isNotEmpty) {
-          (options.data as Map<String, dynamic>)['authToken'] = token;
-          LogService.debug('[AuthInterceptor] Injected authToken', source: _source);
+          (options.data as Map<String, dynamic>)['accessToken'] = token;
+          LogService.debug('[AuthInterceptor] Injected accessToken', source: _source);
         } else if (options.extra['requiresAuth'] == true) {
           LogService.warning('[AuthInterceptor] Auth required but no token available', source: _source);
           // We could reject here, but letting it fail on server might be better for now

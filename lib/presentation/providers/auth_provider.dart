@@ -3,6 +3,7 @@ import '../../core/di.dart';
 import '../../data/models/user_profile.dart';
 import '../../services/interfaces/i_auth_service.dart';
 import '../../services/log_service.dart';
+import '../../core/constants/gas_error_codes.dart';
 
 /// Auth Provider
 /// Manages the global authentication state for the app.
@@ -46,8 +47,8 @@ class AuthProvider extends ChangeNotifier {
   /// Current user's avatar
   String get avatar => _user?.avatar ?? '🐻';
 
-  /// Current user's auth token
-  Future<String?> get authToken => _authService.getAccessToken();
+  /// Current user's access token
+  Future<String?> get accessToken => _authService.getAccessToken();
 
   // ============================================================
   // === PUBLIC METHODS ===
@@ -129,7 +130,8 @@ class AuthProvider extends ChangeNotifier {
       _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
     } else {
       // Session invalidated (e.g., account deleted by admin)
-      if (result.errorCode == '0803' || result.errorCode == '0804') {
+      if (result.errorCode == GasErrorCodes.authAccountDisabled ||
+          result.errorCode == GasErrorCodes.authAccessTokenInvalid) {
         _user = null;
         _isOffline = false;
         _state = AuthState.unauthenticated;

@@ -93,7 +93,7 @@ function authRegister(payload) {
     // 發送驗證信
     _sendVerificationEmail(email, verificationCode);
 
-    // 回傳使用者資料 (不含 authToken，因為註冊後需重新登入)
+    // 回傳使用者資料 (不含 accessToken，因為註冊後需重新登入)
     const userData = {
       uuid: existingUser.uuid,
       email: email.toLowerCase().trim(),
@@ -156,7 +156,7 @@ function authRegister(payload) {
     API_CODES.SUCCESS,
     {
       user: userData,
-      authToken: userId, // 簡易 Token (使用 userId 作為 Token)
+      accessToken: userId, // 簡易 Token (使用 userId 作為 Token)
     },
     "註冊成功"
   );
@@ -251,7 +251,7 @@ function authLogin(payload) {
 
 /**
  * 驗證 Token 並取得使用者資料
- * @param {Object} payload - { authToken }
+ * @param {Object} payload - { accessToken }
  * @returns {Object} 標準 API 回應
  */
 function authValidate(payload) {
@@ -278,12 +278,16 @@ function authValidate(payload) {
   if (!validation.isValid) {
     if (validation.errorCode === "EXPIRED") {
       return buildResponse(
-        API_CODES.AUTH_TOKEN_EXPIRED,
+        API_CODES.AUTH_ACCESS_TOKEN_EXPIRED,
         null,
         "Token 已過期，請重新登入"
       );
     }
-    return buildResponse(API_CODES.AUTH_TOKEN_INVALID, null, "Token 無效");
+    return buildResponse(
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
+      null,
+      "Token 無效"
+    );
   }
 
   const userId = validation.payload.uid;
@@ -292,7 +296,7 @@ function authValidate(payload) {
   const result = _findUserById(sheet, userId);
   if (!result) {
     return buildResponse(
-      API_CODES.AUTH_TOKEN_INVALID,
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
       null,
       "Token 無效或使用者不存在"
     );
@@ -319,7 +323,7 @@ function authValidate(payload) {
 
 /**
  * 假刪除會員
- * @param {Object} payload - { authToken }
+ * @param {Object} payload - { accessToken }
  * @returns {Object} 標準 API 回應
  */
 function authDeleteUser(payload) {
@@ -343,13 +347,21 @@ function authDeleteUser(payload) {
   // 驗證 Token 並取得 userId
   const validation = validateToken(accessToken);
   if (!validation.isValid) {
-    return buildResponse(API_CODES.AUTH_TOKEN_INVALID, null, "Token 無效");
+    return buildResponse(
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
+      null,
+      "Token 無效"
+    );
   }
   const userId = validation.payload.uid;
 
   const result = _findUserById(sheet, userId);
   if (!result) {
-    return buildResponse(API_CODES.AUTH_TOKEN_INVALID, null, "Token 無效");
+    return buildResponse(
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
+      null,
+      "Token 無效"
+    );
   }
 
   const { rowIndex } = result;
@@ -387,13 +399,13 @@ function authRefreshToken(payload) {
   if (!validation.isValid) {
     if (validation.errorCode === "EXPIRED") {
       return buildResponse(
-        API_CODES.AUTH_TOKEN_EXPIRED,
+        API_CODES.AUTH_ACCESS_TOKEN_EXPIRED,
         null,
         "Refresh Token 已過期，請重新登入"
       );
     }
     return buildResponse(
-      API_CODES.AUTH_TOKEN_INVALID,
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
       null,
       "Refresh Token 無效"
     );
@@ -402,7 +414,7 @@ function authRefreshToken(payload) {
   // 確認是 refresh 類型的 Token
   if (validation.payload.type !== "refresh") {
     return buildResponse(
-      API_CODES.AUTH_TOKEN_INVALID,
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
       null,
       "需使用 Refresh Token"
     );
@@ -417,7 +429,7 @@ function authRefreshToken(payload) {
 
   if (!result || !result.user.is_active) {
     return buildResponse(
-      API_CODES.AUTH_TOKEN_INVALID,
+      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
       null,
       "使用者不存在或已停用"
     );
