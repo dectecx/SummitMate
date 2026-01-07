@@ -259,6 +259,8 @@ const API_CODES = {
   AUTH_CODE_INVALID: "0807",
   /** 驗證碼已過期 */
   AUTH_CODE_EXPIRED: "0808",
+  /** Token 已過期 */
+  AUTH_TOKEN_EXPIRED: "0809",
 };
 
 // ============================================================

@@ -153,6 +153,8 @@ function doPost(e) {
         return _createJsonResponse(authResendCode(data));
       case "auth_delete_user":
         return _createJsonResponse(authDeleteUser(data));
+      case "auth_refresh_token":
+        return _createJsonResponse(authRefreshToken(data));
 
       default:
         return _createJsonResponse(
