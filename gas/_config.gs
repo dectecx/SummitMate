@@ -162,6 +162,62 @@ const DEFAULT_CATEGORY = "Misc";
  * @readonly
  * @enum {string}
  */
+const API_ACTIONS = {
+  // === 行程 (Trips) ===
+  FETCH_TRIPS: "fetch_trips",
+  ADD_TRIP: "add_trip",
+  UPDATE_TRIP: "update_trip",
+  DELETE_TRIP: "delete_trip",
+  SET_ACTIVE_TRIP: "set_active_trip",
+  SYNC_TRIP_FULL: "sync_trip_full",
+
+  // === 行程節點 (Itinerary) ===
+  FETCH_ALL: "fetch_all",
+  FETCH_ITINERARY: "fetch_itinerary",
+  UPDATE_ITINERARY: "update_itinerary",
+
+  // === 留言 (Messages) ===
+  FETCH_MESSAGES: "fetch_messages",
+  ADD_MESSAGE: "add_message",
+  BATCH_ADD_MESSAGES: "batch_add_messages",
+  DELETE_MESSAGE: "delete_message",
+
+  // === 裝備組合 (Gear Sets) ===
+  FETCH_GEAR_SETS: "fetch_gear_sets",
+  FETCH_GEAR_SET_BY_KEY: "fetch_gear_set_by_key",
+  DOWNLOAD_GEAR_SET: "download_gear_set",
+  UPLOAD_GEAR_SET: "upload_gear_set",
+  DELETE_GEAR_SET: "delete_gear_set",
+
+  // === 個人裝備庫 (Gear Library) ===
+  UPLOAD_GEAR_LIBRARY: "upload_gear_library",
+  DOWNLOAD_GEAR_LIBRARY: "download_gear_library",
+
+  // === 投票 (Polls) ===
+  POLL: "poll",
+
+  // === 氣象 (Weather) ===
+  FETCH_WEATHER: "fetch_weather",
+
+  // === 監控 (Logs/Heartbeat) ===
+  UPLOAD_LOGS: "upload_logs",
+  HEARTBEAT: "heartbeat",
+
+  // === 會員 (Auth) ===
+  AUTH_REGISTER: "auth_register",
+  AUTH_LOGIN: "auth_login",
+  AUTH_VALIDATE: "auth_validate",
+  AUTH_VERIFY_EMAIL: "auth_verify_email",
+  AUTH_RESEND_CODE: "auth_resend_code",
+  AUTH_DELETE_USER: "auth_delete_user",
+  AUTH_REFRESH_TOKEN: "auth_refresh_token",
+
+  // === 系統 ===
+  HEALTH: "health",
+};
+
+/**
+ * API 回應代碼常數
 const API_CODES = {
   /** 操作成功 */
   SUCCESS: "0000",

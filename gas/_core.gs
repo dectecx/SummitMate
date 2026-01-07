@@ -29,33 +29,33 @@ function doGet(e) {
   try {
     switch (action) {
       // === 行程 (Trips) ===
-      case "fetch_trips":
+      case API_ACTIONS.FETCH_TRIPS:
         return _createJsonResponse(fetchTrips());
 
       // === 行程節點 + 留言 ===
-      case "fetch_all":
+      case API_ACTIONS.FETCH_ALL:
         return _createJsonResponse(fetchAll(tripId));
-      case "fetch_itinerary":
+      case API_ACTIONS.FETCH_ITINERARY:
         return _createJsonResponse(
           _success({ itinerary: getItineraryData(getSpreadsheet(), tripId) })
         );
-      case "fetch_messages":
+      case API_ACTIONS.FETCH_MESSAGES:
         return _createJsonResponse(
           _success({ messages: getMessagesData(getSpreadsheet(), tripId) })
         );
 
       // === 投票 (Polls) ===
-      case "poll":
+      case API_ACTIONS.POLL:
         return _createJsonResponse(
           handlePollAction(e.parameter.subAction, e.parameter)
         );
 
       // === 氣象 (Weather) ===
-      case "fetch_weather":
+      case API_ACTIONS.FETCH_WEATHER:
         return _createJsonResponse(getWeatherData());
 
       // === 健康檢查 ===
-      case "health":
+      case API_ACTIONS.HEALTH:
         return _createJsonResponse(
           _success(
             { status: "ok", timestamp: new Date().toISOString() },
@@ -84,76 +84,76 @@ function doPost(e) {
 
     switch (action) {
       // === 行程 (Trips) ===
-      case "fetch_trips":
+      case API_ACTIONS.FETCH_TRIPS:
         return _createJsonResponse(fetchTrips());
-      case "add_trip":
+      case API_ACTIONS.ADD_TRIP:
         return _createJsonResponse(addTrip(data));
-      case "update_trip":
+      case API_ACTIONS.UPDATE_TRIP:
         return _createJsonResponse(updateTrip(data));
-      case "delete_trip":
+      case API_ACTIONS.DELETE_TRIP:
         return _createJsonResponse(deleteTrip(data.trip_id || data.id));
-      case "set_active_trip":
+      case API_ACTIONS.SET_ACTIVE_TRIP:
         return _createJsonResponse(setActiveTrip(data.id));
-      case "sync_trip_full":
+      case API_ACTIONS.SYNC_TRIP_FULL:
         return _createJsonResponse(handleSyncTripFull(data));
 
       // === 行程節點 (Itinerary) ===
-      case "update_itinerary":
+      case API_ACTIONS.UPDATE_ITINERARY:
         return _createJsonResponse(updateItinerary(data.data, data.trip_id));
 
       // === 留言 (Messages) ===
-      case "add_message":
+      case API_ACTIONS.ADD_MESSAGE:
         return _createJsonResponse(addMessage(data.data));
-      case "batch_add_messages":
+      case API_ACTIONS.BATCH_ADD_MESSAGES:
         return _createJsonResponse(batchAddMessages(data.data));
-      case "delete_message":
+      case API_ACTIONS.DELETE_MESSAGE:
         return _createJsonResponse(deleteMessage(data.uuid));
 
       // === 裝備庫 (Gear) ===
-      case "fetch_gear_sets":
+      case API_ACTIONS.FETCH_GEAR_SETS:
         return _createJsonResponse(fetchGearSets());
-      case "fetch_gear_set_by_key":
+      case API_ACTIONS.FETCH_GEAR_SET_BY_KEY:
         return _createJsonResponse(fetchGearSetByKey(data.key));
-      case "download_gear_set":
+      case API_ACTIONS.DOWNLOAD_GEAR_SET:
         return _createJsonResponse(downloadGearSet(data.uuid, data.key));
-      case "upload_gear_set":
+      case API_ACTIONS.UPLOAD_GEAR_SET:
         return _createJsonResponse(uploadGearSet(data));
-      case "delete_gear_set":
+      case API_ACTIONS.DELETE_GEAR_SET:
         return _createJsonResponse(deleteGearSet(data.uuid, data.key));
 
       // === 個人裝備庫 (GearLibrary) ===
       // 【未來規劃】owner_key → user_id (會員機制上線後)
-      case "upload_gear_library":
+      case API_ACTIONS.UPLOAD_GEAR_LIBRARY:
         return _createJsonResponse(
           uploadGearLibrary(data.owner_key, data.items)
         );
-      case "download_gear_library":
+      case API_ACTIONS.DOWNLOAD_GEAR_LIBRARY:
         return _createJsonResponse(downloadGearLibrary(data.owner_key));
 
       // === 投票 (Polls) ===
-      case "poll":
+      case API_ACTIONS.POLL:
         return _createJsonResponse(handlePollAction(data.subAction, data));
 
       // === 監控 (Logs/Heartbeat) ===
-      case "upload_logs":
+      case API_ACTIONS.UPLOAD_LOGS:
         return _createJsonResponse(uploadLogs(data.logs, data.device_info));
-      case "heartbeat":
+      case API_ACTIONS.HEARTBEAT:
         return _createJsonResponse(recordHeartbeat(data));
 
       // === 會員 (Auth) ===
-      case "auth_register":
+      case API_ACTIONS.AUTH_REGISTER:
         return _createJsonResponse(authRegister(data));
-      case "auth_login":
+      case API_ACTIONS.AUTH_LOGIN:
         return _createJsonResponse(authLogin(data));
-      case "auth_validate":
+      case API_ACTIONS.AUTH_VALIDATE:
         return _createJsonResponse(authValidate(data));
-      case "auth_verify_email":
+      case API_ACTIONS.AUTH_VERIFY_EMAIL:
         return _createJsonResponse(authVerifyEmail(data));
-      case "auth_resend_code":
+      case API_ACTIONS.AUTH_RESEND_CODE:
         return _createJsonResponse(authResendCode(data));
-      case "auth_delete_user":
+      case API_ACTIONS.AUTH_DELETE_USER:
         return _createJsonResponse(authDeleteUser(data));
-      case "auth_refresh_token":
+      case API_ACTIONS.AUTH_REFRESH_TOKEN:
         return _createJsonResponse(authRefreshToken(data));
 
       default:
