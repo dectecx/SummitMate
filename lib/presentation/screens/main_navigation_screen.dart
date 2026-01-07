@@ -74,8 +74,17 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       _usageTrackingService = UsageTrackingService();
       // Async fetch user profile
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
-        if (mounted) {
-          _usageTrackingService!.start(settingsProvider.username, userId: profile?.uuid);
+        if (mounted && profile != null) {
+          _usageTrackingService!.start(settingsProvider.username, userId: profile.uuid);
+
+          // Sync SettingsProvider if valid profile found on launch
+          // This ensures AppDrawer shows correct info if local settings verify from cloud session
+          if (profile.displayName.isNotEmpty && settingsProvider.username != profile.displayName) {
+            settingsProvider.updateUsername(profile.displayName);
+          }
+          if (profile.avatar.isNotEmpty && settingsProvider.avatar != profile.avatar) {
+            settingsProvider.setAvatar(profile.avatar);
+          }
         }
       });
     });
@@ -666,6 +675,30 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                         border: OutlineInputBorder(),
                       ),
                     ),
+                    // Guest mode indicator
+                    if (authProvider.user == null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '訪客模式：資料僅儲存於本機，登入後可同步到雲端',
+                                style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,

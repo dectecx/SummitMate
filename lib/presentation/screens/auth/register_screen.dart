@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/settings_provider.dart';
 import 'verification_screen.dart';
 
 /// Register Screen
@@ -58,6 +59,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
+      // Sync SettingsProvider with user profile
+      if (mounted && result.user != null) {
+        final settingsProvider = context.read<SettingsProvider>();
+        if (result.user!.displayName.isNotEmpty) {
+          settingsProvider.updateUsername(result.user!.displayName);
+        }
+        if (result.user!.avatar.isNotEmpty) {
+          settingsProvider.setAvatar(result.user!.avatar);
+        }
+      }
+
       if (!mounted) return;
 
       // 註冊成功，跳轉至驗證頁面

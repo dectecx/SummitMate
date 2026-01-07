@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/settings_provider.dart';
 import 'register_screen.dart';
 import 'verification_screen.dart';
 
@@ -68,7 +69,17 @@ class _LoginScreenState extends State<LoginScreen> {
           await authProvider.validateSession();
         }
       }
-      // If verified, AuthProvider already updated state to authenticated, app will switch
+      
+      // Sync SettingsProvider with user profile
+      if (mounted && result.isSuccess && result.user != null) {
+        final settingsProvider = context.read<SettingsProvider>();
+        if (result.user!.displayName.isNotEmpty) {
+          settingsProvider.updateUsername(result.user!.displayName);
+        }
+        if (result.user!.avatar.isNotEmpty) {
+          settingsProvider.setAvatar(result.user!.avatar);
+        }
+      }
     }
   }
 

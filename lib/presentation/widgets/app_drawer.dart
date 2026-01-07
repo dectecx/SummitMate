@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../providers/trip_provider.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/message_provider.dart';
+import '../providers/settings_provider.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/trip_list_screen.dart';
 
@@ -116,18 +117,20 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildAuthSection(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, _) {
-        if (authProvider.isAuthenticated) {
+    return Consumer2<AuthProvider, SettingsProvider>(
+      builder: (context, authProvider, settingsProvider, _) {
+        final isGuest = authProvider.user == null; // Guest mode = no user profile
+
+        if (!isGuest) {
           // Logged in - show user info and logout
           return Column(
             children: [
               ListTile(
                 leading: CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(authProvider.avatar, style: const TextStyle(fontSize: 20)),
+                  child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 20)),
                 ),
-                title: Text(authProvider.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text(settingsProvider.username, style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(authProvider.user?.email ?? '', style: const TextStyle(fontSize: 12)),
               ),
               ListTile(
@@ -138,16 +141,41 @@ class AppDrawer extends StatelessWidget {
             ],
           );
         } else {
-          // Not logged in - show login button
-          return ListTile(
-            leading: const Icon(Icons.login),
-            title: const Text('登入 / 註冊'),
-            subtitle: const Text('同步您的行程資料'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.pop(context); // Close drawer
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-            },
+          // Not logged in - show guest indicator and login button
+          return Column(
+            children: [
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.grey.shade300,
+                  child: const Icon(Icons.person_outline, color: Colors.grey),
+                ),
+                title: Row(
+                  children: [
+                    Text(
+                      settingsProvider.username.isNotEmpty ? settingsProvider.username : '訪客',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(4)),
+                      child: Text('訪客模式', style: TextStyle(fontSize: 10, color: Colors.orange.shade800)),
+                    ),
+                  ],
+                ),
+                subtitle: const Text('資料僅儲存於本機', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ),
+              ListTile(
+                leading: const Icon(Icons.login),
+                title: const Text('登入 / 註冊'),
+                subtitle: const Text('同步您的行程資料'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                },
+              ),
+            ],
           );
         }
       },
