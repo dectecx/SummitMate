@@ -298,6 +298,40 @@ class GasAuthService implements IAuthService {
   }
 
   @override
+  Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
+    final token = await _sessionRepo.getAccessToken();
+    if (token == null) {
+      return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '未登入');
+    }
+
+    try {
+      final response = await _apiClient.post({
+        'action': ApiConfig.actionAuthUpdateProfile,
+        'accessToken': token,
+        if (displayName != null) 'displayName': displayName,
+        if (avatar != null) 'avatar': avatar,
+      });
+
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+
+      if (apiResponse.isSuccess) {
+        final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
+
+        // Update local session with new user profile
+        await _sessionRepo.saveSession(token, user);
+
+        LogService.info('個人資料更新成功: ${user.displayName}', source: _source);
+        return AuthResult.success(user: user, accessToken: token);
+      } else {
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
+      }
+    } catch (e) {
+      LogService.error('更新個人資料例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤');
+    }
+  }
+
+  @override
   Future<void> logout() async {
     await _sessionRepo.clearSession();
     _isOfflineMode = false;

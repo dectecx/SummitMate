@@ -19,9 +19,9 @@ class UsageTrackingService {
   final GasApiClient _apiClient;
   final bool _forceWeb;
 
-  UsageTrackingService({GasApiClient? apiClient, bool forceWeb = false}) 
-      : _apiClient = apiClient ?? getIt<GasApiClient>(),
-        _forceWeb = forceWeb;
+  UsageTrackingService({GasApiClient? apiClient, bool forceWeb = false})
+    : _apiClient = apiClient ?? getIt<GasApiClient>(),
+      _forceWeb = forceWeb;
 
   /// 啟動追蹤 (僅 Web 平台)
   /// [username] 顯示名稱

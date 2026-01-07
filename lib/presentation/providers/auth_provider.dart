@@ -142,6 +142,18 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Update user profile (display name, avatar)
+  Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
+    final result = await _authService.updateProfile(displayName: displayName, avatar: avatar);
+
+    if (result.isSuccess) {
+      _user = result.user; // Update local user state
+      notifyListeners();
+    }
+
+    return result;
+  }
+
   /// Skip login and continue as guest
   /// Guest mode allows limited functionality without cloud sync
   void skipLogin() {

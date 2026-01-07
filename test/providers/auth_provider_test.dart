@@ -17,6 +17,7 @@ class MockAuthService implements IAuthService {
   AuthResult? mockDeleteResult;
   AuthResult? mockVerifyEmailResult;
   AuthResult? mockResendCodeResult;
+  AuthResult? mockUpdateProfileResult;
   bool logoutCalled = false;
   String? storedToken;
   UserProfile? cachedUser;
@@ -84,6 +85,11 @@ class MockAuthService implements IAuthService {
 
   @override
   Future<UserProfile?> getCachedUserProfile() async => cachedUser;
+
+  @override
+  Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
+    return mockUpdateProfileResult ?? AuthResult.failure(errorCode: 'ERROR', errorMessage: 'Not configured');
+  }
 
   @override
   Future<bool> isLoggedIn() async => isLoggedInValue;

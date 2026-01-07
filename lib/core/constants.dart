@@ -5,7 +5,7 @@ library;
 class AppInfo {
   static const String appName = 'SummitMate';
   static const String appNameChinese = '山友';
-  static const String version = '0.0.6';
+  static const String version = '0.0.7';
 }
 
 /// 顏色常數 (遵循 Dark Mode 設計)
@@ -123,6 +123,7 @@ class ApiConfig {
   static const String actionAuthResendCode = 'auth_resend_code';
   static const String actionAuthDeleteUser = 'auth_delete_user';
   static const String actionAuthRefreshToken = 'auth_refresh_token';
+  static const String actionAuthUpdateProfile = 'auth_update_profile';
 }
 
 /// Hive Box 名稱
