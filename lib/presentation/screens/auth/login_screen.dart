@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
           await authProvider.validateSession();
         }
       }
-      
+
       // Sync SettingsProvider with user profile
       if (mounted && result.isSuccess && result.user != null) {
         final settingsProvider = context.read<SettingsProvider>();

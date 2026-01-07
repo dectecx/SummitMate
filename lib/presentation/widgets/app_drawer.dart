@@ -6,7 +6,6 @@ import '../providers/trip_provider.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
-import '../screens/auth/login_screen.dart';
 import '../screens/trip_list_screen.dart';
 
 /// 應用程式側邊欄 (Drawer)
@@ -146,8 +145,8 @@ class AppDrawer extends StatelessWidget {
             children: [
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.grey.shade300,
-                  child: const Icon(Icons.person_outline, color: Colors.grey),
+                  backgroundColor: Colors.grey.shade200,
+                  child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 20)),
                 ),
                 title: Row(
                   children: [
@@ -170,9 +169,11 @@ class AppDrawer extends StatelessWidget {
                 title: const Text('登入 / 註冊'),
                 subtitle: const Text('同步您的行程資料'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context); // Close drawer
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                  // Must logout first to reset auth state to unauthenticated
+                  // This triggers HomeScreen's Consumer to show LoginScreen reactively
+                  await authProvider.logout();
                 },
               ),
             ],
@@ -220,11 +221,12 @@ class AppDrawer extends StatelessWidget {
     }
 
     // Proceed with logout
-    await authProvider.logout();
+    // Close drawer first before auth state change triggers HomeScreen rebuild
     if (context.mounted) {
       Navigator.pop(context); // Close drawer
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已登出')));
     }
+    await authProvider.logout();
+    // Snackbar may not work as screen is being replaced, but it's fine
   }
 
   Widget _buildTripTile(BuildContext context, dynamic trip, TripProvider provider) {
