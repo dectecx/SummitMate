@@ -61,9 +61,7 @@ void main() {
       test('API 成功時返回 count', () async {
         mockClient.expectedResponseData = {'count': 5};
 
-        final result = await service.syncLibrary([
-          GearLibraryItem(name: 'Test', weight: 100, category: 'Other'),
-        ]);
+        final result = await service.syncLibrary([GearLibraryItem(name: 'Test', weight: 100, category: 'Other')]);
         // 驗證
         expect(result.isSuccess, isTrue);
         expect(result.data, equals(5));
@@ -72,9 +70,7 @@ void main() {
       test('API 失敗時返回錯誤訊息', () async {
         mockClient.shouldFail = true;
 
-        final result = await service.syncLibrary([
-          GearLibraryItem(name: 'Test', weight: 100, category: 'Other'),
-        ]);
+        final result = await service.syncLibrary([GearLibraryItem(name: 'Test', weight: 100, category: 'Other')]);
         // 驗證
         expect(result.isSuccess, isFalse);
         expect(result.errorMessage, contains('HTTP 500'));

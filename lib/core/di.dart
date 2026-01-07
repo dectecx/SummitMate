@@ -121,32 +121,7 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
 
   // ========================================
-  // Services
-  // ========================================
-
-  // PollService
-  getIt.registerSingleton<PollService>(PollService());
-
-  // Services
-  getIt.registerLazySingleton<GoogleSheetsService>(() => GoogleSheetsService());
-  getIt.registerLazySingleton<SyncService>(
-    () => SyncService(
-      sheetsService: getIt<GoogleSheetsService>(),
-      tripRepo: getIt<ITripRepository>(),
-      itineraryRepo: getIt<IItineraryRepository>(),
-      messageRepo: getIt<IMessageRepository>(),
-      settingsRepo: getIt<ISettingsRepository>(),
-    ),
-  );
-
-  // Providers (Singletons for access outside logic)
-  getIt.registerLazySingleton<GearProvider>(() => GearProvider());
-
-  // ========================================
-  // Auth Services
-  // ========================================
-
-  // Auth Services
+  // Auth & Network Core
   // ========================================
 
   // Token Validator
@@ -169,6 +144,28 @@ Future<void> setupDependencies() async {
 
   // GasApiClient - Core API Client with auth token injection (via Interceptor)
   getIt.registerLazySingleton<GasApiClient>(() => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()));
+
+  // ========================================
+  // Services
+  // ========================================
+
+  // PollService
+  getIt.registerSingleton<PollService>(PollService());
+
+  // Services
+  getIt.registerLazySingleton<GoogleSheetsService>(() => GoogleSheetsService());
+  getIt.registerLazySingleton<SyncService>(
+    () => SyncService(
+      sheetsService: getIt<GoogleSheetsService>(),
+      tripRepo: getIt<ITripRepository>(),
+      itineraryRepo: getIt<IItineraryRepository>(),
+      messageRepo: getIt<IMessageRepository>(),
+      settingsRepo: getIt<ISettingsRepository>(),
+    ),
+  );
+
+  // Providers (Singletons for access outside logic)
+  getIt.registerLazySingleton<GearProvider>(() => GearProvider());
 }
 
 /// 重置依賴注入 (用於測試)

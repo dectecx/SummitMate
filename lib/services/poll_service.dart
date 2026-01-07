@@ -18,9 +18,7 @@ class PollService {
   Future<List<Poll>> fetchPolls({required String userId}) async {
     try {
       LogService.info('Fetching polls for user: $userId', source: _source);
-      final response = await _apiClient.get(
-        queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId},
-      );
+      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId});
 
       LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
 
@@ -120,12 +118,7 @@ class PollService {
 
   /// Add a new option
   Future<void> addOption({required String pollId, required String text, required String creatorId}) async {
-    final payload = {
-      'action': ApiConfig.actionPollAddOption,
-      'poll_id': pollId,
-      'text': text,
-      'creator_id': creatorId,
-    };
+    final payload = {'action': ApiConfig.actionPollAddOption, 'poll_id': pollId, 'text': text, 'creator_id': creatorId};
 
     try {
       LogService.info('Adding option "$text" to poll $pollId by creator $creatorId', source: _source);
@@ -185,11 +178,7 @@ class PollService {
 
   /// Delete an option
   Future<void> deleteOption({required String optionId, required String userId}) async {
-    final payload = {
-      'action': ApiConfig.actionPollDeleteOption,
-      'option_id': optionId,
-      'user_id': userId,
-    };
+    final payload = {'action': ApiConfig.actionPollDeleteOption, 'option_id': optionId, 'user_id': userId};
 
     try {
       LogService.info('Deleting option: $optionId by user: $userId', source: _source);
