@@ -79,11 +79,10 @@ class GasAuthService implements IAuthService {
 
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
-        final accessToken = apiResponse.data['authToken'] as String;
-        // TODO: Support refresh token when GAS returns it
+        final accessToken = apiResponse.data['accessToken'] as String;
         final refreshToken = apiResponse.data['refreshToken'] as String?;
 
-        await _sessionRepo.saveSession(accessToken, user);
+        await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
 
         LogService.info('登入成功: ${user.email}', source: _source);
         return AuthResult.success(user: user, accessToken: accessToken, refreshToken: refreshToken);
@@ -159,24 +158,50 @@ class GasAuthService implements IAuthService {
     if (_tokenValidator.isExpiringSoon(token)) {
       LogService.debug('Token 即將過期，嘗試刷新', source: _source);
       final refreshResult = await refreshToken();
-      if (refreshResult.isSuccess) {
+      // If refresh success, return success immediately (new token saved in repo)
+      if (refreshResult.isSuccess && refreshResult.accessToken != null) {
         return refreshResult;
       }
-      // If refresh fails, continue with validation
+      // If refresh fails (e.g. network error, or invalid refresh token), continue to validate current token
+      // If current token is still valid, we can use it. If expired, validate API will return error.
+      LogService.warning('Token 刷新失敗，繼續驗證舊 Token', source: _source);
     }
 
     try {
-      final response = await _apiClient.post({'action': 'auth_validate', 'authToken': token});
+      // Use accessToken in request
+      final response = await _apiClient.post({'action': 'auth_validate', 'accessToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
-        await _sessionRepo.saveSession(token, user);
-        _isOfflineMode = false;
 
+        // Check if API returned new tokens (e.g. legacy upgrade)
+        final newAccessToken = apiResponse.data['accessToken'] as String?;
+        final newRefreshToken = apiResponse.data['refreshToken'] as String?;
+
+        if (newAccessToken != null) {
+          await _sessionRepo.saveSession(newAccessToken, user, refreshToken: newRefreshToken);
+          return AuthResult.success(user: user, accessToken: newAccessToken, refreshToken: newRefreshToken);
+        } else {
+          // Update cache user
+          // We might want to keep the current tokens if no new ones provided
+          await _sessionRepo.saveSession(token, user);
+        }
+
+        _isOfflineMode = false;
         return AuthResult.success(user: user, accessToken: token);
       } else {
+        // If token expired/invalid, try refresh one last time if we haven't already?
+        // Or just fail.
+        if (apiResponse.code == '0809') {
+          // AUTH_TOKEN_EXPIRED
+          final refreshResult = await refreshToken();
+          if (refreshResult.isSuccess) {
+            return refreshResult;
+          }
+        }
+
         await logout();
         return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
@@ -192,7 +217,7 @@ class GasAuthService implements IAuthService {
           final tokenAge = DateTime.now().difference(validationResult.payload!.issuedAt);
           if (tokenAge < const Duration(days: 7)) {
             _isOfflineMode = true;
-            return AuthResult.success(user: cachedUser, accessToken: token);
+            return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
           }
         }
       }
@@ -203,10 +228,40 @@ class GasAuthService implements IAuthService {
 
   @override
   Future<AuthResult> refreshToken() async {
-    // TODO: Implement refresh token when GAS supports it
-    // For now, return failure to fall back to regular validation
-    LogService.debug('Refresh token not yet supported by GAS', source: _source);
-    return AuthResult.failure(errorCode: 'NOT_SUPPORTED', errorMessage: 'Refresh token 尚未支援');
+    final refreshToken = await _sessionRepo.getRefreshToken();
+    if (refreshToken == null) {
+      LogService.warning('無 Refresh Token，無法刷新', source: _source);
+      return AuthResult.failure(errorCode: 'NO_REFRESH_TOKEN', errorMessage: '無法刷新憑證');
+    }
+
+    try {
+      final response = await _apiClient.post({'action': 'auth_refresh_token', 'refreshToken': refreshToken});
+      final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+
+      if (apiResponse.isSuccess) {
+        final newAccessToken = apiResponse.data['accessToken'] as String;
+        final user = await _sessionRepo.getUserProfile();
+
+        if (user != null) {
+          // Save new access token, keep old refresh token
+          await _sessionRepo.saveSession(newAccessToken, user, refreshToken: refreshToken);
+          LogService.info('Token 刷新成功', source: _source);
+          return AuthResult.success(user: user, accessToken: newAccessToken, refreshToken: refreshToken);
+        } else {
+          return AuthResult.failure(errorCode: 'USER_NOT_FOUND', errorMessage: '找不到使用者資料');
+        }
+      } else {
+        LogService.warning('刷新 Token 失敗: ${apiResponse.message}', source: _source);
+        if (apiResponse.code == '0809' || apiResponse.code == '0804') {
+          // Refresh token expired or invalid -> logout
+          await logout();
+        }
+        return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
+      }
+    } catch (e) {
+      LogService.error('刷新 Token 例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤');
+    }
   }
 
   @override
@@ -217,7 +272,7 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({'action': 'auth_delete_user'});
+      final response = await _apiClient.post({'action': 'auth_delete_user', 'accessToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -244,10 +299,7 @@ class GasAuthService implements IAuthService {
   Future<String?> getAccessToken() => _sessionRepo.getAuthToken();
 
   @override
-  Future<String?> getRefreshToken() async {
-    // TODO: Implement when session supports refresh token
-    return null;
-  }
+  Future<String?> getRefreshToken() => _sessionRepo.getRefreshToken();
 
   @override
   Future<UserProfile?> getCachedUserProfile() => _sessionRepo.getUserProfile();

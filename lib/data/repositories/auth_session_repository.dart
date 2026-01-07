@@ -10,6 +10,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   // Secure Storage Keys
   static const String _keyAuthToken = 'auth_token';
+  static const String _keyRefreshToken = 'refresh_token';
   static const String _keyUserProfile = 'user_profile';
 
   final FlutterSecureStorage _secureStorage;
@@ -18,9 +19,12 @@ class AuthSessionRepository implements IAuthSessionRepository {
     : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   @override
-  Future<void> saveSession(String token, UserProfile user) async {
+  Future<void> saveSession(String accessToken, UserProfile user, {String? refreshToken}) async {
     try {
-      await _secureStorage.write(key: _keyAuthToken, value: token);
+      await _secureStorage.write(key: _keyAuthToken, value: accessToken);
+      if (refreshToken != null) {
+        await _secureStorage.write(key: _keyRefreshToken, value: refreshToken);
+      }
       await _secureStorage.write(key: _keyUserProfile, value: jsonEncode(user.toJson()));
       LogService.debug('Session saved for user: ${user.email}', source: _source);
     } catch (e) {
@@ -33,6 +37,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
   Future<void> clearSession() async {
     try {
       await _secureStorage.delete(key: _keyAuthToken);
+      await _secureStorage.delete(key: _keyRefreshToken);
       await _secureStorage.delete(key: _keyUserProfile);
       LogService.debug('Session cleared', source: _source);
     } catch (e) {
@@ -47,6 +52,16 @@ class AuthSessionRepository implements IAuthSessionRepository {
       return await _secureStorage.read(key: _keyAuthToken);
     } catch (e) {
       LogService.error('Failed to read auth token: $e', source: _source);
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    try {
+      return await _secureStorage.read(key: _keyRefreshToken);
+    } catch (e) {
+      LogService.error('Failed to read refresh token: $e', source: _source);
       return null;
     }
   }
