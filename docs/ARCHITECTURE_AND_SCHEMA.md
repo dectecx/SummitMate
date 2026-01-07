@@ -545,8 +545,8 @@ Base URL: `macros/s/{DEPLOYMENT_ID}/exec`
 所有 API 相關服務皆支援建構子注入：
 
 ```dart
-// GasApiClient - 可替換 http.Client
-GasApiClient({http.Client? client, required String baseUrl})
+// GasApiClient - 可替換 Dio
+GasApiClient({Dio? dio, required String baseUrl})
 
 // GoogleSheetsService - 可替換 GasApiClient
 GoogleSheetsService({GasApiClient? apiClient})
