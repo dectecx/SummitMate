@@ -30,18 +30,18 @@ function doGet(e) {
     switch (action) {
       // === 行程 (Trips) ===
       case API_ACTIONS.TRIP_LIST:
-        return _createJsonResponse(fetchTrips());
+        return _createJsonResponse(getTrips());
 
       // === 行程節點 + 留言 ===
       case API_ACTIONS.TRIP_GET_FULL:
-        return _createJsonResponse(fetchAll(tripId));
+        return _createJsonResponse(getTripFull(tripId));
       case API_ACTIONS.ITINERARY_LIST:
         return _createJsonResponse(
-          _success({ itinerary: getItineraryData(getSpreadsheet(), tripId) })
+          _success({ itinerary: getItinerary(getSpreadsheet(), tripId) })
         );
       case API_ACTIONS.MESSAGE_LIST:
         return _createJsonResponse(
-          _success({ messages: getMessagesData(getSpreadsheet(), tripId) })
+          _success({ messages: getMessages(getSpreadsheet(), tripId) })
         );
 
       // === 投票 (Polls) ===
@@ -84,17 +84,17 @@ function doPost(e) {
     switch (action) {
       // === 行程 (Trips) ===
       case API_ACTIONS.TRIP_LIST:
-        return _createJsonResponse(fetchTrips());
+        return _createJsonResponse(getTrips());
       case API_ACTIONS.TRIP_CREATE:
-        return _createJsonResponse(addTrip(data));
+        return _createJsonResponse(createTrip(data));
       case API_ACTIONS.TRIP_UPDATE:
         return _createJsonResponse(updateTrip(data));
       case API_ACTIONS.TRIP_DELETE:
         return _createJsonResponse(deleteTrip(data.trip_id || data.id));
       case API_ACTIONS.TRIP_SET_ACTIVE:
-        return _createJsonResponse(setActiveTrip(data.id));
+        return _createJsonResponse(setTripActive(data.id));
       case API_ACTIONS.TRIP_SYNC:
-        return _createJsonResponse(handleSyncTripFull(data));
+        return _createJsonResponse(syncTripFull(data));
 
       // === 行程節點 (Itinerary) ===
       case API_ACTIONS.ITINERARY_UPDATE:
@@ -102,17 +102,17 @@ function doPost(e) {
 
       // === 留言 (Messages) ===
       case API_ACTIONS.MESSAGE_CREATE:
-        return _createJsonResponse(addMessage(data.data));
+        return _createJsonResponse(createMessage(data.data));
       case API_ACTIONS.MESSAGE_CREATE_BATCH:
-        return _createJsonResponse(batchAddMessages(data.data));
+        return _createJsonResponse(batchCreateMessages(data.data));
       case API_ACTIONS.MESSAGE_DELETE:
         return _createJsonResponse(deleteMessage(data.uuid));
 
       // === 裝備組合 (Gear) ===
       case API_ACTIONS.GEAR_SET_LIST:
-        return _createJsonResponse(fetchGearSets());
+        return _createJsonResponse(getGearSets());
       case API_ACTIONS.GEAR_SET_GET:
-        return _createJsonResponse(fetchGearSetByKey(data.key));
+        return _createJsonResponse(getGearSet(data.key));
       case API_ACTIONS.GEAR_SET_DOWNLOAD:
         return _createJsonResponse(downloadGearSet(data.uuid, data.key));
       case API_ACTIONS.GEAR_SET_UPLOAD:
@@ -152,19 +152,19 @@ function doPost(e) {
 
       // === 會員 (Auth) ===
       case API_ACTIONS.AUTH_REGISTER:
-        return _createJsonResponse(authRegister(data));
+        return _createJsonResponse(registerUser(data));
       case API_ACTIONS.AUTH_LOGIN:
-        return _createJsonResponse(authLogin(data));
+        return _createJsonResponse(loginUser(data));
       case API_ACTIONS.AUTH_VALIDATE:
-        return _createJsonResponse(authValidate(data));
+        return _createJsonResponse(validateSession(data));
       case API_ACTIONS.AUTH_VERIFY_EMAIL:
-        return _createJsonResponse(authVerifyEmail(data));
+        return _createJsonResponse(verifyEmail(data));
       case API_ACTIONS.AUTH_RESEND_CODE:
-        return _createJsonResponse(authResendCode(data));
+        return _createJsonResponse(resendCode(data));
       case API_ACTIONS.AUTH_DELETE_USER:
-        return _createJsonResponse(authDeleteUser(data));
+        return _createJsonResponse(deleteUser(data));
       case API_ACTIONS.AUTH_REFRESH_TOKEN:
-        return _createJsonResponse(authRefreshToken(data));
+        return _createJsonResponse(refreshSession(data));
 
       default:
         return _createJsonResponse(

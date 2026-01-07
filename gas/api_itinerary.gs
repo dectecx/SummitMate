@@ -14,12 +14,12 @@
  * @param {string} [tripId] - 可選，篩選特定行程的資料
  * @returns {Object} { code, data, message }
  */
-function fetchAll(tripId) {
+function getTripFull(tripId) {
   try {
     const ss = getSpreadsheet();
     return _success({
-      itinerary: getItineraryData(ss, tripId),
-      messages: getMessagesData(ss, tripId),
+      itinerary: getItinerary(ss, tripId),
+      messages: getMessages(ss, tripId),
     });
   } catch (e) {
     return _error(API_CODES.SYSTEM_ERROR, e.message);
@@ -32,7 +32,7 @@ function fetchAll(tripId) {
  * @param {string} [tripId] - 可選，篩選特定行程的資料
  * @returns {Object[]} 行程節點陣列
  */
-function getItineraryData(ss, tripId) {
+function getItinerary(ss, tripId) {
   const sheet = ss.getSheetByName(SHEET_ITINERARY);
   if (!sheet) return [];
 
