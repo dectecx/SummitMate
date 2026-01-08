@@ -336,4 +336,15 @@ class GearProvider extends ChangeNotifier {
   List<GearItem> getItemsFromLibrary(String libraryItemId) {
     return _items.where((item) => item.libraryItemId == libraryItemId).toList();
   }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除 Hive 資料)
+  void reset() {
+    _items = [];
+    _selectedCategory = null;
+    _searchQuery = '';
+    _showUncheckedOnly = false;
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
+  }
 }

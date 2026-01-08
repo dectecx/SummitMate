@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
+import '../core/offline_config.dart';
 import '../data/models/message.dart';
 import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
-import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../services/log_service.dart';
 import 'google_sheets_service.dart';
+import 'connectivity_service.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步
@@ -14,19 +15,19 @@ class SyncService {
   final ITripRepository _tripRepo;
   final IItineraryRepository _itineraryRepo;
   final IMessageRepository _messageRepo;
-  final ISettingsRepository _settingsRepo;
+  final ConnectivityService _connectivity;
 
   SyncService({
     required GoogleSheetsService sheetsService,
     required ITripRepository tripRepo,
     required IItineraryRepository itineraryRepo,
     required IMessageRepository messageRepo,
-    required ISettingsRepository settingsRepo,
+    required ConnectivityService connectivity,
   }) : _sheetsService = sheetsService,
        _tripRepo = tripRepo,
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,
-       _settingsRepo = settingsRepo {
+       _connectivity = connectivity {
     _loadLastSyncTimes();
   }
 
@@ -35,14 +36,13 @@ class SyncService {
     _lastMessagesSyncTime = _messageRepo.getLastSyncTime();
   }
 
-  bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
+  bool get _isOffline => _connectivity.isOffline;
 
   /// 取得當前活動行程 ID
   String? get _activeTripId => _tripRepo.getActiveTrip()?.id;
 
   DateTime? _lastItinerarySyncTime;
   DateTime? _lastMessagesSyncTime;
-  static const Duration _kAutoSyncCooldown = Duration(minutes: 5);
 
   DateTime? get lastItinerarySync => _lastItinerarySyncTime;
   DateTime? get lastMessagesSync => _lastMessagesSyncTime;
@@ -57,9 +57,12 @@ class SyncService {
     // 檢查冷卻時間
     // 若非自動同步 (手動)，則忽略冷卻時間 (視為已冷卻/需更新)
     final itinNeeded =
-        !isAuto || (_lastItinerarySyncTime == null || now.difference(_lastItinerarySyncTime!) > _kAutoSyncCooldown);
+        !isAuto ||
+        (_lastItinerarySyncTime == null ||
+            now.difference(_lastItinerarySyncTime!) > OfflineConfig.syncThrottleDuration);
     final msgNeeded =
-        !isAuto || (_lastMessagesSyncTime == null || now.difference(_lastMessagesSyncTime!) > _kAutoSyncCooldown);
+        !isAuto ||
+        (_lastMessagesSyncTime == null || now.difference(_lastMessagesSyncTime!) > OfflineConfig.syncThrottleDuration);
 
     // Case 0: 兩者皆不需要 (被節流)
     if (!itinNeeded && !msgNeeded) {
@@ -134,8 +137,10 @@ class SyncService {
     if (_isOffline) return _offlineSyncResult();
 
     final now = DateTime.now();
-    if (isAuto && _lastItinerarySyncTime != null && now.difference(_lastItinerarySyncTime!) < _kAutoSyncCooldown) {
-      final remaining = (_kAutoSyncCooldown - now.difference(_lastItinerarySyncTime!)).inSeconds;
+    if (isAuto &&
+        _lastItinerarySyncTime != null &&
+        now.difference(_lastItinerarySyncTime!) < OfflineConfig.syncThrottleDuration) {
+      final remaining = (OfflineConfig.syncThrottleDuration - now.difference(_lastItinerarySyncTime!)).inSeconds;
       LogService.info('行程同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
       return SyncResult(isSuccess: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
     }
@@ -162,8 +167,10 @@ class SyncService {
     if (_isOffline) return _offlineSyncResult();
 
     final now = DateTime.now();
-    if (isAuto && _lastMessagesSyncTime != null && now.difference(_lastMessagesSyncTime!) < _kAutoSyncCooldown) {
-      final remaining = (_kAutoSyncCooldown - now.difference(_lastMessagesSyncTime!)).inSeconds;
+    if (isAuto &&
+        _lastMessagesSyncTime != null &&
+        now.difference(_lastMessagesSyncTime!) < OfflineConfig.syncThrottleDuration) {
+      final remaining = (OfflineConfig.syncThrottleDuration - now.difference(_lastMessagesSyncTime!)).inSeconds;
       LogService.info('留言同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
       return SyncResult(isSuccess: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
     }

@@ -3,6 +3,7 @@ import '../core/di.dart';
 import '../data/models/gear_set.dart';
 import '../data/models/gear_item.dart';
 import '../data/models/meal_item.dart';
+import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
 
@@ -10,9 +11,9 @@ import 'log_service.dart';
 class GearCloudService {
   static const String _source = 'GearCloud';
 
-  final GasApiClient _apiClient;
+  final NetworkAwareClient _apiClient;
 
-  GearCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
+  GearCloudService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 取得公開/保護的裝備組合列表
   Future<GearCloudResult<List<GearSet>>> fetchGearSets() async {

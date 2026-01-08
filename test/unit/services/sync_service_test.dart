@@ -3,13 +3,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:hive/hive.dart';
 import 'package:summitmate/services/sync_service.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
+import 'package:summitmate/services/connectivity_service.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
-import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/data/models/itinerary_item.dart';
-import 'package:summitmate/data/models/settings.dart';
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/services/log_service.dart';
 
@@ -22,9 +21,7 @@ class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
 class MockMessageRepository extends Mock implements IMessageRepository {}
 
-class MockSettingsRepository extends Mock implements ISettingsRepository {}
-
-class MockSettings extends Mock implements Settings {}
+class MockConnectivityService extends Mock implements ConnectivityService {}
 
 void main() {
   late SyncService syncService;
@@ -32,20 +29,17 @@ void main() {
   late MockTripRepository mockTripRepo;
   late MockItineraryRepository mockItineraryRepo;
   late MockMessageRepository mockMessageRepo;
-  late MockSettingsRepository mockSettingsRepo;
-  late MockSettings mockSettings;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockSheetsService = MockGoogleSheetsService();
     mockTripRepo = MockTripRepository();
     mockItineraryRepo = MockItineraryRepository();
     mockMessageRepo = MockMessageRepository();
-    mockSettingsRepo = MockSettingsRepository();
-    mockSettings = MockSettings();
+    mockConnectivity = MockConnectivityService();
 
     // Default: Online mode
-    when(() => mockSettings.isOfflineMode).thenReturn(false);
-    when(() => mockSettingsRepo.getSettings()).thenReturn(mockSettings);
+    when(() => mockConnectivity.isOffline).thenReturn(false);
 
     // Default: Active trip
     when(
@@ -65,7 +59,7 @@ void main() {
       tripRepo: mockTripRepo,
       itineraryRepo: mockItineraryRepo,
       messageRepo: mockMessageRepo,
-      settingsRepo: mockSettingsRepo,
+      connectivity: mockConnectivity,
     );
 
     // Register fallback values
@@ -78,7 +72,7 @@ void main() {
   group('SyncService Tests', () {
     test('syncAll should skip when offline', () async {
       // Arrange
-      when(() => mockSettings.isOfflineMode).thenReturn(true);
+      when(() => mockConnectivity.isOffline).thenReturn(true);
 
       // Act
       final result = await syncService.syncAll();

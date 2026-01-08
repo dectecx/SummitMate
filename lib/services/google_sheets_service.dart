@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import '../core/constants.dart';
 import '../core/di.dart';
@@ -10,10 +11,10 @@ import 'log_service.dart';
 /// Google Sheets API 服務
 /// 透過 Google Apps Script 作為 API Gateway
 class GoogleSheetsService {
-  final GasApiClient _apiClient;
+  final NetworkAwareClient _apiClient;
 
   /// 建構子
-  GoogleSheetsService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
+  GoogleSheetsService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 取得所有資料 (行程 + 留言)
   Future<FetchAllResult> fetchAll({String? tripId}) async {

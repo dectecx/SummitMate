@@ -1,9 +1,12 @@
 import '../core/constants.dart';
 import '../core/constants/gas_error_codes.dart';
 import '../core/di.dart';
+import '../core/exceptions/offline_exception.dart';
+import '../core/offline_config.dart';
 import '../data/models/user_profile.dart';
 import '../data/repositories/interfaces/i_auth_session_repository.dart';
 import 'gas_api_client.dart';
+import 'network_aware_client.dart';
 import 'interfaces/i_auth_service.dart';
 import 'interfaces/i_token_validator.dart';
 import 'jwt_token_validator.dart';
@@ -15,16 +18,16 @@ import 'log_service.dart';
 class GasAuthService implements IAuthService {
   static const String _source = 'GasAuthService';
 
-  final GasApiClient _apiClient;
+  final NetworkAwareClient _apiClient;
   final IAuthSessionRepository _sessionRepo;
   final ITokenValidator _tokenValidator;
   bool _isOfflineMode = false;
 
   GasAuthService({
-    GasApiClient? apiClient,
+    NetworkAwareClient? apiClient,
     required IAuthSessionRepository sessionRepository,
     ITokenValidator? tokenValidator,
-  }) : _apiClient = apiClient ?? getIt<GasApiClient>(),
+  }) : _apiClient = apiClient ?? getIt<NetworkAwareClient>(),
        _sessionRepo = sessionRepository,
        _tokenValidator = tokenValidator ?? JwtTokenValidator();
 
@@ -103,10 +106,41 @@ class GasAuthService implements IAuthService {
         LogService.warning('登入失敗: ${apiResponse.message}', source: _source);
         return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
+    } on OfflineException {
+      // NetworkAwareClient 攔截到離線請求，嘗試使用快取登入
+      LogService.info('離線模式偵測，嘗試使用快取登入', source: _source);
+      return await _tryOfflineLogin(email);
     } catch (e, stackTrace) {
       LogService.error('登入例外: $e', source: _source, stackTrace: stackTrace);
-      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
+      // 其他網路錯誤也嘗試離線登入
+      return await _tryOfflineLogin(email);
     }
+  }
+
+  /// 離線登入嘗試
+  /// 當網路不可用時，檢查本地快取的 session 是否與請求的 email 匹配
+  Future<AuthResult> _tryOfflineLogin(String email) async {
+    final cachedUser = await getCachedUserProfile();
+    final token = await getAccessToken();
+
+    if (cachedUser != null && token != null && cachedUser.email.toLowerCase() == email.toLowerCase()) {
+      // Validate token age (offline grace period)
+      final validationResult = _tokenValidator.validate(token);
+      if (validationResult.payload != null) {
+        final tokenAge = DateTime.now().difference(validationResult.payload!.issuedAt);
+        if (tokenAge < OfflineConfig.offlineGracePeriod) {
+          LogService.info('離線登入成功: $email', source: _source);
+          _isOfflineMode = true;
+          return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
+        } else {
+          LogService.warning('離線登入失敗: Token 已超過 ${OfflineConfig.offlineGracePeriodDays} 天', source: _source);
+          return AuthResult.failure(errorCode: 'OFFLINE_TOKEN_EXPIRED', errorMessage: '離線驗證已過期，請連線後重新登入');
+        }
+      }
+    }
+
+    // No matching cached session
+    return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
   }
 
   @override
@@ -223,11 +257,11 @@ class GasAuthService implements IAuthService {
       final cachedUser = await getCachedUserProfile();
 
       if (cachedUser != null) {
-        // Check offline grace period (7 days)
+        // Check offline grace period
         final validationResult = _tokenValidator.validate(token);
         if (validationResult.payload != null) {
           final tokenAge = DateTime.now().difference(validationResult.payload!.issuedAt);
-          if (tokenAge < const Duration(days: 7)) {
+          if (tokenAge < OfflineConfig.offlineGracePeriod) {
             _isOfflineMode = true;
             return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
           }

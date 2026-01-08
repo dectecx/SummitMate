@@ -80,6 +80,22 @@ class HiveService {
     await Hive.deleteFromDisk();
   }
 
+  /// 清除使用者資料 (登出時使用)
+  /// 保留 logs 以便除錯，清除其他所有使用者資料
+  Future<void> clearUserData() async {
+    await clearSelectedData(
+      clearTrips: true,
+      clearItinerary: true,
+      clearMessages: true,
+      clearGear: true,
+      clearGearLibrary: true,
+      clearPolls: true,
+      clearWeather: true,
+      clearSettings: true,
+      clearLogs: false, // 保留 logs
+    );
+  }
+
   /// 選擇性清除資料
   /// 使用 deleteBoxFromDisk 避免 type conflict
   Future<void> clearSelectedData({

@@ -7,7 +7,7 @@ class MockSyncService extends SyncService {
     required super.tripRepo,
     required super.itineraryRepo,
     required super.messageRepo,
-    required super.settingsRepo,
+    required super.connectivity,
   });
 
   // Override to prevent real sync calls

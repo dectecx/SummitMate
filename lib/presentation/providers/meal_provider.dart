@@ -66,4 +66,11 @@ class MealProvider extends ChangeNotifier {
     _dailyPlans.addAll(newPlans);
     notifyListeners();
   }
+
+  /// 重設 Provider 狀態 (登出時使用)
+  void reset() {
+    _dailyPlans.clear();
+    _dailyPlans.addAll([DailyMealPlan(day: 'D0'), DailyMealPlan(day: 'D1'), DailyMealPlan(day: 'D2')]);
+    notifyListeners();
+  }
 }

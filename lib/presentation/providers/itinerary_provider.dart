@@ -3,11 +3,11 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/itinerary_item.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../../data/repositories/interfaces/i_settings_repository.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/sync_service.dart';
+import '../../services/connectivity_service.dart';
 
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {
@@ -236,7 +236,7 @@ class ItineraryProvider extends ChangeNotifier {
   Future<void> sync({bool isAuto = false}) async {
     try {
       // 檢查離線模式
-      final isOffline = getIt<ISettingsRepository>().getSettings().isOfflineMode;
+      final isOffline = getIt<ConnectivityService>().isOffline;
       if (isOffline) {
         if (!isAuto) ToastService.warning('離線模式無法同步');
         return;
@@ -300,5 +300,16 @@ class ItineraryProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除 Hive 資料)
+  void reset() {
+    _items = [];
+    _selectedDay = ItineraryDay.d1;
+    _isLoading = false;
+    _isEditMode = false;
+    _error = null;
+    LogService.info('ItineraryProvider 已重設', source: 'Itinerary');
+    notifyListeners();
   }
 }

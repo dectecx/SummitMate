@@ -4,10 +4,10 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/poll.dart';
 import '../../data/repositories/interfaces/i_poll_repository.dart';
-import '../../data/repositories/interfaces/i_settings_repository.dart';
 import '../../services/poll_service.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
+import '../../services/connectivity_service.dart';
 
 class PollProvider with ChangeNotifier {
   static const String _source = 'PollProvider';
@@ -33,23 +33,23 @@ class PollProvider with ChangeNotifier {
 
   final PollService _pollService;
   final IPollRepository _pollRepository;
-  final ISettingsRepository _settingsRepo;
+  final ConnectivityService _connectivity;
   final SharedPreferences _prefs;
 
   PollProvider({
     PollService? pollService,
     IPollRepository? pollRepository,
-    ISettingsRepository? settingsRepo,
+    ConnectivityService? connectivity,
     SharedPreferences? prefs,
   }) : _pollService = pollService ?? getIt<PollService>(),
        _pollRepository = pollRepository ?? getIt<IPollRepository>(),
-       _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>(),
+       _connectivity = connectivity ?? getIt<ConnectivityService>(),
        _prefs = prefs ?? getIt<SharedPreferences>() {
     _loadUserId();
     _loadInitialData();
   }
 
-  bool get _isOffline => _settingsRepo.getSettings().isOfflineMode;
+  bool get _isOffline => _connectivity.isOffline;
 
   Future<void> _loadUserId() async {
     _currentUserId = _prefs.getString(PrefKeys.username);
@@ -226,5 +226,16 @@ class PollProvider with ChangeNotifier {
       () => _pollService.deletePoll(pollId: pollId, userId: _currentUserId ?? 'anonymous'),
       offlineMessage: '離線模式無法刪除投票',
     );
+  }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除 Hive 資料)
+  void reset() {
+    _polls = [];
+    _isLoading = false;
+    _error = null;
+    _currentUserId = null;
+    _lastSyncTime = null;
+    LogService.info('PollProvider 已重設', source: _source);
+    notifyListeners();
   }
 }

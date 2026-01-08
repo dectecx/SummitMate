@@ -1,6 +1,7 @@
 import '../core/constants.dart';
 import '../core/di.dart';
 import '../data/models/trip.dart';
+import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
 
@@ -8,9 +9,9 @@ import 'log_service.dart';
 class TripCloudService {
   static const String _source = 'TripCloud';
 
-  final GasApiClient _apiClient;
+  final NetworkAwareClient _apiClient;
 
-  TripCloudService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
+  TripCloudService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 取得所有雲端行程
   Future<TripCloudResult<List<Trip>>> fetchTrips() async {

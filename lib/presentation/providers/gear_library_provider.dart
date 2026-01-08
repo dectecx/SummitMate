@@ -387,4 +387,15 @@ class GearLibraryProvider extends ChangeNotifier {
       LogService.error('同步更新失敗: $e', source: 'GearLibrary');
     }
   }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除 Hive 資料)
+  void reset() {
+    _items = [];
+    _selectedCategory = null;
+    _searchQuery = '';
+    _isLoading = false;
+    _error = null;
+    LogService.info('GearLibraryProvider 已重設', source: 'GearLibrary');
+    notifyListeners();
+  }
 }
