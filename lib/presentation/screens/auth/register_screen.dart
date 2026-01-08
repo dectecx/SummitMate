@@ -57,9 +57,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     setState(() => _isLoading = false);
-
+    // Handle registration result (isSuccess is true for both verified and requiresVerification)
     if (result.isSuccess) {
-      // Sync SettingsProvider with user profile
+      // Sync SettingsProvider with user profile if available
       if (mounted && result.user != null) {
         final settingsProvider = context.read<SettingsProvider>();
         if (result.user!.displayName.isNotEmpty) {
