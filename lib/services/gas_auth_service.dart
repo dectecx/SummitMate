@@ -58,7 +58,14 @@ class GasAuthService implements IAuthService {
       if (apiResponse.isSuccess) {
         // Registration requires email verification, don't save session yet
         LogService.info('註冊成功，需驗證 Email', source: _source);
-        return AuthResult.requiresVerification(errorMessage: '請檢查 Email 完成驗證');
+
+        // Parse user data from response if available
+        UserProfile? user;
+        if (apiResponse.data['user'] != null) {
+          user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
+        }
+
+        return AuthResult.requiresVerification(errorMessage: '請檢查 Email 完成驗證', user: user);
       } else {
         LogService.warning('註冊失敗: ${apiResponse.message}', source: _source);
         return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);

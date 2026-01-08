@@ -71,12 +71,21 @@ class AuthProvider extends ChangeNotifier {
     if (result.isSuccess) {
       _user = result.user;
       _isOffline = false;
-      _state = (result.user?.isVerified == true) ? AuthState.authenticated : AuthState.unauthenticated;
+
+      // Only change state and notify if verified
+      // For unverified users, RegisterScreen will handle navigation to VerificationScreen
+      // Calling notifyListeners for unverified would trigger HomeScreen rebuild and break navigation
+      if (result.user?.isVerified == true) {
+        _state = AuthState.authenticated;
+        notifyListeners();
+      }
+      // For unverified users, state stays as is (loading/unauthenticated)
+      // so HomeScreen doesn't rebuild and RegisterScreen can navigate to VerificationScreen
     } else {
       _state = AuthState.unauthenticated;
+      notifyListeners();
     }
 
-    notifyListeners();
     return result;
   }
 

@@ -37,9 +37,10 @@ class AuthResult {
     return AuthResult(isSuccess: false, errorCode: errorCode, errorMessage: errorMessage);
   }
 
-  factory AuthResult.requiresVerification({String? errorMessage}) {
+  factory AuthResult.requiresVerification({String? errorMessage, UserProfile? user}) {
     return AuthResult(
-      isSuccess: false,
+      isSuccess: true, // The operation succeeded, but verification is needed
+      user: user,
       requiresVerification: true,
       errorCode: 'REQUIRES_VERIFICATION',
       errorMessage: errorMessage,
