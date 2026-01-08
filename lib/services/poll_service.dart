@@ -1,3 +1,4 @@
+import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import '../core/di.dart';
 import '../core/constants.dart';
@@ -10,9 +11,9 @@ class PollService {
 
   static const String _source = 'PollService';
 
-  final GasApiClient _apiClient;
+  final NetworkAwareClient _apiClient;
 
-  PollService({GasApiClient? apiClient}) : _apiClient = apiClient ?? getIt<GasApiClient>();
+  PollService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// Fetch all polls
   Future<List<Poll>> fetchPolls({required String userId}) async {

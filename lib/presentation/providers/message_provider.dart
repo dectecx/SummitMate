@@ -182,4 +182,17 @@ class MessageProvider extends ChangeNotifier {
   void reload() {
     _loadMessages();
   }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除 Hive 資料)
+  void reset() {
+    _allMessages = [];
+    _selectedCategory = MessageCategory.chat;
+    _isLoading = false;
+    _isSyncing = false;
+    _error = null;
+    onItinerarySynced = null;
+    onSyncComplete = null;
+    LogService.info('MessageProvider 已重設', source: 'Message');
+    notifyListeners();
+  }
 }

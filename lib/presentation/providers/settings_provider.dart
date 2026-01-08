@@ -200,4 +200,13 @@ class SettingsProvider extends ChangeNotifier {
   void reload() {
     _loadSettings();
   }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除 Hive 資料)
+  void reset() {
+    _settings = null;
+    _isLoading = false;
+    _error = null;
+    LogService.info('SettingsProvider 已重設', source: 'Settings');
+    notifyListeners();
+  }
 }

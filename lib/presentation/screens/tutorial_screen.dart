@@ -17,10 +17,10 @@ import '../../services/mock/mock_sync_service.dart';
 import '../../services/google_sheets_service.dart';
 import '../../services/interfaces/i_weather_service.dart';
 import '../../services/interfaces/i_geolocator_service.dart';
+import '../../services/connectivity_service.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_message_repository.dart';
-import '../../data/repositories/interfaces/i_settings_repository.dart';
 
 // Mock Repositories
 import '../../data/repositories/mock/mock_itinerary_repository.dart';
@@ -108,7 +108,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
         tripRepo: getIt<ITripRepository>(),
         itineraryRepo: getIt<IItineraryRepository>(),
         messageRepo: getIt<IMessageRepository>(),
-        settingsRepo: getIt<ISettingsRepository>(),
+        connectivity: getIt<ConnectivityService>(),
       ),
     );
 
@@ -132,7 +132,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
     );
     _mockPollProvider = PollProvider(
       pollRepository: _mockPollRepo,
-      settingsRepo: _mockSettingsRepo,
+      // Note: TutorialScreen uses real ConnectivityService since it's read-only
       prefs: getIt<SharedPreferences>(),
       pollService: getIt<PollService>(),
     );

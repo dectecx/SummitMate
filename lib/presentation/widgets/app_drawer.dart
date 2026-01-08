@@ -6,6 +6,11 @@ import '../providers/trip_provider.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/gear_provider.dart';
+import '../providers/gear_library_provider.dart';
+import '../providers/poll_provider.dart';
+import '../providers/map_provider.dart';
+import '../providers/meal_provider.dart';
 import '../screens/trip_list_screen.dart';
 
 /// 應用程式側邊欄 (Drawer)
@@ -225,8 +230,23 @@ class AppDrawer extends StatelessWidget {
     if (context.mounted) {
       Navigator.pop(context); // Close drawer
     }
+
+    // Reset all Provider states (in-memory only)
+    // Hive data is preserved for offline access on next login
+    if (context.mounted) {
+      context.read<TripProvider>().reset();
+      context.read<ItineraryProvider>().reset();
+      context.read<MessageProvider>().reset();
+      context.read<GearProvider>().reset();
+      context.read<GearLibraryProvider>().reset();
+      context.read<PollProvider>().reset();
+      context.read<MapProvider>().reset();
+      context.read<MealProvider>().reset();
+      context.read<SettingsProvider>().reset();
+    }
+
+    // Clear session token only
     await authProvider.logout();
-    // Snackbar may not work as screen is being replaced, but it's fine
   }
 
   Widget _buildTripTile(BuildContext context, dynamic trip, TripProvider provider) {

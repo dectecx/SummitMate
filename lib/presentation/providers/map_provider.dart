@@ -393,4 +393,17 @@ class MapProvider with ChangeNotifier {
     _isLoading = value;
     notifyListeners();
   }
+
+  /// 重設 Provider 狀態 (登出時使用，不清除離線地圖快取)
+  void reset() {
+    _gpx = null;
+    _trackPoints = [];
+    _isLoading = false;
+    _currentLocation = null;
+    _currentHeading = null;
+    _downloadQueue.clear();
+    _isQueueProcessing = false;
+    LogService.info('MapProvider 已重設', source: 'MapProvider');
+    notifyListeners();
+  }
 }

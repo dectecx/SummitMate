@@ -55,6 +55,17 @@ class _LoginScreenState extends State<LoginScreen> {
         _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     } else {
+      // Show offline mode notification if applicable
+      if (result.isOffline && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('已使用離線模式登入，部分功能可能受限'),
+            backgroundColor: Colors.orange.shade700,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
       // Login successful, check verification status
       if (result.user?.isVerified == false) {
         if (!mounted) return;

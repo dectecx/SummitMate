@@ -6,6 +6,8 @@ import '../services/hive_service.dart';
 import '../services/google_sheets_service.dart';
 import '../services/sync_service.dart';
 import '../services/log_service.dart';
+import '../services/connectivity_service.dart';
+import '../services/network_aware_client.dart';
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
@@ -101,6 +103,9 @@ Future<void> setupDependencies() async {
   await settingsRepo.init();
   getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
+  // 6.5. Connectivity - 統一網路與離線模式判斷
+  getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
+
   // 7. Location Resolver
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
 
@@ -145,6 +150,11 @@ Future<void> setupDependencies() async {
   // GasApiClient - Core API Client with auth token injection (via Interceptor)
   getIt.registerLazySingleton<GasApiClient>(() => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()));
 
+  // NetworkAwareClient - API Client with offline interception
+  getIt.registerLazySingleton<NetworkAwareClient>(
+    () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<ConnectivityService>()),
+  );
+
   // ========================================
   // Services
   // ========================================
@@ -160,7 +170,7 @@ Future<void> setupDependencies() async {
       tripRepo: getIt<ITripRepository>(),
       itineraryRepo: getIt<IItineraryRepository>(),
       messageRepo: getIt<IMessageRepository>(),
-      settingsRepo: getIt<ISettingsRepository>(),
+      connectivity: getIt<ConnectivityService>(),
     ),
   );
 
