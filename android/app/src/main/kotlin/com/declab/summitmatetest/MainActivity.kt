@@ -1,4 +1,4 @@
-package com.summitmate.summitmate
+package com.declab.summitmatetest
 
 import io.flutter.embedding.android.FlutterActivity
 
