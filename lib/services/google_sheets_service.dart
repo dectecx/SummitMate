@@ -7,17 +7,19 @@ import '../data/models/itinerary_item.dart';
 import '../data/models/message.dart';
 import '../data/models/trip.dart';
 import 'log_service.dart';
+import 'interfaces/i_data_service.dart';
 
 /// Google Sheets API 服務
 /// 透過 Google Apps Script 作為 API Gateway
-class GoogleSheetsService {
+class GoogleSheetsService implements IDataService {
   final NetworkAwareClient _apiClient;
 
   /// 建構子
   GoogleSheetsService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 取得所有資料 (行程 + 留言)
-  Future<FetchAllResult> fetchAll({String? tripId}) async {
+  @override
+  Future<FetchAllResult> getAll({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchAll${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
@@ -61,7 +63,8 @@ class GoogleSheetsService {
   }
 
   /// 僅取得行程資料
-  Future<FetchAllResult> fetchItinerary({String? tripId}) async {
+  @override
+  Future<FetchAllResult> getItinerary({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchItinerary${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
@@ -94,7 +97,8 @@ class GoogleSheetsService {
   }
 
   /// 僅取得留言資料
-  Future<FetchAllResult> fetchMessages({String? tripId}) async {
+  @override
+  Future<FetchAllResult> getMessages({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchMessages${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
@@ -127,6 +131,7 @@ class GoogleSheetsService {
   }
 
   /// 新增留言
+  @override
   Future<ApiResult> addMessage(Message message) async {
     try {
       final response = await _apiClient.post({'action': ApiConfig.actionMessageCreate, 'data': message.toJson()});
@@ -137,6 +142,7 @@ class GoogleSheetsService {
   }
 
   /// 刪除留言
+  @override
   Future<ApiResult> deleteMessage(String uuid) async {
     try {
       final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'uuid': uuid});
@@ -147,6 +153,7 @@ class GoogleSheetsService {
   }
 
   /// 批次新增留言
+  @override
   Future<ApiResult> batchAddMessages(List<Message> messages) async {
     try {
       final response = await _apiClient.post({
@@ -160,6 +167,7 @@ class GoogleSheetsService {
   }
 
   /// 更新行程 (覆寫雲端)
+  @override
   Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
     try {
       final response = await _apiClient.post({
@@ -180,7 +188,8 @@ class GoogleSheetsService {
   }
 
   /// 取得雲端行程列表
-  Future<FetchTripsResult> fetchTrips() async {
+  @override
+  Future<FetchTripsResult> getTrips() async {
     try {
       LogService.info('API 請求: FetchTrips', source: 'API');
       final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionTripList});
@@ -207,6 +216,7 @@ class GoogleSheetsService {
   }
 
   /// 上傳日誌
+  @override
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {
       final response = await _apiClient.post({
@@ -253,26 +263,4 @@ class GoogleSheetsService {
       return ApiResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
-}
-
-/// 通用 API 結果
-class ApiResult {
-  final bool isSuccess;
-  final String? errorMessage;
-  final String? message;
-
-  ApiResult({required this.isSuccess, this.errorMessage, this.message});
-}
-
-/// fetchAll 結果
-class FetchAllResult extends ApiResult {
-  final List<ItineraryItem> itinerary;
-  final List<Message> messages;
-
-  FetchAllResult({this.itinerary = const [], this.messages = const [], required super.isSuccess, super.errorMessage});
-}
-
-class FetchTripsResult extends ApiResult {
-  final List<Trip> trips;
-  FetchTripsResult({this.trips = const [], required super.isSuccess, super.errorMessage});
 }

@@ -1,29 +1,51 @@
-import 'package:summitmate/services/sync_service.dart';
-import '../google_sheets_service.dart';
+import 'package:summitmate/services/interfaces/i_sync_service.dart';
+import 'package:summitmate/services/interfaces/i_data_service.dart';
+import 'package:summitmate/data/models/message.dart';
 
-class MockSyncService extends SyncService {
-  MockSyncService({
-    required super.sheetsService,
-    required super.tripRepo,
-    required super.itineraryRepo,
-    required super.messageRepo,
-    required super.connectivity,
-  });
+/// Mock 同步服務
+/// 用於測試和離線模式
+class MockSyncService implements ISyncService {
+  DateTime? _lastItinerarySyncTime;
+  DateTime? _lastMessagesSyncTime;
 
-  // Override to prevent real sync calls
+  @override
+  DateTime? get lastItinerarySync => _lastItinerarySyncTime;
+
+  @override
+  DateTime? get lastMessagesSync => _lastMessagesSyncTime;
+
   @override
   Future<SyncResult> syncAll({bool isAuto = false}) async {
-    return SyncResult(isSuccess: true, syncedAt: DateTime.now());
+    _lastItinerarySyncTime = DateTime.now();
+    _lastMessagesSyncTime = DateTime.now();
+    return SyncResult.success();
   }
 
   @override
   Future<SyncResult> syncItinerary({bool isAuto = false}) async {
-    return SyncResult(isSuccess: true, itinerarySynced: true, syncedAt: DateTime.now());
+    _lastItinerarySyncTime = DateTime.now();
+    return SyncResult.success(itinerarySynced: true, messagesSynced: false);
   }
 
   @override
   Future<SyncResult> syncMessages({bool isAuto = false}) async {
-    return SyncResult(isSuccess: true, messagesSynced: true, syncedAt: DateTime.now());
+    _lastMessagesSyncTime = DateTime.now();
+    return SyncResult.success(itinerarySynced: false, messagesSynced: true);
+  }
+
+  @override
+  Future<SyncResult> uploadPendingMessages() async {
+    return SyncResult.success(itinerarySynced: false, messagesSynced: true);
+  }
+
+  @override
+  Future<SyncResult> uploadItinerary() async {
+    return SyncResult.success(itinerarySynced: true, messagesSynced: false);
+  }
+
+  @override
+  Future<bool> checkItineraryConflict() async {
+    return false;
   }
 
   @override
@@ -32,8 +54,18 @@ class MockSyncService extends SyncService {
   }
 
   @override
-  Future<bool> checkItineraryConflict() async => false;
+  Future<ApiResult> addMessageAndSync(Message message) async {
+    return ApiResult(isSuccess: true);
+  }
 
   @override
-  Future<ApiResult> uploadItinerary() async => ApiResult(isSuccess: true);
+  Future<ApiResult> deleteMessageAndSync(String uuid) async {
+    return ApiResult(isSuccess: true);
+  }
+
+  @override
+  void resetLastSyncTimes() {
+    _lastItinerarySyncTime = null;
+    _lastMessagesSyncTime = null;
+  }
 }

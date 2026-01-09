@@ -3,6 +3,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../core/di.dart';
 import '../data/repositories/interfaces/i_settings_repository.dart';
 import 'log_service.dart';
+import 'interfaces/i_connectivity_service.dart';
 
 /// Connectivity Service
 /// 統一管理網路連線狀態與離線模式
@@ -10,7 +11,7 @@ import 'log_service.dart';
 /// 整合：
 /// - 實際網路狀態 (InternetConnectionChecker)
 /// - App 離線模式設定 (settings.isOfflineMode)
-class ConnectivityService {
+class ConnectivityService implements IConnectivityService {
   static const String _source = 'Connectivity';
 
   final InternetConnectionChecker _checker;
@@ -44,9 +45,11 @@ class ConnectivityService {
   }
 
   /// 是否有實際網路連線
+  @override
   bool get hasConnection => _hasConnection;
 
   /// App 是否啟用離線模式
+  @override
   bool get isOfflineModeEnabled {
     try {
       return _settingsRepo.getSettings().isOfflineMode;
@@ -56,12 +59,15 @@ class ConnectivityService {
   }
 
   /// 是否處於離線狀態 (無網路 OR 啟用離線模式)
+  @override
   bool get isOffline => !_hasConnection || isOfflineModeEnabled;
 
   /// 是否處於線上狀態
+  @override
   bool get isOnline => !isOffline;
 
   /// 主動檢查連線狀態
+  @override
   Future<bool> checkConnectivity() async {
     _hasConnection = await _checker.hasConnection;
     LogService.debug(
@@ -72,9 +78,11 @@ class ConnectivityService {
   }
 
   /// 連線狀態變化串流
+  @override
   Stream<bool> get onConnectivityChanged => _onlineController.stream;
 
   /// 釋放資源
+  @override
   void dispose() {
     _subscription?.cancel();
     _onlineController.close();

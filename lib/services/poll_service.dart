@@ -4,8 +4,9 @@ import '../core/di.dart';
 import '../core/constants.dart';
 import '../data/models/poll.dart';
 import 'log_service.dart';
+import 'interfaces/i_poll_service.dart';
 
-class PollService {
+class PollService implements IPollService {
   // Use a singleton pattern if desired, or just static methods
   // Using static methods for simplicity as in other services
 
@@ -15,8 +16,9 @@ class PollService {
 
   PollService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
-  /// Fetch all polls
-  Future<List<Poll>> fetchPolls({required String userId}) async {
+  /// 取得所有投票列表
+  @override
+  Future<List<Poll>> getPolls({required String userId}) async {
     try {
       LogService.info('Fetching polls for user: $userId', source: _source);
       final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId});
@@ -45,7 +47,8 @@ class PollService {
     }
   }
 
-  /// Create a new poll
+  /// 建立新投票
+  @override
   Future<void> createPoll({
     required String title,
     String description = '',
@@ -87,7 +90,8 @@ class PollService {
     }
   }
 
-  /// Vote for options
+  /// 對選項投票
+  @override
   Future<void> votePoll({
     required String pollId,
     required List<String> optionIds,
@@ -117,7 +121,8 @@ class PollService {
     }
   }
 
-  /// Add a new option
+  /// 新增選項
+  @override
   Future<void> addOption({required String pollId, required String text, required String creatorId}) async {
     final payload = {'action': ApiConfig.actionPollAddOption, 'poll_id': pollId, 'text': text, 'creator_id': creatorId};
 
@@ -137,7 +142,8 @@ class PollService {
     }
   }
 
-  /// Close a poll (mark as ended)
+  /// 關閉投票
+  @override
   Future<void> closePoll({required String pollId, required String userId}) async {
     final payload = {'action': ApiConfig.actionPollClose, 'poll_id': pollId, 'user_id': userId};
 
@@ -157,7 +163,8 @@ class PollService {
     }
   }
 
-  /// Delete a poll
+  /// 刪除投票
+  @override
   Future<void> deletePoll({required String pollId, required String userId}) async {
     final payload = {'action': ApiConfig.actionPollDelete, 'poll_id': pollId, 'user_id': userId};
 
@@ -177,7 +184,8 @@ class PollService {
     }
   }
 
-  /// Delete an option
+  /// 刪除選項
+  @override
   Future<void> deleteOption({required String optionId, required String userId}) async {
     final payload = {'action': ApiConfig.actionPollDeleteOption, 'option_id': optionId, 'user_id': userId};
 
