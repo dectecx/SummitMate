@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/gear_library_item.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/services/gear_library_cloud_service.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 // Mock GasApiClient
 class MockGasApiClient extends GasApiClient {
@@ -38,13 +41,20 @@ class MockGasApiClient extends GasApiClient {
   }
 }
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late MockGasApiClient mockClient;
+  late MockConnectivityService mockConnectivity;
   late GearLibraryCloudService service;
 
   setUp(() {
     mockClient = MockGasApiClient();
-    service = GearLibraryCloudService(apiClient: mockClient);
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+
+    final networkClient = NetworkAwareClient(apiClient: mockClient, connectivity: mockConnectivity);
+    service = GearLibraryCloudService(apiClient: networkClient);
   });
 
   group('GearLibraryCloudService Tests', () {
@@ -77,7 +87,7 @@ void main() {
       });
     });
 
-    group('fetchLibrary', () {
+    group('getLibrary', () {
       test('成功下載返回項目列表', () async {
         mockClient.expectedResponseData = {
           'items': [
@@ -85,7 +95,7 @@ void main() {
           ],
         };
 
-        final result = await service.fetchLibrary();
+        final result = await service.getLibrary();
         // 驗證
         expect(result.isSuccess, isTrue);
         expect(result.data, isNotNull);
@@ -97,7 +107,7 @@ void main() {
       test('下載空列表時返回空 List', () async {
         mockClient.expectedResponseData = {'items': []};
 
-        final result = await service.fetchLibrary();
+        final result = await service.getLibrary();
         // 驗證
         expect(result.isSuccess, isTrue);
         expect(result.data, isEmpty);

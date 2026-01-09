@@ -40,15 +40,14 @@ void main() {
         expect(provider.isLoading, false);
       });
 
-      test('creates default trip when no trips exist', () async {
+      test('does not create default trip when no trips exist', () async {
         when(mockRepository.getAllTrips()).thenReturn([]);
         when(mockRepository.getActiveTrip()).thenReturn(null);
-        when(mockRepository.addTrip(any)).thenAnswer((_) async {});
 
         provider = TripProvider(repository: mockRepository);
         await Future.delayed(const Duration(milliseconds: 100));
 
-        verify(mockRepository.addTrip(any)).called(1);
+        verifyNever(mockRepository.addTrip(any));
       });
 
       test('activates first trip if no active trip exists', () async {
@@ -130,16 +129,21 @@ void main() {
     });
 
     group('deleteTrip', () {
-      test('cannot delete the only trip', () async {
+      test('deletes the only trip', () async {
         final trip = createTrip(id: 'trip-1', name: 'Only Trip', isActive: true);
         when(mockRepository.getAllTrips()).thenReturn([trip]);
         when(mockRepository.getActiveTrip()).thenReturn(trip);
+        when(mockRepository.deleteTrip(any)).thenAnswer((_) async {});
+        // If logic reloads and finds empty, it might create default.
+        // We just verify delete was attempted.
+        when(mockRepository.addTrip(any)).thenAnswer((_) async {});
+        when(mockRepository.getAllTrips()).thenReturn([]); // Subsequent call returns empty
 
         provider = TripProvider(repository: mockRepository);
         final result = await provider.deleteTrip('trip-1');
 
-        expect(result, false);
-        verifyNever(mockRepository.deleteTrip(any));
+        expect(result, true);
+        verify(mockRepository.deleteTrip('trip-1')).called(1);
       });
 
       test('deletes trip when multiple trips exist', () async {

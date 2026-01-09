@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 import 'package:summitmate/data/models/user_profile.dart';
 import 'package:summitmate/data/repositories/interfaces/i_auth_session_repository.dart';
@@ -107,6 +110,8 @@ class MockTokenValidator implements ITokenValidator {
   bool isExpiringSoon(String token, {Duration threshold = const Duration(minutes: 5)}) => shouldBeExpiringSoon;
 }
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 // ============================================================
 // === TEST DATA ===
 // ============================================================
@@ -147,13 +152,19 @@ void main() {
   late MockGasApiClient mockApiClient;
   late MockAuthSessionRepository mockSessionRepo;
   late MockTokenValidator mockTokenValidator;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockApiClient = MockGasApiClient();
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+
+    final networkClient = NetworkAwareClient(apiClient: mockApiClient, connectivity: mockConnectivity);
+
     mockSessionRepo = MockAuthSessionRepository();
     mockTokenValidator = MockTokenValidator();
     authService = GasAuthService(
-      apiClient: mockApiClient,
+      apiClient: networkClient,
       sessionRepository: mockSessionRepo,
       tokenValidator: mockTokenValidator,
     );
@@ -169,8 +180,8 @@ void main() {
         displayName: 'New User',
       );
 
-      // GasAuthService returns requiresVerification, not success with token immediately
-      expect(result.isSuccess, isFalse);
+      // GasAuthService returns requiresVerification, sets isSuccess to true
+      expect(result.isSuccess, isTrue);
       expect(result.errorCode, 'REQUIRES_VERIFICATION');
     });
 

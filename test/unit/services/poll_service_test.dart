@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/services/poll_service.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 // ============================================================
 // === MOCKS ===
@@ -62,6 +65,8 @@ class MockGasApiClient extends GasApiClient {
   }
 }
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 // ============================================================
 // === TEST DATA ===
 // ============================================================
@@ -92,19 +97,24 @@ Map<String, dynamic> createPollJson({String id = 'poll-1', String title = 'Test 
 void main() {
   late PollService pollService;
   late MockGasApiClient mockClient;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockClient = MockGasApiClient();
-    pollService = PollService(apiClient: mockClient);
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+
+    final networkClient = NetworkAwareClient(apiClient: mockClient, connectivity: mockConnectivity);
+    pollService = PollService(apiClient: networkClient);
   });
 
-  group('PollService.fetchPolls', () {
+  group('PollService.getPolls', () {
     test('returns list of polls on success', () async {
       mockClient.mockResponseData = {
         'polls': [createPollJson(id: 'poll-1', title: 'Poll 1'), createPollJson(id: 'poll-2', title: 'Poll 2')],
       };
 
-      final polls = await pollService.fetchPolls(userId: 'user-1');
+      final polls = await pollService.getPolls(userId: 'user-1');
 
       expect(polls, hasLength(2));
       expect(polls[0].title, 'Poll 1');
@@ -115,7 +125,7 @@ void main() {
     test('returns empty list when no polls exist', () async {
       mockClient.mockResponseData = {'polls': []};
 
-      final polls = await pollService.fetchPolls(userId: 'user-1');
+      final polls = await pollService.getPolls(userId: 'user-1');
 
       expect(polls, isEmpty);
     });
@@ -124,13 +134,13 @@ void main() {
       mockClient.mockResponseCode = '9999';
       mockClient.mockResponseMessage = 'Server error';
 
-      expect(() => pollService.fetchPolls(userId: 'user-1'), throwsException);
+      expect(() => pollService.getPolls(userId: 'user-1'), throwsException);
     });
 
     test('throws exception on network error', () async {
       mockClient.shouldThrowError = true;
 
-      expect(() => pollService.fetchPolls(userId: 'user-1'), throwsA(isA<DioException>()));
+      expect(() => pollService.getPolls(userId: 'user-1'), throwsA(isA<DioException>()));
     });
   });
 
