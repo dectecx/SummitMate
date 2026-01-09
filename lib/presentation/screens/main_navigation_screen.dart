@@ -11,7 +11,7 @@ import '../../services/toast_service.dart';
 import '../../services/usage_tracking_service.dart';
 import '../../services/hive_service.dart';
 import '../../data/models/trip.dart';
-import '../../services/sync_service.dart';
+import '../../services/interfaces/i_sync_service.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
 import '../providers/itinerary_provider.dart';
@@ -313,7 +313,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   /// 顯示行程選擇對話框 (從雲端匯入)
   Future<void> _showTripSelectionDialog(BuildContext context) async {
-    final syncService = getIt<SyncService>();
+    final syncService = getIt<ISyncService>();
 
     // 1. 顯示 Loading 並取得 Trip List
     showDialog(

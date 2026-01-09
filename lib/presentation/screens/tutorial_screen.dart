@@ -10,17 +10,12 @@ import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
 import '../widgets/info_tab.dart';
 import 'collaboration_tab.dart';
-import '../../services/sync_service.dart';
 import '../../services/mock/mock_weather_service.dart';
 import '../../services/mock/mock_geolocator_service.dart';
 import '../../services/mock/mock_sync_service.dart';
-import '../../services/google_sheets_service.dart';
 import '../../services/interfaces/i_weather_service.dart';
 import '../../services/interfaces/i_geolocator_service.dart';
-import '../../services/connectivity_service.dart';
-import '../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../../data/repositories/interfaces/i_message_repository.dart';
+import '../../services/interfaces/i_sync_service.dart';
 
 // Mock Repositories
 import '../../data/repositories/mock/mock_itinerary_repository.dart';
@@ -102,15 +97,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
     // 2. Register Mock Services
     getIt.registerSingleton<IWeatherService>(MockWeatherService());
     getIt.registerSingleton<IGeolocatorService>(MockGeolocatorService());
-    getIt.registerSingleton<SyncService>(
-      MockSyncService(
-        sheetsService: getIt<GoogleSheetsService>(),
-        tripRepo: getIt<ITripRepository>(),
-        itineraryRepo: getIt<IItineraryRepository>(),
-        messageRepo: getIt<IMessageRepository>(),
-        connectivity: getIt<ConnectivityService>(),
-      ),
-    );
+    getIt.registerSingleton<ISyncService>(MockSyncService());
 
     // 3. Setup Providers with Mocks
     _mockItineraryRepo = MockItineraryRepository();

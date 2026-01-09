@@ -708,7 +708,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     });
 
     try {
-      final result = await _service.fetchLibrary();
+      final result = await _service.getLibrary();
 
       if (!result.isSuccess) {
         setState(() {

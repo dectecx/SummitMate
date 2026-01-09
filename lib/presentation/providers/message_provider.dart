@@ -5,7 +5,7 @@ import '../../core/di.dart';
 import '../../data/models/message.dart';
 import '../../data/repositories/interfaces/i_message_repository.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../services/sync_service.dart';
+import '../../services/interfaces/i_sync_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/log_service.dart';
 
@@ -13,7 +13,7 @@ import '../../services/log_service.dart';
 class MessageProvider extends ChangeNotifier {
   final IMessageRepository _repository;
   final ITripRepository _tripRepository;
-  final SyncService _syncService;
+  final ISyncService _syncService;
   final Uuid _uuid = const Uuid();
 
   List<Message> _allMessages = [];
@@ -31,7 +31,7 @@ class MessageProvider extends ChangeNotifier {
   MessageProvider({IMessageRepository? repository, ITripRepository? tripRepository})
     : _repository = repository ?? getIt<IMessageRepository>(),
       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-      _syncService = getIt<SyncService>() {
+      _syncService = getIt<ISyncService>() {
     _loadMessages();
   }
 

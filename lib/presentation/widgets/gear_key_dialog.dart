@@ -41,7 +41,7 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
 
     setState(() => _isLoading = true);
 
-    final result = await widget.cloudService.fetchGearSetByKey(key);
+    final result = await widget.cloudService.getGearSetByKey(key);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
