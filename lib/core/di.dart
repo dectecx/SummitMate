@@ -83,6 +83,22 @@ Future<void> setupDependencies() async {
 
   getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
 
+  // ========================================
+  // Base Services (Settings, Connectivity)
+  // ========================================
+
+  // 6. Settings - 設定 (Early initialization needed for Connectivity)
+  final settingsRepo = SettingsRepository();
+  await settingsRepo.init();
+  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
+
+  // 6.5. Connectivity - 統一網路與離線模式判斷
+  getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
+
+  // ========================================
+  // Repositories
+  // ========================================
+
   // 1. Trip - 最上層容器
   final tripRepo = TripRepository(
     localDataSource: getIt<ITripLocalDataSource>(),
@@ -116,14 +132,6 @@ Future<void> setupDependencies() async {
   final pollRepo = PollRepository();
   await pollRepo.init();
   getIt.registerSingleton<IPollRepository>(pollRepo);
-
-  // 6. Settings - 設定
-  final settingsRepo = SettingsRepository();
-  await settingsRepo.init();
-  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
-
-  // 6.5. Connectivity - 統一網路與離線模式判斷
-  getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
 
   // 7. Location Resolver
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
