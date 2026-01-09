@@ -11,7 +11,7 @@ class CwaWeatherSource {
   static const String _apiKey = EnvConfig.cwaApiKey;
 
   /// Fetch weather for a specific location using Township Forecast API
-  Future<WeatherData> fetchWeather(String locationName) async {
+  Future<WeatherData> getWeather(String locationName) async {
     String countyName = '';
     if (locationName.length >= 3) {
       countyName = locationName.substring(0, 3);

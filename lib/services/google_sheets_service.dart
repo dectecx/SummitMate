@@ -19,7 +19,7 @@ class GoogleSheetsService implements IDataService {
 
   /// 取得所有資料 (行程 + 留言)
   @override
-  Future<FetchAllResult> getAll({String? tripId}) async {
+  Future<GetAllResult> getAll({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchAll${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
@@ -35,7 +35,7 @@ class GoogleSheetsService implements IDataService {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
         if (!gasResponse.isSuccess) {
-          return FetchAllResult(isSuccess: false, errorMessage: gasResponse.message);
+          return GetAllResult(isSuccess: false, errorMessage: gasResponse.message);
         }
 
         final itineraryList =
@@ -52,19 +52,19 @@ class GoogleSheetsService implements IDataService {
 
         LogService.debug('解析成功: 行程=${itineraryList.length}, 留言=${messagesList.length}', source: 'API');
 
-        return FetchAllResult(itinerary: itineraryList, messages: messagesList, isSuccess: true);
+        return GetAllResult(itinerary: itineraryList, messages: messagesList, isSuccess: true);
       } else {
-        return FetchAllResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}: ${response.statusMessage}');
+        return GetAllResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}: ${response.statusMessage}');
       }
     } catch (e) {
       LogService.error('API 異常: $e', source: 'API');
-      return FetchAllResult(isSuccess: false, errorMessage: e.toString());
+      return GetAllResult(isSuccess: false, errorMessage: e.toString());
     }
   }
 
   /// 僅取得行程資料
   @override
-  Future<FetchAllResult> getItinerary({String? tripId}) async {
+  Future<GetAllResult> getItinerary({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchItinerary${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
@@ -79,7 +79,7 @@ class GoogleSheetsService implements IDataService {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
         if (!gasResponse.isSuccess) {
-          return FetchAllResult(isSuccess: false, errorMessage: gasResponse.message);
+          return GetAllResult(isSuccess: false, errorMessage: gasResponse.message);
         }
 
         final itineraryList =
@@ -87,18 +87,18 @@ class GoogleSheetsService implements IDataService {
                 ?.map((e) => ItineraryItem.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [];
-        return FetchAllResult(itinerary: itineraryList, isSuccess: true);
+        return GetAllResult(itinerary: itineraryList, isSuccess: true);
       } else {
-        return FetchAllResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}');
+        return GetAllResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}');
       }
     } catch (e) {
-      return FetchAllResult(isSuccess: false, errorMessage: e.toString());
+      return GetAllResult(isSuccess: false, errorMessage: e.toString());
     }
   }
 
   /// 僅取得留言資料
   @override
-  Future<FetchAllResult> getMessages({String? tripId}) async {
+  Future<GetAllResult> getMessages({String? tripId}) async {
     try {
       LogService.info('API 請求: FetchMessages${tripId != null ? " (tripId: $tripId)" : ""}', source: 'API');
 
@@ -113,7 +113,7 @@ class GoogleSheetsService implements IDataService {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
         if (!gasResponse.isSuccess) {
-          return FetchAllResult(isSuccess: false, errorMessage: gasResponse.message);
+          return GetAllResult(isSuccess: false, errorMessage: gasResponse.message);
         }
 
         final messagesList =
@@ -121,12 +121,12 @@ class GoogleSheetsService implements IDataService {
                 ?.map((e) => Message.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [];
-        return FetchAllResult(messages: messagesList, isSuccess: true);
+        return GetAllResult(messages: messagesList, isSuccess: true);
       } else {
-        return FetchAllResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}');
+        return GetAllResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}');
       }
     } catch (e) {
-      return FetchAllResult(isSuccess: false, errorMessage: e.toString());
+      return GetAllResult(isSuccess: false, errorMessage: e.toString());
     }
   }
 
@@ -189,7 +189,7 @@ class GoogleSheetsService implements IDataService {
 
   /// 取得雲端行程列表
   @override
-  Future<FetchTripsResult> getTrips() async {
+  Future<GetTripsResult> getTrips() async {
     try {
       LogService.info('API 請求: FetchTrips', source: 'API');
       final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionTripList});
@@ -197,7 +197,7 @@ class GoogleSheetsService implements IDataService {
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
         if (!gasResponse.isSuccess) {
-          return FetchTripsResult(isSuccess: false, errorMessage: gasResponse.message);
+          return GetTripsResult(isSuccess: false, errorMessage: gasResponse.message);
         }
 
         final trips =
@@ -206,12 +206,12 @@ class GoogleSheetsService implements IDataService {
                 .toList() ??
             [];
 
-        return FetchTripsResult(isSuccess: true, trips: trips);
+        return GetTripsResult(isSuccess: true, trips: trips);
       } else {
-        return FetchTripsResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}');
+        return GetTripsResult(isSuccess: false, errorMessage: 'HTTP ${response.statusCode}');
       }
     } catch (e) {
-      return FetchTripsResult(isSuccess: false, errorMessage: e.toString());
+      return GetTripsResult(isSuccess: false, errorMessage: e.toString());
     }
   }
 

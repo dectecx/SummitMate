@@ -178,6 +178,22 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {}
+
+  @override
+  Future<List<Trip>> getRemoteTrips() async => [];
+
+  @override
+  Future<String> uploadTripToRemote(Trip trip) async => trip.id;
+
+  @override
+  Future<void> deleteRemoteTrip(String id) async {}
+
+  @override
+  Future<String> uploadFullTrip({
+    required Trip trip,
+    required List<dynamic> itineraryItems,
+    required List<dynamic> gearItems,
+  }) async => trip.id;
 }
 
 // ============================================================
