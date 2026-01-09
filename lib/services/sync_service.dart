@@ -151,16 +151,13 @@ class SyncService implements ISyncService {
     }
 
     final tripId = _activeTripId;
-    final fetchResult = await _sheetsService.getItinerary(tripId: tripId);
-
-    if (!fetchResult.isSuccess) {
-      return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
+    if (tripId == null) {
+      return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
     }
 
     try {
-      await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
+      await _itineraryRepo.sync(tripId);
       _lastItinerarySyncTime = DateTime.now();
-      await _itineraryRepo.saveLastSyncTime(_lastItinerarySyncTime!);
       return SyncResult(isSuccess: true, itinerarySynced: true, syncedAt: _lastItinerarySyncTime!);
     } catch (e) {
       return SyncResult(isSuccess: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
@@ -182,16 +179,13 @@ class SyncService implements ISyncService {
     }
 
     final tripId = _activeTripId;
-    final fetchResult = await _sheetsService.getMessages(tripId: tripId);
-
-    if (!fetchResult.isSuccess) {
-      return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
+    if (tripId == null) {
+      return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
     }
 
     try {
-      await _syncMessages(fetchResult.messages);
+      await _messageRepo.sync(tripId);
       _lastMessagesSyncTime = DateTime.now();
-      await _messageRepo.saveLastSyncTime(_lastMessagesSyncTime!);
       return SyncResult(isSuccess: true, messagesSynced: true, syncedAt: _lastMessagesSyncTime!);
     } catch (e) {
       return SyncResult(isSuccess: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());
@@ -301,7 +295,12 @@ class SyncService implements ISyncService {
     if (_isOffline) {
       return GetTripsResult(isSuccess: false, errorMessage: '離線模式無法取得行程列表');
     }
-    return await _sheetsService.getTrips();
+    try {
+      final trips = await _tripRepo.getRemoteTrips();
+      return GetTripsResult(isSuccess: true, trips: trips);
+    } catch (e) {
+      return GetTripsResult(isSuccess: false, errorMessage: e.toString());
+    }
   }
 
   @override

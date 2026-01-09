@@ -43,6 +43,9 @@ abstract interface class IMessageRepository {
   /// 取得最後同步時間
   DateTime? getLastSyncTime();
 
+  /// 觸發同步 (Fetch & Update)
+  Future<void> sync(String tripId);
+
   /// 清除所有留言
   Future<void> clearAll();
 }

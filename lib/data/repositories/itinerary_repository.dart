@@ -20,9 +20,9 @@ class ItineraryRepository implements IItineraryRepository {
     IItineraryLocalDataSource? localDataSource,
     IItineraryRemoteDataSource? remoteDataSource,
     IConnectivityService? connectivity,
-  })  : _localDataSource = localDataSource ?? getIt<IItineraryLocalDataSource>(),
-        _remoteDataSource = remoteDataSource ?? getIt<IItineraryRemoteDataSource>(),
-        _connectivity = connectivity ?? getIt<IConnectivityService>();
+  }) : _localDataSource = localDataSource ?? getIt<IItineraryLocalDataSource>(),
+       _remoteDataSource = remoteDataSource ?? getIt<IItineraryRemoteDataSource>(),
+       _connectivity = connectivity ?? getIt<IConnectivityService>();
 
   @override
   Future<void> init() async {
@@ -31,7 +31,7 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   // Delegate Local Operations
-  
+
   @override
   List<ItineraryItem> getAllItems() {
     return _localDataSource.getAll();
@@ -113,7 +113,7 @@ class ItineraryRepository implements IItineraryRepository {
     try {
       LogService.info('Syncing itinerary for trip: $tripId', source: _source);
       final cloudItems = await _remoteDataSource.fetchItinerary(tripId);
-      
+
       // Preservation Logic (Business Logic)
       final existing = _localDataSource.getAll();
       final actualTimeMap = <String, DateTime?>{};
@@ -129,7 +129,7 @@ class ItineraryRepository implements IItineraryRepository {
         item.actualTime = actualTimeMap[key];
         await _localDataSource.add(item);
       }
-      
+
       await saveLastSyncTime(DateTime.now());
       LogService.info('Sync itinerary complete', source: _source);
     } catch (e) {
@@ -137,27 +137,26 @@ class ItineraryRepository implements IItineraryRepository {
       rethrow;
     }
   }
-  
+
   // Deprecated/Legacy method support (if needed for temporary) or Remove?
   // IItineraryRepository definition needs update first.
   @override
   Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {
-      // Legacy support: logic moved to sync() but if called directly with items:
-      // Perform same preservation logic
-       final existing = _localDataSource.getAll();
-      final actualTimeMap = <String, DateTime?>{};
-      for (final item in existing) {
-        final key = '${item.day}_${item.name}';
-        actualTimeMap[key] = item.actualTime;
-      }
+    // Legacy support: logic moved to sync() but if called directly with items:
+    // Perform same preservation logic
+    final existing = _localDataSource.getAll();
+    final actualTimeMap = <String, DateTime?>{};
+    for (final item in existing) {
+      final key = '${item.day}_${item.name}';
+      actualTimeMap[key] = item.actualTime;
+    }
 
-      await _localDataSource.clear();
+    await _localDataSource.clear();
 
-      for (final item in cloudItems) {
-        final key = '${item.day}_${item.name}';
-        item.actualTime = actualTimeMap[key];
-        await _localDataSource.add(item);
-      }
+    for (final item in cloudItems) {
+      final key = '${item.day}_${item.name}';
+      item.actualTime = actualTimeMap[key];
+      await _localDataSource.add(item);
+    }
   }
 }
-

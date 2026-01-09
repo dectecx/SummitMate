@@ -8,17 +8,14 @@ abstract class IGearLocalDataSource {
   List<GearItem> getByTripId(String tripId);
   List<GearItem> getByCategory(String category);
   List<GearItem> getUnchecked();
-  
+  GearItem? getByKey(dynamic key);
+
   Future<int> add(GearItem item);
   Future<void> update(GearItem item);
   Future<void> delete(dynamic key);
-  
+
   Future<void> clearByTripId(String tripId);
   Future<void> clearAll();
-  
-  Stream<BoxEvent> watch();
 
-  // Special batch operations logic if needed, or keeping it in Repository layer?
-  // Method UpdateOrder logic involves business rule (updating index). 
-  // Ideally DataSource provides CRUD. Repository orchestrates.
+  Stream<BoxEvent> watch();
 }

@@ -21,6 +21,14 @@ import '../data/datasources/interfaces/i_trip_local_data_source.dart';
 import '../data/datasources/interfaces/i_trip_remote_data_source.dart';
 import '../data/datasources/local/gear_local_data_source.dart';
 import '../data/datasources/interfaces/i_gear_local_data_source.dart';
+import '../data/datasources/local/message_local_data_source.dart';
+import '../data/datasources/interfaces/i_message_local_data_source.dart';
+import '../data/datasources/remote/message_remote_data_source.dart';
+import '../data/datasources/interfaces/i_message_remote_data_source.dart';
+import '../data/datasources/local/itinerary_local_data_source.dart';
+import '../data/datasources/interfaces/i_itinerary_local_data_source.dart';
+import '../data/datasources/remote/itinerary_remote_data_source.dart';
+import '../data/datasources/interfaces/i_itinerary_remote_data_source.dart';
 import '../data/repositories/interfaces/i_gear_repository.dart';
 import '../data/repositories/interfaces/i_gear_library_repository.dart';
 import '../data/repositories/interfaces/i_auth_session_repository.dart';
@@ -75,19 +83,28 @@ Future<void> setupDependencies() async {
   LogService.info('App 啟動', source: 'DI');
 
   // ========================================
-  // Repositories
+  // Data Sources
   // ========================================
 
-  // Data Sources
   final tripLocalDS = TripLocalDataSource();
   await tripLocalDS.init();
   getIt.registerSingleton<ITripLocalDataSource>(tripLocalDS);
+
+  final itineraryLocalDS = ItineraryLocalDataSource();
+  await itineraryLocalDS.init();
+  getIt.registerSingleton<IItineraryLocalDataSource>(itineraryLocalDS);
 
   final gearLocalDS = GearLocalDataSource();
   await gearLocalDS.init();
   getIt.registerSingleton<IGearLocalDataSource>(gearLocalDS);
 
+  final messageLocalDS = MessageLocalDataSource();
+  await messageLocalDS.init();
+  getIt.registerSingleton<IMessageLocalDataSource>(messageLocalDS);
+
   getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
+  getIt.registerLazySingleton<IItineraryRemoteDataSource>(() => ItineraryRemoteDataSource());
+  getIt.registerLazySingleton<IMessageRemoteDataSource>(() => MessageRemoteDataSource());
 
   // ========================================
   // Base Services (Settings, Connectivity)
