@@ -1,138 +1,163 @@
 import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../models/itinerary_item.dart';
 import 'interfaces/i_itinerary_repository.dart';
+import '../datasources/interfaces/i_itinerary_local_data_source.dart';
+import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
+import '../../services/interfaces/i_connectivity_service.dart';
+import '../../services/log_service.dart';
 
 /// Itinerary Repository
-/// 管理行程節點的 CRUD 操作
+/// Coordinates Local and Remote Data Sources
 class ItineraryRepository implements IItineraryRepository {
-  static const String _boxName = HiveBoxNames.itinerary;
+  static const String _source = 'ItineraryRepository';
 
-  Box<ItineraryItem>? _box;
+  final IItineraryLocalDataSource _localDataSource;
+  final IItineraryRemoteDataSource _remoteDataSource;
+  final IConnectivityService _connectivity;
 
-  /// 開啟 Box
+  ItineraryRepository({
+    IItineraryLocalDataSource? localDataSource,
+    IItineraryRemoteDataSource? remoteDataSource,
+    IConnectivityService? connectivity,
+  })  : _localDataSource = localDataSource ?? getIt<IItineraryLocalDataSource>(),
+        _remoteDataSource = remoteDataSource ?? getIt<IItineraryRemoteDataSource>(),
+        _connectivity = connectivity ?? getIt<IConnectivityService>();
+
   @override
   Future<void> init() async {
-    _box = await Hive.openBox<ItineraryItem>(_boxName);
+    // Repository init mainly ensures LocalDS is ready
+    await _localDataSource.init();
   }
 
-  /// 取得 Box
-  Box<ItineraryItem> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('ItineraryRepository not initialized. Call init() first.');
-    }
-    return _box!;
-  }
-
-  /// 取得所有行程節點
+  // Delegate Local Operations
+  
   @override
   List<ItineraryItem> getAllItems() {
-    return box.values.toList();
+    return _localDataSource.getAll();
   }
 
-  /// 依天數取得行程節點
   @override
   List<ItineraryItem> getItemsByDay(String day) {
-    return box.values.where((item) => item.day == day).toList();
+    return _localDataSource.getAll().where((item) => item.day == day).toList();
   }
 
-  /// 取得單一行程節點
   @override
   ItineraryItem? getItemByKey(dynamic key) {
-    return box.get(key);
+    return _localDataSource.getByKey(key);
   }
 
-  /// 打卡 - 設定實際時間
   @override
   Future<void> checkIn(dynamic key, DateTime time) async {
-    final item = box.get(key);
+    final item = _localDataSource.getByKey(key);
     if (item == null) return;
-
     item.actualTime = time;
-    await item.save();
+    await _localDataSource.update(key, item);
   }
 
-  /// 清除打卡
   @override
   Future<void> clearCheckIn(dynamic key) async {
-    final item = box.get(key);
+    final item = _localDataSource.getByKey(key);
     if (item == null) return;
-
     item.actualTime = null;
-    await item.save();
+    await _localDataSource.update(key, item);
   }
 
-  /// 批次覆寫行程 (從 Google Sheets 同步)
-  /// 保留 actualTime 本地資料
-  @override
-  Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {
-    // 取得現有資料以保留 actualTime
-    final existing = box.values.toList();
-    final actualTimeMap = <String, DateTime?>{};
-    for (final item in existing) {
-      final key = '${item.day}_${item.name}';
-      actualTimeMap[key] = item.actualTime;
-    }
-
-    // 清除舊資料
-    await box.clear();
-
-    // 寫入新資料並還原 actualTime
-    for (final item in cloudItems) {
-      final key = '${item.day}_${item.name}';
-      item.actualTime = actualTimeMap[key];
-      await box.add(item);
-    }
-  }
-
-  /// 監聽行程變更
-  @override
-  Stream<BoxEvent> watchAllItems() {
-    return box.watch();
-  }
-
-  /// 重置所有打卡紀錄
   @override
   Future<void> resetAllCheckIns() async {
-    for (final item in box.values) {
+    for (final item in _localDataSource.getAll()) {
       item.actualTime = null;
-      await item.save();
+      await _localDataSource.update('${item.day}_${item.name}', item);
     }
   }
 
-  /// 新增行程節點
   @override
   Future<void> addItem(ItineraryItem item) async {
-    await box.add(item);
+    await _localDataSource.add(item);
   }
 
-  /// 更新行程節點
   @override
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
-    await box.put(key, item);
+    await _localDataSource.update(key, item);
   }
 
-  /// 儲存最後同步時間
-  @override
-  Future<void> saveLastSyncTime(DateTime time) async {
-    final prefs = getIt<SharedPreferences>();
-    await prefs.setString('itin_last_sync_time', time.toIso8601String());
-  }
-
-  /// 取得最後同步時間
-  @override
-  DateTime? getLastSyncTime() {
-    final prefs = getIt<SharedPreferences>();
-    final str = prefs.getString('itin_last_sync_time');
-    if (str == null) return null;
-    return DateTime.tryParse(str);
-  }
-
-  /// 刪除行程節點
   @override
   Future<void> deleteItem(dynamic key) async {
-    await box.delete(key);
+    await _localDataSource.delete(key);
+  }
+
+  @override
+  Future<void> saveLastSyncTime(DateTime time) async {
+    await _localDataSource.saveLastSyncTime(time);
+  }
+
+  @override
+  DateTime? getLastSyncTime() {
+    return _localDataSource.getLastSyncTime();
+  }
+
+  @override
+  Stream<BoxEvent> watchAllItems() {
+    return _localDataSource.watch();
+  }
+
+  /// Sync Implementation
+  /// Fetches from Remote, Preserves Local State (actualTime), Updates Local
+  @override
+  Future<void> sync(String tripId) async {
+    if (_connectivity.isOffline) {
+      LogService.warning('Offline mode, skipping itinerary sync', source: _source);
+      return;
+    }
+
+    try {
+      LogService.info('Syncing itinerary for trip: $tripId', source: _source);
+      final cloudItems = await _remoteDataSource.fetchItinerary(tripId);
+      
+      // Preservation Logic (Business Logic)
+      final existing = _localDataSource.getAll();
+      final actualTimeMap = <String, DateTime?>{};
+      for (final item in existing) {
+        final key = '${item.day}_${item.name}';
+        actualTimeMap[key] = item.actualTime;
+      }
+
+      await _localDataSource.clear();
+
+      for (final item in cloudItems) {
+        final key = '${item.day}_${item.name}';
+        item.actualTime = actualTimeMap[key];
+        await _localDataSource.add(item);
+      }
+      
+      await saveLastSyncTime(DateTime.now());
+      LogService.info('Sync itinerary complete', source: _source);
+    } catch (e) {
+      LogService.error('Sync itinerary failed: $e', source: _source);
+      rethrow;
+    }
+  }
+  
+  // Deprecated/Legacy method support (if needed for temporary) or Remove?
+  // IItineraryRepository definition needs update first.
+  @override
+  Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {
+      // Legacy support: logic moved to sync() but if called directly with items:
+      // Perform same preservation logic
+       final existing = _localDataSource.getAll();
+      final actualTimeMap = <String, DateTime?>{};
+      for (final item in existing) {
+        final key = '${item.day}_${item.name}';
+        actualTimeMap[key] = item.actualTime;
+      }
+
+      await _localDataSource.clear();
+
+      for (final item in cloudItems) {
+        final key = '${item.day}_${item.name}';
+        item.actualTime = actualTimeMap[key];
+        await _localDataSource.add(item);
+      }
   }
 }
+
