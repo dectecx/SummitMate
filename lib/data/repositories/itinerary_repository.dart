@@ -112,7 +112,7 @@ class ItineraryRepository implements IItineraryRepository {
 
     try {
       LogService.info('Syncing itinerary for trip: $tripId', source: _source);
-      final cloudItems = await _remoteDataSource.fetchItinerary(tripId);
+      final cloudItems = await _remoteDataSource.getItinerary(tripId);
 
       // Preservation Logic (Business Logic)
       final existing = _localDataSource.getAll();

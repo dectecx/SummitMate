@@ -14,7 +14,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   MessageRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   @override
-  Future<List<Message>> fetchMessages(String tripId) async {
+  Future<List<Message>> getMessages(String tripId) async {
     try {
       LogService.info('Fetching messages for trip: $tripId', source: _source);
 

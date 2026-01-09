@@ -14,7 +14,7 @@ class ItineraryRemoteDataSource implements IItineraryRemoteDataSource {
   ItineraryRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   @override
-  Future<List<ItineraryItem>> fetchItinerary(String tripId) async {
+  Future<List<ItineraryItem>> getItinerary(String tripId) async {
     try {
       LogService.info('Fetching itinerary for trip: $tripId', source: _source);
 
