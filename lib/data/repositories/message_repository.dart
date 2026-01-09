@@ -122,7 +122,7 @@ class MessageRepository implements IMessageRepository {
 
     try {
       LogService.info('Syncing messages for trip: $tripId', source: _source);
-      final cloudMessages = await _remoteDataSource.fetchMessages(tripId);
+      final cloudMessages = await _remoteDataSource.getMessages(tripId);
       await syncFromCloud(cloudMessages);
       LogService.info('Sync messages complete', source: _source);
     } catch (e) {
