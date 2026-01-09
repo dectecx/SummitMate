@@ -19,6 +19,8 @@ import '../data/datasources/local/trip_local_data_source.dart';
 import '../data/datasources/remote/trip_remote_data_source.dart';
 import '../data/datasources/interfaces/i_trip_local_data_source.dart';
 import '../data/datasources/interfaces/i_trip_remote_data_source.dart';
+import '../data/datasources/local/gear_local_data_source.dart';
+import '../data/datasources/interfaces/i_gear_local_data_source.dart';
 import '../data/repositories/interfaces/i_gear_repository.dart';
 import '../data/repositories/interfaces/i_gear_library_repository.dart';
 import '../data/repositories/interfaces/i_auth_session_repository.dart';
@@ -81,6 +83,10 @@ Future<void> setupDependencies() async {
   await tripLocalDS.init();
   getIt.registerSingleton<ITripLocalDataSource>(tripLocalDS);
 
+  final gearLocalDS = GearLocalDataSource();
+  await gearLocalDS.init();
+  getIt.registerSingleton<IGearLocalDataSource>(gearLocalDS);
+
   getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
 
   // ========================================
@@ -103,7 +109,6 @@ Future<void> setupDependencies() async {
   final tripRepo = TripRepository(
     localDataSource: getIt<ITripLocalDataSource>(),
     remoteDataSource: getIt<ITripRemoteDataSource>(),
-    connectivity: getIt<IConnectivityService>(),
   );
   await tripRepo.init();
   getIt.registerSingleton<ITripRepository>(tripRepo);

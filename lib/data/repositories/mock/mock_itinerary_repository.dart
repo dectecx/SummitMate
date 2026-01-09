@@ -9,6 +9,8 @@ class MockItineraryRepository implements IItineraryRepository {
   /// 模擬行程 ID（對應 MockTripRepository）
   static const String mockTripId = 'mock-trip-001';
 
+  DateTime? _lastSyncTime;
+
   /// 模擬行程資料
   final List<ItineraryItem> _mockItems = [
     ItineraryItem(
@@ -98,10 +100,19 @@ class MockItineraryRepository implements IItineraryRepository {
   Future<void> updateItem(dynamic key, ItineraryItem item) async {}
 
   @override
-  Future<void> saveLastSyncTime(DateTime time) async {}
+  Future<void> saveLastSyncTime(DateTime time) async {
+    _lastSyncTime = time;
+  }
 
   @override
-  DateTime? getLastSyncTime() => DateTime.now();
+  DateTime? getLastSyncTime() {
+    return _lastSyncTime;
+  }
+
+  @override
+  Future<void> sync(String tripId) async {
+    // Mock sync
+  }
 
   @override
   Future<void> deleteItem(dynamic key) async {}

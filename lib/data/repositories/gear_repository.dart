@@ -1,33 +1,28 @@
-import 'package:hive/hive.dart';
-import '../../core/constants.dart';
+import '../../core/di.dart';
 import '../models/gear_item.dart';
 import 'interfaces/i_gear_repository.dart';
+import '../datasources/interfaces/i_gear_local_data_source.dart';
+import 'package:hive/hive.dart'; // For BoxEvent
 
-/// Gear Repository
+/// Gear Repository (Refactored Phase 5-2)
 /// 管理個人裝備的 CRUD 操作 (僅本地)
+/// Delegates to GearLocalDataSource
 class GearRepository implements IGearRepository {
-  static const String _boxName = HiveBoxNames.gear;
+  
+  final IGearLocalDataSource _localDataSource;
 
-  Box<GearItem>? _box;
+  GearRepository({IGearLocalDataSource? localDataSource})
+      : _localDataSource = localDataSource ?? getIt<IGearLocalDataSource>();
 
-  /// 開啟 Box
   @override
   Future<void> init() async {
-    _box = await Hive.openBox<GearItem>(_boxName);
-  }
-
-  /// 取得 Box
-  Box<GearItem> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('GearRepository not initialized. Call init() first.');
-    }
-    return _box!;
+    await _localDataSource.init();
   }
 
   /// 取得所有裝備 (依 orderIndex 排序)
   @override
   List<GearItem> getAllItems() {
-    final items = box.values.toList();
+    final items = _localDataSource.getAll();
     items.sort((a, b) {
       if (a.orderIndex != null && b.orderIndex != null) {
         return a.orderIndex!.compareTo(b.orderIndex!);
@@ -43,13 +38,13 @@ class GearRepository implements IGearRepository {
   /// 依分類取得裝備
   @override
   List<GearItem> getItemsByCategory(String category) {
-    return box.values.where((item) => item.category == category).toList();
+    return _localDataSource.getByCategory(category);
   }
 
   /// 取得未打包的裝備
   @override
   List<GearItem> getUncheckedItems() {
-    return box.values.where((item) => !item.isChecked).toList();
+    return _localDataSource.getUnchecked();
   }
 
   /// 新增裝備
@@ -57,8 +52,9 @@ class GearRepository implements IGearRepository {
   Future<int> addItem(GearItem item) async {
     // 自動設定 orderIndex 為目前最大值 + 1
     if (item.orderIndex == null) {
-      if (box.isNotEmpty) {
-        final maxOrder = box.values
+      final items = _localDataSource.getAll();
+      if (items.isNotEmpty) {
+        final maxOrder = items
             .map((i) => i.orderIndex ?? 0)
             .fold<int>(0, (max, current) => current > max ? current : max);
         item.orderIndex = maxOrder + 1;
@@ -67,67 +63,91 @@ class GearRepository implements IGearRepository {
       }
     }
 
-    return await box.add(item);
+    return await _localDataSource.add(item);
   }
 
   /// 更新裝備
   @override
   Future<void> updateItem(GearItem item) async {
-    await item.save();
+    await _localDataSource.update(item);
   }
 
   /// 刪除裝備
   @override
   Future<void> deleteItem(dynamic key) async {
-    await box.delete(key);
+    await _localDataSource.delete(key);
   }
 
   /// 切換打包狀態
   @override
   Future<void> toggleChecked(dynamic key) async {
-    final item = box.get(key);
-    if (item == null) return;
-
-    item.isChecked = !item.isChecked;
-    await item.save();
+    // We cannot just 'get(key)' easily if key is not index?
+    // Hive key is dynamic. LocalDataSource.getAll() returns objects.
+    // Ideally LocalDataSource has getByKey?
+    // I didn't add getByKey in IGearLocalDataSource (my bad?).
+    // Wait, step 7934 did NOT have getByKey?
+    // "getAll", "getByTripId", etc.
+    // If I missed getByKey, I should add it or use filtering.
+    // But toggleChecked uses key.
+    // IGearLocalDataSource needs getByKey possibly?
+    // Or I find it in getAll?
+    // Hive key is usually int or string.
+    // GearItem extends HiveObject? Yes.
+    // If HiveObject, item.save() works if item is attached to box.
+    // LocalDataSource.getAll returns attached objects.
+    // I can filter by key if I knew how to access key from object? item.key.
+    
+    // I'll assume I can find it by filtering getAll for now, OR better:
+    // UPDATE IGearLocalDataSource to have getByKey?
+    // In step 7938 (Impl), it has box.
+    // I should add getByKey to IGearLocalDataSource for efficiency?
+    // For now I'll use getAll and find by key.
+    
+    final items = _localDataSource.getAll(); 
+    // HiveObject has 'key' property.
+    try {
+        final item = items.firstWhere((i) => i.key == key);
+        item.isChecked = !item.isChecked;
+        await _localDataSource.update(item);
+    } catch (e) {
+        // Not found
+    }
   }
 
   /// 計算總重量 (克) - 含數量乘積
   @override
   double getTotalWeight() {
-    return box.values.fold<double>(0.0, (sum, item) => sum + item.totalWeight);
+    return _localDataSource.getAll().fold<double>(0.0, (sum, item) => sum + item.totalWeight);
   }
 
   /// 計算已打包重量 (克) - 含數量乘積
   @override
   double getCheckedWeight() {
-    return box.values.where((item) => item.isChecked).fold<double>(0.0, (sum, item) => sum + item.totalWeight);
+    return _localDataSource.getAll().where((item) => item.isChecked).fold<double>(0.0, (sum, item) => sum + item.totalWeight);
   }
 
   /// 依分類統計重量
   @override
   Map<String, double> getWeightByCategory() {
     final result = <String, double>{};
-
-    for (final item in box.values) {
+    for (final item in _localDataSource.getAll()) {
       result[item.category] = (result[item.category] ?? 0) + item.weight;
     }
-
     return result;
   }
 
   /// 監聯裝備變更
   @override
   Stream<BoxEvent> watchAllItems() {
-    return box.watch();
+    return _localDataSource.watch();
   }
 
   /// 重置所有打包狀態
   @override
   Future<void> resetAllChecked() async {
-    for (final item in box.values) {
+    for (final item in _localDataSource.getAll()) {
       item.isChecked = false;
-      await item.save();
+      await _localDataSource.update(item);
     }
   }
 
@@ -135,10 +155,10 @@ class GearRepository implements IGearRepository {
   @override
   Future<void> updateItemsOrder(List<GearItem> items) async {
     for (int i = 0; i < items.length; i++) {
-      final item = items[i];
+        final item = items[i];
       if (item.orderIndex != i) {
         item.orderIndex = i;
-        await item.save();
+        await _localDataSource.update(item);
       }
     }
   }
@@ -146,15 +166,13 @@ class GearRepository implements IGearRepository {
   /// 清除指定行程的所有裝備
   @override
   Future<void> clearByTripId(String tripId) async {
-    final toDelete = box.values.where((item) => item.tripId == tripId).toList();
-    for (final item in toDelete) {
-      await item.delete();
-    }
+    await _localDataSource.clearByTripId(tripId);
   }
 
   /// 清除所有裝備 (Debug 用途)
   @override
   Future<void> clearAll() async {
-    await box.clear();
+    await _localDataSource.clearAll();
   }
 }
+
