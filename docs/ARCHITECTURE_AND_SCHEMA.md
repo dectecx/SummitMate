@@ -57,76 +57,128 @@ graph TD
 
 ```
 lib/
-├── core/                        # 核心工具
-│   ├── constants.dart           # 常數定義 (API Actions, Box Names)
-│   ├── di.dart                  # 依賴注入 (GetIt)
-│   ├── env_config.dart          # 環境配置
-│   ├── extensions.dart          # Dart 擴展方法
-│   ├── gear_helpers.dart        # 裝備分類工具 (Icon, Name, Color)
-│   └── theme.dart               # 主題配置
+├── core/                              # 核心工具
+│   ├── constants.dart                 # 常數定義 (API Actions, Box Names)
+│   ├── di.dart                        # 依賴注入 (GetIt)
+│   ├── env_config.dart                # 環境配置
+│   ├── extensions.dart                # Dart 擴展方法
+│   ├── gear_helpers.dart              # 裝備分類工具 (Icon, Name, Color)
+│   ├── location/                      # 定位相關
+│   │   ├── i_location_resolver.dart
+│   │   └── township_location_resolver.dart
+│   └── theme.dart                     # 主題配置
 ├── data/
-│   ├── models/                  # 資料模型 (HiveType)
-│   │   ├── settings.dart        # [TypeId: 0] 全域設定
-│   │   ├── itinerary_item.dart  # [TypeId: 1] 行程節點
-│   │   ├── message.dart         # [TypeId: 2] 留言
-│   │   ├── gear_item.dart       # [TypeId: 3] 個人裝備
-│   │   ├── weather_data.dart    # [TypeId: 4,5] 氣象資料
-│   │   ├── poll.dart            # [TypeId: 6,7] 投票
-│   │   ├── gear_set.dart        # 雲端裝備組合 (非 Hive)
-│   │   ├── meal_item.dart       # 菜單項目 (非 Hive, 記憶體)
-│   │   └── user_profile.dart    # 用戶資料 (非 Hive, Secure Storage)
-│   └── repositories/            # 資料存取層
-│       ├── settings_repository.dart
+│   ├── models/                        # 資料模型 (HiveType)
+│   │   ├── settings.dart              # [TypeId: 0] 全域設定
+│   │   ├── itinerary_item.dart        # [TypeId: 1] 行程節點
+│   │   ├── message.dart               # [TypeId: 2] 留言
+│   │   ├── gear_item.dart             # [TypeId: 3] 個人裝備
+│   │   ├── weather_data.dart          # [TypeId: 4,5] 氣象資料
+│   │   ├── poll.dart                  # [TypeId: 6,7] 投票
+│   │   ├── trip.dart                  # [TypeId: 10] 行程
+│   │   ├── gear_set.dart              # 雲端裝備組合 (非 Hive)
+│   │   ├── gear_key_record.dart       # 本地 Key 記錄 (非 Hive)
+│   │   ├── meal_item.dart             # 菜單項目 (非 Hive, 記憶體)
+│   │   └── user_profile.dart          # 用戶資料 (非 Hive, Secure Storage)
+│   ├── datasources/                   # 資料來源層 (Offline-First)
+│   │   ├── interfaces/                # DataSource 介面
+│   │   │   ├── i_trip_local_data_source.dart
+│   │   │   ├── i_trip_remote_data_source.dart
+│   │   │   ├── i_itinerary_local_data_source.dart
+│   │   │   ├── i_itinerary_remote_data_source.dart
+│   │   │   ├── i_message_local_data_source.dart
+│   │   │   ├── i_message_remote_data_source.dart
+│   │   │   ├── i_gear_local_data_source.dart
+│   │   │   └── i_gear_key_local_data_source.dart
+│   │   ├── local/                     # 本地儲存 (Hive)
+│   │   │   ├── trip_local_data_source.dart
+│   │   │   ├── itinerary_local_data_source.dart
+│   │   │   ├── message_local_data_source.dart
+│   │   │   ├── gear_local_data_source.dart
+│   │   │   └── gear_key_local_data_source.dart
+│   │   └── remote/                    # 遠端 API
+│   │       ├── trip_remote_data_source.dart
+│   │       ├── itinerary_remote_data_source.dart
+│   │       └── message_remote_data_source.dart
+│   └── repositories/                  # Repository 層 (DataSource Coordinator)
+│       ├── interfaces/                # Repository 介面
+│       │   ├── i_trip_repository.dart
+│       │   ├── i_itinerary_repository.dart
+│       │   ├── i_message_repository.dart
+│       │   ├── i_gear_repository.dart
+│       │   ├── i_gear_library_repository.dart
+│       │   ├── i_gear_set_repository.dart
+│       │   ├── i_poll_repository.dart
+│       │   ├── i_settings_repository.dart
+│       │   └── i_auth_session_repository.dart
+│       ├── mock/                      # 測試用 Mock 實作
+│       │   └── mock_*_repository.dart
+│       ├── trip_repository.dart       # 協調 Local + Remote DataSource
 │       ├── itinerary_repository.dart
 │       ├── message_repository.dart
 │       ├── gear_repository.dart
+│       ├── gear_library_repository.dart
+│       ├── gear_set_repository.dart   # 雲端裝備組合
 │       ├── poll_repository.dart
-│       └── auth_session_repository.dart  # Session/Token 持久化
-├── services/                    # 服務層
-│   ├── hive_service.dart        # Hive 資料庫初始化
-│   ├── google_sheets_service.dart # 主 API Gateway
-│   ├── gas_api_client.dart      # GAS REST 客戶端
-│   ├── gear_cloud_service.dart  # 雲端裝備庫 API
-│   ├── poll_service.dart        # 投票 API
-│   ├── weather_service.dart     # 氣象服務 (CWA ETL)
-│   ├── sync_service.dart        # 雙向同步邏輯
-│   ├── log_service.dart         # 日誌與上傳
-│   ├── toast_service.dart       # UI 通知
-│   ├── tutorial_service.dart    # 教學導覽步驟
-│   ├── usage_tracking_service.dart # Web 使用追蹤
-│   └── auth_service.dart         # 身份驗證服務
+│       ├── settings_repository.dart
+│       └── auth_session_repository.dart
+├── services/                          # 服務層
+│   ├── interfaces/                    # Service 介面
+│   │   ├── i_auth_service.dart
+│   │   ├── i_sync_service.dart
+│   │   ├── i_data_service.dart
+│   │   ├── i_poll_service.dart
+│   │   ├── i_weather_service.dart
+│   │   ├── i_gear_cloud_service.dart
+│   │   ├── i_connectivity_service.dart
+│   │   ├── i_geolocator_service.dart
+│   │   └── i_token_validator.dart
+│   ├── hive_service.dart              # Hive 資料庫初始化
+│   ├── google_sheets_service.dart     # 主 API Gateway (IDataService)
+│   ├── gas_api_client.dart            # GAS REST 客戶端
+│   ├── gas_auth_service.dart          # 會員認證 (IAuthService)
+│   ├── gear_cloud_service.dart        # 雲端裝備庫 (IGearCloudService)
+│   ├── poll_service.dart              # 投票 API (IPollService)
+│   ├── weather_service.dart           # 氣象服務 (IWeatherService)
+│   ├── sync_service.dart              # 雙向同步 (ISyncService)
+│   ├── connectivity_service.dart      # 網路狀態 (IConnectivityService)
+│   ├── network_aware_client.dart      # 離線攔截裝飾器
+│   ├── log_service.dart               # 日誌與上傳
+│   ├── toast_service.dart             # UI 通知
+│   ├── tutorial_service.dart          # 教學導覽
+│   └── usage_tracking_service.dart    # Web 使用追蹤
 ├── presentation/
-│   ├── providers/               # 狀態管理 (MVVM)
+│   ├── providers/                     # 狀態管理 (簡單狀態)
 │   │   ├── settings_provider.dart
+│   │   ├── trip_provider.dart
 │   │   ├── itinerary_provider.dart
 │   │   ├── message_provider.dart
 │   │   ├── gear_provider.dart
+│   │   ├── gear_library_provider.dart
 │   │   ├── meal_provider.dart
-│   │   └── auth_provider.dart    # 全域認證狀態
-│   ├── screens/                 # 畫面
-│   │   ├── collaboration_tab.dart
+│   │   ├── poll_provider.dart
+│   │   └── auth_provider.dart
+│   ├── cubits/                        # Cubit (事件驅動/中等複雜狀態)
+│   │   └── (規劃中)
+│   ├── screens/                       # 畫面
+│   │   ├── main_navigation_screen.dart
+│   │   ├── trip_cloud_screen.dart
 │   │   ├── gear_cloud_screen.dart
 │   │   ├── poll_list_screen.dart
-│   │   ├── poll_detail_screen.dart
-│   │   ├── create_poll_screen.dart
 │   │   ├── meal_planner_screen.dart
-│   │   ├── food_reference_screen.dart
 │   │   ├── map_viewer_screen.dart
-│   │   ├── message_list_screen.dart
-│   │   └── auth/                 # 認證相關畫面
+│   │   └── auth/
 │   │       ├── login_screen.dart
 │   │       ├── register_screen.dart
 │   │       └── verification_screen.dart
-│   └── widgets/                 # 可重用元件
+│   └── widgets/                       # 可重用元件
 │       ├── gear_preview_dialog.dart
 │       ├── gear_upload_dialog.dart
 │       ├── gear_key_dialog.dart
-│       ├── gear_key_download_dialog.dart
 │       ├── itinerary_edit_dialog.dart
-│       └── tutorial_overlay.dart
-├── providers/
-│   └── poll_provider.dart       # 投票狀態管理
-└── main.dart                    # 應用程式入口
+│       ├── tutorial_overlay.dart
+│       └── app_drawer.dart
+└── main.dart
 ```
 
 ---
@@ -164,6 +216,153 @@ lib/
 | `ToastService` | 工具服務 | UI 通知 | - |
 | `TutorialService` | 工具服務 | 教學導覽 | - |
 | `UsageTrackingService` | 工具服務 | Web 使用追蹤 | - |
+
+---
+
+## 2.2 Data Layer 架構 (Offline-First)
+
+本專案採用 **Offline-First Repository Pattern**，資料層分為三個階層：
+
+```mermaid
+flowchart TB
+    subgraph Presentation["Presentation Layer"]
+        Provider["Provider / Cubit"]
+    end
+
+    subgraph Data["Data Layer"]
+        Repo["Repository<br>(Data Coordinator)"]
+        LocalDS["LocalDataSource<br>(Hive)"]
+        RemoteDS["RemoteDataSource<br>(API)"]
+    end
+
+    Provider -->|"getData / saveData"| Repo
+    Repo -->|"cache read/write"| LocalDS
+    Repo -->|"sync"| RemoteDS
+    RemoteDS -.->|"response"| Repo
+    Repo -.->|"return data"| Provider
+```
+
+### 各層職責
+
+| 層級 | 元件 | 職責 |
+|------|------|------|
+| **Presentation** | `Provider` / `Cubit` | 管理 UI 狀態、處理使用者互動 |
+| **Data** | `Repository` | 協調資料來源、決定資料流向 |
+| **Data** | `LocalDataSource` | 本地儲存 (Hive) |
+| **Data** | `RemoteDataSource` | 遠端 API 呼叫 |
+
+### DataSource 清單
+
+| DataSource | 類型 | Interface | 說明 |
+|------------|------|-----------|------|
+| `TripLocalDataSource` | Local | `ITripLocalDataSource` | 行程本地儲存 |
+| `TripRemoteDataSource` | Remote | `ITripRemoteDataSource` | 行程雲端 API |
+| `ItineraryLocalDataSource` | Local | `IItineraryLocalDataSource` | 行程節點本地儲存 |
+| `ItineraryRemoteDataSource` | Remote | `IItineraryRemoteDataSource` | 行程節點雲端 API |
+| `MessageLocalDataSource` | Local | `IMessageLocalDataSource` | 留言本地儲存 |
+| `MessageRemoteDataSource` | Remote | `IMessageRemoteDataSource` | 留言雲端 API |
+| `GearLocalDataSource` | Local | `IGearLocalDataSource` | 裝備本地儲存 |
+| `GearKeyLocalDataSource` | Local | `IGearKeyLocalDataSource` | 裝備 Key 記錄 |
+
+### Repository 運作模式
+
+```dart
+class TripRepository implements ITripRepository {
+  final ITripLocalDataSource _localDS;
+  final ITripRemoteDataSource _remoteDS;
+  final IConnectivityService _connectivity;
+  
+  // Read: 優先讀取本地快取
+  List<Trip> getAllTrips() => _localDS.getAll();
+  
+  // Sync: 有網路時同步
+  Future<void> sync() async {
+    if (_connectivity.isOffline) return;
+    final remote = await _remoteDS.getTrips();
+    await _localDS.saveAll(remote);
+  }
+}
+```
+
+---
+
+## 2.3 狀態管理策略 (State Management)
+
+本專案支援 **Provider** 與 **Cubit** 並存，依據功能複雜度選擇適合的方案：
+
+| 方案         | 適用場景           | 採用狀態    |
+| ------------ | ------------------ | ----------- |
+| **Provider** | 簡單狀態、CRUD | ✅ 使用中 |
+| **Cubit**    | 事件驅動、中等複雜、需要狀態機 | 🚧 規劃中 |
+| **BLoC**     | 複雜事件流         | ❌ 暫不採用 |
+| **Riverpod** | 編譯時安全         | ❌ 暫不採用 |
+
+### Provider 使用場景
+
+- 簡單的 CRUD 操作 (Settings, Gear, Meal)
+- 單一資料流 (Trip, Itinerary, Message)
+- 不需複雜狀態轉換
+
+### Cubit 使用場景 (規劃中)
+
+- 複雜的認證流程 (Login/Logout/Refresh Token)
+- 需要狀態機管理的功能 (同步狀態: Idle → Syncing → Success/Error)
+- 多步驟表單或嚮導
+
+---
+
+## 2.4 登入/登出/資料清除流程
+
+```mermaid
+sequenceDiagram
+    participant UI as Screen
+    participant AP as AuthProvider
+    participant Repo as AuthRepository
+    participant Local as LocalDataSource
+    participant Remote as RemoteDataSource
+
+    Note over UI,Remote: 🔐 登入流程
+    UI->>AP: login(email, password)
+    AP->>Repo: authenticate()
+    
+    alt 有網路 & 非離線模式
+        Repo->>Remote: API 驗證
+        Remote-->>Repo: user + token
+        Repo->>Local: 儲存 session 快取
+        Repo-->>AP: 登入成功
+    else 離線模式
+        Repo->>Local: 檢查本地 session
+        alt 有快取
+            Local-->>Repo: 返回快取 user
+            Repo-->>AP: 離線登入成功
+        else 無快取
+            Repo-->>AP: 無法離線登入
+        end
+    end
+    AP-->>UI: 更新 UI
+
+    Note over UI,Remote: 🚪 登出流程
+    UI->>AP: logout()
+    AP->>AP: 清除 Provider 狀態
+    AP->>Repo: clearSession()
+    Repo->>Local: 清除 token (保留其他資料)
+    AP-->>UI: 返回登入畫面
+
+    Note over UI,Remote: 🗑️ 手動清除資料 (開發選項)
+    UI->>AP: clearAllLocalData()
+    AP->>Local: HiveService.clearAllData()
+    Local-->>AP: 完成
+    AP-->>UI: 資料已清除
+```
+
+### 各層登出行為
+
+| 層級 | 元件 | 登出時 | 手動清除時 |
+|------|------|--------|-----------|
+| **Presentation** | Provider | ✅ 清除狀態 | ✅ 清除狀態 |
+| **Data** | Repository | ❌ 保留 | N/A |
+| **Data** | LocalDataSource | 🔹 只清 session | ✅ 全部清除 |
+| **Data** | RemoteDataSource | N/A | N/A |
 
 ---
 
@@ -732,39 +931,55 @@ class GasSyncServiceImpl implements ISyncService {
 
 ### 狀態管理
 
+> 詳見 [2.3 狀態管理策略](#23-狀態管理策略-state-management)
+
 | 方案         | 適用場景           | 採用狀態    |
 | ------------ | ------------------ | ----------- |
-| **Provider** | 簡單狀態           | ✅ 採用     |
-| **Cubit**    | 事件驅動、中等複雜 | ⏳ 未來考慮 |
+| **Provider** | 簡單狀態、CRUD | ✅ 使用中 |
+| **Cubit**    | 事件驅動、中等複雜、狀態機 | 🚧 規劃中 |
 | **BLoC**     | 複雜事件流         | ❌ 暫不採用 |
 | **Riverpod** | 編譯時安全         | ❌ 暫不採用 |
 
-### 目錄結構
+### 架構演進討論
+
+#### 目前架構
+
+本專案目前採用 **簡化版 Clean Architecture**，將 `domain/` 與 `infrastructure/` 的概念平鋪至 `services/interfaces/` 與 `services/` 下。
+
+#### 潛在演進方向
+
+若專案規模持續成長，可考慮演進至完整分層：
 
 ```
 lib/
-├── core/
-│   ├── constants/
-│   ├── di.dart
-│   └── exceptions/
-├── domain/                          # 領域層 (Interface)
-│   └── interfaces/
-│       ├── i_auth_service.dart
-│       ├── i_sync_service.dart
-│       └── ...
+├── domain/                          # 領域層 (Interface + UseCase)
+│   ├── interfaces/
+│   │   ├── i_auth_service.dart
+│   │   └── ...
+│   └── usecases/                    # 業務邏輯 (可選)
+│       └── sync_trip_usecase.dart
 ├── infrastructure/                  # 基礎設施層 (Impl)
 │   ├── clients/
 │   │   └── gas_api_client.dart
 │   └── services/
-│       ├── gas_auth_service_impl.dart
+│       ├── gas_auth_service.dart
 │       └── ...
 ├── data/
+│   ├── datasources/
 │   ├── models/
 │   └── repositories/
 ├── presentation/
 │   ├── providers/
-│   ├── cubits/                      # 未來
+│   ├── cubits/
 │   ├── screens/
 │   └── widgets/
 └── main.dart
 ```
+
+**考量因素**:
+- ✅ 優點：更清晰的職責分離、更好的測試性
+- ⚠️ 缺點：增加檔案數量、可能過度設計
+- 📌 建議：當 `services/` 超過 20 個檔案時再考慮
+
+> 目前維持現有結構，待需求成長再評估。
+
