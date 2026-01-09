@@ -4,9 +4,10 @@ import '../data/models/gear_library_item.dart';
 import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
+import 'interfaces/i_gear_library_cloud_service.dart';
 
 /// 個人裝備庫雲端同步服務
-class GearLibraryCloudService {
+class GearLibraryCloudService implements IGearLibraryCloudService {
   static const String _source = 'GearLibraryCloud';
 
   final NetworkAwareClient _apiClient;
@@ -14,6 +15,7 @@ class GearLibraryCloudService {
   GearLibraryCloudService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 同步個人裝備庫 (上傳全部)
+  @override
   Future<GearLibraryCloudResult<int>> syncLibrary(List<GearLibraryItem> items) async {
     try {
       LogService.info('同步裝備庫: ${items.length} items (User Auth)', source: _source);
@@ -43,7 +45,8 @@ class GearLibraryCloudService {
   }
 
   /// 取得雲端個人裝備庫
-  Future<GearLibraryCloudResult<List<GearLibraryItem>>> fetchLibrary() async {
+  @override
+  Future<GearLibraryCloudResult<List<GearLibraryItem>>> getLibrary() async {
     try {
       LogService.info('取得雲端個人裝備庫 (User Auth)...', source: _source);
 
@@ -71,17 +74,4 @@ class GearLibraryCloudService {
       return GearLibraryCloudResult.failure('$e');
     }
   }
-}
-
-/// 裝備庫雲端操作結果
-class GearLibraryCloudResult<T> {
-  final bool isSuccess;
-  final T? data;
-  final String? errorMessage;
-
-  GearLibraryCloudResult._({required this.isSuccess, this.data, this.errorMessage});
-
-  factory GearLibraryCloudResult.success(T data) => GearLibraryCloudResult._(isSuccess: true, data: data);
-  factory GearLibraryCloudResult.failure(String message) =>
-      GearLibraryCloudResult._(isSuccess: false, errorMessage: message);
 }

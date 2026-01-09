@@ -6,9 +6,10 @@ import '../data/models/meal_item.dart';
 import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
+import 'interfaces/i_gear_cloud_service.dart';
 
 /// 雲端裝備庫服務
-class GearCloudService {
+class GearCloudService implements IGearCloudService {
   static const String _source = 'GearCloud';
 
   final NetworkAwareClient _apiClient;
@@ -16,7 +17,8 @@ class GearCloudService {
   GearCloudService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 取得公開/保護的裝備組合列表
-  Future<GearCloudResult<List<GearSet>>> fetchGearSets() async {
+  @override
+  Future<GearCloudResult<List<GearSet>>> getGearSets() async {
     try {
       LogService.info('取得雲端裝備組合列表...', source: _source);
 
@@ -46,7 +48,8 @@ class GearCloudService {
   }
 
   /// 用 Key 取得特定裝備組合 (含 items)
-  Future<GearCloudResult<GearSet>> fetchGearSetByKey(String key) async {
+  @override
+  Future<GearCloudResult<GearSet>> getGearSetByKey(String key) async {
     try {
       LogService.info('用 Key 取得裝備組合...', source: _source);
 
@@ -71,6 +74,7 @@ class GearCloudService {
   }
 
   /// 下載指定裝備組合
+  @override
   Future<GearCloudResult<GearSet>> downloadGearSet(String uuid, {String? key}) async {
     try {
       LogService.info('下載裝備組合: $uuid', source: _source);
@@ -100,6 +104,7 @@ class GearCloudService {
   }
 
   /// 上傳裝備組合
+  @override
   Future<GearCloudResult<GearSet>> uploadGearSet({
     required String tripId,
     required String title,
@@ -156,6 +161,7 @@ class GearCloudService {
   }
 
   /// 刪除裝備組合 (需要 Key 驗證)
+  @override
   Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key) async {
     try {
       LogService.info('刪除裝備組合: $uuid', source: _source);
@@ -174,17 +180,4 @@ class GearCloudService {
       return GearCloudResult.failure('$e');
     }
   }
-}
-
-/// 雲端裝備操作結果
-class GearCloudResult<T> {
-  final bool isSuccess;
-  final T? data;
-  final String? errorMessage;
-
-  GearCloudResult._({required this.isSuccess, this.data, this.errorMessage});
-
-  factory GearCloudResult.success(T data) => GearCloudResult._(isSuccess: true, data: data);
-
-  factory GearCloudResult.failure(String message) => GearCloudResult._(isSuccess: false, errorMessage: message);
 }

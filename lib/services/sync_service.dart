@@ -5,24 +5,25 @@ import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
 import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../services/log_service.dart';
-import 'google_sheets_service.dart';
-import 'connectivity_service.dart';
+import 'interfaces/i_connectivity_service.dart';
+import 'interfaces/i_sync_service.dart';
+import 'interfaces/i_data_service.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步
-class SyncService {
-  final GoogleSheetsService _sheetsService;
+class SyncService implements ISyncService {
+  final IDataService _sheetsService;
   final ITripRepository _tripRepo;
   final IItineraryRepository _itineraryRepo;
   final IMessageRepository _messageRepo;
-  final ConnectivityService _connectivity;
+  final IConnectivityService _connectivity;
 
   SyncService({
-    required GoogleSheetsService sheetsService,
+    required IDataService sheetsService,
     required ITripRepository tripRepo,
     required IItineraryRepository itineraryRepo,
     required IMessageRepository messageRepo,
-    required ConnectivityService connectivity,
+    required IConnectivityService connectivity,
   }) : _sheetsService = sheetsService,
        _tripRepo = tripRepo,
        _itineraryRepo = itineraryRepo,
@@ -44,11 +45,14 @@ class SyncService {
   DateTime? _lastItinerarySyncTime;
   DateTime? _lastMessagesSyncTime;
 
+  @override
   DateTime? get lastItinerarySync => _lastItinerarySyncTime;
+  @override
   DateTime? get lastMessagesSync => _lastMessagesSyncTime;
 
   /// 完整同步 (下載 + 上傳)
   /// 智慧選擇：若兩者皆需更新則使用 fetchAll，否則個別更新
+  @override
   Future<SyncResult> syncAll({bool isAuto = false}) async {
     if (_isOffline) return _offlineSyncResult();
 
@@ -77,7 +81,7 @@ class SyncService {
         'SyncAll: Fetching ALL (Itinerary + Messages)${tripId != null ? " for trip: $tripId" : ""}',
         source: 'SyncService',
       );
-      final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
+      final fetchResult = await _sheetsService.getAll(tripId: tripId);
 
       if (!fetchResult.isSuccess) {
         return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: now);
@@ -133,6 +137,7 @@ class SyncService {
   }
 
   /// 僅同步行程
+  @override
   Future<SyncResult> syncItinerary({bool isAuto = false}) async {
     if (_isOffline) return _offlineSyncResult();
 
@@ -146,7 +151,7 @@ class SyncService {
     }
 
     final tripId = _activeTripId;
-    final fetchResult = await _sheetsService.fetchItinerary(tripId: tripId);
+    final fetchResult = await _sheetsService.getItinerary(tripId: tripId);
 
     if (!fetchResult.isSuccess) {
       return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
@@ -163,6 +168,7 @@ class SyncService {
   }
 
   /// 僅同步留言
+  @override
   Future<SyncResult> syncMessages({bool isAuto = false}) async {
     if (_isOffline) return _offlineSyncResult();
 
@@ -176,7 +182,7 @@ class SyncService {
     }
 
     final tripId = _activeTripId;
-    final fetchResult = await _sheetsService.fetchMessages(tripId: tripId);
+    final fetchResult = await _sheetsService.getMessages(tripId: tripId);
 
     if (!fetchResult.isSuccess) {
       return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: DateTime.now());
@@ -194,6 +200,7 @@ class SyncService {
 
   /// 新增留言並同步到雲端
   /// 注意：離線模式下 UI 層應禁用此功能
+  @override
   Future<ApiResult> addMessageAndSync(Message message) async {
     await _messageRepo.addMessage(message);
     final result = await _sheetsService.addMessage(message);
@@ -203,6 +210,7 @@ class SyncService {
 
   /// 刪除留言並同步到雲端
   /// 注意：離線模式下 UI 層應禁用此功能
+  @override
   Future<ApiResult> deleteMessageAndSync(String uuid) async {
     await _messageRepo.deleteByUuid(uuid);
     final result = await _sheetsService.deleteMessage(uuid);
@@ -229,9 +237,10 @@ class SyncService {
 
   /// 檢查行程衝突
   /// 回傳 true 表示有衝突 (雲端資料與本地不一致)
+  @override
   Future<bool> checkItineraryConflict() async {
     final tripId = _activeTripId;
-    final fetchResult = await _sheetsService.fetchAll(tripId: tripId);
+    final fetchResult = await _sheetsService.getAll(tripId: tripId);
 
     if (!fetchResult.isSuccess) {
       // 若無法取得雲端資料，視為無衝突 (或拋出錯誤，這裡選擇保守策略: 讓用戶決定是否硬上傳)
@@ -274,45 +283,36 @@ class SyncService {
   }
 
   /// 強制上傳行程 (覆寫雲端)
-  Future<ApiResult> uploadItinerary() async {
+  @override
+  Future<SyncResult> uploadItinerary() async {
     final tripId = _activeTripId;
     final localItems = _itineraryRepo.getAllItems().where((item) => item.tripId == tripId).toList();
-    return await _sheetsService.updateItinerary(localItems);
+    final result = await _sheetsService.updateItinerary(localItems);
+    if (result.isSuccess) {
+      return SyncResult.success(itinerarySynced: true, messagesSynced: false);
+    } else {
+      return SyncResult.failure(result.errorMessage ?? 'Failed to upload itinerary');
+    }
   }
 
   /// 取得雲端行程列表
+  @override
   Future<FetchTripsResult> fetchCloudTrips() async {
     if (_isOffline) {
       return FetchTripsResult(isSuccess: false, errorMessage: '離線模式無法取得行程列表');
     }
-    return await _sheetsService.fetchTrips();
+    return await _sheetsService.getTrips();
   }
-}
-
-/// 同步結果
-class SyncResult {
-  final bool isSuccess;
-  final bool itinerarySynced;
-  final bool messagesSynced;
-  final bool pollsSynced;
-  final List<String> errors;
-  final DateTime syncedAt;
-
-  SyncResult({
-    required this.isSuccess,
-    this.itinerarySynced = false,
-    this.messagesSynced = false,
-    this.pollsSynced = false,
-    this.errors = const [],
-    required this.syncedAt,
-  });
 
   @override
-  String toString() {
-    if (isSuccess) {
-      return '同步成功 (${syncedAt.toIso8601String()})';
-    } else {
-      return '同步失敗: ${errors.join(', ')}';
-    }
+  Future<SyncResult> uploadPendingMessages() async {
+    // 目前實作為同步留言
+    return await syncMessages();
+  }
+
+  @override
+  void resetLastSyncTimes() {
+    _lastItinerarySyncTime = null;
+    _lastMessagesSyncTime = null;
   }
 }

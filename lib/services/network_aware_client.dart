@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../core/di.dart';
 import '../core/exceptions/offline_exception.dart';
-import 'connectivity_service.dart';
+import 'interfaces/i_connectivity_service.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
 
@@ -18,11 +18,11 @@ class NetworkAwareClient {
   static const String _source = 'NetworkAwareClient';
 
   final GasApiClient _apiClient;
-  final ConnectivityService _connectivity;
+  final IConnectivityService _connectivity;
 
-  NetworkAwareClient({GasApiClient? apiClient, ConnectivityService? connectivity})
+  NetworkAwareClient({GasApiClient? apiClient, IConnectivityService? connectivity})
     : _apiClient = apiClient ?? getIt<GasApiClient>(),
-      _connectivity = connectivity ?? getIt<ConnectivityService>();
+      _connectivity = connectivity ?? getIt<IConnectivityService>();
 
   /// 檢查是否離線，若是則拋出 [OfflineException]
   void _checkConnectivity(String operation) {

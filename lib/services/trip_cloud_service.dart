@@ -4,9 +4,10 @@ import '../data/models/trip.dart';
 import 'network_aware_client.dart';
 import 'gas_api_client.dart';
 import 'log_service.dart';
+import 'interfaces/i_trip_cloud_service.dart';
 
 /// 行程雲端同步服務
-class TripCloudService {
+class TripCloudService implements ITripCloudService {
   static const String _source = 'TripCloud';
 
   final NetworkAwareClient _apiClient;
@@ -14,7 +15,8 @@ class TripCloudService {
   TripCloudService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 取得所有雲端行程
-  Future<TripCloudResult<List<Trip>>> fetchTrips() async {
+  @override
+  Future<TripCloudResult<List<Trip>>> getTrips() async {
     try {
       LogService.info('取得雲端行程列表...', source: _source);
 
@@ -44,6 +46,7 @@ class TripCloudService {
   }
 
   /// 上傳行程到雲端
+  @override
   Future<TripCloudResult<String>> uploadTrip(Trip trip) async {
     try {
       LogService.info('上傳行程: ${trip.name}', source: _source);
@@ -80,6 +83,7 @@ class TripCloudService {
   /// 完整上傳行程 (包含行程表與裝備)
   ///
   /// 使用 `sync_trip_full` 動作
+  @override
   Future<TripCloudResult<String>> uploadFullTrip({
     required Trip trip,
     required List<dynamic> itineraryItems,
@@ -120,6 +124,7 @@ class TripCloudService {
   }
 
   /// 更新雲端行程
+  @override
   Future<TripCloudResult<void>> updateTrip(Trip trip) async {
     try {
       LogService.info('更新行程: ${trip.name}', source: _source);
@@ -153,6 +158,7 @@ class TripCloudService {
   }
 
   /// 刪除雲端行程
+  @override
   Future<TripCloudResult<void>> deleteTrip(String tripId) async {
     try {
       LogService.info('刪除行程: $tripId', source: _source);
@@ -175,16 +181,4 @@ class TripCloudService {
       return TripCloudResult.failure('$e');
     }
   }
-}
-
-/// 行程雲端操作結果
-class TripCloudResult<T> {
-  final bool isSuccess;
-  final T? data;
-  final String? errorMessage;
-
-  TripCloudResult._({required this.isSuccess, this.data, this.errorMessage});
-
-  factory TripCloudResult.success(T? data) => TripCloudResult._(isSuccess: true, data: data);
-  factory TripCloudResult.failure(String message) => TripCloudResult._(isSuccess: false, errorMessage: message);
 }
