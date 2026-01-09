@@ -42,6 +42,12 @@ import '../services/interfaces/i_weather_service.dart';
 import '../services/poll_service.dart';
 import '../services/geolocator_service.dart';
 import '../services/interfaces/i_geolocator_service.dart';
+import '../services/gear_cloud_service.dart';
+import '../services/interfaces/i_gear_cloud_service.dart';
+import '../data/datasources/local/gear_key_local_data_source.dart';
+import '../data/datasources/interfaces/i_gear_key_local_data_source.dart';
+import '../data/repositories/gear_set_repository.dart';
+import '../data/repositories/interfaces/i_gear_set_repository.dart';
 import '../presentation/providers/gear_provider.dart';
 import '../core/location/i_location_resolver.dart';
 import '../core/location/township_location_resolver.dart';
@@ -106,6 +112,12 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<IItineraryRemoteDataSource>(() => ItineraryRemoteDataSource());
   getIt.registerLazySingleton<IMessageRemoteDataSource>(() => MessageRemoteDataSource());
 
+  // Gear Set Remote & Local
+  getIt.registerLazySingleton<IGearCloudService>(() => GearCloudService());
+  final gearKeyLocalDS = GearKeyLocalDataSource();
+  // await gearKeyLocalDS.init(); // SharedPrefs no init needed apart from check
+  getIt.registerSingleton<IGearKeyLocalDataSource>(gearKeyLocalDS);
+
   // ========================================
   // Base Services (Settings, Connectivity)
   // ========================================
@@ -154,6 +166,11 @@ Future<void> setupDependencies() async {
   final pollRepo = PollRepository();
   await pollRepo.init();
   getIt.registerSingleton<IPollRepository>(pollRepo);
+
+  // 6. Gear Sets - 雲端裝備組合
+  final gearSetRepo = GearSetRepository();
+  // await gearSetRepo.init(); // No init needed
+  getIt.registerSingleton<IGearSetRepository>(gearSetRepo);
 
   // 7. Location Resolver
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
