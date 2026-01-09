@@ -131,6 +131,42 @@ lib/
 
 ---
 
+## 2.1 Service 目錄
+
+### 服務分類
+
+| 類別 | 說明 |
+|------|------|
+| 核心業務 | 主要業務功能，需要介面抽象 |
+| 雲端服務 | 與雲端 API 互動，需要介面抽象 |
+| 基礎設施 | 底層技術支援 |
+| 工具服務 | 內部輔助工具，不需介面 |
+
+### Service 清單
+
+| Service | 類別 | 說明 | Interface |
+|---------|------|------|-----------|
+| `GasAuthService` | 核心業務 | 會員認證 (登入/註冊/驗證) | `IAuthService` |
+| `SyncService` | 核心業務 | 資料雙向同步 | `ISyncService` |
+| `PollService` | 核心業務 | 投票功能 | `IPollService` |
+| `WeatherService` | 核心業務 | 氣象資料 (CWA ETL) | `IWeatherService` |
+| `GearCloudService` | 雲端服務 | 裝備組合上傳/下載 | `IGearCloudService` |
+| `GearLibraryCloudService` | 雲端服務 | 個人裝備庫同步 | `IGearLibraryCloudService` |
+| `TripCloudService` | 雲端服務 | 行程雲端管理 | `ITripCloudService` |
+| `GoogleSheetsService` | 雲端服務 | API Gateway (GAS) | `IDataService` |
+| `ConnectivityService` | 基礎設施 | 網路/離線狀態判斷 | `IConnectivityService` |
+| `GasApiClient` | 基礎設施 | GAS HTTP 客戶端 | - |
+| `NetworkAwareClient` | 基礎設施 | 離線攔截裝飾器 | - |
+| `JwtTokenValidator` | 基礎設施 | Token 驗證 | `ITokenValidator` |
+| `GeolocatorService` | 基礎設施 | GPS 定位 | `IGeolocatorService` |
+| `HiveService` | 工具服務 | Hive 初始化 | - |
+| `LogService` | 工具服務 | 日誌記錄 | - |
+| `ToastService` | 工具服務 | UI 通知 | - |
+| `TutorialService` | 工具服務 | 教學導覽 | - |
+| `UsageTrackingService` | 工具服務 | Web 使用追蹤 | - |
+
+---
+
 ## 3. 本地資料庫設計 (Hive Schema)
 
 ### Box: `settings` (TypeId: 0)
@@ -621,31 +657,31 @@ flowchart TB
 
 - **介面**: `I` + 功能名稱 + `Service` (例: `IAuthService`)
 - **實作**: 技術名稱 + 功能名稱 + `Impl` (例: `GasAuthServiceImpl`)
-- **方法**: 動詞 + 名詞 (例: `fetchPolls()`, `createPoll()`)
+- **方法**: 動詞 + 名詞 (例: `getPolls()`, `createPoll()`)
 
 #### 動詞統一
 
-| 動詞        | 用途     | 範例                              |
-| ----------- | -------- | --------------------------------- |
-| `get*`      | 單筆取得 | `getUser()`, `getWeather()`       |
-| `fetch*`    | 批次下載 | `fetchPolls()`, `fetchTrips()`    |
-| `create*`   | 新增     | `createPoll()`, `createMessage()` |
-| `update*`   | 更新     | `updateProfile()`, `updateTrip()` |
-| `delete*`   | 刪除     | `deletePoll()`, `deleteMessage()` |
-| `sync*`     | 同步     | `syncAll()`, `syncItinerary()`    |
-| `upload*`   | 上傳     | `uploadGearSet()`                 |
-| `download*` | 下載     | `downloadGearSet()`               |
-| `validate*` | 驗證     | `validateSession()`               |
+| 動詞        | 用途           | 範例                              |
+| ----------- | -------------- | --------------------------------- |
+| `get*`      | 取得單筆       | `getUser()`, `getWeather()`       |
+| `get*s`     | 取得多筆 (複數) | `getPolls()`, `getTrips()`, `getGearSets()` |
+| `create*`   | 新增           | `createPoll()`, `createMessage()` |
+| `update*`   | 更新           | `updateProfile()`, `updateTrip()` |
+| `delete*`   | 刪除           | `deletePoll()`, `deleteMessage()` |
+| `sync*`     | 同步           | `syncAll()`, `syncItinerary()`    |
+| `upload*`   | 上傳           | `uploadGearSet()`                 |
+| `download*` | 下載           | `downloadGearSet()`               |
+| `validate*` | 驗證           | `validateSession()`               |
 
 #### 核心 Interface
 
-| Interface           | 說明     | 主要方法                                                  |
-| ------------------- | -------- | --------------------------------------------------------- |
-| `IAuthService`      | 認證服務 | `login()`, `logout()`, `validateSession()`                |
-| `ISyncService`      | 同步服務 | `syncAll()`, `syncItinerary()`, `syncMessages()`          |
-| `IGearCloudService` | 裝備雲端 | `uploadGearSet()`, `downloadGearSet()`, `fetchGearSets()` |
-| `IPollService`      | 投票服務 | `fetchPolls()`, `createPoll()`, `votePoll()`              |
-| `IWeatherService`   | 天氣服務 | `getWeather()`, `getForecast()`                           |
+| Interface           | 說明     | 主要方法                                              |
+| ------------------- | -------- | ----------------------------------------------------- |
+| `IAuthService`      | 認證服務 | `login()`, `logout()`, `validateSession()`            |
+| `ISyncService`      | 同步服務 | `syncAll()`, `syncItinerary()`, `syncMessages()`      |
+| `IGearCloudService` | 裝備雲端 | `uploadGearSet()`, `downloadGearSet()`, `getGearSets()` |
+| `IPollService`      | 投票服務 | `getPolls()`, `createPoll()`, `votePoll()`            |
+| `IWeatherService`   | 天氣服務 | `getWeather()`, `getForecast()`                       |
 
 ### DI 多實作策略
 
