@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../services/gear_cloud_service.dart';
+import '../../data/repositories/interfaces/i_gear_set_repository.dart';
 import '../../services/toast_service.dart';
 
 /// Key 輸入對話框
 class GearKeyInputDialog extends StatefulWidget {
-  final GearCloudService cloudService;
+  final IGearSetRepository repository;
 
-  const GearKeyInputDialog({super.key, required this.cloudService});
+  const GearKeyInputDialog({super.key, required this.repository});
 
   @override
   State<GearKeyInputDialog> createState() => _GearKeyInputDialogState();
@@ -41,7 +40,7 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
 
     setState(() => _isLoading = true);
 
-    final result = await widget.cloudService.getGearSetByKey(key);
+    final result = await widget.repository.getGearSetByKey(key);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -82,67 +81,6 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
               : const Text('查詢'),
         ),
       ],
-    );
-  }
-}
-
-/// 本地 Key 記錄管理
-class GearKeyStorage {
-  static const String _keyPrefix = 'gear_uploaded_keys';
-
-  /// 取得已儲存的 Keys
-  static Future<List<GearKeyRecord>> getUploadedKeys() async {
-    final prefs = await SharedPreferences.getInstance();
-    final keysJson = prefs.getStringList(_keyPrefix) ?? [];
-    return keysJson.map((json) => GearKeyRecord.fromStorageString(json)).toList();
-  }
-
-  /// 儲存新的 Key
-  static Future<void> saveUploadedKey(String key, String title, String visibility) async {
-    final prefs = await SharedPreferences.getInstance();
-    final keysJson = prefs.getStringList(_keyPrefix) ?? [];
-
-    final record = GearKeyRecord(key: key, title: title, visibility: visibility, uploadedAt: DateTime.now());
-
-    keysJson.add(record.toStorageString());
-    await prefs.setStringList(_keyPrefix, keysJson);
-  }
-
-  /// 移除已上傳的 Key
-  static Future<void> removeUploadedKey(String key) async {
-    final prefs = await SharedPreferences.getInstance();
-    final keysJson = prefs.getStringList(_keyPrefix) ?? [];
-
-    // 過濾掉指定的 key
-    final filtered = keysJson.where((json) {
-      final record = GearKeyRecord.fromStorageString(json);
-      return record.key != key;
-    }).toList();
-
-    await prefs.setStringList(_keyPrefix, filtered);
-  }
-}
-
-/// Key 記錄
-class GearKeyRecord {
-  final String key;
-  final String title;
-  final String visibility;
-  final DateTime uploadedAt;
-
-  GearKeyRecord({required this.key, required this.title, required this.visibility, required this.uploadedAt});
-
-  String toStorageString() {
-    return '$key|$title|$visibility|${uploadedAt.toIso8601String()}';
-  }
-
-  factory GearKeyRecord.fromStorageString(String str) {
-    final parts = str.split('|');
-    return GearKeyRecord(
-      key: parts.isNotEmpty ? parts[0] : '',
-      title: parts.length > 1 ? parts[1] : '',
-      visibility: parts.length > 2 ? parts[2] : 'private',
-      uploadedAt: parts.length > 3 ? DateTime.tryParse(parts[3]) ?? DateTime.now() : DateTime.now(),
     );
   }
 }
