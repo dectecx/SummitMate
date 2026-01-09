@@ -346,9 +346,9 @@ ETL 處理後的應用端氣象資料。
 
 雲端裝備組合庫。
 
-| uuid | trip_id   | title    | author | visibility | key  | total_weight | item_count | uploaded_at | items_json | meals_json |
-| ---- | --------- | -------- | ------ | ---------- | ---- | ------------ | ---------- | ----------- | ---------- | ---------- |
-| uuid | trip-uuid | 輕量組合 | Alice  | public     |      | 5000         | 15         | ISO8601     | [...]      | [...]      |
+| uuid | trip_id   | title    | author | visibility | key | total_weight | item_count | uploaded_at | items_json | meals_json |
+| ---- | --------- | -------- | ------ | ---------- | --- | ------------ | ---------- | ----------- | ---------- | ---------- |
+| uuid | trip-uuid | 輕量組合 | Alice  | public     |     | 5000         | 15         | ISO8601     | [...]      | [...]      |
 
 - `visibility`: `public` / `protected` / `private`
 - `key`: 4 位數密碼 (protected/private 專用)
@@ -359,17 +359,17 @@ ETL 處理後的應用端氣象資料。
 
 行程裝備清單（每筆裝備為一列）。
 
-| uuid | trip_id   | name   | weight | category | is_checked | quantity |
-| ---- | --------- | ------ | ------ | -------- | ---------- | -------- |
-| uuid | trip-uuid | 睡袋   | 800    | Sleep    | TRUE       | 1        |
+| uuid | trip_id   | name | weight | category | is_checked | quantity |
+| ---- | --------- | ---- | ------ | -------- | ---------- | -------- |
+| uuid | trip-uuid | 睡袋 | 800    | Sleep    | TRUE       | 1        |
 
 ### Sheet: `GearLibrary`
 
 個人裝備庫（每筆裝備為一列）。
 
-| uuid | owner_key | name   | weight | category | notes | created_at | updated_at |
-| ---- | --------- | ------ | ------ | -------- | ----- | ---------- | ---------- |
-| uuid | user-key  | 睡袋   | 800    | Sleep    | ...   | ISO8601    | ISO8601    |
+| uuid | owner_key | name | weight | category | notes | created_at | updated_at |
+| ---- | --------- | ---- | ------ | -------- | ----- | ---------- | ---------- |
+| uuid | user-key  | 睡袋 | 800    | Sleep    | ...   | ISO8601    | ISO8601    |
 
 - `owner_key`: 用戶識別碼 (未來改為 user_id)
 
@@ -426,14 +426,14 @@ Base URL: `macros/s/{DEPLOYMENT_ID}/exec`
 
 #### 會員驗證 (Auth)
 
-| Action              | Payload                                        | Description        |
-| ------------------- | ---------------------------------------------- | ------------------ |
-| `auth_register`     | `{email, password, displayName, avatar?}`      | 註冊新會員         |
-| `auth_login`        | `{email, password}`                            | 登入               |
-| `auth_validate`     | `{accessToken}`                                | 驗證 Token         |
-| `auth_delete_user`  | `{accessToken}`                                | 假刪除會員         |
-| `auth_verify_email` | `{email, code}`                                | Email 驗證碼確認   |
-| `auth_resend_code`  | `{email}`                                      | 重發驗證碼         |
+| Action              | Payload                                   | Description      |
+| ------------------- | ----------------------------------------- | ---------------- |
+| `auth_register`     | `{email, password, displayName, avatar?}` | 註冊新會員       |
+| `auth_login`        | `{email, password}`                       | 登入             |
+| `auth_validate`     | `{accessToken}`                           | 驗證 Token       |
+| `auth_delete_user`  | `{accessToken}`                           | 假刪除會員       |
+| `auth_verify_email` | `{email, code}`                           | Email 驗證碼確認 |
+| `auth_resend_code`  | `{email}`                                 | 重發驗證碼       |
 
 #### 留言相關
 
@@ -566,3 +566,169 @@ WeatherService({ISettingsRepository? settingsRepo})
 | **Service 測試** | 透過 API Client 建構子注入 Mock   |
 | **Widget 測試**  | 使用 `pumpWidget` + Mock Provider |
 | **整合測試**     | 使用 Dev 環境 API                 |
+
+---
+
+## 8. Clean Architecture 設計
+
+### 分層架構
+
+```mermaid
+flowchart TB
+    subgraph Presentation["Presentation Layer"]
+        UI["Screens/Widgets"]
+        SM["State Management<br>(Provider/Cubit)"]
+    end
+
+    subgraph Domain["Domain Layer (Interface)"]
+        IAuth["IAuthService"]
+        ISync["ISyncService"]
+        IGear["IGearCloudService"]
+        IPoll["IPollService"]
+    end
+
+    subgraph Infrastructure["Infrastructure Layer (Impl)"]
+        GasAuth["GasAuthServiceImpl"]
+        GasSync["GasSyncServiceImpl"]
+        GasGear["GasGearCloudImpl"]
+        GasPoll["GasPollServiceImpl"]
+    end
+
+    subgraph Clients["Low-level Clients"]
+        GC["GasApiClient"]
+    end
+
+    UI --> SM
+    SM --> IAuth
+    SM --> ISync
+    GasAuth --> GC
+    GasSync --> GC
+```
+
+### 分層職責
+
+| 層級           | 目錄                     | 職責                           |
+| -------------- | ------------------------ | ------------------------------ |
+| Presentation   | `lib/presentation/`      | UI、狀態管理、使用者互動       |
+| Domain         | `lib/domain/interfaces/` | 業務介面定義 (純抽象)          |
+| Infrastructure | `lib/infrastructure/`    | 介面實作、API Client、外部服務 |
+| Data           | `lib/data/`              | Model、Repository、本地儲存    |
+| Core           | `lib/core/`              | DI、常數、Exception            |
+
+### Domain Interface
+
+#### 命名規範
+
+- **介面**: `I` + 功能名稱 + `Service` (例: `IAuthService`)
+- **實作**: 技術名稱 + 功能名稱 + `Impl` (例: `GasAuthServiceImpl`)
+- **方法**: 動詞 + 名詞 (例: `fetchPolls()`, `createPoll()`)
+
+#### 動詞統一
+
+| 動詞        | 用途     | 範例                              |
+| ----------- | -------- | --------------------------------- |
+| `get*`      | 單筆取得 | `getUser()`, `getWeather()`       |
+| `fetch*`    | 批次下載 | `fetchPolls()`, `fetchTrips()`    |
+| `create*`   | 新增     | `createPoll()`, `createMessage()` |
+| `update*`   | 更新     | `updateProfile()`, `updateTrip()` |
+| `delete*`   | 刪除     | `deletePoll()`, `deleteMessage()` |
+| `sync*`     | 同步     | `syncAll()`, `syncItinerary()`    |
+| `upload*`   | 上傳     | `uploadGearSet()`                 |
+| `download*` | 下載     | `downloadGearSet()`               |
+| `validate*` | 驗證     | `validateSession()`               |
+
+#### 核心 Interface
+
+| Interface           | 說明     | 主要方法                                                  |
+| ------------------- | -------- | --------------------------------------------------------- |
+| `IAuthService`      | 認證服務 | `login()`, `logout()`, `validateSession()`                |
+| `ISyncService`      | 同步服務 | `syncAll()`, `syncItinerary()`, `syncMessages()`          |
+| `IGearCloudService` | 裝備雲端 | `uploadGearSet()`, `downloadGearSet()`, `fetchGearSets()` |
+| `IPollService`      | 投票服務 | `fetchPolls()`, `createPoll()`, `votePoll()`              |
+| `IWeatherService`   | 天氣服務 | `getWeather()`, `getForecast()`                           |
+
+### DI 多實作策略
+
+#### ApiProvider Enum
+
+```dart
+/// API Provider 類型
+enum ApiProvider {
+  gas,       // Google Apps Script
+  firebase,  // Firebase (未來)
+  rest,      // 自建 API (未來)
+}
+```
+
+#### Named Registration
+
+```dart
+// 註冊 (避免打錯字，使用 Enum.name)
+getIt.registerSingleton<IAuthService>(
+  GasAuthServiceImpl(),
+  instanceName: ApiProvider.gas.name,
+);
+
+// 取得
+final authService = getIt<IAuthService>(instanceName: ApiProvider.gas.name);
+```
+
+### 離線處理策略
+
+採用 **Impl 內部處理** 方式，各實作自行決定離線行為：
+
+```dart
+class GasSyncServiceImpl implements ISyncService {
+  final GasApiClient _client;
+  final ConnectivityService _connectivity;
+
+  @override
+  Future<SyncResult> syncAll({bool isAuto = false}) async {
+    // 清楚的離線檢查，易於理解和除錯
+    if (_connectivity.isOffline) {
+      return SyncResult.skipped(reason: 'offline');
+    }
+
+    return await _doSync();
+  }
+}
+```
+
+### 狀態管理
+
+| 方案         | 適用場景           | 採用狀態    |
+| ------------ | ------------------ | ----------- |
+| **Provider** | 簡單狀態           | ✅ 採用     |
+| **Cubit**    | 事件驅動、中等複雜 | ⏳ 未來考慮 |
+| **BLoC**     | 複雜事件流         | ❌ 暫不採用 |
+| **Riverpod** | 編譯時安全         | ❌ 暫不採用 |
+
+### 目錄結構
+
+```
+lib/
+├── core/
+│   ├── constants/
+│   ├── di.dart
+│   └── exceptions/
+├── domain/                          # 領域層 (Interface)
+│   └── interfaces/
+│       ├── i_auth_service.dart
+│       ├── i_sync_service.dart
+│       └── ...
+├── infrastructure/                  # 基礎設施層 (Impl)
+│   ├── clients/
+│   │   └── gas_api_client.dart
+│   └── services/
+│       ├── gas_auth_service_impl.dart
+│       └── ...
+├── data/
+│   ├── models/
+│   └── repositories/
+├── presentation/
+│   ├── providers/
+│   ├── cubits/                      # 未來
+│   ├── screens/
+│   └── widgets/
+└── main.dart
+```
