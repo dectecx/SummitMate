@@ -6,13 +6,13 @@ import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/presentation/providers/message_provider.dart';
-import 'package:summitmate/services/google_sheets_service.dart';
-import 'package:summitmate/services/sync_service.dart';
+import 'package:summitmate/services/interfaces/i_data_service.dart';
+import 'package:summitmate/services/interfaces/i_sync_service.dart';
 
 // Mocks
 class MockMessageRepository extends Mock implements IMessageRepository {}
 
-class MockSyncService extends Mock implements SyncService {}
+class MockSyncService extends Mock implements ISyncService {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
@@ -30,7 +30,7 @@ void main() {
     // Reset GetIt
     await GetIt.I.reset();
     GetIt.I.registerSingleton<IMessageRepository>(mockRepository);
-    GetIt.I.registerSingleton<SyncService>(mockSyncService);
+    GetIt.I.registerSingleton<ISyncService>(mockSyncService);
     GetIt.I.registerSingleton<ITripRepository>(mockTripRepository);
 
     // Default mock behaviors

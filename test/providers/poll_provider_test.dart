@@ -9,6 +9,8 @@ import 'package:summitmate/data/models/settings.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/services/gas_api_client.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 // Mocks
 class MockDio extends Mock implements Dio {}
@@ -21,12 +23,15 @@ class MockSettingsRepository extends Mock implements ISettingsRepository {}
 
 class MockSettings extends Mock implements Settings {}
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late MockDio mockDio;
   late MockSharedPreferences mockSharedPreferences;
   late MockPollRepository mockPollRepository;
   late MockSettingsRepository mockSettingsRepository;
   late MockSettings mockSettings;
+  late MockConnectivityService mockConnectivityService;
   late PollProvider provider;
 
   setUp(() async {
@@ -35,15 +40,20 @@ void main() {
     mockPollRepository = MockPollRepository();
     mockSettingsRepository = MockSettingsRepository();
     mockSettings = MockSettings();
+    mockConnectivityService = MockConnectivityService();
+    when(() => mockConnectivityService.isOnline).thenReturn(true);
+    when(() => mockConnectivityService.isOffline).thenReturn(false);
+    when(() => mockConnectivityService.onConnectivityChanged).thenAnswer((_) => const Stream.empty());
 
     // Register mocks via GetIt
     final getIt = GetIt.instance;
     await getIt.reset();
 
     final gasApiClient = GasApiClient(dio: mockDio, baseUrl: 'https://mock.api');
+    final networkClient = NetworkAwareClient(apiClient: gasApiClient, connectivity: mockConnectivityService);
 
     getIt.registerSingleton<SharedPreferences>(mockSharedPreferences);
-    getIt.registerSingleton<PollService>(PollService(apiClient: gasApiClient));
+    getIt.registerSingleton<PollService>(PollService(apiClient: networkClient));
     getIt.registerSingleton<IPollRepository>(mockPollRepository);
     getIt.registerSingleton<ISettingsRepository>(mockSettingsRepository);
 
@@ -63,7 +73,7 @@ void main() {
     registerFallbackValue(Options());
     registerFallbackValue(<String, dynamic>{});
 
-    provider = PollProvider();
+    provider = PollProvider(connectivity: mockConnectivityService);
   });
 
   tearDown(() {

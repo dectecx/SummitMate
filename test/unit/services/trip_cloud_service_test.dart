@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/services/trip_cloud_service.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 // Mock GasApiClient
 class MockGasApiClient extends GasApiClient {
@@ -38,17 +41,24 @@ class MockGasApiClient extends GasApiClient {
   }
 }
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late TripCloudService service;
   late MockGasApiClient mockClient;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockClient = MockGasApiClient();
-    service = TripCloudService(apiClient: mockClient);
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+
+    final networkClient = NetworkAwareClient(apiClient: mockClient, connectivity: mockConnectivity);
+    service = TripCloudService(apiClient: networkClient);
   });
 
   group('TripCloudService', () {
-    test('fetchTrips returns success with list of trips', () async {
+    test('getTrips returns success with list of trips', () async {
       mockClient.expectedResponseData = {
         'trips': [
           {
@@ -61,7 +71,7 @@ void main() {
         ],
       };
 
-      final result = await service.fetchTrips();
+      final result = await service.getTrips();
 
       expect(result.isSuccess, true);
       expect(result.data, isA<List<Trip>>());
@@ -69,10 +79,10 @@ void main() {
       expect(result.data!.first.name, 'Trip 1');
     });
 
-    test('fetchTrips handles empty list', () async {
+    test('getTrips handles empty list', () async {
       mockClient.expectedResponseData = {'trips': []};
 
-      final result = await service.fetchTrips();
+      final result = await service.getTrips();
 
       expect(result.isSuccess, true);
       expect(result.data, isEmpty);
@@ -107,7 +117,7 @@ void main() {
     test('Handles HTTP error', () async {
       mockClient.shouldFail = true;
 
-      final result = await service.fetchTrips();
+      final result = await service.getTrips();
 
       expect(result.isSuccess, false);
       expect(result.errorMessage, contains('HTTP 500'));

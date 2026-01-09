@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/services/google_sheets_service.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/data/models/message.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 // Mock GasApiClient
 class MockGasApiClient extends GasApiClient {
@@ -60,10 +63,27 @@ class MockGasApiClient extends GasApiClient {
   }
 }
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
+  late MockGasApiClient mockClient;
+  late MockConnectivityService mockConnectivity;
+
+  setUp(() {
+    mockClient = MockGasApiClient();
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+  });
+
   group('GoogleSheetsService Tests', () {
-    test('fetchAll should return itinerary and messages on success', () async {
-      final mockClient = MockGasApiClient();
+    late GoogleSheetsService service;
+
+    setUp(() {
+      final networkClient = NetworkAwareClient(apiClient: mockClient, connectivity: mockConnectivity);
+      service = GoogleSheetsService(apiClient: networkClient);
+    });
+
+    test('getAll should return itinerary and messages on success', () async {
       mockClient.expectedResponseData = {
         'itinerary': [
           {
@@ -87,8 +107,7 @@ void main() {
         ],
       };
 
-      final service = GoogleSheetsService(apiClient: mockClient);
-      final result = await service.fetchAll();
+      final result = await service.getAll();
 
       expect(result.isSuccess, isTrue);
       expect(result.itinerary.length, 1);
@@ -97,21 +116,16 @@ void main() {
       expect(result.messages.first.user, 'Alex');
     });
 
-    test('fetchAll should return error on HTTP failure', () async {
-      final mockClient = MockGasApiClient();
+    test('getAll should return error on HTTP failure', () async {
       mockClient.shouldFail = true;
 
-      final service = GoogleSheetsService(apiClient: mockClient);
-      final result = await service.fetchAll();
+      final result = await service.getAll();
 
       expect(result.isSuccess, isFalse);
       expect(result.errorMessage, contains('500'));
     });
 
     test('addMessage should post message data', () async {
-      final mockClient = MockGasApiClient();
-      final service = GoogleSheetsService(apiClient: mockClient);
-
       final message = Message(
         uuid: 'new-uuid',
         user: 'Bob',
@@ -129,9 +143,6 @@ void main() {
     });
 
     test('deleteMessage should send delete request', () async {
-      final mockClient = MockGasApiClient();
-      final service = GoogleSheetsService(apiClient: mockClient);
-
       final result = await service.deleteMessage('uuid-to-delete');
 
       expect(result.isSuccess, isTrue);

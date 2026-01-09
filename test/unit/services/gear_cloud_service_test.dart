@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/gear_set.dart';
 import 'package:summitmate/data/models/gear_item.dart';
 import 'package:summitmate/services/gas_api_client.dart';
 import 'package:summitmate/services/gear_cloud_service.dart';
+import 'package:summitmate/services/network_aware_client.dart';
+import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
 
 // Mock GasApiClient (Reused pattern)
 class MockGasApiClient extends GasApiClient {
@@ -38,17 +41,24 @@ class MockGasApiClient extends GasApiClient {
   }
 }
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late GearCloudService service;
   late MockGasApiClient mockClient;
+  late MockConnectivityService mockConnectivity;
 
   setUp(() {
     mockClient = MockGasApiClient();
-    service = GearCloudService(apiClient: mockClient);
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+
+    final networkClient = NetworkAwareClient(apiClient: mockClient, connectivity: mockConnectivity);
+    service = GearCloudService(apiClient: networkClient);
   });
 
   group('GearCloudService', () {
-    test('fetchGearSets returns list of GearSets', () async {
+    test('getGearSets returns list of GearSets', () async {
       mockClient.expectedResponseData = {
         'gear_sets': [
           {
@@ -63,7 +73,7 @@ void main() {
         ],
       };
 
-      final result = await service.fetchGearSets();
+      final result = await service.getGearSets();
       // 驗證
       expect(result.isSuccess, isTrue);
       expect(result.data, hasLength(1));

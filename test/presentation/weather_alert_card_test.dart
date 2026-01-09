@@ -90,9 +90,9 @@ void main() {
     await tester.pumpAndSettle();
 
     // Assert
-    expect(find.text('目前位置: 測試鄉鎮'), findsOneWidget);
-    expect(find.textContaining('降雨機率 65%'), findsOneWidget);
-    expect(find.text('注意'), findsOneWidget);
+    expect(find.text('測試鄉鎮'), findsOneWidget);
+    expect(find.textContaining('降雨率 65%'), findsOneWidget);
+    expect(find.text('攜帶雨具'), findsOneWidget);
     expect(find.byIcon(Icons.umbrella), findsOneWidget);
   });
 
@@ -120,7 +120,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Assert
-    expect(find.text('目前位置: 危險鄉鎮'), findsOneWidget);
-    expect(find.text('注意'), findsOneWidget);
+    expect(find.text('危險鄉鎮'), findsOneWidget);
+    expect(find.text('豪雨特報'), findsOneWidget);
   });
 }

@@ -1,4 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/data/models/gear_library_item.dart';
 import 'package:summitmate/data/repositories/interfaces/i_gear_library_repository.dart';
 import 'package:summitmate/presentation/providers/gear_library_provider.dart';
@@ -95,13 +98,22 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
   }
 }
 
+class MockGearRepository extends Mock implements IGearRepository {}
+
+class MockTripRepository extends Mock implements ITripRepository {}
+
 void main() {
   group('GearLibraryProvider Tests', () {
     late MockGearLibraryRepository mockRepo;
     late GearLibraryProvider provider;
+    late MockGearRepository mockGearRepo;
+    late MockTripRepository mockTripRepo;
 
     setUp(() {
       mockRepo = MockGearLibraryRepository();
+      mockGearRepo = MockGearRepository();
+      mockTripRepo = MockTripRepository();
+      when(() => mockGearRepo.getAllItems()).thenReturn([]);
     });
 
     tearDown(() {
@@ -114,7 +126,7 @@ void main() {
         GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
       ]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero); // 等待同步操作完成
 
       expect(provider.allItems.length, equals(2));
@@ -124,7 +136,7 @@ void main() {
     test('filteredItems 初始狀態返回所有項目', () async {
       mockRepo.setItems([GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep')]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       expect(provider.filteredItems.length, equals(1));
@@ -137,7 +149,7 @@ void main() {
         GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
       ]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       provider.selectCategory('Sleep');
@@ -157,7 +169,7 @@ void main() {
         GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
       ]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       provider.setSearchQuery('睡袋');
@@ -177,7 +189,7 @@ void main() {
         GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
       ]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       final grouped = provider.itemsByCategory;
@@ -187,7 +199,7 @@ void main() {
     });
 
     test('addItem 應新增項目並更新列表', () async {
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       await provider.addItem(name: '睡袋', weight: 1200, category: 'Sleep', notes: '品牌備註');
@@ -201,7 +213,7 @@ void main() {
       final item = GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep');
       mockRepo.setItems([item]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
       expect(provider.allItems.length, equals(1));
 
@@ -215,7 +227,7 @@ void main() {
         GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
       ]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       expect(provider.totalWeight, equals(1500));
@@ -228,7 +240,7 @@ void main() {
         GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
       ]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       expect(provider.itemCount, equals(2));
@@ -238,7 +250,7 @@ void main() {
       final item = GearLibraryItem(uuid: 'test-uuid-123', name: '睡袋', weight: 1200, category: 'Sleep');
       mockRepo.setItems([item]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       final found = provider.getById('test-uuid-123');
@@ -253,7 +265,7 @@ void main() {
       final item = GearLibraryItem(uuid: 'test-uuid-456', name: '爐頭', weight: 300, category: 'Cook');
       mockRepo.setItems([item]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       expect(provider.containsItem('test-uuid-456'), isTrue);
@@ -263,7 +275,7 @@ void main() {
     test('error handling: 載入失敗時設定 error', () async {
       mockRepo.setThrowOnGetAllItems(true);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
 
       expect(provider.error, isNotNull);
@@ -273,7 +285,7 @@ void main() {
     test('reload 應重新載入資料', () async {
       mockRepo.setItems([GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep')]);
 
-      provider = GearLibraryProvider(repository: mockRepo);
+      provider = GearLibraryProvider(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
       await Future.delayed(Duration.zero);
       expect(provider.allItems.length, equals(1));
 
