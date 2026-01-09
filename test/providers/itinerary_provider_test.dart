@@ -102,7 +102,7 @@ class MockItineraryRepository implements IItineraryRepository {
 
   @override
   Future<void> sync(String tripId) async {}
-  
+
   @override
   Future<void> addItem(ItineraryItem item) async {
     items.add(item);

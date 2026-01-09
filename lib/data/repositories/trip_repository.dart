@@ -13,11 +13,9 @@ class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
 
-  TripRepository({
-    required ITripLocalDataSource localDataSource,
-    required ITripRemoteDataSource remoteDataSource,
-  }) : _localDataSource = localDataSource,
-       _remoteDataSource = remoteDataSource;
+  TripRepository({required ITripLocalDataSource localDataSource, required ITripRemoteDataSource remoteDataSource})
+    : _localDataSource = localDataSource,
+      _remoteDataSource = remoteDataSource;
 
   @override
   Future<void> init() async {

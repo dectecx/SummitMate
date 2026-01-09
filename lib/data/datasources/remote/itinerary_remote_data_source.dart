@@ -11,18 +11,14 @@ class ItineraryRemoteDataSource implements IItineraryRemoteDataSource {
 
   final NetworkAwareClient _apiClient;
 
-  ItineraryRemoteDataSource({NetworkAwareClient? apiClient})
-      : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
+  ItineraryRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   @override
   Future<List<ItineraryItem>> fetchItinerary(String tripId) async {
     try {
       LogService.info('Fetching itinerary for trip: $tripId', source: _source);
-      
-      final queryParams = <String, String>{
-        'action': ApiConfig.actionTripGetFull,
-        'trip_id': tripId,
-      };
+
+      final queryParams = <String, String>{'action': ApiConfig.actionTripGetFull, 'trip_id': tripId};
 
       final response = await _apiClient.get(queryParams: queryParams);
 

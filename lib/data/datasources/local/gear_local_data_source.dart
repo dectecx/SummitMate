@@ -29,6 +29,11 @@ class GearLocalDataSource implements IGearLocalDataSource {
   }
 
   @override
+  GearItem? getByKey(dynamic key) {
+    return box.get(key);
+  }
+
+  @override
   List<GearItem> getByTripId(String tripId) {
     return box.values.where((item) => item.tripId == tripId).toList();
   }

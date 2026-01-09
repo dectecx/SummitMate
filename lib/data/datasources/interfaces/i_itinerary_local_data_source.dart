@@ -10,7 +10,7 @@ abstract class IItineraryLocalDataSource {
   Future<void> update(dynamic key, ItineraryItem item);
   Future<void> delete(dynamic key);
   Future<void> clear();
-  
+
   Stream<BoxEvent> watch();
 
   Future<void> saveLastSyncTime(DateTime time);

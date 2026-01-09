@@ -169,19 +169,19 @@ void main() {
       expect(result.errors.first, 'Network Error');
     });
 
-    test('getCloudTrips delegates to sheets service', () async {
+    test('getCloudTrips delegates to trip repository', () async {
       // renamed from fetchCloudTrips
       // Arrange
       final trips = [Trip(id: '1', name: 'Test Trip', startDate: DateTime.now())];
-      when(() => mockDataService.getTrips()).thenAnswer((_) async => GetTripsResult(isSuccess: true, trips: trips));
+      when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => trips);
 
       // Act
-      final result = await syncService.getCloudTrips(); // renamed from fetchCloudTrips
+      final result = await syncService.getCloudTrips();
 
       // Assert
       expect(result.isSuccess, true);
       expect(result.trips, trips);
-      verify(() => mockDataService.getTrips()).called(1);
+      verify(() => mockTripRepo.getRemoteTrips()).called(1);
     });
 
     test('addMessageAndSync should save locally and upload to cloud', () async {

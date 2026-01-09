@@ -78,6 +78,9 @@ class MockMessageRepository implements IMessageRepository {
   DateTime? getLastSyncTime() => lastSyncTime;
 
   @override
+  Future<void> sync(String tripId) async {}
+
+  @override
   Future<void> clearAll() async {
     messages.clear();
   }

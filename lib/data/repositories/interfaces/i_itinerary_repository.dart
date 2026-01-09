@@ -42,7 +42,7 @@ abstract interface class IItineraryRepository {
 
   /// 取得最後同步時間
   DateTime? getLastSyncTime();
-  
+
   /// 觸發同步 (Fetch & Update)
   Future<void> sync(String tripId);
 
