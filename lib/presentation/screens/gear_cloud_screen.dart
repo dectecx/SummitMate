@@ -70,7 +70,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       _errorMessage = null;
     });
 
-    final result = await _cloudService.fetchGearSets();
+    final result = await _cloudService.getGearSets();
 
     if (!mounted) return;
 
@@ -514,7 +514,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   Future<void> _deleteGearSet(GearKeyRecord record) async {
     // 嘗試從雲端刪除 (需要透過 key 查詢 uuid)
-    final fetchResult = await _cloudService.fetchGearSetByKey(record.key);
+    final fetchResult = await _cloudService.getGearSetByKey(record.key);
     if (!fetchResult.isSuccess || fetchResult.data == null) {
       ToastService.error('找不到此組合或已被刪除');
       return;

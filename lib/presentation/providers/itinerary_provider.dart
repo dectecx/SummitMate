@@ -6,8 +6,8 @@ import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
-import '../../services/sync_service.dart';
-import '../../services/connectivity_service.dart';
+import '../../services/interfaces/i_sync_service.dart';
+import '../../services/interfaces/i_connectivity_service.dart';
 
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {
@@ -224,7 +224,7 @@ class ItineraryProvider extends ChangeNotifier {
   /// 檢查行程衝突 (回傳 true 表示本地與雲端不同)
   Future<bool> checkConflict() async {
     try {
-      final syncService = getIt<SyncService>();
+      final syncService = getIt<ISyncService>();
       return await syncService.checkItineraryConflict();
     } catch (e) {
       LogService.error('檢查衝突失敗: $e', source: 'Itinerary');
@@ -236,7 +236,7 @@ class ItineraryProvider extends ChangeNotifier {
   Future<void> sync({bool isAuto = false}) async {
     try {
       // 檢查離線模式
-      final isOffline = getIt<ConnectivityService>().isOffline;
+      final isOffline = getIt<IConnectivityService>().isOffline;
       if (isOffline) {
         if (!isAuto) ToastService.warning('離線模式無法同步');
         return;
@@ -250,7 +250,7 @@ class ItineraryProvider extends ChangeNotifier {
 
       LogService.info('開始同步行程...', source: 'Itinerary');
 
-      final syncService = getIt<SyncService>();
+      final syncService = getIt<ISyncService>();
       final result = await syncService.syncItinerary(isAuto: isAuto);
 
       if (result.isSuccess) {
@@ -283,7 +283,7 @@ class ItineraryProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final syncService = getIt<SyncService>();
+      final syncService = getIt<ISyncService>();
       final result = await syncService.uploadItinerary();
 
       if (result.isSuccess) {

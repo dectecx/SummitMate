@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/di.dart';
-import '../../services/sync_service.dart';
+import '../../services/interfaces/i_sync_service.dart';
 import '../../presentation/providers/message_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
 
@@ -66,7 +66,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     // Last Updated Timestamp & Refresh
                     Builder(
                       builder: (context) {
-                        final lastSync = getIt<SyncService>().lastMessagesSync;
+                        final lastSync = getIt<ISyncService>().lastMessagesSync;
                         final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '未同步';
 
                         return Material(

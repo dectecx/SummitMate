@@ -7,7 +7,7 @@ import '../../data/repositories/interfaces/i_poll_repository.dart';
 import '../../services/poll_service.dart';
 import '../../services/log_service.dart';
 import '../../services/toast_service.dart';
-import '../../services/connectivity_service.dart';
+import '../../services/interfaces/i_connectivity_service.dart';
 
 class PollProvider with ChangeNotifier {
   static const String _source = 'PollProvider';
@@ -33,17 +33,17 @@ class PollProvider with ChangeNotifier {
 
   final PollService _pollService;
   final IPollRepository _pollRepository;
-  final ConnectivityService _connectivity;
+  final IConnectivityService _connectivity;
   final SharedPreferences _prefs;
 
   PollProvider({
     PollService? pollService,
     IPollRepository? pollRepository,
-    ConnectivityService? connectivity,
+    IConnectivityService? connectivity,
     SharedPreferences? prefs,
   }) : _pollService = pollService ?? getIt<PollService>(),
        _pollRepository = pollRepository ?? getIt<IPollRepository>(),
-       _connectivity = connectivity ?? getIt<ConnectivityService>(),
+       _connectivity = connectivity ?? getIt<IConnectivityService>(),
        _prefs = prefs ?? getIt<SharedPreferences>() {
     _loadUserId();
     _loadInitialData();
@@ -112,7 +112,7 @@ class PollProvider with ChangeNotifier {
       final user = _prefs.getString(PrefKeys.username);
       if (user != null && user.isNotEmpty) _currentUserId = user;
 
-      final fetchedPolls = await _pollService.fetchPolls(userId: _currentUserId ?? 'anonymous');
+      final fetchedPolls = await _pollService.getPolls(userId: _currentUserId ?? 'anonymous');
 
       // Sort: Active first, then date desc
       fetchedPolls.sort((a, b) {

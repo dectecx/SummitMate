@@ -43,7 +43,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
       _errorMessage = null;
     });
 
-    final result = await _cloudService.fetchTrips();
+    final result = await _cloudService.getTrips();
 
     setState(() {
       _isLoading = false;

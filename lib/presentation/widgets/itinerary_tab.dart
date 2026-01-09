@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/di.dart';
-import '../../services/sync_service.dart';
+import '../../services/interfaces/i_sync_service.dart';
 import '../../services/toast_service.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/settings_provider.dart';
@@ -54,7 +54,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
   Widget build(BuildContext context) {
     return Consumer<ItineraryProvider>(
       builder: (context, provider, child) {
-        final lastSync = getIt<SyncService>().lastItinerarySync;
+        final lastSync = getIt<ISyncService>().lastItinerarySync;
         final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '尚未同步';
 
         if (provider.isLoading) {

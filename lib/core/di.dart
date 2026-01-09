@@ -40,6 +40,10 @@ import '../data/repositories/auth_session_repository.dart';
 import '../core/env_config.dart';
 import 'package:dio/dio.dart';
 import '../services/interceptors/auth_interceptor.dart';
+import '../services/interfaces/i_connectivity_service.dart';
+import '../services/interfaces/i_poll_service.dart';
+import '../services/interfaces/i_sync_service.dart';
+import '../services/interfaces/i_data_service.dart';
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
@@ -104,7 +108,7 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
   // 6.5. Connectivity - 統一網路與離線模式判斷
-  getIt.registerLazySingleton<ConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
+  getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
 
   // 7. Location Resolver
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
@@ -152,7 +156,7 @@ Future<void> setupDependencies() async {
 
   // NetworkAwareClient - API Client with offline interception
   getIt.registerLazySingleton<NetworkAwareClient>(
-    () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<ConnectivityService>()),
+    () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<IConnectivityService>()),
   );
 
   // ========================================
@@ -160,17 +164,19 @@ Future<void> setupDependencies() async {
   // ========================================
 
   // PollService
-  getIt.registerSingleton<PollService>(PollService());
+  getIt.registerSingleton<IPollService>(PollService());
 
-  // Services
-  getIt.registerLazySingleton<GoogleSheetsService>(() => GoogleSheetsService());
-  getIt.registerLazySingleton<SyncService>(
+  // GoogleSheetsService (IDataService)
+  getIt.registerLazySingleton<IDataService>(() => GoogleSheetsService());
+
+  // SyncService (ISyncService)
+  getIt.registerLazySingleton<ISyncService>(
     () => SyncService(
-      sheetsService: getIt<GoogleSheetsService>(),
+      sheetsService: getIt<IDataService>(),
       tripRepo: getIt<ITripRepository>(),
       itineraryRepo: getIt<IItineraryRepository>(),
       messageRepo: getIt<IMessageRepository>(),
-      connectivity: getIt<ConnectivityService>(),
+      connectivity: getIt<IConnectivityService>(),
     ),
   );
 
