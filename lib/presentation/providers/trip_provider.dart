@@ -4,7 +4,6 @@ import '../../core/di.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../services/log_service.dart';
-import '../../services/trip_cloud_service.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
 
@@ -161,25 +160,14 @@ class TripProvider extends ChangeNotifier {
       final tripItineraries = allItineraries.where((i) => i.tripId == trip.id).toList();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
-      // 2. 呼叫雲端服務
-      final cloudService = TripCloudService();
-      final result = await cloudService.uploadFullTrip(
-        trip: trip,
-        itineraryItems: tripItineraries,
-        gearItems: tripGear,
-      );
+      // 2. 呼叫 Repository
+      await _repository.uploadFullTrip(trip: trip, itineraryItems: tripItineraries, gearItems: tripGear);
 
       _isLoading = false;
       notifyListeners();
 
-      if (result.isSuccess) {
-        LogService.info('上傳行程成功: ${trip.name}', source: _source);
-        return true;
-      } else {
-        _error = result.errorMessage;
-        LogService.error('上傳行程失敗: ${result.errorMessage}', source: _source);
-        return false;
-      }
+      LogService.info('上傳行程成功: ${trip.name}', source: _source);
+      return true;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;

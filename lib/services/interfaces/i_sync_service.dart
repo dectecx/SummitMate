@@ -82,7 +82,7 @@ abstract interface class ISyncService {
   Future<bool> checkItineraryConflict();
 
   /// 取得雲端行程列表
-  Future<FetchTripsResult> fetchCloudTrips();
+  Future<GetTripsResult> getCloudTrips();
 
   /// 取得最後同步時間
   DateTime? get lastItinerarySync;

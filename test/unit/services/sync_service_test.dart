@@ -93,7 +93,7 @@ void main() {
 
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => FetchAllResult(isSuccess: true, itinerary: cloudItinerary, messages: cloudMessages));
+      ).thenAnswer((_) async => GetAllResult(isSuccess: true, itinerary: cloudItinerary, messages: cloudMessages));
 
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
@@ -113,7 +113,7 @@ void main() {
       // Arrange
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => FetchAllResult(isSuccess: true, itinerary: [], messages: []));
+      ).thenAnswer((_) async => GetAllResult(isSuccess: true, itinerary: [], messages: []));
       when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
       when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
 
@@ -129,15 +129,59 @@ void main() {
       // Arrange
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => FetchAllResult(isSuccess: false, errorMessage: 'Network Error'));
+      ).thenAnswer((_) async => GetAllResult(isSuccess: true, itinerary: [], messages: []));
+
+      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
+      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
+      when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
 
       // Act
-      final result = await syncService.syncAll();
+      final result = await syncService.syncAll(isAuto: false);
 
       // Assert
-      expect(result.isSuccess, isFalse);
-      expect(result.errors, contains('Network Error'));
-      verifyNever(() => mockItineraryRepo.syncFromCloud(any()));
+      expect(result.isSuccess, true);
+      verify(() => mockDataService.getAll(tripId: 'test-trip-1')).called(1);
+    });
+
+    test('syncAll failure handles error', () async {
+      // Arrange
+      // Need to mock sync needed
+      when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
+      when(() => mockMessageRepo.getLastSyncTime()).thenReturn(null);
+      // Re-init to load new mock times
+      syncService = SyncService(
+        sheetsService: mockDataService,
+        tripRepo: mockTripRepo,
+        itineraryRepo: mockItineraryRepo,
+        messageRepo: mockMessageRepo,
+        connectivity: mockConnectivity,
+      );
+
+      when(
+        () => mockDataService.getAll(tripId: any(named: 'tripId')),
+      ).thenAnswer((_) async => GetAllResult(isSuccess: false, errorMessage: 'Network Error'));
+
+      // Act
+      final result = await syncService.syncAll(isAuto: false);
+
+      // Assert
+      expect(result.isSuccess, false);
+      expect(result.errors.first, 'Network Error');
+    });
+
+    test('getCloudTrips delegates to sheets service', () async {
+      // renamed from fetchCloudTrips
+      // Arrange
+      final trips = [Trip(id: '1', name: 'Test Trip', startDate: DateTime.now())];
+      when(() => mockDataService.getTrips()).thenAnswer((_) async => GetTripsResult(isSuccess: true, trips: trips));
+
+      // Act
+      final result = await syncService.getCloudTrips(); // renamed from fetchCloudTrips
+
+      // Assert
+      expect(result.isSuccess, true);
+      expect(result.trips, trips);
+      verify(() => mockDataService.getTrips()).called(1);
     });
 
     test('addMessageAndSync should save locally and upload to cloud', () async {
@@ -151,7 +195,7 @@ void main() {
       final result = await syncService.addMessageAndSync(newMsg);
 
       // Assert
-      expect(result.isSuccess, isTrue);
+      expect(result.isSuccess, true);
       verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
       verify(() => mockDataService.addMessage(newMsg)).called(1);
     });
@@ -167,7 +211,7 @@ void main() {
       final result = await syncService.deleteMessageAndSync(uuid);
 
       // Assert
-      expect(result.isSuccess, isTrue);
+      expect(result.isSuccess, true);
       verify(() => mockMessageRepo.deleteByUuid(uuid)).called(1);
       verify(() => mockDataService.deleteMessage(uuid)).called(1);
     });

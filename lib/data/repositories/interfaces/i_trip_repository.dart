@@ -32,4 +32,20 @@ abstract interface class ITripRepository {
 
   /// 儲存上次同步時間
   Future<void> saveLastSyncTime(DateTime time);
+
+  /// 取得遠端行程列表 (Offline-First 模式下通常由  /// 從遠端取得行程 (Cloud Management)
+  Future<List<Trip>> getRemoteTrips();
+
+  /// 上傳行程至遠端 (手動備份用)
+  Future<String> uploadTripToRemote(Trip trip);
+
+  /// 刪除遠端行程
+  Future<void> deleteRemoteTrip(String id);
+
+  /// 完整上傳行程 (包含行程表與裝備)
+  Future<String> uploadFullTrip({
+    required Trip trip,
+    required List<dynamic> itineraryItems,
+    required List<dynamic> gearItems,
+  });
 }

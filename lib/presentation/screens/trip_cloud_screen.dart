@@ -3,7 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/trip.dart';
-import '../../services/trip_cloud_service.dart';
+import '../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../core/di.dart';
 import '../../services/toast_service.dart';
 import '../providers/trip_provider.dart';
 import '../providers/settings_provider.dart';
@@ -17,7 +18,8 @@ class TripCloudScreen extends StatefulWidget {
 }
 
 class _TripCloudScreenState extends State<TripCloudScreen> {
-  final TripCloudService _cloudService = TripCloudService();
+  // Use Repository directly for Cloud Operations (Facade)
+  final ITripRepository _tripRepository = getIt<ITripRepository>();
 
   bool _isLoading = false;
   List<Trip> _cloudTrips = [];
@@ -32,41 +34,42 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
       final isOffline = context.read<SettingsProvider>().isOfflineMode;
       if (!isOffline) {
         _hasFetched = true;
-        _fetchCloudTrips();
+        _getCloudTrips();
       }
     }
   }
 
-  Future<void> _fetchCloudTrips() async {
+  Future<void> _getCloudTrips() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final result = await _cloudService.getTrips();
-
-    setState(() {
-      _isLoading = false;
-      if (result.isSuccess) {
-        _cloudTrips = result.data ?? [];
-      } else {
-        _errorMessage = result.errorMessage;
-      }
-    });
+    try {
+      final trips = await _tripRepository.getRemoteTrips();
+      setState(() {
+        _isLoading = false;
+        _cloudTrips = trips;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+    }
   }
 
   Future<void> _uploadTrip(Trip trip) async {
     setState(() => _isLoading = true);
 
-    final result = await _cloudService.uploadTrip(trip);
-
-    setState(() => _isLoading = false);
-
-    if (result.isSuccess) {
+    try {
+      await _tripRepository.uploadTripToRemote(trip);
+      setState(() => _isLoading = false);
       ToastService.success('已上傳: ${trip.name}');
-      _fetchCloudTrips(); // 刷新列表
-    } else {
-      ToastService.error('上傳失敗: ${result.errorMessage}');
+      _getCloudTrips(); // 刷新列表
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ToastService.error('上傳失敗: $e');
     }
   }
 
@@ -129,15 +132,14 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
 
     setState(() => _isLoading = true);
 
-    final result = await _cloudService.deleteTrip(trip.id);
-
-    setState(() => _isLoading = false);
-
-    if (result.isSuccess) {
+    try {
+      await _tripRepository.deleteRemoteTrip(trip.id);
+      setState(() => _isLoading = false);
       ToastService.success('已從雲端刪除: ${trip.name}');
-      _fetchCloudTrips();
-    } else {
-      ToastService.error('刪除失敗: ${result.errorMessage}');
+      _getCloudTrips();
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ToastService.error('刪除失敗: $e');
     }
   }
 
@@ -163,7 +165,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: isOffline ? null : _fetchCloudTrips, tooltip: '重新整理'),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: isOffline ? null : _getCloudTrips, tooltip: '重新整理'),
         ],
       ),
       body: isOffline
@@ -202,7 +204,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
           const SizedBox(height: 8),
           Text(_errorMessage ?? '', style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
-          ElevatedButton.icon(onPressed: _fetchCloudTrips, icon: const Icon(Icons.refresh), label: const Text('重試')),
+          ElevatedButton.icon(onPressed: _getCloudTrips, icon: const Icon(Icons.refresh), label: const Text('重試')),
         ],
       ),
     );

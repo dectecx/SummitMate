@@ -49,8 +49,8 @@ class MockSyncService implements ISyncService {
   }
 
   @override
-  Future<FetchTripsResult> fetchCloudTrips() async {
-    return FetchTripsResult(isSuccess: true, trips: []);
+  Future<GetTripsResult> getCloudTrips() async {
+    return GetTripsResult(isSuccess: true, trips: []);
   }
 
   @override

@@ -297,9 +297,9 @@ class SyncService implements ISyncService {
 
   /// 取得雲端行程列表
   @override
-  Future<FetchTripsResult> fetchCloudTrips() async {
+  Future<GetTripsResult> getCloudTrips() async {
     if (_isOffline) {
-      return FetchTripsResult(isSuccess: false, errorMessage: '離線模式無法取得行程列表');
+      return GetTripsResult(isSuccess: false, errorMessage: '離線模式無法取得行程列表');
     }
     return await _sheetsService.getTrips();
   }

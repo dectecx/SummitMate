@@ -322,7 +322,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (c) => const Center(child: CircularProgressIndicator()),
     );
 
-    final result = await syncService.fetchCloudTrips();
+    final result = await syncService.getCloudTrips();
     if (!context.mounted) return;
     Navigator.pop(context); // Close Loading
 

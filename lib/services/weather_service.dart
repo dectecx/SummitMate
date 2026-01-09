@@ -192,7 +192,7 @@ class WeatherService implements IWeatherService {
   Future<WeatherData> _fetchCwaWeather(String locationName) async {
     LogService.info('Fetching town weather from CWA for: $locationName', source: 'WeatherService');
     try {
-      return await _cwaSource.fetchWeather(locationName);
+      return await _cwaSource.getWeather(locationName);
     } catch (e) {
       LogService.error('CWA Source fetch failed: $e', source: 'WeatherService');
       rethrow;

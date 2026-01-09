@@ -13,31 +13,31 @@ class ApiResult {
 }
 
 /// getAll 結果
-class FetchAllResult extends ApiResult {
+class GetAllResult extends ApiResult {
   final List<ItineraryItem> itinerary;
   final List<Message> messages;
 
-  FetchAllResult({this.itinerary = const [], this.messages = const [], required super.isSuccess, super.errorMessage});
+  GetAllResult({this.itinerary = const [], this.messages = const [], required super.isSuccess, super.errorMessage});
 }
 
 /// getTrips 結果
-class FetchTripsResult extends ApiResult {
+class GetTripsResult extends ApiResult {
   final List<Trip> trips;
 
-  FetchTripsResult({this.trips = const [], required super.isSuccess, super.errorMessage});
+  GetTripsResult({this.trips = const [], required super.isSuccess, super.errorMessage});
 }
 
 /// 資料服務介面 (API Gateway)
 /// 提供行程、留言等資料的 CRUD 操作
 abstract interface class IDataService {
   /// 取得所有資料 (行程 + 留言)
-  Future<FetchAllResult> getAll({String? tripId});
+  Future<GetAllResult> getAll({String? tripId});
 
   /// 僅取得行程資料
-  Future<FetchAllResult> getItinerary({String? tripId});
+  Future<GetAllResult> getItinerary({String? tripId});
 
   /// 僅取得留言資料
-  Future<FetchAllResult> getMessages({String? tripId});
+  Future<GetAllResult> getMessages({String? tripId});
 
   /// 新增留言
   Future<ApiResult> addMessage(Message message);
@@ -52,7 +52,7 @@ abstract interface class IDataService {
   Future<ApiResult> updateItinerary(List<ItineraryItem> items);
 
   /// 取得雲端行程列表
-  Future<FetchTripsResult> getTrips();
+  Future<GetTripsResult> getTrips();
 
   /// 上傳日誌
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName});
