@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app.dart';
 import 'core/di.dart';
 import 'infrastructure/tools/hive_service.dart';
+import 'infrastructure/observers/global_bloc_observer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,9 +22,13 @@ void main() async {
   // Setup Dependencies
   await setupDependencies();
 
-  // Placeholderror Handling
+  // Setup Global Bloc Observer
+  Bloc.observer = GlobalBlocObserver();
+
+  // Global Error Handling
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    // TODO: Log to Crashlytics or LogService
     debugPrint('Flutter Error: ${details.exception}');
   };
 
