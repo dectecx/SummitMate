@@ -111,9 +111,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   Future<void> addItem(ItineraryItem item) async {
     try {
       // Ensure tripId is set correctly if not present (though caller should probably handle this)
-      var ItemToAdd = item;
+      var itemToAdd = item;
       if (item.tripId.isEmpty && _currentTripId != null) {
-        ItemToAdd = ItineraryItem(
+        itemToAdd = ItineraryItem(
           uuid: item.uuid,
           tripId: _currentTripId!,
           day: item.day,
@@ -128,7 +128,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         );
       }
 
-      await _repository.addItem(ItemToAdd);
+      await _repository.addItem(itemToAdd);
       LogService.info('Added item: ${item.name}', source: _source);
       loadItinerary();
     } catch (e) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // for kIsWeb
 import 'package:flutter/services.dart'; // for SystemNavigator
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -21,7 +20,8 @@ import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 // import '../providers/message_provider.dart';
 // import '../providers/poll_provider.dart';
-import '../providers/auth_provider.dart';
+import '../cubits/auth/auth_cubit.dart';
+import '../cubits/auth/auth_state.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
@@ -78,7 +78,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
       if (!hasSeenOnboarding) {
         Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) _showWelcomeDialog(context);
+          if (!mounted) return;
+          _showWelcomeDialog(context);
         });
       }
 
@@ -86,7 +87,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       _usageTrackingService = UsageTrackingService();
       // Async fetch user profile
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
-        if (mounted && profile != null) {
+        if (context.mounted && profile != null) {
           _usageTrackingService!.start(currentUsername, userId: profile.uuid);
 
           // Sync SettingsCubit if valid profile found on launch
@@ -136,7 +137,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
               Navigator.pop(dialogContext);
               // 進入教學 -> 結束後顯示匯入行程
               await Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen()));
-              if (mounted) {
+              if (context.mounted) {
                 // 教學結束後，自動跳出匯入選單
                 _showTripSelectionDialog(context);
               }
@@ -201,7 +202,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
                       // Extract Itinerary State
                       final bool isEditMode = itineraryState is ItineraryLoaded
-                          ? (itineraryState as ItineraryLoaded).isEditMode
+                          ? itineraryState.isEditMode
                           : false;
 
                       // 如果沒有行程，顯示空狀態 (Import / Create)
@@ -463,12 +464,15 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
       // 3. 觸發 Sync (下載該 Trip 的 itinerary/messages)
       // 使用 SyncCubit 統一執行同步
+      if (!context.mounted) return;
       await context.read<SyncCubit>().syncAll(force: true);
 
-      if (mounted) Navigator.pop(context); // Close Loading
+      if (context.mounted) {
+        Navigator.pop(context); // Close Loading
+      }
       ToastService.success('行程匯入成功');
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       ToastService.error('匯入失敗: $e');
     }
   }
@@ -506,6 +510,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
 
     if (result != null) {
+      if (!context.mounted) return;
       final tripState = context.read<TripCubit>().state;
       String tripId = '';
       if (tripState is TripLoaded && tripState.activeTrip != null) {
@@ -655,7 +660,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _showSettingsDialog(BuildContext context) async {
     final settingsCubit = context.read<SettingsCubit>();
-    final authProvider = context.read<AuthProvider>();
+    final authCubit = context.read<AuthCubit>();
+    final authState = authCubit.state;
 
     // Get current state values safely
     String currentUsername = '';
@@ -787,7 +793,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           ),
                         ),
                         // Guest mode indicator
-                        if (authProvider.user == null) ...[
+                        if (authState is! AuthAuthenticated || authState.isGuest) ...[
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -818,9 +824,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                               final newName = controller.text.trim();
                               if (newName.isNotEmpty) {
                                 // 1. 同步到雲端 (如果已登入)
-                                if (authProvider.isAuthenticated && !authProvider.isOffline) {
+                                if (authState is AuthAuthenticated && !authState.isOffline && !authState.isGuest) {
                                   try {
-                                    final result = await authProvider.updateProfile(
+                                    final result = await authCubit.updateProfile(
                                       displayName: newName,
                                       avatar: selectedAvatar,
                                     );
@@ -870,7 +876,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             if (innerContext.mounted) {
                               Navigator.pop(innerContext);
                               Future.delayed(const Duration(milliseconds: 300), () {
-                                if (mounted) {
+                                if (context.mounted) {
                                   _showTutorial(context);
                                 }
                               });
@@ -926,7 +932,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
-        pageBuilder: (_, __, ___) => TutorialOverlay(
+        pageBuilder: (p0, p1, st) => TutorialOverlay(
           targets: const [], // TODO: Restore original targets if possible
           onFinish: () => Navigator.pop(context),
           onSkip: () => Navigator.pop(context),
@@ -1043,7 +1049,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       TextButton.icon(
                         onPressed: () async {
                           await LogService.clearAll();
-                          Navigator.pop(context);
+                          if (context.mounted) Navigator.pop(context);
                           ToastService.info('日誌已清除');
                         },
                         icon: const Icon(Icons.delete_outline, size: 18),

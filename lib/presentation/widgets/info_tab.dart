@@ -92,7 +92,7 @@ class InfoTabState extends State<InfoTab> {
                 Image.asset(
                   'assets/images/jiaming_lake.jpg',
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(color: Colors.grey),
+                  errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
                 ),
                 // 漸層遮罩
                 Container(
@@ -527,9 +527,9 @@ class InfoTabState extends State<InfoTab> {
       final minApp = (d.minApparentTemp ?? d.minTemp).round();
       final maxApp = (d.maxApparentTemp ?? d.maxTemp).round();
       if (minApp == maxApp) {
-        displayApparentTemp = '${minApp}°C';
+        displayApparentTemp = '$minApp°C';
       } else {
-        displayApparentTemp = '$minApp ~ ${maxApp}°C';
+        displayApparentTemp = '$minApp ~ $maxApp°C';
       }
 
       displayHumidity = '- %';

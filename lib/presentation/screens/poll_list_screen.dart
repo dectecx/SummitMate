@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/poll.dart';
 import 'create_poll_screen.dart';
@@ -246,7 +245,7 @@ class _PollListScreenState extends State<PollListScreen> {
                       builder: (context, settingsState) {
                         final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
                         return Material(
-                          color: isOffline ? Colors.grey.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                          color: isOffline ? Colors.grey.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           child: InkWell(
                             onTap: () {
@@ -297,7 +296,7 @@ class _PollListScreenState extends State<PollListScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.how_to_vote_outlined, size: 64, color: Colors.grey.withOpacity(0.5)),
+                            Icon(Icons.how_to_vote_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
                             const SizedBox(height: 16),
                             Text(
                               _selectedFilter == 0 ? '沒有進行中的投票' : '沒有相關投票',

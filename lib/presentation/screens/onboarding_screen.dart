@@ -61,7 +61,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.2) : Colors.transparent,
+                      color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.2) : Colors.transparent,
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,

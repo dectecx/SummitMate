@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Keep for now if needed by other widgets but likely unused based on lints. Wait, lint says unused.
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';

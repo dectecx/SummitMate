@@ -51,7 +51,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
-    for (var c in _optionControllers) c.dispose();
+    for (var c in _optionControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 

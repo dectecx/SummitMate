@@ -244,7 +244,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+                                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
                                         : Theme.of(context).cardColor,
                                     border: Border.all(
                                       color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
@@ -336,6 +336,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                                   ),
                                                 );
                                                 if (confirm == true) {
+                                                  if (!context.mounted) return;
                                                   setState(() => _isSubmitting = true);
                                                   try {
                                                     await context.read<PollCubit>().deleteOption(
@@ -436,6 +437,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                           ),
                                         );
                                         if (confirm == true) {
+                                          if (!context.mounted) return;
                                           setState(() => _isSubmitting = true);
                                           try {
                                             await context.read<PollCubit>().closePoll(pollId: freshPoll.id);
@@ -477,12 +479,13 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                         ),
                                       );
                                       if (confirm == true) {
+                                        if (!context.mounted) return;
                                         setState(() => _isSubmitting = true);
                                         try {
                                           await context.read<PollCubit>().deletePoll(pollId: freshPoll.id);
-                                          if (mounted) Navigator.pop(context);
+                                          if (context.mounted) Navigator.pop(context);
                                         } finally {
-                                          if (mounted) setState(() => _isSubmitting = false);
+                                          if (context.mounted) setState(() => _isSubmitting = false);
                                         }
                                       }
                                     },

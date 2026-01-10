@@ -120,7 +120,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                                   : '未同步';
 
                               return Material(
-                                color: Colors.grey.withOpacity(0.1),
+                                color: Colors.grey.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 child: InkWell(
                                   onTap: () => context.read<SyncCubit>().syncAll(force: true),
@@ -325,7 +325,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
           return PopScope(
             canPop: false,
-            onPopInvoked: (didPop) async {
+            onPopInvokedWithResult: (didPop, result) async {
               if (didPop) return;
               if (isSubmitting) return;
               final shouldPop = await checkDismiss();

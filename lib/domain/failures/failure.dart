@@ -18,7 +18,7 @@ class ServerFailure extends Failure {
 
 /// Network failure (No internet, timeout)
 class NetworkFailure extends Failure {
-  const NetworkFailure([String message = '網路連線異常，請檢查您的網路設定']) : super(message, code: 'NETWORK_ERROR');
+  const NetworkFailure([super.message = '網路連線異常，請檢查您的網路設定']) : super(code: 'NETWORK_ERROR');
 }
 
 /// Cache failure (Hive read/write error)

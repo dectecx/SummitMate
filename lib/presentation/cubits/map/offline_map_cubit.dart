@@ -136,7 +136,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
         ),
       );
 
-      final downloadTask = await _store.download.startForeground(region: downloadable);
+      final downloadTask = _store.download.startForeground(region: downloadable);
 
       // Must re-fetch state/queue because it might have changed (e.g. cancelled)
       if (state is! OfflineMapLoaded) return;

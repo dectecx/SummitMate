@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:provider/provider.dart';
 import 'package:twicon/twicon.dart';
 
 import '../../../infrastructure/tools/log_service.dart';
@@ -90,7 +89,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         userAgentPackageName: packageName,
                         maxNativeZoom: 19,
-                        tileProvider: (!kIsWeb && isStoreReady && offlineState is OfflineMapLoaded)
+                        tileProvider: (!kIsWeb && isStoreReady)
                             ? FMTCTileProvider(
                                 stores: {offlineState.store.storeName: BrowseStoreStrategy.readUpdateCreate},
                               )
@@ -267,7 +266,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                               userAgentPackageName: packageName,
                                               tileProvider:
-                                                  (!kIsWeb && isStoreReady && offlineState is OfflineMapLoaded)
+                                                  (!kIsWeb && isStoreReady)
                                                   ? FMTCTileProvider(
                                                       stores: {
                                                         offlineState.store.storeName:
@@ -349,6 +348,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                           // Need to check state after load...
                                           // Or assumes MapCubit emits state with points.
                                           // We can listen to state changes or just check current state
+                                          if (!context.mounted) return;
                                           final state = context.read<MapCubit>().state;
                                           if (state is MapLoaded && state.trackPoints.isNotEmpty) {
                                             _mapController.move(state.trackPoints.first, 15.0);
@@ -656,8 +656,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     // 計算最短旋轉路徑
     double startRotation = _currentRotation;
     // 正規化至 -180 ~ 180
-    while (startRotation > 180) startRotation -= 360;
-    while (startRotation < -180) startRotation += 360;
+    while (startRotation > 180) {
+      startRotation -= 360;
+    }
+    while (startRotation < -180) {
+      startRotation += 360;
+    }
 
     final rotationTween = Tween<double>(begin: startRotation, end: 0);
     final animation = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic);

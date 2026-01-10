@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 /// 導覽目標模型
@@ -270,7 +269,7 @@ class _HolePainter extends CustomPainter {
     canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
 
     // 1. 繪製半透明背景
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = Colors.black.withOpacity(0.6));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = Colors.black.withValues(alpha: 0.8));
 
     // 2. 挖孔 (使用 BlendMode.clear)
     final radius = (hole.width > hole.height ? hole.width : hole.height) / 2;
