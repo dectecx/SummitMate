@@ -7,6 +7,7 @@ import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
 import 'package:summitmate/presentation/cubits/sync/sync_state.dart';
 
 class MockSyncService extends Mock implements ISyncService {}
+
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
 void main() {
@@ -18,14 +19,11 @@ void main() {
     setUp(() {
       mockSyncService = MockSyncService();
       mockConnectivityService = MockConnectivityService();
-      
+
       // Default behavior for init
       when(() => mockSyncService.lastItinerarySync).thenReturn(null);
 
-      syncCubit = SyncCubit(
-        syncService: mockSyncService,
-        connectivityService: mockConnectivityService,
-      );
+      syncCubit = SyncCubit(syncService: mockSyncService, connectivityService: mockConnectivityService);
     });
 
     tearDown(() {
@@ -43,24 +41,24 @@ void main() {
         return syncCubit;
       },
       act: (cubit) => cubit.syncAll(),
-      expect: () => [
-        isA<SyncFailure>().having((s) => s.errorMessage, 'errorMessage', contains('離線模式')),
-      ],
+      expect: () => [isA<SyncFailure>().having((s) => s.errorMessage, 'errorMessage', contains('離線模式'))],
     );
 
     blocTest<SyncCubit, SyncState>(
       'emits [SyncInProgress, SyncSuccess] when sync is successful',
       build: () {
         when(() => mockConnectivityService.isOffline).thenReturn(false);
-        final result = SyncResult(isSuccess: true, itinerarySynced: true, messagesSynced: true, syncedAt: DateTime.now());
+        final result = SyncResult(
+          isSuccess: true,
+          itinerarySynced: true,
+          messagesSynced: true,
+          syncedAt: DateTime.now(),
+        );
         when(() => mockSyncService.syncAll(isAuto: any(named: 'isAuto'))).thenAnswer((_) async => result);
         return syncCubit;
       },
       act: (cubit) => cubit.syncAll(force: true),
-      expect: () => [
-        isA<SyncInProgress>(),
-        isA<SyncSuccess>().having((s) => s.message, 'message', '同步成功'),
-      ],
+      expect: () => [isA<SyncInProgress>(), isA<SyncSuccess>().having((s) => s.message, 'message', '同步成功')],
       verify: (_) {
         verify(() => mockSyncService.syncAll(isAuto: false)).called(1);
       },
@@ -80,7 +78,7 @@ void main() {
         isA<SyncFailure>().having((s) => s.errorMessage, 'errorMessage', 'Network Error'),
       ],
     );
-    
+
     blocTest<SyncCubit, SyncState>(
       'emits [SyncInProgress, SyncSuccess] even if nothing synced (but operation success)',
       build: () {
@@ -91,10 +89,7 @@ void main() {
         return syncCubit;
       },
       act: (cubit) => cubit.syncAll(),
-      expect: () => [
-        isA<SyncInProgress>(),
-        isA<SyncSuccess>().having((s) => s.message, 'message', '同步成功'),
-      ],
+      expect: () => [isA<SyncInProgress>(), isA<SyncSuccess>().having((s) => s.message, 'message', '同步成功')],
     );
   });
 }

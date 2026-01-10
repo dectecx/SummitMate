@@ -7,7 +7,6 @@ import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 class MessageListScreen extends StatefulWidget {
   const MessageListScreen({super.key});
 
