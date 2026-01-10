@@ -293,7 +293,7 @@ class TripRepository implements ITripRepository {
 | 方案         | 適用場景                       | 採用狀態    |
 | ------------ | ------------------------------ | ----------- |
 | **Provider** | 簡單狀態、CRUD                 | ✅ 使用中   |
-| **Cubit**    | 事件驅動、中等複雜、需要狀態機 | 🚧 規劃中   |
+| **Cubit**    | 事件驅動、中等複雜、需要狀態機 | ✅ 使用中   |
 | **BLoC**     | 複雜事件流                     | ❌ 暫不採用 |
 | **Riverpod** | 編譯時安全                     | ❌ 暫不採用 |
 
@@ -322,31 +322,37 @@ sequenceDiagram
     participant Remote as RemoteDataSource
 
     Note over UI,Remote: 🔐 登入流程
-    UI->>AP: login(email, password)
-    AP->>Repo: authenticate()
+    UI->>Cubit: login(email, password)
+    Cubit->>Repo: authenticate()
 
     alt 有網路 & 非離線模式
         Repo->>Remote: API 驗證
         Remote-->>Repo: user + token
         Repo->>Local: 儲存 session 快取
-        Repo-->>AP: 登入成功
+        Repo-->>Cubit: 登入成功
     else 離線模式
         Repo->>Local: 檢查本地 session
         alt 有快取
             Local-->>Repo: 返回快取 user
-            Repo-->>AP: 離線登入成功
+            Repo-->>Cubit: 離線登入成功
         else 無快取
-            Repo-->>AP: 無法離線登入
+            Repo-->>Cubit: 無法離線登入
         end
     end
-    AP-->>UI: 更新 UI
+
+    Cubit-->>UI: 更新 UI (AuthAuthenticated)
+    par Sync Provider
+        Cubit--)AP: Bridge updates AuthProvider
+    end
 
     Note over UI,Remote: 🚪 登出流程
-    UI->>AP: logout()
-    AP->>AP: 清除 Provider 狀態
-    AP->>Repo: clearSession()
+    UI->>Cubit: logout()
+    Cubit->>Repo: clearSession()
     Repo->>Local: 清除 token (保留其他資料)
-    AP-->>UI: 返回登入畫面
+    Cubit-->>UI: 返回登入畫面 (AuthUnauthenticated)
+    par Sync Provider
+        Cubit--)AP: Bridge calls logout()
+    end
 
     Note over UI,Remote: 🗑️ 手動清除資料 (開發選項)
     UI->>AP: clearAllLocalData()
