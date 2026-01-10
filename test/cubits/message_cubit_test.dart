@@ -29,6 +29,16 @@ void main() {
       timestamp: DateTime.now(),
     );
 
+    setUpAll(() {
+      registerFallbackValue(Message(
+        uuid: 'fallback',
+        user: 'fallback',
+        category: 'fallback',
+        content: 'fallback',
+        timestamp: DateTime.now(),
+      ));
+    });
+
     setUp(() {
       mockMessageRepo = MockMessageRepository();
       mockTripRepo = MockTripRepository();
@@ -38,8 +48,6 @@ void main() {
       when(() => mockTripRepo.getActiveTrip()).thenReturn(Trip(id: 't1', name: 'Trip1', startDate: DateTime.now()));
       // Mock SyncService response
       when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
-      
-      registerFallbackValue(testMessage);
 
       messageCubit = MessageCubit(
         repository: mockMessageRepo,

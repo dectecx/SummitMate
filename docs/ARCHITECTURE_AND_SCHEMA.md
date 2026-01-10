@@ -309,7 +309,6 @@ class TripRepository implements ITripRepository {
 
 ### Provider 使用場景 (Legacy)
 
-- `AuthProvider`: ⚠️ 待遷移 (Bridge 模式共存中)
 - 其他 Provider (`Trip`, `Itinerary`, `Message`, `Poll`, `Gear`, `Settings`) 已全數遷移至 Cubit。
 
 ### Cubit 使用場景 (Active)
