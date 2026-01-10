@@ -36,17 +36,17 @@ void main() {
 
     test('syncLibrary success should return count', () async {
       // Arrange
-      when(
-        () => mockApiClient.post(any(), requiresAuth: true),
-      ).thenAnswer((_) async => Response(
-        requestOptions: RequestOptions(path: ''),
-        statusCode: 200,
-        data: {
-          'code': '0000',
-          'message': 'Success',
-          'data': {'count': 1},
-        },
-      ));
+      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: {
+            'code': '0000',
+            'message': 'Success',
+            'data': {'count': 1},
+          },
+        ),
+      );
 
       // Act
       final result = await service.syncLibrary(testItems);
@@ -58,13 +58,13 @@ void main() {
 
     test('syncLibrary failure should return error message', () async {
       // Arrange
-      when(
-        () => mockApiClient.post(any(), requiresAuth: true),
-      ).thenAnswer((_) async => Response(
-        requestOptions: RequestOptions(path: ''),
-        statusCode: 200,
-        data: {'code': '9999', 'message': 'Database error'},
-      ));
+      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: {'code': '9999', 'message': 'Database error'},
+        ),
+      );
 
       // Act
       final result = await service.syncLibrary(testItems);
@@ -76,19 +76,19 @@ void main() {
 
     test('getLibrary success should return items', () async {
       // Arrange
-      when(
-        () => mockApiClient.post(any(), requiresAuth: true),
-      ).thenAnswer((_) async => Response(
-        requestOptions: RequestOptions(path: ''),
-        statusCode: 200,
-        data: {
-          'code': '0000',
-          'message': 'Success',
-          'data': {
-            'items': [testItems[0].toJson()],
+      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+          data: {
+            'code': '0000',
+            'message': 'Success',
+            'data': {
+              'items': [testItems[0].toJson()],
+            },
           },
-        },
-      ));
+        ),
+      );
 
       // Act
       final result = await service.getLibrary();
@@ -101,13 +101,13 @@ void main() {
 
     test('getLibrary failure should return error', () async {
       // Arrange
-      when(
-        () => mockApiClient.post(any(), requiresAuth: true),
-      ).thenAnswer((_) async => Response(
-        requestOptions: RequestOptions(path: ''),
-        statusCode: 500,
-        data: {},
-      ));
+      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 500,
+          data: {},
+        ),
+      );
 
       // Act
       final result = await service.getLibrary();
