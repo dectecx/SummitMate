@@ -20,6 +20,7 @@ import '../infrastructure/services/jwt_token_validator.dart';
 // Infrastructure - Clients
 import '../infrastructure/clients/network_aware_client.dart';
 import '../infrastructure/clients/gas_api_client.dart';
+import '../infrastructure/tools/usage_tracking_service.dart';
 
 // Infrastructure - Interceptors
 import '../infrastructure/interceptors/auth_interceptor.dart';
@@ -131,6 +132,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<NetworkAwareClient>(
     () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<IConnectivityService>()),
   );
+  getIt.registerLazySingleton<UsageTrackingService>(() => UsageTrackingService(apiClient: getIt<GasApiClient>()));
 
   // 3. Data Sources (Depends on Network Core)
   final tripLocalDS = TripLocalDataSource();
