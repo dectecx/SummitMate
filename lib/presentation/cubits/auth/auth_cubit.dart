@@ -240,14 +240,16 @@ class AuthCubit extends Cubit<AuthState> {
     // 啟動使用追蹤
     _usageTrackingService.start(userName ?? 'Unknown', userId: userId);
 
-    emit(AuthAuthenticated(
-      userId: userId,
-      userName: userName,
-      email: email,
-      avatar: avatar,
-      isGuest: isGuest,
-      isOffline: isOffline,
-    ));
+    emit(
+      AuthAuthenticated(
+        userId: userId,
+        userName: userName,
+        email: email,
+        avatar: avatar,
+        isGuest: isGuest,
+        isOffline: isOffline,
+      ),
+    );
   }
 
   /// 移除 Exception 前綴 (UI 顯示用)

@@ -48,7 +48,6 @@ class SummitMateApp extends StatelessWidget {
         ), // Register SettingsCubit
       ],
       child: _buildMaterialApp(),
-
     );
   }
 
@@ -69,7 +68,7 @@ class SummitMateApp extends StatelessWidget {
       builder: (context, child) {
         return GlobalErrorListener(child: child ?? const SizedBox.shrink());
       },
-      
+
       // 初始頁面
       home: const HomeScreen(),
     );

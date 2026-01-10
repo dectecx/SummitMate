@@ -7,12 +7,7 @@ class GearUploadDialog extends StatefulWidget {
   final String author;
   final Future<bool> Function(String title, GearSetVisibility visibility, String? key) onUpload;
 
-  const GearUploadDialog({
-    super.key,
-    required this.items,
-    required this.author,
-    required this.onUpload,
-  });
+  const GearUploadDialog({super.key, required this.items, required this.author, required this.onUpload});
 
   @override
   State<GearUploadDialog> createState() => _GearUploadDialogState();
@@ -84,24 +79,14 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
               onChanged: (v) => setState(() => _visibility = v),
               child: Column(
                 children: [
-                   _VisibilityOption(
-                    icon: '🌐',
-                    title: '公開',
-                    subtitle: '任何人可下載',
-                    value: GearSetVisibility.public,
-                  ),
+                  _VisibilityOption(icon: '🌐', title: '公開', subtitle: '任何人可下載', value: GearSetVisibility.public),
                   _VisibilityOption(
                     icon: '🔒',
                     title: '保護',
                     subtitle: '需輸入 Key 下載',
                     value: GearSetVisibility.protected,
                   ),
-                  _VisibilityOption(
-                    icon: '👤',
-                    title: '私有',
-                    subtitle: '僅限自己使用',
-                    value: GearSetVisibility.private,
-                  ),
+                  _VisibilityOption(icon: '👤', title: '私有', subtitle: '僅限自己使用', value: GearSetVisibility.private),
                 ],
               ),
             ),
@@ -136,10 +121,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
                 children: [
                   const Icon(Icons.backpack, size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
-                  Text(
-                    '即將上傳 ${widget.items.length} 項裝備',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
+                  Text('即將上傳 ${widget.items.length} 項裝備', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),

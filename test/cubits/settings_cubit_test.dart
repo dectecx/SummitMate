@@ -8,7 +8,9 @@ import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 
 class MockSettingsRepository extends Mock implements ISettingsRepository {}
+
 class MockSharedPreferences extends Mock implements SharedPreferences {}
+
 class MockSettings extends Mock implements Settings {}
 
 void main() {
@@ -30,7 +32,7 @@ void main() {
       when(() => mockRepo.updateUsername(any())).thenAnswer((_) async {});
       when(() => mockRepo.updateAvatar(any())).thenAnswer((_) async {});
       when(() => mockRepo.updateOfflineMode(any())).thenAnswer((_) async {});
-      
+
       when(() => mockPrefs.getString(any())).thenReturn(null);
       when(() => mockPrefs.getBool(any())).thenReturn(false);
       when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);

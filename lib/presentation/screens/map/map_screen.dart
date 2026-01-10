@@ -265,8 +265,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                             TileLayer(
                                               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                                               userAgentPackageName: packageName,
-                                              tileProvider:
-                                                  (!kIsWeb && isStoreReady)
+                                              tileProvider: (!kIsWeb && isStoreReady)
                                                   ? FMTCTileProvider(
                                                       stores: {
                                                         offlineState.store.storeName:
