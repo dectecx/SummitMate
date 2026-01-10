@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'infrastructure/tools/toast_service.dart';
-import 'presentation/providers/auth_provider.dart';
+import 'presentation/cubits/auth/auth_cubit.dart';
+import 'presentation/cubits/auth/auth_state.dart';
+import 'presentation/providers/auth_provider.dart' hide AuthState;
 import 'presentation/providers/gear_library_provider.dart';
 import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
@@ -21,21 +24,36 @@ class SummitMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Auth Provider (優先載入)
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => TripProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => ItineraryProvider()),
-        ChangeNotifierProvider(create: (_) => MessageProvider()),
-        ChangeNotifierProvider(create: (_) => getIt<GearProvider>()),
-        ChangeNotifierProvider(create: (_) => GearLibraryProvider()),
-        ChangeNotifierProvider(create: (_) => MealProvider()),
-        ChangeNotifierProvider(create: (_) => PollProvider()),
-        ChangeNotifierProvider(create: (_) => MapProvider()),
-      ],
-      child: _buildMaterialApp(),
+    return BlocProvider(
+      create: (context) => AuthCubit()..checkAuthStatus(),
+      child: MultiProvider(
+        providers: [
+          // Auth Provider (優先載入)
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => TripProvider()),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => ItineraryProvider()),
+          ChangeNotifierProvider(create: (_) => MessageProvider()),
+          ChangeNotifierProvider(create: (_) => getIt<GearProvider>()),
+          ChangeNotifierProvider(create: (_) => GearLibraryProvider()),
+          ChangeNotifierProvider(create: (_) => MealProvider()),
+          ChangeNotifierProvider(create: (_) => PollProvider()),
+          ChangeNotifierProvider(create: (_) => MapProvider()),
+        ],
+        child: BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthAuthenticated) {
+              // 當 Cubit 登入成功，同步通知 AuthProvider 更新狀態 (讓依賴 Provider 的組件正常運作)
+              // validateSession 會重新從 AuthService 讀取最新的 UserProfile
+              context.read<AuthProvider>().validateSession();
+            } else if (state is AuthUnauthenticated) {
+              // 當 Cubit 登出，同步通知 AuthProvider 清除狀態
+              context.read<AuthProvider>().logout();
+            }
+          },
+          child: _buildMaterialApp(),
+        ),
+      ),
     );
   }
 

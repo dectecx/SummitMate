@@ -84,7 +84,6 @@ import '../core/location/township_location_resolver.dart';
 import '../core/env_config.dart';
 import 'package:dio/dio.dart';
 
-
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;
 
