@@ -5,8 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../providers/auth_provider.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
-import '../providers/itinerary_provider.dart';
-// import '../providers/settings_provider.dart'; // Removed
 import '../cubits/gear/gear_cubit.dart';
 import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/message/message_cubit.dart';
@@ -14,7 +12,9 @@ import '../cubits/poll/poll_cubit.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/auth/auth_cubit.dart';
-import '../providers/meal_provider.dart';
+import '../cubits/itinerary/itinerary_cubit.dart';
+// import '../providers/meal_provider.dart'; // Removed
+import '../cubits/meal/meal_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../../data/models/trip.dart';
 
@@ -220,12 +220,12 @@ class AppDrawer extends StatelessWidget {
     // Hive data is preserved for offline access on next login
     if (context.mounted) {
       context.read<TripCubit>().reset();
-      context.read<ItineraryProvider>().reset(); // Pending migration?
+      context.read<ItineraryCubit>().reset();
       context.read<GearCubit>().reset();
       context.read<GearLibraryCubit>().reset();
       context.read<MessageCubit>().reset();
       context.read<PollCubit>().reset();
-      context.read<MealProvider>().reset();
+      context.read<MealCubit>().reset();
       // Settings managed by Cubit, persistence is desired
     }
 
@@ -263,7 +263,7 @@ class AppDrawer extends StatelessWidget {
           await context.read<TripCubit>().setActiveTrip(trip.id);
           // 重新載入相關 Provider
           if (context.mounted) {
-            context.read<ItineraryProvider>().reload();
+            context.read<ItineraryCubit>().loadItinerary();
             context.read<MessageCubit>().reset();
             Navigator.pop(context); // 關閉抽屜
           }

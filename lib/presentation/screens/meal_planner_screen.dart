@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart'; // optional
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/meal_item.dart';
-import '../providers/meal_provider.dart';
+import '../cubits/meal/meal_cubit.dart';
+import '../cubits/meal/meal_state.dart';
+// import '../providers/meal_provider.dart'; // Removed
 import 'food_reference_screen.dart';
 
 class MealPlannerScreen extends StatelessWidget {
@@ -9,10 +12,17 @@ class MealPlannerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MealProvider>(
-      builder: (context, provider, child) {
+    return BlocBuilder<MealCubit, MealState>(
+      builder: (context, state) {
+        if (state is! MealLoaded) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        final dailyPlans = state.dailyPlans;
+        final cubit = context.read<MealCubit>();
+
         return DefaultTabController(
-          length: provider.dailyPlans.length,
+          length: dailyPlans.length,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
@@ -35,17 +45,17 @@ class MealPlannerScreen extends StatelessWidget {
                     unselectedLabelColor: Colors.white60,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 20),
                     labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
-                    tabs: provider.dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
+                    tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
                   ),
                 ),
                 body: TabBarView(
-                  children: provider.dailyPlans.map((plan) {
+                  children: dailyPlans.map((plan) {
                     return ListView(
                       padding: const EdgeInsets.only(bottom: 80),
                       children: [
                         _buildSummaryCard(context, plan),
                         ...MealType.values.map(
-                          (type) => _buildMealSection(context, provider, plan.day, type, plan.meals[type] ?? []),
+                          (type) => _buildMealSection(context, cubit, plan.day, type, plan.meals[type] ?? []),
                         ),
                       ],
                     );
@@ -92,13 +102,7 @@ class MealPlannerScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMealSection(
-    BuildContext context,
-    MealProvider provider,
-    String day,
-    MealType type,
-    List<MealItem> items,
-  ) {
+  Widget _buildMealSection(BuildContext context, MealCubit cubit, String day, MealType type, List<MealItem> items) {
     if (items.isEmpty && type != MealType.breakfast && type != MealType.lunch && type != MealType.dinner) {
       // 隱藏非主要且空的餐別，這裡選擇顯示所有以方便規劃，或者只摺疊
       // 策略：顯示 Header，若空則顯示 placeholder 鼓勵新增
@@ -117,7 +121,7 @@ class MealPlannerScreen extends StatelessWidget {
             : const Text('尚未規劃', style: TextStyle(color: Colors.grey, fontSize: 12)),
         trailing: IconButton(
           icon: const Icon(Icons.add_circle_outline),
-          onPressed: () => _showAddMealDialog(context, provider, day, type),
+          onPressed: () => _showAddMealDialog(context, cubit, day, type),
         ),
         children: items.isEmpty
             ? [const SizedBox(height: 10)]
@@ -152,7 +156,7 @@ class MealPlannerScreen extends StatelessWidget {
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.grey),
                             onPressed: item.quantity > 1
-                                ? () => provider.updateMealItemQuantity(day, type, item.id, item.quantity - 1)
+                                ? () => cubit.updateMealItemQuantity(day, type, item.id, item.quantity - 1)
                                 : null,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -167,14 +171,14 @@ class MealPlannerScreen extends StatelessWidget {
                           ),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue),
-                            onPressed: () => provider.updateMealItemQuantity(day, type, item.id, item.quantity + 1),
+                            onPressed: () => cubit.updateMealItemQuantity(day, type, item.id, item.quantity + 1),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
                           const SizedBox(width: 8),
                           IconButton(
                             icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                            onPressed: () => _confirmRemoveMeal(context, provider, day, type, item.id, item.name),
+                            onPressed: () => _confirmRemoveMeal(context, cubit, day, type, item.id, item.name),
                           ),
                         ],
                       ),
@@ -187,7 +191,7 @@ class MealPlannerScreen extends StatelessWidget {
 
   void _confirmRemoveMeal(
     BuildContext context,
-    MealProvider provider,
+    MealCubit cubit,
     String day,
     MealType type,
     String itemId,
@@ -202,7 +206,7 @@ class MealPlannerScreen extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () {
-              provider.removeMealItem(day, type, itemId);
+              cubit.removeMealItem(day, type, itemId);
               Navigator.pop(context);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -213,7 +217,7 @@ class MealPlannerScreen extends StatelessWidget {
     );
   }
 
-  void _showAddMealDialog(BuildContext context, MealProvider provider, String day, MealType type) {
+  void _showAddMealDialog(BuildContext context, MealCubit cubit, String day, MealType type) {
     final nameCtrl = TextEditingController();
     final weightCtrl = TextEditingController();
     final calCtrl = TextEditingController();
@@ -260,7 +264,7 @@ class MealPlannerScreen extends StatelessWidget {
               final weight = double.tryParse(weightCtrl.text) ?? 0;
               final cal = double.tryParse(calCtrl.text) ?? 0;
               if (name.isNotEmpty) {
-                provider.addMealItem(day, type, name, weight, cal);
+                cubit.addMealItem(day, type, name, weight, cal);
                 Navigator.pop(context);
               }
             },

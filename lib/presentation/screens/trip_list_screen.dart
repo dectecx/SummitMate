@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../providers/trip_provider.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../../data/models/trip.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import 'trip_cloud_screen.dart';
@@ -19,13 +20,24 @@ class TripListScreen extends StatelessWidget {
           IconButton(icon: const Icon(Icons.add), onPressed: () => _showCreateTripDialog(context), tooltip: '新增行程'),
         ],
       ),
-      body: Consumer<TripProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
+      body: BlocBuilder<TripCubit, TripState>(
+        builder: (context, state) {
+          if (state is TripLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final allTrips = provider.trips;
+          List<Trip> allTrips = [];
+          String? activeTripId;
+
+          if (state is TripLoaded) {
+            allTrips = state.trips;
+            activeTripId = state.activeTrip?.id;
+          } else if (state is TripError) {
+            // In case of error, just show empty or previous state if possible.
+            // Ideally valid UI. For now treating as empty/error.
+            return Center(child: Text('載入失敗: ${state.message}'));
+          }
+
           final now = DateTime.now();
           final today = DateTime(now.year, now.month, now.day);
 
@@ -67,7 +79,7 @@ class TripListScreen extends StatelessWidget {
 
               // 列表內容
               Expanded(
-                child: provider.trips.isEmpty
+                child: allTrips.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -102,12 +114,10 @@ class TripListScreen extends StatelessWidget {
                             ...ongoingTrips.map(
                               (trip) => _TripCard(
                                 trip: trip,
-                                isActive: trip.id == provider.activeTripId,
-                                onTap: () => _onTripTap(context, provider, trip),
-                                onDelete: provider.trips.length > 1
-                                    ? () => _confirmDelete(context, provider, trip)
-                                    : null,
-                                onUpload: () => _handleFullUpload(context, provider, trip),
+                                isActive: trip.id == activeTripId,
+                                onTap: () => _onTripTap(context, trip, activeTripId),
+                                onDelete: allTrips.length > 1 ? () => _confirmDelete(context, trip) : null,
+                                onUpload: () => _handleFullUpload(context, trip),
                               ),
                             ),
                           ],
@@ -125,12 +135,10 @@ class TripListScreen extends StatelessWidget {
                             ...archivedTrips.map(
                               (trip) => _TripCard(
                                 trip: trip,
-                                isActive: trip.id == provider.activeTripId,
-                                onTap: () => _onTripTap(context, provider, trip),
-                                onDelete: provider.trips.length > 1
-                                    ? () => _confirmDelete(context, provider, trip)
-                                    : null,
-                                onUpload: () => _handleFullUpload(context, provider, trip),
+                                isActive: trip.id == activeTripId,
+                                onTap: () => _onTripTap(context, trip, activeTripId),
+                                onDelete: allTrips.length > 1 ? () => _confirmDelete(context, trip) : null,
+                                onUpload: () => _handleFullUpload(context, trip),
                               ),
                             ),
                           ],
@@ -152,9 +160,9 @@ class TripListScreen extends StatelessWidget {
     showDialog(context: context, builder: (ctx) => const CreateTripDialog());
   }
 
-  void _onTripTap(BuildContext context, TripProvider provider, Trip trip) async {
-    if (trip.id != provider.activeTripId) {
-      await provider.setActiveTrip(trip.id);
+  void _onTripTap(BuildContext context, Trip trip, String? activeTripId) async {
+    if (trip.id != activeTripId) {
+      await context.read<TripCubit>().setActiveTrip(trip.id);
       if (context.mounted) {
         ToastService.success('已切換到「${trip.name}」');
         Navigator.pop(context); // 返回首頁
@@ -172,7 +180,7 @@ class TripListScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, TripProvider provider, Trip trip) {
+  void _confirmDelete(BuildContext context, Trip trip) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -183,10 +191,10 @@ class TripListScreen extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final isSuccess = await provider.deleteTrip(trip.id);
-              if (isSuccess) {
-                ToastService.success('已刪除「${trip.name}」');
-              }
+              await context.read<TripCubit>().deleteTrip(trip.id);
+              // Toast handled locally or rely on Cubit? Cubit logs but doesn't toast.
+              // For consistency with old code adding toast here.
+              ToastService.success('已刪除「${trip.name}」');
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('刪除'),
@@ -196,7 +204,7 @@ class TripListScreen extends StatelessWidget {
     );
   }
 
-  void _handleFullUpload(BuildContext context, TripProvider provider, Trip trip) async {
+  void _handleFullUpload(BuildContext context, Trip trip) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -212,7 +220,7 @@ class TripListScreen extends StatelessWidget {
     if (confirm != true) return;
 
     if (context.mounted) {
-      final isSuccess = await provider.uploadFullTrip(trip);
+      final isSuccess = await context.read<TripCubit>().uploadFullTrip(trip);
       if (isSuccess) {
         ToastService.success('行程「${trip.name}」同步成功！');
       } else {
@@ -515,8 +523,6 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
 
     setState(() => _isLoading = true);
 
-    final provider = context.read<TripProvider>();
-
     try {
       if (isEditing) {
         final updatedTrip = Trip(
@@ -528,13 +534,13 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
           isActive: widget.tripToEdit!.isActive,
           createdAt: widget.tripToEdit!.createdAt,
         );
-        await provider.updateTrip(updatedTrip);
+        await context.read<TripCubit>().updateTrip(updatedTrip);
         if (mounted) {
           ToastService.success('行程已更新');
           Navigator.pop(context);
         }
       } else {
-        await provider.addTrip(
+        await context.read<TripCubit>().addTrip(
           name: _nameController.text.trim(),
           startDate: _startDate,
           endDate: _endDate,

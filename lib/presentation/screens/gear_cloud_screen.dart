@@ -12,7 +12,9 @@ import '../../data/models/gear_key_record.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
-import '../providers/meal_provider.dart';
+// import '../providers/meal_provider.dart'; // Removed
+import '../cubits/meal/meal_cubit.dart';
+import '../cubits/meal/meal_state.dart';
 import '../cubits/gear/gear_cubit.dart';
 import '../cubits/gear/gear_state.dart';
 import '../cubits/gear_library/gear_library_cubit.dart';
@@ -162,7 +164,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             author: username,
             visibility: visibility,
             items: items,
-            meals: context.read<MealProvider>().dailyPlans,
+            meals: context.read<MealCubit>().state is MealLoaded
+                ? (context.read<MealCubit>().state as MealLoaded).dailyPlans
+                : [],
             key: key,
           );
 
@@ -241,7 +245,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   Future<void> _importMeals(List<DailyMealPlan> meals) async {
     try {
-      context.read<MealProvider>().setDailyPlans(meals);
+      context.read<MealCubit>().setDailyPlans(meals);
       ToastService.success('已匯入糧食計畫');
     } catch (e) {
       ToastService.error('匯入糧食失敗: $e');
