@@ -1,10 +1,10 @@
-import 'network_aware_client.dart';
-import 'gas_api_client.dart';
-import '../core/di.dart';
-import '../core/constants.dart';
-import '../data/models/poll.dart';
-import 'log_service.dart';
-import 'interfaces/i_poll_service.dart';
+import '../clients/network_aware_client.dart';
+import '../clients/gas_api_client.dart';
+import '../../core/di.dart';
+import '../../core/constants.dart';
+import '../../data/models/poll.dart';
+import '../tools/log_service.dart';
+import '../../domain/interfaces/i_poll_service.dart';
 
 class PollService implements IPollService {
   // Use a singleton pattern if desired, or just static methods

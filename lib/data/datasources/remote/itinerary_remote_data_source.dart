@@ -1,9 +1,9 @@
 import '../../../core/constants.dart';
 import '../../../core/di.dart';
 import '../../models/itinerary_item.dart';
-import '../../../services/gas_api_client.dart';
-import '../../../services/network_aware_client.dart';
-import '../../../services/log_service.dart';
+import '../../../infrastructure/clients/gas_api_client.dart';
+import '../../../infrastructure/clients/network_aware_client.dart';
+import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_itinerary_remote_data_source.dart';
 
 class ItineraryRemoteDataSource implements IItineraryRemoteDataSource {

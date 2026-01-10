@@ -3,7 +3,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_library_item.dart';
 import '../../data/repositories/interfaces/i_gear_library_repository.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../providers/gear_provider.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';

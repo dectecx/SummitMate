@@ -2,15 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/presentation/providers/poll_provider.dart';
-import 'package:summitmate/services/poll_service.dart';
+import 'package:summitmate/infrastructure/services/poll_service.dart';
 import 'package:summitmate/data/repositories/interfaces/i_poll_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
 import 'package:summitmate/data/models/settings.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:summitmate/services/gas_api_client.dart';
-import 'package:summitmate/services/network_aware_client.dart';
-import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
+import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
+import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 
 // Mocks
 class MockDio extends Mock implements Dio {}

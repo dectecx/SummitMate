@@ -3,7 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/di.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
 

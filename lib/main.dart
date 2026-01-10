@@ -4,7 +4,7 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
 import 'app.dart';
 import 'core/di.dart';
-import 'services/hive_service.dart';
+import 'infrastructure/tools/hive_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

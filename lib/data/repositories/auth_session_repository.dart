@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../data/models/user_profile.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_auth_session_repository.dart';
 
 /// Repository responsible for managing local authentication session.

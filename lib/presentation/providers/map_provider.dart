@@ -12,7 +12,7 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../../core/gpx_utils.dart';
 
 enum TaskStatus { pending, downloading, paused, completed, failed, cancelled }

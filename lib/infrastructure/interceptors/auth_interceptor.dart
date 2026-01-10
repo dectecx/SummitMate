@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
-import '../log_service.dart';
+import '../tools/log_service.dart';
 
 /// Interceptor to handle authentication logic for GAS API
 class AuthInterceptor extends Interceptor {

@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
-import 'network_aware_client.dart';
-import 'gas_api_client.dart';
-import '../core/constants.dart';
-import '../core/di.dart';
-import '../data/models/itinerary_item.dart';
-import '../data/models/message.dart';
-import '../data/models/trip.dart';
-import 'log_service.dart';
-import 'interfaces/i_data_service.dart';
+import '../clients/network_aware_client.dart';
+import '../clients/gas_api_client.dart';
+import '../../core/constants.dart';
+import '../../core/di.dart';
+import '../../data/models/itinerary_item.dart';
+import '../../data/models/message.dart';
+import '../../data/models/trip.dart';
+import '../tools/log_service.dart';
+import '../../domain/interfaces/i_data_service.dart';
 
 /// Google Sheets API 服務
 /// 透過 Google Apps Script 作為 API Gateway

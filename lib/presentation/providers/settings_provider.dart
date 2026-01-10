@@ -4,7 +4,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/repositories/interfaces/i_settings_repository.dart';
 import '../../data/models/settings.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 
 /// 設定狀態管理
 class SettingsProvider extends ChangeNotifier {

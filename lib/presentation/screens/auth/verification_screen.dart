@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/di.dart';
 import '../../../core/theme.dart';
-import '../../../services/interfaces/i_auth_service.dart';
+import '../../../domain/interfaces/i_auth_service.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String email;

@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:twicon/twicon.dart';
 
-import '../../../services/log_service.dart';
+import '../../../infrastructure/tools/log_service.dart';
 import '../../providers/map_provider.dart';
 import 'offline_map_manager_screen.dart';
 

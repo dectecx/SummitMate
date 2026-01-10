@@ -2,12 +2,40 @@ import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/hive_service.dart';
-import '../services/google_sheets_service.dart';
-import '../services/sync_service.dart';
-import '../services/log_service.dart';
-import '../services/connectivity_service.dart';
-import '../services/network_aware_client.dart';
+// Infrastructure - Tools
+import '../infrastructure/tools/hive_service.dart';
+import '../infrastructure/tools/log_service.dart';
+
+// Infrastructure - Services
+import '../infrastructure/services/google_sheets_service.dart';
+import '../infrastructure/services/sync_service.dart';
+import '../infrastructure/services/connectivity_service.dart';
+import '../infrastructure/services/weather_service.dart';
+import '../infrastructure/services/poll_service.dart';
+import '../infrastructure/services/geolocator_service.dart';
+import '../infrastructure/services/gear_cloud_service.dart';
+import '../infrastructure/services/gas_auth_service.dart';
+import '../infrastructure/services/jwt_token_validator.dart';
+
+// Infrastructure - Clients
+import '../infrastructure/clients/network_aware_client.dart';
+import '../infrastructure/clients/gas_api_client.dart';
+
+// Infrastructure - Interceptors
+import '../infrastructure/interceptors/auth_interceptor.dart';
+
+// Domain - Interfaces
+import '../domain/interfaces/i_connectivity_service.dart';
+import '../domain/interfaces/i_weather_service.dart';
+import '../domain/interfaces/i_poll_service.dart';
+import '../domain/interfaces/i_geolocator_service.dart';
+import '../domain/interfaces/i_gear_cloud_service.dart';
+import '../domain/interfaces/i_auth_service.dart';
+import '../domain/interfaces/i_token_validator.dart';
+import '../domain/interfaces/i_sync_service.dart';
+import '../domain/interfaces/i_data_service.dart';
+
+// Data - Repositories
 import '../data/repositories/settings_repository.dart';
 import '../data/repositories/itinerary_repository.dart';
 import '../data/repositories/message_repository.dart';
@@ -15,6 +43,21 @@ import '../data/repositories/gear_repository.dart';
 import '../data/repositories/gear_library_repository.dart';
 import '../data/repositories/poll_repository.dart';
 import '../data/repositories/trip_repository.dart';
+import '../data/repositories/gear_set_repository.dart';
+import '../data/repositories/auth_session_repository.dart';
+
+// Data - Repository Interfaces
+import '../data/repositories/interfaces/i_gear_repository.dart';
+import '../data/repositories/interfaces/i_gear_library_repository.dart';
+import '../data/repositories/interfaces/i_auth_session_repository.dart';
+import '../data/repositories/interfaces/i_settings_repository.dart';
+import '../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../data/repositories/interfaces/i_message_repository.dart';
+import '../data/repositories/interfaces/i_poll_repository.dart';
+import '../data/repositories/interfaces/i_trip_repository.dart';
+import '../data/repositories/interfaces/i_gear_set_repository.dart';
+
+// Data - DataSources
 import '../data/datasources/local/trip_local_data_source.dart';
 import '../data/datasources/remote/trip_remote_data_source.dart';
 import '../data/datasources/interfaces/i_trip_local_data_source.dart';
@@ -29,41 +72,18 @@ import '../data/datasources/local/itinerary_local_data_source.dart';
 import '../data/datasources/interfaces/i_itinerary_local_data_source.dart';
 import '../data/datasources/remote/itinerary_remote_data_source.dart';
 import '../data/datasources/interfaces/i_itinerary_remote_data_source.dart';
-import '../data/repositories/interfaces/i_gear_repository.dart';
-import '../data/repositories/interfaces/i_gear_library_repository.dart';
-import '../data/repositories/interfaces/i_auth_session_repository.dart';
-import '../data/repositories/interfaces/i_settings_repository.dart';
-import '../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../data/repositories/interfaces/i_message_repository.dart';
-import '../data/repositories/interfaces/i_poll_repository.dart';
-import '../data/repositories/interfaces/i_trip_repository.dart';
-import '../services/weather_service.dart';
-import '../services/interfaces/i_weather_service.dart';
-import '../services/poll_service.dart';
-import '../services/geolocator_service.dart';
-import '../services/interfaces/i_geolocator_service.dart';
-import '../services/gear_cloud_service.dart';
-import '../services/interfaces/i_gear_cloud_service.dart';
 import '../data/datasources/local/gear_key_local_data_source.dart';
 import '../data/datasources/interfaces/i_gear_key_local_data_source.dart';
-import '../data/repositories/gear_set_repository.dart';
-import '../data/repositories/interfaces/i_gear_set_repository.dart';
+
+// Presentation
 import '../presentation/providers/gear_provider.dart';
+
+// Core
 import '../core/location/i_location_resolver.dart';
 import '../core/location/township_location_resolver.dart';
-import '../services/gas_api_client.dart';
-import '../services/gas_auth_service.dart';
-import '../services/interfaces/i_auth_service.dart';
-import '../services/interfaces/i_token_validator.dart';
-import '../services/jwt_token_validator.dart';
-import '../data/repositories/auth_session_repository.dart';
 import '../core/env_config.dart';
 import 'package:dio/dio.dart';
-import '../services/interceptors/auth_interceptor.dart';
-import '../services/interfaces/i_connectivity_service.dart';
-import '../services/interfaces/i_poll_service.dart';
-import '../services/interfaces/i_sync_service.dart';
-import '../services/interfaces/i_data_service.dart';
+
 
 /// 全域依賴注入容器
 final GetIt getIt = GetIt.instance;

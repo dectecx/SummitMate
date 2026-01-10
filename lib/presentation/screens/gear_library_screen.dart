@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/constants.dart';
 import '../../core/gear_helpers.dart';
 import '../../data/models/gear_library_item.dart';
-import '../../services/gear_library_cloud_service.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/services/gear_library_cloud_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 import '../providers/gear_library_provider.dart';
 import '../providers/settings_provider.dart';
 

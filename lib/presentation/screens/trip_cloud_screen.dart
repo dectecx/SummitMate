@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../core/di.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 import '../providers/trip_provider.dart';
 import '../providers/settings_provider.dart';
 

@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
-import '../core/offline_config.dart';
-import '../data/models/message.dart';
-import '../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../data/repositories/interfaces/i_message_repository.dart';
-import '../data/repositories/interfaces/i_trip_repository.dart';
-import '../services/log_service.dart';
-import 'interfaces/i_connectivity_service.dart';
-import 'interfaces/i_sync_service.dart';
-import 'interfaces/i_data_service.dart';
+import '../../core/offline_config.dart';
+import '../../data/models/message.dart';
+import '../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../data/repositories/interfaces/i_message_repository.dart';
+import '../../data/repositories/interfaces/i_trip_repository.dart';
+import '../tools/log_service.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
+import '../../domain/interfaces/i_sync_service.dart';
+import '../../domain/interfaces/i_data_service.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步

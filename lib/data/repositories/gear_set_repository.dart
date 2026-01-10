@@ -4,7 +4,7 @@ import '../models/gear_key_record.dart';
 import '../models/gear_item.dart';
 import '../models/meal_item.dart';
 import 'interfaces/i_gear_set_repository.dart';
-import '../../services/interfaces/i_gear_cloud_service.dart';
+import '../../domain/interfaces/i_gear_cloud_service.dart';
 import '../datasources/interfaces/i_gear_key_local_data_source.dart';
 
 class GearSetRepository implements IGearSetRepository {

@@ -4,10 +4,10 @@ import '../../core/di.dart';
 import '../../data/models/itinerary_item.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../services/log_service.dart';
-import '../../services/toast_service.dart';
-import '../../services/interfaces/i_sync_service.dart';
-import '../../services/interfaces/i_connectivity_service.dart';
+import '../../infrastructure/tools/log_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
+import '../../domain/interfaces/i_sync_service.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
 
 /// 行程狀態管理
 class ItineraryProvider extends ChangeNotifier {

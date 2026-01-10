@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/repositories/interfaces/i_gear_set_repository.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 
 /// Key 輸入對話框
 class GearKeyInputDialog extends StatefulWidget {

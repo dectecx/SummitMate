@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:latlong2/latlong.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import 'i_location_resolver.dart';
 
 /// 鄉鎮市區地點解析器

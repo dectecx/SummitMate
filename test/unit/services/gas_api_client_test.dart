@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:summitmate/services/gas_api_client.dart';
+import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
 
 // ============================================================
 // === TESTS ===

@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
-import '../core/constants.dart';
+import '../../core/constants.dart';
 
-import '../core/di.dart';
+import '../../core/di.dart';
 import '../services/google_sheets_service.dart';
 
 /// 日誌等級

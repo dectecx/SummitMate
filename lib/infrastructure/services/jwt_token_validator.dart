@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'interfaces/i_token_validator.dart';
+import '../../domain/interfaces/i_token_validator.dart';
 
 /// JWT Token Validator Implementation
 /// Decodes and validates JWT tokens on the client side.

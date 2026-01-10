@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import '../../core/di.dart';
 import '../../data/models/user_profile.dart';
-import '../../services/interfaces/i_auth_service.dart';
-import '../../services/log_service.dart';
+import '../../domain/interfaces/i_auth_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../../core/constants/gas_error_codes.dart';
 
 /// Auth Provider

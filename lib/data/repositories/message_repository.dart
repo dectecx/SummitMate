@@ -1,6 +1,6 @@
 import '../../core/di.dart';
-import '../../services/interfaces/i_connectivity_service.dart';
-import '../../services/log_service.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../models/message.dart';
 import 'interfaces/i_message_repository.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';

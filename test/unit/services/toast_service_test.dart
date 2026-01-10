@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/services/toast_service.dart';
+import 'package:summitmate/infrastructure/tools/toast_service.dart';
 
 void main() {
   group('ToastService', () {

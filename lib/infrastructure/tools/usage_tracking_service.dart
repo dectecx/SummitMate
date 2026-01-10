@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../core/constants.dart';
-import 'gas_api_client.dart';
-import '../core/di.dart';
+import '../../core/constants.dart';
+import '../clients/gas_api_client.dart';
+import '../../core/di.dart';
 import 'log_service.dart';
 
 /// 使用狀態追蹤服務 (僅 Web)

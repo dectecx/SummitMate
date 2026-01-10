@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import '../core/di.dart';
-import '../data/repositories/interfaces/i_settings_repository.dart';
-import 'log_service.dart';
-import 'interfaces/i_connectivity_service.dart';
+import '../../core/di.dart';
+import '../../data/repositories/interfaces/i_settings_repository.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
+import '../tools/log_service.dart';
 
 /// Connectivity Service
 /// 統一管理網路連線狀態與離線模式

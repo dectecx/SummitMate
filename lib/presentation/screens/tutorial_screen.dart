@@ -3,19 +3,19 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/di.dart';
-import '../../services/tutorial_service.dart';
-import '../../services/poll_service.dart';
+import '../../infrastructure/tools/tutorial_service.dart';
+import '../../infrastructure/services/poll_service.dart';
 import '../widgets/tutorial_overlay.dart';
 import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
 import '../widgets/info_tab.dart';
 import 'collaboration_tab.dart';
-import '../../services/mock/mock_weather_service.dart';
-import '../../services/mock/mock_geolocator_service.dart';
-import '../../services/mock/mock_sync_service.dart';
-import '../../services/interfaces/i_weather_service.dart';
-import '../../services/interfaces/i_geolocator_service.dart';
-import '../../services/interfaces/i_sync_service.dart';
+import '../../infrastructure/mock/mock_weather_service.dart';
+import '../../infrastructure/mock/mock_geolocator_service.dart';
+import '../../infrastructure/mock/mock_sync_service.dart';
+import '../../domain/interfaces/i_weather_service.dart';
+import '../../domain/interfaces/i_geolocator_service.dart';
+import '../../domain/interfaces/i_sync_service.dart';
 
 // Mock Repositories
 import '../../data/repositories/mock/mock_itinerary_repository.dart';

@@ -8,7 +8,7 @@ import '../../presentation/providers/settings_provider.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 
 class PollListScreen extends StatefulWidget {
   const PollListScreen({super.key});

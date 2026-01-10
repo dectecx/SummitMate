@@ -4,9 +4,9 @@ import 'package:get_it/get_it.dart';
 
 import 'package:summitmate/data/models/weather_data.dart';
 import 'package:summitmate/presentation/widgets/weather/weather_alert_card.dart';
-import 'package:summitmate/services/interfaces/i_weather_service.dart';
+import 'package:summitmate/domain/interfaces/i_weather_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:summitmate/services/interfaces/i_geolocator_service.dart';
+import 'package:summitmate/domain/interfaces/i_geolocator_service.dart';
 
 // Manual Fake implementation
 class FakeGeolocatorService implements IGeolocatorService {

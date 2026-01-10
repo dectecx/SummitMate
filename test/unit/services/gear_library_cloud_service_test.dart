@@ -3,115 +3,118 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/gear_library_item.dart';
-import 'package:summitmate/services/gas_api_client.dart';
-import 'package:summitmate/services/gear_library_cloud_service.dart';
-import 'package:summitmate/services/network_aware_client.dart';
-import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/infrastructure/services/gear_library_cloud_service.dart';
+import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 
-// Mock GasApiClient
-class MockGasApiClient extends GasApiClient {
-  MockGasApiClient() : super(baseUrl: 'https://mock.url');
-
-  Map<String, dynamic>? expectedResponseData;
-  bool shouldFail = false;
-  int statusCode = 200;
-
-  @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
-    if (shouldFail) {
-      return Response(
-        requestOptions: RequestOptions(path: ''),
-        statusCode: 500,
-        statusMessage: 'Error',
-      );
-    }
-
-    // Default success response
-    final responseBody = {
-      'code': statusCode == 200 ? '0000' : '9999',
-      'message': 'Mock Message',
-      'data': expectedResponseData ?? {},
-    };
-
-    return Response(
-      requestOptions: RequestOptions(path: ''),
-      data: responseBody,
-      statusCode: statusCode,
-    );
-  }
-}
-
-class MockConnectivityService extends Mock implements IConnectivityService {}
+// Mock NetworkAwareClient
+class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}
 
 void main() {
-  late MockGasApiClient mockClient;
-  late MockConnectivityService mockConnectivity;
+  late MockNetworkAwareClient mockApiClient;
   late GearLibraryCloudService service;
 
-  setUp(() {
-    mockClient = MockGasApiClient();
-    mockConnectivity = MockConnectivityService();
-    when(() => mockConnectivity.isOffline).thenReturn(false);
-
-    final networkClient = NetworkAwareClient(apiClient: mockClient, connectivity: mockConnectivity);
-    service = GearLibraryCloudService(apiClient: networkClient);
+  setUpAll(() {
+    registerFallbackValue(RequestOptions(path: ''));
   });
 
-  group('GearLibraryCloudService Tests', () {
-    group('syncLibrary', () {
-      test('成功同步返回項目數量', () async {
-        final items = [GearLibraryItem(name: 'Test Item', weight: 100, category: 'Other')];
-        mockClient.expectedResponseData = {'count': 1};
+  setUp(() {
+    mockApiClient = MockNetworkAwareClient();
+    service = GearLibraryCloudService(apiClient: mockApiClient);
+  });
 
-        final result = await service.syncLibrary(items);
-        expect(result.isSuccess, isTrue);
-        expect(result.data, 1);
-      });
+  group('GearLibraryCloudService', () {
+    final testItems = [
+      GearLibraryItem(
+        uuid: '1',
+        name: 'Tent',
+        weight: 1500,
+        category: 'Shelter',
+        notes: 'Lightweight',
+        updatedAt: DateTime.now(),
+      ),
+    ];
 
-      test('API 成功時返回 count', () async {
-        mockClient.expectedResponseData = {'count': 5};
+    test('syncLibrary success should return count', () async {
+      // Arrange
+      when(
+        () => mockApiClient.post(any(), requiresAuth: true),
+      ).thenAnswer((_) async => Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 200,
+        data: {
+          'code': '0000',
+          'message': 'Success',
+          'data': {'count': 1},
+        },
+      ));
 
-        final result = await service.syncLibrary([GearLibraryItem(name: 'Test', weight: 100, category: 'Other')]);
-        // 驗證
-        expect(result.isSuccess, isTrue);
-        expect(result.data, equals(5));
-      });
+      // Act
+      final result = await service.syncLibrary(testItems);
 
-      test('API 失敗時返回錯誤訊息', () async {
-        mockClient.shouldFail = true;
-
-        final result = await service.syncLibrary([GearLibraryItem(name: 'Test', weight: 100, category: 'Other')]);
-        // 驗證
-        expect(result.isSuccess, isFalse);
-        expect(result.errorMessage, contains('HTTP 500'));
-      });
+      // Assert
+      expect(result.isSuccess, true);
+      expect(result.data, 1);
     });
 
-    group('getLibrary', () {
-      test('成功下載返回項目列表', () async {
-        mockClient.expectedResponseData = {
-          'items': [
-            {'uuid': 'test-uuid', 'name': 'Downloaded Item', 'weight': 200.0, 'category': 'Sleep'},
-          ],
-        };
+    test('syncLibrary failure should return error message', () async {
+      // Arrange
+      when(
+        () => mockApiClient.post(any(), requiresAuth: true),
+      ).thenAnswer((_) async => Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 200,
+        data: {'code': '9999', 'message': 'Database error'},
+      ));
 
-        final result = await service.getLibrary();
-        // 驗證
-        expect(result.isSuccess, isTrue);
-        expect(result.data, isNotNull);
-        expect(result.data, hasLength(1));
+      // Act
+      final result = await service.syncLibrary(testItems);
 
-        expect(result.data!.first.name, 'Downloaded Item');
-      });
+      // Assert
+      expect(result.isSuccess, false);
+      expect(result.errorMessage, contains('Database error'));
+    });
 
-      test('下載空列表時返回空 List', () async {
-        mockClient.expectedResponseData = {'items': []};
+    test('getLibrary success should return items', () async {
+      // Arrange
+      when(
+        () => mockApiClient.post(any(), requiresAuth: true),
+      ).thenAnswer((_) async => Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 200,
+        data: {
+          'code': '0000',
+          'message': 'Success',
+          'data': {
+            'items': [testItems[0].toJson()],
+          },
+        },
+      ));
 
-        final result = await service.getLibrary();
-        // 驗證
-        expect(result.isSuccess, isTrue);
-        expect(result.data, isEmpty);
-      });
+      // Act
+      final result = await service.getLibrary();
+
+      // Assert
+      expect(result.isSuccess, true);
+      expect(result.data!.length, 1);
+      expect(result.data![0].name, 'Tent');
+    });
+
+    test('getLibrary failure should return error', () async {
+      // Arrange
+      when(
+        () => mockApiClient.post(any(), requiresAuth: true),
+      ).thenAnswer((_) async => Response(
+        requestOptions: RequestOptions(path: ''),
+        statusCode: 500,
+        data: {},
+      ));
+
+      // Act
+      final result = await service.getLibrary();
+
+      // Assert
+      expect(result.isSuccess, false);
+      expect(result.errorMessage, contains('HTTP 500'));
     });
   });
 }

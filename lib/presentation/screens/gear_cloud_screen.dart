@@ -8,7 +8,7 @@ import '../../data/models/meal_item.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../data/repositories/interfaces/i_gear_set_repository.dart';
 import '../../data/models/gear_key_record.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 import '../providers/settings_provider.dart';
 import '../providers/gear_provider.dart';
 import '../providers/gear_library_provider.dart';
