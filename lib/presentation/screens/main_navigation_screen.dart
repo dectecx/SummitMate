@@ -13,7 +13,7 @@ import '../../infrastructure/tools/hive_service.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
-import '../providers/itinerary_provider.dart';
+// import '../providers/itinerary_provider.dart'; // Removed
 // import '../providers/trip_provider.dart'; // Removed
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
@@ -23,6 +23,8 @@ import '../providers/poll_provider.dart';
 import '../providers/auth_provider.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
+import '../cubits/itinerary/itinerary_cubit.dart';
+import '../cubits/itinerary/itinerary_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../widgets/app_drawer.dart';
@@ -30,6 +32,9 @@ import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
 import '../widgets/info_tab.dart';
 import '../widgets/itinerary_edit_dialog.dart';
+import '../widgets/tutorial_overlay.dart';
+import 'package:uuid/uuid.dart';
+import '../../data/models/itinerary_item.dart';
 
 import 'collaboration_tab.dart'; // Ensure this file exists, otherwise adapt
 import 'map/map_screen.dart';
@@ -122,28 +127,37 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  void _showTutorial(BuildContext context) {
-    // 導航到獨立的教學畫面，使用假資料和假 UI
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen()));
-  }
+
 
   @override
   Widget build(BuildContext context) {
     // 監聽 SyncCubit 狀態以更新 UI 與重載資料
-    return BlocListener<SyncCubit, SyncState>(
-      listener: (context, state) {
-        if (state is SyncSuccess) {
-          // 同步成功，重載資料
-          context.read<ItineraryProvider>().reload();
-          context.read<MessageProvider>().reload();
-          context.read<SettingsProvider>().updateLastSyncTime(state.timestamp);
-          ToastService.success(state.message);
-        } else if (state is SyncFailure) {
-          ToastService.error(state.errorMessage);
-        }
-      },
-      child: Consumer<ItineraryProvider>(
-        builder: (context, itineraryProvider, child) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<SyncCubit, SyncState>(
+          listener: (context, state) {
+            if (state is SyncSuccess) {
+              // 同步成功，重載資料
+              context.read<ItineraryProvider>().reload();
+              context.read<MessageProvider>().reload();
+              context.read<SettingsProvider>().updateLastSyncTime(state.timestamp);
+              ToastService.success(state.message);
+            } else if (state is SyncFailure) {
+              ToastService.error(state.errorMessage);
+            }
+          },
+        ),
+        BlocListener<TripCubit, TripState>(
+          listener: (context, state) {
+            if (state is TripLoaded) {
+              // 當行程切換或載入完成，重載 Itinerary
+              context.read<ItineraryCubit>().loadItinerary();
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<ItineraryCubit, ItineraryState>(
+        builder: (context, itineraryState) {
           return Consumer2<MessageProvider, PollProvider>(
             builder: (context, messageProvider, pollProvider, child) {
               return BlocBuilder<TripCubit, TripState>(
@@ -156,6 +170,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
                   final isLoading = messageProvider.isSyncing || pollProvider.isLoading || isTripLoading;
                   final isOffline = context.watch<SettingsProvider>().isOfflineMode;
+                  
+                  // Extract Itinerary State
+                  final bool isEditMode = itineraryState is ItineraryLoaded ? (itineraryState as ItineraryLoaded).isEditMode : false;
 
                   // 如果沒有行程，顯示空狀態 (Import / Create)
                   if (!hasTrips && !isTripLoading) {
@@ -234,17 +251,17 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                         // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
                         if (_currentIndex == 0) ...[
                           IconButton(
-                            icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
-                            tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
-                            onPressed: () => itineraryProvider.toggleEditMode(),
+                            icon: Icon(isEditMode ? Icons.check : Icons.edit),
+                            tooltip: isEditMode ? '完成' : '編輯行程',
+                            onPressed: () => context.read<ItineraryCubit>().toggleEditMode(),
                           ),
-                          if (itineraryProvider.isEditMode)
+                          if (isEditMode)
                             IconButton(
                               icon: const Icon(Icons.cloud_upload_outlined),
                               tooltip: '上傳至雲端',
-                              onPressed: () => _handleCloudUpload(context, itineraryProvider),
+                              onPressed: () => _handleCloudUpload(context),
                             ),
-                          if (!itineraryProvider.isEditMode) ...[
+                          if (!isEditMode) ...[
                             IconButton(
                               icon: const Icon(Icons.map_outlined),
                               tooltip: '查看地圖',
@@ -274,8 +291,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       onDestinationSelected: (index) {
                         setState(() => _currentIndex = index);
                         // 切換分頁時關閉編輯模式
-                        if (itineraryProvider.isEditMode) {
-                          itineraryProvider.toggleEditMode();
+                        if (isEditMode) {
+                          context.read<ItineraryCubit>().toggleEditMode();
                         }
                       },
                       destinations: [
@@ -301,9 +318,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                         ),
                       ],
                     ),
-                    floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
+                    floatingActionButton: (_currentIndex == 0 && isEditMode)
                         ? FloatingActionButton(
-                            onPressed: () => _showAddItineraryDialog(context, itineraryProvider),
+                            onPressed: () => _showAddItineraryDialog(context),
                             child: const Icon(Icons.add),
                           )
                         : null,
@@ -322,6 +339,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
     );
   }
+
+
 
   /// 顯示行程選擇對話框 (從雲端匯入)
   Future<void> _showTripSelectionDialog(BuildContext context) async {
@@ -430,21 +449,37 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  void _showAddItineraryDialog(BuildContext context, ItineraryProvider provider) async {
+  void _showAddItineraryDialog(BuildContext context) async {
+    final itineraryCubit = context.read<ItineraryCubit>();
+    String selectedDay = 'D1';
+    final state = itineraryCubit.state;
+    if (state is ItineraryLoaded) {
+       selectedDay = state.selectedDay;
+    }
+
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) => ItineraryEditDialog(defaultDay: provider.selectedDay),
+      builder: (_) => ItineraryEditDialog(defaultDay: selectedDay),
     );
 
     if (result != null) {
-      provider.addItem(
-        day: provider.selectedDay,
-        name: result['name'],
-        estTime: result['estTime'],
-        altitude: result['altitude'],
-        distance: result['distance'],
-        note: result['note'],
+      final tripState = context.read<TripCubit>().state;
+      String tripId = '';
+      if (tripState is TripLoaded && tripState.activeTrip != null) {
+        tripId = tripState.activeTrip!.id;
+      }
+      
+      final item = ItineraryItem(
+        uuid: const Uuid().v4(), // Correct property name is uuid, not id
+        tripId: tripId,
+        day: selectedDay,
+        name: result['name'] ?? '',
+        estTime: result['estTime'] ?? '',
+        altitude: result['altitude'] ?? 0,
+        distance: result['distance'] ?? 0.0,
+        note: result['note'] ?? '',
       );
+      itineraryCubit.addItem(item);
     }
   }
 
@@ -777,7 +812,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           Navigator.pop(innerContext);
                           Future.delayed(const Duration(milliseconds: 300), () {
                             if (mounted) {
-                              _showTutorial(this.context);
+                              _showTutorial(context);
                             }
                           });
                         }
@@ -826,7 +861,20 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  void _handleCloudUpload(BuildContext context, ItineraryProvider provider) async {
+  void _showTutorial(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (_, __, ___) => TutorialOverlay(
+          targets: const [], // TODO: Restore original targets if possible
+          onFinish: () => Navigator.pop(context),
+          onSkip: () => Navigator.pop(context),
+        ),
+      ),
+    );
+  }
+
+  void _handleCloudUpload(BuildContext context) async {
     // 檢查離線模式
     final settingsIsOffline = context.read<SettingsProvider>().isOfflineMode;
     if (settingsIsOffline) {
@@ -843,8 +891,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    // 2. 檢查衝突
-    final hasConflict = await provider.checkConflict();
+    // 2. 檢查衝突 (Use SyncCubit)
+    final hasConflict = await context.read<SyncCubit>().checkItineraryConflict();
 
     if (!context.mounted) return;
     Navigator.pop(context); // 關閉 Loading
@@ -865,7 +913,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(context); // 關閉 Dialog
-                provider.uploadToCloud(); // 執行上傳
+                context.read<SyncCubit>().uploadItinerary(); // 執行上傳
               },
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('強制覆蓋'),
@@ -885,7 +933,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
-                provider.uploadToCloud();
+                context.read<SyncCubit>().uploadItinerary();
               },
               child: const Text('上傳'),
             ),
