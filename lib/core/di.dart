@@ -89,27 +89,50 @@ final GetIt getIt = GetIt.instance;
 /// 初始化依賴注入
 /// 在 App 啟動時呼叫，註冊所有服務與 Repository
 Future<void> setupDependencies() async {
-  // Singleton: SharedPreferences
+  // 1. 基本單例與服務 (SharedPreferences, PackageInfo, Hive, Log)
   final prefs = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(prefs);
 
-  // Singleton: PackageInfo
   final packageInfo = await PackageInfo.fromPlatform();
   getIt.registerSingleton<PackageInfo>(packageInfo);
 
-  // Singleton: HiveService
   final hiveService = HiveService();
   await hiveService.init();
   getIt.registerSingleton<HiveService>(hiveService);
 
-  // LogService 初始化
   await LogService.init();
   LogService.info('App 啟動', source: 'DI');
 
-  // ========================================
-  // Data Sources
-  // ========================================
+  // 2. 設定與身份驗證基礎 (Settings, Auth Core, Network Core)
+  // Settings Repository (Early initialization needed for Connectivity and Sync)
+  final settingsRepo = SettingsRepository();
+  await settingsRepo.init();
+  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
+  // Connectivity
+  getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
+
+  // Auth Core
+  final authSessionRepo = AuthSessionRepository();
+  getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
+  getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
+  getIt.registerLazySingleton<IAuthService>(
+    () => GasAuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
+  );
+
+  // Network Core (Dio & API Clients)
+  getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));
+  getIt.registerLazySingleton<Dio>(() {
+    final dio = Dio();
+    dio.interceptors.add(getIt<AuthInterceptor>());
+    return dio;
+  });
+  getIt.registerLazySingleton<GasApiClient>(() => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()));
+  getIt.registerLazySingleton<NetworkAwareClient>(
+    () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<IConnectivityService>()),
+  );
+
+  // 3. Data Sources (Depends on Network Core)
   final tripLocalDS = TripLocalDataSource();
   await tripLocalDS.init();
   getIt.registerSingleton<ITripLocalDataSource>(tripLocalDS);
@@ -126,33 +149,15 @@ Future<void> setupDependencies() async {
   await messageLocalDS.init();
   getIt.registerSingleton<IMessageLocalDataSource>(messageLocalDS);
 
+  final gearKeyLocalDS = GearKeyLocalDataSource();
+  getIt.registerSingleton<IGearKeyLocalDataSource>(gearKeyLocalDS);
+
   getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
   getIt.registerLazySingleton<IItineraryRemoteDataSource>(() => ItineraryRemoteDataSource());
   getIt.registerLazySingleton<IMessageRemoteDataSource>(() => MessageRemoteDataSource());
-
-  // Gear Set Remote & Local
   getIt.registerLazySingleton<IGearCloudService>(() => GearCloudService());
-  final gearKeyLocalDS = GearKeyLocalDataSource();
-  // await gearKeyLocalDS.init(); // SharedPrefs no init needed apart from check
-  getIt.registerSingleton<IGearKeyLocalDataSource>(gearKeyLocalDS);
 
-  // ========================================
-  // Base Services (Settings, Connectivity)
-  // ========================================
-
-  // 6. Settings - 設定 (Early initialization needed for Connectivity)
-  final settingsRepo = SettingsRepository();
-  await settingsRepo.init();
-  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
-
-  // 6.5. Connectivity - 統一網路與離線模式判斷
-  getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
-
-  // ========================================
-  // Repositories
-  // ========================================
-
-  // 1. Trip - 最上層容器
+  // 4. Repositories (Depends on Data Sources & Network Core)
   final tripRepo = TripRepository(
     localDataSource: getIt<ITripLocalDataSource>(),
     remoteDataSource: getIt<ITripRemoteDataSource>(),
@@ -160,96 +165,40 @@ Future<void> setupDependencies() async {
   await tripRepo.init();
   getIt.registerSingleton<ITripRepository>(tripRepo);
 
-  // 2. Itinerary - 行程節點
   final itineraryRepo = ItineraryRepository();
   await itineraryRepo.init();
   getIt.registerSingleton<IItineraryRepository>(itineraryRepo);
 
-  // 3. Messages - 留言
   final messageRepo = MessageRepository();
   await messageRepo.init();
   getIt.registerSingleton<IMessageRepository>(messageRepo);
 
-  // 4. Gear - 行程裝備
   final gearRepo = GearRepository();
   await gearRepo.init();
   getIt.registerSingleton<IGearRepository>(gearRepo);
 
-  // 5. GearLibrary - 個人裝備庫
   final gearLibraryRepo = GearLibraryRepository();
   await gearLibraryRepo.init();
   getIt.registerSingleton<IGearLibraryRepository>(gearLibraryRepo);
 
-  // 5. Polls - 投票
   final pollRepo = PollRepository();
   await pollRepo.init();
   getIt.registerSingleton<IPollRepository>(pollRepo);
 
-  // 6. Gear Sets - 雲端裝備組合
   final gearSetRepo = GearSetRepository();
-  // await gearSetRepo.init(); // No init needed
   getIt.registerSingleton<IGearSetRepository>(gearSetRepo);
 
-  // 7. Location Resolver
+  // 5. Additional Services & Utils
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
-
-  // 7.5 Geolocator Service
   getIt.registerLazySingleton<IGeolocatorService>(() => GeolocatorService());
 
-  // 8. Weather - 氣象服務 (依賴 ISettingsRepository & ILocationResolver)
   final weatherService = WeatherService();
   await weatherService.init();
   getIt.registerSingleton<IWeatherService>(weatherService);
 
-  // ========================================
-  // Services
-  // ========================================
-
-  // 9. Auth Session - Manages local session (moved to Repository level)
-  final authSessionRepo = AuthSessionRepository();
-  getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
-
-  // ========================================
-  // Auth & Network Core
-  // ========================================
-
-  // Token Validator
-  getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
-
-  // IAuthService - Pluggable auth interface (GasAuthService implementation)
-  getIt.registerLazySingleton<IAuthService>(
-    () => GasAuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
-  );
-
-  // Dio & Interceptors
-  // Inject IAuthSessionRepository directly into Interceptor
-  getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));
-
-  getIt.registerLazySingleton<Dio>(() {
-    final dio = Dio();
-    dio.interceptors.add(getIt<AuthInterceptor>());
-    return dio;
-  });
-
-  // GasApiClient - Core API Client with auth token injection (via Interceptor)
-  getIt.registerLazySingleton<GasApiClient>(() => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()));
-
-  // NetworkAwareClient - API Client with offline interception
-  getIt.registerLazySingleton<NetworkAwareClient>(
-    () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<IConnectivityService>()),
-  );
-
-  // ========================================
-  // Services
-  // ========================================
-
-  // PollService
   getIt.registerSingleton<IPollService>(PollService());
-
-  // GoogleSheetsService (IDataService)
   getIt.registerLazySingleton<IDataService>(() => GoogleSheetsService());
 
-  // SyncService (ISyncService)
   getIt.registerLazySingleton<ISyncService>(
     () => SyncService(
       sheetsService: getIt<IDataService>(),
@@ -259,8 +208,6 @@ Future<void> setupDependencies() async {
       connectivity: getIt<IConnectivityService>(),
     ),
   );
-
-  // Providers (Singletons for access outside logic)
 }
 
 /// 重置依賴注入 (用於測試)
