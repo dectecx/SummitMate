@@ -76,7 +76,6 @@ import '../data/datasources/local/gear_key_local_data_source.dart';
 import '../data/datasources/interfaces/i_gear_key_local_data_source.dart';
 
 // Presentation
-import '../presentation/providers/gear_provider.dart';
 
 // Core
 import '../core/location/i_location_resolver.dart';
@@ -262,7 +261,6 @@ Future<void> setupDependencies() async {
   );
 
   // Providers (Singletons for access outside logic)
-  getIt.registerLazySingleton<GearProvider>(() => GearProvider());
 }
 
 /// 重置依賴注入 (用於測試)

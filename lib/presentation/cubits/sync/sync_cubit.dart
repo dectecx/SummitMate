@@ -58,10 +58,39 @@ class SyncCubit extends Cubit<SyncState> {
     }
   }
 
-  /// 僅同步行程
   Future<void> syncItinerary() async {
-    // ... 類似結構，簡化起見先主要支援 syncAll，後續可擴充
     await syncAll();
+  }
+
+  /// 檢查行程衝突
+  Future<bool> checkItineraryConflict() async {
+    try {
+      return await _syncService.checkItineraryConflict();
+    } catch (e) {
+      LogService.error('Check conflict failed: $e', source: _source);
+      return false;
+    }
+  }
+
+  /// 上傳行程 (覆寫雲端)
+  Future<void> uploadItinerary() async {
+    if (_connectivityService.isOffline) {
+      emit(SyncFailure(errorMessage: '目前處於離線模式，無法上傳', lastSuccessTime: _getLastSyncTime()));
+      return;
+    }
+
+    emit(const SyncInProgress(message: '正在上傳行程...'));
+    try {
+      final result = await _syncService.uploadItinerary();
+      if (result.isSuccess) {
+        emit(SyncSuccess(timestamp: DateTime.now(), message: '行程上傳成功'));
+      } else {
+        emit(SyncFailure(errorMessage: result.errorMessage ?? '上傳失敗', lastSuccessTime: _getLastSyncTime()));
+      }
+    } catch (e) {
+      LogService.error('Upload failed: $e', source: _source);
+      emit(SyncFailure(errorMessage: '上傳發生錯誤', lastSuccessTime: _getLastSyncTime()));
+    }
   }
 
   DateTime? _getLastSyncTime() {

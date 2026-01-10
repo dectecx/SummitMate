@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../cubits/settings/settings_cubit.dart';
 import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/auth_state.dart'
     show AuthState, AuthLoading, AuthAuthenticated, AuthError, AuthRequiresVerification;
 
-import '../../providers/settings_provider.dart';
+// import '../../providers/settings_provider.dart'; // Removed
 import 'register_screen.dart';
 import 'verification_screen.dart';
 
@@ -63,9 +64,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          // Sync SettingsProvider with user profile
+          // Sync SettingsCubit with user profile
           if (state.userName != null && state.userName!.isNotEmpty) {
-            context.read<SettingsProvider>().updateUsername(state.userName!);
+            context.read<SettingsCubit>().updateUsername(state.userName!);
           }
           // Avatar is not in AuthAuthenticated state, might be missing update.
           // But AuthProvider bridge calls validateSession which fetches full profile.

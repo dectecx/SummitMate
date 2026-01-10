@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/poll_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubits/poll/poll_cubit.dart';
 import '../../infrastructure/tools/log_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 
 class CreatePollScreen extends StatefulWidget {
   const CreatePollScreen({super.key});
@@ -37,7 +38,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
 
   void _removeOption(int index) {
     if (_optionControllers.length <= 2) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('至少需要兩個選項')));
+      ToastService.warning('至少需要兩個選項');
       return;
     }
     setState(() {
@@ -77,22 +78,22 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_deadline == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('請設定截止時間')));
+      ToastService.warning('請設定截止時間');
       return;
     }
 
     final options = _optionControllers.map((c) => c.text.trim()).where((t) => t.isNotEmpty).toList();
 
     if (options.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('至少需要兩個有效選項')));
+      ToastService.warning('至少需要兩個有效選項');
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     try {
-      final provider = context.read<PollProvider>();
-      await provider.createPoll(
+      final cubit = context.read<PollCubit>();
+      final success = await cubit.createPoll(
         title: _titleController.text.trim(),
         description: _descController.text.trim(),
         deadline: _deadline!,
@@ -101,15 +102,14 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         isAllowAddOption: _allowAddOption,
       );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票建立成功！')));
+      if (success && mounted) {
         Navigator.pop(context);
+        // Toast handled by cubit
       }
     } catch (e) {
       LogService.error('Create poll failed: $e', source: 'CreatePollScreen');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('建立失敗: $e'), backgroundColor: Colors.red));
-      }
+      // Toast handled by cubit usually, but if not:
+      ToastService.error('建立失敗: $e');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
