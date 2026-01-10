@@ -6,6 +6,7 @@ import 'core/di.dart';
 import 'infrastructure/tools/toast_service.dart';
 import 'presentation/cubits/auth/auth_cubit.dart';
 import 'presentation/cubits/auth/auth_state.dart';
+import 'presentation/cubits/sync/sync_cubit.dart';
 import 'presentation/providers/auth_provider.dart' hide AuthState;
 import 'presentation/providers/gear_library_provider.dart';
 import 'presentation/providers/gear_provider.dart';
@@ -24,8 +25,11 @@ class SummitMateApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthCubit()..checkAuthStatus(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => AuthCubit()..checkAuthStatus()),
+        BlocProvider(create: (context) => SyncCubit()),
+      ],
       child: MultiProvider(
         providers: [
           // Auth Provider (優先載入)
