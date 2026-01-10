@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/core/constants.dart';
-import 'package:summitmate/services/google_sheets_service.dart';
-import 'package:summitmate/services/gas_api_client.dart';
+import 'package:summitmate/infrastructure/services/google_sheets_service.dart';
+import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
 import 'package:summitmate/data/models/message.dart';
-import 'package:summitmate/services/network_aware_client.dart';
-import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
+import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 
 // Mock GasApiClient
 class MockGasApiClient extends GasApiClient {

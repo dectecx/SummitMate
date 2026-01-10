@@ -187,35 +187,35 @@ lib/
 
 ### 服務分類
 
-| 類別 | 說明 |
-|------|------|
-| 核心業務 | 主要業務功能，需要介面抽象 |
+| 類別     | 說明                          |
+| -------- | ----------------------------- |
+| 核心業務 | 主要業務功能，需要介面抽象    |
 | 雲端服務 | 與雲端 API 互動，需要介面抽象 |
-| 基礎設施 | 底層技術支援 |
-| 工具服務 | 內部輔助工具，不需介面 |
+| 基礎設施 | 底層技術支援                  |
+| 工具服務 | 內部輔助工具，不需介面        |
 
 ### Service 清單
 
-| Service | 類別 | 說明 | Interface |
-|---------|------|------|-----------|
-| `GasAuthService` | 核心業務 | 會員認證 (登入/註冊/驗證) | `IAuthService` |
-| `SyncService` | 核心業務 | 資料雙向同步 | `ISyncService` |
-| `PollService` | 核心業務 | 投票功能 | `IPollService` |
-| `WeatherService` | 核心業務 | 氣象資料 (CWA ETL) | `IWeatherService` |
-| `GearCloudService` | 雲端服務 | 裝備組合上傳/下載 | `IGearCloudService` |
-| `GearLibraryCloudService` | 雲端服務 | 個人裝備庫同步 | `IGearLibraryCloudService` |
-| `TripCloudService` | 雲端服務 | 行程雲端管理 | `ITripCloudService` |
-| `GoogleSheetsService` | 雲端服務 | API Gateway (GAS) | `IDataService` |
-| `ConnectivityService` | 基礎設施 | 網路/離線狀態判斷 | `IConnectivityService` |
-| `GasApiClient` | 基礎設施 | GAS HTTP 客戶端 | - |
-| `NetworkAwareClient` | 基礎設施 | 離線攔截裝飾器 | - |
-| `JwtTokenValidator` | 基礎設施 | Token 驗證 | `ITokenValidator` |
-| `GeolocatorService` | 基礎設施 | GPS 定位 | `IGeolocatorService` |
-| `HiveService` | 工具服務 | Hive 初始化 | - |
-| `LogService` | 工具服務 | 日誌記錄 | - |
-| `ToastService` | 工具服務 | UI 通知 | - |
-| `TutorialService` | 工具服務 | 教學導覽 | - |
-| `UsageTrackingService` | 工具服務 | Web 使用追蹤 | - |
+| Service                   | 類別     | 說明                      | Interface                  |
+| ------------------------- | -------- | ------------------------- | -------------------------- |
+| `GasAuthService`          | 核心業務 | 會員認證 (登入/註冊/驗證) | `IAuthService`             |
+| `SyncService`             | 核心業務 | 資料雙向同步              | `ISyncService`             |
+| `PollService`             | 核心業務 | 投票功能                  | `IPollService`             |
+| `WeatherService`          | 核心業務 | 氣象資料 (CWA ETL)        | `IWeatherService`          |
+| `GearCloudService`        | 雲端服務 | 裝備組合上傳/下載         | `IGearCloudService`        |
+| `GearLibraryCloudService` | 雲端服務 | 個人裝備庫同步            | `IGearLibraryCloudService` |
+| `TripCloudService`        | 雲端服務 | 行程雲端管理              | `ITripCloudService`        |
+| `GoogleSheetsService`     | 雲端服務 | API Gateway (GAS)         | `IDataService`             |
+| `ConnectivityService`     | 基礎設施 | 網路/離線狀態判斷         | `IConnectivityService`     |
+| `GasApiClient`            | 基礎設施 | GAS HTTP 客戶端           | -                          |
+| `NetworkAwareClient`      | 基礎設施 | 離線攔截裝飾器            | -                          |
+| `JwtTokenValidator`       | 基礎設施 | Token 驗證                | `ITokenValidator`          |
+| `GeolocatorService`       | 基礎設施 | GPS 定位                  | `IGeolocatorService`       |
+| `HiveService`             | 工具服務 | Hive 初始化               | -                          |
+| `LogService`              | 工具服務 | 日誌記錄                  | -                          |
+| `ToastService`            | 工具服務 | UI 通知                   | -                          |
+| `TutorialService`         | 工具服務 | 教學導覽                  | -                          |
+| `UsageTrackingService`    | 工具服務 | Web 使用追蹤              | -                          |
 
 ---
 
@@ -244,25 +244,25 @@ flowchart TB
 
 ### 各層職責
 
-| 層級 | 元件 | 職責 |
-|------|------|------|
+| 層級             | 元件                 | 職責                         |
+| ---------------- | -------------------- | ---------------------------- |
 | **Presentation** | `Provider` / `Cubit` | 管理 UI 狀態、處理使用者互動 |
-| **Data** | `Repository` | 協調資料來源、決定資料流向 |
-| **Data** | `LocalDataSource` | 本地儲存 (Hive) |
-| **Data** | `RemoteDataSource` | 遠端 API 呼叫 |
+| **Data**         | `Repository`         | 協調資料來源、決定資料流向   |
+| **Data**         | `LocalDataSource`    | 本地儲存 (Hive)              |
+| **Data**         | `RemoteDataSource`   | 遠端 API 呼叫                |
 
 ### DataSource 清單
 
-| DataSource | 類型 | Interface | 說明 |
-|------------|------|-----------|------|
-| `TripLocalDataSource` | Local | `ITripLocalDataSource` | 行程本地儲存 |
-| `TripRemoteDataSource` | Remote | `ITripRemoteDataSource` | 行程雲端 API |
-| `ItineraryLocalDataSource` | Local | `IItineraryLocalDataSource` | 行程節點本地儲存 |
+| DataSource                  | 類型   | Interface                    | 說明             |
+| --------------------------- | ------ | ---------------------------- | ---------------- |
+| `TripLocalDataSource`       | Local  | `ITripLocalDataSource`       | 行程本地儲存     |
+| `TripRemoteDataSource`      | Remote | `ITripRemoteDataSource`      | 行程雲端 API     |
+| `ItineraryLocalDataSource`  | Local  | `IItineraryLocalDataSource`  | 行程節點本地儲存 |
 | `ItineraryRemoteDataSource` | Remote | `IItineraryRemoteDataSource` | 行程節點雲端 API |
-| `MessageLocalDataSource` | Local | `IMessageLocalDataSource` | 留言本地儲存 |
-| `MessageRemoteDataSource` | Remote | `IMessageRemoteDataSource` | 留言雲端 API |
-| `GearLocalDataSource` | Local | `IGearLocalDataSource` | 裝備本地儲存 |
-| `GearKeyLocalDataSource` | Local | `IGearKeyLocalDataSource` | 裝備 Key 記錄 |
+| `MessageLocalDataSource`    | Local  | `IMessageLocalDataSource`    | 留言本地儲存     |
+| `MessageRemoteDataSource`   | Remote | `IMessageRemoteDataSource`   | 留言雲端 API     |
+| `GearLocalDataSource`       | Local  | `IGearLocalDataSource`       | 裝備本地儲存     |
+| `GearKeyLocalDataSource`    | Local  | `IGearKeyLocalDataSource`    | 裝備 Key 記錄    |
 
 ### Repository 運作模式
 
@@ -271,10 +271,10 @@ class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDS;
   final ITripRemoteDataSource _remoteDS;
   final IConnectivityService _connectivity;
-  
+
   // Read: 優先讀取本地快取
   List<Trip> getAllTrips() => _localDS.getAll();
-  
+
   // Sync: 有網路時同步
   Future<void> sync() async {
     if (_connectivity.isOffline) return;
@@ -290,12 +290,12 @@ class TripRepository implements ITripRepository {
 
 本專案支援 **Provider** 與 **Cubit** 並存，依據功能複雜度選擇適合的方案：
 
-| 方案         | 適用場景           | 採用狀態    |
-| ------------ | ------------------ | ----------- |
-| **Provider** | 簡單狀態、CRUD | ✅ 使用中 |
-| **Cubit**    | 事件驅動、中等複雜、需要狀態機 | 🚧 規劃中 |
-| **BLoC**     | 複雜事件流         | ❌ 暫不採用 |
-| **Riverpod** | 編譯時安全         | ❌ 暫不採用 |
+| 方案         | 適用場景                       | 採用狀態    |
+| ------------ | ------------------------------ | ----------- |
+| **Provider** | 簡單狀態、CRUD                 | ✅ 使用中   |
+| **Cubit**    | 事件驅動、中等複雜、需要狀態機 | 🚧 規劃中   |
+| **BLoC**     | 複雜事件流                     | ❌ 暫不採用 |
+| **Riverpod** | 編譯時安全                     | ❌ 暫不採用 |
 
 ### Provider 使用場景
 
@@ -324,7 +324,7 @@ sequenceDiagram
     Note over UI,Remote: 🔐 登入流程
     UI->>AP: login(email, password)
     AP->>Repo: authenticate()
-    
+
     alt 有網路 & 非離線模式
         Repo->>Remote: API 驗證
         Remote-->>Repo: user + token
@@ -357,12 +357,12 @@ sequenceDiagram
 
 ### 各層登出行為
 
-| 層級 | 元件 | 登出時 | 手動清除時 |
-|------|------|--------|-----------|
-| **Presentation** | Provider | ✅ 清除狀態 | ✅ 清除狀態 |
-| **Data** | Repository | ❌ 保留 | N/A |
-| **Data** | LocalDataSource | 🔹 只清 session | ✅ 全部清除 |
-| **Data** | RemoteDataSource | N/A | N/A |
+| 層級             | 元件             | 登出時          | 手動清除時  |
+| ---------------- | ---------------- | --------------- | ----------- |
+| **Presentation** | Provider         | ✅ 清除狀態     | ✅ 清除狀態 |
+| **Data**         | Repository       | ❌ 保留         | N/A         |
+| **Data**         | LocalDataSource  | 🔹 只清 session | ✅ 全部清除 |
+| **Data**         | RemoteDataSource | N/A             | N/A         |
 
 ---
 
@@ -860,27 +860,27 @@ flowchart TB
 
 #### 動詞統一
 
-| 動詞        | 用途           | 範例                              |
-| ----------- | -------------- | --------------------------------- |
-| `get*`      | 取得單筆       | `getUser()`, `getWeather()`       |
+| 動詞        | 用途            | 範例                                        |
+| ----------- | --------------- | ------------------------------------------- |
+| `get*`      | 取得單筆        | `getUser()`, `getWeather()`                 |
 | `get*s`     | 取得多筆 (複數) | `getPolls()`, `getTrips()`, `getGearSets()` |
-| `create*`   | 新增           | `createPoll()`, `createMessage()` |
-| `update*`   | 更新           | `updateProfile()`, `updateTrip()` |
-| `delete*`   | 刪除           | `deletePoll()`, `deleteMessage()` |
-| `sync*`     | 同步           | `syncAll()`, `syncItinerary()`    |
-| `upload*`   | 上傳           | `uploadGearSet()`                 |
-| `download*` | 下載           | `downloadGearSet()`               |
-| `validate*` | 驗證           | `validateSession()`               |
+| `create*`   | 新增            | `createPoll()`, `createMessage()`           |
+| `update*`   | 更新            | `updateProfile()`, `updateTrip()`           |
+| `delete*`   | 刪除            | `deletePoll()`, `deleteMessage()`           |
+| `sync*`     | 同步            | `syncAll()`, `syncItinerary()`              |
+| `upload*`   | 上傳            | `uploadGearSet()`                           |
+| `download*` | 下載            | `downloadGearSet()`                         |
+| `validate*` | 驗證            | `validateSession()`                         |
 
 #### 核心 Interface
 
-| Interface           | 說明     | 主要方法                                              |
-| ------------------- | -------- | ----------------------------------------------------- |
-| `IAuthService`      | 認證服務 | `login()`, `logout()`, `validateSession()`            |
-| `ISyncService`      | 同步服務 | `syncAll()`, `syncItinerary()`, `syncMessages()`      |
+| Interface           | 說明     | 主要方法                                                |
+| ------------------- | -------- | ------------------------------------------------------- |
+| `IAuthService`      | 認證服務 | `login()`, `logout()`, `validateSession()`              |
+| `ISyncService`      | 同步服務 | `syncAll()`, `syncItinerary()`, `syncMessages()`        |
 | `IGearCloudService` | 裝備雲端 | `uploadGearSet()`, `downloadGearSet()`, `getGearSets()` |
-| `IPollService`      | 投票服務 | `getPolls()`, `createPoll()`, `votePoll()`            |
-| `IWeatherService`   | 天氣服務 | `getWeather()`, `getForecast()`                       |
+| `IPollService`      | 投票服務 | `getPolls()`, `createPoll()`, `votePoll()`              |
+| `IWeatherService`   | 天氣服務 | `getWeather()`, `getForecast()`                         |
 
 ### DI 多實作策略
 
@@ -933,12 +933,12 @@ class GasSyncServiceImpl implements ISyncService {
 
 > 詳見 [2.3 狀態管理策略](#23-狀態管理策略-state-management)
 
-| 方案         | 適用場景           | 採用狀態    |
-| ------------ | ------------------ | ----------- |
-| **Provider** | 簡單狀態、CRUD | ✅ 使用中 |
-| **Cubit**    | 事件驅動、中等複雜、狀態機 | 🚧 規劃中 |
-| **BLoC**     | 複雜事件流         | ❌ 暫不採用 |
-| **Riverpod** | 編譯時安全         | ❌ 暫不採用 |
+| 方案         | 適用場景                   | 採用狀態    |
+| ------------ | -------------------------- | ----------- |
+| **Provider** | 簡單狀態、CRUD             | ✅ 使用中   |
+| **Cubit**    | 事件驅動、中等複雜、狀態機 | 🚧 規劃中   |
+| **BLoC**     | 複雜事件流                 | ❌ 暫不採用 |
+| **Riverpod** | 編譯時安全                 | ❌ 暫不採用 |
 
 ### 架構演進討論
 
@@ -977,9 +977,9 @@ lib/
 ```
 
 **考量因素**:
+
 - ✅ 優點：更清晰的職責分離、更好的測試性
 - ⚠️ 缺點：增加檔案數量、可能過度設計
 - 📌 建議：當 `services/` 超過 20 個檔案時再考慮
 
 > 目前維持現有結構，待需求成長再評估。
-

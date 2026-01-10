@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 
 /// Onboarding 畫面 (設定暱稱與頭像)
 class OnboardingScreen extends StatefulWidget {

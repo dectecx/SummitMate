@@ -6,12 +6,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/di.dart';
-import '../../services/log_service.dart';
-import '../../services/toast_service.dart';
-import '../../services/usage_tracking_service.dart';
-import '../../services/hive_service.dart';
+import '../../infrastructure/tools/log_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
+import '../../infrastructure/tools/usage_tracking_service.dart';
+import '../../infrastructure/tools/hive_service.dart';
 import '../../data/models/trip.dart';
-import '../../services/interfaces/i_sync_service.dart';
+import '../../domain/interfaces/i_sync_service.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
 import '../providers/itinerary_provider.dart';

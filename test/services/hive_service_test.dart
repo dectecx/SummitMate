@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/core/constants.dart';
-import 'package:summitmate/services/hive_service.dart';
+import 'package:summitmate/infrastructure/tools/hive_service.dart';
 
 void main() {
   late Directory tempDir;

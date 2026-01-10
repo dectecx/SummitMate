@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants.dart';
 import '../../core/gear_helpers.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 import '../providers/gear_provider.dart';
 import '../providers/meal_provider.dart';
 import '../screens/gear_cloud_screen.dart';

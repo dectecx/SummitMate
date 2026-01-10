@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
-import 'services/toast_service.dart';
+import 'infrastructure/tools/toast_service.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/gear_library_provider.dart';
 import 'presentation/providers/gear_provider.dart';

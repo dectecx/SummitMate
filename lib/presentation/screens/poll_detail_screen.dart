@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../data/models/poll.dart';
 import '../providers/poll_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
-import '../../services/toast_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
 
 class PollDetailScreen extends StatefulWidget {
   final Poll poll;

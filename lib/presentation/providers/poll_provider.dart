@@ -4,10 +4,10 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/poll.dart';
 import '../../data/repositories/interfaces/i_poll_repository.dart';
-import '../../services/poll_service.dart';
-import '../../services/log_service.dart';
-import '../../services/toast_service.dart';
-import '../../services/interfaces/i_connectivity_service.dart';
+import '../../infrastructure/services/poll_service.dart';
+import '../../infrastructure/tools/log_service.dart';
+import '../../infrastructure/tools/toast_service.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
 
 class PollProvider with ChangeNotifier {
   static const String _source = 'PollProvider';

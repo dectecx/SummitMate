@@ -2,7 +2,7 @@ import '../../models/gear_set.dart';
 import '../../models/gear_key_record.dart';
 import '../../models/gear_item.dart';
 import '../../models/meal_item.dart';
-import '../../../services/interfaces/i_gear_cloud_service.dart'; // For GearCloudResult
+import '../../../domain/interfaces/i_gear_cloud_service.dart'; // For GearCloudResult
 
 abstract class IGearSetRepository {
   // Remote Actions

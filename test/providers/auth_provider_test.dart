@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:summitmate/data/models/user_profile.dart';
 import 'package:summitmate/presentation/providers/auth_provider.dart';
-import 'package:summitmate/services/interfaces/i_auth_service.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
 // ============================================================
 // === MOCKS ===

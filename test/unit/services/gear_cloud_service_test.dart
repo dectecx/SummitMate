@@ -4,10 +4,10 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/gear_set.dart';
 import 'package:summitmate/data/models/gear_item.dart';
-import 'package:summitmate/services/gas_api_client.dart';
-import 'package:summitmate/services/gear_cloud_service.dart';
-import 'package:summitmate/services/network_aware_client.dart';
-import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
+import 'package:summitmate/infrastructure/services/gear_cloud_service.dart';
+import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
+import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 
 // Mock GasApiClient (Reused pattern)
 class MockGasApiClient extends GasApiClient {

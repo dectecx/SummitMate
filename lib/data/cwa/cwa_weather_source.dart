@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../../core/env_config.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../models/weather_data.dart';
 import '../models/cwa/cwa_response_models.dart';
 import 'cwa_api_factory.dart';

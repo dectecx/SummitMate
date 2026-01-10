@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../services/interfaces/i_geolocator_service.dart';
+import '../../../domain/interfaces/i_geolocator_service.dart';
 import '../../../core/di.dart';
-import '../../../services/interfaces/i_weather_service.dart';
-import '../../../services/log_service.dart';
+import '../../../domain/interfaces/i_weather_service.dart';
+import '../../../infrastructure/tools/log_service.dart';
 import '../../../data/models/weather_data.dart';
 
 class WeatherAlertCard extends StatefulWidget {

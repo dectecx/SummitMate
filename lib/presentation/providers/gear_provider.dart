@@ -3,7 +3,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../../data/models/gear_item.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 
 /// 裝備狀態管理
 class GearProvider extends ChangeNotifier {

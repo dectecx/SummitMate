@@ -1,7 +1,7 @@
 import '../../data/models/itinerary_item.dart';
 import '../../data/models/message.dart';
 import '../../data/models/trip.dart';
-import '../log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 
 /// 通用 API 結果
 class ApiResult {

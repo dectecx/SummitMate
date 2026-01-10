@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import '../services/interfaces/i_geolocator_service.dart';
+import '../../domain/interfaces/i_geolocator_service.dart';
 
 class GeolocatorService implements IGeolocatorService {
   @override

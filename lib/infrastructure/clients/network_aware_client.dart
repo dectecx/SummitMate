@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../core/di.dart';
-import '../core/exceptions/offline_exception.dart';
-import 'interfaces/i_connectivity_service.dart';
+import '../../core/di.dart';
+import '../../core/exceptions/offline_exception.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
 import 'gas_api_client.dart';
-import 'log_service.dart';
+import '../tools/log_service.dart';
 
 /// 具網路感知能力的 API Client
 ///

@@ -1,16 +1,16 @@
-import '../core/constants.dart';
-import '../core/constants/gas_error_codes.dart';
-import '../core/di.dart';
-import '../core/exceptions/offline_exception.dart';
-import '../core/offline_config.dart';
-import '../data/models/user_profile.dart';
-import '../data/repositories/interfaces/i_auth_session_repository.dart';
-import 'gas_api_client.dart';
-import 'network_aware_client.dart';
-import 'interfaces/i_auth_service.dart';
-import 'interfaces/i_token_validator.dart';
+import '../../core/constants.dart';
+import '../../core/constants/gas_error_codes.dart';
+import '../../core/di.dart';
+import '../../core/exceptions/offline_exception.dart';
+import '../../core/offline_config.dart';
+import '../../data/models/user_profile.dart';
+import '../../data/repositories/interfaces/i_auth_session_repository.dart';
+import '../clients/gas_api_client.dart';
+import '../clients/network_aware_client.dart';
+import '../../domain/interfaces/i_auth_service.dart';
+import '../../domain/interfaces/i_token_validator.dart';
 import 'jwt_token_validator.dart';
-import 'log_service.dart';
+import '../tools/log_service.dart';
 
 /// GAS (Google Apps Script) Authentication Service
 /// Implements [IAuthService] for GAS backend with JWT tokens.

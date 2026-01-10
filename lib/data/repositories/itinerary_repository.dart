@@ -4,8 +4,8 @@ import '../models/itinerary_item.dart';
 import 'interfaces/i_itinerary_repository.dart';
 import '../datasources/interfaces/i_itinerary_local_data_source.dart';
 import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
-import '../../services/interfaces/i_connectivity_service.dart';
-import '../../services/log_service.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 
 /// Itinerary Repository
 /// Coordinates Local and Remote Data Sources

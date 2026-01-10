@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:summitmate/services/interfaces/i_geolocator_service.dart';
+import 'package:summitmate/domain/interfaces/i_geolocator_service.dart';
 
 class MockGeolocatorService implements IGeolocatorService {
   @override

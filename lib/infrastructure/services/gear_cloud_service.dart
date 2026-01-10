@@ -1,12 +1,12 @@
-import '../core/constants.dart';
-import '../core/di.dart';
-import '../data/models/gear_set.dart';
-import '../data/models/gear_item.dart';
-import '../data/models/meal_item.dart';
-import 'network_aware_client.dart';
-import 'gas_api_client.dart';
-import 'log_service.dart';
-import 'interfaces/i_gear_cloud_service.dart';
+import '../../core/constants.dart';
+import '../../core/di.dart';
+import '../../data/models/gear_set.dart';
+import '../../data/models/gear_item.dart';
+import '../../data/models/meal_item.dart';
+import '../clients/network_aware_client.dart';
+import '../clients/gas_api_client.dart';
+import '../tools/log_service.dart';
+import '../../domain/interfaces/i_gear_cloud_service.dart';
 
 /// 雲端裝備庫服務
 class GearCloudService implements IGearCloudService {

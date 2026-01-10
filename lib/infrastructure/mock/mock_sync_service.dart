@@ -1,5 +1,5 @@
-import 'package:summitmate/services/interfaces/i_sync_service.dart';
-import 'package:summitmate/services/interfaces/i_data_service.dart';
+import 'package:summitmate/domain/interfaces/i_sync_service.dart';
+import 'package:summitmate/domain/interfaces/i_data_service.dart';
 import 'package:summitmate/data/models/message.dart';
 
 /// Mock 同步服務

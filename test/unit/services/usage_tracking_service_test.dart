@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/services/usage_tracking_service.dart';
-import 'package:summitmate/services/gas_api_client.dart';
+import 'package:summitmate/infrastructure/tools/usage_tracking_service.dart';
+import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
 
 // Mock Dio
 class MockDio extends Mock implements Dio {}

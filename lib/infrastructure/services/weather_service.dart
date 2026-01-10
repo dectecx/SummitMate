@@ -2,16 +2,16 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
-import '../data/models/weather_data.dart';
-import '../services/log_service.dart';
-import '../core/env_config.dart';
-import '../core/constants.dart';
-import '../core/di.dart';
-import '../data/repositories/interfaces/i_settings_repository.dart';
+import '../../data/models/weather_data.dart';
+import '../tools/log_service.dart';
+import '../../core/env_config.dart';
+import '../../core/constants.dart';
+import '../../core/di.dart';
+import '../../data/repositories/interfaces/i_settings_repository.dart';
 
-import 'interfaces/i_weather_service.dart';
-import '../core/location/i_location_resolver.dart';
-import '../data/cwa/cwa_weather_source.dart';
+import '../../domain/interfaces/i_weather_service.dart';
+import '../../core/location/i_location_resolver.dart';
+import '../../data/cwa/cwa_weather_source.dart';
 
 class WeatherService implements IWeatherService {
   static const String _boxName = HiveBoxNames.weather;

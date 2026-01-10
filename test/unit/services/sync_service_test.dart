@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:summitmate/services/sync_service.dart';
-import 'package:summitmate/services/interfaces/i_data_service.dart';
-import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/infrastructure/services/sync_service.dart';
+import 'package:summitmate/domain/interfaces/i_data_service.dart';
+import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';

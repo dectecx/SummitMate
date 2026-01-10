@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/services/network_aware_client.dart';
-import 'package:summitmate/services/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
+import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 
 import 'package:summitmate/data/models/user_profile.dart';
 import 'package:summitmate/data/repositories/interfaces/i_auth_session_repository.dart';
-import 'package:summitmate/services/gas_auth_service.dart';
-import 'package:summitmate/services/gas_api_client.dart';
-import 'package:summitmate/services/interfaces/i_token_validator.dart';
+import 'package:summitmate/infrastructure/services/gas_auth_service.dart';
+import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
+import 'package:summitmate/domain/interfaces/i_token_validator.dart';
 import 'package:summitmate/core/constants/gas_error_codes.dart';
 
 // ============================================================

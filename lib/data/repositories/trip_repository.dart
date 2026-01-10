@@ -1,6 +1,6 @@
 import '../models/trip.dart';
 
-import '../../services/log_service.dart';
+import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';

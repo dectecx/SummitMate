@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/di.dart';
-import '../../services/interfaces/i_sync_service.dart';
+import '../../domain/interfaces/i_sync_service.dart';
 import '../../presentation/providers/message_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
 

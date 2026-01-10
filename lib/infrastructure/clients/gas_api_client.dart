@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'log_service.dart';
+import '../tools/log_service.dart';
 
 /// Client related to Google Apps Script API calls
 /// Handles common logic like Redirects (302), Web compatibility, etc.
