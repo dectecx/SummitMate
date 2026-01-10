@@ -4,19 +4,25 @@ import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'infrastructure/tools/toast_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'data/repositories/interfaces/i_settings_repository.dart';
 import 'presentation/cubits/auth/auth_cubit.dart';
 import 'presentation/cubits/auth/auth_state.dart';
 import 'presentation/cubits/sync/sync_cubit.dart';
 import 'presentation/cubits/trip/trip_cubit.dart';
+import 'presentation/cubits/gear/gear_cubit.dart';
+import 'presentation/cubits/gear_library/gear_library_cubit.dart';
+import 'presentation/cubits/itinerary/itinerary_cubit.dart';
+import 'presentation/cubits/message/message_cubit.dart';
+import 'presentation/cubits/poll/poll_cubit.dart';
+import 'presentation/cubits/settings/settings_cubit.dart';
 import 'presentation/providers/auth_provider.dart' hide AuthState;
-import 'presentation/providers/gear_library_provider.dart';
-import 'presentation/providers/gear_provider.dart';
 import 'presentation/providers/itinerary_provider.dart';
 import 'presentation/providers/map_provider.dart';
 import 'presentation/providers/meal_provider.dart';
 import 'presentation/providers/message_provider.dart';
 import 'presentation/providers/poll_provider.dart';
-import 'presentation/providers/settings_provider.dart';
+// import 'presentation/providers/settings_provider.dart'; // Removed
 import 'presentation/providers/trip_provider.dart';
 import 'presentation/screens/home_screen.dart';
 
@@ -31,17 +37,25 @@ class SummitMateApp extends StatelessWidget {
         BlocProvider(create: (context) => AuthCubit()..checkAuthStatus()),
         BlocProvider(create: (context) => SyncCubit()),
         BlocProvider(create: (context) => TripCubit()..loadTrips()),
+        BlocProvider(create: (context) => ItineraryCubit()..loadItinerary()),
+        BlocProvider(create: (context) => GearCubit()),
+        BlocProvider(create: (context) => GearLibraryCubit()..loadItems()),
+        BlocProvider(create: (context) => MessageCubit()..loadMessages()),
+        BlocProvider(create: (context) => PollCubit()..loadPolls()),
+        BlocProvider(
+          create: (context) =>
+              SettingsCubit(repository: getIt<ISettingsRepository>(), prefs: getIt<SharedPreferences>())
+                ..loadSettings(),
+        ), // Register SettingsCubit
       ],
       child: MultiProvider(
         providers: [
           // Auth Provider (優先載入)
           ChangeNotifierProvider(create: (_) => AuthProvider()),
           ChangeNotifierProvider(create: (_) => TripProvider()),
-          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          // ChangeNotifierProvider(create: (_) => SettingsProvider()), // Removed
           ChangeNotifierProvider(create: (_) => ItineraryProvider()),
           ChangeNotifierProvider(create: (_) => MessageProvider()),
-          ChangeNotifierProvider(create: (_) => getIt<GearProvider>()),
-          ChangeNotifierProvider(create: (_) => GearLibraryProvider()),
           ChangeNotifierProvider(create: (_) => MealProvider()),
           ChangeNotifierProvider(create: (_) => PollProvider()),
           ChangeNotifierProvider(create: (_) => MapProvider()),

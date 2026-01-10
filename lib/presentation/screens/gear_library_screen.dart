@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants.dart';
@@ -6,17 +7,11 @@ import '../../core/gear_helpers.dart';
 import '../../data/models/gear_library_item.dart';
 import '../../infrastructure/services/gear_library_cloud_service.dart';
 import '../../infrastructure/tools/toast_service.dart';
-import '../providers/gear_library_provider.dart';
-import '../providers/settings_provider.dart';
+import '../cubits/gear_library/gear_library_cubit.dart';
+import '../cubits/gear_library/gear_library_state.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 
-/// 個人裝備庫畫面
-///
-/// 管理個人裝備的 CRUD 操作
-/// 可透過 owner_key 備份到雲端
-///
-/// 【未來規劃】
-/// - 會員機制上線後改用 user_id
-/// - 自動同步，移除 key 輸入
 class GearLibraryScreen extends StatefulWidget {
   const GearLibraryScreen({super.key});
 
@@ -38,45 +33,45 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('🎒 我的裝備庫'),
-        actions: [
-          // 雲端備份按鈕
-          IconButton(icon: const Icon(Icons.cloud_sync), tooltip: '雲端備份', onPressed: _showCloudSyncDialog),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.cloud_sync), tooltip: '雲端備份', onPressed: _showCloudSyncDialog)],
       ),
-      body: Consumer<GearLibraryProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
+      body: BlocBuilder<GearLibraryCubit, GearLibraryState>(
+        builder: (context, state) {
+          if (state is GearLibraryLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (provider.error != null) {
+          if (state is GearLibraryError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
                   const SizedBox(height: 16),
-                  Text(provider.error!, style: TextStyle(color: Colors.red.shade600)),
+                  Text(state.message, style: TextStyle(color: Colors.red.shade600)),
                   const SizedBox(height: 16),
-                  OutlinedButton(onPressed: provider.reload, child: const Text('重試')),
+                  OutlinedButton(onPressed: () => context.read<GearLibraryCubit>().reload(), child: const Text('重試')),
                 ],
               ),
             );
           }
 
+          if (state is! GearLibraryLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final itemCount = state.items.length;
+          final totalWeightKg =
+              state.items.where((i) => !i.isArchived).fold<double>(0, (sum, i) => sum + i.weight) / 1000.0;
+
           return Column(
             children: [
-              // 統計資訊
-              _buildStatsCard(provider),
-
-              // 搜尋欄
-              _buildSearchBar(provider),
-
-              // 裝備列表
+              _buildStatsCard(itemCount, totalWeightKg),
+              _buildSearchBar(context, state),
               Expanded(
-                child: provider.filteredItems.isEmpty
-                    ? _buildEmptyState(provider.allItems.isEmpty)
-                    : _buildGearList(provider),
+                child: state.filteredItems.isEmpty
+                    ? _buildEmptyState(state.items.isEmpty)
+                    : _buildGearList(context, state),
               ),
             ],
           );
@@ -89,7 +84,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     );
   }
 
-  Widget _buildStatsCard(GearLibraryProvider provider) {
+  Widget _buildStatsCard(int itemCount, double totalWeightKg) {
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -97,19 +92,15 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _StatItem(icon: Icons.backpack, label: '裝備數量', value: '${provider.itemCount}'),
-            _StatItem(
-              icon: Icons.fitness_center,
-              label: '總重量',
-              value: '${provider.totalWeightKg.toStringAsFixed(2)} kg',
-            ),
+            _StatItem(icon: Icons.backpack, label: '裝備數量', value: '$itemCount'),
+            _StatItem(icon: Icons.fitness_center, label: '總重量', value: '${totalWeightKg.toStringAsFixed(2)} kg'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSearchBar(GearLibraryProvider provider) {
+  Widget _buildSearchBar(BuildContext context, GearLibraryLoaded state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextField(
@@ -122,8 +113,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
-                    provider.setSearchQuery('');
-                    setState(() {});
+                    context.read<GearLibraryCubit>().setSearchQuery('');
                   },
                 )
               : null,
@@ -133,8 +123,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         ),
         onChanged: (value) {
-          provider.setSearchQuery(value);
-          setState(() {});
+          context.read<GearLibraryCubit>().setSearchQuery(value);
         },
       ),
     );
@@ -157,8 +146,8 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     );
   }
 
-  Widget _buildGearList(GearLibraryProvider provider) {
-    final itemsByCategory = provider.itemsByCategory;
+  Widget _buildGearList(BuildContext context, GearLibraryLoaded state) {
+    final itemsByCategory = state.itemsByCategory;
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -170,7 +159,6 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 分類標題
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
@@ -186,15 +174,14 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                 ],
               ),
             ),
-            // 裝備列表
-            ...items.map((item) => _buildGearCard(item, provider)),
+            ...items.map((item) => _buildGearCard(context, item)),
           ],
         );
       },
     );
   }
 
-  Widget _buildGearCard(GearLibraryItem item, GearLibraryProvider provider) {
+  Widget _buildGearCard(BuildContext context, GearLibraryItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -223,10 +210,10 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                 _showEditDialog(context, item);
                 break;
               case 'archive':
-                provider.toggleArchive(item.uuid);
+                context.read<GearLibraryCubit>().toggleArchive(item.uuid);
                 break;
               case 'delete':
-                _showDeleteImpactDialog(context, item, provider);
+                _showDeleteImpactDialog(context, item);
                 break;
             }
           },
@@ -277,11 +264,10 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   void _showAddDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => _GearLibraryItemDialog(
+      builder: (dialogContext) => _GearLibraryItemDialog(
         onSave: (name, weight, category, notes) async {
-          final provider = context.read<GearLibraryProvider>();
-          await provider.addItem(name: name, weight: weight, category: category, notes: notes);
-          if (context.mounted) Navigator.pop(context);
+          await context.read<GearLibraryCubit>().addItem(name: name, weight: weight, category: category, notes: notes);
+          if (dialogContext.mounted) Navigator.pop(dialogContext);
         },
       ),
     );
@@ -290,32 +276,29 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   void _showEditDialog(BuildContext context, GearLibraryItem item) {
     showDialog(
       context: context,
-      builder: (context) => _GearLibraryItemDialog(
+      builder: (dialogContext) => _GearLibraryItemDialog(
         item: item,
         onSave: (name, weight, category, notes) async {
           item.name = name;
           item.weight = weight;
           item.category = category;
           item.notes = notes;
-          final provider = context.read<GearLibraryProvider>();
-          await provider.updateItem(item);
-          if (context.mounted) Navigator.pop(context);
+          await context.read<GearLibraryCubit>().updateItem(item);
+          if (dialogContext.mounted) Navigator.pop(dialogContext);
         },
       ),
     );
   }
 
-  void _showDeleteImpactDialog(BuildContext context, GearLibraryItem item, GearLibraryProvider provider) async {
-    // 1. Analyze Impact
-    final linkedTrips = provider.getLinkedTrips(item.uuid);
+  void _showDeleteImpactDialog(BuildContext context, GearLibraryItem item) async {
+    final cubit = context.read<GearLibraryCubit>();
+    final linkedTrips = cubit.getLinkedTrips(item.uuid);
 
     if (linkedTrips.isEmpty) {
-      // 沒連結，直接刪除
-      _confirmDelete(context, item, provider);
+      _confirmDelete(context, item);
       return;
     }
 
-    // 2. Show Impact Dialog
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -357,11 +340,6 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                   },
                 ),
               ),
-              if (linkedTrips.length > 5)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text('...以及其他 ${linkedTrips.length - 5} 個行程', style: const TextStyle(color: Colors.grey)),
-                ),
             ],
           ),
         ),
@@ -370,7 +348,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
           FilledButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await provider.deleteItem(item.uuid);
+              await cubit.deleteItem(item.uuid);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('刪除並解除連結'),
@@ -380,7 +358,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, GearLibraryItem item, GearLibraryProvider provider) {
+  void _confirmDelete(BuildContext context, GearLibraryItem item) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -390,7 +368,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () async {
-              await provider.deleteItem(item.uuid);
+              await context.read<GearLibraryCubit>().deleteItem(item.uuid);
               if (context.mounted) Navigator.pop(context);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -406,15 +384,10 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   }
 }
 
-// ============================================================
-// 統計項目元件
-// ============================================================
-
 class _StatItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-
   const _StatItem({required this.icon, required this.label, required this.value});
 
   @override
@@ -429,10 +402,6 @@ class _StatItem extends StatelessWidget {
     );
   }
 }
-
-// ============================================================
-// 裝備新增/編輯 Dialog
-// ============================================================
 
 class _GearLibraryItemDialog extends StatefulWidget {
   final GearLibraryItem? item;
@@ -530,7 +499,6 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
 
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSaving = true);
     try {
       await widget.onSave(
@@ -544,10 +512,6 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
     }
   }
 }
-
-// ============================================================
-// 雲端同步 Dialog
-// ============================================================
 
 class _CloudSyncDialog extends StatefulWidget {
   const _CloudSyncDialog();
@@ -577,7 +541,6 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
               '【同步說明】\n• 上傳：覆蓋雲端資料 (以您的帳號儲存)\n• 下載：覆蓋本地資料',
               style: TextStyle(fontSize: 11, color: Colors.grey),
             ),
-            // 結果訊息
             if (_resultMessage != null) ...[
               const SizedBox(height: 16),
               Container(
@@ -594,7 +557,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
                       color: _isSuccess == true ? Colors.green : Colors.red,
                       size: 20,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(height: 8),
                     Expanded(
                       child: Text(
                         _resultMessage!,
@@ -634,8 +597,8 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   }
 
   Future<void> _handleUpload() async {
-    // 檢查離線模式
-    final isOffline = context.read<SettingsProvider>().isOfflineMode;
+    final settingsState = context.read<SettingsCubit>().state;
+    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
     if (isOffline) {
       ToastService.warning('離線模式，無法上傳');
       return;
@@ -647,8 +610,10 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     });
 
     try {
-      final provider = context.read<GearLibraryProvider>();
-      final items = provider.allItems;
+      final cubit = context.read<GearLibraryCubit>();
+      final state = cubit.state;
+      if (state is! GearLibraryLoaded) throw Exception('未載入裝備庫');
+      final items = state.items;
 
       if (items.isEmpty) {
         setState(() {
@@ -676,14 +641,13 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   }
 
   Future<void> _handleDownload() async {
-    // 檢查離線模式
-    final isOffline = context.read<SettingsProvider>().isOfflineMode;
+    final settingsState = context.read<SettingsCubit>().state;
+    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
     if (isOffline) {
       ToastService.warning('離線模式，無法下載');
       return;
     }
 
-    // 確認覆蓋
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -719,9 +683,8 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
         return;
       }
 
-      // 匯入到本地
-      final provider = context.read<GearLibraryProvider>();
-      await provider.importItems(result.data!);
+      final cubit = context.read<GearLibraryCubit>();
+      await cubit.importItems(result.data!);
 
       setState(() {
         _isLoading = false;

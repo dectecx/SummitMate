@@ -13,18 +13,20 @@ import '../../infrastructure/tools/hive_service.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
-// import '../providers/itinerary_provider.dart'; // Removed
+import '../providers/itinerary_provider.dart'; // Restored
 // import '../providers/trip_provider.dart'; // Removed
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../providers/message_provider.dart';
-import '../providers/settings_provider.dart';
+// import '../providers/settings_provider.dart'; // Removed by migration
 import '../providers/poll_provider.dart';
 import '../providers/auth_provider.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
 import '../cubits/itinerary/itinerary_state.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../widgets/app_drawer.dart';
@@ -58,11 +60,22 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settingsProvider = context.read<SettingsProvider>();
-      // Callbacks handled by BlocListener in build
+      final settingsCubit = context.read<SettingsCubit>();
 
       // 初次啟動顯示歡迎畫面 (選擇是否進入教學)
-      if (!settingsProvider.hasSeenOnboarding) {
+      // Check state safely
+      final state = settingsCubit.state;
+      bool hasSeenOnboarding = false;
+      String currentUsername = '';
+      String currentAvatar = '';
+
+      if (state is SettingsLoaded) {
+        hasSeenOnboarding = state.hasSeenOnboarding;
+        currentUsername = state.username;
+        currentAvatar = state.avatar;
+      }
+
+      if (!hasSeenOnboarding) {
         Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) _showWelcomeDialog(context);
         });
@@ -73,15 +86,22 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       // Async fetch user profile
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
         if (mounted && profile != null) {
-          _usageTrackingService!.start(settingsProvider.username, userId: profile.uuid);
+          _usageTrackingService!.start(currentUsername, userId: profile.uuid);
 
-          // Sync SettingsProvider if valid profile found on launch
+          // Sync SettingsCubit if valid profile found on launch
           // This ensures AppDrawer shows correct info if local settings verify from cloud session
-          if (profile.displayName.isNotEmpty && settingsProvider.username != profile.displayName) {
-            settingsProvider.updateUsername(profile.displayName);
+          bool needUpdate = false;
+          if (profile.displayName.isNotEmpty && currentUsername != profile.displayName) {
+            needUpdate = true;
           }
-          if (profile.avatar.isNotEmpty && settingsProvider.avatar != profile.avatar) {
-            settingsProvider.setAvatar(profile.avatar);
+          if (profile.avatar.isNotEmpty && currentAvatar != profile.avatar) {
+            needUpdate = true;
+          }
+
+          if (needUpdate) {
+            // If local settings differ from cloud session, update local
+            // Assuming session is truth (or at least we want to sync them)
+            settingsCubit.updateProfile(profile.displayName, profile.avatar);
           }
         }
       });
@@ -106,7 +126,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             onPressed: () {
               Navigator.pop(dialogContext);
               // 略過教學：標記完成
-              context.read<SettingsProvider>().completeOnboarding();
+              context.read<SettingsCubit>().completeOnboarding();
             },
             child: const Text('直接開始 (略過)'),
           ),
@@ -127,8 +147,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     // 監聽 SyncCubit 狀態以更新 UI 與重載資料
@@ -140,7 +158,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
               // 同步成功，重載資料
               context.read<ItineraryProvider>().reload();
               context.read<MessageProvider>().reload();
-              context.read<SettingsProvider>().updateLastSyncTime(state.timestamp);
+              context.read<SettingsCubit>().updateLastSyncTime(state.timestamp);
               ToastService.success(state.message);
             } else if (state is SyncFailure) {
               ToastService.error(state.errorMessage);
@@ -169,10 +187,15 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                   final Trip? activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
 
                   final isLoading = messageProvider.isSyncing || pollProvider.isLoading || isTripLoading;
-                  final isOffline = context.watch<SettingsProvider>().isOfflineMode;
-                  
+
+                  // Use SettingsCubit for offline mode
+                  final settingsState = context.watch<SettingsCubit>().state;
+                  final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+
                   // Extract Itinerary State
-                  final bool isEditMode = itineraryState is ItineraryLoaded ? (itineraryState as ItineraryLoaded).isEditMode : false;
+                  final bool isEditMode = itineraryState is ItineraryLoaded
+                      ? (itineraryState as ItineraryLoaded).isEditMode
+                      : false;
 
                   // 如果沒有行程，顯示空狀態 (Import / Create)
                   if (!hasTrips && !isTripLoading) {
@@ -340,8 +363,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-
-
   /// 顯示行程選擇對話框 (從雲端匯入)
   Future<void> _showTripSelectionDialog(BuildContext context) async {
     final tripCubit = context.read<TripCubit>();
@@ -454,7 +475,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     String selectedDay = 'D1';
     final state = itineraryCubit.state;
     if (state is ItineraryLoaded) {
-       selectedDay = state.selectedDay;
+      selectedDay = state.selectedDay;
     }
 
     final result = await showDialog<Map<String, dynamic>>(
@@ -468,7 +489,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       if (tripState is TripLoaded && tripState.activeTrip != null) {
         tripId = tripState.activeTrip!.id;
       }
-      
+
       final item = ItineraryItem(
         uuid: const Uuid().v4(), // Correct property name is uuid, not id
         tripId: tripId,
@@ -611,14 +632,26 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _showSettingsDialog(BuildContext context) async {
-    final settingsProvider = context.read<SettingsProvider>();
+    final settingsCubit = context.read<SettingsCubit>();
     final authProvider = context.read<AuthProvider>();
 
-    final controller = TextEditingController(text: settingsProvider.username);
+    // Get current state values safely
+    String currentUsername = '';
+    String currentAvatar = '🐻';
+    DateTime? lastSyncTime;
+
+    final state = settingsCubit.state;
+    if (state is SettingsLoaded) {
+      currentUsername = state.username;
+      currentAvatar = state.avatar;
+      lastSyncTime = state.lastSyncTime;
+    }
+
+    final controller = TextEditingController(text: currentUsername);
 
     // Avatar 選擇邏輯
     final List<String> avatarOptions = ['🐻', '🦊', '🐼', '🐨', '🦁', '🐸', '🐢', '🐙'];
-    String selectedAvatar = settingsProvider.avatar;
+    String selectedAvatar = currentAvatar;
 
     PackageInfo? packageInfo;
     try {
@@ -632,229 +665,235 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (innerContext, setState) {
           final versionStr = packageInfo != null ? 'v${packageInfo.version}' : '';
-          final lastSyncStr = settingsProvider.lastSyncTimeFormatted ?? '尚未同步';
 
-          return AlertDialog(
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('設定'),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+          String lastSyncStr = '尚未同步';
+          if (lastSyncTime != null) {
+            lastSyncStr =
+                '${lastSyncTime.month}/${lastSyncTime.day} ${lastSyncTime.hour}:${lastSyncTime.minute.toString().padLeft(2, '0')}';
+          }
+
+          return BlocBuilder<SettingsCubit, SettingsState>(
+            bloc: settingsCubit,
+            builder: (context, state) {
+              bool isOfflineMode = false;
+              if (state is SettingsLoaded) {
+                isOfflineMode = state.isOfflineMode;
+              }
+
+              return AlertDialog(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(versionStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                    Text('同步: $lastSyncStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                  ],
-                ),
-              ],
-            ),
-            content: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 320),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ====== 暱稱與頭像區塊 ======
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          // 點擊切換頭像 (簡單循環或選單)
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (ctx) => Container(
-                              padding: const EdgeInsets.all(16),
-                              child: Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: 16,
-                                runSpacing: 16,
-                                children: avatarOptions.map((icon) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() => selectedAvatar = icon);
-                                      Navigator.pop(ctx);
-                                    },
-                                    child: CircleAvatar(
-                                      radius: 24,
-                                      backgroundColor: selectedAvatar == icon
-                                          ? Theme.of(context).colorScheme.primaryContainer
-                                          : Colors.grey.shade100,
-                                      child: Text(icon, style: const TextStyle(fontSize: 24)),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
-                              radius: 36,
-                              child: Text(selectedAvatar, style: const TextStyle(fontSize: 32)),
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(dialogContext).colorScheme.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.edit, size: 12, color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: controller,
-                      decoration: const InputDecoration(
-                        labelText: '暱稱',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    // Guest mode indicator
-                    if (authProvider.user == null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange.shade200),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '訪客模式：資料僅儲存於本機，登入後可同步到雲端',
-                                style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () async {
-                          final newName = controller.text.trim();
-                          if (newName.isNotEmpty) {
-                            // 1. 同步到雲端 (如果已登入)
-                            if (authProvider.isAuthenticated && !authProvider.isOffline) {
-                              try {
-                                final result = await authProvider.updateProfile(
-                                  displayName: newName,
-                                  avatar: selectedAvatar,
-                                );
-                                if (!result.isSuccess) {
-                                  ToastService.error('雲端同步失敗: ${result.errorMessage}');
-                                  // 雖然雲端失敗，但仍允許更新本地? 或者阻擋?
-                                  // User request: "要能夠update雲端"
-                                  // Let's warn but proceed with local update for UX
-                                } else {
-                                  ToastService.success('個人資料已同步更新');
-                                }
-                              } catch (e) {
-                                ToastService.error('更新失敗: $e');
-                              }
-                            }
-
-                            // 2. 更新本地設定 (SettingsProvider)
-                            // 確保本地 UI (App Bar 等) 也能即時更新
-                            settingsProvider.updateProfile(newName, selectedAvatar);
-
-                            if (context.mounted) Navigator.pop(context);
-                          }
-                        },
-                        child: const Text('儲存設定'),
-                      ),
-                    ),
-                    const Divider(height: 32),
-
-                    // ====== 離線模式 ======
-                    Card(
-                      color: settingsProvider.isOfflineMode ? Colors.orange.shade50 : null,
-                      child: SwitchListTile(
-                        title: const Text('離線模式'),
-                        subtitle: Text(
-                          settingsProvider.isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
-                          style: TextStyle(
-                            color: settingsProvider.isOfflineMode ? Colors.orange.shade800 : null,
-                            fontSize: 12,
-                          ),
-                        ),
-                        value: settingsProvider.isOfflineMode,
-                        onChanged: (value) async {
-                          await settingsProvider.setOfflineMode(value);
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                    const Divider(height: 32),
-
-                    // ====== 重看教學引導 ======
-                    ListTile(
-                      leading: const Icon(Icons.help_outline),
-                      title: const Text('重看教學引導'),
-                      onTap: () async {
-                        if (innerContext.mounted) {
-                          Navigator.pop(innerContext);
-                          Future.delayed(const Duration(milliseconds: 300), () {
-                            if (mounted) {
-                              _showTutorial(context);
-                            }
-                          });
-                        }
-                      },
-                    ),
-                    const Divider(height: 32),
-
-                    // ====== 開發資訊 (縮合區塊) ======
-                    ExpansionTile(
-                      leading: const Icon(Icons.developer_mode),
-                      title: const Text('開發資訊'),
-                      childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    const Text('設定'),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        ListTile(
-                          leading: const Icon(Icons.delete_forever, size: 20, color: Colors.red),
-                          title: const Text('清除本地資料庫', style: TextStyle(color: Colors.red)),
-                          subtitle: const Text('選擇要刪除的資料類型', style: TextStyle(fontSize: 11)),
-                          onTap: () async {
-                            Navigator.pop(dialogContext); // 先關閉設定對話框
-                            _showClearDataDialog(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.article_outlined, size: 20),
-                          title: const Text('查看日誌'),
-                          onTap: () {
-                            Navigator.pop(dialogContext);
-                            _showLogViewer(context);
-                          },
-                        ),
-                        const ListTile(
-                          leading: Icon(Icons.code, size: 20),
-                          title: Text('開發者資訊'),
-                          subtitle: Text('by 哲', style: TextStyle(fontStyle: FontStyle.italic)),
-                        ),
+                        Text(versionStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text('同步: $lastSyncStr', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                       ],
                     ),
                   ],
                 ),
-              ),
-            ),
-            actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
+                content: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 320),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ====== 暱稱與頭像區塊 ======
+                        Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (ctx) => Container(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Wrap(
+                                    alignment: WrapAlignment.center,
+                                    spacing: 16,
+                                    runSpacing: 16,
+                                    children: avatarOptions.map((icon) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() => selectedAvatar = icon);
+                                          Navigator.pop(ctx);
+                                        },
+                                        child: CircleAvatar(
+                                          radius: 24,
+                                          backgroundColor: selectedAvatar == icon
+                                              ? Theme.of(context).colorScheme.primaryContainer
+                                              : Colors.grey.shade100,
+                                          child: Text(icon, style: const TextStyle(fontSize: 24)),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: Theme.of(dialogContext).colorScheme.primaryContainer,
+                                  radius: 36,
+                                  child: Text(selectedAvatar, style: const TextStyle(fontSize: 32)),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(dialogContext).colorScheme.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.edit, size: 12, color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: controller,
+                          decoration: const InputDecoration(
+                            labelText: '暱稱',
+                            prefixIcon: Icon(Icons.person),
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        // Guest mode indicator
+                        if (authProvider.user == null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.orange.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '訪客模式：資料僅儲存於本機，登入後可同步到雲端',
+                                    style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: () async {
+                              final newName = controller.text.trim();
+                              if (newName.isNotEmpty) {
+                                // 1. 同步到雲端 (如果已登入)
+                                if (authProvider.isAuthenticated && !authProvider.isOffline) {
+                                  try {
+                                    final result = await authProvider.updateProfile(
+                                      displayName: newName,
+                                      avatar: selectedAvatar,
+                                    );
+                                    if (!result.isSuccess) {
+                                      ToastService.error('雲端同步失敗: ${result.errorMessage}');
+                                    } else {
+                                      ToastService.success('個人資料已同步更新');
+                                    }
+                                  } catch (e) {
+                                    ToastService.error('更新失敗: $e');
+                                  }
+                                }
+
+                                // 2. 更新本地設定
+                                settingsCubit.updateProfile(newName, selectedAvatar);
+
+                                if (context.mounted) Navigator.pop(context);
+                              }
+                            },
+                            child: const Text('儲存設定'),
+                          ),
+                        ),
+                        const Divider(height: 32),
+
+                        // ====== 離線模式 ======
+                        Card(
+                          color: isOfflineMode ? Colors.orange.shade50 : null,
+                          child: SwitchListTile(
+                            title: const Text('離線模式'),
+                            subtitle: Text(
+                              isOfflineMode ? '已暫停自動同步' : '同步功能正常運作中',
+                              style: TextStyle(color: isOfflineMode ? Colors.orange.shade800 : null, fontSize: 12),
+                            ),
+                            value: isOfflineMode,
+                            onChanged: (value) async {
+                              await settingsCubit.toggleOfflineMode();
+                            },
+                          ),
+                        ),
+                        const Divider(height: 32),
+
+                        // ====== 重看教學引導 ======
+                        ListTile(
+                          leading: const Icon(Icons.help_outline),
+                          title: const Text('重看教學引導'),
+                          onTap: () async {
+                            if (innerContext.mounted) {
+                              Navigator.pop(innerContext);
+                              Future.delayed(const Duration(milliseconds: 300), () {
+                                if (mounted) {
+                                  _showTutorial(context);
+                                }
+                              });
+                            }
+                          },
+                        ),
+                        const Divider(height: 32),
+
+                        // ====== 開發資訊 (縮合區塊) ======
+                        ExpansionTile(
+                          leading: const Icon(Icons.developer_mode),
+                          title: const Text('開發資訊'),
+                          childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.delete_forever, size: 20, color: Colors.red),
+                              title: const Text('清除本地資料庫', style: TextStyle(color: Colors.red)),
+                              subtitle: const Text('選擇要刪除的資料類型', style: TextStyle(fontSize: 11)),
+                              onTap: () async {
+                                Navigator.pop(dialogContext);
+                                _showClearDataDialog(context);
+                              },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.article_outlined, size: 20),
+                              title: const Text('查看日誌'),
+                              onTap: () {
+                                Navigator.pop(dialogContext);
+                                _showLogViewer(context);
+                              },
+                            ),
+                            const ListTile(
+                              leading: Icon(Icons.code, size: 20),
+                              title: Text('開發者資訊'),
+                              subtitle: Text('by 哲', style: TextStyle(fontStyle: FontStyle.italic)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
+              );
+            },
           );
         },
       ),
@@ -876,7 +915,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _handleCloudUpload(BuildContext context) async {
     // 檢查離線模式
-    final settingsIsOffline = context.read<SettingsProvider>().isOfflineMode;
+    final state = context.read<SettingsCubit>().state;
+    final settingsIsOffline = state is SettingsLoaded && state.isOfflineMode;
     if (settingsIsOffline) {
       ScaffoldMessenger.of(
         context,

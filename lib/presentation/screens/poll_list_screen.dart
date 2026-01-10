@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/poll_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/poll.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';
-import '../../presentation/providers/settings_provider.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
+import '../cubits/poll/poll_cubit.dart';
+import '../cubits/poll/poll_state.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
@@ -20,21 +23,15 @@ class PollListScreen extends StatefulWidget {
 class _PollListScreenState extends State<PollListScreen> {
   // 0: Active, 1: Ended, 2: My
   int _selectedFilter = 0;
-  bool _isInit = true;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_isInit) {
-      final isOffline = context.read<SettingsProvider>().isOfflineMode;
-      if (!isOffline) {
-        Future.microtask(() => context.read<PollProvider>().fetchPolls(isAuto: true));
-      }
-      _isInit = false;
-    }
+  void initState() {
+    super.initState();
+    // Trigger initial fetch if needed
+    context.read<PollCubit>().fetchPolls(isAuto: true);
   }
 
-  Future<void> _confirmAndDelete(BuildContext context, PollProvider provider, Poll poll) async {
+  Future<void> _confirmAndDelete(BuildContext context, PollCubit cubit, Poll poll) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -52,20 +49,15 @@ class _PollListScreenState extends State<PollListScreen> {
     );
 
     if (confirm == true && context.mounted) {
-      final isSuccess = await provider.deletePoll(pollId: poll.id);
-      if (context.mounted) {
-        if (isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已刪除')));
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('刪除失敗: ${provider.error}'), backgroundColor: Colors.red));
-        }
-      }
+      await cubit.deletePoll(pollId: poll.id);
+      // Feedback handled by cubit (ToastService usually) or we can show snackbar here if needed.
+      // PollCubit doesn't return success bool strictly, but handles errors via state or toasts.
+      // Assuming Cubit handles toast for success/failure or we listen to state.
+      // For now, relies on Cubit's ToastService.
     }
   }
 
-  Widget _buildListTile(BuildContext context, Poll poll) {
+  Widget _buildListTile(BuildContext context, Poll poll, String currentUserId) {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -95,7 +87,7 @@ class _PollListScreenState extends State<PollListScreen> {
                   Icon(Icons.person, size: 14, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    poll.creatorId == context.read<PollProvider>().currentUserId ? '我' : poll.creatorId,
+                    poll.creatorId == currentUserId ? '我' : poll.creatorId,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -121,17 +113,12 @@ class _PollListScreenState extends State<PollListScreen> {
       ),
       onTap: () async {
         await Navigator.push(context, MaterialPageRoute(builder: (_) => PollDetailScreen(poll: poll)));
-        if (context.mounted) {
-          final isOffline = context.read<SettingsProvider>().isOfflineMode;
-          if (!isOffline) {
-            context.read<PollProvider>().fetchPolls();
-          }
-        }
+        // No need to manually refetch if PollDetailScreen uses Cubit and updates state.
       },
     );
   }
 
-  Future<void> _confirmAndClose(BuildContext context, PollProvider provider, Poll poll) async {
+  Future<void> _confirmAndClose(BuildContext context, PollCubit cubit, Poll poll) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -149,38 +136,54 @@ class _PollListScreenState extends State<PollListScreen> {
     );
 
     if (confirm == true && context.mounted) {
-      final isSuccess = await provider.closePoll(pollId: poll.id);
-      if (context.mounted) {
-        if (isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('投票已結束')));
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('結束失敗: ${provider.error}'), backgroundColor: Colors.red));
-        }
-      }
+      await cubit.closePoll(pollId: poll.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PollProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading && provider.polls.isEmpty) {
+    return BlocConsumer<PollCubit, PollState>(
+      listener: (context, state) {
+        if (state is PollError) {
+          // Show error toast if needed, but usually Cubit handles it or we show UI error
+          // If we want to show a snackbar for critical errors not handled by ToastService
+        }
+      },
+      builder: (context, state) {
+        if (state is PollLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (provider.error != null && provider.polls.isEmpty) {
+        List<Poll> polls = [];
+        String currentUserId = '';
+        DateTime? lastSyncTime;
+        bool isSyncing = false;
+        String? errorMessage;
+
+        if (state is PollLoaded) {
+          polls = state.polls;
+          currentUserId = state.currentUserId;
+          lastSyncTime = state.lastSyncTime;
+          isSyncing = state.isSyncing;
+        } else if (state is PollError) {
+          errorMessage = state.message;
+          // We might still have polls if we persist them?
+          // PollState doesn't define polls in PollError.
+          // In PollCubit implementation, on error it might emit PollError without data.
+          // Ideally we should keep data. But based on current simple implementation:
+        }
+
+        if (errorMessage != null && polls.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline, size: 48, color: Colors.grey),
                 const SizedBox(height: 16),
-                Text('載入失敗: ${provider.error}'),
+                Text('載入失敗: $errorMessage'),
                 const SizedBox(height: 16),
                 FilledButton.icon(
-                  onPressed: () => provider.fetchPolls(),
+                  onPressed: () => context.read<PollCubit>().fetchPolls(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('重試'),
                 ),
@@ -192,17 +195,21 @@ class _PollListScreenState extends State<PollListScreen> {
         List<Poll> filteredPolls;
         switch (_selectedFilter) {
           case 0:
-            filteredPolls = provider.activePolls;
+            filteredPolls = polls.where((p) => p.isActive).toList();
             break;
           case 1:
-            filteredPolls = provider.endedPolls;
+            filteredPolls = polls.where((p) => !p.isActive).toList();
             break;
           case 2:
-            filteredPolls = provider.myPolls;
+            filteredPolls = polls.where((p) => p.creatorId == currentUserId).toList();
             break;
           default:
-            filteredPolls = provider.activePolls;
+            filteredPolls = polls.where((p) => p.isActive).toList();
         }
+
+        // Sort: Active/Ended usually by date desc?
+        // provider used getters which sorted. "Newest first"
+        filteredPolls.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         return Scaffold(
           body: Column(
@@ -235,18 +242,19 @@ class _PollListScreenState extends State<PollListScreen> {
                     ),
                     const SizedBox(width: 8),
                     // Sync time + refresh button
-                    Consumer<SettingsProvider>(
-                      builder: (context, settings, child) {
+                    BlocBuilder<SettingsCubit, SettingsState>(
+                      builder: (context, settingsState) {
+                        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
                         return Material(
-                          color: settings.isOfflineMode ? Colors.grey.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+                          color: isOffline ? Colors.grey.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                           child: InkWell(
                             onTap: () {
-                              if (settings.isOfflineMode) {
+                              if (isOffline) {
                                 ToastService.warning('離線模式無法同步');
                                 return;
                               }
-                              provider.fetchPolls();
+                              context.read<PollCubit>().fetchPolls();
                             },
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
@@ -255,15 +263,22 @@ class _PollListScreenState extends State<PollListScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    settings.isOfflineMode
+                                    isOffline
                                         ? '離線模式'
-                                        : (provider.lastSyncTime != null
-                                              ? DateFormat('MM/dd HH:mm').format(provider.lastSyncTime!.toLocal())
+                                        : (lastSyncTime != null
+                                              ? DateFormat('MM/dd HH:mm').format(lastSyncTime.toLocal())
                                               : '未同步'),
                                     style: const TextStyle(fontSize: 11, color: Colors.grey),
                                   ),
                                   const SizedBox(width: 4),
-                                  Icon(Icons.sync, size: 16, color: settings.isOfflineMode ? Colors.grey : Colors.grey),
+                                  if (isSyncing)
+                                    const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  else
+                                    Icon(Icons.sync, size: 16, color: isOffline ? Colors.grey : Colors.grey),
                                 ],
                               ),
                             ),
@@ -292,30 +307,31 @@ class _PollListScreenState extends State<PollListScreen> {
                         ),
                       )
                     : RefreshIndicator(
-                        onRefresh: () => provider.fetchPolls(),
+                        onRefresh: () => context.read<PollCubit>().fetchPolls(),
                         child: ListView.builder(
                           itemCount: filteredPolls.length,
                           padding: const EdgeInsets.only(bottom: 80), // Fab space
                           itemBuilder: (context, index) {
                             final poll = filteredPolls[index];
-                            final isCreator = poll.creatorId == provider.currentUserId;
+                            final isCreator = poll.creatorId == currentUserId;
 
                             if (!isCreator) {
                               return Card(
                                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: _buildListTile(context, poll),
+                                child: _buildListTile(context, poll, currentUserId),
                               );
                             }
 
                             // Define actions based on poll status
                             final actions = <Widget>[];
-                            final isOffline = context.read<SettingsProvider>().isOfflineMode;
+                            final settingsState = context.read<SettingsCubit>().state;
+                            final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
                             if (!isOffline && poll.isActive) {
                               actions.add(
                                 SlidableAction(
                                   onPressed: (context) async {
-                                    await _confirmAndClose(context, provider, poll);
+                                    await _confirmAndClose(context, context.read<PollCubit>(), poll);
                                   },
                                   backgroundColor: Colors.orange,
                                   foregroundColor: Colors.white,
@@ -330,7 +346,7 @@ class _PollListScreenState extends State<PollListScreen> {
                               actions.add(
                                 SlidableAction(
                                   onPressed: (context) async {
-                                    await _confirmAndDelete(context, provider, poll);
+                                    await _confirmAndDelete(context, context.read<PollCubit>(), poll);
                                   },
                                   backgroundColor: const Color(0xFFFE4A49),
                                   foregroundColor: Colors.white,
@@ -348,7 +364,10 @@ class _PollListScreenState extends State<PollListScreen> {
                             if (isOffline) {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: Card(margin: EdgeInsets.zero, child: _buildListTile(context, poll)),
+                                child: Card(
+                                  margin: EdgeInsets.zero,
+                                  child: _buildListTile(context, poll, currentUserId),
+                                ),
                               );
                             }
 
@@ -362,7 +381,10 @@ class _PollListScreenState extends State<PollListScreen> {
                                   extentRatio: actions.length * 0.25,
                                   children: actions,
                                 ),
-                                child: Card(margin: EdgeInsets.zero, child: _buildListTile(context, poll)),
+                                child: Card(
+                                  margin: EdgeInsets.zero,
+                                  child: _buildListTile(context, poll, currentUserId),
+                                ),
                               ),
                             );
                           },
@@ -371,17 +393,18 @@ class _PollListScreenState extends State<PollListScreen> {
               ),
             ],
           ),
-          floatingActionButton: Consumer<SettingsProvider>(
-            builder: (context, settings, child) {
+          floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
+            builder: (context, settingsState) {
+              final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
               return FloatingActionButton.extended(
                 onPressed: () {
-                  if (settings.isOfflineMode) {
+                  if (isOffline) {
                     ToastService.warning('離線模式無法發起投票');
                     return;
                   }
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatePollScreen()));
                 },
-                backgroundColor: settings.isOfflineMode ? Colors.grey : null,
+                backgroundColor: isOffline ? Colors.grey : null,
                 icon: const Icon(Icons.add),
                 label: const Text('發起投票'),
               );

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/auth_state.dart'
     show AuthState, AuthLoading, AuthAuthenticated, AuthError, AuthRequiresVerification;
-import '../../providers/settings_provider.dart';
+import '../../cubits/settings/settings_cubit.dart';
 import 'verification_screen.dart';
 
 /// Register Screen
@@ -75,7 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (state is AuthAuthenticated) {
           // Direct login after register (rare but possible)
           if (state.userName != null) {
-            context.read<SettingsProvider>().updateUsername(state.userName!);
+            context.read<SettingsCubit>().updateUsername(state.userName!);
           }
           if (mounted) Navigator.pop(context);
         } else if (state is AuthRequiresVerification) {

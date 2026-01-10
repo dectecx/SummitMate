@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/di.dart';
@@ -9,11 +10,14 @@ import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../data/repositories/interfaces/i_gear_set_repository.dart';
 import '../../data/models/gear_key_record.dart';
 import '../../infrastructure/tools/toast_service.dart';
-import '../providers/settings_provider.dart';
-import '../providers/gear_provider.dart';
-import '../providers/gear_library_provider.dart';
-import '../providers/trip_provider.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 import '../providers/meal_provider.dart';
+import '../cubits/gear/gear_cubit.dart';
+import '../cubits/gear/gear_state.dart';
+import '../cubits/gear_library/gear_library_cubit.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
@@ -51,7 +55,8 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_hasFetched) {
-      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      final state = context.read<SettingsCubit>().state;
+      final isOffline = state is SettingsLoaded && state.isOfflineMode;
       if (!isOffline) {
         _hasFetched = true;
         _fetchGearSets();
@@ -89,10 +94,51 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   }
 
   Future<void> _showUploadDialog() async {
-    final settingsProvider = context.read<SettingsProvider>();
-    final gearRepo = getIt<IGearRepository>();
+    final settingsState = context.read<SettingsCubit>().state;
+    final String username = settingsState is SettingsLoaded ? settingsState.settings.username : 'Anonymous';
 
-    final items = gearRepo.getAllItems();
+    // We can get items from GearCubit active state or simpler getting from repo for current trip
+    final tripState = context.read<TripCubit>().state;
+    String? currentTripId;
+    if (tripState is TripLoaded) {
+      currentTripId = tripState.activeTrip?.id;
+    }
+
+    if (currentTripId == null) {
+      ToastService.warning('請先選擇行程');
+      return;
+    }
+
+    // Get items for current trip
+    final gearRepo = getIt<IGearRepository>();
+    // Note: gearRepo.getAllItems() might return ALL. We should filter.
+    // Assuming gearRepo has method to get by trip or we filter manually.
+    // If we look at GearCubit logic, it filters loadGear(tripId).
+    // Let's rely on GearCubit state if it matches active trip, else manual fetch.
+    final gearCubit = context.read<GearCubit>();
+    // List<GearItem> items; // Removed unused declaration
+    List<GearItem> items = []; // Initialize to empty list to be safe or just use local var in branches
+    // Actually, items is used later in line 137 check and 151.
+    // So it logic must be accessible.
+    // The previous code had:
+    // List<GearItem> items;
+    // if (...) { ... items = ... } else { ... items = ... }
+    // If analyzer says 'Dead code' at 115, maybe it thinks initialization is guaranteed or not needed?
+    // Let's just initialize it.
+    if (gearCubit.currentTripId == currentTripId && gearCubit.state is GearLoaded) {
+      // Use loaded items
+      try {
+        items = (gearCubit.state as GearLoaded).items;
+      } catch (e) {
+        // Fallback
+        final all = gearRepo.getAllItems();
+        items = all.where((i) => i.tripId == currentTripId).toList();
+      }
+    } else {
+      final all = gearRepo.getAllItems();
+      items = all.where((i) => i.tripId == currentTripId).toList();
+    }
+
     if (items.isEmpty) {
       ToastService.info('請先新增裝備再上傳');
       return;
@@ -108,12 +154,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       context: context,
       builder: (context) => GearUploadDialog(
         items: items,
-        author: settingsProvider.username,
+        author: username,
         onUpload: (title, visibility, key) async {
           final uploadResult = await _repository.uploadGearSet(
-            tripId: context.read<TripProvider>().activeTripId ?? '',
+            tripId: currentTripId ?? '',
             title: title,
-            author: settingsProvider.username,
+            author: username,
             visibility: visibility,
             items: items,
             meals: context.read<MealProvider>().dailyPlans,
@@ -205,10 +251,15 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   /// 將裝備加入我的裝備庫
   Future<void> _addToGearLibrary(List<GearItem> items) async {
     try {
-      final libraryProvider = context.read<GearLibraryProvider>();
+      final libraryCubit = context.read<GearLibraryCubit>();
       int added = 0;
       for (final item in items) {
-        await libraryProvider.addItem(name: item.name, weight: item.weight, category: item.category);
+        await libraryCubit.addItem(
+          name: item.name,
+          weight: item.weight,
+          category: item.category,
+          // assuming library add item doesn't need ID, generates new one
+        );
         added++;
       }
       ToastService.success('已加入 $added 件裝備到我的庫');
@@ -219,31 +270,21 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   Future<void> _importGearItems(List<GearItem> items) async {
     try {
-      // 使用 DI 容器中的 Repository
-      final gearRepo = getIt<IGearRepository>();
-      final tripId = context.read<TripProvider>().activeTripId;
+      final tripCubit = context.read<TripCubit>();
+      final tripState = tripCubit.state;
+      String? tripId;
+      if (tripState is TripLoaded) {
+        tripId = tripState.activeTrip?.id;
+      }
 
       if (tripId == null) {
         ToastService.error('無法匯入：請先選擇行程');
         return;
       }
 
-      // 清除現有裝備 (只清除當前行程的)
-      await gearRepo.clearByTripId(tripId);
+      // Use GearCubit to replace items
+      await context.read<GearCubit>().replaceItems(items);
 
-      // 匯入新裝備 (帶入當前 tripId)
-      for (final item in items) {
-        await gearRepo.addItem(
-          GearItem(tripId: tripId, name: item.name, weight: item.weight, category: item.category, isChecked: false),
-        );
-      }
-
-      // 刷新 GearProvider 以同步 UI
-      if (mounted) {
-        context.read<GearProvider>().reload();
-      }
-
-      ToastService.success('已匯入 ${items.length} 件裝備');
       if (mounted) {
         Navigator.pop(context, true);
       }
@@ -254,7 +295,8 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isOffline = context.watch<SettingsProvider>().isOfflineMode;
+    final settingsState = context.watch<SettingsCubit>().state;
+    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
     return Scaffold(
       appBar: AppBar(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/settings_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubits/settings/settings_cubit.dart';
 import '../../infrastructure/tools/toast_service.dart';
 
 /// Onboarding 畫面 (設定暱稱與頭像)
@@ -29,10 +29,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return;
     }
 
-    final settings = context.read<SettingsProvider>();
-    await settings.updateProfile(name, _selectedAvatar);
-
-    // Configured -> HomeScreen will automatically switch to MainNavigationScreen
+    try {
+      await context.read<SettingsCubit>().updateProfile(name, _selectedAvatar);
+      // Configured -> HomeScreen will automatically switch to MainNavigationScreen
+    } catch (e) {
+      ToastService.error('設定失敗: $e');
+    }
   }
 
   @override

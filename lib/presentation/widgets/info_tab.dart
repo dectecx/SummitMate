@@ -7,7 +7,8 @@ import '../../core/constants.dart';
 import '../../domain/interfaces/i_weather_service.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import '../../data/models/weather_data.dart';
-import '../providers/settings_provider.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 import '../screens/map/map_screen.dart';
 import 'zoomable_image.dart';
 import 'weather/weather_alert_card.dart';
@@ -39,7 +40,8 @@ class InfoTabState extends State<InfoTab> {
   Future<void> _refreshWeather({bool force = false}) async {
     // 離線模式禁止手動更新
     if (force) {
-      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      final settingsState = context.read<SettingsCubit>().state;
+      final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
       if (isOffline) {
         ToastService.warning('離線模式無法更新天氣資料');
         return;

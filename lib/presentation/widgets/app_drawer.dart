@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import '../providers/auth_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../providers/auth_provider.dart';
-// import '../providers/trip_provider.dart'; // Removed
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../providers/itinerary_provider.dart';
-import '../providers/message_provider.dart';
-import '../providers/settings_provider.dart';
-import '../providers/gear_provider.dart';
-import '../providers/gear_library_provider.dart';
-import '../providers/poll_provider.dart';
-import '../providers/map_provider.dart';
-
+// import '../providers/settings_provider.dart'; // Removed
+import '../cubits/gear/gear_cubit.dart';
+import '../cubits/gear_library/gear_library_cubit.dart';
+import '../cubits/message/message_cubit.dart';
+import '../cubits/poll/poll_cubit.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
+import '../cubits/auth/auth_cubit.dart';
 import '../providers/meal_provider.dart';
 import '../screens/trip_list_screen.dart';
 import '../../data/models/trip.dart';
@@ -127,69 +126,49 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildAuthSection(BuildContext context) {
-    return Consumer2<AuthProvider, SettingsProvider>(
-      builder: (context, authProvider, settingsProvider, _) {
-        final isGuest = authProvider.user == null; // Guest mode = no user profile
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
+        // Use SettingsCubit for user info
+        final username = settingsState is SettingsLoaded ? settingsState.username : '...';
+        final avatar = settingsState is SettingsLoaded ? settingsState.avatar : '🐻';
 
-        if (!isGuest) {
-          // Logged in - show user info and logout
-          return Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 20)),
+        return Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            // Check guest mode using AuthProvider (or could check AuthCubit)
+            if (authProvider.user == null) {
+              return ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('訪客模式'),
+                subtitle: const Text('登入以同步資料'),
+                trailing: TextButton(
+                  onPressed: () {
+                    // Logout to login screen
+                    context.read<AuthCubit>().logout();
+                  },
+                  child: const Text('登入'),
                 ),
-                title: Text(settingsProvider.username, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(authProvider.user?.email ?? '', style: const TextStyle(fontSize: 12)),
-              ),
-              ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('登出', style: TextStyle(color: Colors.red)),
-                onTap: () => _handleLogout(context, authProvider),
-              ),
-            ],
-          );
-        } else {
-          // Not logged in - show guest indicator and login button
-          return Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey.shade200,
-                  child: Text(settingsProvider.avatar, style: const TextStyle(fontSize: 20)),
+              );
+            }
+
+            return Column(
+              children: [
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    child: Text(avatar, style: const TextStyle(fontSize: 20)),
+                  ),
+                  title: Text(username, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(authProvider.user?.email ?? '', style: const TextStyle(fontSize: 12)),
                 ),
-                title: Row(
-                  children: [
-                    Text(
-                      settingsProvider.username.isNotEmpty ? settingsProvider.username : '訪客',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(4)),
-                      child: Text('訪客模式', style: TextStyle(fontSize: 10, color: Colors.orange.shade800)),
-                    ),
-                  ],
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text('登出', style: TextStyle(color: Colors.red)),
+                  onTap: () => _handleLogout(context, authProvider),
                 ),
-                subtitle: const Text('資料僅儲存於本機', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ),
-              ListTile(
-                leading: const Icon(Icons.login),
-                title: const Text('登入 / 註冊'),
-                subtitle: const Text('同步您的行程資料'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () async {
-                  Navigator.pop(context); // Close drawer
-                  // Must logout first to reset auth state to unauthenticated
-                  // This triggers HomeScreen's Consumer to show LoginScreen reactively
-                  await authProvider.logout();
-                },
-              ),
-            ],
-          );
-        }
+              ],
+            );
+          },
+        );
       },
     );
   }
@@ -241,14 +220,13 @@ class AppDrawer extends StatelessWidget {
     // Hive data is preserved for offline access on next login
     if (context.mounted) {
       context.read<TripCubit>().reset();
-      context.read<ItineraryProvider>().reset();
-      context.read<MessageProvider>().reset();
-      context.read<GearProvider>().reset();
-      context.read<GearLibraryProvider>().reset();
-      context.read<PollProvider>().reset();
-      context.read<MapProvider>().reset();
+      context.read<ItineraryProvider>().reset(); // Pending migration?
+      context.read<GearCubit>().reset();
+      context.read<GearLibraryCubit>().reset();
+      context.read<MessageCubit>().reset();
+      context.read<PollCubit>().reset();
       context.read<MealProvider>().reset();
-      context.read<SettingsProvider>().reset();
+      // Settings managed by Cubit, persistence is desired
     }
 
     // Clear session token only
@@ -286,7 +264,7 @@ class AppDrawer extends StatelessWidget {
           // 重新載入相關 Provider
           if (context.mounted) {
             context.read<ItineraryProvider>().reload();
-            context.read<MessageProvider>().reload();
+            context.read<MessageCubit>().reset();
             Navigator.pop(context); // 關閉抽屜
           }
         } else {

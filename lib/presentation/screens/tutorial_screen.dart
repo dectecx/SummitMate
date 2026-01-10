@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/di.dart';
+import '../../infrastructure/mock/mock_connectivity_service.dart';
+import '../../infrastructure/mock/mock_poll_service.dart';
 import '../../infrastructure/tools/tutorial_service.dart';
-import '../../infrastructure/services/poll_service.dart';
 import '../widgets/tutorial_overlay.dart';
 import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
@@ -26,19 +27,17 @@ import '../../data/repositories/mock/mock_gear_library_repository.dart';
 import '../../data/repositories/mock/mock_poll_repository.dart';
 import '../../data/repositories/mock/mock_settings_repository.dart';
 
-// Providers
-import '../providers/itinerary_provider.dart';
-import '../providers/message_provider.dart';
-import '../providers/trip_provider.dart';
-import '../providers/gear_provider.dart';
-import '../providers/gear_library_provider.dart';
-import '../providers/poll_provider.dart';
-import '../providers/settings_provider.dart';
+// Providers & Cubits
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/gear/gear_cubit.dart';
+import '../cubits/gear_library/gear_library_cubit.dart';
+import '../cubits/itinerary/itinerary_cubit.dart';
+import '../cubits/sync/sync_cubit.dart';
+import '../cubits/message/message_cubit.dart';
+import '../cubits/poll/poll_cubit.dart';
+import '../cubits/settings/settings_cubit.dart';
 
 /// 教學引導畫面
-///
-/// 使用 Mock Repository 注入的 Provider，復用真實 Widget，
-/// 確保教學畫面與主程式 UI 一致，且不會觸發任何真實 API。
 class TutorialScreen extends StatefulWidget {
   const TutorialScreen({super.key});
 
@@ -47,16 +46,10 @@ class TutorialScreen extends StatefulWidget {
 }
 
 class _TutorialScreenState extends State<TutorialScreen> {
-  /// 當前顯示的頁籤索引
   int _currentTab = 0;
-
-  /// 是否處於編輯模式（用於行程頁籤）
   bool _isEditMode = false;
-
-  /// Tutorial Overlay Entry
   OverlayEntry? _tutorialEntry;
 
-  // GlobalKeys 供教學 Overlay 定位目標元素
   final _keyTabItinerary = GlobalKey();
   final _keyTabGear = GlobalKey();
   final _keyTabMessage = GlobalKey();
@@ -69,64 +62,75 @@ class _TutorialScreenState extends State<TutorialScreen> {
   final _keyInfoTimeMap = GlobalKey();
   final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
 
-  // Mock Repositories
   late final MockItineraryRepository _mockItineraryRepo;
-  late final MockMessageRepository _mockMessageRepo;
   late final MockTripRepository _mockTripRepo;
-  late final MockGearRepository _mockGearRepo;
-  late final MockGearLibraryRepository _mockGearLibraryRepo;
-  late final MockPollRepository _mockPollRepo;
-  late final MockSettingsRepository _mockSettingsRepo;
 
-  // Mock Providers (使用 Mock Repository 初始化)
-  late final ItineraryProvider _mockItineraryProvider;
-  late final MessageProvider _mockMessageProvider;
-  late final TripProvider _mockTripProvider;
-  late final GearProvider _mockGearProvider;
-  late final GearLibraryProvider _mockGearLibraryProvider;
-  late final PollProvider _mockPollProvider;
-  late final SettingsProvider _mockSettingsProvider;
+  // Mock Cubits/Providers
+  late final TripCubit _mockTripCubit;
+  late final ItineraryCubit _mockItineraryCubit;
+  late final SyncCubit _mockSyncCubit;
+  late final GearCubit _mockGearCubit;
+  late final GearLibraryCubit _mockGearLibraryCubit;
+  late final MessageCubit _mockMessageCubit;
+  late final PollCubit _mockPollCubit;
+  late final SettingsCubit _mockSettingsCubit;
 
   @override
   void initState() {
     super.initState();
 
-    // 1. Push a new scope to override services
     getIt.pushNewScope(scopeName: 'tutorial_scope');
-
-    // 2. Register Mock Services
     getIt.registerSingleton<IWeatherService>(MockWeatherService());
     getIt.registerSingleton<IGeolocatorService>(MockGeolocatorService());
     getIt.registerSingleton<ISyncService>(MockSyncService());
 
-    // 3. Setup Providers with Mocks
     _mockItineraryRepo = MockItineraryRepository();
-    _mockMessageRepo = MockMessageRepository();
     _mockTripRepo = MockTripRepository();
-    _mockGearRepo = MockGearRepository();
-    _mockGearLibraryRepo = MockGearLibraryRepository();
-    _mockPollRepo = MockPollRepository();
-    _mockSettingsRepo = MockSettingsRepository();
 
-    _mockTripProvider = TripProvider(repository: _mockTripRepo);
-    _mockItineraryProvider = ItineraryProvider(repository: _mockItineraryRepo, tripRepository: _mockTripRepo);
-    _mockMessageProvider = MessageProvider(repository: _mockMessageRepo, tripRepository: _mockTripRepo);
-    _mockGearProvider = GearProvider(repository: _mockGearRepo);
-    _mockGearLibraryProvider = GearLibraryProvider(
-      repository: _mockGearLibraryRepo,
-      gearRepository: _mockGearRepo,
+    // Init Cubits
+    _mockTripCubit = TripCubit(tripRepository: _mockTripRepo, syncService: MockSyncService());
+    _mockTripCubit.loadTrips();
+
+    _mockItineraryCubit = ItineraryCubit(repository: _mockItineraryRepo, tripRepository: _mockTripRepo);
+
+    _mockSyncCubit = SyncCubit(syncService: MockSyncService());
+
+    _mockGearCubit = GearCubit(repository: MockGearRepository());
+
+    _mockGearLibraryCubit = GearLibraryCubit(
+      repository: MockGearLibraryRepository(),
+      gearRepository: MockGearRepository(),
       tripRepository: _mockTripRepo,
     );
-    _mockPollProvider = PollProvider(
-      pollRepository: _mockPollRepo,
-      // Note: TutorialScreen uses real ConnectivityService since it's read-only
-      prefs: getIt<SharedPreferences>(),
-      pollService: getIt<PollService>(),
-    );
-    _mockSettingsProvider = SettingsProvider(repository: _mockSettingsRepo);
-    _mockGearProvider.setTripId(MockItineraryRepository.mockTripId);
 
-    // 4. Start Tutorial after build
+    _mockMessageCubit = MessageCubit(
+      repository: MockMessageRepository(),
+      tripRepository: _mockTripRepo,
+      syncService: MockSyncService(),
+    );
+
+    _mockSettingsCubit = SettingsCubit(repository: MockSettingsRepository(), prefs: getIt<SharedPreferences>());
+
+    _mockPollCubit = PollCubit(
+      pollService: MockPollService(),
+      pollRepository: MockPollRepository(),
+      connectivity: MockConnectivityService(),
+      prefs: getIt<SharedPreferences>(),
+    );
+
+    // Initial Data Setup
+    Future.microtask(() async {
+      await _mockTripCubit.loadTrips();
+      await _mockTripCubit.setActiveTrip(MockItineraryRepository.mockTripId);
+
+      await _mockItineraryCubit.loadItinerary();
+      await _mockGearCubit.loadGear(MockItineraryRepository.mockTripId);
+      await _mockGearLibraryCubit.loadItems();
+      await _mockMessageCubit.loadMessages();
+      await _mockPollCubit.loadPolls();
+      await _mockSettingsCubit.loadSettings();
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startTutorial();
     });
@@ -134,22 +138,20 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
   @override
   void dispose() {
-    // Pop the scope to restore real services
     getIt.popScope();
-
     _tutorialEntry?.remove();
-    // Dispose mock providers
-    _mockTripProvider.dispose();
-    _mockItineraryProvider.dispose();
-    _mockMessageProvider.dispose();
-    _mockGearProvider.dispose();
-    _mockGearLibraryProvider.dispose();
-    _mockPollProvider.dispose();
-    _mockSettingsProvider.dispose();
+    _mockTripCubit.close();
+    _mockItineraryCubit.close();
+    _mockSyncCubit.close();
+    _mockGearCubit.close();
+    _mockGearLibraryCubit.close();
+    _mockMessageCubit.close();
+    _mockPollCubit.close();
+    _mockSettingsCubit.close();
+
     super.dispose();
   }
 
-  /// 啟動教學導覽
   void _startTutorial() {
     _tutorialEntry = OverlayEntry(
       builder: (context) => TutorialOverlay(
@@ -168,9 +170,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
             Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentTab = 0);
             });
-            if (_isEditMode) {
-              setState(() => _isEditMode = false);
-            }
+            if (_isEditMode) setState(() => _isEditMode = false);
           },
           onFocusUpload: () async {
             setState(() {
@@ -179,9 +179,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
             });
           },
           onFocusSync: () async {
-            if (_isEditMode) {
-              setState(() => _isEditMode = false);
-            }
+            if (_isEditMode) setState(() => _isEditMode = false);
           },
           onSwitchToGear: () async {
             Future.delayed(const Duration(milliseconds: 400), () {
@@ -223,28 +221,25 @@ class _TutorialScreenState extends State<TutorialScreen> {
     Overlay.of(context).insert(_tutorialEntry!);
   }
 
-  /// 結束教學導覽
   void _finishTutorial() {
     _tutorialEntry?.remove();
     _tutorialEntry = null;
-
-    // 標記教學完成並返回主畫面
-    context.read<SettingsProvider>().completeOnboarding();
+    _mockSettingsCubit.completeOnboarding();
     if (mounted) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    // 使用 MultiProvider 覆蓋全域 Provider，注入 Mock 版本
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider.value(value: _mockTripProvider),
-        ChangeNotifierProvider.value(value: _mockItineraryProvider),
-        ChangeNotifierProvider.value(value: _mockMessageProvider),
-        ChangeNotifierProvider.value(value: _mockGearProvider),
-        ChangeNotifierProvider.value(value: _mockGearLibraryProvider),
-        ChangeNotifierProvider.value(value: _mockPollProvider),
-        ChangeNotifierProvider.value(value: _mockSettingsProvider),
+        BlocProvider<TripCubit>.value(value: _mockTripCubit),
+        BlocProvider<ItineraryCubit>.value(value: _mockItineraryCubit),
+        BlocProvider<SyncCubit>.value(value: _mockSyncCubit),
+        BlocProvider<GearCubit>.value(value: _mockGearCubit),
+        BlocProvider<GearLibraryCubit>.value(value: _mockGearLibraryCubit),
+        BlocProvider<MessageCubit>.value(value: _mockMessageCubit),
+        BlocProvider<PollCubit>.value(value: _mockPollCubit),
+        BlocProvider<SettingsCubit>.value(value: _mockSettingsCubit),
       ],
       child: Builder(
         builder: (context) {
@@ -252,11 +247,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
             appBar: AppBar(
               automaticallyImplyLeading: false,
               leading: Builder(
-                builder: (context) => IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {}, // 教學模式：不執行動作
-                  tooltip: '選單',
-                ),
+                builder: (context) => IconButton(icon: const Icon(Icons.menu), onPressed: () {}, tooltip: '選單'),
               ),
               title: const Text('SummitMate 山友'),
               actions: _buildAppBarActions(context),
@@ -264,7 +255,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
             body: AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: _buildTabContent(_currentTab)),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _currentTab,
-              onDestinationSelected: (_) {}, // 教學模式：禁止手動切換
+              onDestinationSelected: (_) {},
               destinations: [
                 NavigationDestination(
                   key: _keyTabItinerary,
@@ -298,10 +289,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
     );
   }
 
-  /// 建立 AppBar 動作按鈕
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
-      // 行程頁籤的編輯/上傳按鈕
       if (_currentTab == 0) ...[
         IconButton(
           key: _keyBtnEdit,
@@ -314,33 +303,15 @@ class _TutorialScreenState extends State<TutorialScreen> {
             key: _keyBtnUpload,
             icon: const Icon(Icons.cloud_upload_outlined),
             tooltip: '上傳至雲端',
-            onPressed: () {}, // 教學模式：不執行
+            onPressed: () {},
           ),
-        if (!_isEditMode)
-          IconButton(
-            icon: const Icon(Icons.map_outlined),
-            tooltip: '查看地圖',
-            onPressed: () {}, // 教學模式：不執行
-          ),
+        if (!_isEditMode) IconButton(icon: const Icon(Icons.map_outlined), tooltip: '查看地圖', onPressed: () {}),
       ],
-      // 互動頁籤的同步按鈕
-      if (_currentTab == 2)
-        IconButton(
-          key: _keyBtnSync,
-          icon: const Icon(Icons.sync),
-          tooltip: '同步',
-          onPressed: () {}, // 教學模式：不執行
-        ),
-      // 設定按鈕
-      IconButton(
-        icon: const Icon(Icons.settings),
-        tooltip: '設定',
-        onPressed: () {}, // 教學模式：不執行
-      ),
+      if (_currentTab == 2) IconButton(key: _keyBtnSync, icon: const Icon(Icons.sync), tooltip: '同步', onPressed: () {}),
+      IconButton(icon: const Icon(Icons.settings), tooltip: '設定', onPressed: () {}),
     ];
   }
 
-  /// 建立頁籤內容（復用真實 Widget）
   Widget _buildTabContent(int index) {
     switch (index) {
       case 0:

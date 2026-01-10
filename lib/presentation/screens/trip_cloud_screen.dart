@@ -7,7 +7,8 @@ import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../core/di.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import '../providers/trip_provider.dart';
-import '../providers/settings_provider.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 
 /// 雲端行程同步畫面
 class TripCloudScreen extends StatefulWidget {
@@ -31,7 +32,8 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     super.didChangeDependencies();
     // Only fetch once and not in offline mode
     if (!_hasFetched) {
-      final isOffline = context.read<SettingsProvider>().isOfflineMode;
+      final state = context.read<SettingsCubit>().state;
+      final isOffline = state is SettingsLoaded && state.isOfflineMode;
       if (!isOffline) {
         _hasFetched = true;
         _getCloudTrips();
@@ -145,8 +147,8 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final settingsProvider = context.watch<SettingsProvider>();
-    final isOffline = settingsProvider.isOfflineMode;
+    final settingsState = context.watch<SettingsCubit>().state;
+    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
     return Scaffold(
       appBar: AppBar(

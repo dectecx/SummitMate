@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/poll.dart';
-import '../providers/poll_provider.dart';
-import '../../presentation/providers/settings_provider.dart';
+import '../cubits/poll/poll_cubit.dart';
+import '../cubits/poll/poll_state.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 import '../../infrastructure/tools/toast_service.dart';
 
 class PollDetailScreen extends StatefulWidget {
@@ -29,19 +31,15 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   @override
   void didUpdateWidget(PollDetailScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 若資料已更新，同步本地狀態
-    // Only update if myVotes changed, to avoid overwriting user's current unsaved selection
-    // 假設 poll.myVotes 為可信來源
-    if (widget.poll.myVotes.length != oldWidget.poll.myVotes.length ||
-        !widget.poll.myVotes.every((element) => oldWidget.poll.myVotes.contains(element))) {
-      // Ideally we might want to sync, but if user is editing, it's tricky.
-      // For now, let's just keep user's local state unless valid submission happened.
-    }
+    // Logic to sync myVotes if updated externally?
+    // Since we re-use widget.poll mostly or fetch from cubit, we might want to respect local edits.
+    // If widget.poll.myVotes changes (e.g. from sync), we should update _selectedOptionIds unless submitting?
+    // For simplicity, we'll keep local state isolated until submit.
   }
 
-  void _toggleOption(String optionId) {
+  void _toggleOption(String optionId, bool allowMultiple) {
     setState(() {
-      if (widget.poll.allowMultipleVotes) {
+      if (allowMultiple) {
         if (_selectedOptionIds.contains(optionId)) {
           _selectedOptionIds.remove(optionId);
         } else {
@@ -54,30 +52,24 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     });
   }
 
-  Future<void> _submitVote() async {
+  Future<void> _submitVote(PollCubit cubit, String pollId) async {
     if (_selectedOptionIds.isEmpty) {
       ToastService.info('請至少選擇一個選項');
       return;
     }
 
     setState(() => _isSubmitting = true);
-    final provider = context.read<PollProvider>();
 
     try {
-      final isSuccess = await provider.votePoll(pollId: widget.poll.id, optionIds: _selectedOptionIds.toList());
-
-      if (isSuccess) {
-        ToastService.success('投票成功');
-        if (mounted) Navigator.pop(context); // Optional: go back or stay to see results
-      } else {
-        ToastService.error(provider.error ?? '投票失敗');
-      }
+      await cubit.votePoll(pollId: pollId, optionIds: _selectedOptionIds.toList());
+      // Cubit handles toasts (via fetchPolls mostly).
+      if (mounted) Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
-  Future<void> _addOption() async {
+  Future<void> _addOption(PollCubit cubit, String pollId) async {
     final controller = TextEditingController();
     final result = await showDialog<String>(
       context: context,
@@ -97,15 +89,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
     if (result != null && result.isNotEmpty) {
       setState(() => _isSubmitting = true);
-      final provider = context.read<PollProvider>();
       try {
-        final isSuccess = await provider.addOption(pollId: widget.poll.id, text: result);
-        if (isSuccess) {
-          ToastService.success('已新增選項: $result');
-          // No need to pop, UI will update via Consumer/Parent
-        } else {
-          ToastService.error(provider.error ?? '新增失敗');
-        }
+        await cubit.addOption(pollId: pollId, text: result);
+        // Toast handled by cubit.
       } finally {
         if (mounted) setState(() => _isSubmitting = false);
       }
@@ -114,23 +100,27 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the poll instance to use.
-    // We should use the one from Provider effectively if we want real-time updates while on this screen.
-    // But widget.poll is passed in. Let's rely on Consumer in parent or just use widget.poll if parent rebuilds.
-    // For simplicity, we use widget.poll which is updated when parent rebuilds.
-    // Actually, to get updates, we should probably find the poll from provider by ID.
-    // But since Screen is usually pushed with a snapshot, let's wrap body in Consumer to find fresh data.
+    return BlocConsumer<PollCubit, PollState>(
+      listener: (context, state) {
+        // error handling handled by cubit usually
+      },
+      builder: (context, state) {
+        final settingsState = context.watch<SettingsCubit>().state;
+        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
-    return Consumer<PollProvider>(
-      builder: (context, provider, child) {
-        final isOffline = context.select<SettingsProvider, bool>((s) => s.isOfflineMode);
-
-        // Find the fresh poll object from provider
-        final freshPoll = provider.polls.firstWhere((p) => p.id == widget.poll.id, orElse: () => widget.poll);
+        Poll freshPoll = widget.poll;
+        if (state is PollLoaded) {
+          try {
+            freshPoll = state.polls.firstWhere((p) => p.id == widget.poll.id);
+          } catch (_) {
+            // Poll not found in list (maybe deleted?), stick to widget.poll or show error?
+            // sticking to widget.poll allows viewing what we have.
+          }
+        }
 
         return Scaffold(
           appBar: AppBar(title: const Text('投票詳情')),
-          body: _isSubmitting
+          body: _isSubmitting || (state is PollLoading && state is! PollLoaded)
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -181,7 +171,6 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         '發起人: ${freshPoll.creatorId}  •  ${DateFormat('yyyy/MM/dd HH:mm').format(freshPoll.createdAt)}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
                       ),
-
                       if (freshPoll.description.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(freshPoll.description, style: Theme.of(context).textTheme.bodyMedium),
@@ -206,7 +195,6 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             ),
                         ],
                       ),
-
                       if (isOffline) ...[
                         const SizedBox(height: 16),
                         Container(
@@ -230,9 +218,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           ),
                         ),
                       ],
-
                       const Divider(height: 32),
-
                       // Options List
                       ListView.separated(
                         shrinkWrap: true,
@@ -243,18 +229,16 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           final option = freshPoll.options[index];
                           final isSelected = _selectedOptionIds.contains(option.id);
                           final percentage = freshPoll.totalVotes > 0 ? option.voteCount / freshPoll.totalVotes : 0.0;
-
-                          // Voters text
                           // option.voters is List<Map<String, dynamic>>
                           final votersList = option.voters.map((v) => v['user_name'] ?? v['user_id']).join(', ');
-
                           final canInteract = freshPoll.isActive && !isOffline;
-
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               InkWell(
-                                onTap: canInteract ? () => _toggleOption(option.id) : null,
+                                onTap: canInteract
+                                    ? () => _toggleOption(option.id, freshPoll.allowMultipleVotes)
+                                    : null,
                                 borderRadius: BorderRadius.circular(8),
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
@@ -331,7 +315,6 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                             style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.grey),
                                           ),
                                           const Spacer(),
-
                                           if (freshPoll.isActive && option.voteCount == 0 && !isOffline)
                                             InkWell(
                                               onTap: () async {
@@ -355,10 +338,11 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                                 if (confirm == true) {
                                                   setState(() => _isSubmitting = true);
                                                   try {
-                                                    await provider.deleteOption(optionId: option.id);
-                                                    ToastService.success('選項已刪除');
-                                                  } catch (e) {
-                                                    ToastService.error(e.toString());
+                                                    await context.read<PollCubit>().deleteOption(
+                                                      pollId: freshPoll.id,
+                                                      optionId: option.id,
+                                                    );
+                                                    // Toast handled by cubit.
                                                   } finally {
                                                     setState(() => _isSubmitting = false);
                                                   }
@@ -385,9 +369,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           );
                         },
                       ),
-
                       const SizedBox(height: 32),
-
                       // Action Buttons
                       if (freshPoll.isActive)
                         Row(
@@ -395,7 +377,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             if (freshPoll.isAllowAddOption) ...[
                               Expanded(
                                 child: OutlinedButton.icon(
-                                  onPressed: isOffline ? null : _addOption,
+                                  onPressed: isOffline
+                                      ? null
+                                      : () => _addOption(context.read<PollCubit>(), freshPoll.id),
                                   icon: const Icon(Icons.add),
                                   label: const Text('新增選項'),
                                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
@@ -406,7 +390,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             Expanded(
                               flex: 2,
                               child: FilledButton.icon(
-                                onPressed: isOffline ? null : _submitVote,
+                                onPressed: isOffline
+                                    ? null
+                                    : () => _submitVote(context.read<PollCubit>(), freshPoll.id),
                                 icon: const Icon(Icons.check),
                                 label: const Text('送出投票'),
                                 style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
@@ -414,9 +400,10 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                             ),
                           ],
                         ),
-
                       // Management Actions (Visible to Creator)
-                      if (true) ...[
+                      // Logic: freshPoll.creatorId needed. But to check if I am creator, I need my ID.
+                      // PollState has currentUserId if loaded.
+                      if (state is PollLoaded && freshPoll.creatorId == state.currentUserId) ...[
                         const SizedBox(height: 24),
                         const Divider(),
                         const SizedBox(height: 16),
@@ -451,10 +438,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                         if (confirm == true) {
                                           setState(() => _isSubmitting = true);
                                           try {
-                                            await provider.closePoll(pollId: freshPoll.id);
-                                            ToastService.success('投票已關閉');
-                                          } catch (e) {
-                                            ToastService.error(e.toString());
+                                            await context.read<PollCubit>().closePoll(pollId: freshPoll.id);
                                           } finally {
                                             setState(() => _isSubmitting = false);
                                           }
@@ -495,12 +479,10 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                                       if (confirm == true) {
                                         setState(() => _isSubmitting = true);
                                         try {
-                                          await provider.deletePoll(pollId: freshPoll.id);
-                                          ToastService.success('投票已刪除');
+                                          await context.read<PollCubit>().deletePoll(pollId: freshPoll.id);
                                           if (mounted) Navigator.pop(context);
-                                        } catch (e) {
-                                          ToastService.error(e.toString());
-                                          setState(() => _isSubmitting = false);
+                                        } finally {
+                                          if (mounted) setState(() => _isSubmitting = false);
                                         }
                                       }
                                     },

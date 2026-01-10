@@ -159,7 +159,15 @@ lib/
 │   │   ├── poll_provider.dart
 │   │   └── auth_provider.dart
 │   ├── cubits/                        # Cubit (事件驅動/中等複雜狀態)
-│   │   └── (規劃中)
+│   │   ├── auth/                      # Auth State Management
+│   │   │   ├── auth_cubit.dart
+│   │   │   └── auth_state.dart
+│   │   ├── sync/                      # Sync State Management
+│   │   │   ├── sync_cubit.dart
+│   │   │   └── sync_state.dart
+│   │   └── trip/                      # Trip State Management
+│   │       ├── trip_cubit.dart
+│   │       └── trip_state.dart
 │   ├── screens/                       # 畫面
 │   │   ├── main_navigation_screen.dart
 │   │   ├── trip_cloud_screen.dart
@@ -292,22 +300,24 @@ class TripRepository implements ITripRepository {
 
 | 方案         | 適用場景                       | 採用狀態    |
 | ------------ | ------------------------------ | ----------- |
-| **Provider** | 簡單狀態、CRUD                 | ✅ 使用中   |
-| **Cubit**    | 事件驅動、中等複雜、需要狀態機 | ✅ 使用中   |
-| **BLoC**     | 複雜事件流                     | ❌ 暫不採用 |
-| **Riverpod** | 編譯時安全                     | ❌ 暫不採用 |
+| **Provider** | 簡單狀態、Legacy Migration     | ⚠️ 遷移中 (逐步移除) |
+| **Cubit**    | 主要狀態管理                   | ✅ 主流採用         |
+| **BLoC**     | 複雜事件流                     | ❌ 暫不採用         |
+| **Riverpod** | 編譯時安全                     | ❌ 暫不採用         |
 
-### Provider 使用場景
+### Provider 使用場景 (Legacy)
 
-- 簡單的 CRUD 操作 (Settings, Gear, Meal)
-- 單一資料流 (Trip, Itinerary, Message)
-- 不需複雜狀態轉換
+- `ItineraryProvider`: 待遷移
+- `MessageProvider`: 待遷移
+- `PollProvider`: 待遷移
+- `GearProvider`: 待遷移
+- `SettingsProvider`: 待遷移
 
-### Cubit 使用場景 (規劃中)
+### Cubit 使用場景 (Active)
 
-- 複雜的認證流程 (Login/Logout/Refresh Token)
-- 需要狀態機管理的功能 (同步狀態: Idle → Syncing → Success/Error)
-- 多步驟表單或嚮導
+- **AuthCubit**: 認證流程 (Login/Logout/Refresh Token)
+- **SyncCubit**: 同步狀態 (Idle → Syncing → Success/Error)
+- **TripCubit**: 行程管理 (Load/Add/Import/Delete/ActiveSelection)
 
 ---
 
