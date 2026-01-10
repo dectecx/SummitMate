@@ -225,6 +225,8 @@ lib/
 | `TutorialService`         | 工具服務 | 教學導覽                  | -                          |
 | `UsageTrackingService`    | 工具服務 | Web 使用追蹤              | -                          |
 
+> **Note**: 上述 Service 已遷移至 `lib/infrastructure/` 目錄。
+
 ---
 
 ## 2.2 Data Layer 架構 (Offline-First)
@@ -307,17 +309,20 @@ class TripRepository implements ITripRepository {
 
 ### Provider 使用場景 (Legacy)
 
-- `ItineraryProvider`: 待遷移
-- `MessageProvider`: 待遷移
-- `PollProvider`: 待遷移
-- `GearProvider`: 待遷移
-- `SettingsProvider`: 待遷移
+- `AuthProvider`: ⚠️ 待遷移 (Bridge 模式共存中)
+- 其他 Provider (`Trip`, `Itinerary`, `Message`, `Poll`, `Gear`, `Settings`) 已全數遷移至 Cubit。
 
 ### Cubit 使用場景 (Active)
 
 - **AuthCubit**: 認證流程 (Login/Logout/Refresh Token)
 - **SyncCubit**: 同步狀態 (Idle → Syncing → Success/Error)
 - **TripCubit**: 行程管理 (Load/Add/Import/Delete/ActiveSelection)
+- **ItineraryCubit**: 行程節點管理
+- **GearCubit / GearLibraryCubit**: 裝備管理
+- **MessageCubit**: 留言板
+- **PollCubit**: 投票功能
+- **SettingsCubit**: 設定與個人資料
+- **MapCubit / OfflineMapCubit**: 地圖與離線圖磚
 
 ---
 
@@ -958,13 +963,9 @@ class GasSyncServiceImpl implements ISyncService {
 
 ### 架構演進討論
 
-#### 目前架構
+#### 目前架構 (Clean Architecture)
 
-本專案目前採用 **簡化版 Clean Architecture**，將 `domain/` 與 `infrastructure/` 的概念平鋪至 `services/interfaces/` 與 `services/` 下。
-
-#### 潛在演進方向
-
-若專案規模持續成長，可考慮演進至完整分層：
+本專案已完成 **Clean Architecture** 分層遷移 (Phase 6 Completed)。
 
 ```
 lib/
@@ -973,29 +974,29 @@ lib/
 │   │   ├── i_auth_service.dart
 │   │   └── ...
 │   └── usecases/                    # 業務邏輯 (可選)
-│       └── sync_trip_usecase.dart
 ├── infrastructure/                  # 基礎設施層 (Impl)
 │   ├── clients/
 │   │   └── gas_api_client.dart
-│   └── services/
-│       ├── gas_auth_service.dart
-│       └── ...
+│   ├── services/
+│   │   ├── gas_auth_service.dart
+│   │   └── ...
+│   ├── mock/
+│   └── tools/
 ├── data/
 │   ├── datasources/
 │   ├── models/
 │   └── repositories/
 ├── presentation/
-│   ├── providers/
-│   ├── cubits/
+│   ├── providers/                   # Legacy (AuthProvider only)
+│   ├── cubits/                      # Active State Management
 │   ├── screens/
 │   └── widgets/
 └── main.dart
 ```
 
-**考量因素**:
+**架構優勢**:
+- ✅ 職責分離：Domain 定義 `Interface`，Infrastructure 負責 `Implementation`。
+- ✅ 測試性：各層皆可透過 Interface 進行 Mock 測試。
+- ✅ 擴展性：未來可輕鬆替換底層實作 (如 GAS -> AWS) 而不影響業務邏輯。
 
-- ✅ 優點：更清晰的職責分離、更好的測試性
-- ⚠️ 缺點：增加檔案數量、可能過度設計
-- 📌 建議：當 `services/` 超過 20 個檔案時再考慮
-
-> 目前維持現有結構，待需求成長再評估。
+> 目前架構已穩定，後續開發請遵循此分層原則。
