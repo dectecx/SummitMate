@@ -114,6 +114,7 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// Sync Implementation (Autonomous)
+  @override
   Future<void> sync(String tripId) async {
     if (_connectivity.isOffline) {
       LogService.warning('Offline mode, skipping message sync', source: _source);

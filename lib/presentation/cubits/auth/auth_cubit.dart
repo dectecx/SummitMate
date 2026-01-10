@@ -203,6 +203,29 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// 更新個人資料
+  Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
+    LogService.info('Updating profile: $displayName', source: _source);
+    // Note: We don't emit AuthLoading here to avoid blocking UI during a setting update if handled by dialog
+    try {
+      final result = await _authService.updateProfile(displayName: displayName, avatar: avatar);
+      if (result.isSuccess && result.user != null) {
+        _emitAuthenticated(
+          result.user!.uuid,
+          result.user!.displayName,
+          result.user!.email,
+          result.user!.avatar,
+          false,
+          isOffline: result.isOffline,
+        );
+      }
+      return result;
+    } catch (e) {
+      LogService.error('Update profile failed: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UPDATE_FAILED', errorMessage: e.toString());
+    }
+  }
+
   /// 發送已認證狀態並啟動追蹤
   void _emitAuthenticated(
     String userId,

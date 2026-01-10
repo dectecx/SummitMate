@@ -98,7 +98,7 @@ class TripDropdownSelector extends StatelessWidget {
         final currentId = selectedTripId ?? state.activeTrip?.id;
 
         return DropdownButtonFormField<String>(
-          value: currentId,
+          initialValue: currentId,
           decoration: const InputDecoration(labelText: '選擇行程', prefixIcon: Icon(Icons.terrain)),
           items: trips.map((trip) {
             return DropdownMenuItem<String>(

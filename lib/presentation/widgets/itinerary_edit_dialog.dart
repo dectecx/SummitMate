@@ -52,7 +52,7 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
     final isEdit = widget.item != null;
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         final shouldPop = await _checkDismiss();
         if (shouldPop && context.mounted) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 import '../../core/constants.dart';
 import '../../core/gear_helpers.dart';
@@ -468,7 +467,7 @@ class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: const InputDecoration(labelText: '分類'),
                 items: GearCategory.all
                     .map((cat) => DropdownMenuItem(value: cat, child: Text(GearCategoryHelper.getName(cat))))
@@ -683,8 +682,8 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
         return;
       }
 
-      final cubit = context.read<GearLibraryCubit>();
-      await cubit.importItems(result.data!);
+      if (!mounted) return;
+      await context.read<GearLibraryCubit>().importItems(result.data!);
 
       setState(() {
         _isLoading = false;

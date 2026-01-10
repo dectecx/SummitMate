@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart'; // For MealProvider (Legacy)
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants.dart';
@@ -559,7 +558,7 @@ class _GearTabState extends State<GearTab> {
 
               return PopScope(
                 canPop: false,
-                onPopInvoked: (didPop) async {
+                onPopInvokedWithResult: (didPop, result) async {
                   if (didPop) return;
                   final shouldPop = await checkDismiss();
                   if (shouldPop && dialogContext.mounted) Navigator.pop(dialogContext);
@@ -656,7 +655,7 @@ class _GearTabState extends State<GearTab> {
                         ),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
-                          value: selectedCategory,
+                          initialValue: selectedCategory,
                           decoration: const InputDecoration(labelText: '分類'),
                           items: const [
                             DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
@@ -718,6 +717,7 @@ class _GearTabState extends State<GearTab> {
                             } catch (_) {}
                           }
 
+                          if (!context.mounted) return;
                           context.read<GearCubit>().addItem(
                             name: name,
                             weight: weight,
@@ -814,7 +814,7 @@ class _GearTabState extends State<GearTab> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedCategory,
+                    initialValue: selectedCategory,
                     decoration: const InputDecoration(labelText: '分類'),
                     items: const [
                       DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
