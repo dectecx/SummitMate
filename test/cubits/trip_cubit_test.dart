@@ -8,6 +8,7 @@ import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}
+
 class MockSyncService extends Mock implements ISyncService {}
 
 void main() {
@@ -22,7 +23,6 @@ void main() {
       registerFallbackValue(trip1);
     });
 
-
     setUp(() {
       mockTripRepo = MockTripRepository();
       mockSyncService = MockSyncService();
@@ -33,10 +33,7 @@ void main() {
       when(() => mockTripRepo.setActiveTrip(any())).thenAnswer((_) async {});
       when(() => mockTripRepo.deleteTrip(any())).thenAnswer((_) async {});
 
-      tripCubit = TripCubit(
-        tripRepository: mockTripRepo,
-        syncService: mockSyncService,
-      );
+      tripCubit = TripCubit(tripRepository: mockTripRepo, syncService: mockSyncService);
     });
 
     tearDown(() {

@@ -11,7 +11,9 @@ import 'package:summitmate/presentation/cubits/message/message_cubit.dart';
 import 'package:summitmate/presentation/cubits/message/message_state.dart';
 
 class MockMessageRepository extends Mock implements IMessageRepository {}
+
 class MockTripRepository extends Mock implements ITripRepository {}
+
 class MockSyncService extends Mock implements ISyncService {}
 
 void main() {
@@ -30,13 +32,15 @@ void main() {
     );
 
     setUpAll(() {
-      registerFallbackValue(Message(
-        uuid: 'fallback',
-        user: 'fallback',
-        category: 'fallback',
-        content: 'fallback',
-        timestamp: DateTime.now(),
-      ));
+      registerFallbackValue(
+        Message(
+          uuid: 'fallback',
+          user: 'fallback',
+          category: 'fallback',
+          content: 'fallback',
+          timestamp: DateTime.now(),
+        ),
+      );
     });
 
     setUp(() {

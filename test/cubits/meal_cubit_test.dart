@@ -24,9 +24,7 @@ void main() {
       'reset emits MealLoaded with default days',
       build: () => mealCubit,
       act: (cubit) => cubit.reset(),
-      expect: () => [
-        isA<MealLoaded>().having((state) => state.dailyPlans.length, 'dailyPlans length', 3),
-      ],
+      expect: () => [isA<MealLoaded>().having((state) => state.dailyPlans.length, 'dailyPlans length', 3)],
     );
 
     blocTest<MealCubit, MealState>(
@@ -37,13 +35,13 @@ void main() {
         // Wait for reset to emit? bloc_test won't capture internal emit if called in constructor?
         // Constructor called reset().
         // Actually constructor calls reset(), so it should emit immediately?
-        // No, Cubit constructor is sync. emit called in constructor? 
+        // No, Cubit constructor is sync. emit called in constructor?
         // MealCubit constructor calls reset().
         // But initial state is MealInitial.
         // If constructor calls reset, initial state *should* be MealLoaded if emit works in constructor?
-        // Cubit: "emit is only allowed after the constructor has finished." - Wait, really? No. 
+        // Cubit: "emit is only allowed after the constructor has finished." - Wait, really? No.
         // Just verify initial state.
-        
+
         // Let's call reset explicitely in tests if needed or rely on constructor.
         // If constructor calls reset(), state might be MealLoaded already?
         // Let's check constructor: `MealCubit() : super(const MealInitial()) { reset(); }`

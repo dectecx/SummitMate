@@ -5,16 +5,13 @@ import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 
 /// 全域錯誤監聽器
-/// 
+///
 /// 負責監聽背景 Cubit 的錯誤狀態並顯示提示 (Toast/Snackbar)
 /// 例如: 同步失敗、網路中斷等
 class GlobalErrorListener extends StatelessWidget {
   final Widget child;
 
-  const GlobalErrorListener({
-    super.key,
-    required this.child,
-  });
+  const GlobalErrorListener({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

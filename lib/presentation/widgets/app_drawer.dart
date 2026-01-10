@@ -228,7 +228,7 @@ class AppDrawer extends StatelessWidget {
       context.read<PollCubit>().reset();
       context.read<MealCubit>().reset();
       // Settings managed by Cubit, persistence is desired
-      
+
       // Clear session token only
       context.read<AuthCubit>().logout();
     }

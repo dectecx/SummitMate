@@ -201,9 +201,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
                       // Extract Itinerary State
-                      final bool isEditMode = itineraryState is ItineraryLoaded
-                          ? itineraryState.isEditMode
-                          : false;
+                      final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
 
                       // 如果沒有行程，顯示空狀態 (Import / Create)
                       if (!hasTrips && !isTripLoading) {

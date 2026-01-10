@@ -26,13 +26,8 @@ class ErrorDialog extends StatelessWidget {
   }) {
     return showDialog(
       context: context,
-      builder: (context) => ErrorDialog(
-        title: title,
-        message: message,
-        onRetry: onRetry,
-        retryText: retryText,
-        onDismiss: onDismiss,
-      ),
+      builder: (context) =>
+          ErrorDialog(title: title, message: message, onRetry: onRetry, retryText: retryText, onDismiss: onDismiss),
     );
   }
 
@@ -57,10 +52,7 @@ class ErrorDialog extends StatelessWidget {
             child: const Text('取消'),
           )
         else
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('關閉'),
-          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('關閉')),
         if (onRetry != null)
           FilledButton(
             onPressed: () {

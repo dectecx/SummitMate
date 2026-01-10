@@ -20,15 +20,21 @@ class GlobalBlocObserver extends BlocObserver {
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
     // Log state changes. Use debug or info depending on verbosity.
-    // Limiting verbose output for 'nextState' if it's too large could be considered, 
+    // Limiting verbose output for 'nextState' if it's too large could be considered,
     // but for now logging simplified change.
-    LogService.debug('onChange: ${bloc.runtimeType}, current: ${change.currentState.runtimeType}, next: ${change.nextState.runtimeType}', source: _source);
+    LogService.debug(
+      'onChange: ${bloc.runtimeType}, current: ${change.currentState.runtimeType}, next: ${change.nextState.runtimeType}',
+      source: _source,
+    );
   }
 
   @override
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
-    LogService.debug('onTransition: ${bloc.runtimeType}, event: ${transition.event}, nextState: ${transition.nextState.runtimeType}', source: _source);
+    LogService.debug(
+      'onTransition: ${bloc.runtimeType}, event: ${transition.event}, nextState: ${transition.nextState.runtimeType}',
+      source: _source,
+    );
   }
 
   @override
