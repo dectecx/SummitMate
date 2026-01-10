@@ -20,6 +20,7 @@ import 'presentation/cubits/settings/settings_cubit.dart';
 // import 'presentation/providers/map_provider.dart'; // Removed
 // import 'presentation/providers/meal_provider.dart'; // Removed
 import 'presentation/screens/home_screen.dart';
+import 'presentation/widgets/global_error_listener.dart';
 
 /// SummitMate 主應用程式
 class SummitMateApp extends StatelessWidget {
@@ -64,6 +65,11 @@ class SummitMateApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
 
+      // 錯誤監聽與 Overlay
+      builder: (context, child) {
+        return GlobalErrorListener(child: child ?? const SizedBox.shrink());
+      },
+      
       // 初始頁面
       home: const HomeScreen(),
     );
