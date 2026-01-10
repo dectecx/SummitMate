@@ -70,152 +70,152 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
             final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '尚未同步';
 
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
+            if (provider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        Widget content;
-        if (provider.allItems.isEmpty) {
-          content = CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.schedule, size: 64, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text('尚無行程資料'),
-                    Text('請下拉刷新以同步行程'),
-                  ],
-                ),
-              ),
-            ],
-          );
-        } else {
-          content = Column(
-            children: [
-              // 天數切換與狀態列
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // 天數選擇器
-                    Expanded(
-                      child: SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(value: 'D0', label: Text('D0')),
-                          ButtonSegment(value: 'D1', label: Text('D1')),
-                          ButtonSegment(value: 'D2', label: Text('D2')),
-                        ],
-                        selected: {provider.selectedDay},
-                        onSelectionChanged: (selected) {
-                          provider.selectDay(selected.first);
-                        },
-                        style: ButtonStyle(
-                          visualDensity: VisualDensity.compact,
-                          padding: WidgetStateProperty.all(EdgeInsets.zero),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
-                        ),
-                      ),
+            Widget content;
+            if (provider.allItems.isEmpty) {
+              content = CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.schedule, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('尚無行程資料'),
+                        Text('請下拉刷新以同步行程'),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    // 更新時間與按鈕 (置右)
-                    Material(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        onTap: () => _manualSync(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                              const SizedBox(width: 4),
-                              if (isSyncing)
-                                const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              else
-                                const Icon(Icons.sync, size: 16, color: Colors.grey),
+                  ),
+                ],
+              );
+            } else {
+              content = Column(
+                children: [
+                  // 天數切換與狀態列
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 天數選擇器
+                        Expanded(
+                          child: SegmentedButton<String>(
+                            segments: const [
+                              ButtonSegment(value: 'D0', label: Text('D0')),
+                              ButtonSegment(value: 'D1', label: Text('D1')),
+                              ButtonSegment(value: 'D2', label: Text('D2')),
                             ],
+                            selected: {provider.selectedDay},
+                            onSelectionChanged: (selected) {
+                              provider.selectDay(selected.first);
+                            },
+                            style: ButtonStyle(
+                              visualDensity: VisualDensity.compact,
+                              padding: WidgetStateProperty.all(EdgeInsets.zero),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
+                            ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        // 更新時間與按鈕 (置右)
+                        Material(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          child: InkWell(
+                            onTap: () => _manualSync(context),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                  const SizedBox(width: 4),
+                                  if (isSyncing)
+                                    const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  else
+                                    const Icon(Icons.sync, size: 16, color: Colors.grey),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-              // 行程列表
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 80), // 避免被 FAB 遮擋
-                  itemCount: provider.currentDayItems.length,
-                  itemBuilder: (context, index) {
-                    final item = provider.currentDayItems[index];
-                    // 計算累積距離
-                    double cumulativeDistance = 0;
-                    for (int i = 0; i <= index; i++) {
-                      cumulativeDistance += provider.currentDayItems[i].distance;
-                    }
+                  // 行程列表
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 80), // 避免被 FAB 遮擋
+                      itemCount: provider.currentDayItems.length,
+                      itemBuilder: (context, index) {
+                        final item = provider.currentDayItems[index];
+                        // 計算累積距離
+                        double cumulativeDistance = 0;
+                        for (int i = 0; i <= index; i++) {
+                          cumulativeDistance += provider.currentDayItems[i].distance;
+                        }
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: item.isCheckedIn ? Colors.green : Theme.of(context).colorScheme.primary,
-                          child: item.isCheckedIn
-                              ? const Icon(Icons.check, color: Colors.white)
-                              : Text('${index + 1}', style: const TextStyle(color: Colors.white)),
-                        ),
-                        title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.isCheckedIn
-                                  ? '✓ 打卡: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
-                                  : '預計: ${item.estTime}',
-                              style: TextStyle(color: item.isCheckedIn ? Colors.green : null),
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: item.isCheckedIn ? Colors.green : Theme.of(context).colorScheme.primary,
+                              child: item.isCheckedIn
+                                  ? const Icon(Icons.check, color: Colors.white)
+                                  : Text('${index + 1}', style: const TextStyle(color: Colors.white)),
                             ),
-                            Text(
-                              '海拔 ${item.altitude}m  |  累計 ${cumulativeDistance.toStringAsFixed(1)} km',
-                              style: Theme.of(context).textTheme.bodySmall,
+                            title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.isCheckedIn
+                                      ? '✓ 打卡: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
+                                      : '預計: ${item.estTime}',
+                                  style: TextStyle(color: item.isCheckedIn ? Colors.green : null),
+                                ),
+                                Text(
+                                  '海拔 ${item.altitude}m  |  累計 ${cumulativeDistance.toStringAsFixed(1)} km',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        isThreeLine: true,
-                        trailing: provider.isEditMode
-                            ? IconButton(
-                                icon: const Icon(Icons.remove_circle, color: Colors.red),
-                                onPressed: () => _confirmDelete(context, provider, item.key),
-                              )
-                            : (item.note.isNotEmpty ? const Icon(Icons.info_outline, size: 20) : null),
-                        onTap: () {
-                          if (provider.isEditMode) {
-                            _showEditDialog(context, provider, item);
-                          } else {
-                            _showCheckInDialog(context, item, provider);
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        }
+                            isThreeLine: true,
+                            trailing: provider.isEditMode
+                                ? IconButton(
+                                    icon: const Icon(Icons.remove_circle, color: Colors.red),
+                                    onPressed: () => _confirmDelete(context, provider, item.key),
+                                  )
+                                : (item.note.isNotEmpty ? const Icon(Icons.info_outline, size: 20) : null),
+                            onTap: () {
+                              if (provider.isEditMode) {
+                                _showEditDialog(context, provider, item);
+                              } else {
+                                _showCheckInDialog(context, item, provider);
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            }
 
-        return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);
+            return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);
           },
         );
       },

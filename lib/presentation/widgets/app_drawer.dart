@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../providers/auth_provider.dart';
-import '../providers/trip_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../providers/auth_provider.dart';
+// import '../providers/trip_provider.dart'; // Removed
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
@@ -10,8 +14,10 @@ import '../providers/gear_provider.dart';
 import '../providers/gear_library_provider.dart';
 import '../providers/poll_provider.dart';
 import '../providers/map_provider.dart';
+
 import '../providers/meal_provider.dart';
 import '../screens/trip_list_screen.dart';
+import '../../data/models/trip.dart';
 
 /// 應用程式側邊欄 (Drawer)
 class AppDrawer extends StatelessWidget {
@@ -20,10 +26,10 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Consumer<TripProvider>(
-        builder: (context, tripProvider, child) {
-          final activeTrip = tripProvider.activeTrip;
-          final allTrips = tripProvider.trips;
+      child: BlocBuilder<TripCubit, TripState>(
+        builder: (context, tripState) {
+          final activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
+          final allTrips = tripState is TripLoaded ? tripState.trips : <Trip>[];
 
           final now = DateTime.now();
           final today = DateTime(now.year, now.month, now.day);
@@ -94,7 +100,7 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ),
                 ),
-                ...ongoingTrips.map((trip) => _buildTripTile(context, trip, tripProvider)),
+                ...ongoingTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
               ],
 
               // 已封存行程
@@ -107,7 +113,7 @@ class AppDrawer extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey),
                   ),
                 ),
-                ...archivedTrips.map((trip) => _buildTripTile(context, trip, tripProvider)),
+                ...archivedTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
               ],
 
               // Auth Section
@@ -234,7 +240,7 @@ class AppDrawer extends StatelessWidget {
     // Reset all Provider states (in-memory only)
     // Hive data is preserved for offline access on next login
     if (context.mounted) {
-      context.read<TripProvider>().reset();
+      context.read<TripCubit>().reset();
       context.read<ItineraryProvider>().reset();
       context.read<MessageProvider>().reset();
       context.read<GearProvider>().reset();
@@ -249,8 +255,8 @@ class AppDrawer extends StatelessWidget {
     await authProvider.logout();
   }
 
-  Widget _buildTripTile(BuildContext context, dynamic trip, TripProvider provider) {
-    final isActive = trip.id == provider.activeTripId;
+  Widget _buildTripTile(BuildContext context, dynamic trip, String? activeTripId) {
+    final isActive = trip.id == activeTripId;
     // Format date: "2024/05/20 - 2024/05/22"
     final start = '${trip.startDate.year}/${trip.startDate.month}/${trip.startDate.day}';
     String end = '';
@@ -276,7 +282,7 @@ class AppDrawer extends StatelessWidget {
       selected: isActive,
       onTap: () async {
         if (!isActive) {
-          await provider.setActiveTrip(trip.id);
+          await context.read<TripCubit>().setActiveTrip(trip.id);
           // 重新載入相關 Provider
           if (context.mounted) {
             context.read<ItineraryProvider>().reload();

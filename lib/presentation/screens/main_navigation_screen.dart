@@ -14,7 +14,9 @@ import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
 import '../providers/itinerary_provider.dart';
-import '../providers/trip_provider.dart';
+// import '../providers/trip_provider.dart'; // Removed
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/poll_provider.dart';
@@ -142,182 +144,188 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       },
       child: Consumer<ItineraryProvider>(
         builder: (context, itineraryProvider, child) {
-        return Consumer2<MessageProvider, PollProvider>(
-          builder: (context, messageProvider, pollProvider, child) {
-            final tripProvider = context.watch<TripProvider>();
-            final hasTrips = tripProvider.hasTrips;
+          return Consumer2<MessageProvider, PollProvider>(
+            builder: (context, messageProvider, pollProvider, child) {
+              return BlocBuilder<TripCubit, TripState>(
+                builder: (context, tripState) {
+                  // final tripProvider = context.watch<TripProvider>(); // Removed
 
-            final isLoading = messageProvider.isSyncing || pollProvider.isLoading || tripProvider.isLoading;
-            final isOffline = context.watch<SettingsProvider>().isOfflineMode;
+                  final bool isTripLoading = tripState is TripLoading;
+                  final bool hasTrips = tripState is TripLoaded && tripState.trips.isNotEmpty;
+                  final Trip? activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
 
-            // 如果沒有行程，顯示空狀態 (Import / Create)
-            if (!hasTrips && !tripProvider.isLoading) {
-              return Scaffold(
-                appBar: AppBar(
-                  title: const Text('SummitMate 山友'),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.info_outline),
-                      tooltip: '歡迎訊息 / 教學',
-                      onPressed: () => _showWelcomeDialog(context),
-                    ),
-                  ],
-                ),
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.hiking, size: 80, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      const Text('歡迎使用 SummitMate', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 32),
-                      FilledButton.icon(
-                        onPressed: () => _showTripSelectionDialog(context),
-                        icon: const Icon(Icons.cloud_download),
-                        label: const Text('從雲端匯入行程'),
+                  final isLoading = messageProvider.isSyncing || pollProvider.isLoading || isTripLoading;
+                  final isOffline = context.watch<SettingsProvider>().isOfflineMode;
+
+                  // 如果沒有行程，顯示空狀態 (Import / Create)
+                  if (!hasTrips && !isTripLoading) {
+                    return Scaffold(
+                      appBar: AppBar(
+                        title: const Text('SummitMate 山友'),
+                        actions: [
+                          IconButton(
+                            icon: const Icon(Icons.info_outline),
+                            tooltip: '歡迎訊息 / 教學',
+                            onPressed: () => _showWelcomeDialog(context),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        onPressed: () => tripProvider.createDefaultTrip(),
-                        icon: const Icon(Icons.add),
-                        label: const Text('建立新行程'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            final scaffold = Scaffold(
-              appBar: AppBar(
-                leading: Builder(
-                  builder: (context) => IconButton(
-                    icon: const Icon(Icons.menu),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                    tooltip: '選單',
-                  ),
-                ),
-                title: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(tripProvider.activeTrip?.name ?? 'SummitMate 山友', overflow: TextOverflow.ellipsis),
-                    ),
-                    if (isOffline) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(10)),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
+                      body: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.cloud_off, size: 12, color: Colors.white),
-                            SizedBox(width: 4),
-                            Text('離線', style: TextStyle(fontSize: 11, color: Colors.white)),
+                            const Icon(Icons.hiking, size: 80, color: Colors.grey),
+                            const SizedBox(height: 16),
+                            const Text('歡迎使用 SummitMate', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
+                            const SizedBox(height: 32),
+                            FilledButton.icon(
+                              onPressed: () => _showTripSelectionDialog(context),
+                              icon: const Icon(Icons.cloud_download),
+                              label: const Text('從雲端匯入行程'),
+                            ),
+                            const SizedBox(height: 16),
+                            OutlinedButton.icon(
+                              onPressed: () => context.read<TripCubit>().createDefaultTrip(),
+                              icon: const Icon(Icons.add),
+                              label: const Text('建立新行程'),
+                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ],
-                ),
-                bottom: isLoading
-                    ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
-                    : null,
-                actions: [
-                  // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
-                  if (_currentIndex == 0) ...[
-                    IconButton(
-                      icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
-                      tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
-                      onPressed: () => itineraryProvider.toggleEditMode(),
-                    ),
-                    if (itineraryProvider.isEditMode)
-                      IconButton(
-                        icon: const Icon(Icons.cloud_upload_outlined),
-                        tooltip: '上傳至雲端',
-                        onPressed: () => _handleCloudUpload(context, itineraryProvider),
-                      ),
-                    if (!itineraryProvider.isEditMode) ...[
-                      IconButton(
-                        icon: const Icon(Icons.map_outlined),
-                        tooltip: '查看地圖',
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
-                      ),
-                    ],
-                  ],
-                  // 設定按鈕
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () => _showSettingsDialog(context),
-                    tooltip: '設定',
-                  ),
-                ],
-              ),
-              drawer: const AppDrawer(), // 使用獨立的 AppDrawer Widget
-              body: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child: _buildTabContent(_currentIndex),
-              ),
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: _currentIndex,
-                onDestinationSelected: (index) {
-                  setState(() => _currentIndex = index);
-                  // 切換分頁時關閉編輯模式
-                  if (itineraryProvider.isEditMode) {
-                    itineraryProvider.toggleEditMode();
+                    );
                   }
-                },
-                destinations: [
-                  const NavigationDestination(
-                    icon: Icon(Icons.schedule),
-                    selectedIcon: Icon(Icons.schedule),
-                    label: '行程',
-                  ),
-                  const NavigationDestination(
-                    icon: Icon(Icons.backpack_outlined),
-                    selectedIcon: Icon(Icons.backpack),
-                    label: '裝備',
-                  ),
-                  const NavigationDestination(
-                    icon: Icon(Icons.forum_outlined),
-                    selectedIcon: Icon(Icons.forum),
-                    label: '互動',
-                  ),
-                  const NavigationDestination(
-                    icon: Icon(Icons.info_outline),
-                    selectedIcon: Icon(Icons.info),
-                    label: '資訊',
-                  ),
-                ],
-              ),
-              floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
-                  ? FloatingActionButton(
-                      onPressed: () => _showAddItineraryDialog(context, itineraryProvider),
-                      child: const Icon(Icons.add),
-                    )
-                  : null,
-            );
 
-            // [Web Support] Responsive Wrapper
-            // 在寬螢幕上限制最大寬度，置中顯示，維持手機版面比例
-            return Center(
-              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: scaffold),
-            );
-          },
-        );
-      },
+                  final scaffold = Scaffold(
+                    appBar: AppBar(
+                      leading: Builder(
+                        builder: (context) => IconButton(
+                          icon: const Icon(Icons.menu),
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                          tooltip: '選單',
+                        ),
+                      ),
+                      title: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(child: Text(activeTrip?.name ?? 'SummitMate 山友', overflow: TextOverflow.ellipsis)),
+                          if (isOffline) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(10)),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.cloud_off, size: 12, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text('離線', style: TextStyle(fontSize: 11, color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      bottom: isLoading
+                          ? const PreferredSize(preferredSize: Size.fromHeight(4.0), child: LinearProgressIndicator())
+                          : null,
+                      actions: [
+                        // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
+                        if (_currentIndex == 0) ...[
+                          IconButton(
+                            icon: Icon(itineraryProvider.isEditMode ? Icons.check : Icons.edit),
+                            tooltip: itineraryProvider.isEditMode ? '完成' : '編輯行程',
+                            onPressed: () => itineraryProvider.toggleEditMode(),
+                          ),
+                          if (itineraryProvider.isEditMode)
+                            IconButton(
+                              icon: const Icon(Icons.cloud_upload_outlined),
+                              tooltip: '上傳至雲端',
+                              onPressed: () => _handleCloudUpload(context, itineraryProvider),
+                            ),
+                          if (!itineraryProvider.isEditMode) ...[
+                            IconButton(
+                              icon: const Icon(Icons.map_outlined),
+                              tooltip: '查看地圖',
+                              onPressed: () =>
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
+                            ),
+                          ],
+                        ],
+                        // 設定按鈕
+                        IconButton(
+                          icon: const Icon(Icons.settings),
+                          onPressed: () => _showSettingsDialog(context),
+                          tooltip: '設定',
+                        ),
+                      ],
+                    ),
+                    drawer: const AppDrawer(), // 使用獨立的 AppDrawer Widget
+                    body: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                      child: _buildTabContent(_currentIndex),
+                    ),
+                    bottomNavigationBar: NavigationBar(
+                      selectedIndex: _currentIndex,
+                      onDestinationSelected: (index) {
+                        setState(() => _currentIndex = index);
+                        // 切換分頁時關閉編輯模式
+                        if (itineraryProvider.isEditMode) {
+                          itineraryProvider.toggleEditMode();
+                        }
+                      },
+                      destinations: [
+                        const NavigationDestination(
+                          icon: Icon(Icons.schedule),
+                          selectedIcon: Icon(Icons.schedule),
+                          label: '行程',
+                        ),
+                        const NavigationDestination(
+                          icon: Icon(Icons.backpack_outlined),
+                          selectedIcon: Icon(Icons.backpack),
+                          label: '裝備',
+                        ),
+                        const NavigationDestination(
+                          icon: Icon(Icons.forum_outlined),
+                          selectedIcon: Icon(Icons.forum),
+                          label: '互動',
+                        ),
+                        const NavigationDestination(
+                          icon: Icon(Icons.info_outline),
+                          selectedIcon: Icon(Icons.info),
+                          label: '資訊',
+                        ),
+                      ],
+                    ),
+                    floatingActionButton: (_currentIndex == 0 && itineraryProvider.isEditMode)
+                        ? FloatingActionButton(
+                            onPressed: () => _showAddItineraryDialog(context, itineraryProvider),
+                            child: const Icon(Icons.add),
+                          )
+                        : null,
+                  );
+
+                  // [Web Support] Responsive Wrapper
+                  // 在寬螢幕上限制最大寬度，置中顯示，維持手機版面比例
+                  return Center(
+                    child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: scaffold),
+                  );
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
 
   /// 顯示行程選擇對話框 (從雲端匯入)
   Future<void> _showTripSelectionDialog(BuildContext context) async {
-    final tripProvider = context.read<TripProvider>();
+    final tripCubit = context.read<TripCubit>();
 
     // 1. 顯示 Loading 並取得 Trip List
     showDialog(
@@ -326,7 +334,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (c) => const Center(child: CircularProgressIndicator()),
     );
 
-    final result = await tripProvider.getCloudTrips();
+    final result = await tripCubit.getCloudTrips();
     if (!context.mounted) return;
     Navigator.pop(context); // Close Loading
 
@@ -379,21 +387,19 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
 
     try {
-      final tripProvider = context.read<TripProvider>();
-      // final messageProvider = context.read<MessageProvider>(); // Removed
-      // final itineraryProvider = context.read<ItineraryProvider>(); // Removed
+      final tripCubit = context.read<TripCubit>();
 
       // 1. 新增/更新 Trip Meta 到本地
       // 先檢查本地是否已有此 ID
-      final existing = tripProvider.getTripById(cloudTrip.id);
+      final existing = tripCubit.getTripById(cloudTrip.id);
       if (existing != null) {
-        await tripProvider.updateTrip(cloudTrip);
+        await tripCubit.updateTrip(cloudTrip);
       } else {
-        await tripProvider.importTrip(cloudTrip);
+        await tripCubit.importTrip(cloudTrip);
       }
 
       // 2. 切換為 Active
-      await tripProvider.setActiveTrip(cloudTrip.id);
+      await tripCubit.setActiveTrip(cloudTrip.id);
 
       // 3. 觸發 Sync (下載該 Trip 的 itinerary/messages)
       // 使用 SyncCubit 統一執行同步

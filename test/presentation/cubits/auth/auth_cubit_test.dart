@@ -10,7 +10,9 @@ import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/data/models/user_profile.dart';
 
 class MockAuthService extends Mock implements IAuthService {}
+
 class MockConnectivityService extends Mock implements IConnectivityService {}
+
 class MockUsageTrackingService extends Mock implements UsageTrackingService {}
 
 void main() {
@@ -42,8 +44,7 @@ void main() {
     mockUsageTrackingService = MockUsageTrackingService();
 
     // Default mock behavior
-    when(() => mockUsageTrackingService.start(any(), userId: any(named: 'userId')))
-        .thenAnswer((_) async {});
+    when(() => mockUsageTrackingService.start(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
     when(() => mockConnectivityService.isOffline).thenReturn(false);
 
     authCubit = AuthCubit(
@@ -89,8 +90,9 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'login emits AuthLoading then AuthAuthenticated on success',
       build: () {
-        when(() => mockAuthService.login(email: 'email', password: 'password'))
-            .thenAnswer((_) async => AuthResult.success(user: testUser));
+        when(
+          () => mockAuthService.login(email: 'email', password: 'password'),
+        ).thenAnswer((_) async => AuthResult.success(user: testUser));
         return authCubit;
       },
       act: (cubit) => cubit.login('email', 'password'),
@@ -106,29 +108,25 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'login emits AuthLoading then AuthRequiresVerification if user not verified',
       build: () {
-        when(() => mockAuthService.login(email: 'email', password: 'password'))
-            .thenAnswer((_) async => AuthResult.success(user: unverifiedUser));
+        when(
+          () => mockAuthService.login(email: 'email', password: 'password'),
+        ).thenAnswer((_) async => AuthResult.success(user: unverifiedUser));
         return authCubit;
       },
       act: (cubit) => cubit.login('email', 'password'),
-      expect: () => [
-        AuthLoading(),
-        AuthRequiresVerification('email'),
-      ],
+      expect: () => [AuthLoading(), AuthRequiresVerification('email')],
     );
 
     blocTest<AuthCubit, AuthState>(
       'login emits AuthLoading then AuthError on failure',
       build: () {
-        when(() => mockAuthService.login(email: 'email', password: 'password'))
-            .thenAnswer((_) async => AuthResult.failure(errorCode: 'LOGIN_FAILED', errorMessage: 'Login failed'));
+        when(
+          () => mockAuthService.login(email: 'email', password: 'password'),
+        ).thenAnswer((_) async => AuthResult.failure(errorCode: 'LOGIN_FAILED', errorMessage: 'Login failed'));
         return authCubit;
       },
       act: (cubit) => cubit.login('email', 'password'),
-      expect: () => [
-        AuthLoading(),
-        const AuthError('Login failed'),
-      ],
+      expect: () => [AuthLoading(), const AuthError('Login failed')],
     );
 
     blocTest<AuthCubit, AuthState>(
@@ -146,47 +144,37 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'register emits AuthLoading then AuthOperationSuccess when verification required',
       build: () {
-        when(() => mockAuthService.register(
-              email: 'email',
-              password: 'password',
-              displayName: 'name',
-            )).thenAnswer((_) async => AuthResult.requiresVerification());
+        when(
+          () => mockAuthService.register(email: 'email', password: 'password', displayName: 'name'),
+        ).thenAnswer((_) async => AuthResult.requiresVerification());
         return authCubit;
       },
       act: (cubit) => cubit.register(email: 'email', password: 'password', displayName: 'name'),
-      expect: () => [
-        AuthLoading(),
-        const AuthRequiresVerification('email'),
-      ],
+      expect: () => [AuthLoading(), const AuthRequiresVerification('email')],
     );
 
     blocTest<AuthCubit, AuthState>(
       'verifyEmail emits AuthLoading then AuthOperationSuccess then AuthUnauthenticated on success',
       build: () {
-        when(() => mockAuthService.verifyEmail(email: 'email', code: '123456'))
-            .thenAnswer((_) async => AuthResult.success());
+        when(
+          () => mockAuthService.verifyEmail(email: 'email', code: '123456'),
+        ).thenAnswer((_) async => AuthResult.success());
         return authCubit;
       },
       act: (cubit) => cubit.verifyEmail('email', '123456'),
-      expect: () => [
-        AuthLoading(),
-        const AuthOperationSuccess('驗證成功，請登入'),
-        AuthUnauthenticated(),
-      ],
+      expect: () => [AuthLoading(), const AuthOperationSuccess('驗證成功，請登入'), AuthUnauthenticated()],
     );
 
     blocTest<AuthCubit, AuthState>(
-        'verifyEmail emits AuthLoading then AuthError then AuthUnauthenticated on failure',
-        build: () {
-          when(() => mockAuthService.verifyEmail(email: 'email', code: '123456'))
-              .thenAnswer((_) async => AuthResult.failure(errorCode: 'VERIFY_FAILED', errorMessage: 'Invalid code'));
-          return authCubit;
-        },
-        act: (cubit) => cubit.verifyEmail('email', '123456'),
-        expect: () => [
-          AuthLoading(),
-          const AuthError('Invalid code'),
-          AuthUnauthenticated(),
-        ]);
+      'verifyEmail emits AuthLoading then AuthError then AuthUnauthenticated on failure',
+      build: () {
+        when(
+          () => mockAuthService.verifyEmail(email: 'email', code: '123456'),
+        ).thenAnswer((_) async => AuthResult.failure(errorCode: 'VERIFY_FAILED', errorMessage: 'Invalid code'));
+        return authCubit;
+      },
+      act: (cubit) => cubit.verifyEmail('email', '123456'),
+      expect: () => [AuthLoading(), const AuthError('Invalid code'), AuthUnauthenticated()],
+    );
   });
 }

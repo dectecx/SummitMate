@@ -13,12 +13,10 @@ class SyncCubit extends Cubit<SyncState> {
   final ISyncService _syncService;
   final IConnectivityService _connectivityService;
 
-  SyncCubit({
-    ISyncService? syncService,
-    IConnectivityService? connectivityService,
-  })  : _syncService = syncService ?? getIt<ISyncService>(),
-        _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
-        super(const SyncInitial()) {
+  SyncCubit({ISyncService? syncService, IConnectivityService? connectivityService})
+    : _syncService = syncService ?? getIt<ISyncService>(),
+      _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
+      super(const SyncInitial()) {
     _initLastSyncTime();
   }
 
@@ -33,10 +31,7 @@ class SyncCubit extends Cubit<SyncState> {
   /// 執行完整同步
   Future<void> syncAll({bool force = false}) async {
     if (_connectivityService.isOffline) {
-      emit(SyncFailure(
-        errorMessage: '目前處於離線模式，無法同步',
-        lastSuccessTime: _getLastSyncTime(),
-      ));
+      emit(SyncFailure(errorMessage: '目前處於離線模式，無法同步', lastSuccessTime: _getLastSyncTime()));
       return;
     }
 
@@ -50,28 +45,16 @@ class SyncCubit extends Cubit<SyncState> {
         if (result.skipReason != null) {
           // 被節流或跳過，視為成功但不更新 UI 顯示強烈訊息
           LogService.info('Sync skipped: ${result.skipReason}', source: _source);
-          emit(SyncSuccess(
-            timestamp: result.syncedAt,
-            message: '同步完成 (已略過)',
-          ));
+          emit(SyncSuccess(timestamp: result.syncedAt, message: '同步完成 (已略過)'));
         } else {
-          emit(SyncSuccess(
-            timestamp: result.syncedAt,
-            message: '同步成功',
-          ));
+          emit(SyncSuccess(timestamp: result.syncedAt, message: '同步成功'));
         }
       } else {
-        emit(SyncFailure(
-          errorMessage: result.errorMessage ?? '同步失敗',
-          lastSuccessTime: _getLastSyncTime(),
-        ));
+        emit(SyncFailure(errorMessage: result.errorMessage ?? '同步失敗', lastSuccessTime: _getLastSyncTime()));
       }
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);
-      emit(SyncFailure(
-        errorMessage: '同步發生錯誤',
-        lastSuccessTime: _getLastSyncTime(),
-      ));
+      emit(SyncFailure(errorMessage: '同步發生錯誤', lastSuccessTime: _getLastSyncTime()));
     }
   }
 
