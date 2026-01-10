@@ -4,6 +4,8 @@ import 'package:uuid/uuid.dart';
 import '../../../core/di.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../../domain/interfaces/i_sync_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../domain/interfaces/i_data_service.dart';
@@ -149,6 +151,33 @@ class TripCubit extends Cubit<TripState> {
     } catch (e) {
       LogService.error('Error updating trip: $e', source: _source);
       emit(TripError(e.toString()));
+    }
+  }
+
+  /// Full upload of trip to cloud (including itinerary and gear)
+  Future<bool> uploadFullTrip(Trip trip) async {
+    try {
+      // 1. Collect data
+      // We need to access other repositories via DI since Cubit doesn't have direct access to other providers
+      // Ideally these should be injected or handled via a Service, but for migration parity we use DI.
+      final itineraryRepo = getIt<IItineraryRepository>();
+      final gearRepo = getIt<IGearRepository>();
+
+      // Note: Repository currently lacks filter by Trip ID API, so fetch all and filter
+      final allItineraries = itineraryRepo.getAllItems();
+      final allGear = gearRepo.getAllItems();
+
+      final tripItineraries = allItineraries.where((i) => i.tripId == trip.id).toList();
+      final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
+
+      // 2. Call Repository
+      await _tripRepository.uploadFullTrip(trip: trip, itineraryItems: tripItineraries, gearItems: tripGear);
+
+      LogService.info('Full trip upload successful: ${trip.name}', source: _source);
+      return true;
+    } catch (e) {
+      LogService.error('Full trip upload exception: $e', source: _source);
+      return false;
     }
   }
 

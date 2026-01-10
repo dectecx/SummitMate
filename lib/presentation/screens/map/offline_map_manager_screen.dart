@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:provider/provider.dart';
-import '../../providers/map_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../cubits/map/offline_map_cubit.dart';
+import '../../cubits/map/offline_map_state.dart';
+import '../../../data/models/download_task.dart';
 
 class OfflineMapManagerScreen extends StatefulWidget {
   const OfflineMapManagerScreen({super.key});
@@ -35,14 +37,20 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
 
   Future<void> _refreshStats() async {
     setState(() => _isLoadingStats = true);
-    final provider = context.read<MapProvider>();
-    final stats = await provider.getStoreStats();
+    final cubit = context.read<OfflineMapCubit>();
+    await cubit.getStoreStats();
     if (mounted) {
-      setState(() {
-        _tileCount = stats.tileCount;
-        _sizeMb = stats.sizeMb;
-        _isLoadingStats = false;
-      });
+      // Need to check state to get updated stats
+      final state = cubit.state;
+      if (state is OfflineMapLoaded) {
+        setState(() {
+          _tileCount = state.tileCount;
+          _sizeMb = state.sizeMb;
+          _isLoadingStats = false;
+        });
+      } else {
+        setState(() => _isLoadingStats = false);
+      }
     }
   }
 
@@ -53,8 +61,12 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
         title: const Text('離線地圖管理'),
         actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshStats, tooltip: '重新整理')],
       ),
-      body: Consumer<MapProvider>(
-        builder: (context, provider, child) {
+      body: BlocBuilder<OfflineMapCubit, OfflineMapState>(
+        builder: (context, state) {
+          final isLoaded = state is OfflineMapLoaded;
+          final downloadQueue = isLoaded ? state.downloadQueue : <DownloadTask>[];
+          final isDownloading = isLoaded && state.isDownloading;
+
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
@@ -108,13 +120,13 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
               const SizedBox(height: 16),
 
               // 2. 下載佇列
-              if (provider.downloadQueue.isNotEmpty) ...[
+              if (downloadQueue.isNotEmpty) ...[
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.0),
                   child: Text('下載任務佇列', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 8),
-                ...provider.downloadQueue.map(
+                ...downloadQueue.map(
                   (task) => Card(
                     color: task.status == TaskStatus.downloading ? Colors.blue.shade50 : null,
                     child: ListTile(
@@ -148,7 +160,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                       trailing: (task.status == TaskStatus.downloading || task.status == TaskStatus.pending)
                           ? IconButton(
                               icon: const Icon(Icons.cancel, color: Colors.red),
-                              onPressed: () => provider.cancelTask(task.id),
+                              onPressed: () => context.read<OfflineMapCubit>().cancelTask(task.id),
                             )
                           : const Icon(Icons.check_circle, color: Colors.green),
                     ),
@@ -158,7 +170,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
               ],
 
               // 3. 推薦下載區域
-              if (!provider.isDownloading) ...[
+              if (!isDownloading) ...[
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.0),
                   child: Text('推薦區域下載 (熱門百岳)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -186,7 +198,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                           IconButton(
                             icon: const Icon(Icons.download_for_offline_outlined, color: Colors.blue),
                             tooltip: '加入下載',
-                            onPressed: () => _confirmDownloadPreset(context, provider, preset),
+                            onPressed: () => _confirmDownloadPreset(context, preset),
                           ),
                         ],
                       ),
@@ -201,7 +213,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                 leading: const Icon(Icons.delete_forever, color: Colors.red),
                 title: const Text('清除所有離線地圖'),
                 subtitle: const Text('這將刪除所有已下載的圖資，無法復原。'),
-                onTap: () => _showClearConfirmation(context, provider),
+                onTap: () => _showClearConfirmation(context),
               ),
             ],
           );
@@ -224,7 +236,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
     );
   }
 
-  void _showClearConfirmation(BuildContext context, MapProvider provider) {
+  void _showClearConfirmation(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -236,7 +248,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
             onPressed: () async {
               Navigator.pop(ctx);
-              await provider.clearStore();
+              await context.read<OfflineMapCubit>().clearStore();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已清除所有離線地圖')));
                 _refreshStats();
@@ -249,7 +261,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
     );
   }
 
-  void _confirmDownloadPreset(BuildContext context, MapProvider provider, ({String name, LatLngBounds bounds}) preset) {
+  void _confirmDownloadPreset(BuildContext context, ({String name, LatLngBounds bounds}) preset) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -261,7 +273,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已在背景開始下載...')));
-              provider.downloadRegion(
+              context.read<OfflineMapCubit>().downloadRegion(
                 bounds: preset.bounds,
                 minZoom: 12,
                 maxZoom: 20,

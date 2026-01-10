@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/trip_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../screens/trip_list_screen.dart';
 
 /// 行程選擇器 Widget
@@ -16,9 +17,13 @@ class TripSelectorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TripProvider>(
-      builder: (context, provider, child) {
-        final activeTrip = provider.activeTrip;
+    return BlocBuilder<TripCubit, TripState>(
+      builder: (context, state) {
+        String? activeTripName;
+        // Check state
+        if (state is TripLoaded) {
+          activeTripName = state.activeTrip?.name;
+        }
 
         if (showFullVersion) {
           return InkWell(
@@ -38,7 +43,7 @@ class TripSelectorWidget extends StatelessWidget {
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 150),
                     child: Text(
-                      activeTrip?.name ?? '選擇行程',
+                      activeTripName ?? '選擇行程',
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -57,7 +62,7 @@ class TripSelectorWidget extends StatelessWidget {
           return IconButton(
             onPressed: () => _navigateToTripList(context),
             icon: Icon(Icons.terrain, size: iconSize),
-            tooltip: activeTrip?.name ?? '選擇行程',
+            tooltip: activeTripName ?? '選擇行程',
           );
         }
       },
@@ -79,10 +84,18 @@ class TripDropdownSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TripProvider>(
-      builder: (context, provider, child) {
-        final trips = provider.trips;
-        final currentId = selectedTripId ?? provider.activeTripId;
+    return BlocBuilder<TripCubit, TripState>(
+      builder: (context, state) {
+        // Assume loaded or show loading logic if needed, but for dropdown we usually want data or empty.
+        // If not loaded, we can return empty or loader.
+        // Let's check if loaded.
+        if (state is! TripLoaded) {
+          // Optionally show loading if critical, or just empty box
+          return const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2));
+        }
+
+        final trips = state.trips;
+        final currentId = selectedTripId ?? state.activeTrip?.id;
 
         return DropdownButtonFormField<String>(
           value: currentId,

@@ -15,15 +15,13 @@ import 'presentation/cubits/gear_library/gear_library_cubit.dart';
 import 'presentation/cubits/itinerary/itinerary_cubit.dart';
 import 'presentation/cubits/message/message_cubit.dart';
 import 'presentation/cubits/poll/poll_cubit.dart';
+import 'presentation/cubits/meal/meal_cubit.dart';
+import 'presentation/cubits/map/map_cubit.dart';
+import 'presentation/cubits/map/offline_map_cubit.dart';
 import 'presentation/cubits/settings/settings_cubit.dart';
 import 'presentation/providers/auth_provider.dart' hide AuthState;
-import 'presentation/providers/itinerary_provider.dart';
-import 'presentation/providers/map_provider.dart';
-import 'presentation/providers/meal_provider.dart';
-import 'presentation/providers/message_provider.dart';
-import 'presentation/providers/poll_provider.dart';
-// import 'presentation/providers/settings_provider.dart'; // Removed
-import 'presentation/providers/trip_provider.dart';
+// import 'presentation/providers/map_provider.dart'; // Removed
+// import 'presentation/providers/meal_provider.dart'; // Removed
 import 'presentation/screens/home_screen.dart';
 
 /// SummitMate 主應用程式
@@ -42,6 +40,9 @@ class SummitMateApp extends StatelessWidget {
         BlocProvider(create: (context) => GearLibraryCubit()..loadItems()),
         BlocProvider(create: (context) => MessageCubit()..loadMessages()),
         BlocProvider(create: (context) => PollCubit()..loadPolls()),
+        BlocProvider(create: (_) => MealCubit()),
+        BlocProvider(create: (_) => MapCubit()..initLocation()),
+        BlocProvider(create: (_) => OfflineMapCubit()), // Register MealCubit
         BlocProvider(
           create: (context) =>
               SettingsCubit(repository: getIt<ISettingsRepository>(), prefs: getIt<SharedPreferences>())
@@ -52,13 +53,6 @@ class SummitMateApp extends StatelessWidget {
         providers: [
           // Auth Provider (優先載入)
           ChangeNotifierProvider(create: (_) => AuthProvider()),
-          ChangeNotifierProvider(create: (_) => TripProvider()),
-          // ChangeNotifierProvider(create: (_) => SettingsProvider()), // Removed
-          ChangeNotifierProvider(create: (_) => ItineraryProvider()),
-          ChangeNotifierProvider(create: (_) => MessageProvider()),
-          ChangeNotifierProvider(create: (_) => MealProvider()),
-          ChangeNotifierProvider(create: (_) => PollProvider()),
-          ChangeNotifierProvider(create: (_) => MapProvider()),
         ],
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {

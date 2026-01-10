@@ -20,7 +20,7 @@ void main() async {
   // Setup Dependencies
   await setupDependencies();
 
-  // Global Error Handling
+  // Placeholderror Handling
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     debugPrint('Flutter Error: ${details.exception}');

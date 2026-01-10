@@ -160,4 +160,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       emit(ItineraryError(e.toString()));
     }
   }
+
+  /// Reset state (e.g. on logout)
+  void reset() {
+    emit(const ItineraryInitial());
+  }
 }

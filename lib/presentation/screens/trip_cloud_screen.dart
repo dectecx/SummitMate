@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../core/di.dart';
 import '../../infrastructure/tools/toast_service.dart';
-import '../providers/trip_provider.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 
@@ -20,6 +21,8 @@ class TripCloudScreen extends StatefulWidget {
 
 class _TripCloudScreenState extends State<TripCloudScreen> {
   // Use Repository directly for Cloud Operations (Facade)
+  // Note: Ideally cloud viewing should also be in Cubit, but keeping it local to this screen
+  // for now avoids polluting TripCubit with transient "view-only" cloud state.
   final ITripRepository _tripRepository = getIt<ITripRepository>();
 
   bool _isLoading = false;
@@ -76,10 +79,15 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
   }
 
   Future<void> _downloadTrip(Trip cloudTrip) async {
-    final tripProvider = context.read<TripProvider>();
+    final tripCubit = context.read<TripCubit>();
+    final state = tripCubit.state;
+    List<Trip> localTrips = [];
+    if (state is TripLoaded) {
+      localTrips = state.trips;
+    }
 
     // 檢查是否已存在
-    final exists = tripProvider.trips.any((t) => t.id == cloudTrip.id);
+    final exists = localTrips.any((t) => t.id == cloudTrip.id);
 
     if (exists) {
       final overwrite = await showDialog<bool>(
@@ -97,18 +105,11 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
       if (overwrite != true) return;
 
       // 更新現有
-      await tripProvider.updateTrip(cloudTrip);
+      await tripCubit.updateTrip(cloudTrip);
       ToastService.success('已覆蓋: ${cloudTrip.name}');
     } else {
-      // 新增 - 使用命名參數
-      await tripProvider.addTrip(
-        name: cloudTrip.name,
-        startDate: cloudTrip.startDate,
-        endDate: cloudTrip.endDate,
-        description: cloudTrip.description,
-        coverImage: cloudTrip.coverImage,
-        setAsActive: false,
-      );
+      // 新增 (Import)
+      await tripCubit.importTrip(cloudTrip);
       ToastService.success('已下載: ${cloudTrip.name}');
     }
   }
@@ -213,13 +214,14 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
   }
 
   Widget _buildBody() {
-    return Consumer<TripProvider>(
-      builder: (context, tripProvider, _) {
+    return BlocBuilder<TripCubit, TripState>(
+      builder: (context, state) {
+        final localTrips = state is TripLoaded ? state.trips : <Trip>[];
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
             // 上傳本地行程區塊
-            _buildUploadSection(tripProvider),
+            _buildUploadSection(localTrips),
             const SizedBox(height: 24),
             // 雲端行程列表
             _buildCloudTripsSection(),
@@ -229,9 +231,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     );
   }
 
-  Widget _buildUploadSection(TripProvider tripProvider) {
-    final localTrips = tripProvider.trips;
-
+  Widget _buildUploadSection(List<Trip> localTrips) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),

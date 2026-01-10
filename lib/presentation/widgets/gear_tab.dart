@@ -12,7 +12,9 @@ import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/gear_library/gear_library_state.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
-import '../providers/meal_provider.dart';
+// import '../providers/meal_provider.dart'; // Removed
+import '../cubits/meal/meal_cubit.dart';
+import '../cubits/meal/meal_state.dart';
 import '../screens/gear_cloud_screen.dart';
 import '../screens/gear_library_screen.dart';
 import '../screens/meal_planner_screen.dart';
@@ -68,7 +70,9 @@ class _GearTabState extends State<GearTab> {
 
   @override
   Widget build(BuildContext context) {
-    final mealProvider = context.watch<MealProvider>();
+    // final mealProvider = context.watch<MealProvider>(); // Removed
+    final mealState = context.watch<MealCubit>().state;
+    final mealWeight = mealState is MealLoaded ? mealState.totalWeightKg : 0.0;
 
     return MultiBlocListener(
       listeners: [
@@ -86,7 +90,7 @@ class _GearTabState extends State<GearTab> {
       ],
       child: BlocBuilder<GearCubit, GearState>(
         builder: (context, state) {
-          final totalWeight = (state is GearLoaded ? state.totalWeightKg : 0.0) + mealProvider.totalWeightKg;
+          final totalWeight = (state is GearLoaded ? state.totalWeightKg : 0.0) + mealWeight;
 
           // Checking loading state is tricky because we might want to show previous data while reloading?
           // Assuming GearState tracks loading.
@@ -299,9 +303,7 @@ class _GearTabState extends State<GearTab> {
                                     children: [
                                       const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                       Text(
-                                        mealProvider.totalWeightKg > 0
-                                            ? '已規劃 ${mealProvider.totalWeightKg.toStringAsFixed(2)} kg'
-                                            : '尚未規劃',
+                                        mealWeight > 0 ? '已規劃 ${mealWeight.toStringAsFixed(2)} kg' : '尚未規劃',
                                         style: TextStyle(color: Colors.grey[600]),
                                       ),
                                     ],
