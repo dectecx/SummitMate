@@ -14,13 +14,22 @@ final class AuthLoading extends AuthState {}
 final class AuthAuthenticated extends AuthState {
   final String userId;
   final String? userName;
+  final String? email;
+  final String? avatar;
   final bool isGuest;
   final bool isOffline;
 
-  const AuthAuthenticated({required this.userId, this.userName, this.isGuest = false, this.isOffline = false});
+  const AuthAuthenticated({
+    required this.userId,
+    this.userName,
+    this.email,
+    this.avatar,
+    this.isGuest = false,
+    this.isOffline = false,
+  });
 
   @override
-  List<Object?> get props => [userId, userName, isGuest, isOffline];
+  List<Object?> get props => [userId, userName, email, avatar, isGuest, isOffline];
 }
 
 final class AuthUnauthenticated extends AuthState {}

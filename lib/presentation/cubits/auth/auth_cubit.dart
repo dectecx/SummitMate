@@ -36,7 +36,14 @@ class AuthCubit extends Cubit<AuthState> {
       if (isLoggedIn) {
         final cachedUser = await _authService.getCachedUserProfile();
         if (cachedUser != null) {
-          _emitAuthenticated(cachedUser.uuid, cachedUser.displayName, false, isOffline: _authService.isOfflineMode);
+          _emitAuthenticated(
+            cachedUser.uuid,
+            cachedUser.displayName,
+            cachedUser.email,
+            cachedUser.avatar,
+            false,
+            isOffline: _authService.isOfflineMode,
+          );
           return;
         }
       }
@@ -71,7 +78,14 @@ class AuthCubit extends Cubit<AuthState> {
           emit(AuthRequiresVerification(email));
         } else if (result.user != null) {
           // Direct login (rare for this flow but possible)
-          _emitAuthenticated(result.user!.uuid, result.user!.displayName, false, isOffline: result.isOffline);
+          _emitAuthenticated(
+            result.user!.uuid,
+            result.user!.displayName,
+            result.user!.email,
+            result.user!.avatar,
+            false,
+            isOffline: result.isOffline,
+          );
         } else {
           emit(const AuthError('註冊成功但不需驗證且無使用者回傳 (異常)'));
         }
@@ -99,7 +113,14 @@ class AuthCubit extends Cubit<AuthState> {
       if (result.isSuccess) {
         if (result.user != null) {
           if (result.user!.isVerified) {
-            _emitAuthenticated(result.user!.uuid, result.user!.displayName, false, isOffline: result.isOffline);
+            _emitAuthenticated(
+              result.user!.uuid,
+              result.user!.displayName,
+              result.user!.email,
+              result.user!.avatar,
+              false,
+              isOffline: result.isOffline,
+            );
           } else {
             emit(AuthRequiresVerification(email));
           }
@@ -119,7 +140,8 @@ class AuthCubit extends Cubit<AuthState> {
   /// 訪客登入
   void loginAsGuest() {
     LogService.info('Login as guest', source: _source);
-    _emitAuthenticated('guest', '訪客', true, isOffline: true);
+    // Guest login
+    _emitAuthenticated('guest', '訪客', null, null, true, isOffline: true);
   }
 
   /// 驗證 Email
@@ -182,13 +204,27 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 發送已認證狀態並啟動追蹤
-  void _emitAuthenticated(String userId, String? userName, bool isGuest, {bool isOffline = false}) {
+  void _emitAuthenticated(
+    String userId,
+    String? userName,
+    String? email,
+    String? avatar,
+    bool isGuest, {
+    bool isOffline = false,
+  }) {
     LogService.info('User authenticated: $userId ($userName)', source: _source);
 
     // 啟動使用追蹤
     _usageTrackingService.start(userName ?? 'Unknown', userId: userId);
 
-    emit(AuthAuthenticated(userId: userId, userName: userName, isGuest: isGuest, isOffline: isOffline));
+    emit(AuthAuthenticated(
+      userId: userId,
+      userName: userName,
+      email: email,
+      avatar: avatar,
+      isGuest: isGuest,
+      isOffline: isOffline,
+    ));
   }
 
   /// 移除 Exception 前綴 (UI 顯示用)

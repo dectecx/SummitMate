@@ -72,6 +72,8 @@ void main() {
         isA<AuthAuthenticated>()
             .having((s) => s.userId, 'userId', testUser.uuid)
             .having((s) => s.userName, 'userName', testUser.displayName)
+            .having((s) => s.email, 'email', testUser.email)
+            .having((s) => s.avatar, 'avatar', testUser.avatar)
             .having((s) => s.isGuest, 'isGuest', false)
             .having((s) => s.isOffline, 'isOffline', false),
       ],
@@ -101,6 +103,7 @@ void main() {
         isA<AuthAuthenticated>()
             .having((s) => s.userId, 'userId', testUser.uuid)
             .having((s) => s.userName, 'userName', testUser.displayName)
+            .having((s) => s.avatar, 'avatar', testUser.avatar)
             .having((s) => s.isGuest, 'isGuest', false),
       ],
     );
@@ -137,7 +140,8 @@ void main() {
         isA<AuthAuthenticated>()
             .having((s) => s.isGuest, 'isGuest', true)
             .having((s) => s.isOffline, 'isOffline', true)
-            .having((s) => s.userId, 'userId', 'guest'),
+            .having((s) => s.userId, 'userId', 'guest')
+            .having((s) => s.avatar, 'avatar', null),
       ],
     );
 

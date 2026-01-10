@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../providers/auth_provider.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/gear/gear_cubit.dart';
@@ -12,6 +10,7 @@ import '../cubits/poll/poll_cubit.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/auth/auth_cubit.dart';
+import '../cubits/auth/auth_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
 // import '../providers/meal_provider.dart'; // Removed
 import '../cubits/meal/meal_cubit.dart';
@@ -132,10 +131,12 @@ class AppDrawer extends StatelessWidget {
         final username = settingsState is SettingsLoaded ? settingsState.username : '...';
         final avatar = settingsState is SettingsLoaded ? settingsState.avatar : '🐻';
 
-        return Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            // Check guest mode using AuthProvider (or could check AuthCubit)
-            if (authProvider.user == null) {
+        return BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) {
+            final isGuest = authState is! AuthAuthenticated || authState.isGuest;
+            final email = authState is AuthAuthenticated ? authState.email : null;
+
+            if (isGuest) {
               return ListTile(
                 leading: const Icon(Icons.person_outline),
                 title: const Text('訪客模式'),
@@ -158,12 +159,12 @@ class AppDrawer extends StatelessWidget {
                     child: Text(avatar, style: const TextStyle(fontSize: 20)),
                   ),
                   title: Text(username, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(authProvider.user?.email ?? '', style: const TextStyle(fontSize: 12)),
+                  subtitle: Text(email ?? '', style: const TextStyle(fontSize: 12)),
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
                   title: const Text('登出', style: TextStyle(color: Colors.red)),
-                  onTap: () => _handleLogout(context, authProvider),
+                  onTap: () => _handleLogout(context),
                 ),
               ],
             );
@@ -173,7 +174,7 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Future<void> _handleLogout(BuildContext context, AuthProvider authProvider) async {
+  Future<void> _handleLogout(BuildContext context) async {
     // Check network status
     final hasConnection = await InternetConnectionChecker.instance.hasConnection;
 
@@ -227,10 +228,10 @@ class AppDrawer extends StatelessWidget {
       context.read<PollCubit>().reset();
       context.read<MealCubit>().reset();
       // Settings managed by Cubit, persistence is desired
+      
+      // Clear session token only
+      context.read<AuthCubit>().logout();
     }
-
-    // Clear session token only
-    await authProvider.logout();
   }
 
   Widget _buildTripTile(BuildContext context, dynamic trip, String? activeTripId) {

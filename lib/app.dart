@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'infrastructure/tools/toast_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/repositories/interfaces/i_settings_repository.dart';
 import 'presentation/cubits/auth/auth_cubit.dart';
-import 'presentation/cubits/auth/auth_state.dart';
 import 'presentation/cubits/sync/sync_cubit.dart';
 import 'presentation/cubits/trip/trip_cubit.dart';
 import 'presentation/cubits/gear/gear_cubit.dart';
@@ -19,7 +17,6 @@ import 'presentation/cubits/meal/meal_cubit.dart';
 import 'presentation/cubits/map/map_cubit.dart';
 import 'presentation/cubits/map/offline_map_cubit.dart';
 import 'presentation/cubits/settings/settings_cubit.dart';
-import 'presentation/providers/auth_provider.dart' hide AuthState;
 // import 'presentation/providers/map_provider.dart'; // Removed
 // import 'presentation/providers/meal_provider.dart'; // Removed
 import 'presentation/screens/home_screen.dart';
@@ -49,25 +46,8 @@ class SummitMateApp extends StatelessWidget {
                 ..loadSettings(),
         ), // Register SettingsCubit
       ],
-      child: MultiProvider(
-        providers: [
-          // Auth Provider (優先載入)
-          ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ],
-        child: BlocListener<AuthCubit, AuthState>(
-          listener: (context, state) {
-            if (state is AuthAuthenticated) {
-              // 當 Cubit 登入成功，同步通知 AuthProvider 更新狀態 (讓依賴 Provider 的組件正常運作)
-              // validateSession 會重新從 AuthService 讀取最新的 UserProfile
-              context.read<AuthProvider>().validateSession();
-            } else if (state is AuthUnauthenticated) {
-              // 當 Cubit 登出，同步通知 AuthProvider 清除狀態
-              context.read<AuthProvider>().logout();
-            }
-          },
-          child: _buildMaterialApp(),
-        ),
-      ),
+      child: _buildMaterialApp(),
+
     );
   }
 

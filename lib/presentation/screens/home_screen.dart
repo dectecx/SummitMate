@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Restore this
+import 'package:provider/provider.dart'; // Keep for now if needed by other widgets but likely unused based on lints. Wait, lint says unused.
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
-import '../providers/auth_provider.dart';
+import '../cubits/auth/auth_cubit.dart';
+import '../cubits/auth/auth_state.dart';
 // import '../providers/settings_provider.dart'; // Removed
 import 'auth/login_screen.dart';
 import 'onboarding_screen.dart';
@@ -18,10 +19,10 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, settingsState) {
-        return Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
+        return BlocBuilder<AuthCubit, AuthState>(
+          builder: (context, authState) {
             // 1. 檢查 Auth 狀態
-            if (authProvider.state == AuthState.loading) {
+            if (authState is AuthLoading) {
               return const Scaffold(
                 body: Center(
                   child: Column(
@@ -33,7 +34,7 @@ class HomeScreen extends StatelessWidget {
             }
 
             // 2. 未登入 → 顯示登入畫面
-            if (!authProvider.isAuthenticated) {
+            if (authState is AuthUnauthenticated || authState is AuthError) {
               return const LoginScreen();
             }
 

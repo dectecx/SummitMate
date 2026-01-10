@@ -66,12 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
         if (state is AuthAuthenticated) {
           // Sync SettingsCubit with user profile
           if (state.userName != null && state.userName!.isNotEmpty) {
-            context.read<SettingsCubit>().updateUsername(state.userName!);
+            if (state.avatar != null && state.avatar!.isNotEmpty) {
+              context.read<SettingsCubit>().updateProfile(state.userName!, state.avatar!);
+            } else {
+              context.read<SettingsCubit>().updateUsername(state.userName!);
+            }
           }
-          // Avatar is not in AuthAuthenticated state, might be missing update.
-          // But AuthProvider bridge calls validateSession which fetches full profile.
-          // SettingsProvider might need another way to get avatar if not in state.
-          // AuthCubit could define Avatar in state, or we rely on AuthProvider bridge.
 
           // Show offline mode notification if applicable
           if (state.isOffline) {
