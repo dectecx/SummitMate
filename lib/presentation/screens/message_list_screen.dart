@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../core/di.dart';
-import '../../domain/interfaces/i_sync_service.dart';
 import '../../presentation/providers/message_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
+import '../cubits/sync/sync_cubit.dart';
+import '../cubits/sync/sync_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 
 class MessageListScreen extends StatefulWidget {
   const MessageListScreen({super.key});
@@ -22,7 +24,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
     if (_isInit) {
       final isOffline = context.read<SettingsProvider>().isOfflineMode;
       if (!isOffline) {
-        Future.microtask(() => context.read<MessageProvider>().sync(isAuto: true));
+        Future.microtask(() => context.read<SyncCubit>().syncAll());
       }
       _isInit = false;
     }
@@ -64,16 +66,28 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     ),
                     const SizedBox(width: 8),
                     // Last Updated Timestamp & Refresh
-                    Builder(
-                      builder: (context) {
-                        final lastSync = getIt<ISyncService>().lastMessagesSync;
+                    BlocBuilder<SyncCubit, SyncState>(
+                      builder: (context, syncState) {
+                        DateTime? lastSync;
+                        bool isSyncing = false;
+
+                        if (syncState is SyncInitial) {
+                          lastSync = syncState.lastSyncTime;
+                        } else if (syncState is SyncSuccess) {
+                          lastSync = syncState.timestamp;
+                        } else if (syncState is SyncInProgress) {
+                          isSyncing = true;
+                        } else if (syncState is SyncFailure) {
+                          lastSync = syncState.lastSuccessTime;
+                        }
+
                         final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '未同步';
 
                         return Material(
                           color: Colors.grey.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                           child: InkWell(
-                            onTap: () => messageProvider.sync(),
+                            onTap: () => context.read<SyncCubit>().syncAll(force: true),
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -82,7 +96,14 @@ class _MessageListScreenState extends State<MessageListScreen> {
                                 children: [
                                   Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.sync, size: 16, color: Colors.grey),
+                                  if (isSyncing)
+                                    const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  else
+                                    const Icon(Icons.sync, size: 16, color: Colors.grey),
                                 ],
                               ),
                             ),
@@ -100,7 +121,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     : messageProvider.currentCategoryMessages.isEmpty
                     ? const Center(child: Text('尚無留言，點擊右下角新增'))
                     : RefreshIndicator(
-                        onRefresh: () async => await messageProvider.sync(),
+                        onRefresh: () async => context.read<SyncCubit>().syncAll(force: true),
                         child: ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: messageProvider.currentCategoryMessages.length,

@@ -6,6 +6,8 @@ import '../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
+import '../../domain/interfaces/i_sync_service.dart';
+import '../../domain/interfaces/i_data_service.dart';
 
 /// 行程 (Trip) 狀態管理
 /// 負責管理多個不同的登山計畫
@@ -239,5 +241,10 @@ class TripProvider extends ChangeNotifier {
     _error = null;
     LogService.info('TripProvider 已重設', source: _source);
     notifyListeners();
+  }
+
+  /// 取得雲端行程列表 (Proxy to SyncService)
+  Future<GetTripsResult> getCloudTrips() {
+    return getIt<ISyncService>().getCloudTrips();
   }
 }

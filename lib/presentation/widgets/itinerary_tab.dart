@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import '../../core/di.dart';
-import '../../domain/interfaces/i_sync_service.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../infrastructure/tools/toast_service.dart';
+import '../cubits/sync/sync_cubit.dart';
+import '../cubits/sync/sync_state.dart';
 import '../providers/itinerary_provider.dart';
 import '../providers/settings_provider.dart';
 import 'itinerary_edit_dialog.dart';
@@ -37,25 +40,35 @@ class _ItineraryTabState extends State<ItineraryTab> {
     // 首次載入 (尚未同步過) 時，不觸發自動同步
     if (settingsInfo.lastSyncTime == null) return;
 
-    // 使用 Provider 進行自動同步
-    final provider = Provider.of<ItineraryProvider>(context, listen: false);
-    await provider.sync(isAuto: true);
-
-    if (context.mounted) setState(() {}); // 更新時間戳記
+    // 使用 SyncCubit 進行自動同步
+    context.read<SyncCubit>().syncAll();
   }
 
   Future<void> _manualSync(BuildContext context) async {
-    final provider = Provider.of<ItineraryProvider>(context, listen: false);
-    await provider.sync(isAuto: false);
-    if (context.mounted) setState(() {}); // 更新時間戳記
+    context.read<SyncCubit>().syncAll(force: true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ItineraryProvider>(
       builder: (context, provider, child) {
-        final lastSync = getIt<ISyncService>().lastItinerarySync;
-        final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '尚未同步';
+        return BlocBuilder<SyncCubit, SyncState>(
+          builder: (context, syncState) {
+            DateTime? lastSync;
+            bool isSyncing = false;
+
+            if (syncState is SyncInitial) {
+              lastSync = syncState.lastSyncTime;
+            } else if (syncState is SyncSuccess) {
+              lastSync = syncState.timestamp;
+            } else if (syncState is SyncInProgress) {
+              isSyncing = true;
+              // 保持之前的時間顯示，或者暫時不變
+            } else if (syncState is SyncFailure) {
+              lastSync = syncState.lastSuccessTime;
+            }
+
+            final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '尚未同步';
 
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -124,7 +137,14 @@ class _ItineraryTabState extends State<ItineraryTab> {
                             children: [
                               Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
                               const SizedBox(width: 4),
-                              const Icon(Icons.sync, size: 16, color: Colors.grey),
+                              if (isSyncing)
+                                const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              else
+                                const Icon(Icons.sync, size: 16, color: Colors.grey),
                             ],
                           ),
                         ),
@@ -196,6 +216,8 @@ class _ItineraryTabState extends State<ItineraryTab> {
         }
 
         return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);
+          },
+        );
       },
     );
   }

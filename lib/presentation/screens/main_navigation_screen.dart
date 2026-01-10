@@ -11,7 +11,6 @@ import '../../infrastructure/tools/toast_service.dart';
 import '../../infrastructure/tools/usage_tracking_service.dart';
 import '../../infrastructure/tools/hive_service.dart';
 import '../../data/models/trip.dart';
-import '../../domain/interfaces/i_sync_service.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 
 import '../providers/itinerary_provider.dart';
@@ -20,6 +19,9 @@ import '../providers/message_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/poll_provider.dart';
 import '../providers/auth_provider.dart';
+import '../cubits/sync/sync_cubit.dart';
+import '../cubits/sync/sync_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../widgets/app_drawer.dart';
 import '../widgets/itinerary_tab.dart';
@@ -49,19 +51,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final messageProvider = context.read<MessageProvider>();
-      final itineraryProvider = context.read<ItineraryProvider>();
       final settingsProvider = context.read<SettingsProvider>();
-
-      // 行程同步完成後，重載行程列表
-      messageProvider.onItinerarySynced = () {
-        itineraryProvider.reload();
-      };
-
-      // 接收同步完成時間
-      messageProvider.onSyncComplete = (syncedAt) {
-        settingsProvider.updateLastSyncTime(syncedAt);
-      };
+      // Callbacks handled by BlocListener in build
 
       // 初次啟動顯示歡迎畫面 (選擇是否進入教學)
       if (!settingsProvider.hasSeenOnboarding) {
@@ -136,9 +127,21 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 監聽 ItineraryProvider 以控制 AppBar/FAB
-    return Consumer<ItineraryProvider>(
-      builder: (context, itineraryProvider, child) {
+    // 監聽 SyncCubit 狀態以更新 UI 與重載資料
+    return BlocListener<SyncCubit, SyncState>(
+      listener: (context, state) {
+        if (state is SyncSuccess) {
+          // 同步成功，重載資料
+          context.read<ItineraryProvider>().reload();
+          context.read<MessageProvider>().reload();
+          context.read<SettingsProvider>().updateLastSyncTime(state.timestamp);
+          ToastService.success(state.message);
+        } else if (state is SyncFailure) {
+          ToastService.error(state.errorMessage);
+        }
+      },
+      child: Consumer<ItineraryProvider>(
+        builder: (context, itineraryProvider, child) {
         return Consumer2<MessageProvider, PollProvider>(
           builder: (context, messageProvider, pollProvider, child) {
             final tripProvider = context.watch<TripProvider>();
@@ -308,12 +311,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
           },
         );
       },
+      ),
     );
   }
 
   /// 顯示行程選擇對話框 (從雲端匯入)
   Future<void> _showTripSelectionDialog(BuildContext context) async {
-    final syncService = getIt<ISyncService>();
+    final tripProvider = context.read<TripProvider>();
 
     // 1. 顯示 Loading 並取得 Trip List
     showDialog(
@@ -322,7 +326,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (c) => const Center(child: CircularProgressIndicator()),
     );
 
-    final result = await syncService.getCloudTrips();
+    final result = await tripProvider.getCloudTrips();
     if (!context.mounted) return;
     Navigator.pop(context); // Close Loading
 
@@ -376,8 +380,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
     try {
       final tripProvider = context.read<TripProvider>();
-      final messageProvider = context.read<MessageProvider>();
-      final itineraryProvider = context.read<ItineraryProvider>();
+      // final messageProvider = context.read<MessageProvider>(); // Removed
+      // final itineraryProvider = context.read<ItineraryProvider>(); // Removed
 
       // 1. 新增/更新 Trip Meta 到本地
       // 先檢查本地是否已有此 ID
@@ -392,9 +396,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       await tripProvider.setActiveTrip(cloudTrip.id);
 
       // 3. 觸發 Sync (下載該 Trip 的 itinerary/messages)
-      // 注意：SyncService 會抓 activeTripId
-      await messageProvider.sync();
-      await itineraryProvider.sync();
+      // 使用 SyncCubit 統一執行同步
+      await context.read<SyncCubit>().syncAll(force: true);
 
       if (mounted) Navigator.pop(context); // Close Loading
       ToastService.success('行程匯入成功');
