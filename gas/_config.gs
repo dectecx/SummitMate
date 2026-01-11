@@ -45,6 +45,7 @@ const HEADERS_TRIPS = [
   "cover_image",
   "is_active",
   "created_at",
+  "day_names",
 ];
 
 const HEADERS_ITINERARY = [

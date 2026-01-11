@@ -64,6 +64,7 @@ function createTrip(tripData) {
     String(tripData.cover_image || ""),
     tripData.is_active || false,
     now,
+    JSON.stringify(tripData.day_names || []),
   ]);
 
   return _success({ id }, "行程已新增");
@@ -242,6 +243,7 @@ function syncTripFull(data) {
       String(trip.cover_image || trip.coverImage || ""),
       trip.is_active || trip.isActive || false,
       createdAt,
+      JSON.stringify(trip.day_names || []),
     ];
 
     if (tripRowIndex > 0) {

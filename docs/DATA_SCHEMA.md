@@ -148,8 +148,9 @@ Hive 的 TypeId 必須全域唯一。
 | endDate     | `DateTime?` | 3   | `null`  | 結束日期       |
 | description | `String?`   | 4   | `null`  | 描述           |
 | coverImage  | `String?`   | 5   | `null`  | 封面圖片       |
-| isActive    | `bool`      | 6   | `false` | 是否為當前行程 |
-| createdAt   | `DateTime`  | 7   | `now`   | 建立時間       |
+| isActive    | `bool`         | 6   | `false` | 是否為當前行程 |
+| createdAt   | `DateTime`     | 7   | `now`   | 建立時間       |
+| dayNames    | `List<String>` | 8   | `[]`    | 行程天數列表   |
 
 ### Box: `gearLibrary` (TypeId: 11)
 
@@ -203,6 +204,7 @@ Hive 的 TypeId 必須全域唯一。
 | F            | cover_image | 封面圖片              |
 | G            | is_active   | 是否啟用              |
 | H            | created_at  | 建立時間              |
+| I            | day_names   | 天數列表 (JSON)       |
 
 ### Sheet: `Itinerary` (行程節點)
 
