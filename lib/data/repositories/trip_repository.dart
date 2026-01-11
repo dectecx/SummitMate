@@ -150,4 +150,11 @@ class TripRepository implements ITripRepository {
   }) async {
     return _remoteDataSource.uploadFullTrip(trip: trip, itineraryItems: itineraryItems, gearItems: gearItems);
   }
+
+  /// 清除所有本地行程
+  @override
+  Future<void> clearAll() async {
+    LogService.info('Clearing all trips (Local)', source: _source);
+    await _localDataSource.clear();
+  }
 }

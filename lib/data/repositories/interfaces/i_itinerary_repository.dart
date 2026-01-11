@@ -70,4 +70,7 @@ abstract interface class IItineraryRepository {
   ///
   /// [key] 目標節點 Key
   Future<void> deleteItem(dynamic key);
+
+  /// 清除所有行程節點 (登出時使用)
+  Future<void> clearAll();
 }

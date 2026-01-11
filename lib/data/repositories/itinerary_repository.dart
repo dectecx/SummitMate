@@ -212,4 +212,11 @@ class ItineraryRepository implements IItineraryRepository {
       await _localDataSource.add(item);
     }
   }
+
+  /// 清除所有行程項目
+  @override
+  Future<void> clearAll() async {
+    LogService.info('Clearing all itinerary items (Local)', source: _source);
+    await _localDataSource.clear();
+  }
 }

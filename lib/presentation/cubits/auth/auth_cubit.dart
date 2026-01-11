@@ -7,6 +7,13 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/usage_tracking_service.dart';
 import 'auth_state.dart';
 
+import '../../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../../data/repositories/interfaces/i_gear_repository.dart';
+import '../../../data/repositories/interfaces/i_message_repository.dart';
+import '../../../data/repositories/interfaces/i_poll_repository.dart';
+import '../../../data/repositories/interfaces/i_gear_library_repository.dart';
+
 /// 管理認證狀態的 Cubit
 ///
 /// 負責協調 [IAuthService] 進行登入/登出，並追蹤使用者狀態。
@@ -18,13 +25,33 @@ class AuthCubit extends Cubit<AuthState> {
   final IConnectivityService _connectivityService;
   final UsageTrackingService _usageTrackingService;
 
+  // Repositories for data clearing
+  final ITripRepository _tripRepository;
+  final IItineraryRepository _itineraryRepository;
+  final IGearRepository _gearRepository;
+  final IMessageRepository _messageRepository;
+  final IPollRepository _pollRepository;
+  final IGearLibraryRepository _gearLibraryRepository;
+
   AuthCubit({
     IAuthService? authService,
     IConnectivityService? connectivityService,
     UsageTrackingService? usageTrackingService,
+    ITripRepository? tripRepository,
+    IItineraryRepository? itineraryRepository,
+    IGearRepository? gearRepository,
+    IMessageRepository? messageRepository,
+    IPollRepository? pollRepository,
+    IGearLibraryRepository? gearLibraryRepository,
   }) : _authService = authService ?? getIt<IAuthService>(),
        _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
        _usageTrackingService = usageTrackingService ?? getIt<UsageTrackingService>(),
+       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
+       _itineraryRepository = itineraryRepository ?? getIt<IItineraryRepository>(),
+       _gearRepository = gearRepository ?? getIt<IGearRepository>(),
+       _messageRepository = messageRepository ?? getIt<IMessageRepository>(),
+       _pollRepository = pollRepository ?? getIt<IPollRepository>(),
+       _gearLibraryRepository = gearLibraryRepository ?? getIt<IGearLibraryRepository>(),
        super(AuthInitial());
 
   /// 檢查當前認證狀態 (通常在 App 啟動時呼叫)
@@ -207,7 +234,18 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
 
     try {
+      // 1. Clear Service Session
       await _authService.logout();
+
+      // 2. Clear all local data repositories to ensure data isolation between users
+      LogService.info('Clearing local data for logout', source: _source);
+      await _tripRepository.clearAll();
+      await _itineraryRepository.clearAll();
+      await _gearRepository.clearAll();
+      await _messageRepository.clearAll();
+      await _pollRepository.clearAll();
+      await _gearLibraryRepository.clearAll();
+
       _usageTrackingService.stop();
       emit(AuthUnauthenticated());
     } catch (e) {
