@@ -6,6 +6,7 @@ class AppInfo {
   static const String appName = 'SummitMate';
   static const String appNameChinese = '山友';
   static const String version = '0.0.7';
+  static const int verificationCodeExpiryMinutes = 10; // 驗證碼有效時間 (分鐘)
 }
 
 /// 顏色常數 (遵循 Dark Mode 設計)

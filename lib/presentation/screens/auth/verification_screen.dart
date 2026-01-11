@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants.dart';
 import '../../../core/theme.dart';
 import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/auth_state.dart';
@@ -21,11 +22,17 @@ class _VerificationScreenState extends State<VerificationScreen> {
   bool _canResend = false;
   int _countdown = 30;
   Timer? _timer;
+  late DateTime _expiryTime;
 
   @override
   void initState() {
     super.initState();
     _startTimer();
+    _refreshExpiryTime();
+  }
+
+  void _refreshExpiryTime() {
+    _expiryTime = DateTime.now().add(const Duration(minutes: AppInfo.verificationCodeExpiryMinutes));
   }
 
   @override
@@ -59,12 +66,25 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   void _handleVerify(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
+
+    // Check client-side expiration
+    if (DateTime.now().isAfter(_expiryTime)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('驗證碼已逾時，請重新發送'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     context.read<AuthCubit>().verifyEmail(widget.email, _codeController.text.trim());
   }
 
   void _handleResend(BuildContext context) {
     context.read<AuthCubit>().resendCode(widget.email);
     _startTimer();
+    _refreshExpiryTime();
   }
 
   void _showSuccessDialog() {
