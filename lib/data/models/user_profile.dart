@@ -14,7 +14,7 @@ part 'user_profile.g.dart';
 @JsonSerializable()
 class UserProfile extends HiveObject {
   @HiveField(0)
-  final String uuid;
+  final String id;
 
   @HiveField(1)
   final String email;
@@ -33,7 +33,7 @@ class UserProfile extends HiveObject {
   final bool isVerified;
 
   UserProfile({
-    required this.uuid,
+    required this.id,
     required this.email,
     required this.displayName,
     this.avatar = '🐻',

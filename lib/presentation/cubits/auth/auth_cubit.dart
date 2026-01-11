@@ -7,13 +7,6 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/usage_tracking_service.dart';
 import 'auth_state.dart';
 
-import '../../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../../data/repositories/interfaces/i_message_repository.dart';
-import '../../../data/repositories/interfaces/i_poll_repository.dart';
-import '../../../data/repositories/interfaces/i_gear_library_repository.dart';
-
 /// 管理認證狀態的 Cubit
 ///
 /// 負責協調 [IAuthService] 進行登入/登出，並追蹤使用者狀態。
@@ -25,33 +18,13 @@ class AuthCubit extends Cubit<AuthState> {
   final IConnectivityService _connectivityService;
   final UsageTrackingService _usageTrackingService;
 
-  // Repositories for data clearing
-  final ITripRepository _tripRepository;
-  final IItineraryRepository _itineraryRepository;
-  final IGearRepository _gearRepository;
-  final IMessageRepository _messageRepository;
-  final IPollRepository _pollRepository;
-  final IGearLibraryRepository _gearLibraryRepository;
-
   AuthCubit({
     IAuthService? authService,
     IConnectivityService? connectivityService,
     UsageTrackingService? usageTrackingService,
-    ITripRepository? tripRepository,
-    IItineraryRepository? itineraryRepository,
-    IGearRepository? gearRepository,
-    IMessageRepository? messageRepository,
-    IPollRepository? pollRepository,
-    IGearLibraryRepository? gearLibraryRepository,
   }) : _authService = authService ?? getIt<IAuthService>(),
        _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
        _usageTrackingService = usageTrackingService ?? getIt<UsageTrackingService>(),
-       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       _itineraryRepository = itineraryRepository ?? getIt<IItineraryRepository>(),
-       _gearRepository = gearRepository ?? getIt<IGearRepository>(),
-       _messageRepository = messageRepository ?? getIt<IMessageRepository>(),
-       _pollRepository = pollRepository ?? getIt<IPollRepository>(),
-       _gearLibraryRepository = gearLibraryRepository ?? getIt<IGearLibraryRepository>(),
        super(AuthInitial());
 
   /// 檢查當前認證狀態 (通常在 App 啟動時呼叫)
@@ -64,7 +37,7 @@ class AuthCubit extends Cubit<AuthState> {
         final cachedUser = await _authService.getCachedUserProfile();
         if (cachedUser != null) {
           _emitAuthenticated(
-            cachedUser.uuid,
+            cachedUser.id,
             cachedUser.displayName,
             cachedUser.email,
             cachedUser.avatar,
@@ -109,9 +82,8 @@ class AuthCubit extends Cubit<AuthState> {
         if (result.requiresVerification) {
           emit(AuthRequiresVerification(email));
         } else if (result.user != null) {
-          // Direct login (rare for this flow but possible)
           _emitAuthenticated(
-            result.user!.uuid,
+            result.user!.id,
             result.user!.displayName,
             result.user!.email,
             result.user!.avatar,
@@ -139,17 +111,13 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
 
     try {
-      if (_connectivityService.isOffline) {
-        // IAuthService will handle offline login if cached
-      }
-
       final result = await _authService.login(email: email, password: password);
 
       if (result.isSuccess) {
         if (result.user != null) {
           if (result.user!.isVerified) {
             _emitAuthenticated(
-              result.user!.uuid,
+              result.user!.id,
               result.user!.displayName,
               result.user!.email,
               result.user!.avatar,
@@ -160,7 +128,6 @@ class AuthCubit extends Cubit<AuthState> {
             emit(AuthRequiresVerification(email));
           }
         } else {
-          // Should ideally not happen for login unless verification needed
           emit(const AuthError('登入異常: 無法取得使用者資料'));
         }
       } else {
@@ -175,7 +142,6 @@ class AuthCubit extends Cubit<AuthState> {
   /// 訪客登入
   void loginAsGuest() {
     LogService.info('Login as guest', source: _source);
-    // Guest login respects current connectivity status
     _emitAuthenticated('guest', '訪客', null, null, true, isOffline: _connectivityService.isOffline);
   }
 
@@ -234,23 +200,17 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
 
     try {
-      // 1. Clear Service Session
+      // 1. 清除 Auth Session
       await _authService.logout();
 
-      // 2. Clear all local data repositories to ensure data isolation between users
-      LogService.info('Clearing local data for logout', source: _source);
-      await _tripRepository.clearAll();
-      await _itineraryRepository.clearAll();
-      await _gearRepository.clearAll();
-      await _messageRepository.clearAll();
-      await _pollRepository.clearAll();
-      await _gearLibraryRepository.clearAll();
-
+      // 2. 停止追蹤
       _usageTrackingService.stop();
+
+      LogService.info('Logout completed (fast transition)', source: _source);
       emit(AuthUnauthenticated());
-    } catch (e) {
-      LogService.error('Logout failed: $e', source: _source);
-      emit(AuthUnauthenticated()); // 即使登出失敗，UI 上也視為未登入以保安全
+    } catch (e, stack) {
+      LogService.error('Logout failed: $e', source: _source, stackTrace: stack);
+      emit(AuthUnauthenticated()); // 即使出錯，UI 也應回到未登入狀態
     }
   }
 
@@ -265,7 +225,7 @@ class AuthCubit extends Cubit<AuthState> {
       final result = await _authService.updateProfile(displayName: displayName, avatar: avatar);
       if (result.isSuccess && result.user != null) {
         _emitAuthenticated(
-          result.user!.uuid,
+          result.user!.id,
           result.user!.displayName,
           result.user!.email,
           result.user!.avatar,

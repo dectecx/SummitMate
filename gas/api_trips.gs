@@ -291,7 +291,7 @@ function syncTripFull(data) {
         // Must match HEADERS_ITINERARY order:
         // [uuid, trip_id, day, name, est_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at]
         newItinRows.push([
-          item.uuid || Utilities.getUuid(),
+          item.id || Utilities.getUuid(),
           tripId,
           item.day || "",
           item.name || "",
@@ -344,7 +344,7 @@ function syncTripFull(data) {
     if (gear && gear.length > 0) {
       gear.forEach(function (item) {
         newGearRows.push([
-          item.uuid || Utilities.getUuid(),
+          item.id || Utilities.getUuid(),
           tripId,
           item.name || "",
           item.weight || 0,

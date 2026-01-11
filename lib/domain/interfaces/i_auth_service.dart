@@ -140,4 +140,10 @@ abstract class IAuthService {
 
   /// 檢查目前是否處於離線模式
   bool get isOfflineMode;
+
+  /// 取得當前登入使用者的 Email (同步，用於資料過濾)
+  String? get currentUserEmail;
+
+  /// 取得當前登入使用者的 UUID (同步，用於資料所有權標記)
+  String? get currentUserId;
 }

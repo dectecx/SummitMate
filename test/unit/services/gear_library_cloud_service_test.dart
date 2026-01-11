@@ -25,12 +25,15 @@ void main() {
   group('GearLibraryCloudService', () {
     final testItems = [
       GearLibraryItem(
-        uuid: '1',
+        id: '1',
+        userId: 'u1',
         name: 'Tent',
         weight: 1500,
         category: 'Shelter',
         notes: 'Lightweight',
         updatedAt: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: 'u1',
       ),
     ];
 

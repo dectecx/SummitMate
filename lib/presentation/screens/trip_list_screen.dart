@@ -537,12 +537,15 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
       if (isEditing) {
         final updatedTrip = Trip(
           id: widget.tripToEdit!.id,
+          userId: widget.tripToEdit!.userId,
           name: _nameController.text.trim(),
           startDate: _startDate,
           endDate: _endDate,
           description: _descriptionController.text.trim().isNotEmpty ? _descriptionController.text.trim() : null,
           isActive: widget.tripToEdit!.isActive,
           createdAt: widget.tripToEdit!.createdAt,
+          createdBy: widget.tripToEdit!.createdBy,
+          // repository will update updatedAt/updatedBy
         );
         await context.read<TripCubit>().updateTrip(updatedTrip);
         if (mounted) {

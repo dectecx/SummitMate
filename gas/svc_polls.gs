@@ -52,7 +52,7 @@ function createPoll(data) {
     return _error(API_CODES.POLL_SHEET_MISSING, "缺少 PollOptions 工作表。");
   }
 
-  const pollId = data.poll_id || Utilities.getUuid();
+  const id = data.id || Utilities.getUuid();
   const createdAt = data.created_at || new Date().toISOString();
 
   // 讀取設定
@@ -68,7 +68,7 @@ function createPoll(data) {
   const creatorId = String(data.creator_id || "anonymous");
 
   sheet.appendRow([
-    pollId,
+    id,
     title,
     description,
     creatorId,
@@ -85,8 +85,8 @@ function createPoll(data) {
   if (data.initial_options && Array.isArray(data.initial_options)) {
     data.initial_options.forEach((optText) => {
       optionsSheet.appendRow([
-        Utilities.getUuid(),
-        pollId,
+        Utilities.getUuid(), // id (PK)
+        id, // poll_id (FK)
         String(optText),
         String(data.creator_id || ""),
         createdAt,
@@ -95,7 +95,7 @@ function createPoll(data) {
     });
   }
 
-  return _success({ poll_id: pollId }, "投票建立成功");
+  return _success({ id: id }, "投票建立成功");
 }
 
 /**
@@ -127,7 +127,7 @@ function getPolls(userId) {
     p.options = [];
     p.my_votes = [];
     p.total_votes = 0;
-    pollsMap[p.poll_id] = p;
+    pollsMap[p.id] = p;
   });
 
   // 計算每個選項的票數與投票者
@@ -150,8 +150,8 @@ function getPolls(userId) {
 
   options.forEach((o) => {
     if (pollsMap[o.poll_id]) {
-      o.vote_count = voteCounts[o.option_id] || 0;
-      o.voters = voteVoters[o.option_id] || [];
+      o.vote_count = voteCounts[o.id] || 0;
+      o.voters = voteVoters[o.id] || [];
       pollsMap[o.poll_id].options.push(o);
       pollsMap[o.poll_id].total_votes += o.vote_count;
     }
@@ -169,7 +169,7 @@ function votePoll(data) {
   const voteSheet = ss.getSheetByName("PollVotes");
   const pollSheet = ss.getSheetByName("Polls");
 
-  const pollId = data.poll_id;
+  const pollId = data.poll_id; // FK to Poll
   const optionIds = data.option_ids || [];
   const userId = data.user_id;
 
@@ -179,7 +179,7 @@ function votePoll(data) {
 
   // 1. 檢查投票狀態
   const polls = getDataAsObjects(pollSheet);
-  const poll = polls.find((p) => p.poll_id === pollId);
+  const poll = polls.find((p) => p.id === pollId);
   if (!poll) {
     return _error(API_CODES.POLL_NOT_FOUND, "找不到此投票");
   }
@@ -255,8 +255,8 @@ function addOption(data) {
   }
 
   optSheet.appendRow([
-    Utilities.getUuid(),
-    pollId,
+    Utilities.getUuid(), // id (PK)
+    pollId, // FK
     String(text || ""),
     String(data.creator_id || ""),
     new Date().toISOString(),
@@ -275,17 +275,17 @@ function deleteOption(data) {
   const optSheet = ss.getSheetByName("PollOptions");
   const voteSheet = ss.getSheetByName("PollVotes");
 
-  const optId = data.option_id;
+  const id = data.id || data.option_id; // Compatible input
 
   const votes = getDataAsObjects(voteSheet);
-  const hasVotes = votes.some((v) => v.option_id === optId);
+  const hasVotes = votes.some((v) => v.option_id === id);
   if (hasVotes) {
     return _error(API_CODES.POLL_OPTION_HAS_VOTES, "該選項已有票數，無法刪除");
   }
 
   const opts = optSheet.getDataRange().getValues();
   for (let i = 1; i < opts.length; i++) {
-    if (opts[i][0] === optId) {
+    if (opts[i][0] === id) {
       optSheet.deleteRow(i + 1);
       return _success(null, "選項已刪除");
     }
@@ -301,12 +301,12 @@ function deleteOption(data) {
 function closePoll(data) {
   const ss = getSpreadsheet();
   const pollSheet = ss.getSheetByName("Polls");
-  const pollId = data.poll_id;
+  const id = data.id || data.poll_id;
   const userId = data.user_id;
 
   const polls = pollSheet.getDataRange().getValues();
   for (let i = 1; i < polls.length; i++) {
-    if (polls[i][0] === pollId) {
+    if (polls[i][0] === id) {
       if (polls[i][3] !== userId) {
         return _error(API_CODES.POLL_CREATOR_ONLY, "只有發起人可以關閉投票");
       }
@@ -329,14 +329,14 @@ function deletePoll(data) {
   const optSheet = ss.getSheetByName("PollOptions");
   const voteSheet = ss.getSheetByName("PollVotes");
 
-  const pollId = data.poll_id;
+  const id = data.id || data.poll_id;
   const userId = data.user_id;
 
   // 1. Verify creator
   const polls = pollSheet.getDataRange().getValues();
   let pollRowIndex = -1;
   for (let i = 1; i < polls.length; i++) {
-    if (polls[i][0] === pollId) {
+    if (polls[i][0] === id) {
       if (polls[i][3] !== userId) {
         return _error(API_CODES.POLL_CREATOR_ONLY, "只有發起人可以刪除投票");
       }
@@ -352,13 +352,13 @@ function deletePoll(data) {
   // 2. Delete Votes
   const votes = voteSheet.getDataRange().getValues();
   for (let i = votes.length - 1; i >= 1; i--) {
-    if (votes[i][1] === pollId) voteSheet.deleteRow(i + 1);
+    if (votes[i][1] === id) voteSheet.deleteRow(i + 1);
   }
 
   // 3. Delete Options
   const opts = optSheet.getDataRange().getValues();
   for (let i = opts.length - 1; i >= 1; i--) {
-    if (opts[i][1] === pollId) optSheet.deleteRow(i + 1);
+    if (opts[i][1] === id) optSheet.deleteRow(i + 1);
   }
 
   // 4. Delete Poll
@@ -400,7 +400,7 @@ function setupPollSheets() {
   if (!ss.getSheetByName("Polls")) {
     const s = ss.insertSheet("Polls");
     s.appendRow([
-      "poll_id",
+      "id",
       "title",
       "description",
       "creator_id",
@@ -417,7 +417,7 @@ function setupPollSheets() {
   if (!ss.getSheetByName("PollOptions")) {
     const s = ss.insertSheet("PollOptions");
     s.appendRow([
-      "option_id",
+      "id",
       "poll_id",
       "text",
       "creator_id",
@@ -429,7 +429,7 @@ function setupPollSheets() {
   if (!ss.getSheetByName("PollVotes")) {
     const s = ss.insertSheet("PollVotes");
     s.appendRow([
-      "vote_id",
+      "id",
       "poll_id",
       "option_id",
       "user_id",

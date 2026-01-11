@@ -7,6 +7,7 @@ import 'package:summitmate/data/repositories/interfaces/i_message_repository.dar
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/interfaces/i_sync_service.dart';
 import 'package:summitmate/domain/interfaces/i_data_service.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/message/message_cubit.dart';
 import 'package:summitmate/presentation/cubits/message/message_state.dart';
 
@@ -16,12 +17,15 @@ class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockSyncService extends Mock implements ISyncService {}
 
+class MockAuthService extends Mock implements IAuthService {}
+
 class FakeMessage extends Fake implements Message {}
 
 void main() {
   late MockMessageRepository mockRepo;
   late MockTripRepository mockTripRepo;
   late MockSyncService mockSyncService;
+  late MockAuthService mockAuthService;
   late MessageCubit cubit;
 
   final testMessage1 = Message(uuid: 'm1', content: 'Hello', category: 'chat', tripId: 't1', timestamp: DateTime.now());
@@ -42,13 +46,16 @@ void main() {
     mockRepo = MockMessageRepository();
     mockTripRepo = MockTripRepository();
     mockSyncService = MockSyncService();
+    mockAuthService = MockAuthService();
+
+    when(() => mockAuthService.currentUserId).thenReturn('u1');
 
     // Default setup: active trip 't1'
-    when(() => mockTripRepo.getActiveTrip()).thenReturn(
-      Trip(id: 't1', name: 'Test Trip', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now()),
+    when(() => mockTripRepo.getActiveTrip(any())).thenReturn(
+      Trip(id: 't1', userId: 'u1', name: 'Test Trip', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now(), createdBy: 'u1'),
     );
 
-    cubit = MessageCubit(repository: mockRepo, tripRepository: mockTripRepo, syncService: mockSyncService);
+    cubit = MessageCubit(repository: mockRepo, tripRepository: mockTripRepo, syncService: mockSyncService, authService: mockAuthService);
   });
 
   tearDown(() {

@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/infrastructure/services/sync_service.dart';
 import 'package:summitmate/domain/interfaces/i_data_service.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
@@ -22,6 +23,8 @@ class MockMessageRepository extends Mock implements IMessageRepository {}
 
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
+class MockAuthService extends Mock implements IAuthService {}
+
 void main() {
   late SyncService syncService;
   late MockDataService mockDataService;
@@ -29,6 +32,7 @@ void main() {
   late MockItineraryRepository mockItineraryRepo;
   late MockMessageRepository mockMessageRepo;
   late MockConnectivityService mockConnectivity;
+  late MockAuthService mockAuthService;
 
   setUp(() {
     mockDataService = MockDataService();
@@ -36,14 +40,25 @@ void main() {
     mockItineraryRepo = MockItineraryRepository();
     mockMessageRepo = MockMessageRepository();
     mockConnectivity = MockConnectivityService();
+    mockAuthService = MockAuthService();
+
+    when(() => mockAuthService.currentUserId).thenReturn('u1');
 
     // Default: Online mode
     when(() => mockConnectivity.isOffline).thenReturn(false);
 
     // Default: Active trip
     when(
-      () => mockTripRepo.getActiveTrip(),
-    ).thenReturn(Trip(id: 'test-trip-1', name: 'Test Trip', startDate: DateTime.now()));
+      () => mockTripRepo.getActiveTrip(any()),
+    ).thenReturn(Trip(
+      id: 'test-trip-1',
+      userId: 'u1',
+      name: 'Test Trip',
+      startDate: DateTime.now(),
+      isActive: true,
+      createdAt: DateTime.now(),
+      createdBy: 'u1',
+    ));
 
     // Default: No last sync time
     when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
@@ -59,6 +74,7 @@ void main() {
       itineraryRepo: mockItineraryRepo,
       messageRepo: mockMessageRepo,
       connectivity: mockConnectivity,
+      authService: mockAuthService,
     );
 
     // Register fallback values
@@ -155,6 +171,7 @@ void main() {
         itineraryRepo: mockItineraryRepo,
         messageRepo: mockMessageRepo,
         connectivity: mockConnectivity,
+        authService: mockAuthService,
       );
 
       when(
@@ -170,9 +187,8 @@ void main() {
     });
 
     test('getCloudTrips delegates to trip repository', () async {
-      // renamed from fetchCloudTrips
       // Arrange
-      final trips = [Trip(id: '1', name: 'Test Trip', startDate: DateTime.now())];
+      final trips = [Trip(id: '1', userId: 'u1', name: 'Test Trip', startDate: DateTime.now(), createdAt: DateTime.now(), createdBy: 'u1')];
       when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => trips);
 
       // Act

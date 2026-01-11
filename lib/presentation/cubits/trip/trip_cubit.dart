@@ -9,6 +9,8 @@ import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../../domain/interfaces/i_sync_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../domain/interfaces/i_data_service.dart';
+import '../../../domain/interfaces/i_auth_service.dart';
+import '../../../data/models/enums/sync_status.dart';
 import 'trip_state.dart';
 
 /// Manage Trip state and operations
@@ -17,11 +19,13 @@ class TripCubit extends Cubit<TripState> {
 
   final ITripRepository _tripRepository;
   final ISyncService _syncService;
+  final IAuthService _authService;
   final Uuid _uuid = const Uuid();
 
-  TripCubit({ITripRepository? tripRepository, ISyncService? syncService})
+  TripCubit({ITripRepository? tripRepository, ISyncService? syncService, IAuthService? authService})
     : _tripRepository = tripRepository ?? getIt<ITripRepository>(),
       _syncService = syncService ?? getIt<ISyncService>(),
+      _authService = authService ?? getIt<IAuthService>(),
       super(const TripInitial());
 
   /// 載入所有行程並自動判定活動行程
@@ -29,16 +33,17 @@ class TripCubit extends Cubit<TripState> {
     try {
       emit(const TripLoading());
 
-      final trips = _tripRepository.getAllTrips();
+      final userId = _authService.currentUserId ?? 'guest';
+      final trips = _tripRepository.getAllTrips(userId);
       // 依建立時間排序 (最新的在前)
       trips.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      var activeTrip = _tripRepository.getActiveTrip();
+      var activeTrip = _tripRepository.getActiveTrip(userId);
 
       // 若無活動行程但有行程資料，強制設定第一筆為活動行程
       if (activeTrip == null && trips.isNotEmpty) {
         await _setActiveTripInternal(trips.first.id);
-        activeTrip = _tripRepository.getActiveTrip();
+        activeTrip = _tripRepository.getActiveTrip(userId);
       } else if (activeTrip == null && trips.isEmpty) {
         // 若完全無行程，由 UI 決定是否引導建立
       }
@@ -67,15 +72,19 @@ class TripCubit extends Cubit<TripState> {
     bool setAsActive = true,
   }) async {
     try {
+      final currentUserId = _authService.currentUserId ?? 'guest';
       final trip = Trip(
         id: _uuid.v4(),
+        userId: currentUserId,
         name: name,
         startDate: startDate,
         endDate: endDate,
         description: description,
         coverImage: coverImage,
         isActive: false, // 將透過 setActiveTrip 設定
+        syncStatus: SyncStatus.pendingCreate,
         createdAt: DateTime.now(),
+        createdBy: currentUserId,
       );
 
       await _tripRepository.addTrip(trip);

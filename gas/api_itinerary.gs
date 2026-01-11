@@ -86,7 +86,7 @@ function updateItinerary(itineraryItems, tripId) {
   // 準備資料列 (順序需與 HEADERS_ITINERARY 一致)
   // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   const rows = itineraryItems.map((item) => [
-    String(item.uuid || Utilities.getUuid()),
+    String(item.id || Utilities.getUuid()),
     String(tripId || item.trip_id || ""),
     item.day,
     String(item.name || ""),

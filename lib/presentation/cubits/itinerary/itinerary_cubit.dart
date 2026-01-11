@@ -3,6 +3,7 @@ import '../../../core/di.dart';
 import '../../../data/models/itinerary_item.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../../domain/interfaces/i_auth_service.dart';
 
 import '../../../infrastructure/tools/log_service.dart';
 import 'itinerary_state.dart';
@@ -10,14 +11,16 @@ import 'itinerary_state.dart';
 class ItineraryCubit extends Cubit<ItineraryState> {
   final IItineraryRepository _repository;
   final ITripRepository _tripRepository;
+  final IAuthService _authService;
   static const String _source = 'ItineraryCubit';
 
-  ItineraryCubit({IItineraryRepository? repository, ITripRepository? tripRepository})
+  ItineraryCubit({IItineraryRepository? repository, ITripRepository? tripRepository, IAuthService? authService})
     : _repository = repository ?? getIt<IItineraryRepository>(),
       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
+      _authService = authService ?? getIt<IAuthService>(),
       super(const ItineraryInitial());
 
-  String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
+  String? get _currentTripId => _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest')?.id;
 
   /// 載入當前行程的項目
   Future<void> loadItinerary() async {
@@ -82,7 +85,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 新增天數
   Future<void> addDay(String name) async {
-    final trip = _tripRepository.getActiveTrip();
+    final trip = _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     if (trip == null) return;
 
     if (trip.dayNames.contains(name)) {
@@ -99,7 +102,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 重新命名天數
   Future<void> renameDay(String oldName, String newName) async {
-    final trip = _tripRepository.getActiveTrip();
+    final trip = _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     if (trip == null) return;
 
     if (oldName == newName) return;
@@ -136,7 +139,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 移除天數
   Future<void> removeDay(String name) async {
-    final trip = _tripRepository.getActiveTrip();
+    final trip = _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     if (trip == null) return;
 
     // 檢查是否有行程項目
@@ -155,7 +158,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 重新排序天數
   Future<void> reorderDays(List<String> newOrder) async {
-    final trip = _tripRepository.getActiveTrip();
+    final trip = _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     if (trip == null) return;
 
     trip.dayNames = newOrder;
@@ -236,6 +239,13 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         );
       }
 
+      // Populate Audit Fields
+      final userId = _authService.currentUserId;
+      if (userId != null) {
+        itemToAdd.createdBy ??= userId;
+        itemToAdd.updatedBy = userId;
+      }
+
       await _repository.addItem(itemToAdd);
       LogService.info('Added item: ${item.name}', source: _source);
       loadItinerary();
@@ -251,6 +261,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   /// [item] 更新後的節點資料
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     try {
+      // Populate Audit Fields
+      final userId = _authService.currentUserId;
+      if (userId != null) {
+        item.updatedBy = userId;
+      }
+
       await _repository.updateItem(key, item);
       LogService.info('Updated item: ${item.name}', source: _source);
       loadItinerary();

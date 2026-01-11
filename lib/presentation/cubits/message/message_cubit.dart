@@ -4,6 +4,7 @@ import '../../../core/di.dart';
 import '../../../data/models/message.dart';
 import '../../../data/repositories/interfaces/i_message_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../../domain/interfaces/i_auth_service.dart';
 import '../../../domain/interfaces/i_sync_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import 'message_state.dart';
@@ -12,18 +13,20 @@ class MessageCubit extends Cubit<MessageState> {
   final IMessageRepository _repository;
   final ITripRepository _tripRepository;
   final ISyncService _syncService;
+  final IAuthService _authService;
   final Uuid _uuid = const Uuid();
 
   static const String _source = 'MessageCubit';
 
-  MessageCubit({IMessageRepository? repository, ITripRepository? tripRepository, ISyncService? syncService})
+  MessageCubit({IMessageRepository? repository, ITripRepository? tripRepository, ISyncService? syncService, IAuthService? authService})
     : _repository = repository ?? getIt<IMessageRepository>(),
       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
       _syncService = syncService ?? getIt<ISyncService>(),
+      _authService = authService ?? getIt<IAuthService>(),
       super(const MessageInitial());
 
   /// 取得當前活動行程 ID
-  String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
+  String? get _currentTripId => _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest')?.id;
 
   Future<void> loadMessages() async {
     emit(const MessageLoading());

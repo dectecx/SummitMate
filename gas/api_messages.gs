@@ -54,7 +54,7 @@ function getMessages(ss, tripId) {
       return _formatData(msg, SHEET_MESSAGES);
     })
     .filter((msg) => {
-      if (!msg.uuid) return false;
+      if (!msg.id) return false;
       // 若有指定 tripId，則只回傳該行程或全域 (trip_id 為空) 的留言
       if (tripId && tripIdIndex !== -1) {
         return !msg.trip_id || msg.trip_id === tripId;
@@ -78,7 +78,7 @@ function createMessage(messageData) {
   // 檢查是否有重複的 UUID
   const existingData = sheet.getDataRange().getValues();
   for (let i = 1; i < existingData.length; i++) {
-    if (existingData[i][0] === messageData.uuid) {
+    if (existingData[i][0] === messageData.id) {
       return _success(null, "訊息已存在 (Message already exists)");
     }
   }
@@ -86,7 +86,7 @@ function createMessage(messageData) {
   // 新增資料列 (順序需與 HEADERS_MESSAGES 一致)
   // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   sheet.appendRow([
-    String(messageData.uuid || Utilities.getUuid()),
+    String(messageData.id || Utilities.getUuid()),
     String(messageData.trip_id || ""),
     String(messageData.parent_id || ""),
     String(messageData.user || DEFAULT_USER),
@@ -116,7 +116,7 @@ function batchCreateMessages(messages) {
   // 順序需與 HEADERS_MESSAGES 一致
   // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   const rows = messages.map((messageData) => [
-    String(messageData.uuid || Utilities.getUuid()),
+    String(messageData.id || Utilities.getUuid()),
     String(messageData.trip_id || ""),
     String(messageData.parent_id || ""),
     String(messageData.user || DEFAULT_USER),
@@ -137,10 +137,10 @@ function batchCreateMessages(messages) {
 
 /**
  * 刪除留言
- * @param {string} uuid - 留言 UUID
+ * @param {string} id - 留言 UUID
  * @returns {Object} { code, data, message }
  */
-function deleteMessage(uuid) {
+function deleteMessage(id) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_MESSAGES);
 
@@ -151,7 +151,7 @@ function deleteMessage(uuid) {
   const data = sheet.getDataRange().getValues();
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === uuid) {
+    if (data[i][0] === id) {
       sheet.deleteRow(i + 1);
       return _success(null, "訊息已刪除");
     }

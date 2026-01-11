@@ -84,13 +84,13 @@
  *   // 留言 (Messages)
  *   { action: 'message_create', data: {...} }
  *   { action: 'message_create_batch', data: [...] }
- *   { action: 'message_delete', uuid: '...' }
+ *   { action: 'message_delete', id: '...' }
  *
  *   // 裝備組合 (Gear Sets)
  *   { action: 'gear_set_list' }
  *   { action: 'gear_set_upload', ... }
- *   { action: 'gear_set_download', uuid: '...', key: '...' }
- *   { action: 'gear_set_delete', uuid: '...', key: '...' }
+ *   { action: 'gear_set_download', id: '...', key: '...' }
+ *   { action: 'gear_set_delete', id: '...', key: '...' }
  *
  *   // 個人裝備庫 (Gear Library)
  *   { action: 'gear_library_upload', accessToken: '...', items: [...] }
@@ -110,7 +110,7 @@
  * ============================================================
  *
  * Users:
- *   uuid, email, password_hash, display_name, avatar, role,
+ *   id, email, password_hash, display_name, avatar, role,
  *   is_active, is_verified, verification_code, verification_expiry,
  *   created_at, updated_at, last_login_at
  *
@@ -118,21 +118,21 @@
  *   id, name, start_date, end_date, description, cover_image, is_active, created_at
  *
  * Itinerary:
- *   uuid, trip_id, day, name, est_time, altitude, distance, note, image_asset,
+ *   id, trip_id, day, name, est_time, altitude, distance, note, image_asset,
  *   is_checked_in, checked_in_at
  *
  * Messages:
- *   uuid, trip_id, parent_id, user, category, content, timestamp, avatar
+ *   id, trip_id, parent_id, user, category, content, timestamp, avatar
  *
  * GearSets:
- *   uuid, trip_id, title, author, visibility, key, total_weight, item_count,
+ *   id, trip_id, title, author, visibility, key, total_weight, item_count,
  *   uploaded_at, items_json, meals_json
  *
  * TripGear (每筆裝備為一列):
- *   uuid, trip_id, name, weight, category, is_checked, quantity
+ *   id, trip_id, name, weight, category, is_checked, quantity
  *
  * GearLibrary (每筆裝備為一列):
- *   uuid, user_id, name, weight, category, notes, created_at, updated_at
+ *   id, user_id, name, weight, category, notes, created_at, updated_at
  *
  * Logs:
  *   upload_time, device_id, device_name, timestamp, level, source, message

@@ -95,7 +95,7 @@ function registerUser(payload) {
 
     // 回傳使用者資料 (不含 accessToken，因為註冊後需重新登入)
     const userData = {
-      uuid: existingUser.uuid,
+      id: existingUser.id,
       email: email.toLowerCase().trim(),
       displayName: displayName.trim(),
       avatar: userAvatar,
@@ -144,7 +144,7 @@ function registerUser(payload) {
 
   // 回傳使用者資料 (不含密碼)
   const userData = {
-    uuid: userId,
+    id: userId,
     email: email.toLowerCase().trim(),
     displayName: displayName.trim(),
     avatar: userAvatar,
@@ -226,7 +226,7 @@ function loginUser(payload) {
 
   // 回傳使用者資料
   const userData = {
-    uuid: user.uuid,
+    id: user.id,
     email: user.email,
     displayName: user.display_name,
     avatar: user.avatar,
@@ -235,8 +235,8 @@ function loginUser(payload) {
   };
 
   // 生成 JWT Tokens
-  const accessToken = generateAccessToken(user.uuid);
-  const refreshToken = generateRefreshToken(user.uuid);
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
   return buildResponse(
     API_CODES.SUCCESS,
@@ -310,7 +310,7 @@ function validateSession(payload) {
   }
 
   const userData = {
-    uuid: user.uuid,
+    id: user.id,
     email: user.email,
     displayName: user.display_name,
     avatar: user.avatar,
@@ -517,7 +517,7 @@ function updateProfile(payload) {
 
   // 回傳更新後的資料
   const userData = {
-    uuid: user.uuid,
+    id: user.id,
     email: user.email,
     displayName: user.display_name,
     avatar: user.avatar,
@@ -732,21 +732,21 @@ function _findUserByEmail(sheet, email) {
 }
 
 /**
- * 依 UUID 查找使用者
+ * 依 ID 查找使用者
  * @private
  * @param {Sheet} sheet - Users 工作表
- * @param {string} uuid - 使用者 UUID
+ * @param {string} id - 使用者 ID
  * @returns {Object|null} { user, rowIndex } 或 null
  */
-function _findUserById(sheet, uuid) {
+function _findUserById(sheet, id) {
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) return null;
 
   const headers = data[0];
-  const uuidCol = headers.indexOf("uuid");
+  const idCol = headers.indexOf("id");
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][uuidCol] === uuid) {
+    if (data[i][idCol] === id) {
       const user = _rowToUser(headers, data[i]);
       return { user, rowIndex: i + 1 };
     }

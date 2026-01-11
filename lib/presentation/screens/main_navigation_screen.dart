@@ -89,7 +89,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       // Async fetch user profile
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
         if (context.mounted && profile != null) {
-          _usageTrackingService!.start(currentUsername, userId: profile.uuid);
+          _usageTrackingService!.start(currentUsername, userId: profile.id);
 
           // Sync SettingsCubit if valid profile found on launch
           // This ensures AppDrawer shows correct info if local settings verify from cloud session

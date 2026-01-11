@@ -8,6 +8,7 @@ import '../tools/log_service.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../../domain/interfaces/i_sync_service.dart';
 import '../../domain/interfaces/i_data_service.dart';
+import '../../domain/interfaces/i_auth_service.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步
@@ -17,6 +18,7 @@ class SyncService implements ISyncService {
   final IItineraryRepository _itineraryRepo;
   final IMessageRepository _messageRepo;
   final IConnectivityService _connectivity;
+  final IAuthService _authService;
 
   SyncService({
     required IDataService sheetsService,
@@ -24,11 +26,13 @@ class SyncService implements ISyncService {
     required IItineraryRepository itineraryRepo,
     required IMessageRepository messageRepo,
     required IConnectivityService connectivity,
+    required IAuthService authService,
   }) : _sheetsService = sheetsService,
        _tripRepo = tripRepo,
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,
-       _connectivity = connectivity {
+       _connectivity = connectivity,
+       _authService = authService {
     _loadLastSyncTimes();
   }
 
@@ -40,7 +44,7 @@ class SyncService implements ISyncService {
   bool get _isOffline => _connectivity.isOffline;
 
   /// 取得當前活動行程 ID
-  String? get _activeTripId => _tripRepo.getActiveTrip()?.id;
+  String? get _activeTripId => _tripRepo.getActiveTrip(_authService.currentUserId ?? 'guest')?.id;
 
   /// 上次同步行程的時間
   DateTime? _lastItinerarySyncTime;
