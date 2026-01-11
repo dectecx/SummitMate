@@ -70,4 +70,7 @@ abstract interface class ITripRepository {
     required List<dynamic> itineraryItems,
     required List<dynamic> gearItems,
   });
+
+  /// 清除所有本地行程資料 (登出時使用)
+  Future<void> clearAll();
 }

@@ -85,4 +85,10 @@ class TripLocalDataSource implements ITripLocalDataSource {
       }
     }
   }
+
+  /// 清除所有行程
+  @override
+  Future<void> clear() async {
+    await box.clear();
+  }
 }

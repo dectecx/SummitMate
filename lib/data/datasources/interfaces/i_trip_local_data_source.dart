@@ -37,4 +37,7 @@ abstract class ITripLocalDataSource {
 
   /// 取得當前活動行程
   Trip? getActiveTrip();
+
+  /// 清除所有行程 (登出時使用)
+  Future<void> clear();
 }

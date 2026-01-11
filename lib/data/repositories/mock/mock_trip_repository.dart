@@ -60,4 +60,7 @@ class MockTripRepository implements ITripRepository {
     required List<dynamic> itineraryItems,
     required List<dynamic> gearItems,
   }) async => trip.id;
+
+  @override
+  Future<void> clearAll() async {}
 }

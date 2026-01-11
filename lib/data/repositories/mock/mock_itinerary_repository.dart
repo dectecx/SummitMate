@@ -116,4 +116,7 @@ class MockItineraryRepository implements IItineraryRepository {
 
   @override
   Future<void> deleteItem(dynamic key) async {}
+
+  @override
+  Future<void> clearAll() async {}
 }

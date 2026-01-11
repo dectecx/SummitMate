@@ -32,8 +32,8 @@ class HomeScreen extends StatelessWidget {
               );
             }
 
-            // 2. 未登入 → 顯示登入畫面
-            if (authState is AuthUnauthenticated || authState is AuthError) {
+            // 2. 未登入 或 登入中(維持現有畫面) → 顯示登入畫面
+            if (authState is AuthUnauthenticated || authState is AuthError || authState is AuthLoading) {
               return const LoginScreen();
             }
 
