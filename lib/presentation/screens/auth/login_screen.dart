@@ -76,10 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // Show offline mode notification if applicable
           if (state.isOffline) {
+            final settingsState = context.read<SettingsCubit>().state;
+            final isManualOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('已使用離線模式登入，部分功能可能受限'),
-                backgroundColor: Colors.orange.shade700,
+                content: Text(
+                  isManualOffline ? '已使用離線模式登入，部分功能可能受限' : '無法連線至伺服器，已自動切換至離線登入',
+                ),
+                backgroundColor: isManualOffline ? Colors.orange.shade700 : Colors.red.shade700,
                 duration: const Duration(seconds: 4),
               ),
             );
