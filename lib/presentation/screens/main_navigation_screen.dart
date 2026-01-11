@@ -207,6 +207,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       if (!hasTrips && !isTripLoading) {
                         return Scaffold(
                           appBar: AppBar(
+                            leading: Builder(
+                              builder: (context) => IconButton(
+                                icon: const Icon(Icons.menu),
+                                onPressed: () => Scaffold.of(context).openDrawer(),
+                                tooltip: '選單',
+                              ),
+                            ),
                             title: const Text('SummitMate 山友'),
                             actions: [
                               IconButton(
@@ -214,8 +221,14 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                 tooltip: '歡迎訊息 / 教學',
                                 onPressed: () => _showWelcomeDialog(context),
                               ),
+                              IconButton(
+                                icon: const Icon(Icons.settings),
+                                onPressed: () => _showSettingsDialog(context),
+                                tooltip: '設定',
+                              ),
                             ],
                           ),
+                          drawer: const AppDrawer(), // 允許在空狀態使用側邊欄
                           body: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
