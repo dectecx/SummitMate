@@ -42,23 +42,21 @@ class PollCubit extends Cubit<PollState> {
   Future<void> loadPolls() async {
     emit(const PollLoading());
 
-    // Load from local repo
+    // 從本地 Repo 載入
     final polls = _pollRepository.getAllPolls();
     final lastSync = _pollRepository.getLastSyncTime();
 
-    // Initial load
+    // 初始載入
     emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: lastSync));
 
-    // Try fetch if online and stale
-    // Logic similar to Provider's isAuto logic?
-    // Maybe best to let UI trigger explicit refresh or simple load.
-    // Let's just load from local first.
+    // 若在線且資料過舊，可嘗試 fetch
+    // 目前邏輯建議由 UI 觸發明確刷新
   }
 
   Future<void> fetchPolls({bool isAuto = false}) async {
     if (state is! PollLoaded) {
-      // If not loaded yet, assume loading
-      // But fetchPolls might be called after loadPolls
+      // 若尚未載入，可能需要先 emit loading?
+      // 但通常 fetchPolls 會在 loadPolls 之後呼叫
     }
 
     if (_isOffline) {
@@ -66,7 +64,7 @@ class PollCubit extends Cubit<PollState> {
       return;
     }
 
-    // Cooldown check for auto sync
+    // 自動同步的冷卻檢查
     if (isAuto && state is PollLoaded) {
       final lastSync = (state as PollLoaded).lastSyncTime;
       if (lastSync != null) {
@@ -78,7 +76,7 @@ class PollCubit extends Cubit<PollState> {
       }
     }
 
-    // Set syncing state
+    // 設定同步中狀態
     if (state is PollLoaded) {
       emit((state as PollLoaded).copyWith(isSyncing: true));
     } else {
@@ -88,7 +86,7 @@ class PollCubit extends Cubit<PollState> {
     try {
       final fetchedPolls = await _pollService.getPolls(userId: _currentUserId);
 
-      // Save to repo
+      // 儲存至 Repo
       await _pollRepository.savePolls(fetchedPolls);
       final now = DateTime.now();
       await _pollRepository.saveLastSyncTime(now);
@@ -100,16 +98,14 @@ class PollCubit extends Cubit<PollState> {
       LogService.error('Fetch polls failed: $e', source: _source);
       if (!isAuto) {
         emit(PollError(e.toString()));
-        // If error, reverting to Loaded with old data?
-        // If we emit Error, we lose the data view.
-        // Better strategy: emit Loaded with isSyncing false and show toast.
-        // Reload from local to ensure state consistency?
+        // 若失敗，恢復為舊資料的 Loaded 狀態?
+        // 較好的策略：emit Loaded 但 isSyncing=false 並顯示 Toast
         final polls = _pollRepository.getAllPolls();
         final lastSync = _pollRepository.getLastSyncTime();
         emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: lastSync, isSyncing: false));
         ToastService.error('同步失敗: $e');
       } else {
-        // Silent fail, just reset syncing flag
+        // 自動同步失敗則靜默處理，僅重置 flag
         if (state is PollLoaded) {
           emit((state as PollLoaded).copyWith(isSyncing: false));
         }

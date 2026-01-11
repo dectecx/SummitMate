@@ -19,9 +19,9 @@ class GlobalBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
-    // Log state changes. Use debug or info depending on verbosity.
-    // Limiting verbose output for 'nextState' if it's too large could be considered,
-    // but for now logging simplified change.
+    // 記錄狀態變更。
+    // 若 nextState 太過冗長，可考慮限制長度。
+    // 暫時記錄簡化的變更資訊。
     LogService.debug(
       'onChange: ${bloc.runtimeType}, current: ${change.currentState.runtimeType}, next: ${change.nextState.runtimeType}',
       source: _source,

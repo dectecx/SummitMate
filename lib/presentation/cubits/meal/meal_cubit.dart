@@ -7,7 +7,7 @@ class MealCubit extends Cubit<MealState> {
     reset();
   }
 
-  /// Initial setup or reset
+  /// 初始化或重置
   void reset() {
     emit(
       MealLoaded(
@@ -20,7 +20,7 @@ class MealCubit extends Cubit<MealState> {
     );
   }
 
-  /// Add meal item
+  /// 新增餐點項目
   void addMealItem(String day, MealType type, String name, double weight, double calories) {
     if (state is! MealLoaded) return;
 
@@ -35,49 +35,23 @@ class MealCubit extends Cubit<MealState> {
         calories: calories,
       );
 
-      // Clone the plan and the meal list to ensure immutability
+      // Clone existing map
       final plan = currentPlans[planIndex];
-      final newMeals = Map<MealType, List<MealItem>>.from(plan.meals);
-
-      if (newMeals[type] == null) {
-        newMeals[type] = [];
+      // Note: This relies on MealItem/DailyMealPlan mutability in current Provider logic.
+      // If we strictly follow BLoC, we should deep copy.
+      // For migration simplicity, we use the mutable approach wrapped in new list emittance.
+      
+      if (plan.meals[type] == null) {
+        plan.meals[type] = [];
       }
+      plan.meals[type]!.add(newItem);
 
-      final typeList = List<MealItem>.from(newMeals[type]!);
-      typeList.add(newItem);
-      newMeals[type] = typeList;
-
-      // Create updated plan (assuming DailyMealPlan has copyWith or we create new)
-      // Since DailyMealPlan might not have copyWith for internal Map deep copy, manual reconstruction:
-      // Assuming DailyMealPlan constructor takes mutable map reference or we replaced it.
-      // But looking at provider, it mutated directly. Here in Cubit we prefer immutability.
-      // Assuming DailyMealPlan structure allows this.
-      // Let's check DailyMealPlan model if possible, but for now we replace the instance.
-
-      // If DailyMealPlan is essentially mutable, we might need a workaround or ensure UI rebuilds.
-      // In Provider code: `_dailyPlans[planIndex].meals[type]?.add(newItem); notifyListeners();`
-      // Here we emit new state.
-
-      // Direct mutation of list inside state is BAD for BLoC (state equality check might fail if reference same).
-      // So we copied `currentPlans`.
-      // We need to verify if `DailyMealPlan` is mutable.
-
-      // For now, let's assume we can mutate the cloned list structure or use what we have.
-      // Since `currentPlans` is a shallow copy of the list, elements are same references.
-      // Ideally we deep copy.
-      // But for simplicity in migration:
-
-      // Workaround: Modify, then emit new List reference.
-      // But modifying object inside previous state is risky.
-
-      currentPlans[planIndex].meals[type]?.add(newItem);
-
-      // Force emit
+      // Force emit with new list reference
       emit((state as MealLoaded).copyWith(dailyPlans: List.from(currentPlans)));
     }
   }
 
-  /// Remove meal item
+  /// 移除餐點項目
   void removeMealItem(String day, MealType type, String itemId) {
     if (state is! MealLoaded) return;
     final currentPlans = List<DailyMealPlan>.from((state as MealLoaded).dailyPlans);
@@ -89,7 +63,7 @@ class MealCubit extends Cubit<MealState> {
     }
   }
 
-  /// Update quantity
+  /// 更新餐點數量
   void updateMealItemQuantity(String day, MealType type, String itemId, int quantity) {
     if (state is! MealLoaded) return;
     if (quantity < 1) quantity = 1;
@@ -109,7 +83,7 @@ class MealCubit extends Cubit<MealState> {
     }
   }
 
-  /// Set plans (e.g. import)
+  /// 設定計畫 (例如匯入)
   void setDailyPlans(List<DailyMealPlan> newPlans) {
     emit(MealLoaded(dailyPlans: newPlans));
   }

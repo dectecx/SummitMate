@@ -1,6 +1,11 @@
 import '../../models/message.dart';
 
+/// 留言訊息 (Message) 的遠端資料來源介面
+///
+/// 負責定義與後端 API (GAS) 進行訊息資料交換的操作。
 abstract class IMessageRemoteDataSource {
   /// 取得雲端留言列表 (透過 sync/getAll API)
+  ///
+  /// [tripId] 指定的行程 ID
   Future<List<Message>> getMessages(String tripId);
 }

@@ -25,7 +25,7 @@ class SettingsCubit extends Cubit<SettingsState> {
         final savedUsername = _prefs.getString(PrefKeys.username);
         if (savedUsername != null && savedUsername.isNotEmpty) {
           await _repository.updateUsername(savedUsername);
-          // settings object needs refresh or manual update
+          // 重新整理物件或手動更新
           settings.username = savedUsername;
         }
       }
@@ -47,17 +47,16 @@ class SettingsCubit extends Cubit<SettingsState> {
     try {
       LogService.info('Update username: $username', source: _source);
       await _repository.updateUsername(username);
-      // Update local prefs for backup/legacy
+      // 更新本地 Prefs 作為備份/其餘用途
       await _prefs.setString(PrefKeys.username, username);
 
-      // Reload settings to get updated object or modify current one
+      // 重新載入設定以取得更新後的物件
       final updatedSettings = _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update username: $e', source: _source);
       emit(SettingsError(e.toString()));
-      // Recover state? Or just stay in Error?
-      // Ideally rollback or re-emit loaded. For now error.
+      // 復原狀態? 這裡暫時停留在 Error
     }
   }
 
@@ -122,7 +121,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update last sync time: $e', source: _source);
-      // Silent error for sync time?
+      // 同步時間更新失敗可靜默處理
     }
   }
 
@@ -133,7 +132,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       if (state is SettingsLoaded) {
         emit((state as SettingsLoaded).copyWith(hasSeenOnboarding: true));
       } else {
-        // If not loaded yet, reload
+        // 若尚未載入，則進行載入
         loadSettings();
       }
     } catch (e) {
@@ -162,7 +161,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       await _repository.resetSettings();
       await _prefs.remove(PrefKeys.username);
 
-      // Reload defaults
+      // 重新載入預設值
       loadSettings();
     } catch (e) {
       LogService.error('Failed to reset identity: $e', source: _source);

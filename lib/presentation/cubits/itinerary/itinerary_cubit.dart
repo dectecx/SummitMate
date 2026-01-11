@@ -29,7 +29,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
 
-  /// Load itinerary items for the active trip
+  /// 載入當前行程的項目
   Future<void> loadItinerary() async {
     try {
       if (state is! ItineraryLoaded) {
@@ -38,7 +38,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
       final currentTripId = _currentTripId;
       if (currentTripId == null) {
-        // No active trip, empty state
+        // 無活動行程，顯示空狀態
         emit(const ItineraryLoaded(items: []));
         return;
       }
@@ -46,7 +46,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       final allItems = _repository.getAllItems();
       final tripItems = allItems.where((item) => item.tripId == currentTripId).toList();
 
-      // Preserve current selection if reloading
+      // 若為重新載入，保留當前選擇的狀態
       String selectedDay = 'D1';
       bool isEditMode = false;
       if (state is ItineraryLoaded) {
@@ -63,14 +63,14 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  /// Select a different day
+  /// 選擇日期
   void selectDay(String day) {
     if (state is ItineraryLoaded) {
       emit((state as ItineraryLoaded).copyWith(selectedDay: day));
     }
   }
 
-  /// Toggle edit mode
+  /// 切換編輯模式
   void toggleEditMode() {
     if (state is ItineraryLoaded) {
       final current = state as ItineraryLoaded;
@@ -78,7 +78,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  /// Check-in logic
+  /// 簽到邏輯
   Future<void> checkIn(dynamic key, {DateTime? time}) async {
     try {
       final checkInTime = time ?? DateTime.now();
@@ -88,13 +88,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     } catch (e) {
       LogService.error('Check-in failed: $e', source: _source);
       emit(ItineraryError(e.toString()));
-      // Recover to loaded state after error?
-      // For now, let UI handle error state or re-load
+      // 錯誤後重新載入以確保狀態一致
       loadItinerary();
     }
   }
 
-  /// Clear check-in
+  /// 清除簽到
   Future<void> clearCheckIn(dynamic key) async {
     try {
       await _repository.clearCheckIn(key);
@@ -107,10 +106,10 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  /// Add new item
+  /// 新增項目
   Future<void> addItem(ItineraryItem item) async {
     try {
-      // Ensure tripId is set correctly if not present (though caller should probably handle this)
+      // 確保 tripId 正確填充 (若未指定則使用當前活動 tripId)
       var itemToAdd = item;
       if (item.tripId.isEmpty && _currentTripId != null) {
         itemToAdd = ItineraryItem(
@@ -137,7 +136,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  /// Update item
+  /// 更新項目
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     try {
       await _repository.updateItem(key, item);
@@ -149,7 +148,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  /// Delete item
+  /// 刪除項目
   Future<void> deleteItem(dynamic key) async {
     try {
       await _repository.deleteItem(key);
@@ -161,7 +160,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
   }
 
-  /// Reset state (e.g. on logout)
+  /// 重置狀態 (例如登出時)
   void reset() {
     emit(const ItineraryInitial());
   }

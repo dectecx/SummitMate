@@ -4,7 +4,7 @@ import '../../data/models/user_profile.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_auth_session_repository.dart';
 
-/// Repository responsible for managing local authentication session.
+/// 用於管理本地身份驗證工作階段的 Repository
 class AuthSessionRepository implements IAuthSessionRepository {
   static const String _source = 'AuthSessionRepository';
 
@@ -18,6 +18,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
   AuthSessionRepository({FlutterSecureStorage? secureStorage})
     : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
+  /// 儲存工作階段 (Access Token, User Profile, Refresh Token)
   @override
   Future<void> saveSession(String accessToken, UserProfile user, {String? refreshToken}) async {
     try {
@@ -33,6 +34,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
+  /// 清除工作階段 (登出)
   @override
   Future<void> clearSession() async {
     try {
@@ -46,6 +48,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
+  /// 取得 Access Token
   @override
   Future<String?> getAccessToken() async {
     try {
@@ -56,6 +59,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
+  /// 取得 Refresh Token
   @override
   Future<String?> getRefreshToken() async {
     try {
@@ -66,6 +70,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
+  /// 取得使用者個人資料
   @override
   Future<UserProfile?> getUserProfile() async {
     try {
@@ -78,6 +83,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
+  /// 檢查是否存在有效的工作階段
   @override
   Future<bool> hasSession() async {
     final token = await getAccessToken();

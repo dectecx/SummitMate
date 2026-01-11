@@ -5,12 +5,14 @@ import '../../../core/di.dart';
 import '../../models/itinerary_item.dart';
 import '../interfaces/i_itinerary_local_data_source.dart';
 
+/// 行程項目 (ItineraryItem) 的本地資料來源實作 (使用 Hive)
 class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   static const String _boxName = HiveBoxNames.itinerary;
   static const String _prefKeyLastSync = 'itin_last_sync_time';
 
   Box<ItineraryItem>? _box;
 
+  /// 初始化 Hive Box
   @override
   Future<void> init() async {
     if (!Hive.isBoxOpen(_boxName)) {
@@ -27,47 +29,56 @@ class ItineraryLocalDataSource implements IItineraryLocalDataSource {
     return _box!;
   }
 
+  /// 取得所有行程
   @override
   List<ItineraryItem> getAll() {
     return box.values.toList();
   }
 
+  /// 透過 Key 取得行程
   @override
   ItineraryItem? getByKey(key) {
     return box.get(key);
   }
 
+  /// 新增行程
   @override
   Future<void> add(ItineraryItem item) async {
     await box.add(item);
   }
 
+  /// 更新行程
   @override
   Future<void> update(key, ItineraryItem item) async {
     await box.put(key, item);
   }
 
+  /// 刪除行程
   @override
   Future<void> delete(key) async {
     await box.delete(key);
   }
 
+  /// 清除所有行程
   @override
   Future<void> clear() async {
     await box.clear();
   }
 
+  /// 監聽資料變更
   @override
   Stream<BoxEvent> watch() {
     return box.watch();
   }
 
+  /// 儲存最後同步時間
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
     final prefs = getIt<SharedPreferences>();
     await prefs.setString(_prefKeyLastSync, time.toIso8601String());
   }
 
+  /// 取得最後同步時間
   @override
   DateTime? getLastSyncTime() {
     final prefs = getIt<SharedPreferences>();

@@ -44,10 +44,10 @@ class UserProfile extends HiveObject {
   factory UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
   Map<String, dynamic> toJson() => _$UserProfileToJson(this);
 
-  /// Check if user has leader role
+  /// 檢查是否與具有領隊權限 (role == leader || admin)
   bool get isLeader => role == 'leader' || role == 'admin';
 
-  /// Check if user has admin role
+  /// 檢查是否與具有管理員權限 (role == admin)
   bool get isAdmin => role == 'admin';
 
   @override

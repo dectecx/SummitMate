@@ -22,7 +22,7 @@ class MessageCubit extends Cubit<MessageState> {
       _syncService = syncService ?? getIt<ISyncService>(),
       super(const MessageInitial());
 
-  /// Get active trip ID currently
+  /// 取得當前活動行程 ID
   String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
 
   Future<void> loadMessages() async {
@@ -37,16 +37,15 @@ class MessageCubit extends Cubit<MessageState> {
 
   void _refreshLocalMessages() {
     final allMessages = _repository.getAllMessages();
-    // Filter logic: match tripId OR global (tripId == null)
-    // AND if _currentTripId is set, show messages for that trip.
+    // 過濾邏輯：匹配 tripId 或全域 (tripId == null)
+    // 且若 _currentTripId 已設定，則顯示該行程的留言
 
     List<Message> filtered;
     if (_currentTripId != null) {
       filtered = allMessages.where((msg) => msg.tripId == null || msg.tripId == _currentTripId).toList();
     } else {
-      // If no trip active (e.g. home screen?), maybe show only global?
-      // Or show all? Provider showed all if tripId was null in provider but logic was:
-      // if (currentTripId != null) filter... else all.
+      // 若無活動行程 (例如首頁)，顯示全部或僅顯示全域？
+      // 目前邏輯為顯示全部
       filtered = allMessages;
     }
 
@@ -79,8 +78,8 @@ class MessageCubit extends Cubit<MessageState> {
     final currentState = state as MessageLoaded;
 
     try {
-      // Optimistic update?
-      // Ideally we create object, save local repo, then trigger sync.
+      // 樂觀更新 (Optimistic Update)
+      // 理想情況：建立物件 -> 儲存本地 Repo -> 觸發同步
 
       final message = Message(
         uuid: _uuid.v4(),
@@ -93,16 +92,16 @@ class MessageCubit extends Cubit<MessageState> {
         timestamp: DateTime.now(),
       );
 
-      // Using SyncService to add and sync
-      // It likely saves to repo internally
+      // 使用 SyncService 新增並同步
+      // 內部應已處理儲存至 Repository
       await _syncService.addMessageAndSync(message);
 
-      // Refresh
+      // 刷新列表
       _refreshLocalMessages();
     } catch (e) {
       LogService.error('Add message failed: $e', source: _source);
       emit(MessageError(e.toString()));
-      // Recover state if needed
+      // 若需要，可恢復狀態
       _refreshLocalMessages();
     }
   }

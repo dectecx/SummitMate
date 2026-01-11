@@ -6,6 +6,7 @@ import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_trip_remote_data_source.dart';
 
+/// 行程 (Trip) 的遠端資料來源實作
 class TripRemoteDataSource implements ITripRemoteDataSource {
   static const String _source = 'TripRemoteDataSource';
 
@@ -13,6 +14,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
 
   TripRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
+  /// 取得雲端行程列表
   @override
   Future<List<Trip>> getTrips() async {
     try {
@@ -40,6 +42,9 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
     }
   }
 
+  /// 上傳新行程
+  ///
+  /// 回傳新建立的行程 ID
   @override
   Future<String> uploadTrip(Trip trip) async {
     try {
@@ -66,6 +71,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
     }
   }
 
+  /// 更新雲端行程資料
   @override
   Future<void> updateTrip(Trip trip) async {
     try {
@@ -90,6 +96,9 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
     }
   }
 
+  /// 刪除雲端行程
+  ///
+  /// [tripId] 目標行程 ID
   @override
   Future<void> deleteTrip(String tripId) async {
     try {
@@ -108,6 +117,9 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
     }
   }
 
+  /// 完整同步行程 (包含行程、細節、裝備等)
+  ///
+  /// 用於一鍵備份或同步
   @override
   Future<String> uploadFullTrip({
     required Trip trip,

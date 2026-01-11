@@ -8,7 +8,14 @@ class GearLibraryCloudResult<T> {
 
   const GearLibraryCloudResult._({required this.isSuccess, this.data, this.errorMessage});
 
+  /// 建立成功結果
+  ///
+  /// [data] 成功回傳的資料
   factory GearLibraryCloudResult.success(T data) => GearLibraryCloudResult._(isSuccess: true, data: data);
+
+  /// 建立失敗結果
+  ///
+  /// [message] 錯誤訊息
   factory GearLibraryCloudResult.failure(String message) =>
       GearLibraryCloudResult._(isSuccess: false, errorMessage: message);
 }

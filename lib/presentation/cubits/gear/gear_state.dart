@@ -23,9 +23,21 @@ class GearLoaded extends GearState {
   final String searchQuery;
   final bool showUncheckedOnly;
 
+  /// 建構子
+  ///
+  /// [items] 裝備列表
+  /// [selectedCategory] 目前篩選分類
+  /// [searchQuery] 搜尋關鍵字
+  /// [showUncheckedOnly] 是否僅顯示未打包項目
   const GearLoaded({required this.items, this.selectedCategory, this.searchQuery = '', this.showUncheckedOnly = false});
 
   /// CopyWith method for updating state
+  ///
+  /// [items] 更新裝備列表
+  /// [selectedCategory] 更新分類
+  /// [clearCategory] 是否清除分類
+  /// [searchQuery] 更新搜尋關鍵字
+  /// [showUncheckedOnly] 更新過濾狀態
   GearLoaded copyWith({
     List<GearItem>? items,
     String? selectedCategory,

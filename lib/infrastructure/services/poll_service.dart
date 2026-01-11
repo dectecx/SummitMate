@@ -7,9 +7,7 @@ import '../tools/log_service.dart';
 import '../../domain/interfaces/i_poll_service.dart';
 
 class PollService implements IPollService {
-  // Use a singleton pattern if desired, or just static methods
-  // Using static methods for simplicity as in other services
-
+  // 若有需要可使用 Singleton，或保持目前的依賴注入方式
   static const String _source = 'PollService';
 
   final NetworkAwareClient _apiClient;

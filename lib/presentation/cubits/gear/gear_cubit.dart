@@ -163,11 +163,11 @@ class GearCubit extends Cubit<GearState> {
     if (state is! GearLoaded) return;
 
     final currentState = state as GearLoaded;
-    final items = currentState.items; // Full list for this trip
+    final items = currentState.items; // 該行程的所有裝備
 
     try {
-      // Logic from Provider:
-      // 1. Get target list (all or category filtered)
+      // 排序邏輯：
+      // 1. 取得目標清單 (全部或僅限特定分類)
       final targetList = category == null ? items : items.where((item) => item.category == category).toList();
 
       if (oldIndex < newIndex) {
@@ -181,7 +181,7 @@ class GearCubit extends Cubit<GearState> {
       if (category == null) {
         finalSortedList = targetList;
       } else {
-        // Merge back into full list
+        // 因只排序了分類子集，需合併回完整清單
         finalSortedList = List<GearItem>.from(items);
         int targetIndex = 0;
         for (int i = 0; i < finalSortedList.length; i++) {

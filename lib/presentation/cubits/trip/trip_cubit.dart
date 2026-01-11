@@ -24,26 +24,23 @@ class TripCubit extends Cubit<TripState> {
       _syncService = syncService ?? getIt<ISyncService>(),
       super(const TripInitial());
 
-  /// Load all trips and determine the active trip
+  /// 載入所有行程並自動判定活動行程
   Future<void> loadTrips() async {
     try {
       emit(const TripLoading());
 
       final trips = _tripRepository.getAllTrips();
-      // Sort by creation date descending (newest first)
+      // 依建立時間排序 (最新的在前)
       trips.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       var activeTrip = _tripRepository.getActiveTrip();
 
-      // If no active trip but trips exist, force set the first one as active
+      // 若無活動行程但有行程資料，強制設定第一筆為活動行程
       if (activeTrip == null && trips.isNotEmpty) {
         await _setActiveTripInternal(trips.first.id);
         activeTrip = _tripRepository.getActiveTrip();
       } else if (activeTrip == null && trips.isEmpty) {
-        // Create default trip if completely empty??
-        // Strategy: Let UI decide or do it here?
-        // TripProvider created default trip. Let's replicate that logic generally or invoke explicitly.
-        // For now, if empty, just emit empty list. UI can show "Create First Trip".
+        // 若完全無行程，由 UI 決定是否引導建立
       }
 
       emit(TripLoaded(trips: trips, activeTrip: activeTrip));
@@ -53,7 +50,7 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Add a new trip
+  /// 新增行程
   Future<void> addTrip({
     required String name,
     required DateTime startDate,
@@ -70,7 +67,7 @@ class TripCubit extends Cubit<TripState> {
         endDate: endDate,
         description: description,
         coverImage: coverImage,
-        isActive: false, // will be set via setActiveTrip if needed
+        isActive: false, // 將透過 setActiveTrip 設定
         createdAt: DateTime.now(),
       );
 
@@ -85,13 +82,13 @@ class TripCubit extends Cubit<TripState> {
     } catch (e) {
       LogService.error('Error adding trip: $e', source: _source);
       emit(TripError(e.toString()));
-      // Re-load to ensure consistent state
+      // 重新載入以確保狀態一致
       loadTrips();
     }
   }
 
-  /// Import a trip (e.g. from Cloud)
-  /// Note: This doesn't trigger SyncCubit directly. UI should handle that side-effect.
+  /// 匯入行程 (例如從雲端)
+  /// 注意：此方法不會直接觸發 SyncCubit，應由 UI 處理副作用
   Future<void> importTrip(Trip trip) async {
     try {
       await _tripRepository.addTrip(trip);
@@ -103,7 +100,7 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Set the active trip
+  /// 設定活動行程
   Future<void> setActiveTrip(String tripId) async {
     try {
       await _setActiveTripInternal(tripId);
@@ -119,12 +116,12 @@ class TripCubit extends Cubit<TripState> {
     LogService.info('Set active trip: $tripId', source: _source);
   }
 
-  /// Delete a trip
+  /// 刪除行程
   Future<void> deleteTrip(String tripId) async {
     try {
       final currentState = state;
       if (currentState is TripLoaded) {
-        // If deleting active trip, switch to another one first
+        // 若刪除的是當前活動行程，先切換到其他行程
         if (currentState.activeTrip?.id == tripId) {
           final otherTrips = currentState.trips.where((t) => t.id != tripId);
           if (otherTrips.isNotEmpty) {
@@ -142,7 +139,7 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Update a trip
+  /// 更新行程
   Future<void> updateTrip(Trip trip) async {
     try {
       await _tripRepository.updateTrip(trip);
@@ -154,23 +151,23 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Full upload of trip to cloud (including itinerary and gear)
+  /// 上傳完整行程至雲端 (包含行程表與裝備)
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
-      // 1. Collect data
-      // We need to access other repositories via DI since Cubit doesn't have direct access to other providers
-      // Ideally these should be injected or handled via a Service, but for migration parity we use DI.
+      // 1. 蒐集資料
+      // 透過 DI 存取其他 Repo，因 Cubit 無法直接存取其他 Provider
+      // 理想上應透過 Service 處理，但為了維持架構一致性暫時使用 DI
       final itineraryRepo = getIt<IItineraryRepository>();
       final gearRepo = getIt<IGearRepository>();
 
-      // Note: Repository currently lacks filter by Trip ID API, so fetch all and filter
+      // 注意：目前 Repository API 缺乏依 TripID 過濾的功能，因此先全抓再過濾
       final allItineraries = itineraryRepo.getAllItems();
       final allGear = gearRepo.getAllItems();
 
       final tripItineraries = allItineraries.where((i) => i.tripId == trip.id).toList();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
-      // 2. Call Repository
+      // 2. 呼叫 Repository 執行上傳
       await _tripRepository.uploadFullTrip(trip: trip, itineraryItems: tripItineraries, gearItems: tripGear);
 
       LogService.info('Full trip upload successful: ${trip.name}', source: _source);
@@ -181,12 +178,12 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Get Cloud Trips via SyncService
+  /// 透過 SyncService 取得雲端行程列表
   Future<GetTripsResult> getCloudTrips() {
     return _syncService.getCloudTrips();
   }
 
-  /// Get Trip by ID from current state or repository
+  /// 根據 ID 取得行程 (優先從 State 讀取，若無則查 Repo)
   Trip? getTripById(String id) {
     if (state is TripLoaded) {
       final loadedParams = state as TripLoaded;
@@ -197,12 +194,12 @@ class TripCubit extends Cubit<TripState> {
     return _tripRepository.getTripById(id);
   }
 
-  // Create default trip (compatibility with Provider logic)
+  // 建立預設行程 (相容 Provider 邏輯)
   Future<void> createDefaultTrip() async {
     await addTrip(name: '我的登山行程', startDate: DateTime.now());
   }
 
-  /// Reset state (e.g. on logout)
+  /// 重置狀態 (例如登出時)
   void reset() {
     emit(const TripInitial());
   }
