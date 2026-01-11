@@ -61,6 +61,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final settingsCubit = context.read<SettingsCubit>();
 
       // 初次啟動顯示歡迎畫面 (選擇是否進入教學)
