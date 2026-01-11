@@ -127,7 +127,10 @@ class _ItineraryTabState extends State<ItineraryTab> {
               );
             } else {
               // Prepare specific day items
-              final currentDayItems = (state is ItineraryLoaded) ? state.currentDayItems : [];
+              // Effectively, if items is not empty, state must be ItineraryLoaded
+              if (state is! ItineraryLoaded) return const SizedBox.shrink();
+              final loadedState = state;
+              final currentDayItems = loadedState.currentDayItems;
 
               content = Column(
                 children: [
@@ -151,10 +154,10 @@ class _ItineraryTabState extends State<ItineraryTab> {
                               ),
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
-                                itemCount: (state as ItineraryLoaded).dayNames.length,
+                                itemCount: loadedState.dayNames.length,
                                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                                 itemBuilder: (ctx, index) {
-                                  final dayName = (state as ItineraryLoaded).dayNames[index];
+                                  final dayName = loadedState.dayNames[index];
                                   final isSelected = dayName == selectedDay;
                                   return ChoiceChip(
                                     label: Text(dayName),
