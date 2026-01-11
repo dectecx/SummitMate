@@ -7,8 +7,9 @@ import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../../infrastructure/tools/log_service.dart';
 
-/// Itinerary Repository
-/// Coordinates Local and Remote Data Sources
+/// 行程 Repository
+///
+/// 協調本地資料庫 (Hive) 與遠端資料來源 (API)，負責行程資料的 CRUD 與同步。
 class ItineraryRepository implements IItineraryRepository {
   static const String _source = 'ItineraryRepository';
 
@@ -24,29 +25,33 @@ class ItineraryRepository implements IItineraryRepository {
        _remoteDataSource = remoteDataSource ?? getIt<IItineraryRemoteDataSource>(),
        _connectivity = connectivity ?? getIt<IConnectivityService>();
 
+  /// 初始化 Repository (主要是本地資料庫)
   @override
   Future<void> init() async {
-    // Repository init mainly ensures LocalDS is ready
     await _localDataSource.init();
   }
 
-  // Delegate Local Operations
+  // --- 本地操作代理 ---
 
+  /// 取得所有行程項目
   @override
   List<ItineraryItem> getAllItems() {
     return _localDataSource.getAll();
   }
 
+  /// 依天數取得行程項目 (e.g. "D1")
   @override
   List<ItineraryItem> getItemsByDay(String day) {
     return _localDataSource.getAll().where((item) => item.day == day).toList();
   }
 
+  /// 依 Key 取得單一行程項目
   @override
   ItineraryItem? getItemByKey(dynamic key) {
     return _localDataSource.getByKey(key);
   }
 
+  /// 打卡 (設定 actualTime)
   @override
   Future<void> checkIn(dynamic key, DateTime time) async {
     final item = _localDataSource.getByKey(key);
@@ -55,6 +60,7 @@ class ItineraryRepository implements IItineraryRepository {
     await _localDataSource.update(key, item);
   }
 
+  /// 取消打卡
   @override
   Future<void> clearCheckIn(dynamic key) async {
     final item = _localDataSource.getByKey(key);
@@ -63,6 +69,7 @@ class ItineraryRepository implements IItineraryRepository {
     await _localDataSource.update(key, item);
   }
 
+  /// 重置所有打卡狀態
   @override
   Future<void> resetAllCheckIns() async {
     for (final item in _localDataSource.getAll()) {
@@ -71,38 +78,47 @@ class ItineraryRepository implements IItineraryRepository {
     }
   }
 
+  /// 新增行程項目 (本地)
   @override
   Future<void> addItem(ItineraryItem item) async {
     await _localDataSource.add(item);
   }
 
+  /// 更新行程項目 (本地)
   @override
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     await _localDataSource.update(key, item);
   }
 
+  /// 刪除行程項目 (本地)
   @override
   Future<void> deleteItem(dynamic key) async {
     await _localDataSource.delete(key);
   }
 
+  /// 儲存最後同步時間
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
     await _localDataSource.saveLastSyncTime(time);
   }
 
+  /// 取得最後同步時間
   @override
   DateTime? getLastSyncTime() {
     return _localDataSource.getLastSyncTime();
   }
 
+  /// 監聽行程變更
   @override
   Stream<BoxEvent> watchAllItems() {
     return _localDataSource.watch();
   }
 
-  /// Sync Implementation
-  /// Fetches from Remote, Preserves Local State (actualTime), Updates Local
+  // --- 同步操作 ---
+
+  /// 同步行程 (從雲端拉取)
+  ///
+  /// 策略：從雲端取得最新行程表，但保留本地的打卡紀錄 (actualTime)，然後覆寫本地資料。
   @override
   Future<void> sync(String tripId) async {
     if (_connectivity.isOffline) {
@@ -114,7 +130,7 @@ class ItineraryRepository implements IItineraryRepository {
       LogService.info('Syncing itinerary for trip: $tripId', source: _source);
       final cloudItems = await _remoteDataSource.getItinerary(tripId);
 
-      // Preservation Logic (Business Logic)
+      // 保存本地打卡狀態
       final existing = _localDataSource.getAll();
       final actualTimeMap = <String, DateTime?>{};
       for (final item in existing) {
@@ -124,6 +140,7 @@ class ItineraryRepository implements IItineraryRepository {
 
       await _localDataSource.clear();
 
+      // 還原打卡狀態並寫入新資料
       for (final item in cloudItems) {
         final key = '${item.day}_${item.name}';
         item.actualTime = actualTimeMap[key];
@@ -138,12 +155,10 @@ class ItineraryRepository implements IItineraryRepository {
     }
   }
 
-  // Deprecated/Legacy method support (if needed for temporary) or Remove?
-  // IItineraryRepository definition needs update first.
+  /// 從雲端列表同步 (Legacy / 直接匯入用)
   @override
   Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {
-    // Legacy support: logic moved to sync() but if called directly with items:
-    // Perform same preservation logic
+    // 保留打卡狀態邏輯
     final existing = _localDataSource.getAll();
     final actualTimeMap = <String, DateTime?>{};
     for (final item in existing) {

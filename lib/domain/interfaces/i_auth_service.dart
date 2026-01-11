@@ -1,7 +1,7 @@
 import '../../../data/models/user_profile.dart';
 
-/// Authentication Result
-/// Represents the outcome of an authentication operation.
+/// 認證結果
+/// 代表認證操作的結果
 class AuthResult {
   final bool isSuccess;
   final UserProfile? user;
@@ -23,6 +23,12 @@ class AuthResult {
     this.isOffline = false,
   });
 
+  /// 建立成功結果
+  ///
+  /// [user] 使用者資料
+  /// [accessToken] 存取權杖
+  /// [refreshToken] 刷新權杖
+  /// [isOffline] 是否為離線登入模式
   factory AuthResult.success({UserProfile? user, String? accessToken, String? refreshToken, bool isOffline = false}) {
     return AuthResult(
       isSuccess: true,
@@ -33,13 +39,21 @@ class AuthResult {
     );
   }
 
+  /// 建立失敗結果
+  ///
+  /// [errorCode] 錯誤代碼 (例如: 'INVALID_PASSWORD')
+  /// [errorMessage] 錯誤訊息描述
   factory AuthResult.failure({required String errorCode, String? errorMessage}) {
     return AuthResult(isSuccess: false, errorCode: errorCode, errorMessage: errorMessage);
   }
 
+  /// 建立需要驗證結果
+  ///
+  /// [errorMessage] 提示訊息
+  /// [user] 使用者暫存資料
   factory AuthResult.requiresVerification({String? errorMessage, UserProfile? user}) {
     return AuthResult(
-      isSuccess: true, // The operation succeeded, but verification is needed
+      isSuccess: true, // 操作成功，但需要驗證
       user: user,
       requiresVerification: true,
       errorCode: 'REQUIRES_VERIFICATION',
@@ -48,18 +62,23 @@ class AuthResult {
   }
 }
 
-/// Third-party authentication provider for OAuth SSO
+/// 第三方 OAuth 認證提供者
 enum OAuthProvider { google, facebook, apple, line }
 
-/// Abstract Authentication Service Interface
-/// All authentication backends implement this interface.
-/// This enables swappable auth implementations:
-/// - GasAuthService (current)
-/// - FirebaseAuthService (future)
-/// - AzureAuthService (future)
-/// - OAuthSSOService (future)
+/// 抽象認證服務介面
+/// 所有認證後端皆實作此介面。
+/// 這使得認證實作可抽換：
+/// - GasAuthService (目前)
+/// - FirebaseAuthService (未來)
+/// - AzureAuthService (未來)
+/// - OAuthSSOService (未來)
 abstract class IAuthService {
-  /// Register a new user with email and password
+  /// 使用 Email 與密碼註冊新使用者
+  ///
+  /// [email] 使用者電子郵件
+  /// [password] 使用者密碼
+  /// [displayName] 顯示名稱
+  /// [avatar] 頭像 URL (可選)
   Future<AuthResult> register({
     required String email,
     required String password,
@@ -67,45 +86,58 @@ abstract class IAuthService {
     String? avatar,
   });
 
-  /// Update user profile (display name, avatar)
+  /// 更新使用者資料 (顯示名稱、頭像)
+  ///
+  /// [displayName] 新的顯示名稱 (若為 null 則不更新)
+  /// [avatar] 新的頭像 URL (若為 null 則不更新)
   Future<AuthResult> updateProfile({String? displayName, String? avatar});
 
-  /// Login with email and password
+  /// 使用 Email 與密碼登入
+  ///
+  /// [email] 使用者電子郵件
+  /// [password] 使用者密碼
   Future<AuthResult> login({required String email, required String password});
 
-  /// Login with third-party OAuth provider
+  /// 使用第三方 OAuth 提供者登入
+  ///
+  /// [provider] OAuth 提供者 (Google, Facebook, etc.)
   Future<AuthResult> loginWithProvider(OAuthProvider provider);
 
-  /// Verify email with verification code
+  /// 使用驗證碼驗證 Email
+  ///
+  /// [email] 使用者電子郵件
+  /// [code] 驗證碼
   Future<AuthResult> verifyEmail({required String email, required String code});
 
-  /// Resend verification code
+  /// 重送驗證碼
+  ///
+  /// [email] 使用者電子郵件
   Future<AuthResult> resendVerificationCode({required String email});
 
-  /// Validate current session with server
+  /// 驗證目前與伺服器的 Session
   Future<AuthResult> validateSession();
 
-  /// Refresh the access token using refresh token
+  /// 使用 Refresh Token 刷新 Access Token
   Future<AuthResult> refreshToken();
 
-  /// Logout and clear session
+  /// 登出並清除 Session
   Future<void> logout();
 
-  /// Delete user account (soft delete)
+  /// 刪除使用者帳號 (軟刪除)
   Future<AuthResult> deleteAccount();
 
-  /// Get the current access token
+  /// 取得目前的 Access Token
   Future<String?> getAccessToken();
 
-  /// Get the current refresh token
+  /// 取得目前的 Refresh Token
   Future<String?> getRefreshToken();
 
-  /// Get cached user profile
+  /// 取得快取的使用者資料
   Future<UserProfile?> getCachedUserProfile();
 
-  /// Check if user is logged in (has valid session)
+  /// 檢查使用者是否已登入 (擁有有效 Session)
   Future<bool> isLoggedIn();
 
-  /// Check if currently in offline mode
+  /// 檢查目前是否處於離線模式
   bool get isOfflineMode;
 }

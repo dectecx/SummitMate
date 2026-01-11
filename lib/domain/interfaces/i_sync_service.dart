@@ -24,6 +24,11 @@ class SyncResult {
   });
 
   /// 建立成功結果
+  ///
+  /// [itinerarySynced] 是否同步了行程
+  /// [messagesSynced] 是否同步了留言
+  /// [pollsSynced] 是否同步了投票
+  /// [syncedAt] 同步時間
   factory SyncResult.success({
     bool itinerarySynced = true,
     bool messagesSynced = true,
@@ -40,11 +45,16 @@ class SyncResult {
   }
 
   /// 建立失敗結果
+  ///
+  /// [message] 錯誤訊息
+  /// [errors] 詳細錯誤列表
   factory SyncResult.failure(String message, {List<String>? errors}) {
     return SyncResult(isSuccess: false, errorMessage: message, errors: errors ?? [message], syncedAt: DateTime.now());
   }
 
   /// 建立跳過結果 (離線或節流)
+  ///
+  /// [reason] 跳過原因
   factory SyncResult.skipped({required String reason}) {
     return SyncResult(isSuccess: true, skipReason: reason, syncedAt: DateTime.now());
   }
@@ -63,13 +73,18 @@ class SyncResult {
 /// 負責本地與雲端資料的雙向同步
 abstract interface class ISyncService {
   /// 完整同步 (行程 + 留言)
+  ///
   /// [isAuto] 是否為自動同步 (受節流限制)
   Future<SyncResult> syncAll({bool isAuto = false});
 
   /// 僅同步行程資料
+  ///
+  /// [isAuto] 是否為自動同步
   Future<SyncResult> syncItinerary({bool isAuto = false});
 
   /// 僅同步留言資料
+  ///
+  /// [isAuto] 是否為自動同步
   Future<SyncResult> syncMessages({bool isAuto = false});
 
   /// 上傳本地待同步的留言
@@ -89,9 +104,13 @@ abstract interface class ISyncService {
   DateTime? get lastMessagesSync;
 
   /// 新增留言並同步到雲端
+  ///
+  /// [message] 欲新增的留言物件
   Future<ApiResult> addMessageAndSync(Message message);
 
   /// 刪除留言並同步到雲端
+  ///
+  /// [uuid] 留言 UUID
   Future<ApiResult> deleteMessageAndSync(String uuid);
 
   /// 重設同步時間 (用於測試)

@@ -1,22 +1,48 @@
+/// 餐食類型 (早/午/晚/行動糧...)
 enum MealType {
+  /// 早早餐 (攻頂前)
   preBreakfast('早早餐'),
+
+  /// 早餐
   breakfast('早餐'),
+
+  /// 午餐
   lunch('午餐'),
+
+  /// 下午點心
   teatime('下午點心'),
+
+  /// 晚餐
   dinner('晚餐'),
+
+  /// 行動糧
   action('行動糧'),
+
+  /// 緊急/備用糧
   emergency('緊急/備用糧');
 
   final String label;
   const MealType(this.label);
 }
 
+/// 單一餐食項目
 class MealItem {
+  /// 唯一識別碼
   final String id;
+
+  /// 食物名稱
   final String name;
-  final double weight; // Grams
-  final double calories; // Kcal
+
+  /// 重量 (公克)
+  final double weight;
+
+  /// 熱量 (Kcal)
+  final double calories;
+
+  /// 數量
   final int quantity;
+
+  /// 備註
   final String? note;
 
   MealItem({
@@ -28,7 +54,7 @@ class MealItem {
     this.note,
   });
 
-  // Create a copy with some changes
+  /// 建立副本並更新欄位
   MealItem copyWith({String? name, double? weight, double? calories, int? quantity, String? note}) {
     return MealItem(
       id: id,
@@ -40,10 +66,12 @@ class MealItem {
     );
   }
 
+  /// 轉換為 JSON
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name, 'weight': weight, 'calories': calories, 'quantity': quantity, 'note': note};
   }
 
+  /// 從 JSON 建立
   factory MealItem.fromJson(Map<String, dynamic> json) {
     return MealItem(
       id: json['id'] as String? ?? '',
@@ -56,8 +84,12 @@ class MealItem {
   }
 }
 
+/// 每日餐食計畫
 class DailyMealPlan {
-  final String day; // D0, D1...
+  /// 天數 (Days), e.g. "D0", "D1"
+  final String day;
+
+  /// 餐食 map: MealType -> List<MealItem>
   final Map<MealType, List<MealItem>> meals;
 
   DailyMealPlan({required this.day, Map<MealType, List<MealItem>>? meals})

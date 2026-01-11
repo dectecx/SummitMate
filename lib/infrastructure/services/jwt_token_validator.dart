@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import '../../domain/interfaces/i_token_validator.dart';
 
-/// JWT Token Validator Implementation
-/// Decodes and validates JWT tokens on the client side.
-/// Note: Signature verification is done server-side.
+/// JWT Token 驗證器實作
+/// 在用戶端解碼並驗證 JWT Token。
+/// 注意：簽章驗證由伺服器端進行。
 class JwtTokenValidator implements ITokenValidator {
   @override
   TokenValidationResult validate(String token) {
@@ -24,20 +24,20 @@ class JwtTokenValidator implements ITokenValidator {
   @override
   TokenPayload? decode(String token) {
     try {
-      // JWT format: header.payload.signature
+      // JWT 格式: header.payload.signature
       final parts = token.split('.');
       if (parts.length != 3) {
         return null;
       }
 
-      // Decode payload (middle part)
+      // 解碼 Payload (中間部分)
       final payloadB64 = parts[1];
-      // Add padding if necessary
+      // 若需要則補齊 Padding
       final normalized = base64Url.normalize(payloadB64);
       final payloadJson = utf8.decode(base64Url.decode(normalized));
       final payloadMap = jsonDecode(payloadJson) as Map<String, dynamic>;
 
-      // Extract required fields
+      // 提取必要欄位
       final userId = payloadMap['uid'] as String?;
       final iat = payloadMap['iat'];
       final exp = payloadMap['exp'];
@@ -47,7 +47,7 @@ class JwtTokenValidator implements ITokenValidator {
         return null;
       }
 
-      // Parse timestamps (could be int seconds or milliseconds)
+      // 解析時間戳 (可能為秒或毫秒)
       final issuedAt = _parseTimestamp(iat);
       final expiresAt = _parseTimestamp(exp);
 
@@ -55,7 +55,7 @@ class JwtTokenValidator implements ITokenValidator {
         return null;
       }
 
-      // Extract additional claims
+      // 提取額外 Claims
       final claims = Map<String, dynamic>.from(payloadMap)
         ..remove('uid')
         ..remove('iat')
@@ -77,7 +77,7 @@ class JwtTokenValidator implements ITokenValidator {
   @override
   bool isExpiringSoon(String token, {Duration threshold = const Duration(minutes: 5)}) {
     final payload = decode(token);
-    if (payload == null) return true; // Treat malformed as expiring
+    if (payload == null) return true; // 視格式錯誤為即將過期
 
     return payload.remainingTime <= threshold;
   }
@@ -85,20 +85,20 @@ class JwtTokenValidator implements ITokenValidator {
   @override
   bool isExpired(String token) {
     final payload = decode(token);
-    if (payload == null) return true; // Treat malformed as expired
+    if (payload == null) return true; // 視格式錯誤為已過期
 
     return payload.isExpired;
   }
 
-  /// Parse timestamp from various formats
+  /// 解析多種格式的時間戳
   DateTime? _parseTimestamp(dynamic value) {
     if (value is int) {
-      // Check if milliseconds or seconds
+      // 檢查是毫秒還是秒
       if (value > 1000000000000) {
-        // Likely milliseconds
+        // 應為毫秒
         return DateTime.fromMillisecondsSinceEpoch(value);
       } else {
-        // Likely seconds
+        // 應為秒
         return DateTime.fromMillisecondsSinceEpoch(value * 1000);
       }
     }

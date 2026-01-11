@@ -6,6 +6,7 @@ import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_message_remote_data_source.dart';
 
+/// 留言訊息 (Message) 的遠端資料來源實作
 class MessageRemoteDataSource implements IMessageRemoteDataSource {
   static const String _source = 'MessageRemoteDataSource';
 
@@ -13,6 +14,9 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
 
   MessageRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
+  /// 取得行程的所有留言
+  ///
+  /// [tripId] 指定的行程 ID
   @override
   Future<List<Message>> getMessages(String tripId) async {
     try {

@@ -79,7 +79,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   Future<void> updateItem(GearLibraryItem item) async {
     try {
       await _repository.updateItem(item);
-      // Sync linked items (logic migrated from Provider)
+      // 同步更新已連結的裝備項目 (邏輯遷移自 Provider)
       await _syncLinkedGear(item);
       reload();
     } catch (e) {
@@ -90,13 +90,13 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
   Future<void> deleteItem(String uuid) async {
     try {
-      // Unlink logic
+      // 解除連結 (Unlink)
       final allGear = _gearRepository.getAllItems();
       final linkedItems = allGear.where((g) => g.libraryItemId == uuid).toList();
 
       for (final gear in linkedItems) {
         gear.libraryItemId = null;
-        await _gearRepository.updateItem(gear); // Assuming updateItem handles save
+        await _gearRepository.updateItem(gear); // 假設 updateItem 會處理 save
       }
 
       await _repository.deleteItem(uuid);

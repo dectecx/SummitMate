@@ -3,8 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../tools/log_service.dart';
 
-/// Client related to Google Apps Script API calls
-/// Handles common logic like Redirects (302), Web compatibility, etc.
+/// Google Apps Script API 用戶端
+/// 處理重新導向 (302)、Web 相容性等通用邏輯
 class GasApiClient {
   static const String _source = 'GasApiClient';
 
@@ -13,7 +13,7 @@ class GasApiClient {
 
   GasApiClient({Dio? dio, required String baseUrl}) : _dio = dio ?? Dio(), _baseUrl = baseUrl;
 
-  /// GET request
+  /// GET 請求
   Future<Response> get({Map<String, String>? queryParams}) async {
     final stopwatch = Stopwatch()..start();
     try {
@@ -32,18 +32,18 @@ class GasApiClient {
     }
   }
 
-  /// POST request with automated redirect handling
+  /// POST 請求 (自動處理重新導向)
   Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     final stopwatch = Stopwatch()..start();
     final action = body['action'] ?? 'unknown';
 
     try {
-      // [Web Compatibility]
-      // Web: Use text/plain to avoid CORS Preflight (OPTIONS) which GAS doesn't support.
+      // [Web 相容性]
+      // Web: 使用 text/plain 避免 CORS Preflight (OPTIONS)，因 GAS 不支援。
       final options = Options(
         contentType: kIsWeb ? 'text/plain' : 'application/json',
         extra: {'requiresAuth': requiresAuth},
-        // We need to handle 302 manually for HTML body redirects common in GAS
+        // 我們需要手動處理 302 重導向，因為 GAS 常回傳 HTML body 重導向
         followRedirects: !kIsWeb,
         validateStatus: (status) => status != null && status < 500,
       );
@@ -52,17 +52,17 @@ class GasApiClient {
       LogService.debug('[POST] 請求開始: action=$action', source: _source);
       LogService.debug('[POST] Request Body: $jsonBody', source: _source);
 
-      // Warning: Dio automatically encodes based on contentType.
-      // If 'text/plain', we must send string. If 'application/json', we can send Map.
-      // But here we might want to consistently send string to avoid Dio's auto-json logic messing with GAS?
-      // Actually GAS handles JSON text payload fine in doPost(e).
+      // Warning: Dio 會根據 contentType 自動編碼。
+      // 若為 'text/plain'，必須傳送字串。若為 'application/json'，可傳送 Map。
+      // 但為了避免 Dio 的自動 JSON 邏輯影響 GAS，這裡統一處裡。
+      // 實際上 GAS 的 doPost(e) 可以正確處裡 JSON 文字 payload。
       final data = kIsWeb ? jsonBody : body;
 
       final response = await _dio.post(_baseUrl, data: data, options: options);
 
-      // [Mobile Compatibility]
-      // 1. Standard 302 Redirect (Dio handles this automatically if followRedirects is true,
-      //    but we might have manual redirect logic desire for specific GAS behavior)
+      // [Mobile 相容性]
+      // 1. 標準 302 重導向 (若 followRedirects 為 true，Dio 會自動處理，
+      //    但我們可能需要針對 GAS 的特定行為進行手動重導向邏輯)
       if (response.statusCode == 302) {
         final location = response.headers.value('location');
         if (location != null && location.isNotEmpty) {
@@ -77,7 +77,7 @@ class GasApiClient {
         }
       }
 
-      // 2. HTML Body Redirect (Common in GAS)
+      // 2. HTML Body 重導向 (GAS 常見)
       if (response.data is String &&
           response.data.toString().contains('<HTML>') &&
           (response.data.toString().contains('HREF=') || response.data.toString().contains('href='))) {
@@ -97,7 +97,7 @@ class GasApiClient {
       }
 
       stopwatch.stop();
-      // Ensure data is Map for consistency
+      // 確保 data 為 Map 以保持一致性
       if (response.data is String) {
         try {
           response.data = jsonDecode(response.data);

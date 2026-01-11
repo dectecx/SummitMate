@@ -22,6 +22,12 @@ class MessageLoaded extends MessageState {
   final bool isSyncing;
   final String searchQuery;
 
+  /// 建構子
+  ///
+  /// [allMessages] 所有留言列表
+  /// [selectedCategory] 選擇的分類 (預設 'chat')
+  /// [isSyncing] 是否正在同步
+  /// [searchQuery] 搜尋關鍵字
   const MessageLoaded({
     required this.allMessages,
     this.selectedCategory = 'chat',

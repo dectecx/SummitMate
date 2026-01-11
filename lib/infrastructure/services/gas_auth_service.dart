@@ -12,9 +12,9 @@ import '../../domain/interfaces/i_token_validator.dart';
 import 'jwt_token_validator.dart';
 import '../tools/log_service.dart';
 
-/// GAS (Google Apps Script) Authentication Service
-/// Implements [IAuthService] for GAS backend with JWT tokens.
-/// This can be swapped with FirebaseAuthService, etc. via DI.
+/// GAS (Google Apps Script) 認證服務
+/// 實作基於 JWT Token 的 GAS 後端認證 [IAuthService]。
+/// 可透過 DI 替換為 FirebaseAuthService 等其他實作。
 class GasAuthService implements IAuthService {
   static const String _source = 'GasAuthService';
 
@@ -35,7 +35,7 @@ class GasAuthService implements IAuthService {
   bool get isOfflineMode => _isOfflineMode;
 
   // ============================================================
-  // === PUBLIC API ===
+  // === 公開 API (Public API) ===
   // ============================================================
 
   @override
@@ -59,10 +59,10 @@ class GasAuthService implements IAuthService {
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
-        // Registration requires email verification, don't save session yet
+        // 註冊需要驗證 Email，尚不儲存 Session
         LogService.info('註冊成功，需驗證 Email', source: _source);
 
-        // Parse user data from response if available
+        // 若回應包含使用者資料則解析
         UserProfile? user;
         if (apiResponse.data['user'] != null) {
           user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
@@ -124,7 +124,7 @@ class GasAuthService implements IAuthService {
     final token = await getAccessToken();
 
     if (cachedUser != null && token != null && cachedUser.email.toLowerCase() == email.toLowerCase()) {
-      // Validate token age (offline grace period)
+      // 驗證 Token 時效 (離線寬限期)
       final validationResult = _tokenValidator.validate(token);
       if (validationResult.payload != null) {
         final tokenAge = DateTime.now().difference(validationResult.payload!.issuedAt);
@@ -139,13 +139,13 @@ class GasAuthService implements IAuthService {
       }
     }
 
-    // No matching cached session
+    // 無匹配的快取 Session
     return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
   }
 
   @override
   Future<AuthResult> loginWithProvider(OAuthProvider provider) async {
-    // TODO: Implement OAuth providers in future
+    // TODO: 未來實作 OAuth Provider
     LogService.warning('OAuth login not implemented: $provider', source: _source);
     return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: 'OAuth 登入尚未實作');
   }
@@ -161,7 +161,7 @@ class GasAuthService implements IAuthService {
 
       if (apiResponse.isSuccess) {
         LogService.info('Email 驗證成功', source: _source);
-        // After verification, user needs to login
+        // 驗證後需要使用者重新登入
         return AuthResult.success(user: null);
       } else {
         LogService.warning('Email 驗證失敗: ${apiResponse.message}', source: _source);
@@ -201,21 +201,21 @@ class GasAuthService implements IAuthService {
       return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '未登入');
     }
 
-    // Check if token is expiring soon and needs refresh
+    // 檢查 Token 是否即將過期並需要刷新
     if (_tokenValidator.isExpiringSoon(token)) {
       LogService.debug('Token 即將過期，嘗試刷新', source: _source);
       final refreshResult = await refreshToken();
-      // If refresh success, return success immediately (new token saved in repo)
+      // 若刷新成功，立即回傳成功結果 (Repository 已更新)
       if (refreshResult.isSuccess && refreshResult.accessToken != null) {
         return refreshResult;
       }
-      // If refresh fails (e.g. network error, or invalid refresh token), continue to validate current token
-      // If current token is still valid, we can use it. If expired, validate API will return error.
+      // 若刷新失敗 (例如網路錯誤或 Refresh Token 無效)，繼續驗證舊 Token
+      // 若舊 Token 仍有效則繼續使用。若已過期，API 驗證將會回傳錯誤。
       LogService.warning('Token 刷新失敗，繼續驗證舊 Token', source: _source);
     }
 
     try {
-      // Use accessToken in request
+      // 使用 Access Token 發送請求
       final response = await _apiClient.post({'action': ApiConfig.actionAuthValidate, 'accessToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -223,7 +223,7 @@ class GasAuthService implements IAuthService {
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
 
-        // Check if API returned new tokens (e.g. legacy upgrade)
+        // 檢查 API 是否回傳新 Token (例如舊版升級)
         final newAccessToken = apiResponse.data['accessToken'] as String?;
         final newRefreshToken = apiResponse.data['refreshToken'] as String?;
 
@@ -231,15 +231,15 @@ class GasAuthService implements IAuthService {
           await _sessionRepo.saveSession(newAccessToken, user, refreshToken: newRefreshToken);
           return AuthResult.success(user: user, accessToken: newAccessToken, refreshToken: newRefreshToken);
         } else {
-          // Update cache user
-          // We might want to keep the current tokens if no new ones provided
+          // 更新快取的使用者資料
+          // 若無新 Token 則保持原樣
           await _sessionRepo.saveSession(token, user);
         }
 
         _isOfflineMode = false;
         return AuthResult.success(user: user, accessToken: token);
       } else {
-        // If token expired/invalid, try refresh one last time
+        // 若 Token 過期/無效，嘗試最後一次刷新
         if (apiResponse.code == GasErrorCodes.authAccessTokenExpired) {
           // AUTH_TOKEN_EXPIRED
           final refreshResult = await refreshToken();
@@ -252,12 +252,12 @@ class GasAuthService implements IAuthService {
         return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
       }
     } catch (e) {
-      // Network error -> Check local cache (Offline Support)
+      // 網路錯誤 -> 檢查本地快取 (離線支援)
       LogService.warning('驗證 Token 失敗 (可能離線): $e', source: _source);
       final cachedUser = await getCachedUserProfile();
 
       if (cachedUser != null) {
-        // Check offline grace period
+        // 檢查離線寬限期
         final validationResult = _tokenValidator.validate(token);
         if (validationResult.payload != null) {
           final tokenAge = DateTime.now().difference(validationResult.payload!.issuedAt);
@@ -292,7 +292,7 @@ class GasAuthService implements IAuthService {
         final user = await _sessionRepo.getUserProfile();
 
         if (user != null) {
-          // Save new access token, keep old refresh token
+          // 儲存新 Access Token，保留舊 Refresh Token
           await _sessionRepo.saveSession(newAccessToken, user, refreshToken: refreshToken);
           LogService.info('Token 刷新成功', source: _source);
           return AuthResult.success(user: user, accessToken: newAccessToken, refreshToken: refreshToken);
@@ -303,7 +303,7 @@ class GasAuthService implements IAuthService {
         LogService.warning('刷新 Token 失敗: ${apiResponse.message}', source: _source);
         if (apiResponse.code == GasErrorCodes.authAccessTokenExpired ||
             apiResponse.code == GasErrorCodes.authAccessTokenInvalid) {
-          // Refresh token expired or invalid -> logout
+          // Refresh Token 過期或無效 -> 登出
           await logout();
         }
         return AuthResult.failure(errorCode: apiResponse.code, errorMessage: apiResponse.message);
@@ -358,7 +358,7 @@ class GasAuthService implements IAuthService {
       if (apiResponse.isSuccess) {
         final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
 
-        // Update local session with new user profile
+        // 更新本地 Session 中的使用者資料
         await _sessionRepo.saveSession(token, user);
 
         LogService.info('個人資料更新成功: ${user.displayName}', source: _source);

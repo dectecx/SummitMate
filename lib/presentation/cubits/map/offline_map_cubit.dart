@@ -60,7 +60,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     required int minZoom,
     required int maxZoom,
     String? name,
-    Function(double progress)? onProgress, // Callback not strictly needed if we watch state, but handy
+    Function(double progress)? onProgress, // 進度回調 (非必須，可透過狀態監聽)
   }) async {
     final hasConnection = await InternetConnectionChecker.createInstance().hasConnection;
     LogService.info(
@@ -70,8 +70,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
 
     if (!kIsWeb && !hasConnection) {
       LogService.warning('No internet connection. Task rejected.', source: 'OfflineMapCubit');
-      // Ideally we should emit an ephemeral error or throw so UI catches it
-      // But here we rely on UI catching exception if awaited
+      // 應發送錯誤狀態或拋出例外供 UI 處理
       throw Exception('無網路連線，無法下載地圖。');
     }
 
@@ -99,13 +98,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     final currentState = state as OfflineMapLoaded;
     final currentQueue = currentState.downloadQueue;
 
-    // Find next pending task
-    // Note: We need to reference the objects in the list.
-    // Since we emit new lists, we must be careful.
-    // However, the Task objects themselves are mutable (we defined them effectively mutable status).
-    // Cubit state usually should be immutable.
-    // But for progress updates, replacing the whole task object every time is safer for equality checks.
-
+    // 尋找下一個待處理任務
     final nextTaskIndex = currentQueue.indexWhere((t) => t.status == TaskStatus.pending);
     if (nextTaskIndex == -1) {
       _isQueueProcessing = false;
@@ -114,11 +107,11 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
 
     _isQueueProcessing = true;
 
-    // Convert to working queue copy to update status
+    // 複製佇列以更新狀態
     var workingQueue = List<DownloadTask>.from(currentQueue);
     var task = workingQueue[nextTaskIndex];
 
-    // Update status to downloading
+    // 更新狀態為下載中
     task.status = TaskStatus.downloading;
     workingQueue[nextTaskIndex] = task;
     emit(currentState.copyWith(downloadQueue: workingQueue));
@@ -138,19 +131,10 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
 
       final downloadTask = _store.download.startForeground(region: downloadable);
 
-      // Must re-fetch state/queue because it might have changed (e.g. cancelled)
+      // 重新取得狀態/佇列，防止因外部操作導致狀態變更
       if (state is! OfflineMapLoaded) return;
 
-      // Update task with subscription
-      // workingQueue = List<DownloadTask>.from((state as OfflineMapLoaded).downloadQueue);
-      // task = workingQueue[nextTaskIndex]; // Index might have changed if tasks removed?
-      // Ideally find by ID.
-
-      // Since subscription is not serializable/equatable easily, sticking it in the task object is a pragmatic choice for this migration.
-      // But we need to keep the reference alive.
-      // Or we can just store subscription in the task object and not emit it?
-      // But we need to cancel it.
-
+      // 監聽下載進度
       task.subscription = downloadTask.downloadProgress.listen(
         (progress) {
           if (state is! OfflineMapLoaded) return;
@@ -160,9 +144,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
           if (idx != -1) {
             final t = q[idx];
             t.progress = progress.percentageProgress / 100.0;
-            // t.successfulTiles...
-            // We are mutating `t` which is in `q`.
-            // Then emitting `q`.
+            // 更新佇列並發送新狀態
             emit(loadedState.copyWith(downloadQueue: q));
           }
         },
@@ -188,8 +170,6 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
             final q = List<DownloadTask>.from(loadedState.downloadQueue);
             final idx = q.indexWhere((t) => t.id == task.id);
             if (idx != -1) {
-              // Check failure logic if needed (FMTC v10 doesn't expose failedTiles easily in onDone? It's in progress event probably)
-              // Assuming success for simplicity unless error
               q[idx].status = TaskStatus.completed;
               q[idx].progress = 1.0;
               emit(loadedState.copyWith(downloadQueue: q));
@@ -275,7 +255,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
       await _store.manage.delete();
       await _store.manage.create();
       LogService.info('Store cleared and recreated.', source: 'OfflineMapCubit');
-      // Update stats
+      // 更新統計資訊
       getStoreStats();
     } catch (e) {
       LogService.error('Error clearing store: $e', source: 'OfflineMapCubit');

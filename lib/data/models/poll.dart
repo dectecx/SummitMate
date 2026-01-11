@@ -6,54 +6,68 @@ part 'poll.g.dart';
 @HiveType(typeId: 6)
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Poll {
+  /// 投票 ID (PK)
   @HiveField(0)
   @JsonKey(name: 'poll_id')
   final String id;
 
+  /// 標題
   @HiveField(1)
   final String title;
 
+  /// 描述
   @HiveField(2)
   @JsonKey(defaultValue: '', fromJson: _parseString)
   final String description;
 
+  /// 建立者 ID
   @HiveField(3)
   final String creatorId;
 
+  /// 建立時間
   @HiveField(4)
   final DateTime createdAt;
 
+  /// 截止時間
   @HiveField(5)
   final DateTime? deadline;
 
+  /// 是否允許新增選項
   @HiveField(6)
   @JsonKey(defaultValue: false)
   final bool isAllowAddOption;
 
+  /// 選項上限
   @HiveField(7)
   @JsonKey(defaultValue: 20, fromJson: _parseInt)
   final int maxOptionLimit;
 
+  /// 是否允許複選
   @HiveField(8)
   @JsonKey(defaultValue: false)
   final bool allowMultipleVotes;
 
+  /// 結果顯示方式 ('realtime' 或 'blind')
   @HiveField(9)
   @JsonKey(defaultValue: 'realtime')
-  final String resultDisplayType; // 'realtime' or 'blind'
+  final String resultDisplayType;
 
+  /// 狀態 ('active' 或 'ended')
   @HiveField(10)
   @JsonKey(defaultValue: 'active')
-  final String status; // 'active', 'ended'
+  final String status;
 
+  /// 投票選項列表
   @HiveField(11)
   @JsonKey(defaultValue: [])
   final List<PollOption> options;
 
+  /// 我的投票紀錄 (選項 ID 列表)
   @HiveField(12)
   @JsonKey(defaultValue: [], fromJson: _parseStringList)
-  final List<String> myVotes; // List of optionIds I voted for
+  final List<String> myVotes;
 
+  /// 總票數
   @HiveField(13)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int totalVotes;
@@ -75,11 +89,13 @@ class Poll {
     this.totalVotes = 0,
   });
 
+  /// 是否已過期
   bool get isExpired {
     if (deadline == null) return false;
     return DateTime.now().isAfter(deadline!);
   }
 
+  /// 是否活動中 (未結束且未過期)
   bool get isActive => status == 'active' && !isExpired;
 
   static int _parseInt(dynamic value) {
@@ -105,23 +121,29 @@ class Poll {
 @HiveType(typeId: 7)
 @JsonSerializable(fieldRename: FieldRename.snake)
 class PollOption {
+  /// 選項 ID (PK)
   @HiveField(0)
   @JsonKey(name: 'option_id')
   final String id;
 
+  /// 關聯的投票 ID (FK)
   @HiveField(1)
   final String pollId;
 
+  /// 選項文字
   @HiveField(2)
   final String text;
 
+  /// 選項建立者
   @HiveField(3)
   final String creatorId;
 
+  /// 得票數
   @HiveField(4)
   @JsonKey(defaultValue: 0, fromJson: Poll._parseInt)
   final int voteCount;
 
+  /// 投票者列表 (List of Maps, containing voter info)
   @HiveField(5)
   @JsonKey(defaultValue: [], fromJson: _parseVoters)
   final List<Map<String, dynamic>> voters;

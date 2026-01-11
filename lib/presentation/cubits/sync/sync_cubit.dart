@@ -58,6 +58,7 @@ class SyncCubit extends Cubit<SyncState> {
     }
   }
 
+  /// 同步行程資料
   Future<void> syncItinerary() async {
     await syncAll();
   }

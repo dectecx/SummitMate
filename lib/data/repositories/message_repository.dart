@@ -5,10 +5,11 @@ import '../models/message.dart';
 import 'interfaces/i_message_repository.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';
 import '../datasources/interfaces/i_message_remote_data_source.dart';
-import 'package:hive/hive.dart'; // For BoxEvent
+import 'package:hive/hive.dart';
 
-/// Message Repository
-/// Coordinates Local and Remote Data Sources
+/// 留言 Repository
+///
+/// 協調本地資料庫 (Hive) 與遠端資料來源 (API)，負責留言資料的 CRUD 與同步。
 class MessageRepository implements IMessageRepository {
   static const String _source = 'MessageRepository';
 
@@ -24,12 +25,13 @@ class MessageRepository implements IMessageRepository {
        _remoteDataSource = remoteDataSource ?? getIt<IMessageRemoteDataSource>(),
        _connectivity = connectivity ?? getIt<IConnectivityService>();
 
+  /// 初始化 Repository (主要是本地資料庫)
   @override
   Future<void> init() async {
     await _localDataSource.init();
   }
 
-  /// 取得所有留言
+  /// 取得所有留言 (依時間倒序)
   @override
   List<Message> getAllMessages() {
     final messages = _localDataSource.getAll();
@@ -38,6 +40,8 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 依分類取得留言
+  ///
+  /// [category] 留言分類 (e.g., "Gear")
   @override
   List<Message> getMessagesByCategory(String category) {
     final messages = _localDataSource.getAll().where((m) => m.category == category).toList();
@@ -46,6 +50,8 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 取得主留言 (非回覆)
+  ///
+  /// [category] 選擇性篩選分類
   @override
   List<Message> getMainMessages({String? category}) {
     var messages = _localDataSource.getAll().where((m) => m.parentId == null);
@@ -59,7 +65,9 @@ class MessageRepository implements IMessageRepository {
     return result;
   }
 
-  /// 取得子留言 (回覆)
+  /// 取得指定留言的回覆列表
+  ///
+  /// [parentUuid] 父留言的 UUID
   @override
   List<Message> getReplies(String parentUuid) {
     final messages = _localDataSource.getAll().where((m) => m.parentId == parentUuid).toList();
@@ -68,12 +76,16 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 依 UUID 取得留言
+  ///
+  /// [uuid] 留言 UUID
   @override
   Message? getByUuid(String uuid) {
     return _localDataSource.getByUuid(uuid);
   }
 
   /// 新增留言
+  ///
+  /// [message] 欲新增的留言物件
   @override
   Future<void> addMessage(Message message) async {
     await _localDataSource.add(message);
@@ -81,26 +93,25 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 刪除留言 (依 UUID)
+  ///
+  /// [uuid] 欲刪除的留言 UUID
   @override
   Future<void> deleteByUuid(String uuid) async {
     final item = _localDataSource.getByUuid(uuid);
     if (item != null) {
-      // Hive key access if Message extends HiveObject and is attached
+      // 若已載入 HiveObject，直接 delete
       if (item.isInBox) {
         await item.delete();
       } else {
-        // Fallback if not attached (shouldn't happen if retrieved from box)
-        // But MessageLocalDataSource.getByUuid matches filters filter?
-        // No, getByUuid uses firstWhere.
-        // LocalDataSource.delete takes key.
-        // I need key.
-        // item.key works if in box.
+        // 否則透過 LocalDataSource 刪除 (需知道 key)
         await _localDataSource.delete(item.key);
       }
     }
   }
 
   /// 批次同步留言 (從雲端) - 完全覆蓋模式 (Legacy/Optimization)
+  ///
+  /// [cloudMessages] 雲端下載的留言列表
   @override
   Future<void> syncFromCloud(List<Message> cloudMessages) async {
     // 清除現有資料，用雲端資料完全覆蓋
@@ -113,7 +124,9 @@ class MessageRepository implements IMessageRepository {
     await saveLastSyncTime(DateTime.now());
   }
 
-  /// Sync Implementation (Autonomous)
+  /// 自動同步 (自主判斷連線狀態)
+  ///
+  /// [tripId] 當前行程 ID
   @override
   Future<void> sync(String tripId) async {
     if (_connectivity.isOffline) {
@@ -133,6 +146,8 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 取得待上傳的本地留言 (尚未在雲端)
+  ///
+  /// [cloudUuids] 已存在於雲端的 UUID 集合
   @override
   List<Message> getPendingMessages(Set<String> cloudUuids) {
     return _localDataSource.getAll().where((m) => !cloudUuids.contains(m.uuid)).toList();

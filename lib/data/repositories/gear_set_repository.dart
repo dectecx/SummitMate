@@ -7,6 +7,9 @@ import 'interfaces/i_gear_set_repository.dart';
 import '../../domain/interfaces/i_gear_cloud_service.dart';
 import '../datasources/interfaces/i_gear_key_local_data_source.dart';
 
+/// 裝備組合 Repository
+///
+/// 負責協調雲端裝備組合 (GearSet) 與本地 Key 儲存。
 class GearSetRepository implements IGearSetRepository {
   final IGearCloudService _remoteDataSource;
   final IGearKeyLocalDataSource _localDataSource;
@@ -15,18 +18,22 @@ class GearSetRepository implements IGearSetRepository {
     : _remoteDataSource = remoteDataSource ?? getIt<IGearCloudService>(),
       _localDataSource = localDataSource ?? getIt<IGearKeyLocalDataSource>();
 
-  // --- Remote ---
+  // --- Remote (雲端操作) ---
 
+  /// 取得所有公開/分享的裝備組合
   @override
   Future<GearCloudResult<List<GearSet>>> getGearSets() => _remoteDataSource.getGearSets();
 
+  /// 透過 Key 取得單一裝備組合
   @override
   Future<GearCloudResult<GearSet>> getGearSetByKey(String key) => _remoteDataSource.getGearSetByKey(key);
 
+  /// 下載並匯入裝備組合至指定行程
   @override
   Future<GearCloudResult<GearSet>> downloadGearSet(String uuid, {String? key}) =>
       _remoteDataSource.downloadGearSet(uuid, key: key);
 
+  /// 上傳/分享裝備組合
   @override
   Future<GearCloudResult<GearSet>> uploadGearSet({
     required String tripId,
@@ -46,18 +53,22 @@ class GearSetRepository implements IGearSetRepository {
     key: key,
   );
 
+  /// 刪除雲端裝備組合
   @override
   Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key) => _remoteDataSource.deleteGearSet(uuid, key);
 
-  // --- Local ---
+  // --- Local (本地紀錄) ---
 
+  /// 取得已上傳的組合 Key 紀錄
   @override
   Future<List<GearKeyRecord>> getUploadedKeys() => _localDataSource.getUploadedKeys();
 
+  /// 儲存上傳紀錄 (Key)
   @override
   Future<void> saveUploadedKey(String key, String title, String visibility) =>
       _localDataSource.saveUploadedKey(key, title, visibility);
 
+  /// 移除上傳紀錄
   @override
   Future<void> removeUploadedKey(String key) => _localDataSource.removeUploadedKey(key);
 }

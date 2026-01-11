@@ -35,7 +35,7 @@ class WeatherService implements IWeatherService {
     }
   }
 
-  // Get cached weather. Only fetch new if forceRefresh is true or cache is missing.
+  // 取得快取天氣。僅在 forceRefresh 為真或無快取時取得新資料。
   @override
   Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
     final dynamicCacheKey = 'weather_$locationName';
@@ -45,24 +45,24 @@ class WeatherService implements IWeatherService {
     if (isOffline) {
       if (cached != null) {
         LogService.info(
-          'Offline Mode: Returning cached weather for $locationName (Stale: ${cached.isStale})',
+          '離線模式: 回傳 $locationName 的快取天氣 (Stale: ${cached.isStale})',
           source: 'WeatherService',
         );
         return cached;
       }
-      LogService.warning('Offline Mode: No cache for $locationName', source: 'WeatherService');
+      LogService.warning('離線模式: 無 $locationName 的快取資料', source: 'WeatherService');
       throw Exception('目前為離線模式且無快取資料');
     }
 
-    // If forcing refresh
+    // 若強制重新整理
     if (forceRefresh) {
-      // Check if cache is fresh enough (e.g. < 5 minutes) to avoid spamming
+      // 檢查快取是否夠新 (例如 < 5 分鐘) 以避免過於頻繁請求
       if (cached != null) {
         final now = DateTime.now();
         final diff = now.difference(cached.timestamp);
         if (diff.inMinutes < 5) {
           LogService.info(
-            'Weather cache is fresh (${diff.inMinutes}m ago), ignoring force refresh.',
+            '天氣快取夠新 (${diff.inMinutes}m 前), 忽略強制重新整理。',
             source: 'WeatherService',
           );
           return cached;
@@ -74,46 +74,46 @@ class WeatherService implements IWeatherService {
         _box?.put(dynamicCacheKey, weather);
         return weather;
       } catch (e) {
-        LogService.error('Failed to force refresh weather: $e', source: 'WeatherService');
-        // If fetch fails, fall back to cache if available
+        LogService.error('強制重新整理天氣失敗: $e', source: 'WeatherService');
+        // 若失敗，則退回使用快取 (若有)
         return cached;
       }
     }
 
-    // If not forcing refresh, attempt to return cache (even if stale)
+    // 若非強制重新整理，嘗試回傳快取 (即使過期)
     if (cached != null) {
       if (cached.isStale) {
-        // Option: We could auto-fetch background, but user requested Manual Only.
-        // So we just return stale cache. UI can show "Data out of date" warning if needed.
-        LogService.info('Returning stale cache for $locationName', source: 'WeatherService');
+        // 選項: 我們可以在背景自動更新，但若用戶僅要求手動更新。
+        // 所以這裡回傳過期快取。UI 可顯示「資料已過期」警告。
+        LogService.info('回傳 $locationName 的過期快取', source: 'WeatherService');
       }
       return cached;
     }
 
-    // No cache and not force refresh -> Auto-fetch
+    // 無快取且非強制重新整理 -> 自動取得
     try {
-      LogService.info('Cache miss for $locationName, fetching...', source: 'WeatherService');
+      LogService.info('$locationName 無快取，開始取得...', source: 'WeatherService');
       final weather = await _fetchWeatherInternal(locationName: locationName);
       _box?.put(dynamicCacheKey, weather);
       return weather;
     } catch (e) {
-      LogService.error('Failed to auto-fetch weather: $e', source: 'WeatherService');
+      LogService.error('自動取得天氣失敗: $e', source: 'WeatherService');
       return null;
     }
   }
 
-  /// Internal fetch method (formerly fetchWeather)
+  /// 內部取得方法
   Future<WeatherData> _fetchWeatherInternal({required String locationName}) async {
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
     if (isOffline) {
-      throw Exception('Offline Mode: Cannot fetch weather');
+      throw Exception('離線模式: 無法取得天氣');
     }
 
-    // Check cache (double check within fetch if needed, but redundant here if logic is above)
-    // Keeping logic simple: Always fetch fresh here.
+    // 檢查快取 (雙重檢查，但若邏輯在上方則此處冗餘)
+    // 保持邏輯簡單: 這裡總是取得新資料。
 
-    // Determine if we should use CWA or GAS
-    // Logic: If resolved location looks like a Township/District (contains 縣, 市, 區, 鄉, 鎮), try CWA.
+    // 決定使用 CWA 或 GAS
+    // 邏輯: 若地點名稱看似鄉鎮市區 (包含縣, 市, 區, 鄉, 鎮)，嘗試 CWA。
     if (locationName.contains('縣') ||
         locationName.contains('市') ||
         locationName.contains('區') ||
@@ -126,91 +126,91 @@ class WeatherService implements IWeatherService {
   }
 
   Future<WeatherData> _fetchHikingWeather(String locationName) async {
-    // Call GAS API
+    // 呼叫 GAS API
     final baseUrl = EnvConfig.getApiUrl();
     final url = Uri.parse('$baseUrl?action=${ApiConfig.actionWeatherGet}');
 
-    LogService.info('Fetching hiking weather from GAS for: $locationName', source: 'WeatherService');
+    LogService.info('從 GAS 取得登山天氣: $locationName', source: 'WeatherService');
 
     try {
       final response = await http.get(url);
 
-      LogService.info('GAS API Status: ${response.statusCode}', source: 'WeatherService');
+      LogService.info('GAS API 狀態: ${response.statusCode}', source: 'WeatherService');
 
       if (response.statusCode == 200) {
-        // Parse new GAS format: { code, data: { weather: [...] }, message }
+        // 解析新的 GAS 格式: { code, data: { weather: [...] }, message }
         final bodyMsgs = utf8.decode(response.bodyBytes);
-        LogService.debug('GAS API Response (Length: ${bodyMsgs.length})', source: 'WeatherService');
+        LogService.debug('GAS API 回應 (長度: ${bodyMsgs.length})', source: 'WeatherService');
 
         final jsonMap = json.decode(bodyMsgs) as Map<String, dynamic>;
 
-        // Check if it's the new format
+        // 檢查格式
         if (jsonMap['code'] != '0000') {
-          throw Exception('GAS API Error: ${jsonMap['message']}');
+          throw Exception('GAS API 錯誤: ${jsonMap['message']}');
         }
-        // Extract weather array from data.weather
+        // 從 data.weather 提取天氣陣列
         final data = jsonMap['data'] as Map<String, dynamic>? ?? {};
         final List<dynamic> jsonList = data['weather'] as List<dynamic>? ?? [];
 
         if (jsonList.isEmpty) {
-          throw Exception('No weather data returned from GAS');
+          throw Exception('GAS 未回傳天氣資料');
         }
 
         return _parseAndCacheWeatherData(jsonList, locationName);
       } else {
-        throw Exception('GAS API Error: ${response.statusCode}');
+        throw Exception('GAS API 錯誤: ${response.statusCode}');
       }
     } catch (e) {
-      LogService.error('GAS API Request failed: $e', source: 'WeatherService');
+      LogService.error('GAS API 請求失敗: $e', source: 'WeatherService');
       rethrow;
     }
   }
 
-  /// Parse weather data and cache all locations
+  /// 解析天氣資料並快取所有地點
   WeatherData _parseAndCacheWeatherData(List<dynamic> jsonList, String locationName) {
-    // --- OPTIMIZATION: Cache ALL locations from this response ---
-    // 1. Identify all unique locations
+    // --- 最佳化: 快取此回應中的所有地點 ---
+    // 1. 識別所有唯一地點
     final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
-    LogService.info('GAS returned data for: ${uniqueLocations.join(', ')}', source: 'WeatherService');
+    LogService.info('GAS 回傳資料地點: ${uniqueLocations.join(', ')}', source: 'WeatherService');
 
-    // 2. Parse and Cache each location
+    // 2. 解析並快取每個地點
     for (var loc in uniqueLocations) {
       try {
         final weather = _parseGasWeatherData(jsonList, loc);
         final key = 'weather_$loc';
         _box?.put(key, weather);
-        LogService.info('Cached bulk data for: $loc', source: 'WeatherService');
+        LogService.info('已快取整批資料: $loc', source: 'WeatherService');
       } catch (e) {
-        LogService.error('Failed to parse/cache bulk data for $loc: $e', source: 'WeatherService');
+        LogService.error('解析/快取整批資料失敗 $loc: $e', source: 'WeatherService');
       }
     }
 
-    // 3. Return the requested location's data
+    // 3. 回傳請求地點的資料
     return _parseGasWeatherData(jsonList, locationName);
   }
 
   Future<WeatherData> _fetchCwaWeather(String locationName) async {
-    LogService.info('Fetching town weather from CWA for: $locationName', source: 'WeatherService');
+    LogService.info('從 CWA 取得城鎮天氣: $locationName', source: 'WeatherService');
     try {
       return await _cwaSource.getWeather(locationName);
     } catch (e) {
-      LogService.error('CWA Source fetch failed: $e', source: 'WeatherService');
+      LogService.error('CWA Source 取得失敗: $e', source: 'WeatherService');
       rethrow;
     }
   }
 
   WeatherData _parseGasWeatherData(List<dynamic> list, String locationName) {
-    // 1. Filter by Location
+    // 1. 依地點過濾
     final locationRows = list.where((item) => item['Location'] == locationName).toList();
 
     if (locationRows.isEmpty) {
-      throw Exception('Location "$locationName" not found in GAS data');
+      throw Exception('GAS 資料中找不到地點 "$locationName"');
     }
 
-    // 2. Sort by StartTime
+    // 2. 依 StartTime 排序
     locationRows.sort((a, b) => a['StartTime'].compareTo(b['StartTime']));
 
-    // 3. Current Weather (First item covering current time, or just the first item)
+    // 3. 目前天氣 (涵蓋目前時間的第一筆，或直接取第一筆)
     final current = locationRows.first;
 
     final temp = double.tryParse(current['T'].toString()) ?? 0.0;
@@ -219,12 +219,12 @@ class WeatherService implements IWeatherService {
     final windSpeed = double.tryParse(current['WS'].toString()) ?? 0.0;
     final wx = current['Wx'].toString();
 
-    // Apparent Temp (Avg of Max/Min if available)
+    // 體感溫度 (Apparent Temp) (若有 Max/Min 則取平均)
     final maxAT = double.tryParse(current['MaxAT'].toString()) ?? 0.0;
     final minAT = double.tryParse(current['MinAT'].toString()) ?? 0.0;
     final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
 
-    // IssueTime (if available)
+    // 發布時間 (IssueTime) (若有)
     DateTime? issueTime;
     if (current.containsKey('IssueTime') && current['IssueTime'].toString().isNotEmpty) {
       try {
@@ -232,7 +232,7 @@ class WeatherService implements IWeatherService {
       } catch (_) {}
     }
 
-    // 4. Build Daily Forecast
+    // 4. 建立每日預報 (Daily Forecast)
     final dailyMap = <String, Map<String, dynamic>>{};
 
     for (var row in locationRows) {
@@ -252,7 +252,7 @@ class WeatherService implements IWeatherService {
         },
       );
 
-      // Wx logic (Day 06-18, Night 18-06)
+      // Wx 自訂邏輯 (白天 06-18, 晚上 18-06)
       final val = row['Wx'].toString();
       if (start.hour >= 6 && start.hour < 18) {
         if (dailyMap[dateKey]!['dayCondition'] == '') {
@@ -334,8 +334,8 @@ class WeatherService implements IWeatherService {
     );
   }
 
-  // Simple local Sunrise/Sunset calculation
-  // Source: General algorithms approx (offline friendly)
+  // 簡易本地日出日落計算
+  // 來源: 通用演算法近似值 (便於離線使用)
   Map<String, DateTime> _calculateSunTimes(DateTime date, double lat, double lng) {
     // Julian Date
     final startOfYear = DateTime(date.year, 1, 1, 0, 0, 0);
@@ -381,29 +381,29 @@ class WeatherService implements IWeatherService {
   Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
 
-    // Resolve location
+    // 解析地點
     final location = await _locationResolver.resolve(lat, lon);
     if (location == null) {
-      LogService.warning('Could not resolve location for $lat, $lon', source: 'WeatherService');
+      LogService.warning('無法解析座標 $lat, $lon', source: 'WeatherService');
       return null;
     }
 
     final locationName = location.name;
     final dynamicCacheKey = 'weather_$locationName';
 
-    // Check cache
+    // 檢查快取
     if (!forceRefresh && _box != null && _box!.containsKey(dynamicCacheKey)) {
       final cached = _box!.get(dynamicCacheKey);
       if (cached != null && !cached.isStale) {
         LogService.info(
-          'Returning cached weather for $locationName (Freshness: ${DateTime.now().difference(cached.timestamp).inMinutes}m)',
+          '回傳 $locationName 的快取天氣 (新鮮度: ${DateTime.now().difference(cached.timestamp).inMinutes}m)',
           source: 'WeatherService',
         );
         return cached;
       }
       if (isOffline && cached != null) {
         LogService.warning(
-          'Offline Mode: Returning cached (stale) weather for $locationName',
+          '離線模式: 回傳 $locationName 的過期快取',
           source: 'WeatherService',
         );
         return cached;
@@ -411,12 +411,12 @@ class WeatherService implements IWeatherService {
     }
 
     if (isOffline) {
-      LogService.warning('Offline and no cache for $locationName', source: 'WeatherService');
+      LogService.warning('$locationName 無快取且為離線模式', source: 'WeatherService');
       return null;
     }
 
-    // Determine if we should use CWA or GAS
-    // Logic: If resolved location looks like a Township/District (contains 縣, 市, 區, 鄉, 鎮), try CWA.
+    // 決定使用 CWA 或 GAS
+    // 邏輯: 若地點名稱看似鄉鎮市區 (包含縣, 市, 區, 鄉, 鎮)，嘗試 CWA。
     if (locationName.contains('縣') ||
         locationName.contains('市') ||
         locationName.contains('區') ||
@@ -427,12 +427,12 @@ class WeatherService implements IWeatherService {
         _box?.put(dynamicCacheKey, weather);
         return weather;
       } catch (e) {
-        LogService.error('Failed to fetch CWA weather for $locationName: $e', source: 'WeatherService');
+        LogService.error('CWA 天氣取得失敗 $locationName: $e', source: 'WeatherService');
         return null;
       }
     }
 
-    // Fallback if resolver returns something else ??
+    // 若解析器回傳其他格式的後備方案 ??
     return null;
   }
 }
