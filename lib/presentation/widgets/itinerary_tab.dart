@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:intl/intl.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import '../cubits/itinerary/itinerary_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import 'itinerary_edit_dialog.dart';
+import 'day_management_dialog.dart';
 
 /// Tab 1: 行程頁
 class ItineraryTab extends StatefulWidget {
@@ -135,27 +137,48 @@ class _ItineraryTabState extends State<ItineraryTab> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // 天數選擇器
+                        // 天數選擇器 (可滑動)
                         Expanded(
-                          child: SegmentedButton<String>(
-                            segments: const [
-                              ButtonSegment(value: 'D0', label: Text('D0')),
-                              ButtonSegment(value: 'D1', label: Text('D1')),
-                              ButtonSegment(value: 'D2', label: Text('D2')),
-                            ],
-                            selected: {selectedDay},
-                            onSelectionChanged: (selected) {
-                              context.read<ItineraryCubit>().selectDay(selected.first);
-                            },
-                            style: ButtonStyle(
-                              visualDensity: VisualDensity.compact,
-                              padding: WidgetStateProperty.all(EdgeInsets.zero),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
+                          child: SizedBox(
+                            height: 40,
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(context).copyWith(
+                                dragDevices: {
+                                  // Enable touch and mouse drag for desktop web support
+                                  PointerDeviceKind.touch,
+                                  PointerDeviceKind.mouse,
+                                },
+                              ),
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: (state as ItineraryLoaded).dayNames.length,
+                                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                itemBuilder: (ctx, index) {
+                                  final dayName = (state as ItineraryLoaded).dayNames[index];
+                                  final isSelected = dayName == selectedDay;
+                                  return ChoiceChip(
+                                    label: Text(dayName),
+                                    selected: isSelected,
+                                    onSelected: (_) => context.read<ItineraryCubit>().selectDay(dayName),
+                                    showCheckmark: false,
+                                    visualDensity: VisualDensity.compact,
+                                    labelStyle: TextStyle(
+                                      color: isSelected ? Theme.of(context).colorScheme.onPrimaryContainer : null,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        // 管理天數按鈕
+                        IconButton(
+                          icon: const Icon(Icons.edit_calendar, size: 20),
+                          tooltip: '管理天數',
+                          onPressed: () => showDialog(context: context, builder: (_) => const DayManagementDialog()),
+                        ),
+                        const SizedBox(width: 4),
                         // 更新時間與按鈕 (置右)
                         Material(
                           color: Colors.grey.withValues(alpha: 0.1),

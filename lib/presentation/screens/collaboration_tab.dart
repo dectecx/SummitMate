@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'message_list_screen.dart';
 import 'poll_list_screen.dart';
 
+/// 協作頁面 (Tab 3)
+///
+/// 包含 [MessageListScreen] (留言板) 與 [PollListScreen] (投票活動)。
 class CollaborationTab extends StatelessWidget {
   const CollaborationTab({super.key});
 

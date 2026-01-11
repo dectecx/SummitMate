@@ -4,6 +4,9 @@ import '../cubits/poll/poll_cubit.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../../infrastructure/tools/toast_service.dart';
 
+/// 建立投票畫面
+///
+/// 允許使用者設定標題、描述、截止時間以及多個選項。
 class CreatePollScreen extends StatefulWidget {
   const CreatePollScreen({super.key});
 

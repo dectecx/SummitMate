@@ -20,20 +20,33 @@ class ItineraryLoaded extends ItineraryState {
   final List<ItineraryItem> items;
   final String selectedDay;
   final bool isEditMode;
+  final List<String> dayNames;
 
   /// 建構子
   ///
   /// [items] 行程節點列表
   /// [selectedDay] 目前選擇的天數 (預設 'D1')
   /// [isEditMode] 是否處於編輯模式
-  const ItineraryLoaded({required this.items, this.selectedDay = 'D1', this.isEditMode = false});
+  /// [dayNames] 天數名稱列表 (預設空)
+  const ItineraryLoaded({
+    required this.items,
+    this.selectedDay = 'D1',
+    this.isEditMode = false,
+    this.dayNames = const [],
+  });
 
   /// CopyWith method for updating state
-  ItineraryLoaded copyWith({List<ItineraryItem>? items, String? selectedDay, bool? isEditMode}) {
+  ItineraryLoaded copyWith({
+    List<ItineraryItem>? items,
+    String? selectedDay,
+    bool? isEditMode,
+    List<String>? dayNames,
+  }) {
     return ItineraryLoaded(
       items: items ?? this.items,
       selectedDay: selectedDay ?? this.selectedDay,
       isEditMode: isEditMode ?? this.isEditMode,
+      dayNames: dayNames ?? this.dayNames,
     );
   }
 
@@ -52,7 +65,7 @@ class ItineraryLoaded extends ItineraryState {
   }
 
   @override
-  List<Object?> get props => [items, selectedDay, isEditMode];
+  List<Object?> get props => [items, selectedDay, isEditMode, dayNames];
 }
 
 class ItineraryError extends ItineraryState {

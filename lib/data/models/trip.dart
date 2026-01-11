@@ -46,6 +46,12 @@ class Trip extends HiveObject {
   @JsonKey(fromJson: _parseDateWithDefault)
   DateTime createdAt;
 
+  /// 自訂天數名稱列表 (有序)
+  /// 若為空，則依賴 startDate/endDate 自動生成 D1, D2...
+  @HiveField(8)
+  @JsonKey(defaultValue: <String>[])
+  List<String> dayNames;
+
   Trip({
     required this.id,
     required this.name,
@@ -55,7 +61,9 @@ class Trip extends HiveObject {
     this.coverImage,
     this.isActive = false,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    List<String>? dayNames,
+  }) : createdAt = createdAt ?? DateTime.now(),
+       dayNames = dayNames ?? [];
 
   /// 行程天數
   int get durationDays {

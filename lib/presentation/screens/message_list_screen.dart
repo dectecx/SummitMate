@@ -9,6 +9,10 @@ import '../cubits/message/message_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 
+/// 留言板畫面 (Tab 3 - 協作)
+///
+/// 支援分類 (公告、討論、裝備) 顯示留言，並提供回覆與刪除功能。
+/// 支援離線瀏覽與雲端同步。
 class MessageListScreen extends StatefulWidget {
   const MessageListScreen({super.key});
 

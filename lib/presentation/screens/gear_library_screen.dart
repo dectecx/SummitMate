@@ -11,6 +11,10 @@ import '../cubits/gear_library/gear_library_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 
+/// 我的裝備庫畫面
+///
+/// 管理個人的裝備項目 (可新增、編輯、封存、刪除)。
+/// 支援從雲端備份與還原。
 class GearLibraryScreen extends StatefulWidget {
   const GearLibraryScreen({super.key});
 
