@@ -29,12 +29,7 @@ void main() {
       dayNames: ['D1'], // Initialize with single day
     );
 
-    testItem = ItineraryItem(
-        uuid: 'item_1',
-        tripId: 'trip_1',
-        day: 'D1',
-        name: 'Start Point',
-        estTime: '08:00');
+    testItem = ItineraryItem(uuid: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Start Point', estTime: '08:00');
 
     mockItineraryRepository = MockItineraryRepository();
     mockTripRepository = MockTripRepository();
@@ -42,8 +37,7 @@ void main() {
     // Default setup: active trip exists
     when(() => mockTripRepository.getActiveTrip()).thenReturn(testTrip);
 
-    cubit = ItineraryCubit(
-        repository: mockItineraryRepository, tripRepository: mockTripRepository);
+    cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository);
   });
 
   tearDown(() {
@@ -77,8 +71,7 @@ void main() {
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItinerary(),
-      expect: () =>
-          [const ItineraryLoading(), isA<ItineraryLoaded>().having((s) => s.items, 'items', isEmpty)],
+      expect: () => [const ItineraryLoading(), isA<ItineraryLoaded>().having((s) => s.items, 'items', isEmpty)],
     );
 
     blocTest<ItineraryCubit, ItineraryState>(
@@ -156,24 +149,24 @@ void main() {
     group('Day Management', () {
       setUp(() {
         testTrip = Trip(
-            id: 'trip_1',
-            name: 'Test Trip',
-            startDate: DateTime.now(),
-            endDate: DateTime.now().add(const Duration(days: 3)),
-            dayNames: ['D1']);
+          id: 'trip_1',
+          name: 'Test Trip',
+          startDate: DateTime.now(),
+          endDate: DateTime.now().add(const Duration(days: 3)),
+          dayNames: ['D1'],
+        );
 
         // Reset mocks relative to Day Management to ensure clean state
         reset(mockTripRepository);
         when(() => mockTripRepository.getActiveTrip()).thenReturn(testTrip);
         when(() => mockTripRepository.getTripById(any())).thenReturn(testTrip); // For loadItinerary
         when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async {});
-        
+
         // Also stub getAllItems for loadItinerary which is called after addDay
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([]); 
+        when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
 
         // Re-initialize cubit with reset mocks
-        cubit = ItineraryCubit(
-            repository: mockItineraryRepository, tripRepository: mockTripRepository);
+        cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository);
       });
 
       blocTest<ItineraryCubit, ItineraryState>(
@@ -183,9 +176,7 @@ void main() {
         act: (cubit) => cubit.addDay('D2'),
         verify: (_) {
           verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny()))
-              .captured
-              .first as Trip;
+          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
           expect(capturedTrip.dayNames, ['D1', 'D2']);
         },
       );
@@ -197,9 +188,7 @@ void main() {
         act: (cubit) => cubit.renameDay('D1', 'Day 1'),
         verify: (_) {
           verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny()))
-              .captured
-              .first as Trip;
+          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
           expect(capturedTrip.dayNames, ['Day 1']);
         },
       );
@@ -209,14 +198,12 @@ void main() {
         build: () => cubit,
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1', 'D2'], selectedDay: 'D1'),
         setUp: () {
-            testTrip.dayNames = ['D1', 'D2']; // Setup for remove
+          testTrip.dayNames = ['D1', 'D2']; // Setup for remove
         },
         act: (cubit) => cubit.removeDay('D2'),
         verify: (_) {
           verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny()))
-              .captured
-              .first as Trip;
+          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
           expect(capturedTrip.dayNames, ['D1']);
         },
       );
@@ -226,17 +213,15 @@ void main() {
         build: () => cubit,
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1', 'D2'], selectedDay: 'D1'),
         setUp: () {
-            testTrip.dayNames = ['D1', 'D2']; // Setup for reorder
+          testTrip.dayNames = ['D1', 'D2']; // Setup for reorder
         },
         act: (cubit) => cubit.reorderDays(['D2', 'D1']),
         verify: (_) {
           verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny()))
-              .captured
-              .first as Trip;
+          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
           expect(capturedTrip.dayNames, ['D2', 'D1']);
         },
       );
-  });
+    });
   });
 }

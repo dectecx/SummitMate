@@ -200,7 +200,7 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
         await context.read<ItineraryCubit>().removeDay(name);
       } catch (e) {
         // 發生錯誤時還原資料
-        _initData(); 
+        _initData();
         setState(() {});
       }
     }

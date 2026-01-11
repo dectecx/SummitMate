@@ -69,12 +69,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     // Check client-side expiration
     if (DateTime.now().isAfter(_expiryTime)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('驗證碼已逾時，請重新發送'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('驗證碼已逾時，請重新發送'), backgroundColor: Colors.red));
       return;
     }
 
