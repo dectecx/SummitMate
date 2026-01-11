@@ -22,6 +22,8 @@ class GasAuthService implements IAuthService {
   final IAuthSessionRepository _sessionRepo;
   final ITokenValidator _tokenValidator;
   bool _isOfflineMode = false;
+  String? _currentUserId;
+  String? _currentUserEmail;
 
   GasAuthService({
     NetworkAwareClient? apiClient,
@@ -33,6 +35,12 @@ class GasAuthService implements IAuthService {
 
   @override
   bool get isOfflineMode => _isOfflineMode;
+
+  @override
+  String? get currentUserId => _currentUserId;
+
+  @override
+  String? get currentUserEmail => _currentUserEmail;
 
   // ============================================================
   // === 公開 API (Public API) ===
@@ -109,6 +117,8 @@ class GasAuthService implements IAuthService {
         final refreshToken = apiResponse.data['refreshToken'] as String?;
 
         await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
+        _currentUserId = user.id;
+        _currentUserEmail = user.email;
 
         LogService.info('登入成功: ${user.email}', source: _source);
         return AuthResult.success(user: user, accessToken: accessToken, refreshToken: refreshToken);
@@ -143,6 +153,8 @@ class GasAuthService implements IAuthService {
         if (tokenAge < OfflineConfig.offlineGracePeriod) {
           LogService.info('離線登入成功: $email', source: _source);
           _isOfflineMode = true;
+          _currentUserId = cachedUser.id;
+          _currentUserEmail = cachedUser.email;
           return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
         } else {
           LogService.warning('離線登入失敗: Token 已超過 ${OfflineConfig.offlineGracePeriodDays} 天', source: _source);
@@ -250,11 +262,15 @@ class GasAuthService implements IAuthService {
 
         if (newAccessToken != null) {
           await _sessionRepo.saveSession(newAccessToken, user, refreshToken: newRefreshToken);
+          _currentUserId = user.id;
+          _currentUserEmail = user.email;
           return AuthResult.success(user: user, accessToken: newAccessToken, refreshToken: newRefreshToken);
         } else {
           // 更新快取的使用者資料
           // 若無新 Token 則保持原樣
           await _sessionRepo.saveSession(token, user);
+          _currentUserId = user.id;
+          _currentUserEmail = user.email;
         }
 
         _isOfflineMode = false;
@@ -284,6 +300,8 @@ class GasAuthService implements IAuthService {
           final tokenAge = DateTime.now().difference(validationResult.payload!.issuedAt);
           if (tokenAge < OfflineConfig.offlineGracePeriod) {
             _isOfflineMode = true;
+            _currentUserId = cachedUser.id;
+            _currentUserEmail = cachedUser.email;
             return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
           }
         }
@@ -315,6 +333,8 @@ class GasAuthService implements IAuthService {
         if (user != null) {
           // 儲存新 Access Token，保留舊 Refresh Token
           await _sessionRepo.saveSession(newAccessToken, user, refreshToken: refreshToken);
+          _currentUserId = user.id;
+          _currentUserEmail = user.email;
           LogService.info('Token 刷新成功', source: _source);
           return AuthResult.success(user: user, accessToken: newAccessToken, refreshToken: refreshToken);
         } else {
@@ -349,6 +369,8 @@ class GasAuthService implements IAuthService {
 
       if (apiResponse.isSuccess) {
         await logout();
+        _currentUserId = null;
+        _currentUserEmail = null;
         LogService.info('帳號已刪除', source: _source);
         return AuthResult.success(user: null);
       } else {
@@ -381,6 +403,8 @@ class GasAuthService implements IAuthService {
 
         // 更新本地 Session 中的使用者資料
         await _sessionRepo.saveSession(token, user);
+        _currentUserId = user.id;
+        _currentUserEmail = user.email;
 
         LogService.info('個人資料更新成功: ${user.displayName}', source: _source);
         return AuthResult.success(user: user, accessToken: token);
@@ -397,6 +421,8 @@ class GasAuthService implements IAuthService {
   Future<void> logout() async {
     await _sessionRepo.clearSession();
     _isOfflineMode = false;
+    _currentUserId = null;
+    _currentUserEmail = null;
     LogService.info('已登出', source: _source);
   }
 
@@ -407,8 +433,23 @@ class GasAuthService implements IAuthService {
   Future<String?> getRefreshToken() => _sessionRepo.getRefreshToken();
 
   @override
-  Future<UserProfile?> getCachedUserProfile() => _sessionRepo.getUserProfile();
+  Future<UserProfile?> getCachedUserProfile() async {
+    final user = await _sessionRepo.getUserProfile();
+    if (user != null) {
+      if (_currentUserId == null) _currentUserId = user.id;
+      if (_currentUserEmail == null) _currentUserEmail = user.email;
+    }
+    return user;
+  }
 
   @override
-  Future<bool> isLoggedIn() => _sessionRepo.hasSession();
+  Future<bool> isLoggedIn() async {
+    final hasSession = await _sessionRepo.hasSession();
+    if (hasSession && (_currentUserEmail == null || _currentUserId == null)) {
+      final user = await _sessionRepo.getUserProfile();
+      _currentUserId = user?.id;
+      _currentUserEmail = user?.email;
+    }
+    return hasSession;
+  }
 }

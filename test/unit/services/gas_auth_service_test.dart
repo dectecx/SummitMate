@@ -117,24 +117,24 @@ class MockConnectivityService extends Mock implements IConnectivityService {}
 // ============================================================
 
 UserProfile createTestUser({
-  String uuid = 'test-uuid',
+  String id = 'test-uuid',
   String email = 'test@example.com',
   String displayName = 'Test User',
   String avatar = '🐻',
   bool isVerified = true,
 }) {
-  return UserProfile(uuid: uuid, email: email, displayName: displayName, avatar: avatar, isVerified: isVerified);
+  return UserProfile(id: id, email: email, displayName: displayName, avatar: avatar, isVerified: isVerified);
 }
 
 Map<String, dynamic> createUserJson({
-  String uuid = 'test-uuid',
+  String id = 'test-uuid',
   String email = 'test@example.com',
   String displayName = 'Test User',
   String avatar = '🐻',
   bool isVerified = true,
 }) {
   return {
-    'uuid': uuid,
+    'uuid': id,
     'email': email,
     'displayName': displayName,
     'avatar': avatar,

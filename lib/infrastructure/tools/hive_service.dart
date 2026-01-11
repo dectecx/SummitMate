@@ -109,8 +109,8 @@ class HiveService {
     bool clearSettings = false,
     bool clearLogs = false,
   }) async {
-    // 先關閉所有 box 以避免 type conflict
-    await Hive.close();
+    // 先關閉所有 box 以避免 type conflict，並重置初始化狀態
+    await close();
 
     // 1. Core Data (最重要)
     if (clearTrips) {

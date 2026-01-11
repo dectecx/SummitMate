@@ -7,10 +7,14 @@ abstract interface class ITripRepository {
   Future<void> init();
 
   /// 取得所有行程
-  List<Trip> getAllTrips();
+  ///
+  /// [userId] 使用者 ID
+  List<Trip> getAllTrips(String userId);
 
   /// 取得當前啟用的行程
-  Trip? getActiveTrip();
+  ///
+  /// [userId] 使用者 ID
+  Trip? getActiveTrip(String userId);
 
   /// 透過 ID 取得單一行程
   ///

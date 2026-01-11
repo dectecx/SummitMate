@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants.dart';
 import '../../../core/di.dart';
 import '../../../data/repositories/interfaces/i_poll_repository.dart';
 import '../../../domain/interfaces/i_connectivity_service.dart';
 import '../../../domain/interfaces/i_poll_service.dart';
+import '../../../domain/interfaces/i_auth_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/toast_service.dart';
 import 'poll_state.dart';
@@ -13,7 +13,7 @@ class PollCubit extends Cubit<PollState> {
   final IPollService _pollService;
   final IPollRepository _pollRepository;
   final IConnectivityService _connectivity;
-  final SharedPreferences _prefs;
+  final IAuthService _authService;
 
   static const String _source = 'PollCubit';
   static const Duration _syncCooldown = Duration(minutes: 5);
@@ -22,19 +22,16 @@ class PollCubit extends Cubit<PollState> {
     IPollService? pollService,
     IPollRepository? pollRepository,
     IConnectivityService? connectivity,
+    IAuthService? authService,
     SharedPreferences? prefs,
   }) : _pollService = pollService ?? getIt<IPollService>(),
        _pollRepository = pollRepository ?? getIt<IPollRepository>(),
        _connectivity = connectivity ?? getIt<IConnectivityService>(),
-       _prefs = prefs ?? getIt<SharedPreferences>(),
+       _authService = authService ?? getIt<IAuthService>(),
        super(const PollInitial());
 
   String get _currentUserId {
-    String? user = _prefs.getString(PrefKeys.username);
-    if (user == null || user.isEmpty) {
-      user = 'User_${DateTime.now().millisecondsSinceEpoch}'; // Fallback
-    }
-    return user;
+    return _authService.currentUserId ?? 'guest';
   }
 
   bool get _isOffline => _connectivity.isOffline;

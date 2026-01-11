@@ -213,7 +213,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                 _showEditDialog(context, item);
                 break;
               case 'archive':
-                context.read<GearLibraryCubit>().toggleArchive(item.uuid);
+                context.read<GearLibraryCubit>().toggleArchive(item.id);
                 break;
               case 'delete':
                 _showDeleteImpactDialog(context, item);
@@ -295,7 +295,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
 
   void _showDeleteImpactDialog(BuildContext context, GearLibraryItem item) async {
     final cubit = context.read<GearLibraryCubit>();
-    final linkedTrips = cubit.getLinkedTrips(item.uuid);
+    final linkedTrips = cubit.getLinkedTrips(item.id);
 
     if (linkedTrips.isEmpty) {
       _confirmDelete(context, item);
@@ -351,7 +351,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
           FilledButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await cubit.deleteItem(item.uuid);
+              await cubit.deleteItem(item.id);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('刪除並解除連結'),
@@ -371,7 +371,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () async {
-              await context.read<GearLibraryCubit>().deleteItem(item.uuid);
+              await context.read<GearLibraryCubit>().deleteItem(item.id);
               if (context.mounted) Navigator.pop(context);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),

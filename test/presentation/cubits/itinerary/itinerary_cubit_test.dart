@@ -5,6 +5,7 @@ import 'package:summitmate/data/models/itinerary_item.dart';
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_cubit.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_state.dart';
 
@@ -12,9 +13,12 @@ class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
+class MockAuthService extends Mock implements IAuthService {}
+
 void main() {
   late IItineraryRepository mockItineraryRepository;
   late ITripRepository mockTripRepository;
+  late MockAuthService mockAuthService;
   late ItineraryCubit cubit;
 
   late Trip testTrip;
@@ -23,8 +27,12 @@ void main() {
   setUp(() {
     testTrip = Trip(
       id: 'trip_1',
+      userId: 'user_1',
       name: 'Test Trip',
       startDate: DateTime.now(),
+      isActive: true,
+      createdAt: DateTime.now(),
+      createdBy: 'user_1',
       endDate: DateTime.now().add(const Duration(days: 3)),
       dayNames: ['D1'], // Initialize with single day
     );
@@ -33,11 +41,14 @@ void main() {
 
     mockItineraryRepository = MockItineraryRepository();
     mockTripRepository = MockTripRepository();
+    mockAuthService = MockAuthService();
+
+    when(() => mockAuthService.currentUserId).thenReturn('user_1');
 
     // Default setup: active trip exists
-    when(() => mockTripRepository.getActiveTrip()).thenReturn(testTrip);
+    when(() => mockTripRepository.getActiveTrip(any())).thenReturn(testTrip);
 
-    cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository);
+    cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository, authService: mockAuthService);
   });
 
   tearDown(() {
@@ -67,7 +78,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'loadItinerary emits empty list when no active trip',
       setUp: () {
-        when(() => mockTripRepository.getActiveTrip()).thenReturn(null);
+        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(null);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItinerary(),
@@ -150,15 +161,19 @@ void main() {
       setUp(() {
         testTrip = Trip(
           id: 'trip_1',
+          userId: 'user_1',
           name: 'Test Trip',
           startDate: DateTime.now(),
+          isActive: true,
+          createdAt: DateTime.now(),
+          createdBy: 'user_1',
           endDate: DateTime.now().add(const Duration(days: 3)),
           dayNames: ['D1'],
         );
 
         // Reset mocks relative to Day Management to ensure clean state
         reset(mockTripRepository);
-        when(() => mockTripRepository.getActiveTrip()).thenReturn(testTrip);
+        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(testTrip);
         when(() => mockTripRepository.getTripById(any())).thenReturn(testTrip); // For loadItinerary
         when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async {});
 
@@ -166,7 +181,7 @@ void main() {
         when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
 
         // Re-initialize cubit with reset mocks
-        cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository);
+        cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository, authService: mockAuthService);
       });
 
       blocTest<ItineraryCubit, ItineraryState>(

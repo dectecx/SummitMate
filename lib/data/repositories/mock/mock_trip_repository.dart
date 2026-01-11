@@ -1,3 +1,4 @@
+import '../../models/enums/sync_status.dart';
 import '../../models/trip.dart';
 import '../interfaces/i_trip_repository.dart';
 import 'mock_itinerary_repository.dart';
@@ -8,22 +9,25 @@ class MockTripRepository implements ITripRepository {
   /// 模擬行程
   final Trip _mockTrip = Trip(
     id: MockItineraryRepository.mockTripId,
+    userId: 'mock-user-1',
     name: '嘉明湖三天兩夜',
     startDate: DateTime.now(),
     endDate: DateTime.now().add(const Duration(days: 2)),
     description: '向陽山 + 三叉山 + 嘉明湖',
     isActive: true,
+    syncStatus: SyncStatus.synced,
     createdAt: DateTime.now().subtract(const Duration(days: 7)),
+    createdBy: 'mock-user-1',
   );
 
   @override
   Future<void> init() async {}
 
   @override
-  List<Trip> getAllTrips() => [_mockTrip];
+  List<Trip> getAllTrips(String userId) => [_mockTrip];
 
   @override
-  Trip? getActiveTrip() => _mockTrip;
+  Trip? getActiveTrip(String userId) => _mockTrip;
 
   @override
   Trip? getTripById(String id) => id == _mockTrip.id ? _mockTrip : null;

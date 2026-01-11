@@ -49,7 +49,7 @@ function uploadGearLibrary(accessToken, items) {
     if (items && items.length > 0) {
       const now = new Date().toISOString();
       const rows = items.map((item) => [
-        String(item.uuid || Utilities.getUuid()),
+        String(item.id || Utilities.getUuid()),
         String(userId),
         String(item.name || ""),
         item.weight || 0,

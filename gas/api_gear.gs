@@ -32,7 +32,7 @@ function getGearSets() {
     if (visibility === "private") continue;
 
     const gearSet = {
-      uuid: row[headers.indexOf("uuid")],
+      id: row[headers.indexOf("id")],
       title: row[headers.indexOf("title")],
       author: row[headers.indexOf("author")],
       total_weight: row[headers.indexOf("total_weight")],
@@ -69,7 +69,7 @@ function getGearSet(key) {
         {
           gear_set: _formatData(
             {
-              uuid: row[headers.indexOf("uuid")],
+              id: row[headers.indexOf("id")],
               title: row[headers.indexOf("title")],
               author: row[headers.indexOf("author")],
               total_weight: row[headers.indexOf("total_weight")],
@@ -92,22 +92,22 @@ function getGearSet(key) {
 
 /**
  * 下載指定裝備組合
- * @param {string} uuid - 組合 UUID
+ * @param {string} id - 組合 ID
  * @param {string} [key] - 可選，若為 protected 需要 key
  * @returns {Object} { code, data, message }
  */
-function downloadGearSet(uuid, key) {
-  if (!uuid) {
-    return _error(API_CODES.INVALID_PARAMS, "缺少 UUID");
+function downloadGearSet(id, key) {
+  if (!id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 ID");
   }
 
   const sheet = _initGearSheet();
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
-  const uuidIndex = headers.indexOf("uuid");
+  const idIndex = headers.indexOf("id");
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][uuidIndex] === uuid) {
+    if (data[i][idIndex] === id) {
       const row = data[i];
       const visibility = row[headers.indexOf("visibility")];
       const storedKey = row[headers.indexOf("key")];
@@ -123,7 +123,7 @@ function downloadGearSet(uuid, key) {
       return _success(
         {
           gear_set: {
-            uuid: row[headers.indexOf("uuid")],
+            id: row[headers.indexOf("id")],
             title: row[headers.indexOf("title")],
             author: row[headers.indexOf("author")],
             total_weight: row[headers.indexOf("total_weight")],
@@ -195,15 +195,15 @@ function uploadGearSet(data) {
     }
   }
 
-  // 產生 UUID
-  const uuid = Utilities.getUuid();
+  // 產生 ID
+  const id = Utilities.getUuid();
   const uploadedAt = new Date().toISOString();
   const itemsJson = JSON.stringify(items || []);
   const mealsJson = JSON.stringify(meals || []);
 
   // 建立 row 物件 (key-value)
   const rowData = {
-    uuid: uuid,
+    id: id,
     trip_id: trip_id || "",
     title: title,
     author: author,
@@ -224,7 +224,7 @@ function uploadGearSet(data) {
   return _success(
     {
       gear_set: {
-        uuid: uuid,
+        id: id,
         title: title,
         author: author,
         total_weight: total_weight || 0,
@@ -239,24 +239,24 @@ function uploadGearSet(data) {
 
 /**
  * 刪除裝備組合
- * @param {string} uuid - 裝備組合 UUID
+ * @param {string} id - 裝備組合 ID
  * @param {string} key - 4 位數 Key (protected/private 需要驗證)
  * @returns {Object} { code, data, message }
  */
-function deleteGearSet(uuid, key) {
-  if (!uuid) {
-    return _error(API_CODES.INVALID_PARAMS, "缺少 UUID");
+function deleteGearSet(id, key) {
+  if (!id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 ID");
   }
 
   const sheet = _initGearSheet();
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
-  const uuidIndex = headers.indexOf("uuid");
+  const idIndex = headers.indexOf("id");
   const keyIndex = headers.indexOf("key");
   const visibilityIndex = headers.indexOf("visibility");
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][uuidIndex] === uuid) {
+    if (data[i][idIndex] === id) {
       const storedKey = data[i][keyIndex];
       const visibility = data[i][visibilityIndex];
 

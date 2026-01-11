@@ -9,12 +9,15 @@ import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
 class MockGearLibraryRepository extends Mock implements IGearLibraryRepository {}
 
 class MockGearRepository extends Mock implements IGearRepository {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
+
+class MockAuthService extends Mock implements IAuthService {}
 
 class FakeGearLibraryItem extends Fake implements GearLibraryItem {}
 
@@ -25,10 +28,11 @@ void main() {
     late IGearLibraryRepository mockRepo;
     late IGearRepository mockGearRepo;
     late ITripRepository mockTripRepo;
+    late IAuthService mockAuthService;
     late GearLibraryCubit cubit;
 
-    final libItem1 = GearLibraryItem(uuid: 'lib1', name: 'Tent', weight: 2000, category: 'Sleep');
-    final libItem2 = GearLibraryItem(uuid: 'lib2', name: 'Stove', weight: 500, category: 'Cook');
+    final libItem1 = GearLibraryItem(id: 'lib1', userId: 'u1', name: 'Tent', weight: 2000, category: 'Sleep', createdAt: DateTime.now(), createdBy: 'u1');
+    final libItem2 = GearLibraryItem(id: 'lib2', userId: 'u1', name: 'Stove', weight: 500, category: 'Cook', createdAt: DateTime.now(), createdBy: 'u1');
 
     setUpAll(() {
       registerFallbackValue(FakeGearLibraryItem());
@@ -38,9 +42,18 @@ void main() {
     setUp(() {
       mockRepo = MockGearLibraryRepository();
       mockGearRepo = MockGearRepository();
+      mockAuthService = MockAuthService();
       mockTripRepo = MockTripRepository();
 
-      cubit = GearLibraryCubit(repository: mockRepo, gearRepository: mockGearRepo, tripRepository: mockTripRepo);
+      when(() => mockAuthService.currentUserId).thenReturn('u1');
+      when(() => mockAuthService.currentUserEmail).thenReturn('u1@test.com');
+
+      cubit = GearLibraryCubit(
+        repository: mockRepo,
+        gearRepository: mockGearRepo,
+        tripRepository: mockTripRepo,
+        authService: mockAuthService,
+      );
     });
 
     tearDown(() {
@@ -54,7 +67,7 @@ void main() {
     blocTest<GearLibraryCubit, GearLibraryState>(
       'loadItems emits [GearLibraryLoading, GearLibraryLoaded]',
       setUp: () {
-        when(() => mockRepo.getAllItems()).thenReturn([libItem1, libItem2]);
+        when(() => mockRepo.getAllItems(any())).thenReturn([libItem1, libItem2]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItems(),
@@ -68,14 +81,14 @@ void main() {
       'addItem calls repository and reloads',
       setUp: () {
         when(() => mockRepo.addItem(any())).thenAnswer((_) async {});
-        when(() => mockRepo.getAllItems()).thenReturn([libItem1]);
+        when(() => mockRepo.getAllItems(any())).thenReturn([libItem1]);
       },
       build: () => cubit,
       act: (cubit) => cubit.addItem(name: 'Tent', weight: 2000, category: 'Sleep'),
       expect: () => [isA<GearLibraryLoaded>()],
       verify: (_) {
         verify(() => mockRepo.addItem(any())).called(1);
-        verify(() => mockRepo.getAllItems()).called(1); // reload
+        verify(() => mockRepo.getAllItems(any())).called(1); // reload
       },
     );
 
@@ -83,14 +96,14 @@ void main() {
       'updateItem calls repository and syncs linked gear',
       setUp: () {
         when(() => mockRepo.updateItem(any())).thenAnswer((_) async {});
-        when(() => mockRepo.getAllItems()).thenReturn([libItem1]);
+        when(() => mockRepo.getAllItems(any())).thenReturn([libItem1]);
 
         // Mock sync logic
         final linkedGear = GearItem(uuid: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1');
         when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
         when(
           () => mockTripRepo.getTripById('t1'),
-        ).thenReturn(Trip(id: 't1', name: 'T1', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now()));
+        ).thenReturn(Trip(id: 't1', userId: 'u1', name: 'T1', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now(), createdBy: 'u1'));
         when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async {});
       },
       build: () => cubit,

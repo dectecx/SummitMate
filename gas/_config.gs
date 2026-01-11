@@ -51,7 +51,7 @@ const HEADERS_TRIPS = [
 ];
 
 const HEADERS_ITINERARY = [
-  "uuid", // PK (新增)
+  "id", // PK (新增)
   "trip_id", // FK → Trips
   "day",
   "name",
@@ -67,7 +67,7 @@ const HEADERS_ITINERARY = [
 ];
 
 const HEADERS_MESSAGES = [
-  "uuid", // PK
+  "id", // PK
   "trip_id", // FK → Trips
   "parent_id", // FK → Messages (回覆)
   "user",
@@ -78,7 +78,7 @@ const HEADERS_MESSAGES = [
 ];
 
 const HEADERS_GEAR = [
-  "uuid", // PK
+  "id", // PK
   "trip_id", // FK → Trips
   "title",
   "author",
@@ -92,7 +92,7 @@ const HEADERS_GEAR = [
 ];
 
 const HEADERS_TRIP_GEAR = [
-  "uuid", // PK
+  "id", // PK
   "trip_id", // FK → Trips
   "name",
   "weight",
@@ -106,7 +106,7 @@ const HEADERS_TRIP_GEAR = [
 // 【未來規劃】owner_key → user_id (會員機制上線後)
 // ============================================================
 const HEADERS_GEAR_LIBRARY = [
-  "uuid", // PK
+  "id", // PK
   "user_id", // 擁有者識別碼 (對應 Users.uuid)
   "name",
   "weight",
@@ -121,7 +121,7 @@ const HEADERS_GEAR_LIBRARY = [
 // role: 預留欄位供未來權限擴充 (團長/團員/管理員)
 // ============================================================
 const HEADERS_USERS = [
-  "uuid", // PK
+  "id", // PK
   "email", // Unique, 作為登入帳號
   "password_hash", // 密碼雜湊 (SHA-256)
   "display_name", // 顯示名稱
@@ -358,7 +358,7 @@ const SHEET_SCHEMA = {
   },
 
   Itinerary: {
-    uuid: { type: "text" },
+    id: { type: "text" },
     trip_id: { type: "text" },
     day: { type: "text" },
     name: { type: "text" },
@@ -374,7 +374,7 @@ const SHEET_SCHEMA = {
   },
 
   Messages: {
-    uuid: { type: "text" },
+    id: { type: "text" },
     trip_id: { type: "text" },
     parent_id: { type: "text" },
     user: { type: "text" },
@@ -385,7 +385,7 @@ const SHEET_SCHEMA = {
   },
 
   GearSets: {
-    uuid: { type: "text" },
+    id: { type: "text" },
     title: { type: "text" },
     author: { type: "text" },
     total_weight: { type: "number" },
@@ -398,7 +398,7 @@ const SHEET_SCHEMA = {
   },
 
   TripGear: {
-    uuid: { type: "text" },
+    id: { type: "text" },
     trip_id: { type: "text" },
     name: { type: "text" },
     weight: { type: "number" },
@@ -408,7 +408,7 @@ const SHEET_SCHEMA = {
   },
 
   GearLibrary: {
-    uuid: { type: "text" },
+    id: { type: "text" },
     user_id: { type: "text" },
     name: { type: "text" },
     weight: { type: "number" },
@@ -471,7 +471,7 @@ const SHEET_SCHEMA = {
   },
 
   Users: {
-    uuid: { type: "text" },
+    id: { type: "text" },
     email: { type: "text" },
     password_hash: { type: "text" },
     display_name: { type: "text" },

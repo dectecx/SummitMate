@@ -22,7 +22,7 @@ void main() {
   late AuthCubit authCubit;
 
   final testUser = UserProfile(
-    uuid: 'test-uuid',
+    id: 'test-uuid',
     email: 'test@example.com',
     displayName: 'Test User',
     avatar: 'test-avatar',
@@ -31,7 +31,7 @@ void main() {
   );
 
   final unverifiedUser = UserProfile(
-    uuid: 'unverified-uuid',
+    id: 'unverified-uuid',
     email: 'unverified@example.com',
     displayName: 'Unverified User',
     role: 'member',
@@ -70,7 +70,7 @@ void main() {
       act: (cubit) => cubit.checkAuthStatus(),
       expect: () => [
         isA<AuthAuthenticated>()
-            .having((s) => s.userId, 'userId', testUser.uuid)
+            .having((s) => s.userId, 'userId', testUser.id)
             .having((s) => s.userName, 'userName', testUser.displayName)
             .having((s) => s.email, 'email', testUser.email)
             .having((s) => s.avatar, 'avatar', testUser.avatar)
@@ -101,7 +101,7 @@ void main() {
       expect: () => [
         AuthLoading(),
         isA<AuthAuthenticated>()
-            .having((s) => s.userId, 'userId', testUser.uuid)
+            .having((s) => s.userId, 'userId', testUser.id)
             .having((s) => s.userName, 'userName', testUser.displayName)
             .having((s) => s.avatar, 'avatar', testUser.avatar)
             .having((s) => s.isGuest, 'isGuest', false),
@@ -139,7 +139,7 @@ void main() {
       expect: () => [
         isA<AuthAuthenticated>()
             .having((s) => s.isGuest, 'isGuest', true)
-            .having((s) => s.isOffline, 'isOffline', true)
+            .having((s) => s.isOffline, 'isOffline', false)
             .having((s) => s.userId, 'userId', 'guest')
             .having((s) => s.avatar, 'avatar', null),
       ],

@@ -7,7 +7,6 @@ import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../../infrastructure/tools/log_service.dart';
 
-import '../../domain/interfaces/i_auth_service.dart';
 
 /// 行程 Repository
 ///
@@ -18,17 +17,14 @@ class ItineraryRepository implements IItineraryRepository {
   final IItineraryLocalDataSource _localDataSource;
   final IItineraryRemoteDataSource _remoteDataSource;
   final IConnectivityService _connectivity;
-  final IAuthService _authService;
 
   ItineraryRepository({
     IItineraryLocalDataSource? localDataSource,
     IItineraryRemoteDataSource? remoteDataSource,
     IConnectivityService? connectivity,
-    IAuthService? authService,
   }) : _localDataSource = localDataSource ?? getIt<IItineraryLocalDataSource>(),
        _remoteDataSource = remoteDataSource ?? getIt<IItineraryRemoteDataSource>(),
-       _connectivity = connectivity ?? getIt<IConnectivityService>(),
-       _authService = authService ?? getIt<IAuthService>();
+       _connectivity = connectivity ?? getIt<IConnectivityService>();
 
   /// 初始化 Repository (主要是本地資料庫)
   @override
@@ -97,12 +93,6 @@ class ItineraryRepository implements IItineraryRepository {
   /// [item] 欲新增的節點
   @override
   Future<void> addItem(ItineraryItem item) async {
-    // 填寫審計欄位 (Audit Fields)
-    final user = await _authService.getCachedUserProfile();
-    if (user != null) {
-      item.createdBy ??= user.email;
-      item.updatedBy = user.email;
-    }
     await _localDataSource.add(item);
   }
 
@@ -112,11 +102,6 @@ class ItineraryRepository implements IItineraryRepository {
   /// [item] 更新後的節點資料
   @override
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
-    // Populate Audit Fields
-    final user = await _authService.getCachedUserProfile();
-    if (user != null) {
-      item.updatedBy = user.email;
-    }
     await _localDataSource.update(key, item);
   }
 

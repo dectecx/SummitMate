@@ -3,7 +3,6 @@ import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
-import '../../domain/interfaces/i_auth_service.dart';
 
 /// 行程 Repository (支援離線優先)
 ///
@@ -13,15 +12,12 @@ class TripRepository implements ITripRepository {
 
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
-  final IAuthService _authService;
 
   TripRepository({
     required ITripLocalDataSource localDataSource,
     required ITripRemoteDataSource remoteDataSource,
-    required IAuthService authService,
   }) : _localDataSource = localDataSource,
-       _remoteDataSource = remoteDataSource,
-       _authService = authService;
+       _remoteDataSource = remoteDataSource;
 
   /// 初始化本地資料庫
   @override
@@ -29,16 +25,20 @@ class TripRepository implements ITripRepository {
     await _localDataSource.init();
   }
 
-  /// 取得所有本地行程
+  /// 取得所有本地行程 (僅限目前登入使用者)
   @override
-  List<Trip> getAllTrips() {
-    return _localDataSource.getAllTrips();
+  List<Trip> getAllTrips(String userId) {
+    return _localDataSource.getAllTrips().where((t) => t.userId == userId).toList();
   }
 
-  /// 取得當前活動行程
+  /// 取得當前活動行程 (僅限目前登入使用者)
   @override
-  Trip? getActiveTrip() {
-    return _localDataSource.getActiveTrip();
+  Trip? getActiveTrip(String userId) {
+    final trip = _localDataSource.getActiveTrip();
+    if (trip != null && trip.userId == userId) {
+      return trip;
+    }
+    return null;
   }
 
   /// 根據 ID 取得行程
@@ -56,17 +56,15 @@ class TripRepository implements ITripRepository {
   Future<void> addTrip(Trip trip) async {
     LogService.info('Adding trip: ${trip.name} (Local)', source: _source);
 
-    // 填寫審計欄位 (Audit Fields)
-    final user = await _authService.getCachedUserProfile();
-    if (user != null) {
-      trip.createdBy ??= user.email;
-      trip.updatedBy = user.email;
-    }
-
+    // 填寫審計欄位 (Audit Fields) & Ownership
+    // userId, createdBy, createdAt are final and required in Trip constructor,
+    // so they must be populated by the caller (Cubit/Service).
+    
+    // Ensure updatedBy matches createdBy if not set (constructor handles this default, but explicit here doesn't hurt if mutable)
+    // Actually constructor matches them. logic here is redundant if constructor does it.
+    // Just save.
+    
     await _localDataSource.addTrip(trip);
-
-    // Optional: Attempt immediate sync if online?
-    // For now, we stay consistent with basic "Local First, Manual Sync" pattern unless requested.
   }
 
   /// 更新行程 (本地)
@@ -74,11 +72,7 @@ class TripRepository implements ITripRepository {
   /// [trip] 更新後的行程物件
   @override
   Future<void> updateTrip(Trip trip) async {
-    // 填寫審計欄位 (Audit Fields)
-    final user = await _authService.getCachedUserProfile();
-    if (user != null) {
-      trip.updatedBy = user.email;
-    }
+    // 呼叫者負責更新 updatedBy / updatedAt
     await _localDataSource.updateTrip(trip);
   }
 

@@ -8,7 +8,7 @@ part 'poll.g.dart';
 class Poll {
   /// 投票 ID (PK)
   @HiveField(0)
-  @JsonKey(name: 'poll_id')
+  @HiveField(0)
   final String id;
 
   /// 標題
@@ -123,7 +123,7 @@ class Poll {
 class PollOption {
   /// 選項 ID (PK)
   @HiveField(0)
-  @JsonKey(name: 'option_id')
+  @HiveField(0)
   final String id;
 
   /// 關聯的投票 ID (FK)

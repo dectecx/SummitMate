@@ -26,11 +26,11 @@ function setupSheets() {
   const defaultTripId = _createDefaultTrip(ss);
   Logger.log("✓ Trips 工作表已建立，預設行程 ID: " + defaultTripId);
 
-  // 2. 建立 Itinerary 工作表 (新欄位順序: uuid, trip_id, day, name, ...)
+  // 2. 建立 Itinerary 工作表 (新欄位順序: id, trip_id, day, name, ...)
   const sampleItinerary = _getSampleItinerary().map((row) => {
-    // 插入 uuid 和 trip_id 到前兩位
+    // 插入 id 和 trip_id 到前兩位
     return [
-      Utilities.getUuid(), // uuid (PK)
+      Utilities.getUuid(), // id (PK)
       defaultTripId, // trip_id (FK)
       ...row, // day, name, est_time, altitude, distance, note, image_asset
     ];
@@ -38,10 +38,10 @@ function setupSheets() {
   _setupSheet(ss, SHEET_ITINERARY, HEADERS_ITINERARY, sampleItinerary);
   Logger.log("✓ Itinerary 工作表已建立");
 
-  // 3. 建立 Messages 工作表 (新欄位順序: uuid, trip_id, parent_id, user, ...)
+  // 3. 建立 Messages 工作表 (新欄位順序: id, trip_id, parent_id, user, ...)
   _setupSheet(ss, SHEET_MESSAGES, HEADERS_MESSAGES, [
     [
-      Utilities.getUuid(), // uuid (PK)
+      Utilities.getUuid(), // id (PK)
       defaultTripId, // trip_id (FK)
       "", // parent_id
       "Admin", // user
@@ -211,7 +211,7 @@ function applyTextFormatToAll() {
  * @private
  * @returns {Array[]} 範例資料
  * @description 欄位順序: day, name, est_time, altitude, distance, note, image_asset
- *              (uuid 和 trip_id 由 setupSheets 補上)
+ *              (id 和 trip_id 由 setupSheets 補上)
  */
 function _getSampleItinerary() {
   return [
@@ -275,7 +275,7 @@ function testFetchAll() {
  */
 function testAddMessage() {
   const result = addMessage({
-    uuid: "test-" + new Date().getTime(),
+    id: "test-" + new Date().getTime(),
     user: "TestUser",
     category: "Gear",
     content: "這是一條測試訊息",

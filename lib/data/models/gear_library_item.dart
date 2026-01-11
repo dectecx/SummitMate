@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:uuid/uuid.dart';
+import 'enums/sync_status.dart';
 
 part 'gear_library_item.g.dart';
 
@@ -10,7 +10,13 @@ part 'gear_library_item.g.dart';
 class GearLibraryItem extends HiveObject {
   /// 唯一識別碼 (PK)
   @HiveField(0)
-  String uuid;
+  @JsonKey(name: 'id')
+  String id;
+
+  /// 所屬使用者 ID (Ownership)
+  @HiveField(9)
+  @JsonKey(name: 'user_id')
+  String userId;
 
   /// 裝備名稱
   @HiveField(1)
@@ -31,30 +37,51 @@ class GearLibraryItem extends HiveObject {
   @HiveField(4)
   String? notes;
 
+  /// 是否封存 (Soft Delete)
+  @HiveField(7)
+  @JsonKey(name: 'is_archived', defaultValue: false)
+  bool isArchived;
+
+  /// 同步狀態
+  @HiveField(10)
+  @JsonKey(name: 'sync_status', defaultValue: SyncStatus.pendingCreate)
+  SyncStatus syncStatus;
+
   /// 建立時間
   @HiveField(5)
+  @JsonKey(name: 'created_at')
   DateTime createdAt;
+
+  /// 建立者
+  @HiveField(8)
+  @JsonKey(name: 'created_by')
+  String createdBy;
 
   /// 更新時間
   @HiveField(6)
-  DateTime? updatedAt;
+  @JsonKey(name: 'updated_at')
+  DateTime updatedAt;
 
-  /// 是否封存 (Soft Delete) - 封存後不在 Autocomplete 顯示，但保留連結
-  @HiveField(7)
-  @JsonKey(defaultValue: false)
-  bool isArchived;
+  /// 更新者
+  @HiveField(11) // New field index
+  @JsonKey(name: 'updated_by')
+  String updatedBy;
 
   GearLibraryItem({
-    String? uuid,
+    required this.id,
+    required this.userId,
     required this.name,
     required this.weight,
     required this.category,
     this.notes,
-    DateTime? createdAt,
-    this.updatedAt,
     this.isArchived = false,
-  }) : uuid = uuid ?? const Uuid().v4(),
-       createdAt = createdAt ?? DateTime.now();
+    this.syncStatus = SyncStatus.pendingCreate,
+    required this.createdAt,
+    required this.createdBy,
+    DateTime? updatedAt,
+    String? updatedBy,
+  })  : updatedAt = updatedAt ?? createdAt,
+        updatedBy = updatedBy ?? createdBy;
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;
@@ -66,5 +93,5 @@ class GearLibraryItem extends HiveObject {
   Map<String, dynamic> toJson() => _$GearLibraryItemToJson(this);
 
   @override
-  String toString() => 'GearLibraryItem($name, ${weight}g, $category)';
+  String toString() => 'GearLibraryItem(id: $id, name: $name, weight: ${weight}g, category: $category, user: $userId, sync: $syncStatus)';
 }

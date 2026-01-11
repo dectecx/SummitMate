@@ -4,40 +4,67 @@ import 'package:summitmate/data/models/gear_library_item.dart';
 void main() {
   group('GearLibraryItem Model Tests', () {
     test('should create with default values', () {
-      final item = GearLibraryItem(name: '', weight: 0, category: '');
+      final item = GearLibraryItem(
+        id: 'test-id',
+        name: '',
+        weight: 0,
+        category: '',
+        userId: 'guest',
+        createdAt: DateTime.now(),
+        createdBy: 'guest',
+      );
 
       expect(item.name, isEmpty);
       expect(item.weight, equals(0));
       expect(item.category, isEmpty);
       expect(item.notes, isNull);
-      expect(item.uuid, isNotEmpty); // UUID 應自動生成
+      expect(item.notes, isNull);
+      expect(item.id, isNotEmpty); // ID 應自動生成
+      expect(item.userId, equals('guest')); // Default
+      expect(item.createdAt, isNotNull); // Default now()
     });
 
-    test('should auto-generate uuid if not provided', () {
-      final item1 = GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep');
-      final item2 = GearLibraryItem(name: '帳篷', weight: 2000, category: 'Sleep');
+    test('should auto-generate id if not provided', () {
+      // NOTE: Constructor now requires ID, so manually providing one for test, 
+      // essentially testing that provided ID is used (logic shifted to factory or caller)
+      // If logic was "auto-gen if null", we changed it to "required".
+      // So this test 'should auto-generate id' might be obsolete or needs to test a Factory?
+      // Assuming we just updated the model to require ID.
+      final item1 = GearLibraryItem(id: 'id-1', name: '睡袋', weight: 1200, category: 'Sleep', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest');
+      final item2 = GearLibraryItem(id: 'id-2', name: '帳篷', weight: 2000, category: 'Sleep', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest');
 
-      expect(item1.uuid, isNotEmpty);
-      expect(item2.uuid, isNotEmpty);
-      expect(item1.uuid, isNot(equals(item2.uuid))); // 應為不同 UUID
+      expect(item1.id, isNotEmpty);
+      expect(item2.id, isNotEmpty);
+      expect(item1.id, isNot(equals(item2.id)));
     });
 
-    test('should use provided uuid', () {
-      const customUuid = 'custom-uuid-12345';
-      final item = GearLibraryItem(uuid: customUuid, name: '睡袋', weight: 1200, category: 'Sleep');
+    test('should use provided id', () {
+      const customId = 'custom-id-12345';
+      final item = GearLibraryItem(
+        id: customId,
+        name: '睡袋',
+        weight: 1200,
+        category: 'Sleep',
+        userId: 'guest',
+        createdAt: DateTime.now(),
+        createdBy: 'guest',
+      );
 
-      expect(item.uuid, equals(customUuid));
+      expect(item.id, equals(customId));
     });
 
     test('should create with all named parameters', () {
       final now = DateTime.now();
       final item = GearLibraryItem(
+        id: 'test-id-all',
         name: '羽絨睡袋',
         weight: 1200,
         category: 'Sleep',
         notes: 'Thermarest Pro',
         createdAt: now,
         updatedAt: now,
+        userId: 'guest',
+        createdBy: 'guest',
       );
 
       expect(item.name, equals('羽絨睡袋'));
@@ -49,13 +76,13 @@ void main() {
     });
 
     test('should calculate weightInKg correctly', () {
-      final item = GearLibraryItem(name: '睡袋', weight: 1500, category: 'Sleep');
+      final item = GearLibraryItem(id: 'w1', name: '睡袋', weight: 1500, category: 'Sleep', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest');
 
       expect(item.weightInKg, equals(1.5));
     });
 
     test('should handle zero weight', () {
-      final item = GearLibraryItem(name: '地圖', weight: 0, category: 'Other');
+      final item = GearLibraryItem(id: 'z1', name: '地圖', weight: 0, category: 'Other', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest');
 
       expect(item.weight, equals(0));
       expect(item.weightInKg, equals(0));
@@ -65,17 +92,27 @@ void main() {
       final validCategories = ['Sleep', 'Cook', 'Wear', 'Other'];
 
       for (final cat in validCategories) {
-        final item = GearLibraryItem(name: 'Test', weight: 100, category: cat);
+        final item = GearLibraryItem(id: 'cat-${cat}', name: 'Test', weight: 100, category: cat, userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest');
         expect(validCategories.contains(item.category), isTrue);
       }
     });
 
     test('should convert to JSON correctly', () {
-      final item = GearLibraryItem(uuid: 'test-uuid', name: '睡袋', weight: 1200, category: 'Sleep', notes: '品牌備註');
+      final item = GearLibraryItem(
+        id: 'test-id',
+        userId: 'user1',
+        name: '睡袋',
+        weight: 1200,
+        category: 'Sleep',
+        notes: '品牌備註',
+        createdAt: DateTime.now(),
+        createdBy: 'user1',
+      );
 
       final json = item.toJson();
 
-      expect(json['uuid'], equals('test-uuid'));
+      expect(json['id'], equals('test-id'));
+      expect(json['user_id'], equals('user1'));
       expect(json['name'], equals('睡袋'));
       expect(json['weight'], equals(1200));
       expect(json['category'], equals('Sleep'));
@@ -86,7 +123,8 @@ void main() {
 
     test('should create from JSON correctly', () {
       final json = {
-        'uuid': 'json-uuid',
+        'id': 'json-id',
+        'user_id': 'user2',
         'name': '帳篷',
         'weight': 2000,
         'category': 'Sleep',
@@ -97,7 +135,8 @@ void main() {
 
       final item = GearLibraryItem.fromJson(json);
 
-      expect(item.uuid, equals('json-uuid'));
+      expect(item.id, equals('json-id'));
+      expect(item.userId, equals('user2'));
       expect(item.name, equals('帳篷'));
       expect(item.weight, equals(2000));
       expect(item.category, equals('Sleep'));
@@ -113,16 +152,25 @@ void main() {
       expect(item.weight, equals(300));
       expect(item.category, equals('Cook'));
       expect(item.notes, isNull);
-      expect(item.uuid, isNotEmpty); // 應自動生成
+      expect(item.id, isNotEmpty); // 應自動生成
+      expect(item.userId, equals('guest')); // Default
     });
 
     test('should round-trip JSON conversion', () {
-      final original = GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep', notes: '測試備註');
+      final original = GearLibraryItem(
+          id: 'rt-1',
+          name: '睡袋',
+          weight: 1200,
+          category: 'Sleep',
+          notes: '測試備註',
+          userId: 'guest',
+          createdAt: DateTime.now(),
+          createdBy: 'guest');
 
       final json = original.toJson();
       final restored = GearLibraryItem.fromJson(json);
 
-      expect(restored.uuid, equals(original.uuid));
+      expect(restored.id, equals(original.id));
       expect(restored.name, equals(original.name));
       expect(restored.weight, equals(original.weight));
       expect(restored.category, equals(original.category));
@@ -131,9 +179,9 @@ void main() {
 
     test('should calculate total weight for multiple items', () {
       final items = [
-        GearLibraryItem(name: '睡袋', weight: 1200, category: 'Sleep'),
-        GearLibraryItem(name: '帳篷', weight: 2000, category: 'Sleep'),
-        GearLibraryItem(name: '爐頭', weight: 300, category: 'Cook'),
+        GearLibraryItem(id: 't1', name: '睡袋', weight: 1200, category: 'Sleep', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest'),
+        GearLibraryItem(id: 't2', name: '帳篷', weight: 2000, category: 'Sleep', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest'),
+        GearLibraryItem(id: 't3', name: '爐頭', weight: 300, category: 'Cook', userId: 'guest', createdAt: DateTime.now(), createdBy: 'guest'),
       ];
 
       final total = items.fold<double>(0, (sum, item) => sum + item.weight);

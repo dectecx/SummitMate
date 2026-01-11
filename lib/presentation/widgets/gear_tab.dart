@@ -722,7 +722,7 @@ class _GearTabState extends State<GearTab> {
                             name: name,
                             weight: weight,
                             category: selectedCategory,
-                            libraryItemId: linkedItem?.uuid,
+                            libraryItemId: linkedItem?.id,
                             quantity: int.tryParse(quantityController.text) ?? 1,
                           );
 
@@ -755,7 +755,7 @@ class _GearTabState extends State<GearTab> {
     bool isLinked = false;
     if (libraryItemId != null && libraryState is GearLibraryLoaded) {
       // Check if library item exists
-      if (libraryState.items.any((i) => i.uuid == libraryItemId)) {
+      if (libraryState.items.any((i) => i.id == libraryItemId)) {
         isLinked = true;
       }
     }

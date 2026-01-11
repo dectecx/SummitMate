@@ -106,7 +106,7 @@ function doPost(e) {
       case API_ACTIONS.MESSAGE_CREATE_BATCH:
         return _createJsonResponse(batchCreateMessages(data.data));
       case API_ACTIONS.MESSAGE_DELETE:
-        return _createJsonResponse(deleteMessage(data.uuid));
+        return _createJsonResponse(deleteMessage(data.id));
 
       // === 裝備組合 (Gear) ===
       case API_ACTIONS.GEAR_SET_LIST:
@@ -114,11 +114,11 @@ function doPost(e) {
       case API_ACTIONS.GEAR_SET_GET:
         return _createJsonResponse(getGearSet(data.key));
       case API_ACTIONS.GEAR_SET_DOWNLOAD:
-        return _createJsonResponse(downloadGearSet(data.uuid, data.key));
+        return _createJsonResponse(downloadGearSet(data.id, data.key));
       case API_ACTIONS.GEAR_SET_UPLOAD:
         return _createJsonResponse(uploadGearSet(data));
       case API_ACTIONS.GEAR_SET_DELETE:
-        return _createJsonResponse(deleteGearSet(data.uuid, data.key));
+        return _createJsonResponse(deleteGearSet(data.id, data.key));
 
       // === 個人裝備庫 (GearLibrary) ===
       case API_ACTIONS.GEAR_LIBRARY_UPLOAD:
