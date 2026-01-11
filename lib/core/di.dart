@@ -163,11 +163,17 @@ Future<void> setupDependencies() async {
   final tripRepo = TripRepository(
     localDataSource: getIt<ITripLocalDataSource>(),
     remoteDataSource: getIt<ITripRemoteDataSource>(),
+    authService: getIt<IAuthService>(),
   );
   await tripRepo.init();
   getIt.registerSingleton<ITripRepository>(tripRepo);
 
-  final itineraryRepo = ItineraryRepository();
+  final itineraryRepo = ItineraryRepository(
+    localDataSource: getIt<IItineraryLocalDataSource>(),
+    remoteDataSource: getIt<IItineraryRemoteDataSource>(),
+    connectivity: getIt<IConnectivityService>(),
+    authService: getIt<IAuthService>(),
+  );
   await itineraryRepo.init();
   getIt.registerSingleton<IItineraryRepository>(itineraryRepo);
 

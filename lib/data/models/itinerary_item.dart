@@ -64,6 +64,16 @@ class ItineraryItem extends HiveObject {
   @JsonKey(fromJson: _dateTimeFromJson)
   DateTime? checkedInAt;
 
+  /// 建立者 ID
+  @HiveField(12)
+  @JsonKey(name: 'created_by')
+  String? createdBy;
+
+  /// 更新者 ID
+  @HiveField(13)
+  @JsonKey(name: 'updated_by')
+  String? updatedBy;
+
   ItineraryItem({
     this.uuid = '',
     this.tripId = '',
@@ -77,6 +87,8 @@ class ItineraryItem extends HiveObject {
     this.imageAsset,
     this.isCheckedIn = false,
     this.checkedInAt,
+    this.createdBy,
+    this.updatedBy,
   });
 
   /// 解析 est_time：API 可能返回 ISO 格式，需轉為 HH:mm

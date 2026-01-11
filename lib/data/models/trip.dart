@@ -52,6 +52,16 @@ class Trip extends HiveObject {
   @JsonKey(defaultValue: <String>[])
   List<String> dayNames;
 
+  /// 建立者 ID
+  @HiveField(9)
+  @JsonKey(name: 'created_by')
+  String? createdBy;
+
+  /// 更新者 ID
+  @HiveField(10)
+  @JsonKey(name: 'updated_by')
+  String? updatedBy;
+
   Trip({
     required this.id,
     required this.name,
@@ -62,6 +72,8 @@ class Trip extends HiveObject {
     this.isActive = false,
     DateTime? createdAt,
     List<String>? dayNames,
+    this.createdBy,
+    this.updatedBy,
   }) : createdAt = createdAt ?? DateTime.now(),
        dayNames = dayNames ?? [];
 
@@ -113,5 +125,5 @@ class Trip extends HiveObject {
   Map<String, dynamic> toJson() => _$TripToJson(this);
 
   @override
-  String toString() => 'Trip(id: $id, name: $name, isActive: $isActive)';
+  String toString() => 'Trip(id: $id, name: $name, isActive: $isActive, createdBy: $createdBy)';
 }
