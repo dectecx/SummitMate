@@ -17,14 +17,7 @@ void main() {
     mockLocalDataSource = MockGearLocalDataSource();
     repository = GearRepository(localDataSource: mockLocalDataSource);
 
-    testItem1 = GearItem(
-      uuid: 'item_1',
-      name: 'Tent',
-      category: 'Shelter',
-      weight: 2000,
-      quantity: 1,
-      orderIndex: 0,
-    );
+    testItem1 = GearItem(uuid: 'item_1', name: 'Tent', category: 'Shelter', weight: 2000, quantity: 1, orderIndex: 0);
 
     testItem2 = GearItem(
       uuid: 'item_2',
@@ -34,7 +27,7 @@ void main() {
       quantity: 1,
       orderIndex: 1,
     );
-    
+
     registerFallbackValue(testItem1);
   });
 
@@ -60,14 +53,14 @@ void main() {
         expect(result[0].uuid, testItem2.uuid); // Should be first
         expect(result[1].uuid, testItem1.uuid);
       });
-      
-       test('handles null orderIndex sorting (pushes to end)', () {
+
+      test('handles null orderIndex sorting (pushes to end)', () {
         testItem1.orderIndex = null;
         testItem2.orderIndex = 0;
         when(() => mockLocalDataSource.getAll()).thenReturn([testItem1, testItem2]);
-        
+
         final result = repository.getAllItems();
-        
+
         expect(result[0].uuid, testItem2.uuid);
         expect(result[1].uuid, testItem1.uuid);
       });
@@ -85,14 +78,14 @@ void main() {
         expect(newItem.orderIndex, 2); // 1 + 1
         verify(() => mockLocalDataSource.add(newItem)).called(1);
       });
-      
-       test('delegates add call', () async {
-         when(() => mockLocalDataSource.getAll()).thenReturn([]);
-         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async => 0);
-         
-         await repository.addItem(testItem1);
-         verify(() => mockLocalDataSource.add(testItem1)).called(1);
-       });
+
+      test('delegates add call', () async {
+        when(() => mockLocalDataSource.getAll()).thenReturn([]);
+        when(() => mockLocalDataSource.add(any())).thenAnswer((_) async => 0);
+
+        await repository.addItem(testItem1);
+        verify(() => mockLocalDataSource.add(testItem1)).called(1);
+      });
     });
 
     test('getTotalWeight calculates correctly', () {
@@ -105,22 +98,22 @@ void main() {
       testItem1.isChecked = true; // 2000
       testItem2.isChecked = false; // 1000
       when(() => mockLocalDataSource.getAll()).thenReturn([testItem1, testItem2]);
-      
+
       final result = repository.getCheckedWeight();
       expect(result, 2000.0);
     });
-    
+
     test('resetAllChecked updates all items', () async {
-       testItem1.isChecked = true;
-       testItem2.isChecked = true;
-       when(() => mockLocalDataSource.getAll()).thenReturn([testItem1, testItem2]);
-       when(() => mockLocalDataSource.update(any())).thenAnswer((_) async {});
-       
-       await repository.resetAllChecked();
-       
-       expect(testItem1.isChecked, false);
-       expect(testItem2.isChecked, false);
-       verify(() => mockLocalDataSource.update(any())).called(2);
+      testItem1.isChecked = true;
+      testItem2.isChecked = true;
+      when(() => mockLocalDataSource.getAll()).thenReturn([testItem1, testItem2]);
+      when(() => mockLocalDataSource.update(any())).thenAnswer((_) async {});
+
+      await repository.resetAllChecked();
+
+      expect(testItem1.isChecked, false);
+      expect(testItem2.isChecked, false);
+      verify(() => mockLocalDataSource.update(any())).called(2);
     });
   });
 }

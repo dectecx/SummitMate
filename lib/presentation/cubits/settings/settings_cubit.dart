@@ -107,13 +107,21 @@ class SettingsCubit extends Cubit<SettingsState> {
     final currentState = state as SettingsLoaded;
     final newStatus = !currentState.isOfflineMode;
 
+    // 1. 樂觀更新 UI (立刻發送新狀態，不等待資料庫寫入)
+    final tempSettings = currentState.settings.copyWith(isOfflineMode: newStatus);
+    emit(currentState.copyWith(settings: tempSettings));
+
     try {
+      // 2. 執行實際儲存
       await _repository.updateOfflineMode(newStatus);
+      // 3. 儲存後再次確認狀態 (以防 repository 內部有其他邏輯或需要同步最新物件)
       final updatedSettings = _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to toggle offline mode: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      // 4. 發生錯誤時復原狀態
+      emit(currentState);
+      emit(SettingsError('狀態更新失敗: ${e.toString()}'));
     }
   }
 

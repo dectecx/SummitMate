@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_state.dart';
 import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/auth_state.dart'
     show AuthState, AuthLoading, AuthAuthenticated, AuthError, AuthRequiresVerification;
@@ -123,6 +124,37 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48),
+
+                    // Offline Mode Toggle
+                    BlocBuilder<SettingsCubit, SettingsState>(
+                      builder: (context, settingsState) {
+                        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 24),
+                          color: isOffline ? Colors.orange.shade50 : null,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: isOffline ? Colors.orange.shade200 : Colors.grey.shade300),
+                          ),
+                          child: SwitchListTile(
+                            title: const Text('離線模式', style: TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text(
+                              isOffline ? '已暫停自動同步，登入將改為本機驗證' : '同步功能正常運作中',
+                              style: TextStyle(fontSize: 12, color: isOffline ? Colors.orange.shade800 : null),
+                            ),
+                            secondary: Icon(
+                              isOffline ? Icons.cloud_off : Icons.cloud_done,
+                              color: isOffline ? Colors.orange : Colors.green,
+                            ),
+                            value: isOffline,
+                            onChanged: (value) {
+                              context.read<SettingsCubit>().toggleOfflineMode();
+                            },
+                          ),
+                        );
+                      },
+                    ),
 
                     // Error Message
                     if (errorMessage != null)

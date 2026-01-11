@@ -33,13 +33,15 @@ class _ItineraryTabState extends State<ItineraryTab> {
   }
 
   Future<void> _autoSync() async {
-    final context = this.context;
-    if (!context.mounted) return;
+    if (!mounted) return;
+    final cubit = context.read<SyncCubit>();
+    final settingsCubit = context.read<SettingsCubit>();
 
-    // 檢查離線模式
-    final settingsState = context.read<SettingsCubit>().state;
+    final settingsState = settingsCubit.state;
     final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
     if (isOffline) return;
+
+    if (!mounted) return;
 
     // 首次載入 (尚未同步過) 時，不觸發自動同步
     // Use SyncCubit state to check lastSyncTime
@@ -62,7 +64,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     if (lastSyncTime == null) return;
 
     // 使用 SyncCubit 進行自動同步
-    context.read<SyncCubit>().syncAll();
+    cubit.syncAll();
   }
 
   Future<void> _manualSync(BuildContext context) async {
