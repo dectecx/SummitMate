@@ -18,17 +18,14 @@ void main() {
     late SettingsCubit settingsCubit;
     late MockSettingsRepository mockRepo;
     late MockSharedPreferences mockPrefs;
-    late MockSettings mockSettings;
+    late Settings testSettings;
 
     setUp(() {
       mockRepo = MockSettingsRepository();
       mockPrefs = MockSharedPreferences();
-      mockSettings = MockSettings();
+      testSettings = Settings(username: 'TestUser', isOfflineMode: false, avatar: 'bear');
 
-      when(() => mockSettings.username).thenReturn('TestUser');
-      when(() => mockSettings.isOfflineMode).thenReturn(false);
-      when(() => mockSettings.avatar).thenReturn('bear');
-      when(() => mockRepo.getSettings()).thenReturn(mockSettings);
+      when(() => mockRepo.getSettings()).thenReturn(testSettings);
       when(() => mockRepo.updateUsername(any())).thenAnswer((_) async {});
       when(() => mockRepo.updateAvatar(any())).thenAnswer((_) async {});
       when(() => mockRepo.updateOfflineMode(any())).thenAnswer((_) async {});
@@ -62,7 +59,7 @@ void main() {
     blocTest<SettingsCubit, SettingsState>(
       'updateUsername calls repo and emits updated state',
       build: () => settingsCubit,
-      seed: () => SettingsLoaded(settings: mockSettings, hasSeenOnboarding: true),
+      seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true),
       act: (cubit) => cubit.updateUsername('NewName'),
       verify: (_) {
         verify(() => mockRepo.updateUsername('NewName')).called(1);
@@ -73,7 +70,7 @@ void main() {
     blocTest<SettingsCubit, SettingsState>(
       'toggleOfflineMode switches mode',
       build: () => settingsCubit,
-      seed: () => SettingsLoaded(settings: mockSettings, hasSeenOnboarding: true),
+      seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true),
       act: (cubit) => cubit.toggleOfflineMode(),
       verify: (_) {
         verify(() => mockRepo.updateOfflineMode(true)).called(1);

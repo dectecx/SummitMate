@@ -10,8 +10,11 @@ import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 
 // Mocks
 class MockItineraryLocalDataSource extends Mock implements IItineraryLocalDataSource {}
+
 class MockItineraryRemoteDataSource extends Mock implements IItineraryRemoteDataSource {}
+
 class MockConnectivityService extends Mock implements IConnectivityService {}
+
 class MockAuthService extends Mock implements IAuthService {}
 
 void main() {
@@ -37,12 +40,7 @@ void main() {
       authService: mockAuthService,
     );
 
-    testItem = ItineraryItem(
-      uuid: 'item_1',
-      tripId: 'trip_1',
-      day: 'D1',
-      name: 'Test Point',
-    );
+    testItem = ItineraryItem(uuid: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point');
 
     testUser = UserProfile(
       uuid: 'user_1',
@@ -52,7 +50,7 @@ void main() {
       isVerified: true,
       role: 'member',
     );
-    
+
     registerFallbackValue(testItem);
   });
 
@@ -75,13 +73,13 @@ void main() {
         // Assert
         verify(() => mockAuthService.getCachedUserProfile()).called(1);
         final capturedItem = verify(() => mockLocalDataSource.add(captureAny())).captured.first as ItineraryItem;
-        
+
         expect(capturedItem.createdBy, testUser.email);
         expect(capturedItem.updatedBy, testUser.email);
       });
 
       test('should NOT populate createdBy/updatedBy when user is null', () async {
-         // Arrange
+        // Arrange
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => null);
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
 
@@ -93,8 +91,8 @@ void main() {
         expect(capturedItem.createdBy, isNull);
         expect(capturedItem.updatedBy, isNull);
       });
-      
-       test('should NOT overwrite existing createdBy', () async {
+
+      test('should NOT overwrite existing createdBy', () async {
         // Arrange
         testItem.createdBy = 'original_creator';
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => testUser);
@@ -112,7 +110,7 @@ void main() {
 
     group('updateItem', () {
       test('should populate updatedBy when user is logged in', () async {
-         // Arrange
+        // Arrange
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => testUser);
         when(() => mockLocalDataSource.update(any(), any())).thenAnswer((_) async {});
 
@@ -121,7 +119,8 @@ void main() {
 
         // Assert
         verify(() => mockAuthService.getCachedUserProfile()).called(1);
-        final capturedItem = verify(() => mockLocalDataSource.update(any(), captureAny())).captured.first as ItineraryItem;
+        final capturedItem =
+            verify(() => mockLocalDataSource.update(any(), captureAny())).captured.first as ItineraryItem;
         expect(capturedItem.updatedBy, testUser.email);
       });
     });

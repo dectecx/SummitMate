@@ -9,7 +9,9 @@ import 'package:summitmate/data/models/user_profile.dart'; // Assuming UserProfi
 
 // Mocks
 class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
+
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
+
 class MockAuthService extends Mock implements IAuthService {}
 
 void main() {
@@ -31,11 +33,7 @@ void main() {
       authService: mockAuthService,
     );
 
-    testTrip = Trip(
-      id: 'trip_1',
-      name: 'Test Trip',
-      startDate: DateTime.now(),
-    );
+    testTrip = Trip(id: 'trip_1', name: 'Test Trip', startDate: DateTime.now());
 
     testUser = UserProfile(
       uuid: 'user_1',
@@ -45,16 +43,16 @@ void main() {
       isVerified: true,
       role: 'member',
     );
-     // Register fallback values for mocktail if needed
+    // Register fallback values for mocktail if needed
     registerFallbackValue(testTrip);
   });
 
   group('TripRepository', () {
     test('init calls localDataSource.init', () async {
       when(() => mockLocalDataSource.init()).thenAnswer((_) async {});
-      
+
       await repository.init();
-      
+
       verify(() => mockLocalDataSource.init()).called(1);
     });
 
@@ -70,7 +68,7 @@ void main() {
         // Assert
         verify(() => mockAuthService.getCachedUserProfile()).called(1);
         final capturedTrip = verify(() => mockLocalDataSource.addTrip(captureAny())).captured.first as Trip;
-        
+
         expect(capturedTrip.createdBy, testUser.email);
         expect(capturedTrip.updatedBy, testUser.email);
       });
@@ -89,7 +87,7 @@ void main() {
         // updatedBy might be null or default, depending on implementation. In current impl, it shouldn't be set if user is null.
         expect(capturedTrip.updatedBy, isNull);
       });
-      
+
       test('should NOT overwrite existing createdBy', () async {
         // Arrange
         testTrip.createdBy = 'original_creator';
@@ -109,7 +107,7 @@ void main() {
     group('updateTrip', () {
       test('should populate updatedBy when user is logged in', () async {
         // Arrange
-         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => testUser);
+        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => testUser);
         when(() => mockLocalDataSource.updateTrip(any())).thenAnswer((_) async {});
 
         // Act
@@ -135,8 +133,8 @@ void main() {
       expect(result, testTrip);
       verify(() => mockLocalDataSource.getTripById('trip_1')).called(1);
     });
-    
-     test('deleteTrip delegates to localDataSource', () async {
+
+    test('deleteTrip delegates to localDataSource', () async {
       when(() => mockLocalDataSource.deleteTrip('trip_1')).thenAnswer((_) async {});
       await repository.deleteTrip('trip_1');
       verify(() => mockLocalDataSource.deleteTrip('trip_1')).called(1);
