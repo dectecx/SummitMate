@@ -42,7 +42,10 @@ class SyncService implements ISyncService {
   /// 取得當前活動行程 ID
   String? get _activeTripId => _tripRepo.getActiveTrip()?.id;
 
+  /// 上次同步行程的時間
   DateTime? _lastItinerarySyncTime;
+
+  /// 上次同步留言的時間
   DateTime? _lastMessagesSyncTime;
 
   @override

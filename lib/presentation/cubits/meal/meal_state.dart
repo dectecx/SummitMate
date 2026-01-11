@@ -15,6 +15,9 @@ class MealInitial extends MealState {
 class MealLoaded extends MealState {
   final List<DailyMealPlan> dailyPlans;
 
+  /// 建構子
+  ///
+  /// [dailyPlans] 每日餐食計畫列表
   const MealLoaded({required this.dailyPlans});
 
   /// Get total weight in kg

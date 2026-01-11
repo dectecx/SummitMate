@@ -59,7 +59,6 @@ class LogEntry {
 ///   - info: 正常操作完成 (API 成功、資料同步完成)
 ///   - warning: 可恢復的問題 (快取過期、使用 fallback)
 ///   - error: 錯誤 (API 失敗、解析錯誤)
-
 class LogService {
   static const String _boxName = HiveBoxNames.logs;
   static const int _maxLogCount = 1000; // 最多保留 1000 條

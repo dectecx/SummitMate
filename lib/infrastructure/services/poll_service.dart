@@ -6,6 +6,14 @@ import '../../data/models/poll.dart';
 import '../tools/log_service.dart';
 import '../../domain/interfaces/i_poll_service.dart';
 
+/// 投票服務
+///
+/// 負責與後端 (GAS) 溝通以管理投票功能：
+/// - 取得投票列表
+/// - 建立新投票
+/// - 參與投票 (Vote)
+/// - 新增選項
+/// - 關閉/刪除投票
 class PollService implements IPollService {
   // 若有需要可使用 Singleton，或保持目前的依賴注入方式
   static const String _source = 'PollService';

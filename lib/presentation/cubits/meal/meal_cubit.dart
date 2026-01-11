@@ -21,6 +21,12 @@ class MealCubit extends Cubit<MealState> {
   }
 
   /// 新增餐點項目
+  ///
+  /// [day] 天數 (e.g., "D1")
+  /// [type] 餐別 (早餐/午餐/晚餐/行動糧)
+  /// [name] 餐點名稱
+  /// [weight] 重量 (g)
+  /// [calories] 熱量 (kcal)
   void addMealItem(String day, MealType type, String name, double weight, double calories) {
     if (state is! MealLoaded) return;
 
@@ -40,7 +46,7 @@ class MealCubit extends Cubit<MealState> {
       // Note: This relies on MealItem/DailyMealPlan mutability in current Provider logic.
       // If we strictly follow BLoC, we should deep copy.
       // For migration simplicity, we use the mutable approach wrapped in new list emittance.
-      
+
       if (plan.meals[type] == null) {
         plan.meals[type] = [];
       }
@@ -52,6 +58,10 @@ class MealCubit extends Cubit<MealState> {
   }
 
   /// 移除餐點項目
+  ///
+  /// [day] 天數
+  /// [type] 餐別
+  /// [itemId] 項目 ID
   void removeMealItem(String day, MealType type, String itemId) {
     if (state is! MealLoaded) return;
     final currentPlans = List<DailyMealPlan>.from((state as MealLoaded).dailyPlans);
@@ -64,6 +74,11 @@ class MealCubit extends Cubit<MealState> {
   }
 
   /// 更新餐點數量
+  ///
+  /// [day] 天數
+  /// [type] 餐別
+  /// [itemId] 項目 ID
+  /// [quantity] 新數量
   void updateMealItemQuantity(String day, MealType type, String itemId, int quantity) {
     if (state is! MealLoaded) return;
     if (quantity < 1) quantity = 1;
@@ -84,6 +99,8 @@ class MealCubit extends Cubit<MealState> {
   }
 
   /// 設定計畫 (例如匯入)
+  ///
+  /// [newPlans] 新的每日計畫列表
   void setDailyPlans(List<DailyMealPlan> newPlans) {
     emit(MealLoaded(dailyPlans: newPlans));
   }

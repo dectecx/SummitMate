@@ -40,18 +40,25 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 依天數取得行程項目 (e.g. "D1")
+  ///
+  /// [day] 行程天數 (e.g., "D1")
   @override
   List<ItineraryItem> getItemsByDay(String day) {
     return _localDataSource.getAll().where((item) => item.day == day).toList();
   }
 
   /// 依 Key 取得單一行程項目
+  ///
+  /// [key] 行程節點 Key
   @override
   ItineraryItem? getItemByKey(dynamic key) {
     return _localDataSource.getByKey(key);
   }
 
   /// 打卡 (設定 actualTime)
+  ///
+  /// [key] 行程節點 Key
+  /// [time] 打卡時間
   @override
   Future<void> checkIn(dynamic key, DateTime time) async {
     final item = _localDataSource.getByKey(key);
@@ -61,6 +68,8 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 取消打卡
+  ///
+  /// [key] 行程節點 Key
   @override
   Future<void> clearCheckIn(dynamic key) async {
     final item = _localDataSource.getByKey(key);
@@ -79,24 +88,33 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 新增行程項目 (本地)
+  ///
+  /// [item] 欲新增的節點
   @override
   Future<void> addItem(ItineraryItem item) async {
     await _localDataSource.add(item);
   }
 
   /// 更新行程項目 (本地)
+  ///
+  /// [key] 目標節點 Key
+  /// [item] 更新後的節點資料
   @override
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     await _localDataSource.update(key, item);
   }
 
   /// 刪除行程項目 (本地)
+  ///
+  /// [key] 目標節點 Key
   @override
   Future<void> deleteItem(dynamic key) async {
     await _localDataSource.delete(key);
   }
 
   /// 儲存最後同步時間
+  ///
+  /// [time] 同步時間
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
     await _localDataSource.saveLastSyncTime(time);
@@ -117,6 +135,8 @@ class ItineraryRepository implements IItineraryRepository {
   // --- 同步操作 ---
 
   /// 同步行程 (從雲端拉取)
+  ///
+  /// [tripId] 行程 ID
   ///
   /// 策略：從雲端取得最新行程表，但保留本地的打卡紀錄 (actualTime)，然後覆寫本地資料。
   @override
@@ -156,6 +176,8 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   /// 從雲端列表同步 (Legacy / 直接匯入用)
+  ///
+  /// [cloudItems] 雲端下載的行程節點列表
   @override
   Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {
     // 保留打卡狀態邏輯

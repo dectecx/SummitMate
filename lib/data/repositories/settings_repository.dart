@@ -37,6 +37,8 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新使用者名稱
+  ///
+  /// [username] 新的使用者名稱
   @override
   Future<void> updateUsername(String username) async {
     final settings = getSettings();
@@ -45,6 +47,8 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新最後同步時間
+  ///
+  /// [time] 最後同步時間
   @override
   Future<void> updateLastSyncTime(DateTime? time) async {
     final settings = getSettings();
@@ -53,6 +57,8 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新頭像
+  ///
+  /// [avatar] 新的頭像 (e.g., Emoji 字串)
   @override
   Future<void> updateAvatar(String avatar) async {
     final settings = getSettings();
@@ -61,6 +67,8 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   /// 更新離線模式
+  ///
+  /// [isOffline] 是否開啟離線模式
   @override
   Future<void> updateOfflineMode(bool isOffline) async {
     final settings = getSettings();

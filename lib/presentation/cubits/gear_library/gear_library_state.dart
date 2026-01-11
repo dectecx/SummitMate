@@ -22,6 +22,11 @@ class GearLibraryLoaded extends GearLibraryState {
   final String? selectedCategory;
   final String searchQuery;
 
+  /// 建構子
+  ///
+  /// [items] 裝備庫項目列表
+  /// [selectedCategory] 目前選擇的分類 (null 表示全部)
+  /// [searchQuery] 搜尋關鍵字
   const GearLibraryLoaded({required this.items, this.selectedCategory, this.searchQuery = ''});
 
   GearLibraryLoaded copyWith({

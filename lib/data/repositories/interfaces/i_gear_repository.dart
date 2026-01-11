@@ -11,21 +11,32 @@ abstract interface class IGearRepository {
   List<GearItem> getAllItems();
 
   /// 依分類取得裝備
+  ///
+  /// [category] 裝備分類
   List<GearItem> getItemsByCategory(String category);
 
   /// 取得未打包的裝備
   List<GearItem> getUncheckedItems();
 
   /// 新增裝備
+  ///
+  /// [item] 欲新增的裝備
+  /// 回傳: 新增項目的 Key
   Future<int> addItem(GearItem item);
 
   /// 更新裝備
+  ///
+  /// [item] 更新後的裝備
   Future<void> updateItem(GearItem item);
 
   /// 刪除裝備
+  ///
+  /// [key] 裝備的本地鍵值
   Future<void> deleteItem(dynamic key);
 
   /// 切換打包狀態
+  ///
+  /// [key] 裝備的本地鍵值
   Future<void> toggleChecked(dynamic key);
 
   /// 計算總重量 (克)
@@ -44,9 +55,13 @@ abstract interface class IGearRepository {
   Future<void> resetAllChecked();
 
   /// 批量更新裝備順序
+  ///
+  /// [items] 重新排序後的裝備列表
   Future<void> updateItemsOrder(List<GearItem> items);
 
   /// 清除指定行程的所有裝備
+  ///
+  /// [tripId] 行程 ID
   Future<void> clearByTripId(String tripId);
 
   /// 清除所有裝備 (Debug 用途)

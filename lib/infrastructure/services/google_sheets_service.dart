@@ -63,6 +63,8 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 僅取得行程資料
+  ///
+  /// [tripId] 行程 ID (可選，若無則取得所有行程)
   @override
   Future<GetAllResult> getItinerary({String? tripId}) async {
     try {
@@ -97,6 +99,8 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 僅取得留言資料
+  ///
+  /// [tripId] 行程 ID (可選)
   @override
   Future<GetAllResult> getMessages({String? tripId}) async {
     try {
@@ -131,6 +135,8 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 新增留言
+  ///
+  /// [message] 留言物件
   @override
   Future<ApiResult> addMessage(Message message) async {
     try {
@@ -142,6 +148,8 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 刪除留言
+  ///
+  /// [uuid] 留言 UUID
   @override
   Future<ApiResult> deleteMessage(String uuid) async {
     try {
@@ -153,6 +161,8 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 批次新增留言
+  ///
+  /// [messages] 留言列表
   @override
   Future<ApiResult> batchAddMessages(List<Message> messages) async {
     try {
@@ -167,6 +177,8 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 更新行程 (覆寫雲端)
+  ///
+  /// [items] 行程列表
   @override
   Future<ApiResult> updateItinerary(List<ItineraryItem> items) async {
     try {
@@ -216,6 +228,9 @@ class GoogleSheetsService implements IDataService {
   }
 
   /// 上傳日誌
+  ///
+  /// [logs] 日誌列表
+  /// [deviceName] 裝置名稱 (可選)
   @override
   Future<ApiResult> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {

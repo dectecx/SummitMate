@@ -53,6 +53,9 @@ class PollCubit extends Cubit<PollState> {
     // 目前邏輯建議由 UI 觸發明確刷新
   }
 
+  /// 透過 API 更新投票列表
+  ///
+  /// [isAuto] 是否為自動同步 (若是，失敗時不顯示錯誤 Dialog，僅 Log)
   Future<void> fetchPolls({bool isAuto = false}) async {
     if (state is! PollLoaded) {
       // 若尚未載入，可能需要先 emit loading?
@@ -135,6 +138,15 @@ class PollCubit extends Cubit<PollState> {
     }
   }
 
+  /// 建立投票
+  ///
+  /// [title] 標題
+  /// [description] 描述
+  /// [deadline] 截止時間
+  /// [isAllowAddOption] 是否允許新增選項
+  /// [maxOptionLimit] 最大選項數限制
+  /// [allowMultipleVotes] 是否允許複選
+  /// [initialOptions] 初始選項列表
   Future<bool> createPoll({
     required String title,
     String description = '',
@@ -159,6 +171,10 @@ class PollCubit extends Cubit<PollState> {
     );
   }
 
+  /// 進行投票
+  ///
+  /// [pollId] 投票 ID
+  /// [optionIds] 選項 ID 列表
   Future<bool> votePoll({required String pollId, required List<String> optionIds}) async {
     return await _performAction(
       () => _pollService.votePoll(
@@ -171,6 +187,10 @@ class PollCubit extends Cubit<PollState> {
     );
   }
 
+  /// 新增選項
+  ///
+  /// [pollId] 投票 ID
+  /// [text] 選項文字
   Future<bool> addOption({required String pollId, required String text}) async {
     return await _performAction(
       () => _pollService.addOption(pollId: pollId, text: text, creatorId: _currentUserId),
@@ -178,6 +198,10 @@ class PollCubit extends Cubit<PollState> {
     );
   }
 
+  /// 刪除選項
+  ///
+  /// [pollId] 投票 ID
+  /// [optionId] 選項 ID
   Future<bool> deleteOption({required String pollId, required String optionId}) async {
     return await _performAction(
       () => _pollService.deleteOption(optionId: optionId, userId: _currentUserId),
@@ -185,10 +209,16 @@ class PollCubit extends Cubit<PollState> {
     );
   }
 
+  /// 結束投票
+  ///
+  /// [pollId] 投票 ID
   Future<bool> closePoll({required String pollId}) async {
     return await _performAction(() => _pollService.closePoll(pollId: pollId, userId: _currentUserId), '離線模式無法結束投票');
   }
 
+  /// 刪除投票
+  ///
+  /// [pollId] 投票 ID
   Future<bool> deletePoll({required String pollId}) async {
     return await _performAction(() => _pollService.deletePoll(pollId: pollId, userId: _currentUserId), '離線模式無法刪除投票');
   }

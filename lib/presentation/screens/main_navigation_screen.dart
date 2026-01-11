@@ -397,6 +397,11 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   /// 顯示行程選擇對話框 (從雲端匯入)
+  ///
+  /// 流程：
+  /// 1. 呼叫 [TripCubit.getCloudTrips] 取得雲端列表
+  /// 2. 顯示列表供用戶選擇
+  /// 3. 選定後呼叫 [_importAndSwitchTrip] 進行匯入
   Future<void> _showTripSelectionDialog(BuildContext context) async {
     final tripCubit = context.read<TripCubit>();
 
@@ -452,6 +457,14 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
+  /// 匯入並切換行程
+  ///
+  /// 此過程包含：
+  /// 1. 將 [Trip] 資料存入本地 (若存在則更新，不存在則新增)
+  /// 2. 設定為當前活動行程 (Active Trip)
+  /// 3. 呼叫 [SyncCubit.syncAll] 下載該行程的完整資料 (行程表、留言)
+  ///
+  /// [cloudTrip] 欲匯入的雲端行程物件
   Future<void> _importAndSwitchTrip(BuildContext context, Trip cloudTrip) async {
     showDialog(
       context: context,
@@ -508,6 +521,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  /// 顯示新增行程項目對話框
+  /// 預設使用目前選擇的天數 (Selected Day)
   void _showAddItineraryDialog(BuildContext context) async {
     final itineraryCubit = context.read<ItineraryCubit>();
     String selectedDay = 'D1';
@@ -543,6 +558,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  /// 顯示清除資料對話框
+  ///
+  /// 這是 Debug 工具，但在正式版保留以解決極端異常狀況。
+  /// 允許用戶選擇性清除特定類型的本地 Hive 資料。
   void _showClearDataDialog(BuildContext context) {
     // 預設選項狀態
     bool clearItinerary = true;

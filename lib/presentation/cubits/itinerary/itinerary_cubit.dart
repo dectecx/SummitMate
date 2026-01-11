@@ -64,6 +64,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 選擇日期
+  ///
+  /// [day] 行程天數 (e.g., "D1")
   void selectDay(String day) {
     if (state is ItineraryLoaded) {
       emit((state as ItineraryLoaded).copyWith(selectedDay: day));
@@ -79,6 +81,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 簽到邏輯
+  ///
+  /// [key] 行程節點 Key
+  /// [time] 簽到時間 (預設當下)
   Future<void> checkIn(dynamic key, {DateTime? time}) async {
     try {
       final checkInTime = time ?? DateTime.now();
@@ -94,6 +99,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 清除簽到
+  ///
+  /// [key] 行程節點 Key
   Future<void> clearCheckIn(dynamic key) async {
     try {
       await _repository.clearCheckIn(key);
@@ -107,6 +114,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 新增項目
+  ///
+  /// [item] 行程節點物件
   Future<void> addItem(ItineraryItem item) async {
     try {
       // 確保 tripId 正確填充 (若未指定則使用當前活動 tripId)
@@ -137,6 +146,9 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 更新項目
+  ///
+  /// [key] 目標節點 Key
+  /// [item] 更新後的節點資料
   Future<void> updateItem(dynamic key, ItineraryItem item) async {
     try {
       await _repository.updateItem(key, item);
@@ -149,6 +161,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 刪除項目
+  ///
+  /// [key] 目標節點 Key
   Future<void> deleteItem(dynamic key) async {
     try {
       await _repository.deleteItem(key);

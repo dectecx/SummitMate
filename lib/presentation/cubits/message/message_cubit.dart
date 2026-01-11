@@ -68,6 +68,12 @@ class MessageCubit extends Cubit<MessageState> {
     }
   }
 
+  /// 新增留言
+  ///
+  /// [user] 使用者名稱
+  /// [avatar] 頭像 URL
+  /// [content] 留言內容
+  /// [parentId] 父留言 ID (若為回覆)
   Future<void> addMessage({
     required String user,
     required String avatar,
@@ -106,6 +112,9 @@ class MessageCubit extends Cubit<MessageState> {
     }
   }
 
+  /// 刪除留言
+  ///
+  /// [uuid] 留言 UUID
   Future<void> deleteMessage(String uuid) async {
     try {
       await _syncService.deleteMessageAndSync(uuid);

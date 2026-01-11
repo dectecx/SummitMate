@@ -25,15 +25,28 @@ class GearSetRepository implements IGearSetRepository {
   Future<GearCloudResult<List<GearSet>>> getGearSets() => _remoteDataSource.getGearSets();
 
   /// 透過 Key 取得單一裝備組合
+  ///
+  /// [key] 裝備組合的唯一識別碼
   @override
   Future<GearCloudResult<GearSet>> getGearSetByKey(String key) => _remoteDataSource.getGearSetByKey(key);
 
   /// 下載並匯入裝備組合至指定行程
+  ///
+  /// [uuid] 本地識別碼 (可選)
+  /// [key] 雲端識別碼
   @override
   Future<GearCloudResult<GearSet>> downloadGearSet(String uuid, {String? key}) =>
       _remoteDataSource.downloadGearSet(uuid, key: key);
 
   /// 上傳/分享裝備組合
+  ///
+  /// [tripId] 關聯行程 ID
+  /// [title] 清單標題
+  /// [author] 作者名稱
+  /// [visibility] 可見度
+  /// [items] 裝備項目列表
+  /// [meals] 餐食計畫 (可選)
+  /// [key] 若為更新舊有清單，則提供此 Key
   @override
   Future<GearCloudResult<GearSet>> uploadGearSet({
     required String tripId,
@@ -54,6 +67,9 @@ class GearSetRepository implements IGearSetRepository {
   );
 
   /// 刪除雲端裝備組合
+  ///
+  /// [uuid] 本地識別碼 (若有)
+  /// [key] 雲端識別碼
   @override
   Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key) => _remoteDataSource.deleteGearSet(uuid, key);
 
@@ -64,11 +80,17 @@ class GearSetRepository implements IGearSetRepository {
   Future<List<GearKeyRecord>> getUploadedKeys() => _localDataSource.getUploadedKeys();
 
   /// 儲存上傳紀錄 (Key)
+  ///
+  /// [key] 雲端識別碼
+  /// [title] 標題
+  /// [visibility] 可見度
   @override
   Future<void> saveUploadedKey(String key, String title, String visibility) =>
       _localDataSource.saveUploadedKey(key, title, visibility);
 
   /// 移除上傳紀錄
+  ///
+  /// [key] 雲端識別碼
   @override
   Future<void> removeUploadedKey(String key) => _localDataSource.removeUploadedKey(key);
 }

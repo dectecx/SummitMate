@@ -19,7 +19,7 @@ enum TaskStatus {
   failed,
 
   /// 已取消
-  cancelled
+  cancelled,
 }
 
 /// 離線地圖下載任務

@@ -13,6 +13,14 @@ import '../../domain/interfaces/i_weather_service.dart';
 import '../../core/location/i_location_resolver.dart';
 import '../../data/cwa/cwa_weather_source.dart';
 
+/// 天氣服務
+///
+/// 整合 CWA (氣象局) 與 GAS API 的天氣資料。
+/// 支援：
+/// - 本地快取 (Hive)
+/// - 離線模式存取
+/// - 透過 [ILocationResolver] 解析地點名稱
+/// - 取得目前天氣與預報
 class WeatherService implements IWeatherService {
   static const String _boxName = HiveBoxNames.weather;
 
@@ -26,6 +34,7 @@ class WeatherService implements IWeatherService {
       _locationResolver = locationResolver ?? getIt<ILocationResolver>(),
       _cwaSource = cwaSource ?? CwaWeatherSource();
 
+  /// 初始化天氣服務 (開啟 Hive Local Storage)
   @override
   Future<void> init() async {
     if (!Hive.isBoxOpen(_boxName)) {
@@ -44,10 +53,7 @@ class WeatherService implements IWeatherService {
 
     if (isOffline) {
       if (cached != null) {
-        LogService.info(
-          '離線模式: 回傳 $locationName 的快取天氣 (Stale: ${cached.isStale})',
-          source: 'WeatherService',
-        );
+        LogService.info('離線模式: 回傳 $locationName 的快取天氣 (Stale: ${cached.isStale})', source: 'WeatherService');
         return cached;
       }
       LogService.warning('離線模式: 無 $locationName 的快取資料', source: 'WeatherService');
@@ -61,10 +67,7 @@ class WeatherService implements IWeatherService {
         final now = DateTime.now();
         final diff = now.difference(cached.timestamp);
         if (diff.inMinutes < 5) {
-          LogService.info(
-            '天氣快取夠新 (${diff.inMinutes}m 前), 忽略強制重新整理。',
-            source: 'WeatherService',
-          );
+          LogService.info('天氣快取夠新 (${diff.inMinutes}m 前), 忽略強制重新整理。', source: 'WeatherService');
           return cached;
         }
       }
@@ -402,10 +405,7 @@ class WeatherService implements IWeatherService {
         return cached;
       }
       if (isOffline && cached != null) {
-        LogService.warning(
-          '離線模式: 回傳 $locationName 的過期快取',
-          source: 'WeatherService',
-        );
+        LogService.warning('離線模式: 回傳 $locationName 的過期快取', source: 'WeatherService');
         return cached;
       }
     }

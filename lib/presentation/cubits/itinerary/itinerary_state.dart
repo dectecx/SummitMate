@@ -21,6 +21,11 @@ class ItineraryLoaded extends ItineraryState {
   final String selectedDay;
   final bool isEditMode;
 
+  /// 建構子
+  ///
+  /// [items] 行程節點列表
+  /// [selectedDay] 目前選擇的天數 (預設 'D1')
+  /// [isEditMode] 是否處於編輯模式
   const ItineraryLoaded({required this.items, this.selectedDay = 'D1', this.isEditMode = false});
 
   /// CopyWith method for updating state

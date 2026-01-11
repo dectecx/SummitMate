@@ -524,7 +524,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
   }
 
-  // 顯示下載確認對話框
+  /// 顯示下載確認對話框
+  ///
+  /// [mapController] 用於取得目前視窗邊界 (Bounds)
+  /// 使用者確認後呼叫 [_startDownload]
   void _showDownloadDialog(BuildContext context, MapController mapController) {
     final bounds = mapController.camera.visibleBounds;
     final zoom = mapController.camera.zoom;
@@ -575,7 +578,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     });
   }
 
-  // 執行下載 (背景)
+  /// 執行下載 (背景作業)
+  ///
+  /// 觸發 [OfflineMapCubit.downloadRegion] 進行圖資下載。
+  /// 下載進度可在 [OfflineMapManagerScreen] 查看。
+  ///
+  /// [bounds] 下載範圍
   Future<void> _startDownload(LatLngBounds bounds) async {
     // 先取得必要的參照
     final offlineCubit = context.read<OfflineMapCubit>();

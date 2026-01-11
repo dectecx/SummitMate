@@ -17,6 +17,8 @@ abstract class IItineraryLocalDataSource {
   ItineraryItem? getByKey(dynamic key);
 
   /// 新增行程項目
+  ///
+  /// [item] 欲新增的項目
   Future<void> add(ItineraryItem item);
 
   /// 更新行程項目
@@ -26,6 +28,8 @@ abstract class IItineraryLocalDataSource {
   Future<void> update(dynamic key, ItineraryItem item);
 
   /// 刪除行程項目
+  ///
+  /// [key] 目標項目的鍵值
   Future<void> delete(dynamic key);
 
   /// 清除所有行程項目

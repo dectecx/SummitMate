@@ -16,6 +16,10 @@ class SettingsLoaded extends SettingsState {
   final Settings settings;
   final bool hasSeenOnboarding;
 
+  /// 建構子
+  ///
+  /// [settings] 設定資料模型
+  /// [hasSeenOnboarding] 是否已看過導覽
   const SettingsLoaded({required this.settings, required this.hasSeenOnboarding});
 
   String get username => settings.username;

@@ -19,6 +19,13 @@ class MapLoaded extends MapState {
   final List<LatLng> trackPoints;
   final bool isLoading;
 
+  /// 建構子
+  ///
+  /// [currentLocation] 目前 GPS 位置
+  /// [currentHeading] 目前方位角
+  /// [gpx] 載入的 GPX 資料
+  /// [trackPoints] 軌跡點列表
+  /// [isLoading] 是否正在載入
   const MapLoaded({
     this.currentLocation,
     this.currentHeading,

@@ -42,18 +42,25 @@ class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   }
 
   /// 新增行程
+  ///
+  /// [item] 欲新增的項目
   @override
   Future<void> add(ItineraryItem item) async {
     await box.add(item);
   }
 
   /// 更新行程
+  ///
+  /// [key] 目標項目的鍵值
+  /// [item] 更新後的項目資料
   @override
   Future<void> update(key, ItineraryItem item) async {
     await box.put(key, item);
   }
 
   /// 刪除行程
+  ///
+  /// [key] 目標項目的鍵值
   @override
   Future<void> delete(key) async {
     await box.delete(key);
