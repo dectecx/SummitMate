@@ -36,6 +36,8 @@ Hive 的 TypeId 必須全域唯一。
 | imageAsset  | `String?`   | 9   | `null`  | 對應 Assets 圖片檔名            |
 | isCheckedIn | `bool`      | 10  | `false` | 是否已打卡                      |
 | checkedInAt | `DateTime?` | 11  | `null`  | 打卡時間                        |
+| createdBy   | `String?`   | 12  | `null`  | 建立者 ID                       |
+| updatedBy   | `String?`   | 13  | `null`  | 更新者 ID                       |
 
 ### Box: `messages` (TypeId: 2)
 
@@ -151,6 +153,8 @@ Hive 的 TypeId 必須全域唯一。
 | isActive    | `bool`         | 6   | `false` | 是否為當前行程 |
 | createdAt   | `DateTime`     | 7   | `now`   | 建立時間       |
 | dayNames    | `List<String>` | 8   | `[]`    | 行程天數列表   |
+| createdBy   | `String?`      | 9   | `null`  | 建立者 ID      |
+| updatedBy   | `String?`      | 10  | `null`  | 更新者 ID      |
 
 ### Box: `gearLibrary` (TypeId: 11)
 
@@ -205,6 +209,8 @@ Hive 的 TypeId 必須全域唯一。
 | G            | is_active   | 是否啟用              |
 | H            | created_at  | 建立時間              |
 | I            | day_names   | 天數列表 (JSON)       |
+| J            | created_by  | 建立者 ID             |
+| K            | updated_by  | 更新者 ID             |
 
 ### Sheet: `Itinerary` (行程節點)
 
@@ -221,6 +227,8 @@ Hive 的 TypeId 必須全域唯一。
 | I            | image_asset   | 圖片路徑                     |
 | J            | is_checked_in | 是否打卡                     |
 | K            | checked_in_at | 打卡時間                     |
+| L            | created_by    | 建立者 ID                    |
+| M            | updated_by    | 更新者 ID                    |
 
 ### Sheet: `Messages` (留言)
 

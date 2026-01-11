@@ -46,6 +46,8 @@ const HEADERS_TRIPS = [
   "is_active",
   "created_at",
   "day_names",
+  "created_by", // 建立者 (User Email/ID)
+  "updated_by", // 更新者 (User Email/ID)
 ];
 
 const HEADERS_ITINERARY = [
@@ -60,6 +62,8 @@ const HEADERS_ITINERARY = [
   "image_asset",
   "is_checked_in",
   "checked_in_at",
+  "created_by", // 建立者
+  "updated_by", // 更新者
 ];
 
 const HEADERS_MESSAGES = [
@@ -349,6 +353,8 @@ const SHEET_SCHEMA = {
     cover_image: { type: "text" },
     is_active: { type: "boolean" },
     created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_by: { type: "text" },
   },
 
   Itinerary: {
@@ -363,6 +369,8 @@ const SHEET_SCHEMA = {
     image_asset: { type: "text" },
     is_checked_in: { type: "boolean" },
     checked_in_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_by: { type: "text" },
   },
 
   Messages: {

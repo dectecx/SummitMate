@@ -65,6 +65,8 @@ function createTrip(tripData) {
     tripData.is_active || false,
     now,
     JSON.stringify(tripData.day_names || []),
+    String(tripData.created_by || ""), // created_by
+    String(tripData.updated_by || ""), // updated_by
   ]);
 
   return _success({ id }, "行程已新增");
@@ -244,6 +246,8 @@ function syncTripFull(data) {
       trip.is_active || trip.isActive || false,
       createdAt,
       JSON.stringify(trip.day_names || []),
+      String(trip.created_by || ""),
+      String(trip.updated_by || ""),
     ];
 
     if (tripRowIndex > 0) {
@@ -298,6 +302,8 @@ function syncTripFull(data) {
           item.image_asset || item.imageAsset || "",
           item.is_checked_in || item.isCheckedIn || false,
           _toIsoString(item.checked_in_at || item.checkedInAt),
+          String(item.created_by || ""),
+          String(item.updated_by || ""),
         ]);
       });
     }

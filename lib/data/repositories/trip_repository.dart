@@ -1,9 +1,9 @@
 import '../models/trip.dart';
-
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
+import '../../domain/interfaces/i_auth_service.dart';
 
 /// 行程 Repository (支援離線優先)
 ///
@@ -13,10 +13,15 @@ class TripRepository implements ITripRepository {
 
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
+  final IAuthService _authService;
 
-  TripRepository({required ITripLocalDataSource localDataSource, required ITripRemoteDataSource remoteDataSource})
-    : _localDataSource = localDataSource,
-      _remoteDataSource = remoteDataSource;
+  TripRepository({
+    required ITripLocalDataSource localDataSource,
+    required ITripRemoteDataSource remoteDataSource,
+    required IAuthService authService,
+  }) : _localDataSource = localDataSource,
+       _remoteDataSource = remoteDataSource,
+       _authService = authService;
 
   /// 初始化本地資料庫
   @override
@@ -50,6 +55,14 @@ class TripRepository implements ITripRepository {
   @override
   Future<void> addTrip(Trip trip) async {
     LogService.info('Adding trip: ${trip.name} (Local)', source: _source);
+
+    // 填寫審計欄位 (Audit Fields)
+    final user = await _authService.getCachedUserProfile();
+    if (user != null) {
+      trip.createdBy ??= user.email;
+      trip.updatedBy = user.email;
+    }
+
     await _localDataSource.addTrip(trip);
 
     // Optional: Attempt immediate sync if online?
@@ -61,6 +74,11 @@ class TripRepository implements ITripRepository {
   /// [trip] 更新後的行程物件
   @override
   Future<void> updateTrip(Trip trip) async {
+    // 填寫審計欄位 (Audit Fields)
+    final user = await _authService.getCachedUserProfile();
+    if (user != null) {
+      trip.updatedBy = user.email;
+    }
     await _localDataSource.updateTrip(trip);
   }
 

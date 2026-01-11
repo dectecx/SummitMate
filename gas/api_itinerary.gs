@@ -95,6 +95,10 @@ function updateItinerary(itineraryItems, tripId) {
     item.distance,
     String(item.note || ""),
     String(item.image_asset || item.imageAsset || ""),
+    item.is_checked_in || item.isCheckedIn || false,
+    _toIsoString(item.checked_in_at || item.checkedInAt),
+    String(item.created_by || ""),
+    String(item.updated_by || ""),
   ]);
 
   if (rows.length > 0) {
