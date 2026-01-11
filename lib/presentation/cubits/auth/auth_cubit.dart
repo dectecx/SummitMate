@@ -148,8 +148,8 @@ class AuthCubit extends Cubit<AuthState> {
   /// 訪客登入
   void loginAsGuest() {
     LogService.info('Login as guest', source: _source);
-    // Guest login
-    _emitAuthenticated('guest', '訪客', null, null, true, isOffline: true);
+    // Guest login respects current connectivity status
+    _emitAuthenticated('guest', '訪客', null, null, true, isOffline: _connectivityService.isOffline);
   }
 
   /// 驗證 Email

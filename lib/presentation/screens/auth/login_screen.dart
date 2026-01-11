@@ -75,19 +75,23 @@ class _LoginScreenState extends State<LoginScreen> {
           }
 
           // Show offline mode notification if applicable
-          if (state.isOffline && !state.isGuest) {
+          if (state.isOffline) {
             final settingsState = context.read<SettingsCubit>().state;
             final isManualOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  isManualOffline ? '已使用離線模式登入，部分功能可能受限' : '無法連線至伺服器，已自動切換至離線登入',
+            // 如果是 手動開啟離線模式，一律顯示訊息 (包含訪客)
+            // 如果是 自動切換離線模式 (連線失敗)，僅對非訪客顯示 (訪客本來就預期離線)
+            final shouldShow = isManualOffline || !state.isGuest;
+
+            if (shouldShow) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isManualOffline ? '已使用離線模式登入，部分功能可能受限' : '無法連線至伺服器，已自動切換至離線登入'),
+                  backgroundColor: isManualOffline ? Colors.orange.shade700 : Colors.red.shade700,
+                  duration: const Duration(seconds: 4),
                 ),
-                backgroundColor: isManualOffline ? Colors.orange.shade700 : Colors.red.shade700,
-                duration: const Duration(seconds: 4),
-              ),
-            );
+              );
+            }
           }
         } else if (state is AuthError) {
           if (mounted) {
