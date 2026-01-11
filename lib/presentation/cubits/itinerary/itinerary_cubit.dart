@@ -3,28 +3,20 @@ import '../../../core/di.dart';
 import '../../../data/models/itinerary_item.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../../domain/interfaces/i_sync_service.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
+
 import '../../../infrastructure/tools/log_service.dart';
 import 'itinerary_state.dart';
 
 class ItineraryCubit extends Cubit<ItineraryState> {
   final IItineraryRepository _repository;
   final ITripRepository _tripRepository;
-  // final ISyncService _syncService;
-  // final IConnectivityService _connectivityService;
-
   static const String _source = 'ItineraryCubit';
 
   ItineraryCubit({
     IItineraryRepository? repository,
     ITripRepository? tripRepository,
-    ISyncService? syncService,
-    IConnectivityService? connectivityService,
   }) : _repository = repository ?? getIt<IItineraryRepository>(),
        _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       // _syncService = syncService ?? getIt<ISyncService>(),
-       // _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
        super(const ItineraryInitial());
 
   String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
