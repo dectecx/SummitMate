@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
           }
 
           // Show offline mode notification if applicable
-          if (state.isOffline) {
+          if (state.isOffline && !state.isGuest) {
             final settingsState = context.read<SettingsCubit>().state;
             final isManualOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
