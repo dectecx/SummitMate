@@ -13,6 +13,7 @@ void main() {
         expect(trip.endDate, isNull);
         expect(trip.isActive, false);
         expect(trip.createdAt, isNotNull);
+        expect(trip.dayNames, isEmpty);
       });
 
       test('creates Trip with all optional fields', () {
@@ -25,6 +26,7 @@ void main() {
           coverImage: 'assets/yushan.jpg',
           isActive: true,
           createdAt: DateTime(2024, 2, 1),
+          dayNames: ['D1', 'D2'],
         );
 
         expect(trip.id, 'trip-456');
@@ -34,6 +36,7 @@ void main() {
         expect(trip.coverImage, 'assets/yushan.jpg');
         expect(trip.isActive, true);
         expect(trip.createdAt, DateTime(2024, 2, 1));
+        expect(trip.dayNames, ['D1', 'D2']);
       });
     });
 
@@ -68,6 +71,7 @@ void main() {
           'cover_image': 'assets/jiaming.jpg',
           'is_active': true,
           'created_at': '2024-01-01T00:00:00.000Z',
+          'day_names': ['D0', 'D1', 'D2'],
         };
 
         final trip = Trip.fromJson(json);
@@ -77,6 +81,7 @@ void main() {
         expect(trip.description, '向陽山屋 → 嘉明湖');
         expect(trip.coverImage, 'assets/jiaming.jpg');
         expect(trip.isActive, true);
+        expect(trip.dayNames, ['D0', 'D1', 'D2']);
       });
 
       test('parses JSON with "id" instead of "trip_id"', () {
@@ -97,6 +102,7 @@ void main() {
         expect(trip.description, isNull);
         expect(trip.coverImage, isNull);
         expect(trip.isActive, false);
+        expect(trip.dayNames, isEmpty);
       });
 
       test('handles is_active as "TRUE" string', () {
@@ -118,6 +124,7 @@ void main() {
           coverImage: 'assets/hehuan.jpg',
           isActive: true,
           createdAt: DateTime.utc(2024, 1, 15),
+          dayNames: ['D1', 'D2'],
         );
 
         final json = trip.toJson();
@@ -130,6 +137,7 @@ void main() {
         expect(json['cover_image'], 'assets/hehuan.jpg');
         expect(json['is_active'], true);
         expect(json['created_at'], '2024-01-15T00:00:00.000Z');
+        expect(json['day_names'], ['D1', 'D2']);
       });
 
       test('serializes null endDate as null', () {

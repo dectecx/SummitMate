@@ -188,29 +188,10 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
     );
 
     if (confirm == true && mounted) {
-      // Note: Verify if we should optimally remove locally first.
-      // Deleting needs Cubit validation (checks if items exist).
-      // If items exist, Cubit might fail (emit error or not change state).
-      // So for delete, we should ideally wait for success?
-      // But _localDays is separate. If cubit fails, we should revert?
-      // For "delete", it's safer to try calling Cubit, and if it succeeds (state changes), we update?
-      // Or just try. If it throws/fails, we reload?
-      // Simplest: Call cubit. If returns, assume success?
-      // ItineraryCubit.removeDay() is void.
-      // Let's rely on optimistically removing. If error, we'd need to handle reload.
-      // But for better UX, let's just call removeDay. If it has items, it might do nothing or show toast (Cubit usually handles error).
-      // Let's check ItineraryCubit.removeDay implementation.
-      // "if (trip.items.any((i) => i.day == name)) { emit(ItineraryError...); loadItinerary(); return; }"
-      // So if error, it reloads.
-      // If we optimistic remove, we might be wrong.
-      // Better: For DELETE, keep it as is, or remove properly.
-      // Since we removed BlocBuilder, if error happens, `_localDays` won't revert automatically!
-      // Fix: Listen to ItineraryLoaded in BlocListener above to resync?
-      // NO, that would bring back the rebuild issue if reordering triggers it.
-      // Compromise: For delete, we call cubit. If it fails, we show toast.
-      // We can optimize: Check locally if we have items for that day? We don't have items here easily.
-      // Okay, let's optimistically remove. If error comes in BlocListener (ItineraryError), we should revert/reload.
-
+      // 樂觀更新 (Optimistic Update): 先從本地列表移除以提供即時的 UI 回饋。
+      // 接著呼叫 Cubit 執行實際刪除。
+      // 若刪除失敗 (例如該天數下仍有行程)，Cubit 會拋出錯誤，
+      // 此時 catch 區塊會捕捉錯誤並呼叫 _initData() 還原本地列表。
       setState(() {
         _localDays.removeAt(index);
       });
@@ -218,8 +199,8 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
       try {
         await context.read<ItineraryCubit>().removeDay(name);
       } catch (e) {
-        // Should be caught by Cubit and emitted as error
-        _initData(); // Revert
+        // 發生錯誤時還原資料
+        _initData(); 
         setState(() {});
       }
     }
