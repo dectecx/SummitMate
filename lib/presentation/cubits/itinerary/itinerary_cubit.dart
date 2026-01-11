@@ -12,12 +12,10 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   final ITripRepository _tripRepository;
   static const String _source = 'ItineraryCubit';
 
-  ItineraryCubit({
-    IItineraryRepository? repository,
-    ITripRepository? tripRepository,
-  }) : _repository = repository ?? getIt<IItineraryRepository>(),
-       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       super(const ItineraryInitial());
+  ItineraryCubit({IItineraryRepository? repository, ITripRepository? tripRepository})
+    : _repository = repository ?? getIt<IItineraryRepository>(),
+      _tripRepository = tripRepository ?? getIt<ITripRepository>(),
+      super(const ItineraryInitial());
 
   String? get _currentTripId => _tripRepository.getActiveTrip()?.id;
 
