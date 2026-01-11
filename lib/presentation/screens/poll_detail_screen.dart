@@ -8,6 +8,10 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../../infrastructure/tools/toast_service.dart';
 
+/// 投票詳情畫面
+///
+/// 顯示單一投票活動的詳細資訊，並提供投票、新增選項 (若允許)、管理投票 (若為發起人) 等功能。
+/// 支援即時更新與離線模式檢查。
 class PollDetailScreen extends StatefulWidget {
   final Poll poll;
 

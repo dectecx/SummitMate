@@ -12,6 +12,10 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import '../../infrastructure/tools/toast_service.dart';
 
+/// 投票列表畫面
+///
+/// 顯示所有投票活動，支援篩選 (進行中、已結束、我的)。
+/// 提供側滑選單 (Slidable) 進行快速操作 (刪除、結束)。
 class PollListScreen extends StatefulWidget {
   const PollListScreen({super.key});
 

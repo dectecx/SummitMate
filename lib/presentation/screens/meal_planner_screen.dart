@@ -7,6 +7,10 @@ import '../cubits/meal/meal_state.dart';
 // import '../providers/meal_provider.dart'; // Removed
 import 'food_reference_screen.dart';
 
+/// 糧食計畫畫面
+///
+/// 顯示每日的餐點規劃，支援依餐別 (早餐、午餐、晚餐等) 新增與編輯食材。
+/// 自動計算總熱量與總重量。
 class MealPlannerScreen extends StatelessWidget {
   const MealPlannerScreen({super.key});
 

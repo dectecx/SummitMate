@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../../infrastructure/tools/toast_service.dart';
 
-/// Onboarding 畫面 (設定暱稱與頭像)
+/// Onboarding 畫面 (新手引導)
+///
+/// 用於初次啟動 App 時，讓使用者設定 [SettingsCubit] 中的基本資料 (暱稱、頭像)。
+/// 設定完成後會自動導向主畫面。
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 

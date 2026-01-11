@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// 新手百岳日出指南
+///
+/// 提供給登山新手的百岳推薦清單，包含路線難度、日出特色等資訊。
+/// 使用 [PageView] 實現類無限捲動的分類切換效果。
 class BeginnerPeaksScreen extends StatefulWidget {
   const BeginnerPeaksScreen({super.key});
 
@@ -178,6 +182,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
     );
   }
 
+  /// 建構 "指南簡介" 頁面
   Widget _buildInfoPage(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -284,6 +289,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
     );
   }
 
+  /// 建構 "分類詳情" 頁面 (包含該分類下的山岳列表)
   Widget _buildCategoryPage(BuildContext context, _CategoryData category) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -332,6 +338,7 @@ class _BeginnerPeaksScreenState extends State<BeginnerPeaksScreen> {
     );
   }
 
+  /// 建構單座山岳的卡片 (可展開顯示詳細資訊)
   Widget _buildPeakCard(_PeakData peak, Color themeColor) {
     return Card(
       elevation: 0,
