@@ -51,6 +51,13 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 新增行程
+  ///
+  /// [name] 行程名稱
+  /// [startDate] 開始日期
+  /// [endDate] 結束日期 (可選)
+  /// [description] 描述
+  /// [coverImage] 封面圖片 URL
+  /// [setAsActive] 是否建立後立即設為活動行程
   Future<void> addTrip({
     required String name,
     required DateTime startDate,
@@ -89,6 +96,8 @@ class TripCubit extends Cubit<TripState> {
 
   /// 匯入行程 (例如從雲端)
   /// 注意：此方法不會直接觸發 SyncCubit，應由 UI 處理副作用
+  ///
+  /// [trip] 欲匯入的行程物件
   Future<void> importTrip(Trip trip) async {
     try {
       await _tripRepository.addTrip(trip);
@@ -101,6 +110,8 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 設定活動行程
+  ///
+  /// [tripId] 行程 ID
   Future<void> setActiveTrip(String tripId) async {
     try {
       await _setActiveTripInternal(tripId);
@@ -117,6 +128,8 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 刪除行程
+  ///
+  /// [tripId] 行程 ID
   Future<void> deleteTrip(String tripId) async {
     try {
       final currentState = state;
@@ -140,6 +153,8 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 更新行程
+  ///
+  /// [trip] 更新後的行程物件
   Future<void> updateTrip(Trip trip) async {
     try {
       await _tripRepository.updateTrip(trip);
@@ -152,6 +167,8 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 上傳完整行程至雲端 (包含行程表與裝備)
+  ///
+  /// [trip] 欲上傳的行程物件
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
       // 1. 蒐集資料

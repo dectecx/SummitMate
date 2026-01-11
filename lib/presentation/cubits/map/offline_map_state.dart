@@ -20,6 +20,15 @@ class OfflineMapLoaded extends OfflineMapState {
   final bool isLoadingStats;
   final String packageName;
 
+  /// 建構子
+  ///
+  /// [store] FMTC 圖磚儲存庫實例
+  /// [isStoreReady] 儲存庫是否已就緒
+  /// [downloadQueue] 下載任務佇列
+  /// [tileCount] 已下載圖磚數量
+  /// [sizeMb] 已佔用空間 (MB)
+  /// [isLoadingStats] 是否正在讀取統計資訊
+  /// [packageName] 地圖包名稱
   const OfflineMapLoaded({
     required this.store,
     this.isStoreReady = false,

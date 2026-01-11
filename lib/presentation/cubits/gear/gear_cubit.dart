@@ -5,6 +5,14 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../../../core/di.dart';
 import '../../cubits/gear/gear_state.dart';
 
+/// 裝備清單 (行程) Cubit
+///
+/// 管理特定行程 (Trip) 中的裝備清單。
+/// 功能包含：
+/// - 載入行程裝備
+/// - 新增/更新/刪除裝備 (透過 [IGearRepository])
+/// - 勾選/取消勾選裝備 (透過 [IGearRepository])
+/// - 從個人庫匯入裝備
 class GearCubit extends Cubit<GearState> {
   final IGearRepository _repository;
   String? _currentTripId;
@@ -16,6 +24,8 @@ class GearCubit extends Cubit<GearState> {
   String? get currentTripId => _currentTripId;
 
   /// 載入指定行程的裝備
+  ///
+  /// [tripId] 行程 ID
   Future<void> loadGear(String tripId) async {
     if (_currentTripId == tripId && state is GearLoaded) {
       return; // Already loaded for this trip
@@ -83,6 +93,13 @@ class GearCubit extends Cubit<GearState> {
   // CRUD Operations
   // ========================================
 
+  /// 新增裝備
+  ///
+  /// [name] 裝備名稱
+  /// [weight] 重量 (g)
+  /// [category] 分類
+  /// [libraryItemId] 對應的預設庫 Item ID (可選)
+  /// [quantity] 數量 (預設 1)
   Future<void> addItem({
     required String name,
     required double weight,
@@ -114,6 +131,9 @@ class GearCubit extends Cubit<GearState> {
     }
   }
 
+  /// 更新裝備
+  ///
+  /// [item] 裝備物件
   Future<void> updateItem(GearItem item) async {
     try {
       await _repository.updateItem(item);
@@ -124,6 +144,10 @@ class GearCubit extends Cubit<GearState> {
     }
   }
 
+  /// 更新數量
+  ///
+  /// [item] 目標裝備
+  /// [quantity] 新數量 (至少為 1)
   Future<void> updateQuantity(GearItem item, int quantity) async {
     if (quantity < 1) quantity = 1;
     try {
@@ -136,6 +160,9 @@ class GearCubit extends Cubit<GearState> {
     }
   }
 
+  /// 刪除裝備
+  ///
+  /// [key] 裝備 Key (Hive Key)
   Future<void> deleteItem(dynamic key) async {
     try {
       await _repository.deleteItem(key);
@@ -146,6 +173,9 @@ class GearCubit extends Cubit<GearState> {
     }
   }
 
+  /// 切換勾選狀態
+  ///
+  /// [key] 裝備 Key (Hive Key)
   Future<void> toggleChecked(dynamic key) async {
     try {
       await _repository.toggleChecked(key);
@@ -159,6 +189,11 @@ class GearCubit extends Cubit<GearState> {
     }
   }
 
+  /// 重新排序裝備
+  ///
+  /// [oldIndex] 原索引
+  /// [newIndex] 新索引
+  /// [category] 當前顯示的分類 (若有篩選)
   Future<void> reorderItem(int oldIndex, int newIndex, {String? category}) async {
     if (state is! GearLoaded) return;
 
@@ -199,6 +234,9 @@ class GearCubit extends Cubit<GearState> {
     }
   }
 
+  /// 匯入裝備列表 (覆寫當前行程的所有裝備)
+  ///
+  /// [newItems] 新的裝備列表
   Future<void> replaceItems(List<GearItem> newItems) async {
     if (_currentTripId == null) return;
     try {

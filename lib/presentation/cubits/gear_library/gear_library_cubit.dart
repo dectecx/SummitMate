@@ -7,6 +7,14 @@ import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import 'gear_library_state.dart';
 
+/// 個人裝備庫 Cubit
+///
+/// 管理使用者個人的裝備庫存 (Personal Gear Library)。
+/// 獨立於特定行程，作為裝備的來源資料中心。
+/// 支援：
+/// - 載入/搜尋個人裝備
+/// - 新增/編輯/刪除個人裝備項目
+/// - 同步至雲端 (Sync)
 class GearLibraryCubit extends Cubit<GearLibraryState> {
   final IGearLibraryRepository _repository;
   final IGearRepository _gearRepository;
@@ -65,6 +73,12 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   // CRUD
   // ========================================
 
+  /// 新增庫存項目
+  ///
+  /// [name] 名稱
+  /// [weight] 重量 (g)
+  /// [category] 分類
+  /// [notes] 備註 (可選)
   Future<void> addItem({required String name, required double weight, required String category, String? notes}) async {
     try {
       final item = GearLibraryItem(name: name, weight: weight, category: category, notes: notes);
@@ -76,6 +90,9 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     }
   }
 
+  /// 更新庫存項目
+  ///
+  /// [item] 更新後的項目
   Future<void> updateItem(GearLibraryItem item) async {
     try {
       await _repository.updateItem(item);
@@ -88,6 +105,9 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     }
   }
 
+  /// 刪除庫存項目
+  ///
+  /// [uuid] 項目 UUID
   Future<void> deleteItem(String uuid) async {
     try {
       // 解除連結 (Unlink)
@@ -107,6 +127,9 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     }
   }
 
+  /// 切換封存狀態
+  ///
+  /// [uuid] 項目 UUID
   Future<void> toggleArchive(String uuid) async {
     try {
       final item = _repository.getById(uuid);
@@ -125,6 +148,9 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   // Sync Logic
   // ========================================
 
+  /// 匯入項目列表
+  ///
+  /// [items] 欲匯入的項目清單
   Future<void> importItems(List<GearLibraryItem> items) async {
     try {
       await _repository.importItems(items);
@@ -180,6 +206,10 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   // Helper getters
   GearLibraryItem? getById(String uuid) => _repository.getById(uuid);
 
+  /// 取得連結此裝備的行程資訊
+  ///
+  /// [libraryItemId] 裝備庫 Item UUID
+  /// 回傳: List of {tripName, startDate, tripId}
   List<Map<String, dynamic>> getLinkedTrips(String libraryItemId) {
     final allGear = _gearRepository.getAllItems();
     final linkedGear = allGear.where((g) => g.libraryItemId == libraryItemId).toList();

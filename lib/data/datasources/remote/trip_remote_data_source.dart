@@ -44,6 +44,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
 
   /// 上傳新行程
   ///
+  /// [trip] 行程資料
   /// 回傳新建立的行程 ID
   @override
   Future<String> uploadTrip(Trip trip) async {
@@ -72,6 +73,8 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   }
 
   /// 更新雲端行程資料
+  ///
+  /// [trip] 更新後的行程資料
   @override
   Future<void> updateTrip(Trip trip) async {
     try {

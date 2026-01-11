@@ -15,6 +15,8 @@ class GearLibraryCloudService implements IGearLibraryCloudService {
   GearLibraryCloudService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   /// 同步個人裝備庫 (上傳全部)
+  ///
+  /// [items] 完整的裝備庫清單 (覆寫模式)
   @override
   Future<GearLibraryCloudResult<int>> syncLibrary(List<GearLibraryItem> items) async {
     try {

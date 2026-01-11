@@ -44,6 +44,9 @@ abstract class IGearSetRepository {
   });
 
   /// 刪除雲端上的裝備組合
+  ///
+  /// [uuid] 本地識別碼 (若有)
+  /// [key] 雲端識別碼
   Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key);
 
   // === 本地金鑰儲存 (Local Key Storage) ===
@@ -52,8 +55,14 @@ abstract class IGearSetRepository {
   Future<List<GearKeyRecord>> getUploadedKeys();
 
   /// 儲存一筆上傳記錄 (Key) 到本地
+  ///
+  /// [key] 雲端識別碼
+  /// [title] 標題
+  /// [visibility] 可見度
   Future<void> saveUploadedKey(String key, String title, String visibility);
 
   /// 移除本地的上傳記錄
+  ///
+  /// [key] 雲端識別碼
   Future<void> removeUploadedKey(String key);
 }

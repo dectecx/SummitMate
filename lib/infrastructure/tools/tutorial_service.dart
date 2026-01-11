@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:summitmate/presentation/widgets/tutorial_overlay.dart';
 
+/// 使用教學服務
+///
+/// 負責產生與管理 App 內的使用教學指引 (Tutorial Targets)。
+/// 針對特定 UI 元件 (Key) 定義對應的說明內容與操作指引。
 class TutorialService {
   static List<TutorialTarget> initTargets({
     required GlobalKey keyTabItinerary,

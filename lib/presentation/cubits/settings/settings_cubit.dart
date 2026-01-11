@@ -40,6 +40,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// 更新使用者名稱
+  ///
+  /// [username] 新的使用者名稱
   Future<void> updateUsername(String username) async {
     if (state is! SettingsLoaded) return;
     final currentState = state as SettingsLoaded;
@@ -61,6 +63,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// 更新頭像
+  ///
+  /// [avatar] 新的頭像 URL
   Future<void> updateAvatar(String avatar) async {
     if (state is! SettingsLoaded) return;
     final currentState = state as SettingsLoaded;
@@ -76,6 +80,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// 同時更新 Profile (Name + Avatar)
+  ///
+  /// [name] 使用者名稱
+  /// [avatar] 頭像 URL
   Future<void> updateProfile(String name, String avatar) async {
     if (state is! SettingsLoaded) return;
     final currentState = state as SettingsLoaded;
@@ -111,6 +118,8 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// 更新最後同步時間
+  ///
+  /// [time] 同步時間
   Future<void> updateLastSyncTime(DateTime? time) async {
     if (state is! SettingsLoaded) return;
     final currentState = state as SettingsLoaded;

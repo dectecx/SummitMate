@@ -55,6 +55,12 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
   }
 
   /// 下載指定區域
+  ///
+  /// [bounds] 下載範圍 (經緯度邊界)
+  /// [minZoom] 最小縮放層級
+  /// [maxZoom] 最大縮放層級
+  /// [name] 任務名稱 (可選)
+  /// [onProgress] 下載進度 Callback (可選)
   Future<void> downloadRegion({
     required LatLngBounds bounds,
     required int minZoom,
@@ -196,6 +202,9 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     }
   }
 
+  /// 取消下載任務
+  ///
+  /// [taskId] 任務 ID
   Future<void> cancelTask(String taskId) async {
     if (state is! OfflineMapLoaded) return;
     final loadedState = state as OfflineMapLoaded;

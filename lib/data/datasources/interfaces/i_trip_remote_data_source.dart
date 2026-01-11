@@ -8,12 +8,19 @@ abstract class ITripRemoteDataSource {
   Future<List<Trip>> getTrips();
 
   /// 上傳單一行程 (僅行程 Meta)
+  ///
+  /// [trip] 行程資料
+  /// 回傳: 新行程 ID
   Future<String> uploadTrip(Trip trip);
 
   /// 更新行程
+  ///
+  /// [trip] 更新後的行程資料
   Future<void> updateTrip(Trip trip);
 
   /// 刪除行程
+  ///
+  /// [tripId] 行程 ID
   Future<void> deleteTrip(String tripId);
 
   /// 完整上傳行程 (包含行程表與裝備)

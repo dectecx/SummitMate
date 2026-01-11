@@ -156,10 +156,14 @@ class TripListScreen extends StatelessWidget {
     );
   }
 
+  /// 顯示建立行程對話框
   void _showCreateTripDialog(BuildContext context) {
     showDialog(context: context, builder: (ctx) => const CreateTripDialog());
   }
 
+  /// 點擊行程項目
+  /// 若非當前活動行程 -> 切換為活動行程 (且不進入編輯)
+  /// 若已是活動行程 -> 顯示編輯對話框
   void _onTripTap(BuildContext context, Trip trip, String? activeTripId) async {
     if (trip.id != activeTripId) {
       await context.read<TripCubit>().setActiveTrip(trip.id);
@@ -173,6 +177,7 @@ class TripListScreen extends StatelessWidget {
     }
   }
 
+  /// 顯示編輯行程對話框 (傳入 [Trip] 物件)
   void _showEditTripDialog(BuildContext context, Trip trip) {
     showDialog(
       context: context,
@@ -180,6 +185,7 @@ class TripListScreen extends StatelessWidget {
     );
   }
 
+  /// 確認刪除行程
   void _confirmDelete(BuildContext context, Trip trip) {
     showDialog(
       context: context,
@@ -204,6 +210,10 @@ class TripListScreen extends StatelessWidget {
     );
   }
 
+  /// 處理完整行程上傳 (含裝備與行程表)
+  ///
+  /// 這是一個破壞性操作，會覆蓋雲端的對應資料。
+  /// 使用 [TripCubit.uploadFullTrip] 執行。
   void _handleFullUpload(BuildContext context, Trip trip) async {
     final confirm = await showDialog<bool>(
       context: context,

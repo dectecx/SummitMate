@@ -19,6 +19,10 @@ class AuthSessionRepository implements IAuthSessionRepository {
     : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   /// 儲存工作階段 (Access Token, User Profile, Refresh Token)
+  ///
+  /// [accessToken] 存取權杖
+  /// [user] 用戶個人檔案
+  /// [refreshToken] 刷新權杖 (可選)
   @override
   Future<void> saveSession(String accessToken, UserProfile user, {String? refreshToken}) async {
     try {

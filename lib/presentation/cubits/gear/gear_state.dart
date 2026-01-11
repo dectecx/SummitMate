@@ -2,6 +2,13 @@ import 'package:equatable/equatable.dart';
 import '../../../data/models/gear_item.dart';
 import '../../../core/constants.dart';
 
+/// 裝備清單狀態
+///
+/// 定義裝備頁面的可能有狀態：
+/// - [GearInitial]: 初始狀態
+/// - [GearLoading]: 載入中
+/// - [GearLoaded]: 成功載入 (含裝備清單與分類統計)
+/// - [GearError]: 發生錯誤
 abstract class GearState extends Equatable {
   const GearState();
 

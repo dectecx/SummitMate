@@ -56,6 +56,11 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 執行註冊
+  ///
+  /// [email] 使用者 Email
+  /// [password] 密碼
+  /// [displayName] 顯示名稱
+  /// [avatar] 頭像 (可選)
   Future<void> register({
     required String email,
     required String password,
@@ -99,6 +104,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 執行登入 (Email/Password)
+  ///
+  /// [email] 使用者 Email
+  /// [password] 密碼
   Future<void> login(String email, String password) async {
     LogService.info('Attempting login: $email', source: _source);
     emit(AuthLoading());
@@ -145,6 +153,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 驗證 Email
+  ///
+  /// [email] 使用者 Email
+  /// [code] 驗證碼
   Future<void> verifyEmail(String email, String code) async {
     LogService.info('Verifying email: $email', source: _source);
     emit(AuthLoading());
@@ -167,6 +178,8 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 重發驗證碼
+  ///
+  /// [email] 使用者 Email
   Future<void> resendCode(String email) async {
     LogService.info('Resending code: $email', source: _source);
     emit(AuthLoading());
@@ -204,6 +217,9 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 更新個人資料
+  ///
+  /// [displayName] 新增顯示名稱 (可選)
+  /// [avatar] 新頭像 URL (可選)
   Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
     LogService.info('Updating profile: $displayName', source: _source);
     // Note: We don't emit AuthLoading here to avoid blocking UI during a setting update if handled by dialog

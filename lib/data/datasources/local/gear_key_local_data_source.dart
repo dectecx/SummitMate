@@ -15,6 +15,10 @@ class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
   }
 
   /// 儲存上傳 Key 紀錄
+  ///
+  /// [key] 雲端回傳的唯一識別碼
+  /// [title] 清單標題
+  /// [visibility] 可見度 (public / private)
   @override
   Future<void> saveUploadedKey(String key, String title, String visibility) async {
     final prefs = await SharedPreferences.getInstance();
@@ -27,6 +31,8 @@ class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
   }
 
   /// 移除指定的上傳 Key 紀錄
+  ///
+  /// [key] 雲端識別碼
   @override
   Future<void> removeUploadedKey(String key) async {
     final prefs = await SharedPreferences.getInstance();

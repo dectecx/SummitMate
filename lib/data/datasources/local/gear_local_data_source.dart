@@ -32,18 +32,24 @@ class GearLocalDataSource implements IGearLocalDataSource {
   }
 
   /// 透過 Key 取得裝備
+  ///
+  /// [key] 裝備的本地鍵值
   @override
   GearItem? getByKey(dynamic key) {
     return box.get(key);
   }
 
   /// 根據行程 ID 取得裝備
+  ///
+  /// [tripId] 行程 ID
   @override
   List<GearItem> getByTripId(String tripId) {
     return box.values.where((item) => item.tripId == tripId).toList();
   }
 
   /// 根據類別取得裝備
+  ///
+  /// [category] 裝備類別
   @override
   List<GearItem> getByCategory(String category) {
     return box.values.where((item) => item.category == category).toList();
@@ -56,24 +62,32 @@ class GearLocalDataSource implements IGearLocalDataSource {
   }
 
   /// 新增裝備
+  ///
+  /// [item] 欲新增的裝備
   @override
   Future<int> add(GearItem item) async {
     return await box.add(item);
   }
 
   /// 更新裝備
+  ///
+  /// [item] 更新後的裝備
   @override
   Future<void> update(GearItem item) async {
     await item.save(); // HiveObject save
   }
 
   /// 刪除裝備
+  ///
+  /// [key] 裝備的本地鍵值
   @override
   Future<void> delete(dynamic key) async {
     await box.delete(key);
   }
 
   /// 清除指定行程的裝備
+  ///
+  /// [tripId] 行程 ID
   @override
   Future<void> clearByTripId(String tripId) async {
     final toDelete = box.values.where((item) => item.tripId == tripId).toList();

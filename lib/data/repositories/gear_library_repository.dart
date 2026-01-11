@@ -40,6 +40,8 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }
 
   /// 依 UUID 取得裝備項目
+  ///
+  /// [uuid] 裝備 UUID
   @override
   GearLibraryItem? getById(String uuid) {
     try {
@@ -50,18 +52,24 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }
 
   /// 依類別取得裝備項目
+  ///
+  /// [category] 裝備類別
   @override
   List<GearLibraryItem> getByCategory(String category) {
     return box.values.where((item) => item.category == category).toList();
   }
 
   /// 新增裝備項目
+  ///
+  /// [item] 欲新增的裝備
   @override
   Future<void> addItem(GearLibraryItem item) async {
     await box.put(item.uuid, item);
   }
 
   /// 更新裝備項目
+  ///
+  /// [item] 更新後的裝備
   @override
   Future<void> updateItem(GearLibraryItem item) async {
     item.updatedAt = DateTime.now();
@@ -69,6 +77,8 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }
 
   /// 刪除裝備項目
+  ///
+  /// [uuid] 裝備 UUID
   @override
   Future<void> deleteItem(String uuid) async {
     await box.delete(uuid);
@@ -81,6 +91,8 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }
 
   /// 批次匯入項目 (覆寫模式)
+  ///
+  /// [items] 欲匯入的裝備列表
   @override
   Future<void> importItems(List<GearLibraryItem> items) async {
     await box.clear();

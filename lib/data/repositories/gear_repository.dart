@@ -35,6 +35,8 @@ class GearRepository implements IGearRepository {
   }
 
   /// 依分類取得裝備
+  ///
+  /// [category] 裝備分類
   @override
   List<GearItem> getItemsByCategory(String category) {
     return _localDataSource.getByCategory(category);
@@ -47,6 +49,9 @@ class GearRepository implements IGearRepository {
   }
 
   /// 新增裝備
+  ///
+  /// [item] 欲新增的裝備
+  /// 回傳: 新增項目的 Key
   @override
   Future<int> addItem(GearItem item) async {
     // 自動設定 orderIndex 為目前最大值 + 1
@@ -66,18 +71,24 @@ class GearRepository implements IGearRepository {
   }
 
   /// 更新裝備
+  ///
+  /// [item] 更新後的裝備
   @override
   Future<void> updateItem(GearItem item) async {
     await _localDataSource.update(item);
   }
 
   /// 刪除裝備
+  ///
+  /// [key] 裝備的本地鍵值
   @override
   Future<void> deleteItem(dynamic key) async {
     await _localDataSource.delete(key);
   }
 
   /// 切換打包狀態
+  ///
+  /// [key] 裝備的本地鍵值
   @override
   Future<void> toggleChecked(dynamic key) async {
     // 透過 LocalDataSource 直接取得 Item (Hive Key)
@@ -129,6 +140,8 @@ class GearRepository implements IGearRepository {
   }
 
   /// 批量更新裝備順序
+  ///
+  /// [items] 重新排序後的裝備列表
   @override
   Future<void> updateItemsOrder(List<GearItem> items) async {
     for (int i = 0; i < items.length; i++) {
@@ -141,6 +154,8 @@ class GearRepository implements IGearRepository {
   }
 
   /// 清除指定行程的所有裝備
+  ///
+  /// [tripId] 行程 ID
   @override
   Future<void> clearByTripId(String tripId) async {
     await _localDataSource.clearByTripId(tripId);

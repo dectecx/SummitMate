@@ -32,6 +32,8 @@ class PollRepository implements IPollRepository {
   }
 
   /// 儲存所有投票 (清除舊資料並寫入新資料)
+  ///
+  /// [polls] 欲儲存的投票列表
   @override
   Future<void> savePolls(List<Poll> polls) async {
     await box.clear();
@@ -45,6 +47,8 @@ class PollRepository implements IPollRepository {
   }
 
   /// 儲存最後同步時間
+  ///
+  /// [time] 同步時間
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
     final prefs = getIt<SharedPreferences>();

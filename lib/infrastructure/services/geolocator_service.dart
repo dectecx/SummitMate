@@ -1,7 +1,19 @@
 import 'package:geolocator/geolocator.dart';
 import '../../domain/interfaces/i_geolocator_service.dart';
 
+/// 定位服務實作
+///
+/// 使用 `geolocator` 套件存取裝置 GPS 位置。
+/// 處理權限請求與服務狀態檢查。
 class GeolocatorService implements IGeolocatorService {
+  /// 取得當前位置
+  ///
+  /// 此方法會先檢查：
+  /// 1. 裝置定位服務是否啟用
+  /// 2. App 是否擁有定位權限 (若無則請求)
+  ///
+  /// 若所有檢查通過，則回傳目前座標。
+  /// [LocationAccuracy.low] 用於非導航場景，節省電力並加快獲取速度。
   @override
   Future<Position> getCurrentPosition() async {
     bool serviceEnabled;

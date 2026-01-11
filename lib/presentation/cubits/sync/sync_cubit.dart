@@ -29,6 +29,8 @@ class SyncCubit extends Cubit<SyncState> {
   }
 
   /// 執行完整同步
+  ///
+  /// [force] 是否強制執行同步 (忽略節流與最小間隔)
   Future<void> syncAll({bool force = false}) async {
     if (_connectivityService.isOffline) {
       emit(SyncFailure(errorMessage: '目前處於離線模式，無法同步', lastSuccessTime: _getLastSyncTime()));

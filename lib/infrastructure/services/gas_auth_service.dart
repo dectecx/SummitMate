@@ -38,6 +38,12 @@ class GasAuthService implements IAuthService {
   // === 公開 API (Public API) ===
   // ============================================================
 
+  /// 註冊新帳號
+  ///
+  /// [email] 使用者 Email
+  /// [password] 密碼
+  /// [displayName] 顯示名稱
+  /// [avatar] 頭像 URL (可選)
   @override
   Future<AuthResult> register({
     required String email,
@@ -79,6 +85,10 @@ class GasAuthService implements IAuthService {
     }
   }
 
+  /// 登入
+  ///
+  /// [email] 使用者 Email
+  /// [password] 密碼
   @override
   Future<AuthResult> login({required String email, required String password}) async {
     try {
@@ -119,6 +129,8 @@ class GasAuthService implements IAuthService {
 
   /// 離線登入嘗試
   /// 當網路不可用時，檢查本地快取的 session 是否與請求的 email 匹配
+  ///
+  /// [email] 嘗試登入的 Email
   Future<AuthResult> _tryOfflineLogin(String email) async {
     final cachedUser = await getCachedUserProfile();
     final token = await getAccessToken();
@@ -150,6 +162,10 @@ class GasAuthService implements IAuthService {
     return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: 'OAuth 登入尚未實作');
   }
 
+  /// 驗證 Email
+  ///
+  /// [email] 使用者 Email
+  /// [code] 驗證碼
   @override
   Future<AuthResult> verifyEmail({required String email, required String code}) async {
     try {
@@ -173,6 +189,9 @@ class GasAuthService implements IAuthService {
     }
   }
 
+  /// 重發驗證碼
+  ///
+  /// [email] 目標 Email
   @override
   Future<AuthResult> resendVerificationCode({required String email}) async {
     try {
@@ -194,6 +213,8 @@ class GasAuthService implements IAuthService {
     }
   }
 
+  /// 驗證目前 Session 是否有效
+  /// 若 Token 即將過期會嘗試自動刷新
   @override
   Future<AuthResult> validateSession() async {
     final token = await _sessionRepo.getAccessToken();

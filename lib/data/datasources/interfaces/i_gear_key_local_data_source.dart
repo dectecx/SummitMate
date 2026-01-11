@@ -15,5 +15,7 @@ abstract class IGearKeyLocalDataSource {
   Future<void> saveUploadedKey(String key, String title, String visibility);
 
   /// 移除一筆上傳 Key 記錄
+  ///
+  /// [key] 雲端識別碼
   Future<void> removeUploadedKey(String key);
 }

@@ -11,24 +11,36 @@ abstract class IGearLibraryRepository {
   List<GearLibraryItem> getAllItems();
 
   /// 依 UUID 取得裝備項目
+  ///
+  /// [uuid] 裝備 UUID
   GearLibraryItem? getById(String uuid);
 
   /// 依類別取得裝備項目
+  ///
+  /// [category] 裝備類別
   List<GearLibraryItem> getByCategory(String category);
 
   /// 新增裝備項目
+  ///
+  /// [item] 欲新增的裝備
   Future<void> addItem(GearLibraryItem item);
 
   /// 更新裝備項目
+  ///
+  /// [item] 更新後的裝備
   Future<void> updateItem(GearLibraryItem item);
 
   /// 刪除裝備項目
+  ///
+  /// [uuid] 裝備 UUID
   Future<void> deleteItem(String uuid);
 
   /// 清除所有項目
   Future<void> clearAll();
 
   /// 批次匯入項目 (覆寫模式)
+  ///
+  /// [items] 欲匯入的裝備列表
   Future<void> importItems(List<GearLibraryItem> items);
 
   /// 取得項目數量

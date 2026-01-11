@@ -22,6 +22,12 @@ class PollLoaded extends PollState {
   final DateTime? lastSyncTime;
   final bool isSyncing;
 
+  /// 建構子
+  ///
+  /// [polls] 所有投票列表
+  /// [currentUserId] 目前使用者 ID (用於篩選我的投票)
+  /// [lastSyncTime] 上次同步時間
+  /// [isSyncing] 是否正在同步
   const PollLoaded({required this.polls, required this.currentUserId, this.lastSyncTime, this.isSyncing = false});
 
   /// Computed: Active Polls (sorted by date)
