@@ -33,6 +33,10 @@ function setupSheets() {
       Utilities.getUuid(), // id (PK)
       defaultTripId, // trip_id (FK)
       ...row, // day, name, est_time, altitude, distance, note, image_asset
+      false, // is_checked_in
+      "", // checked_in_at
+      "System", // created_by
+      "System", // updated_by
     ];
   });
   _setupSheet(ss, SHEET_ITINERARY, HEADERS_ITINERARY, sampleItinerary);
@@ -157,19 +161,27 @@ function _setupSheet(ss, name, headers, sampleData) {
 
   if (!sheet) {
     sheet = ss.insertSheet(name);
-    sheet.appendRow(headers);
 
-    // 設定文字欄位格式為純文字 (@)
+    // 1. 準備合併後的資料 (標題 + 範例資料)
+    const allData = [headers];
+    if (sampleData && sampleData.length > 0) {
+      allData.push(...sampleData);
+    }
+
+    // 2. 批次寫入 (Batch Write)
+    // getRange(row, col, numRows, numColumns)
+    sheet.getRange(1, 1, allData.length, headers.length).setValues(allData);
+
+    // 3. 設定格式 (一次性處理)
     _applyTextFormat(sheet, name);
 
-    if (sampleData && sampleData.length > 0) {
-      sampleData.forEach((row) => sheet.appendRow(row));
-    }
+    Logger.log(`工作表 ${name} 已建立並匯入 ${allData.length} 列資料。`);
   } else {
     // 遷移：確保所有欄位存在
     const existingHeaders = sheet
-      .getRange(1, 1, 1, sheet.getLastColumn())
+      .getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)) // 確保至少有 1 欄
       .getValues()[0];
+
     headers.forEach((header) => {
       if (!existingHeaders.includes(header)) {
         sheet.getRange(1, existingHeaders.length + 1).setValue(header);

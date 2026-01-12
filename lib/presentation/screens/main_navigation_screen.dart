@@ -11,6 +11,7 @@ import '../cubits/message/message_cubit.dart';
 import '../cubits/message/message_state.dart';
 import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
+import '../../core/constants/role_constants.dart';
 import '../../infrastructure/tools/usage_tracking_service.dart';
 import '../../infrastructure/tools/hive_service.dart';
 import '../../data/models/trip.dart';
@@ -108,6 +109,11 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
           }
         }
       });
+
+      // Reload Trips on mount (ensures correct data after re-login)
+      if (context.mounted) {
+        context.read<TripCubit>().loadTrips();
+      }
     });
   }
 
@@ -275,6 +281,38 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                               Flexible(
                                 child: Text(activeTrip?.name ?? 'SummitMate 山友', overflow: TextOverflow.ellipsis),
                               ),
+                              if (activeTrip != null) ...[
+                                const SizedBox(width: 8),
+                                Builder(
+                                  builder: (context) {
+                                    // Determine Role
+                                    final authState = context.read<AuthCubit>().state;
+                                    final userId = (authState is AuthAuthenticated) ? authState.userId : '';
+                                    final isOwner = activeTrip.userId == userId;
+                                    final roleLabel = isOwner
+                                        ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
+                                        : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
+                                    final color = isOwner ? Colors.orange : Colors.blueGrey;
+
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: color, // Solid color for better contrast
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
+                                      ),
+                                      child: Text(
+                                        roleLabel,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                               if (isOffline) ...[
                                 const SizedBox(width: 8),
                                 Container(

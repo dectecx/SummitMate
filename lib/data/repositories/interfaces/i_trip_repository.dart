@@ -1,4 +1,5 @@
 import '../../models/trip.dart';
+import '../../models/user_profile.dart';
 
 /// Trip Repository 抽象介面
 /// 定義行程資料存取的契約
@@ -95,4 +96,28 @@ abstract interface class ITripRepository {
   /// [tripId] 行程 ID
   /// [userId] 目標成員 ID
   Future<void> removeMember(String tripId, String userId);
+
+  /// 新增成員 (透過 Email)
+  ///
+  /// [tripId] 行程 ID
+  /// [email] 成員 Email
+  /// [role] 初始角色
+  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'});
+
+  /// 新增成員 (透過 User ID)
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 成員 User ID
+  /// [role] 初始角色
+  Future<void> addMemberById(String tripId, String userId, {String role = 'member'});
+
+  /// 透過 Email 搜尋使用者
+  ///
+  /// [email] 使用者 Email
+  Future<UserProfile> searchUserByEmail(String email);
+
+  /// 透過 ID 搜尋使用者
+  ///
+  /// [userId] 使用者 ID
+  Future<UserProfile> searchUserById(String userId);
 }

@@ -6,4 +6,6 @@ class RoleConstants {
   static const String leader = 'LEADER';
   static const String guide = 'GUIDE';
   static const String member = 'MEMBER';
+
+  static const Map<String, String> displayName = {admin: '管理員', leader: '團長', guide: '嚮導', member: '成員'};
 }

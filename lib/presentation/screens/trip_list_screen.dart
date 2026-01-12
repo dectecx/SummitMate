@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import 'member_management_screen.dart';
+import '../../core/constants/role_constants.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../../data/models/trip.dart';
@@ -129,13 +130,18 @@ class TripListScreen extends StatelessWidget {
                                   final canEdit = permissionService.canEditTripSync(currentUser, trip);
                                   final canDelete = permissionService.canDeleteTripSync(currentUser, trip);
 
+                                  final isOwner = currentUser != null && trip.userId == currentUser.id;
+                                  final roleLabel = isOwner
+                                      ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
+                                      : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
+
                                   return _TripCard(
                                     trip: trip,
                                     isActive: trip.id == activeTripId,
+                                    roleLabel: roleLabel,
                                     onTap: () => _onTripTap(context, trip, activeTripId, canEdit),
-                                    onDelete: (allTrips.length > 1 && canDelete)
-                                        ? () => _confirmDelete(context, trip)
-                                        : null,
+                                    onEdit: canEdit ? () => _showEditTripDialog(context, trip) : null,
+                                    onDelete: canDelete ? () => _confirmDelete(context, trip) : null,
                                     onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
                                     onManageMembers: () => _navigateToMembers(context, trip),
                                   );
@@ -156,13 +162,18 @@ class TripListScreen extends StatelessWidget {
                                   final canEdit = permissionService.canEditTripSync(currentUser, trip);
                                   final canDelete = permissionService.canDeleteTripSync(currentUser, trip);
 
+                                  final isOwner = currentUser != null && trip.userId == currentUser.id;
+                                  final roleLabel = isOwner
+                                      ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
+                                      : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
+
                                   return _TripCard(
                                     trip: trip,
                                     isActive: trip.id == activeTripId,
+                                    roleLabel: roleLabel,
                                     onTap: () => _onTripTap(context, trip, activeTripId, canEdit),
-                                    onDelete: (allTrips.length > 1 && canDelete)
-                                        ? () => _confirmDelete(context, trip)
-                                        : null,
+                                    onEdit: canEdit ? () => _showEditTripDialog(context, trip) : null,
+                                    onDelete: canDelete ? () => _confirmDelete(context, trip) : null,
                                     onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
                                     onManageMembers: () => _navigateToMembers(context, trip),
                                   );
@@ -200,12 +211,7 @@ class TripListScreen extends StatelessWidget {
         Navigator.pop(context); // 返回首頁
       }
     } else {
-      // 編輯行程 (需檢查權限)
-      if (canEdit) {
-        _showEditTripDialog(context, trip);
-      } else {
-        ToastService.info('您沒有權限編輯此行程');
-      }
+      ToastService.info('此為當前行程');
     }
   }
 
@@ -278,7 +284,9 @@ class TripListScreen extends StatelessWidget {
 class _TripCard extends StatelessWidget {
   final Trip trip;
   final bool isActive;
+  final String roleLabel;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onUpload;
   final VoidCallback? onManageMembers;
@@ -286,7 +294,9 @@ class _TripCard extends StatelessWidget {
   const _TripCard({
     required this.trip,
     required this.isActive,
+    required this.roleLabel,
     required this.onTap,
+    this.onEdit,
     this.onDelete,
     this.onUpload,
     this.onManageMembers,
@@ -351,6 +361,7 @@ class _TripCard extends StatelessWidget {
                             ),
                             if (isActive)
                               Container(
+                                margin: const EdgeInsets.only(left: 8),
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).colorScheme.primary,
@@ -364,7 +375,32 @@ class _TripCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(dateText, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                        Row(
+                          children: [
+                            // 顯示權限角色
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: roleLabel == (RoleConstants.displayName[RoleConstants.leader] ?? 'Leader')
+                                    ? Colors.orange.withValues(alpha: 0.2)
+                                    : Colors.grey.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                roleLabel,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: roleLabel == (RoleConstants.displayName[RoleConstants.leader] ?? 'Leader')
+                                      ? Colors.orange[800]
+                                      : Colors.grey[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(dateText, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+                          ],
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           'ID: $shortId...',
@@ -396,21 +432,22 @@ class _TripCard extends StatelessWidget {
                       label: const Text('成員'),
                       onPressed: onManageMembers,
                     ),
+                  if (onEdit != null)
+                    TextButton.icon(icon: const Icon(Icons.edit, size: 18), label: const Text('編輯'), onPressed: onEdit),
+                  if (onUpload != null) ...[
+                    TextButton.icon(
+                      icon: const Icon(Icons.cloud_upload_outlined, size: 18),
+                      label: const Text('上傳'),
+                      onPressed: onUpload,
+                    ),
+                  ],
                   if (onDelete != null)
                     TextButton.icon(
                       icon: const Icon(Icons.delete_outline, size: 18),
                       label: const Text('刪除'),
-                      style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                      style: TextButton.styleFrom(foregroundColor: Colors.red[400]),
                       onPressed: onDelete,
                     ),
-                  if (onUpload != null) ...[
-                    const SizedBox(width: 8),
-                    TextButton.icon(
-                      icon: const Icon(Icons.cloud_upload_outlined, size: 18),
-                      label: const Text('上傳/同步'),
-                      onPressed: onUpload,
-                    ),
-                  ],
                 ],
               ),
             ],

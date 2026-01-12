@@ -53,6 +53,21 @@ function createTrip(tripData) {
   const id = tripData.id || Utilities.getUuid();
   const now = new Date().toISOString();
 
+  // 解析 Access Token 取得 User ID
+  if (!tripData.accessToken) {
+    return _error(API_CODES.AUTH_REQUIRED, "缺少認證 Token (createTrip)");
+  }
+
+  const validation = validateToken(tripData.accessToken);
+  if (!validation.isValid) {
+    return _error(API_CODES.AUTH_ACCESS_TOKEN_INVALID, "Token 無效或已過期");
+  }
+
+  const creatorId = validation.payload.uid;
+  if (!creatorId) {
+    return _error(API_CODES.AUTH_ACCESS_TOKEN_INVALID, "Token Payload 異常");
+  }
+
   // 順序需與 HEADERS_TRIPS 一致
   // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
   sheet.appendRow([
@@ -65,9 +80,26 @@ function createTrip(tripData) {
     tripData.is_active || false,
     now,
     JSON.stringify(tripData.day_names || []),
-    String(tripData.created_by || ""), // created_by
-    String(tripData.updated_by || ""), // updated_by
+    String(creatorId), // created_by (from Token)
+    String(creatorId), // updated_by
   ]);
+
+  // 自動將建立者加入成員列表 (Role: Leader)
+  if (creatorId) {
+    Logger.log(
+      `[createTrip] Adding creator ${creatorId} as leader to trip ${id}`
+    );
+    const memberResult = updateMemberRole({
+      trip_id: id,
+      user_id: creatorId,
+      role: "leader",
+    });
+    Logger.log(
+      `[createTrip] updateMemberRole result: ${JSON.stringify(memberResult)}`
+    );
+  } else {
+    Logger.log(`[createTrip] No creatorId found, skipping member addition`);
+  }
 
   return _success({ id }, "行程已新增");
 }
@@ -517,4 +549,159 @@ function removeMember(payload) {
   }
 
   return _success(null, "成員已移除");
+}
+
+/**
+ * 透過 Email 搜尋使用者
+ * @param {Object} payload - { email }
+ * @returns {Object} { user: { id, display_name, email, avatar } }
+ */
+function searchUserByEmail(payload) {
+  const { email } = payload;
+  if (!email) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 email 參數");
+  }
+
+  const ss = getSpreadsheet();
+  const uSheet = ss.getSheetByName(SHEET_USERS);
+
+  // Strict check: Verify it looks like an email? (Optional but requested strictness)
+  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // if (!emailRegex.test(email)) {
+  //   return _error(API_CODES.INVALID_PARAMS, "Email 格式不正確");
+  // }
+  // User asked for separation to avoid cross-match. Just searching by email is enough.
+
+  const result = _findUserByEmail(uSheet, email);
+  if (!result) {
+    return _error(API_CODES.TRIP_USER_NOT_FOUND, "找不到此 Email 的使用者");
+  }
+
+  return _success({
+    user: {
+      id: result.user.id,
+      display_name: result.user.display_name,
+      email: result.user.email,
+      avatar: result.user.avatar,
+    },
+  });
+}
+
+/**
+ * 透過 User ID 搜尋使用者
+ * @param {Object} payload - { user_id }
+ * @returns {Object} { user: { id, display_name, email, avatar } }
+ */
+function searchUserById(payload) {
+  const { user_id } = payload;
+  if (!user_id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 user_id 參數");
+  }
+
+  const ss = getSpreadsheet();
+  const uSheet = ss.getSheetByName(SHEET_USERS);
+
+  const result = _findUserById(uSheet, user_id);
+  if (!result) {
+    return _error(API_CODES.TRIP_USER_NOT_FOUND, "找不到此 User ID 的使用者");
+  }
+
+  return _success({
+    user: {
+      id: result.user.id,
+      display_name: result.user.display_name,
+      email: result.user.email,
+      avatar: result.user.avatar,
+    },
+  });
+}
+
+/**
+ * 新增成員 (透過 Email)
+ * @param {Object} payload - { trip_id, email, role? }
+ * @returns {Object}
+ */
+function addMemberByEmail(payload) {
+  const { trip_id, email, role } = payload;
+
+  if (!trip_id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 trip_id");
+  }
+  if (!email) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 email");
+  }
+
+  const ss = getSpreadsheet();
+  const uSheet = ss.getSheetByName(SHEET_USERS);
+
+  // 搜尋 USER ID
+  const result = _findUserByEmail(uSheet, email);
+  if (!result) {
+    return _error(API_CODES.TRIP_USER_NOT_FOUND, "找不到此 Email 對應的使用者");
+  }
+
+  const targetUserId = result.user.id;
+  const targetRole = role || "member";
+
+  return updateMemberRole({
+    trip_id: trip_id,
+    user_id: targetUserId,
+    role: targetRole,
+  });
+}
+
+/**
+ * 新增成員 (透過 User ID)
+ * @param {Object} payload - { trip_id, user_id, role? }
+ * @returns {Object}
+ */
+function addMemberById(payload) {
+  const { trip_id, user_id, role } = payload;
+
+  if (!trip_id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 trip_id");
+  }
+  if (!user_id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 user_id");
+  }
+
+  // 驗證 User 是否存在 (可選)
+  const ss = getSpreadsheet();
+  const uSheet = ss.getSheetByName(SHEET_USERS);
+  const check = _findUserById(uSheet, user_id);
+  if (!check) {
+    return _error(API_CODES.TRIP_USER_NOT_FOUND, "找不到此 User ID");
+  }
+
+  const targetRole = role || "member";
+
+  return updateMemberRole({
+    trip_id: trip_id,
+    user_id: user_id,
+    role: targetRole,
+  });
+}
+
+/**
+ * 內部 Helper: 透過 ID 尋找使用者
+ * @param {Sheet} sheet
+ * @param {string} id
+ * @returns {Object|null} { user, rowIndex }
+ */
+function _findUserById(sheet, id) {
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const idx = headers.indexOf("id"); // 通常是 0
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][idx] === id) {
+      // 讀取整列資料轉 Object
+      const user = {};
+      headers.forEach((h, col) => {
+        user[h] = data[i][col];
+      });
+      return { user: user, rowIndex: i + 1 };
+    }
+  }
+  return null;
 }

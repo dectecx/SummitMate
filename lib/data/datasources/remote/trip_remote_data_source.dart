@@ -1,6 +1,7 @@
 import '../../../core/constants.dart';
 import '../../../core/di.dart';
 import '../../models/trip.dart';
+import '../../models/user_profile.dart';
 import '../../../infrastructure/clients/gas_api_client.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -58,7 +59,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
         'description': trip.description ?? '',
         'cover_image': trip.coverImage ?? '',
         'is_active': trip.isActive,
-      });
+      }, requiresAuth: true);
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -87,7 +88,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
         'description': trip.description ?? '',
         'cover_image': trip.coverImage ?? '',
         'is_active': trip.isActive,
-      });
+      }, requiresAuth: true);
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -108,7 +109,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
       final response = await _apiClient.post({
         'action': ApiConfig.actionTripDelete,
         'trip_id': tripId,
-      }); // Note: API expects trip_id
+      }, requiresAuth: true); // Note: API expects trip_id
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -214,6 +215,104 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
       if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
     } catch (e) {
       LogService.error('Remote RemoveMember failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 新增成員 (透過 Email)
+  ///
+  /// [tripId] 行程 ID
+  /// [email] 成員 Email
+  /// [role] 初始角色
+  @override
+  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
+    try {
+      final response = await _apiClient.post({
+        'action': 'trip_add_member_by_email',
+        'trip_id': tripId,
+        'email': email,
+        'role': role,
+      });
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+    } catch (e) {
+      LogService.error('Remote AddMemberByEmail failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 新增成員 (透過 User ID)
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 成員 User ID
+  /// [role] 初始角色
+  @override
+  Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) async {
+    try {
+      final response = await _apiClient.post({
+        'action': 'trip_add_member_by_id',
+        'trip_id': tripId,
+        'user_id': userId,
+        'role': role,
+      });
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+    } catch (e) {
+      LogService.error('Remote AddMemberById failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 透過 Email 搜尋使用者
+  ///
+  /// [email] 使用者 Email
+  @override
+  Future<UserProfile> searchUserByEmail(String email) async {
+    try {
+      LogService.info('Searching user by email: $email', source: _source);
+      final response = await _apiClient.post({
+        'action': 'trip_search_user_by_email',
+        'email': email,
+      }, requiresAuth: true);
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+
+      return UserProfile.fromJson(gasResponse.data['user'] as Map<String, dynamic>);
+    } catch (e) {
+      LogService.error('Remote SearchUserByEmail failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 透過 ID 搜尋使用者
+  ///
+  /// [userId] 使用者 ID
+  @override
+  Future<UserProfile> searchUserById(String userId) async {
+    try {
+      LogService.info('Searching user by ID: $userId', source: _source);
+      final response = await _apiClient.post({
+        'action': 'trip_search_user_by_id',
+        'user_id': userId,
+      }, requiresAuth: true);
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+
+      return UserProfile.fromJson(gasResponse.data['user'] as Map<String, dynamic>);
+    } catch (e) {
+      LogService.error('Remote SearchUserById failed: $e', source: _source);
       rethrow;
     }
   }

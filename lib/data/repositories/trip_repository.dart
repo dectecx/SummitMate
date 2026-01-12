@@ -3,6 +3,7 @@ import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
+import '../models/user_profile.dart';
 
 /// 行程 Repository (支援離線優先)
 ///
@@ -166,5 +167,28 @@ class TripRepository implements ITripRepository {
   @override
   Future<void> removeMember(String tripId, String userId) {
     return _remoteDataSource.removeMember(tripId, userId);
+  }
+
+  /// 新增成員 (透過 Email)
+  @override
+  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) {
+    return _remoteDataSource.addMemberByEmail(tripId, email, role: role);
+  }
+
+  /// 新增成員 (透過 User ID)
+  @override
+  Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) {
+    return _remoteDataSource.addMemberById(tripId, userId, role: role);
+  }
+
+  /// 搜尋使用者
+  @override
+  Future<UserProfile> searchUserByEmail(String email) async {
+    return _remoteDataSource.searchUserByEmail(email);
+  }
+
+  @override
+  Future<UserProfile> searchUserById(String userId) async {
+    return _remoteDataSource.searchUserById(userId);
   }
 }
