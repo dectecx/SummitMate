@@ -66,5 +66,41 @@ void main() {
       await repository.deleteTrip('trip_1');
       verify(() => mockLocalDataSource.deleteTrip('trip_1')).called(1);
     });
+
+    test('Negative: getTripById returns null if not found', () {
+      when(() => mockLocalDataSource.getTripById('unknown')).thenReturn(null);
+      final result = repository.getTripById('unknown');
+      expect(result, isNull);
+    });
+
+    test('Positive: getRemoteTrips fetches from remote and returns list', () async {
+      final remoteTrips = [testTrip];
+      when(() => mockRemoteDataSource.getTrips()).thenAnswer((_) async => remoteTrips);
+
+      final result = await repository.getRemoteTrips();
+
+      expect(result, remoteTrips);
+      verify(() => mockRemoteDataSource.getTrips()).called(1);
+    });
+
+    test('Extreme: getAllTrips handles large number of trips', () {
+      final manyTrips = List.generate(
+        100,
+        (i) => Trip(
+          id: 't_$i',
+          userId: 'u1',
+          name: 'Trip $i',
+          startDate: DateTime.now(),
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        ),
+      );
+      when(() => mockLocalDataSource.getAllTrips()).thenReturn(manyTrips);
+
+      final result = repository.getAllTrips('u1');
+
+      expect(result.length, 100);
+      expect(result[99].name, 'Trip 99');
+    });
   });
 }

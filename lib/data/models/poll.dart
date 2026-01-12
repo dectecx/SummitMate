@@ -8,7 +8,6 @@ part 'poll.g.dart';
 class Poll {
   /// 投票 ID (PK)
   @HiveField(0)
-  @HiveField(0)
   final String id;
 
   /// 標題
@@ -122,7 +121,6 @@ class Poll {
 @JsonSerializable(fieldRename: FieldRename.snake)
 class PollOption {
   /// 選項 ID (PK)
-  @HiveField(0)
   @HiveField(0)
   final String id;
 

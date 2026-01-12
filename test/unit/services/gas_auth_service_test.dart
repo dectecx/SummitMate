@@ -134,12 +134,12 @@ Map<String, dynamic> createUserJson({
   bool isVerified = true,
 }) {
   return {
-    'uuid': id,
+    'id': id,
     'email': email,
-    'displayName': displayName,
+    'display_name': displayName,
     'avatar': avatar,
     'role': 'member',
-    'isVerified': isVerified,
+    'is_verified': isVerified,
   };
 }
 
@@ -292,13 +292,81 @@ void main() {
     });
   });
 
-  group('GasAuthService helper methods', () {
+  group('GasAuthService helper methods & cases', () {
     test('getAccessToken returns stored token', () async {
       mockSessionRepo.storedAccessToken = 'my-token';
 
       final token = await authService.getAccessToken();
 
       expect(token, 'my-token');
+    });
+
+    test('Exception: login handles network timeout (DioException)', () async {
+      mockApiClient.shouldThrowError = true;
+      // NetworkAwareClient will catch this and throw OfflineException if connectivity says offline
+      // But here mockConnectivity says online (false), so it should propagate or be caught by login()
+
+      final result = await authService.login(email: 'e@e.com', password: 'p');
+
+      // GasAuthService.login catches error and returns failure with NETWORK_ERROR
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, 'NETWORK_ERROR');
+    });
+
+    test('Negative: verifyEmail returns failure on invalid code', () async {
+      mockApiClient.mockResponseCode = '0810'; // Assume some error code
+      mockApiClient.mockResponseMessage = 'Invalid code';
+
+      final result = await authService.verifyEmail(email: 'e@e.com', code: 'wrong');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, '0810');
+      expect(result.errorMessage, 'Invalid code');
+    });
+
+    test('Extreme: login handles empty JSON response data', () async {
+      mockApiClient.mockResponseData = {};
+
+      final result = await authService.login(email: 'e@e.com', password: 'p');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, 'DATA_ERROR');
+    });
+
+    test('Positive: updateProfile successfully updates local session', () async {
+      mockSessionRepo.storedAccessToken = 'token';
+      mockApiClient.mockResponseData = {'user': createTestUser(displayName: 'New Name').toJson()};
+
+      final result = await authService.updateProfile(displayName: 'New Name');
+
+      expect(result.isSuccess, isTrue);
+      expect(result.user?.displayName, 'New Name');
+      expect(mockSessionRepo.storedUser?.displayName, 'New Name');
+    });
+
+    test('Negative: updateProfile returns failure on API error', () async {
+      mockSessionRepo.storedAccessToken = 'token';
+      mockApiClient.mockResponseCode = '0805';
+      mockApiClient.mockResponseMessage = 'Update failed';
+
+      final result = await authService.updateProfile(displayName: 'Fail');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, '0805');
+      expect(result.errorMessage, 'Update failed');
+    });
+
+    test('Positive: verifyEmail returns success', () async {
+      mockApiClient.mockResponseCode = '0000';
+      final result = await authService.verifyEmail(email: 'e@e.com', code: '1234');
+      expect(result.isSuccess, isTrue);
+    });
+
+    test('Exception: resendVerificationCode handles network error', () async {
+      mockApiClient.shouldThrowError = true;
+      final result = await authService.resendVerificationCode(email: 'e@e.com');
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, 'NETWORK_ERROR');
     });
   });
 }

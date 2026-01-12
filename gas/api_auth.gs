@@ -97,10 +97,10 @@ function registerUser(payload) {
     const userData = {
       id: existingUser.id,
       email: email.toLowerCase().trim(),
-      displayName: displayName.trim(),
+      display_name: displayName.trim(),
       avatar: userAvatar,
       role: existingUser.role,
-      isVerified: false,
+      is_verified: false,
     };
 
     return buildResponse(API_CODES.SUCCESS, {
@@ -146,10 +146,10 @@ function registerUser(payload) {
   const userData = {
     id: userId,
     email: email.toLowerCase().trim(),
-    displayName: displayName.trim(),
+    display_name: displayName.trim(),
     avatar: userAvatar,
     role: defaultRole,
-    isVerified: false,
+    is_verified: false,
   };
 
   return buildResponse(
@@ -228,10 +228,10 @@ function loginUser(payload) {
   const userData = {
     id: user.id,
     email: user.email,
-    displayName: user.display_name,
+    display_name: user.display_name,
     avatar: user.avatar,
     role: user.role,
-    isVerified: user.is_verified,
+    is_verified: user.is_verified,
   };
 
   // 生成 JWT Tokens
@@ -312,10 +312,10 @@ function validateSession(payload) {
   const userData = {
     id: user.id,
     email: user.email,
-    displayName: user.display_name,
+    display_name: user.display_name,
     avatar: user.avatar,
     role: user.role,
-    isVerified: user.is_verified,
+    is_verified: user.is_verified,
   };
 
   return buildResponse(API_CODES.SUCCESS, { user: userData }, "驗證成功");
@@ -519,10 +519,10 @@ function updateProfile(payload) {
   const userData = {
     id: user.id,
     email: user.email,
-    displayName: user.display_name,
+    display_name: user.display_name,
     avatar: user.avatar,
     role: user.role,
-    isVerified: user.is_verified,
+    is_verified: user.is_verified,
   };
 
   return buildResponse(

@@ -11,7 +11,7 @@ part 'user_profile.g.dart';
 /// - 'leader': 團長 (TODO: 未來開發)
 /// - 'admin': 管理員 (TODO: 未來開發)
 @HiveType(typeId: 10)
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserProfile extends HiveObject {
   @HiveField(0)
   final String id;

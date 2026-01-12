@@ -112,7 +112,12 @@ class GasAuthService implements IAuthService {
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
-        final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
+        final userData = apiResponse.data['user'] as Map<String, dynamic>?;
+        if (userData == null) {
+          LogService.error('登入成功但缺少使用者資料', source: _source);
+          return AuthResult.failure(errorCode: 'DATA_ERROR', errorMessage: '伺服器回傳資料異常');
+        }
+        final user = UserProfile.fromJson(userData);
         final accessToken = apiResponse.data['accessToken'] as String;
         final refreshToken = apiResponse.data['refreshToken'] as String?;
 
@@ -254,7 +259,12 @@ class GasAuthService implements IAuthService {
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
-        final user = UserProfile.fromJson(apiResponse.data['user'] as Map<String, dynamic>);
+        final userData = apiResponse.data['user'] as Map<String, dynamic>?;
+        if (userData == null) {
+          LogService.error('驗證成功但缺少使用者資料', source: _source);
+          return AuthResult.failure(errorCode: 'DATA_ERROR', errorMessage: '伺服器回傳資料異常');
+        }
+        final user = UserProfile.fromJson(userData);
 
         // 檢查 API 是否回傳新 Token (例如舊版升級)
         final newAccessToken = apiResponse.data['accessToken'] as String?;
