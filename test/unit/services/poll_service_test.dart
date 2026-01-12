@@ -73,7 +73,7 @@ class MockConnectivityService extends Mock implements IConnectivityService {}
 
 Map<String, dynamic> createPollJson({String id = 'poll-1', String title = 'Test Poll', String status = 'active'}) {
   return {
-    'poll_id': id,
+    'id': id,
     'title': title,
     'description': 'Test description',
     'creator_id': 'user-1',
