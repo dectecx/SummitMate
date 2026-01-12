@@ -26,6 +26,9 @@ const SHEET_POLL_VOTES = "PollVotes";
 
 // 會員系統
 const SHEET_USERS = "Users";
+const SHEET_ROLES = "Roles";
+const SHEET_PERMISSIONS = "Permissions";
+const SHEET_ROLE_PERMISSIONS = "RolePermissions";
 
 // 監控與外部服務
 const SHEET_LOGS = "Logs";
@@ -118,7 +121,7 @@ const HEADERS_GEAR_LIBRARY = [
 
 // ============================================================
 // 會員系統 (Users)
-// role: 預留欄位供未來權限擴充 (團長/團員/管理員)
+// role_id: 關聯 Roles 表的 UUID
 // ============================================================
 const HEADERS_USERS = [
   "id", // PK
@@ -126,7 +129,7 @@ const HEADERS_USERS = [
   "password_hash", // 密碼雜湊 (SHA-256)
   "display_name", // 顯示名稱
   "avatar", // 頭像 Emoji
-  "role", // 角色: member, leader, admin (預留)
+  "role_id", // FK: Roles.id
   "is_active", // 帳號狀態 (false = 假刪除)
   "is_verified", // Email 驗證狀態
   "verification_code",
@@ -134,6 +137,26 @@ const HEADERS_USERS = [
   "created_at",
   "updated_at",
   "last_login_at",
+];
+
+const HEADERS_ROLES = [
+  "id", // PK
+  "code", // UK (ADMIN, LEADER)
+  "name", // Display Name
+  "description",
+];
+
+const HEADERS_PERMISSIONS = [
+  "id", // PK
+  "code", // UK (trip.edit)
+  "category",
+  "description",
+];
+
+const HEADERS_ROLE_PERMISSIONS = [
+  "id", // PK
+  "role_id", // FK
+  "permission_id", // FK
 ];
 
 const HEADERS_LOGS = [
@@ -221,6 +244,8 @@ const API_ACTIONS = {
   AUTH_DELETE_USER: "auth_delete_user",
   AUTH_REFRESH_TOKEN: "auth_refresh_token",
   AUTH_UPDATE_PROFILE: "auth_update_profile",
+  AUTH_GET_ROLES: "auth_get_roles", // 取得角色列表
+  AUTH_ASSIGN_ROLE: "auth_assign_role", // 指派角色
 };
 
 // ============================================================
@@ -476,7 +501,7 @@ const SHEET_SCHEMA = {
     password_hash: { type: "text" },
     display_name: { type: "text" },
     avatar: { type: "text" },
-    role: { type: "text" },
+    role_id: { type: "text" }, // Changed from role
     is_active: { type: "boolean" },
     is_verified: { type: "boolean" }, // Email 驗證狀態
     verification_code: { type: "text" }, // 驗證碼 (6碼)
@@ -484,6 +509,26 @@ const SHEET_SCHEMA = {
     created_at: { type: "date" },
     updated_at: { type: "date" },
     last_login_at: { type: "date" },
+  },
+
+  Roles: {
+    id: { type: "text" },
+    code: { type: "text" },
+    name: { type: "text" },
+    description: { type: "text" },
+  },
+
+  Permissions: {
+    id: { type: "text" },
+    code: { type: "text" },
+    category: { type: "text" },
+    description: { type: "text" },
+  },
+
+  RolePermissions: {
+    id: { type: "text" },
+    role_id: { type: "text" },
+    permission_id: { type: "text" },
   },
 };
 

@@ -8,6 +8,7 @@ import 'package:summitmate/infrastructure/tools/usage_tracking_service.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/data/models/user_profile.dart';
+import 'package:summitmate/core/constants/role_constants.dart';
 
 class MockAuthService extends Mock implements IAuthService {}
 
@@ -26,7 +27,7 @@ void main() {
     email: 'test@example.com',
     displayName: 'Test User',
     avatar: 'test-avatar',
-    role: 'member',
+    roleCode: RoleConstants.member,
     isVerified: true,
   );
 
@@ -34,7 +35,7 @@ void main() {
     id: 'unverified-uuid',
     email: 'unverified@example.com',
     displayName: 'Unverified User',
-    role: 'member',
+    roleCode: RoleConstants.member,
     isVerified: false,
   );
 
