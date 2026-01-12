@@ -100,6 +100,14 @@ function doPost(e) {
       case API_ACTIONS.ITINERARY_UPDATE:
         return _createJsonResponse(updateItinerary(data.data, data.trip_id));
 
+      // === 行程成員 (Trip Members) ===
+      case API_ACTIONS.TRIP_GET_MEMBERS:
+        return _createJsonResponse(getTripMembers(data.trip_id));
+      case API_ACTIONS.TRIP_UPDATE_MEMBER_ROLE:
+        return _createJsonResponse(updateMemberRole(data));
+      case API_ACTIONS.TRIP_REMOVE_MEMBER:
+        return _createJsonResponse(removeMember(data));
+
       // === 留言 (Messages) ===
       case API_ACTIONS.MESSAGE_CREATE:
         return _createJsonResponse(createMessage(data.data));

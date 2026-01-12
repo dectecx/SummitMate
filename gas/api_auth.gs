@@ -28,26 +28,6 @@
  */
 
 // ============================================================
-// 會員系統 (Users)
-// role_id: 關聯 Roles 表的 UUID
-// ============================================================
-const HEADERS_USERS = [
-  "id", // PK
-  "email", // Unique, 作為登入帳號
-  "password_hash", // 密碼雜湊 (SHA-256)
-  "display_name", // 顯示名稱
-  "avatar", // 頭像 Emoji
-  "role_id", // FK: Roles.id
-  "is_active", // 帳號是否啟用
-  "is_verified", // Email 是否已驗證
-  "verification_code", // Email 驗證碼
-  "verification_expiry", // 驗證碼過期時間
-  "created_at", // 建立時間
-  "updated_at", // 更新時間
-  "last_login_at", // 最後登入時間
-];
-
-// ============================================================
 // === PUBLIC API (doPost Handlers) ===
 // ============================================================
 

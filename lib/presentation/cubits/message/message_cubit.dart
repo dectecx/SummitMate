@@ -102,6 +102,7 @@ class MessageCubit extends Cubit<MessageState> {
         content: content,
         avatar: avatar,
         tripId: _currentTripId,
+        userId: _authService.currentUserId ?? '',
         timestamp: DateTime.now(),
       );
 

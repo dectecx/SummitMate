@@ -153,4 +153,68 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
       rethrow;
     }
   }
+
+  /// 取得行程成員列表
+  ///
+  /// [tripId] 行程 ID
+  @override
+  Future<List<Map<String, dynamic>>> getTripMembers(String tripId) async {
+    try {
+      final response = await _apiClient.post({'action': 'trip_get_members', 'trip_id': tripId});
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+
+      return (gasResponse.data['members'] as List<dynamic>).cast<Map<String, dynamic>>();
+    } catch (e) {
+      LogService.error('Remote GetTripMembers failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 更新成員角色
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 目標成員 ID
+  /// [role] 新角色身分代碼 (參考 RoleConstants)
+  @override
+  Future<void> updateMemberRole(String tripId, String userId, String role) async {
+    try {
+      final response = await _apiClient.post({
+        'action': 'trip_update_member_role',
+        'trip_id': tripId,
+        'user_id': userId,
+        'role': role,
+      });
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+    } catch (e) {
+      LogService.error('Remote UpdateMemberRole failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 移除成員
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 目標成員 ID
+  @override
+  Future<void> removeMember(String tripId, String userId) async {
+    try {
+      final response = await _apiClient.post({'action': 'trip_remove_member', 'trip_id': tripId, 'user_id': userId});
+
+      if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+    } catch (e) {
+      LogService.error('Remote RemoveMember failed: $e', source: _source);
+      rethrow;
+    }
+  }
 }

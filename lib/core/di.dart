@@ -15,6 +15,7 @@ import '../infrastructure/services/poll_service.dart';
 import '../infrastructure/services/geolocator_service.dart';
 import '../infrastructure/services/gear_cloud_service.dart';
 import '../infrastructure/services/gas_auth_service.dart';
+import '../core/services/permission_service.dart';
 import '../infrastructure/services/jwt_token_validator.dart';
 
 // Infrastructure - Clients
@@ -120,6 +121,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<IAuthService>(
     () => GasAuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
   );
+  getIt.registerLazySingleton<PermissionService>(() => PermissionService(getIt<IAuthService>()));
 
   // Network Core (Dio & API Clients)
   getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));

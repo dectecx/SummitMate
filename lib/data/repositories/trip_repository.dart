@@ -149,4 +149,22 @@ class TripRepository implements ITripRepository {
     LogService.info('Clearing all trips (Local)', source: _source);
     await _localDataSource.clear();
   }
+
+  /// 取得行程成員列表
+  @override
+  Future<List<Map<String, dynamic>>> getTripMembers(String tripId) {
+    return _remoteDataSource.getTripMembers(tripId);
+  }
+
+  /// 更新成員角色
+  @override
+  Future<void> updateMemberRole(String tripId, String userId, String role) {
+    return _remoteDataSource.updateMemberRole(tripId, userId, role);
+  }
+
+  /// 移除成員
+  @override
+  Future<void> removeMember(String tripId, String userId) {
+    return _remoteDataSource.removeMember(tripId, userId);
+  }
 }

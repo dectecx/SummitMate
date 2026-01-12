@@ -8,6 +8,11 @@ import '../cubits/message/message_cubit.dart';
 import '../cubits/message/message_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
+import '../cubits/auth/auth_cubit.dart';
+import '../cubits/auth/auth_state.dart';
+import '../../data/models/user_profile.dart';
+import '../../core/services/permission_service.dart';
+import '../../core/di.dart';
 
 /// 留言板畫面 (Tab 3 - 協作)
 ///
@@ -41,220 +46,249 @@ class _MessageListScreenState extends State<MessageListScreen> {
       ],
       child: BlocBuilder<SettingsCubit, SettingsState>(
         builder: (context, settingsState) {
-          // Default values
-          String username = '';
-          String avatar = '🐻';
           bool isOfflineMode = false;
-
           if (settingsState is SettingsLoaded) {
-            username = settingsState.username;
-            avatar = settingsState.avatar;
             isOfflineMode = settingsState.isOfflineMode;
           }
 
-          return BlocBuilder<MessageCubit, MessageState>(
-            builder: (context, messageState) {
-              // Default values for initial/loading state
-              String selectedCategory = 'Important';
-              List<dynamic> currentMessages = [];
-              bool isLoading = true;
+          return BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, authState) {
+              UserProfile? currentUser;
+              String username = '';
+              String avatar = '🐻';
 
-              if (messageState is MessageLoaded) {
-                selectedCategory = messageState.selectedCategory;
-                currentMessages = messageState.currentCategoryMessages;
-                isLoading = false;
-              } else if (messageState is MessageLoading) {
-                isLoading = true;
-              } else if (messageState is MessageError) {
-                isLoading = false;
+              if (authState is AuthAuthenticated) {
+                currentUser = authState.user;
+                username = authState.userName ?? '';
+                avatar = authState.avatar ?? '🐻';
               }
 
-              // Determine if specific category messages are empty
-              final isListEmpty = !isLoading && currentMessages.isEmpty;
+              final permissionService = getIt<PermissionService>();
 
-              return Scaffold(
-                body: Column(
-                  children: [
-                    // 分類切換
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: SegmentedButton<String>(
-                              showSelectedIcon: false,
-                              segments: const [
-                                ButtonSegment(value: 'Important', label: Text('📢 重要')),
-                                ButtonSegment(value: 'Chat', label: Text('💬 討論')),
-                                ButtonSegment(value: 'Gear', label: Text('🎒 裝備')),
-                              ],
-                              selected: {selectedCategory},
-                              onSelectionChanged: (selected) {
-                                context.read<MessageCubit>().selectCategory(selected.first);
-                              },
-                              style: ButtonStyle(
-                                visualDensity: VisualDensity.compact,
-                                textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
-                                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Last Updated Timestamp & Refresh
-                          BlocBuilder<SyncCubit, SyncState>(
-                            builder: (context, syncState) {
-                              DateTime? lastSync;
-                              bool isSyncing = false;
+              return BlocBuilder<MessageCubit, MessageState>(
+                builder: (context, messageState) {
+                  // Default values for initial/loading state
+                  String selectedCategory = 'Important';
+                  List<dynamic> currentMessages = [];
+                  bool isLoading = true;
 
-                              if (syncState is SyncInitial) {
-                                lastSync = syncState.lastSyncTime;
-                              } else if (syncState is SyncSuccess) {
-                                lastSync = syncState.timestamp;
-                              } else if (syncState is SyncInProgress) {
-                                isSyncing = true;
-                              } else if (syncState is SyncFailure) {
-                                lastSync = syncState.lastSuccessTime;
-                              }
+                  if (messageState is MessageLoaded) {
+                    selectedCategory = messageState.selectedCategory;
+                    currentMessages = messageState.currentCategoryMessages;
+                    isLoading = false;
+                  } else if (messageState is MessageLoading) {
+                    isLoading = true;
+                  } else if (messageState is MessageError) {
+                    isLoading = false;
+                  }
 
-                              final timeStr = lastSync != null
-                                  ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal())
-                                  : '未同步';
+                  // Determine if specific category messages are empty
+                  final isListEmpty = !isLoading && currentMessages.isEmpty;
 
-                              return Material(
-                                color: Colors.grey.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                child: InkWell(
-                                  onTap: () => context.read<SyncCubit>().syncAll(force: true),
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                        const SizedBox(width: 4),
-                                        if (isSyncing)
-                                          const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          )
-                                        else
-                                          const Icon(Icons.sync, size: 16, color: Colors.grey),
-                                      ],
-                                    ),
+                  return Scaffold(
+                    body: Column(
+                      children: [
+                        // 分類切換 & Sync Status (Unchanged logic, just inside new builder)
+                        _buildHeader(context, selectedCategory),
+
+                        // 留言列表
+                        Expanded(
+                          child: isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : isListEmpty
+                              ? const Center(child: Text('尚無留言，點擊右下角新增'))
+                              : RefreshIndicator(
+                                  onRefresh: () async => context.read<SyncCubit>().syncAll(force: true),
+                                  child: ListView.builder(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    itemCount: currentMessages.length,
+                                    itemBuilder: (context, index) {
+                                      final msg = (messageState as MessageLoaded).currentCategoryMessages[index];
+                                      final replies = messageState.getReplies(msg.id);
+                                      final canDelete = permissionService.canDeleteMessageSync(currentUser, msg);
+
+                                      return _buildMessageCard(
+                                        context,
+                                        msg,
+                                        replies,
+                                        canDelete,
+                                        isOfflineMode,
+                                        selectedCategory,
+                                        username,
+                                        avatar,
+                                        currentUser,
+                                        permissionService,
+                                      );
+                                    },
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    // 留言列表
-                    Expanded(
-                      child: isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : isListEmpty
-                          ? const Center(child: Text('尚無留言，點擊右下角新增'))
-                          : RefreshIndicator(
-                              onRefresh: () async => context.read<SyncCubit>().syncAll(force: true),
-                              child: ListView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: currentMessages.length,
-                                itemBuilder: (context, index) {
-                                  // Explicit cast to Message if needed, but dynamic should work or type check
-                                  // messageState is MessageLoaded, so filteredMessages is List<Message>
-                                  final msg = (messageState as MessageLoaded).currentCategoryMessages[index];
-                                  final replies = messageState.getReplies(msg.id);
-
-                                  return Card(
-                                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    child: ExpansionTile(
-                                      leading: CircleAvatar(
-                                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                        child: Text(msg.avatar),
-                                      ),
-                                      title: Text(msg.content),
-                                      subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (replies.isNotEmpty)
-                                            Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
-                                          IconButton(
-                                            icon: const Icon(Icons.reply, size: 20),
-                                            onPressed: isOfflineMode
-                                                ? null
-                                                : () => _showReplyDialog(
-                                                    context,
-                                                    context.read<MessageCubit>(),
-                                                    selectedCategory, // pass category for title logic
-                                                    username,
-                                                    avatar,
-                                                    msg.id,
-                                                  ),
-                                            tooltip: '回覆',
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline, size: 20),
-                                            onPressed: () =>
-                                                _confirmDelete(context, context.read<MessageCubit>(), msg.id),
-                                            tooltip: '刪除',
-                                          ),
-                                        ],
-                                      ),
-                                      children: replies
-                                          .map(
-                                            (reply) => ListTile(
-                                              leading: CircleAvatar(
-                                                radius: 12,
-                                                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                                child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
-                                              ),
-                                              title: Text(reply.content),
-                                              subtitle: Text(
-                                                '${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}',
-                                              ),
-                                              trailing: IconButton(
-                                                icon: const Icon(Icons.delete_outline, size: 18),
-                                                onPressed: () =>
-                                                    _confirmDelete(context, context.read<MessageCubit>(), reply.id),
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-                floatingActionButton: FloatingActionButton(
-                  backgroundColor: isOfflineMode ? Colors.grey : null,
-                  onPressed: isOfflineMode
-                      ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
-                        }
-                      : () => _showAddMessageDialog(
-                          context,
-                          context.read<MessageCubit>(),
-                          selectedCategory,
-                          username,
-                          avatar,
-                          null,
                         ),
-                  child: const Icon(Icons.add_comment),
-                ),
+                      ],
+                    ),
+                    floatingActionButton: FloatingActionButton(
+                      backgroundColor: isOfflineMode ? Colors.grey : null,
+                      onPressed: isOfflineMode
+                          ? () {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
+                            }
+                          : () => _showAddMessageDialog(
+                              context,
+                              context.read<MessageCubit>(),
+                              selectedCategory,
+                              username,
+                              avatar,
+                              null,
+                            ),
+                      child: const Icon(Icons.add_comment),
+                    ),
+                  );
+                },
               );
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, String selectedCategory) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: SegmentedButton<String>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(value: 'Important', label: Text('📢 重要')),
+                ButtonSegment(value: 'Chat', label: Text('💬 討論')),
+                ButtonSegment(value: 'Gear', label: Text('🎒 裝備')),
+              ],
+              selected: {selectedCategory},
+              onSelectionChanged: (selected) {
+                context.read<MessageCubit>().selectCategory(selected.first);
+              },
+              style: ButtonStyle(
+                visualDensity: VisualDensity.compact,
+                textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
+                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          BlocBuilder<SyncCubit, SyncState>(
+            builder: (context, syncState) {
+              DateTime? lastSync;
+              bool isSyncing = false;
+
+              if (syncState is SyncInitial) {
+                lastSync = syncState.lastSyncTime;
+              } else if (syncState is SyncSuccess) {
+                lastSync = syncState.timestamp;
+              } else if (syncState is SyncInProgress) {
+                isSyncing = true;
+              } else if (syncState is SyncFailure) {
+                lastSync = syncState.lastSuccessTime;
+              }
+
+              final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '未同步';
+
+              return Material(
+                color: Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                child: InkWell(
+                  onTap: () => context.read<SyncCubit>().syncAll(force: true),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        const SizedBox(width: 4),
+                        if (isSyncing)
+                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        else
+                          const Icon(Icons.sync, size: 16, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageCard(
+    BuildContext context,
+    dynamic msg,
+    List<dynamic> replies,
+    bool canDelete,
+    bool isOfflineMode,
+    String selectedCategory,
+    String username,
+    String avatar,
+    UserProfile? currentUser,
+    PermissionService permissionService,
+  ) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ExpansionTile(
+        leading: CircleAvatar(backgroundColor: Theme.of(context).colorScheme.primaryContainer, child: Text(msg.avatar)),
+        title: Text(msg.content),
+        subtitle: Text('${msg.user} · ${msg.timestamp.month}/${msg.timestamp.day}'),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (replies.isNotEmpty) Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
+            IconButton(
+              icon: const Icon(Icons.reply, size: 20),
+              onPressed: isOfflineMode
+                  ? null
+                  : () => _showReplyDialog(
+                      context,
+                      context.read<MessageCubit>(),
+                      selectedCategory,
+                      username,
+                      avatar,
+                      msg.id,
+                    ),
+              tooltip: '回覆',
+            ),
+            if (canDelete)
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                onPressed: () => _confirmDelete(context, context.read<MessageCubit>(), msg.id),
+                tooltip: '刪除',
+              ),
+          ],
+        ),
+        children: replies.map((reply) {
+          final canDeleteReply = permissionService.canDeleteMessageSync(currentUser, reply);
+          return ListTile(
+            leading: CircleAvatar(
+              radius: 12,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Text(reply.avatar, style: const TextStyle(fontSize: 12)),
+            ),
+            title: Text(reply.content),
+            subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
+            trailing: canDeleteReply
+                ? IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    onPressed: () => _confirmDelete(context, context.read<MessageCubit>(), reply.id),
+                  )
+                : null,
+          );
+        }).toList(),
       ),
     );
   }

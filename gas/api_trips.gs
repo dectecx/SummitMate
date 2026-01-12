@@ -375,3 +375,146 @@ function syncTripFull(data) {
     lock.releaseLock();
   }
 }
+
+/**
+ * 取得行程成員列表
+ * @param {string} tripId
+ * @returns {Object} { code, data, message }
+ */
+function getTripMembers(tripId) {
+  if (!tripId) {
+    return _error(API_CODES.INVALID_PARAMS, "Trip ID is required");
+  }
+
+  const ss = getSpreadsheet();
+  const tmSheet = ss.getSheetByName(SHEET_TRIP_MEMBERS);
+  const uSheet = ss.getSheetByName(SHEET_USERS);
+
+  // 若尚未有成員表，回傳空列表 (或自動建立)
+  if (!tmSheet) {
+    return _success({ members: [] }, "尚無成員");
+  }
+
+  // 1. 取得該行程的所有成員關聯
+  const tmData = tmSheet.getDataRange().getValues();
+  // Headers: id, trip_id, user_id, role_code, created_at, updated_at
+  // Index:   0,  1,       2,       3,         4,          5
+
+  const tripMembers = [];
+  // Skip header
+  for (let i = 1; i < tmData.length; i++) {
+    if (tmData[i][1] === tripId) {
+      tripMembers.push({
+        relationship_id: tmData[i][0],
+        user_id: tmData[i][2],
+        role_code: tmData[i][3],
+      });
+    }
+  }
+
+  if (tripMembers.length === 0) {
+    return _success({ members: [] });
+  }
+
+  // 2. 取得使用者詳細資料 (Join Users)
+  const userMap = {};
+  if (uSheet) {
+    const uData = uSheet.getDataRange().getValues();
+    const h = uData[0];
+    const idx = {
+      id: h.indexOf("id"),
+      name: h.indexOf("display_name"),
+      avatar: h.indexOf("avatar"),
+      email: h.indexOf("email"),
+    };
+
+    for (let i = 1; i < uData.length; i++) {
+      const uid = uData[i][idx.id];
+      userMap[uid] = {
+        display_name: uData[i][idx.name],
+        avatar: uData[i][idx.avatar],
+        email: uData[i][idx.email],
+      };
+    }
+  }
+
+  // 3. 組合結果
+  const result = tripMembers.map((m) => {
+    const u = userMap[m.user_id] || {};
+    return {
+      id: m.user_id, // Client expects member list with User IDs primarily
+      relationship_id: m.relationship_id,
+      role_code: m.role_code,
+      display_name: u.display_name || "Unknown",
+      avatar: u.avatar || DEFAULT_AVATAR,
+      email: u.email || "",
+    };
+  });
+
+  return _success({ members: result });
+}
+
+/**
+ * 更新成員角色
+ * @param {Object} payload - { trip_id, user_id, role }
+ * @returns {Object}
+ */
+function updateMemberRole(payload) {
+  const { trip_id, user_id, role } = payload;
+  if (!trip_id || !user_id || !role) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少必要參數");
+  }
+
+  const ss = getSpreadsheet();
+  const sheet = _getSheetOrCreate(SHEET_TRIP_MEMBERS, HEADERS_TRIP_MEMBERS);
+  const data = sheet.getDataRange().getValues();
+
+  // 尋找是否已存在
+  let found = false;
+  for (let i = 1; i < data.length; i++) {
+    // trip_id @ Col 1, user_id @ Col 2
+    if (data[i][1] === trip_id && data[i][2] === user_id) {
+      // Update role @ Col 3 ("role_code")
+      // Data Col 3 -> Sheet Col 4
+      sheet.getRange(i + 1, 4).setValue(role);
+      sheet.getRange(i + 1, 6).setValue(new Date().toISOString()); // updated_at
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    // Insert new
+    const now = new Date().toISOString();
+    sheet.appendRow([Utilities.getUuid(), trip_id, user_id, role, now, now]);
+  }
+
+  return _success(null, "成員角色已更新");
+}
+
+/**
+ * 移除成員
+ * @param {Object} payload - { trip_id, user_id }
+ * @returns {Object}
+ */
+function removeMember(payload) {
+  const { trip_id, user_id } = payload;
+  if (!trip_id || !user_id) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少必要參數");
+  }
+
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_TRIP_MEMBERS);
+  if (!sheet) return _error(API_CODES.TRIP_NOT_FOUND, "成員表不存在");
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === trip_id && data[i][2] === user_id) {
+      sheet.deleteRow(i + 1);
+      return _success(null, "成員已移除");
+    }
+  }
+
+  return _success(null, "成員已移除");
+}

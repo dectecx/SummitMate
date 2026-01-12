@@ -67,4 +67,13 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<void> clearAll() async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> getTripMembers(String tripId) async => [];
+
+  @override
+  Future<void> updateMemberRole(String tripId, String userId, String role) async {}
+
+  @override
+  Future<void> removeMember(String tripId, String userId) async {}
 }
