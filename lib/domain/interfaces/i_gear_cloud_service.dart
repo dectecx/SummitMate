@@ -34,9 +34,9 @@ abstract interface class IGearCloudService {
 
   /// 下載指定裝備組合
   ///
-  /// [uuid] 裝備組合 UUID
+  /// [id] 裝備組合 ID
   /// [key] 如果是受保護的組合，需要提供 Key
-  Future<GearCloudResult<GearSet>> downloadGearSet(String uuid, {String? key});
+  Future<GearCloudResult<GearSet>> downloadGearSet(String id, {String? key});
 
   /// 上傳裝備組合
   ///
@@ -59,7 +59,7 @@ abstract interface class IGearCloudService {
 
   /// 刪除裝備組合 (需要 Key 驗證)
   ///
-  /// [uuid] 裝備組合 UUID
+  /// [id] 裝備組合 ID
   /// [key] 驗證用的分享碼
-  Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key);
+  Future<GearCloudResult<bool>> deleteGearSet(String id, String key);
 }

@@ -151,9 +151,9 @@ class GoogleSheetsService implements IDataService {
   ///
   /// [uuid] 留言 UUID
   @override
-  Future<ApiResult> deleteMessage(String uuid) async {
+  Future<ApiResult> deleteMessage(String id) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'uuid': uuid});
+      final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'id': id});
       return _handleResponse(response);
     } catch (e) {
       return ApiResult(isSuccess: false, errorMessage: e.toString());

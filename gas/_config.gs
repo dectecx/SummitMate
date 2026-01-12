@@ -419,7 +419,7 @@ const SHEET_SCHEMA = {
   },
 
   Polls: {
-    poll_id: { type: "text" },
+    id: { type: "text" },
     title: { type: "text" },
     description: { type: "text" },
     creator_id: { type: "text" },
@@ -433,7 +433,7 @@ const SHEET_SCHEMA = {
   },
 
   PollOptions: {
-    option_id: { type: "text" },
+    id: { type: "text" },
     poll_id: { type: "text" },
     text: { type: "text" },
     creator_id: { type: "text" },
@@ -442,7 +442,7 @@ const SHEET_SCHEMA = {
   },
 
   PollVotes: {
-    vote_id: { type: "text" },
+    id: { type: "text" },
     poll_id: { type: "text" },
     option_id: { type: "text" },
     user_id: { type: "text" },

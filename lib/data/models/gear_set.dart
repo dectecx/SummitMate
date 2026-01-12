@@ -16,7 +16,7 @@ enum GearSetVisibility {
 /// 雲端裝備組合
 class GearSet {
   /// 唯一識別碼
-  final String uuid;
+  final String id;
 
   /// 組合標題
   final String title;
@@ -43,7 +43,7 @@ class GearSet {
   final List<DailyMealPlan>? meals;
 
   GearSet({
-    required this.uuid,
+    required this.id,
     required this.title,
     required this.author,
     required this.totalWeight,
@@ -56,14 +56,19 @@ class GearSet {
 
   /// 從 JSON 建立 (API 回應)
   factory GearSet.fromJson(Map<String, dynamic> json) {
+    if (json['id'] == null) throw ArgumentError('GearSet ID is required');
+    if (json['title'] == null) throw ArgumentError('GearSet title is required');
+    if (json['author'] == null) throw ArgumentError('GearSet author is required');
+    if (json['uploaded_at'] == null) throw ArgumentError('GearSet uploaded_at is required');
+
     return GearSet(
-      uuid: json['uuid'] as String,
+      id: json['id'] as String,
       title: json['title'] as String,
-      author: json['author'] as String? ?? 'Unknown',
-      totalWeight: (json['total_weight'] as num?)?.toDouble() ?? 0,
+      author: json['author'] as String,
+      totalWeight: (json['total_weight'] as num?)?.toDouble() ?? 0.0,
       itemCount: json['item_count'] as int? ?? 0,
       visibility: _parseVisibility(json['visibility'] as String?),
-      uploadedAt: DateTime.tryParse(json['uploaded_at'] as String? ?? '') ?? DateTime.now(),
+      uploadedAt: DateTime.parse(json['uploaded_at'] as String).toLocal(),
       items: (json['items'] as List<dynamic>?)?.map((item) => GearItem.fromJson(item as Map<String, dynamic>)).toList(),
       meals: (json['meals'] as List<dynamic>?)?.map((m) => DailyMealPlan.fromJson(m as Map<String, dynamic>)).toList(),
     );
@@ -72,7 +77,7 @@ class GearSet {
   /// 轉換為 JSON (上傳用)
   Map<String, dynamic> toJson() {
     return {
-      'uuid': uuid,
+      'id': id,
       'title': title,
       'author': author,
       'total_weight': totalWeight,

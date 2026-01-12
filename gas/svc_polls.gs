@@ -237,7 +237,7 @@ function addOption(data) {
   const text = data.text;
 
   const polls = getDataAsObjects(pollSheet);
-  const poll = polls.find((p) => p.poll_id === pollId);
+  const poll = polls.find((p) => p.id === pollId);
   if (!poll) {
     return _error(API_CODES.POLL_NOT_FOUND, "找不到此投票");
   }

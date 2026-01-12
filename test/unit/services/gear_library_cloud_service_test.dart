@@ -31,9 +31,10 @@ void main() {
         weight: 1500,
         category: 'Shelter',
         notes: 'Lightweight',
-        updatedAt: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: 'u1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'u1',
       ),
     ];
 

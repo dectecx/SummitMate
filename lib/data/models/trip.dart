@@ -11,7 +11,6 @@ part 'trip.g.dart';
 class Trip extends HiveObject {
   /// 行程 ID
   @HiveField(0)
-  @JsonKey(readValue: _readId, name: 'trip_id')
   final String id;
 
   /// 所屬使用者 ID
@@ -57,7 +56,7 @@ class Trip extends HiveObject {
 
   /// 建立時間
   @HiveField(10)
-  @JsonKey(fromJson: _parseDateWithDefault)
+  @JsonKey(fromJson: _parseDate)
   final DateTime createdAt;
 
   /// 建立者
@@ -98,11 +97,6 @@ class Trip extends HiveObject {
     return diff >= 0 ? diff + 1 : 1;
   }
 
-  /// 讀取 ID (相容 trip_id 與 id)
-  static Object? _readId(Map map, String key) {
-    return map['trip_id'] ?? map['id'] ?? '';
-  }
-
   /// 解析布林值 (處理字串 "true"/"false")
   static bool _parseBool(dynamic value) {
     if (value == true) return true;
@@ -110,25 +104,18 @@ class Trip extends HiveObject {
     return false;
   }
 
-  /// 解析日期 (若為 null 預設為當下)
+  /// 解析日期
   static DateTime _parseDate(dynamic value) {
-    if (value == null || value == '') return DateTime.now();
+    if (value == null || value == '') throw ArgumentError('Date is required');
     if (value is DateTime) return value;
-    return DateTime.parse(value.toString());
+    return DateTime.parse(value.toString()).toLocal();
   }
 
   /// 解析可空日期
   static DateTime? _parseDateNullable(dynamic value) {
     if (value == null || value == '') return null;
     if (value is DateTime) return value;
-    return DateTime.tryParse(value.toString());
-  }
-
-  /// 解析日期 (若解析失敗則使用當下)
-  static DateTime _parseDateWithDefault(dynamic value) {
-    if (value == null || value == '') return DateTime.now();
-    if (value is DateTime) return value;
-    return DateTime.tryParse(value.toString()) ?? DateTime.now();
+    return DateTime.tryParse(value.toString())?.toLocal();
   }
 
   /// 從 JSON 建立 Trip 物件

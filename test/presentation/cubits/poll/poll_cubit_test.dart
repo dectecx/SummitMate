@@ -6,11 +6,12 @@ import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/data/models/poll.dart';
 import 'package:summitmate/data/repositories/interfaces/i_poll_repository.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
-import 'package:summitmate/infrastructure/services/poll_service.dart';
+import 'package:summitmate/domain/interfaces/i_poll_service.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/poll/poll_cubit.dart';
 import 'package:summitmate/presentation/cubits/poll/poll_state.dart';
 
-class MockPollService extends Mock implements PollService {}
+class MockPollService extends Mock implements IPollService {}
 
 class MockPollRepository extends Mock implements IPollRepository {}
 
@@ -18,12 +19,15 @@ class MockConnectivityService extends Mock implements IConnectivityService {}
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
+class MockAuthService extends Mock implements IAuthService {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockPollService mockPollService;
   late MockPollRepository mockRepo;
   late MockConnectivityService mockConnectivity;
+  late MockAuthService mockAuthService;
   late MockSharedPreferences mockPrefs;
   late PollCubit cubit;
 
@@ -33,8 +37,10 @@ void main() {
     mockPollService = MockPollService();
     mockRepo = MockPollRepository();
     mockConnectivity = MockConnectivityService();
+    mockAuthService = MockAuthService();
     mockPrefs = MockSharedPreferences();
 
+    when(() => mockAuthService.currentUserId).thenReturn('u1');
     when(() => mockPrefs.getString(PrefKeys.username)).thenReturn('u1');
     when(() => mockConnectivity.isOffline).thenReturn(false);
     when(() => mockRepo.getAllPolls()).thenReturn([]);
@@ -44,6 +50,7 @@ void main() {
       pollService: mockPollService,
       pollRepository: mockRepo,
       connectivity: mockConnectivity,
+      authService: mockAuthService,
       prefs: mockPrefs,
     );
   });

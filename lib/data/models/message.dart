@@ -10,10 +10,9 @@ String? _nullIfEmpty(String? value) => (value == null || value.isEmpty) ? null :
 @HiveType(typeId: 2)
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Message extends HiveObject {
-  /// 後端識別用 UUID (PK)
+  /// 後端識別用 ID (PK)
   @HiveField(0)
-  @JsonKey(readValue: _readUuid)
-  String uuid;
+  String id;
 
   /// 關聯的行程 ID (FK → Trip，null = 全域留言)
   @HiveField(1)
@@ -50,7 +49,7 @@ class Message extends HiveObject {
   String avatar;
 
   Message({
-    this.uuid = '',
+    required this.id,
     this.tripId,
     this.parentId,
     this.user = '',
@@ -62,11 +61,6 @@ class Message extends HiveObject {
 
   /// 是否為回覆留言
   bool get isReply => parentId != null;
-
-  /// 讀取 UUID，支援 'uuid' 或 'message_id'
-  static Object? _readUuid(Map map, String key) {
-    return map['uuid'] ?? map['message_id'] ?? '';
-  }
 
   /// 從 JSON 建立
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);

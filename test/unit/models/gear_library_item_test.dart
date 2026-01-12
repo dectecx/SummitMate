@@ -12,6 +12,8 @@ void main() {
         userId: 'guest',
         createdAt: DateTime.now(),
         createdBy: 'guest',
+        updatedAt: DateTime.now(),
+        updatedBy: 'guest',
       );
 
       expect(item.name, isEmpty);
@@ -19,39 +21,9 @@ void main() {
       expect(item.category, isEmpty);
       expect(item.notes, isNull);
       expect(item.notes, isNull);
-      expect(item.id, isNotEmpty); // ID 應自動生成
-      expect(item.userId, equals('guest')); // Default
-      expect(item.createdAt, isNotNull); // Default now()
-    });
-
-    test('should auto-generate id if not provided', () {
-      // NOTE: Constructor now requires ID, so manually providing one for test,
-      // essentially testing that provided ID is used (logic shifted to factory or caller)
-      // If logic was "auto-gen if null", we changed it to "required".
-      // So this test 'should auto-generate id' might be obsolete or needs to test a Factory?
-      // Assuming we just updated the model to require ID.
-      final item1 = GearLibraryItem(
-        id: 'id-1',
-        name: '睡袋',
-        weight: 1200,
-        category: 'Sleep',
-        userId: 'guest',
-        createdAt: DateTime.now(),
-        createdBy: 'guest',
-      );
-      final item2 = GearLibraryItem(
-        id: 'id-2',
-        name: '帳篷',
-        weight: 2000,
-        category: 'Sleep',
-        userId: 'guest',
-        createdAt: DateTime.now(),
-        createdBy: 'guest',
-      );
-
-      expect(item1.id, isNotEmpty);
-      expect(item2.id, isNotEmpty);
-      expect(item1.id, isNot(equals(item2.id)));
+      expect(item.id, isNotEmpty);
+      expect(item.userId, equals('guest'));
+      expect(item.createdAt, isNotNull);
     });
 
     test('should use provided id', () {
@@ -64,6 +36,8 @@ void main() {
         userId: 'guest',
         createdAt: DateTime.now(),
         createdBy: 'guest',
+        updatedAt: DateTime.now(),
+        updatedBy: 'guest',
       );
 
       expect(item.id, equals(customId));
@@ -73,14 +47,15 @@ void main() {
       final now = DateTime.now();
       final item = GearLibraryItem(
         id: 'test-id-all',
+        userId: 'guest',
         name: '羽絨睡袋',
         weight: 1200,
         category: 'Sleep',
         notes: 'Thermarest Pro',
         createdAt: now,
-        updatedAt: now,
-        userId: 'guest',
         createdBy: 'guest',
+        updatedAt: now,
+        updatedBy: 'guest',
       );
 
       expect(item.name, equals('羽絨睡袋'));
@@ -100,6 +75,8 @@ void main() {
         userId: 'guest',
         createdAt: DateTime.now(),
         createdBy: 'guest',
+        updatedAt: DateTime.now(),
+        updatedBy: 'guest',
       );
 
       expect(item.weightInKg, equals(1.5));
@@ -114,6 +91,8 @@ void main() {
         userId: 'guest',
         createdAt: DateTime.now(),
         createdBy: 'guest',
+        updatedAt: DateTime.now(),
+        updatedBy: 'guest',
       );
 
       expect(item.weight, equals(0));
@@ -132,6 +111,8 @@ void main() {
           userId: 'guest',
           createdAt: DateTime.now(),
           createdBy: 'guest',
+          updatedAt: DateTime.now(),
+          updatedBy: 'guest',
         );
         expect(validCategories.contains(item.category), isTrue);
       }
@@ -147,6 +128,8 @@ void main() {
         notes: '品牌備註',
         createdAt: DateTime.now(),
         createdBy: 'user1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'user1',
       );
 
       final json = item.toJson();
@@ -158,7 +141,7 @@ void main() {
       expect(json['category'], equals('Sleep'));
       expect(json['notes'], equals('品牌備註'));
       expect(json['created_at'], isNotNull);
-      expect(json['updated_at'], isNull); // updatedAt 未設定時為 null
+      expect(json['updated_at'], isNotNull);
     });
 
     test('should create from JSON correctly', () {
@@ -170,7 +153,9 @@ void main() {
         'category': 'Sleep',
         'notes': 'MSR Hubba',
         'created_at': '2024-01-01T00:00:00.000Z',
+        'created_by': 'user2',
         'updated_at': '2024-01-02T00:00:00.000Z',
+        'updated_by': 'user2',
       };
 
       final item = GearLibraryItem.fromJson(json);
@@ -184,7 +169,17 @@ void main() {
     });
 
     test('should handle JSON with missing optional fields', () {
-      final json = {'name': '爐頭', 'weight': 300, 'category': 'Cook'};
+      final json = {
+        'id': 'opt-1',
+        'user_id': 'guest',
+        'name': '爐頭',
+        'weight': 300.0,
+        'category': 'Cook',
+        'created_at': '2024-01-01T00:00:00.000Z',
+        'created_by': 'guest',
+        'updated_at': '2024-01-02T00:00:00.000Z',
+        'updated_by': 'guest',
+      };
 
       final item = GearLibraryItem.fromJson(json);
 
@@ -192,8 +187,8 @@ void main() {
       expect(item.weight, equals(300));
       expect(item.category, equals('Cook'));
       expect(item.notes, isNull);
-      expect(item.id, isNotEmpty); // 應自動生成
-      expect(item.userId, equals('guest')); // Default
+      expect(item.id, equals('opt-1'));
+      expect(item.userId, equals('guest'));
     });
 
     test('should round-trip JSON conversion', () {
@@ -206,6 +201,8 @@ void main() {
         userId: 'guest',
         createdAt: DateTime.now(),
         createdBy: 'guest',
+        updatedAt: DateTime.now(),
+        updatedBy: 'guest',
       );
 
       final json = original.toJson();
@@ -228,6 +225,8 @@ void main() {
           userId: 'guest',
           createdAt: DateTime.now(),
           createdBy: 'guest',
+          updatedAt: DateTime.now(),
+          updatedBy: 'guest',
         ),
         GearLibraryItem(
           id: 't2',
@@ -237,6 +236,8 @@ void main() {
           userId: 'guest',
           createdAt: DateTime.now(),
           createdBy: 'guest',
+          updatedAt: DateTime.now(),
+          updatedBy: 'guest',
         ),
         GearLibraryItem(
           id: 't3',
@@ -246,6 +247,8 @@ void main() {
           userId: 'guest',
           createdAt: DateTime.now(),
           createdBy: 'guest',
+          updatedAt: DateTime.now(),
+          updatedBy: 'guest',
         ),
       ];
 

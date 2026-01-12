@@ -10,12 +10,12 @@ part 'gear_library_item.g.dart';
 class GearLibraryItem extends HiveObject {
   /// 唯一識別碼 (PK)
   @HiveField(0)
-  @JsonKey(name: 'id')
+  @JsonKey(name: 'id', required: true, disallowNullValue: true)
   String id;
 
   /// 所屬使用者 ID (Ownership)
   @HiveField(9)
-  @JsonKey(name: 'user_id')
+  @JsonKey(name: 'user_id', required: true, disallowNullValue: true)
   String userId;
 
   /// 裝備名稱
@@ -49,22 +49,22 @@ class GearLibraryItem extends HiveObject {
 
   /// 建立時間
   @HiveField(5)
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'created_at', fromJson: _parseDateTime, required: true, disallowNullValue: true)
   DateTime createdAt;
 
   /// 建立者
   @HiveField(8)
-  @JsonKey(name: 'created_by')
+  @JsonKey(name: 'created_by', required: true, disallowNullValue: true)
   String createdBy;
 
   /// 更新時間
   @HiveField(6)
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: 'updated_at', required: true, disallowNullValue: true)
   DateTime updatedAt;
 
   /// 更新者
-  @HiveField(11) // New field index
-  @JsonKey(name: 'updated_by')
+  @HiveField(11)
+  @JsonKey(name: 'updated_by', required: true, disallowNullValue: true)
   String updatedBy;
 
   GearLibraryItem({
@@ -78,10 +78,14 @@ class GearLibraryItem extends HiveObject {
     this.syncStatus = SyncStatus.pendingCreate,
     required this.createdAt,
     required this.createdBy,
-    DateTime? updatedAt,
-    String? updatedBy,
-  }) : updatedAt = updatedAt ?? createdAt,
-       updatedBy = updatedBy ?? createdBy;
+    required this.updatedAt,
+    required this.updatedBy,
+  });
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) throw ArgumentError('DateTime value cannot be null');
+    return DateTime.parse(value.toString()).toLocal();
+  }
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;

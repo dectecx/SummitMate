@@ -10,7 +10,7 @@ class MockMessageRepository implements IMessageRepository {
   /// 模擬留言資料
   final List<Message> _mockMessages = [
     Message(
-      uuid: 'mock-msg-001',
+      id: 'mock-msg-001',
       tripId: MockItineraryRepository.mockTripId,
       parentId: null,
       user: 'Admin',
@@ -20,7 +20,7 @@ class MockMessageRepository implements IMessageRepository {
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
     ),
     Message(
-      uuid: 'mock-msg-002',
+      id: 'mock-msg-002',
       tripId: MockItineraryRepository.mockTripId,
       parentId: null,
       user: '小明',
@@ -30,7 +30,7 @@ class MockMessageRepository implements IMessageRepository {
       timestamp: DateTime.now().subtract(const Duration(hours: 1)),
     ),
     Message(
-      uuid: 'mock-msg-003',
+      id: 'mock-msg-003',
       tripId: MockItineraryRepository.mockTripId,
       parentId: 'mock-msg-002',
       user: '小華',
@@ -56,23 +56,22 @@ class MockMessageRepository implements IMessageRepository {
       _mockMessages.where((msg) => msg.parentId == null && (category == null || msg.category == category)).toList();
 
   @override
-  List<Message> getReplies(String parentUuid) => _mockMessages.where((msg) => msg.parentId == parentUuid).toList();
+  List<Message> getReplies(String parentId) => _mockMessages.where((msg) => msg.parentId == parentId).toList();
 
   @override
-  Message? getByUuid(String uuid) =>
-      _mockMessages.cast<Message?>().firstWhere((msg) => msg?.uuid == uuid, orElse: () => null);
+  Message? getById(String id) => _mockMessages.cast<Message?>().firstWhere((msg) => msg?.id == id, orElse: () => null);
 
   @override
   Future<void> addMessage(Message message) async {}
 
   @override
-  Future<void> deleteByUuid(String uuid) async {}
+  Future<void> deleteById(String id) async {}
 
   @override
   Future<void> syncFromCloud(List<Message> cloudMessages) async {}
 
   @override
-  List<Message> getPendingMessages(Set<String> cloudUuids) => [];
+  List<Message> getPendingMessages(Set<String> cloudIds) => [];
 
   @override
   Stream<BoxEvent> watchAllMessages() => const Stream.empty();

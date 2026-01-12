@@ -75,13 +75,13 @@ class GearCloudService implements IGearCloudService {
 
   /// 下載指定裝備組合
   @override
-  Future<GearCloudResult<GearSet>> downloadGearSet(String uuid, {String? key}) async {
+  Future<GearCloudResult<GearSet>> downloadGearSet(String id, {String? key}) async {
     try {
-      LogService.info('下載裝備組合: $uuid', source: _source);
+      LogService.info('下載裝備組合: $id', source: _source);
 
       final response = await _apiClient.post({
         'action': ApiConfig.actionGearSetDownload,
-        'uuid': uuid,
+        'id': id,
         if (key != null) 'key': key,
       });
 
@@ -152,7 +152,7 @@ class GearCloudService implements IGearCloudService {
       }
 
       final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
-      LogService.info('上傳成功: ${gearSet.uuid}', source: _source);
+      LogService.info('上傳成功: ${gearSet.id}', source: _source);
       return GearCloudResult.success(gearSet);
     } catch (e) {
       LogService.error('上傳失敗: $e', source: _source);
@@ -162,11 +162,11 @@ class GearCloudService implements IGearCloudService {
 
   /// 刪除裝備組合 (需要 Key 驗證)
   @override
-  Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key) async {
+  Future<GearCloudResult<bool>> deleteGearSet(String id, String key) async {
     try {
-      LogService.info('刪除裝備組合: $uuid', source: _source);
+      LogService.info('刪除裝備組合: $id', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionGearSetDelete, 'uuid': uuid, 'key': key});
+      final response = await _apiClient.post({'action': ApiConfig.actionGearSetDelete, 'id': id, 'key': key});
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {

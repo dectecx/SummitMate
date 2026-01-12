@@ -95,7 +95,7 @@ class MessageCubit extends Cubit<MessageState> {
       // 理想情況：建立物件 -> 儲存本地 Repo -> 觸發同步
 
       final message = Message(
-        uuid: _uuid.v4(),
+        id: _uuid.v4(),
         parentId: parentId,
         user: user,
         category: currentState.selectedCategory,

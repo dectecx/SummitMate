@@ -14,7 +14,7 @@ class MockItineraryRepository implements IItineraryRepository {
   /// 模擬行程資料
   final List<ItineraryItem> _mockItems = [
     ItineraryItem(
-      uuid: 'mock-itinerary-001',
+      id: 'mock-itinerary-001',
       tripId: mockTripId,
       day: 'D1',
       name: '向陽遊樂區起登',
@@ -24,7 +24,7 @@ class MockItineraryRepository implements IItineraryRepository {
       note: '檢查哨整裝出發',
     ),
     ItineraryItem(
-      uuid: 'mock-itinerary-002',
+      id: 'mock-itinerary-002',
       tripId: mockTripId,
       day: 'D1',
       name: '向陽山屋',
@@ -34,7 +34,7 @@ class MockItineraryRepository implements IItineraryRepository {
       note: '',
     ),
     ItineraryItem(
-      uuid: 'mock-itinerary-003',
+      id: 'mock-itinerary-003',
       tripId: mockTripId,
       day: 'D1',
       name: '向陽山',
@@ -44,7 +44,7 @@ class MockItineraryRepository implements IItineraryRepository {
       note: '百岳 No.15',
     ),
     ItineraryItem(
-      uuid: 'mock-itinerary-004',
+      id: 'mock-itinerary-004',
       tripId: mockTripId,
       day: 'D1',
       name: '嘉明湖避難山屋',
@@ -54,7 +54,7 @@ class MockItineraryRepository implements IItineraryRepository {
       note: '抵達山屋休息',
     ),
     ItineraryItem(
-      uuid: 'mock-itinerary-005',
+      id: 'mock-itinerary-005',
       tripId: mockTripId,
       day: 'D2',
       name: '嘉明湖',
@@ -76,7 +76,7 @@ class MockItineraryRepository implements IItineraryRepository {
 
   @override
   ItineraryItem? getItemByKey(dynamic key) =>
-      _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.uuid == key, orElse: () => null);
+      _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.id == key, orElse: () => null);
 
   @override
   Future<void> checkIn(dynamic key, DateTime time) async {}

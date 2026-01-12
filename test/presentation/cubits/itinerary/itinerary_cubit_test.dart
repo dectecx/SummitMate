@@ -15,14 +15,22 @@ class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockAuthService extends Mock implements IAuthService {}
 
+class FakeTrip extends Fake implements Trip {}
+
+class FakeItineraryItem extends Fake implements ItineraryItem {}
+
 void main() {
   late IItineraryRepository mockItineraryRepository;
   late ITripRepository mockTripRepository;
   late MockAuthService mockAuthService;
   late ItineraryCubit cubit;
-
   late Trip testTrip;
   late ItineraryItem testItem;
+
+  setUpAll(() {
+    registerFallbackValue(FakeTrip());
+    registerFallbackValue(FakeItineraryItem());
+  });
 
   setUp(() {
     testTrip = Trip(
@@ -30,14 +38,16 @@ void main() {
       userId: 'user_1',
       name: 'Test Trip',
       startDate: DateTime.now(),
+      endDate: DateTime.now().add(const Duration(days: 3)),
+      dayNames: ['D1'], // Initialize with single day
       isActive: true,
       createdAt: DateTime.now(),
       createdBy: 'user_1',
-      endDate: DateTime.now().add(const Duration(days: 3)),
-      dayNames: ['D1'], // Initialize with single day
+      updatedAt: DateTime.now(),
+      updatedBy: 'user_1',
     );
 
-    testItem = ItineraryItem(uuid: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Start Point', estTime: '08:00');
+    testItem = ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Start Point', estTime: '08:00');
 
     mockItineraryRepository = MockItineraryRepository();
     mockTripRepository = MockTripRepository();
@@ -171,6 +181,8 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           createdBy: 'user_1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'user_1',
           endDate: DateTime.now().add(const Duration(days: 3)),
           dayNames: ['D1'],
         );
@@ -198,8 +210,9 @@ void main() {
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1'], selectedDay: 'D1'),
         act: (cubit) => cubit.addDay('D2'),
         verify: (_) {
-          verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
+          final res = verify(() => mockTripRepository.updateTrip(captureAny()));
+          res.called(1);
+          final capturedTrip = res.captured.first as Trip;
           expect(capturedTrip.dayNames, ['D1', 'D2']);
         },
       );
@@ -210,8 +223,9 @@ void main() {
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1'], selectedDay: 'D1'),
         act: (cubit) => cubit.renameDay('D1', 'Day 1'),
         verify: (_) {
-          verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
+          final res = verify(() => mockTripRepository.updateTrip(captureAny()));
+          res.called(1);
+          final capturedTrip = res.captured.first as Trip;
           expect(capturedTrip.dayNames, ['Day 1']);
         },
       );
@@ -225,8 +239,9 @@ void main() {
         },
         act: (cubit) => cubit.removeDay('D2'),
         verify: (_) {
-          verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
+          final res = verify(() => mockTripRepository.updateTrip(captureAny()));
+          res.called(1);
+          final capturedTrip = res.captured.first as Trip;
           expect(capturedTrip.dayNames, ['D1']);
         },
       );
@@ -240,8 +255,9 @@ void main() {
         },
         act: (cubit) => cubit.reorderDays(['D2', 'D1']),
         verify: (_) {
-          verify(() => mockTripRepository.updateTrip(any())).called(1);
-          final capturedTrip = verify(() => mockTripRepository.updateTrip(captureAny())).captured.first as Trip;
+          final res = verify(() => mockTripRepository.updateTrip(captureAny()));
+          res.called(1);
+          final capturedTrip = res.captured.first as Trip;
           expect(capturedTrip.dayNames, ['D2', 'D1']);
         },
       );

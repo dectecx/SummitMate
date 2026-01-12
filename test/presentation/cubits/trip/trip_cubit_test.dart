@@ -39,6 +39,8 @@ void main() {
         startDate: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: 'u1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'u1',
       ),
     );
   });
@@ -51,6 +53,8 @@ void main() {
       startDate: DateTime(2023, 1, 1),
       createdAt: DateTime(2023, 1, 1),
       createdBy: 'user-1',
+      updatedAt: DateTime(2023, 1, 1),
+      updatedBy: 'user-1',
       isActive: true,
     );
     final trip2 = Trip(
@@ -60,6 +64,8 @@ void main() {
       startDate: DateTime(2023, 2, 1),
       createdAt: DateTime(2023, 2, 1),
       createdBy: 'user-1',
+      updatedAt: DateTime(2023, 2, 1),
+      updatedBy: 'user-1',
       isActive: false,
     );
 

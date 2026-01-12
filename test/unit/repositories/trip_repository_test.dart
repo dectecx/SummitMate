@@ -32,6 +32,8 @@ void main() {
       startDate: DateTime.now(),
       createdAt: DateTime.now(),
       createdBy: 'user_1',
+      updatedAt: DateTime.now(),
+      updatedBy: 'user_1',
     );
 
     // Register fallback values for mocktail if needed
@@ -93,6 +95,8 @@ void main() {
           startDate: DateTime.now(),
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         ),
       );
       when(() => mockLocalDataSource.getAllTrips()).thenReturn(manyTrips);

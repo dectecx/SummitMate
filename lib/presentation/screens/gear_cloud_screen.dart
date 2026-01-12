@@ -206,9 +206,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   Future<void> _downloadGearSet(GearSet gearSet, {String? key}) async {
     // 防止連續點擊
     if (_busyGearSetId != null) return;
-    setState(() => _busyGearSetId = gearSet.uuid);
+    setState(() => _busyGearSetId = gearSet.id);
 
-    final result = await _repository.downloadGearSet(gearSet.uuid, key: key);
+    final result = await _repository.downloadGearSet(gearSet.id, key: key);
 
     if (!mounted) return;
     setState(() => _busyGearSetId = null);
@@ -382,7 +382,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           }
 
           final gearSet = _filteredGearSets[index - 2];
-          final isBusy = _busyGearSetId == gearSet.uuid;
+          final isBusy = _busyGearSetId == gearSet.id;
           return _GearSetCard(
             gearSet: gearSet,
             isLoading: isBusy,
@@ -567,7 +567,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     }
 
     final gearSet = fetchResult.data!;
-    final deleteResult = await _repository.deleteGearSet(gearSet.uuid, record.key);
+    final deleteResult = await _repository.deleteGearSet(gearSet.id, record.key);
 
     if (deleteResult.isSuccess) {
       // 從本地儲存中也刪除記錄
@@ -610,7 +610,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     if (confirmed == true) {
       // public 組合不需要 key
-      final deleteResult = await _repository.deleteGearSet(gearSet.uuid, '');
+      final deleteResult = await _repository.deleteGearSet(gearSet.id, '');
       if (deleteResult.isSuccess) {
         ToastService.success('已刪除裝備組合');
         _fetchGearSets(); // 刷新列表
