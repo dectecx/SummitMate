@@ -1,5 +1,16 @@
 /**
  * ============================================================
+ * Role & Permission API
+ * ============================================================
+ * @fileoverview 處理角色與權限相關邏輯
+ *
+ * API Actions:
+ *   - auth_get_roles: 取得可用角色列表
+ *   - auth_assign_role: 指派角色給使用者 (Admin Only)
+ */
+
+/**
+ * ============================================================
  * Authentication API
  * ============================================================
  * @fileoverview 處理會員註冊、登入、刪除等操作
@@ -15,6 +26,26 @@
  *   - Token 為簡易 UUID (未來可改用 JWT)
  *   - 【未來規劃】加入 Email 驗證碼機制
  */
+
+// ============================================================
+// 會員系統 (Users)
+// role_id: 關聯 Roles 表的 UUID
+// ============================================================
+const HEADERS_USERS = [
+  "id", // PK
+  "email", // Unique, 作為登入帳號
+  "password_hash", // 密碼雜湊 (SHA-256)
+  "display_name", // 顯示名稱
+  "avatar", // 頭像 Emoji
+  "role_id", // FK: Roles.id
+  "is_active", // 帳號是否啟用
+  "is_verified", // Email 是否已驗證
+  "verification_code", // Email 驗證碼
+  "verification_expiry", // 驗證碼過期時間
+  "created_at", // 建立時間
+  "updated_at", // 更新時間
+  "last_login_at", // 最後登入時間
+];
 
 // ============================================================
 // === PUBLIC API (doPost Handlers) ===
@@ -113,7 +144,11 @@ function registerUser(payload) {
   const userId = Utilities.getUuid();
   const passwordHash = _hashPassword(password);
   const userAvatar = avatar || DEFAULT_AVATAR;
-  const defaultRole = "member"; // 預設角色
+
+  // [Role] 查找 Member Role ID
+  const memberRole = _getRoleByCode("MEMBER");
+  const defaultRoleId = memberRole ? memberRole.id : "";
+  const defaultRoleCode = memberRole ? memberRole.code : "member"; // Fallback
 
   // 生成驗證資料
   const verificationCode = _generateVerificationCode();
@@ -127,7 +162,7 @@ function registerUser(payload) {
     passwordHash,
     displayName.trim(),
     userAvatar,
-    defaultRole,
+    defaultRoleId,
     true, // is_active
     false, // is_verified (預設未驗證)
     verificationCode,
@@ -148,7 +183,8 @@ function registerUser(payload) {
     email: email.toLowerCase().trim(),
     display_name: displayName.trim(),
     avatar: userAvatar,
-    role: defaultRole,
+    role_id: defaultRoleId,
+    role_code: defaultRoleCode,
     is_verified: false,
   };
 
@@ -156,7 +192,11 @@ function registerUser(payload) {
     API_CODES.SUCCESS,
     {
       user: userData,
-      accessToken: userId, // 簡易 Token (使用 userId 作為 Token)
+      accessToken: userId, // 簡易 Token
+      role: memberRole
+        ? { id: memberRole.id, code: memberRole.code, name: memberRole.name }
+        : null,
+      permissions: _getRolePermissions(defaultRoleId),
     },
     "註冊成功"
   );
@@ -225,12 +265,19 @@ function loginUser(payload) {
   }
 
   // 回傳使用者資料
+  const roleId = user.role_id;
+
+  // [Role] 解析 Role & Permissions
+  const roleObj = _getRoleById(roleId);
+  const permissions = _getRolePermissions(roleId);
+
   const userData = {
     id: user.id,
     email: user.email,
     display_name: user.display_name,
     avatar: user.avatar,
-    role: user.role,
+    role_id: roleId,
+    role_code: roleObj ? roleObj.code : user.role || "MEMBER", // Fallback
     is_verified: user.is_verified,
   };
 
@@ -244,6 +291,10 @@ function loginUser(payload) {
       user: userData,
       accessToken: accessToken,
       refreshToken: refreshToken,
+      role: roleObj
+        ? { id: roleObj.id, code: roleObj.code, name: roleObj.name }
+        : null,
+      permissions: permissions,
     },
     "登入成功"
   );
@@ -314,11 +365,26 @@ function validateSession(payload) {
     email: user.email,
     display_name: user.display_name,
     avatar: user.avatar,
-    role: user.role,
+    role_id: user.role_id,
     is_verified: user.is_verified,
   };
 
-  return buildResponse(API_CODES.SUCCESS, { user: userData }, "驗證成功");
+  // [Role]
+  const roleId = user.role_id;
+  const roleObj = _getRoleById(roleId);
+  const permissions = _getRolePermissions(roleId);
+
+  return buildResponse(
+    API_CODES.SUCCESS,
+    {
+      user: userData,
+      role: roleObj
+        ? { id: roleObj.id, code: roleObj.code, name: roleObj.name }
+        : null,
+      permissions: permissions,
+    },
+    "驗證成功"
+  );
 }
 
 /**

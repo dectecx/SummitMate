@@ -8,12 +8,65 @@
 
 SummitMate 採用可抽換的身份驗證架構，支援未來遷移至不同認證後端：
 
-- 當前：Google Apps Script 自製 JWT
+- 當前：Google Apps Script 自製 JWT + 角色權限系統 (Role & Permission System)
 - 未來：Firebase Auth / AWS Cognito / Azure AD / OAuth SSO
 
 ---
 
-## 架構圖
+## 2. 角色權限系統 (Role & Permission System)
+
+### 核心概念：`roleId` vs `roleCode`
+
+- **`roleId` (UUID)**: 資料庫層級的關聯鍵。
+  - 用途：ForeignKey 關聯，確保資料一致性與可遷移性。
+  - 例：`d290f1ee-6c54-4b01-90e6-d701748f0851`
+- **`roleCode` (Constant)**: 應用層級的邏輯判斷。
+  - 用途：程式碼中的判斷邏輯，具備可讀性。
+  - 例：`ADMIN`, `LEADER`, `GUIDE`, `MEMBER`
+
+### 資料庫實體關係圖 (ERD)
+
+```mermaid
+erDiagram
+    Users }|--|| Roles : "assigned to"
+    Roles ||--|{ RolePermissions : "has"
+    Permissions ||--|{ RolePermissions : "belongs to"
+
+    Users {
+        string id PK "UUID"
+        string role_id FK "UUID"
+        string email
+    }
+
+    Roles {
+        string id PK "UUID"
+        string code UK "ADMIN/LEADER"
+        string name "UI Display Name"
+    }
+
+    Permissions {
+        string id PK "UUID"
+        string code UK "trip.edit"
+        string category
+    }
+
+    RolePermissions {
+        string role_id FK
+        string permission_id FK
+    }
+```
+
+### 資料扁平化策略 (Flattening Strategy)
+
+為了提升 Mobile App 效能並支援離線模式，我們採用 **後端解析、前端快取** 的策略：
+
+1. **GAS 端**：在 `login` 或 `validate` 時，進行複雜的 Join 查詢，解析出該使用者擁有的所有權限代碼 (Permission Codes)。
+2. **App 端**：接收扁平化的 `permissions` 字串陣列 (如 `['trip.view', 'gear.edit']`)，並存入 Hive。
+3. **優點**：App 端無需維護複雜的關聯表，且離線時仍可進行權限檢查。
+
+---
+
+## 3. 架構圖
 
 ### 整體架構
 

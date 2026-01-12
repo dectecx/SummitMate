@@ -167,6 +167,10 @@ function doPost(e) {
         return _createJsonResponse(refreshSession(data));
       case API_ACTIONS.AUTH_UPDATE_PROFILE:
         return _createJsonResponse(updateProfile(data));
+      case API_ACTIONS.AUTH_GET_ROLES:
+        return _createJsonResponse(getAvailableRoles());
+      case API_ACTIONS.AUTH_ASSIGN_ROLE:
+        return _createJsonResponse(assignUserRole(data));
 
       default:
         return _createJsonResponse(

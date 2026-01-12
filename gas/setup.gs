@@ -84,7 +84,20 @@ function setupSheets() {
   _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
   Logger.log("✓ Users 工作表已建立");
 
-  // 10. 套用文字欄位格式到所有工作表 (確保已存在的工作表也有正確格式)
+  // 9. 建立 Users 工作表 (會員系統)
+  _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
+  Logger.log("✓ Users 工作表已建立");
+
+  // 10. 建立角色權限相關工作表
+  _setupSheet(ss, SHEET_ROLES, HEADERS_ROLES);
+  _setupSheet(ss, SHEET_PERMISSIONS, HEADERS_PERMISSIONS);
+  _setupSheet(ss, SHEET_ROLE_PERMISSIONS, HEADERS_ROLE_PERMISSIONS);
+  
+  // 檢查是否需要植入預設角色資料
+  _seedDefaultRoles(ss);
+  Logger.log("✓ 角色權限工作表與預設資料已建立");
+
+  // 11. 套用文字欄位格式到所有工作表 (確保已存在的工作表也有正確格式)
   applyTextFormatToAll();
 
   Logger.log("========================================");
@@ -256,6 +269,91 @@ function _getSampleItinerary() {
     ["'D2", "回到向陽山屋", "'14:50", 2850, 4.3, "最後休息點", ""],
     ["'D2", "回到向陽遊樂區", "'16:30", 2312, 0, "平安完登 (Finish)", ""],
   ];
+  ];
+}
+
+/**
+ * 植入預設資料 (Roles, Permissions)
+ * @private
+ */
+function _seedDefaultRoles(ss) {
+  const roleSheet = ss.getSheetByName(SHEET_ROLES);
+  
+  // 檢查是否已有資料
+  if (!roleSheet || roleSheet.getLastRow() > 1) return;
+  
+  Logger.log("正在植入預設資料...");
+  
+  // 1. 建立預設角色
+  const roles = [
+    { code: "ADMIN", name: "管理員", desc: "系統維護者，擁有所有權限" },
+    { code: "LEADER", name: "團長", desc: "行程擁有者，可管理行程與成員" },
+    { code: "GUIDE", name: "嚮導/協作", desc: "協助管理行程，不可刪除行程" },
+    { code: "MEMBER", name: "一般成員", desc: "僅可檢視與編輯個人資料" }
+  ];
+  
+  const roleMap = {}; // code -> uuid
+  
+  roles.forEach(r => {
+    const uuid = Utilities.getUuid();
+    roleMap[r.code] = uuid;
+    roleSheet.appendRow([uuid, r.code, r.name, r.desc]);
+  });
+  
+  // 2. 建立預設權限
+  const permissions = [
+    // Trip
+    { code: "trip.view", cat: "Trip", desc: "檢視行程" },
+    { code: "trip.create", cat: "Trip", desc: "建立行程" },
+    { code: "trip.edit", cat: "Trip", desc: "編輯行程內容" },
+    { code: "trip.delete", cat: "Trip", desc: "刪除行程" },
+    { code: "trip.transfer", cat: "Trip", desc: "移交行程擁有權" },
+    
+    // Gear
+    { code: "gear.view", cat: "Gear", desc: "檢視裝備" },
+    { code: "gear.edit", cat: "Gear", desc: "編輯公裝" },
+    
+    // Member
+    { code: "member.manage", cat: "Member", desc: "管理成員 (新增/移除/變更角色)" },
+    
+    // System
+    { code: "system.admin", cat: "System", desc: "系統管理權限" }
+  ];
+  
+  const permSheet = ss.getSheetByName(SHEET_PERMISSIONS);
+  const permMap = {}; // code -> uuid
+  
+  permissions.forEach(p => {
+    const uuid = Utilities.getUuid();
+    permMap[p.code] = uuid;
+    permSheet.appendRow([uuid, p.code, p.cat, p.desc]);
+  });
+  
+  // 3. 設定角色權限關聯
+  const rpSheet = ss.getSheetByName(SHEET_ROLE_PERMISSIONS);
+  const assignments = [
+    // ADMIN
+    { role: "ADMIN", perms: ["system.admin", "trip.view", "trip.create", "trip.edit", "trip.delete", "trip.transfer", "gear.view", "gear.edit", "member.manage"] },
+    
+    // LEADER
+    { role: "LEADER", perms: ["trip.view", "trip.create", "trip.edit", "trip.delete", "trip.transfer", "gear.view", "gear.edit", "member.manage"] },
+    
+    // GUIDE
+    { role: "GUIDE", perms: ["trip.view", "trip.edit", "gear.view", "gear.edit"] }, // No delete, no transfer, no member manage
+    
+    // MEMBER
+    { role: "MEMBER", perms: ["trip.view", "gear.view"] }
+  ];
+  
+  assignments.forEach(assign => {
+    const roleId = roleMap[assign.role];
+    assign.perms.forEach(pCode => {
+      const permId = permMap[pCode];
+      if (roleId && permId) {
+        rpSheet.appendRow([Utilities.getUuid(), roleId, permId]);
+      }
+    });
+  });
 }
 
 // ============================================================

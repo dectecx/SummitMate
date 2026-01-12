@@ -112,14 +112,25 @@ class GasAuthService implements IAuthService {
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
-        final userData = apiResponse.data['user'] as Map<String, dynamic>?;
+        final data = apiResponse.data;
+        Map<String, dynamic>? userData = data['user'] as Map<String, dynamic>?;
         if (userData == null) {
           LogService.error('登入成功但缺少使用者資料', source: _source);
           return AuthResult.failure(errorCode: 'DATA_ERROR', errorMessage: '伺服器回傳資料異常');
         }
+
+        // [Role] Inject permissions from root response into user map
+        if (data['permissions'] != null) {
+          userData['permissions'] = data['permissions'];
+        }
+        // Also ensure role info is present if passed separately (though api_auth.gs puts it in user too)
+        if (data['role'] != null) {
+          // Optional: store full role object if needed, but UserProfile uses code/id
+        }
+
         final user = UserProfile.fromJson(userData);
-        final accessToken = apiResponse.data['accessToken'] as String;
-        final refreshToken = apiResponse.data['refreshToken'] as String?;
+        final accessToken = data['accessToken'] as String;
+        final refreshToken = data['refreshToken'] as String?;
 
         await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
         _currentUserId = user.id;

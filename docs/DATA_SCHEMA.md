@@ -18,6 +18,21 @@ Hive 的 TypeId 必須全域唯一。
 | avatar        | `String`    | 2   | `'🐻'`  | 使用者頭像 (Emoji)        |
 | isOfflineMode | `bool`      | 3   | `false` | 離線模式開關              |
 
+### Type: `UserProfile` (TypeId: 10)
+
+存放於 Secure Storage 或 Hive 加密 Box，包含權限快取。
+
+| Field       | Type           | Key | Default    | Description                                        |
+| :---------- | :------------- | :-- | :--------- | :------------------------------------------------- |
+| id          | `String`       | 0   | -          | 使用者 UUID                                        |
+| email       | `String`       | 1   | -          | Email                                              |
+| displayName | `String`       | 2   | -          | 顯示名稱                                           |
+| avatar      | `String`       | 3   | `'🐻'`     | 頭像                                               |
+| roleId      | `String`       | 4   | -          | 角色 UUID (v.2.0 新增)                             |
+| roleCode    | `String`       | 5   | `'MEMBER'` | 角色代碼 (e.g. 'ADMIN', 'LEADER', 'GUIDE')         |
+| permissions | `List<String>` | 6   | `[]`       | 權限列表 (e.g. `['trip.view', 'gear.edit']`) (v2.0) |
+| isVerified  | `bool`         | 7   | `false`    | 是否已驗證                                         |
+
 ### Box: `itinerary` (TypeId: 1)
 
 行程節點，支援雲端下載與本地修改。
@@ -187,7 +202,7 @@ Hive 的 TypeId 必須全域唯一。
 | C            | password_hash       | 密碼雜湊                   |
 | D            | display_name        | 顯示名稱                   |
 | E            | avatar              | 頭像 URL/Emoji             |
-| F            | role                | 角色 (member/leader/admin) |
+| F            | role_id             | **FK** 角色 ID (Roles.id)  |
 | G            | is_active           | 是否啟用 (TRUE/FALSE)      |
 | H            | is_verified         | 是否驗證 Email             |
 | I            | verification_code   | 驗證碼                     |
@@ -195,6 +210,32 @@ Hive 的 TypeId 必須全域唯一。
 | K            | created_at          | 建立時間 (ISO8601)         |
 | L            | updated_at          | 更新時間 (ISO8601)         |
 | M            | last_login_at       | 最後登入時間               |
+
+### Sheet: `Roles` (角色定義)
+
+| Column Index | Field       | Description                |
+| :----------- | :---------- | :------------------------- |
+| A            | id          | **PK** 角色 ID (UUID)      |
+| B            | code        | **UK** 代碼 (ADMIN/LEADER) |
+| C            | name        | 顯示名稱                   |
+| D            | description | 描述                       |
+
+### Sheet: `Permissions` (權限定義)
+
+| Column Index | Field       | Description                   |
+| :----------- | :---------- | :---------------------------- |
+| A            | id          | **PK** 權限 ID (UUID)         |
+| B            | code        | **UK** 代碼 (e.g. trip.edit)  |
+| C            | category    | 分類 (Trip, Gear, User)       |
+| D            | description | 描述                          |
+
+### Sheet: `RolePermissions` (角色權限關聯)
+
+| Column Index | Field         | Description                |
+| :----------- | :------------ | :------------------------- |
+| A            | id            | **PK** 關聯 ID             |
+| B            | role_id       | **FK** 角色 ID (Roles.id)  |
+| C            | permission_id | **FK** 權限 ID (Perms.id)  |
 
 ### Sheet: `Trips` (行程管理)
 
