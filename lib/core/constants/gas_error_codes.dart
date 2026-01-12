@@ -22,6 +22,7 @@ class GasErrorCodes {
   static const String tripCreateFailed = '0105';
   static const String tripUpdateFailed = '0106';
   static const String tripSyncFailed = '0107';
+  static const String tripUserNotFound = '0108';
 
   // ============================================================
   // Itinerary (02XX)

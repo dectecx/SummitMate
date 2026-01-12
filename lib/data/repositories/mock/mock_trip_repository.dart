@@ -1,3 +1,4 @@
+import '../../models/user_profile.dart';
 import '../../models/enums/sync_status.dart';
 import '../../models/trip.dart';
 import '../interfaces/i_trip_repository.dart';
@@ -76,4 +77,20 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<void> removeMember(String tripId, String userId) async {}
+
+  @override
+  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {}
+
+  @override
+  Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) async {}
+
+  @override
+  Future<UserProfile> searchUserByEmail(String email) async {
+    return UserProfile(id: 'mock-user-2', email: email, displayName: 'Mock User');
+  }
+
+  @override
+  Future<UserProfile> searchUserById(String userId) async {
+    return UserProfile(id: userId, email: 'mock@example.com', displayName: 'Mock User');
+  }
 }

@@ -15,6 +15,7 @@
 const SHEET_TRIPS = "Trips";
 const SHEET_ITINERARY = "Itinerary";
 const SHEET_MESSAGES = "Messages";
+const SHEET_GEAR_SETS = "GearSets";
 const SHEET_TRIP_GEAR = "TripGear";
 const SHEET_GEAR_LIBRARY = "GearLibrary";
 const SHEET_POLLS = "Polls";
@@ -212,6 +213,10 @@ const API_ACTIONS = {
   TRIP_GET_MEMBERS: "trip_get_members",
   TRIP_UPDATE_MEMBER_ROLE: "trip_update_member_role",
   TRIP_REMOVE_MEMBER: "trip_remove_member",
+  TRIP_ADD_MEMBER_BY_EMAIL: "trip_add_member_by_email",
+  TRIP_ADD_MEMBER_BY_ID: "trip_add_member_by_id",
+  TRIP_SEARCH_USER_BY_EMAIL: "trip_search_user_by_email",
+  TRIP_SEARCH_USER_BY_ID: "trip_search_user_by_id",
 
   // === 留言 (Messages) ===
   MESSAGE_LIST: "message_list",
@@ -298,6 +303,8 @@ const API_CODES = {
   TRIP_UPDATE_FAILED: "0106",
   /** 行程同步失敗 */
   TRIP_SYNC_FAILED: "0107",
+  /** 找不到使用者 (新增成員時) */
+  TRIP_USER_NOT_FOUND: "0108",
 
   // ========== 02XX - Itinerary API ==========
   /** Itinerary 工作表不存在 */

@@ -107,6 +107,14 @@ function doPost(e) {
         return _createJsonResponse(updateMemberRole(data));
       case API_ACTIONS.TRIP_REMOVE_MEMBER:
         return _createJsonResponse(removeMember(data));
+      case API_ACTIONS.TRIP_ADD_MEMBER_BY_EMAIL:
+        return _createJsonResponse(addMemberByEmail(data));
+      case API_ACTIONS.TRIP_ADD_MEMBER_BY_ID:
+        return _createJsonResponse(addMemberById(data));
+      case API_ACTIONS.TRIP_SEARCH_USER_BY_EMAIL:
+        return _createJsonResponse(searchUserByEmail(data));
+      case API_ACTIONS.TRIP_SEARCH_USER_BY_ID:
+        return _createJsonResponse(searchUserById(data));
 
       // === 留言 (Messages) ===
       case API_ACTIONS.MESSAGE_CREATE:
