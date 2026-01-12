@@ -15,14 +15,12 @@
 const SHEET_TRIPS = "Trips";
 const SHEET_ITINERARY = "Itinerary";
 const SHEET_MESSAGES = "Messages";
-
-// 輔助功能
-const SHEET_GEAR_SETS = "GearSets";
 const SHEET_TRIP_GEAR = "TripGear";
 const SHEET_GEAR_LIBRARY = "GearLibrary";
 const SHEET_POLLS = "Polls";
 const SHEET_POLL_OPTIONS = "PollOptions";
 const SHEET_POLL_VOTES = "PollVotes";
+const SHEET_TRIP_MEMBERS = "TripMembers";
 
 // 會員系統
 const SHEET_USERS = "Users";
@@ -104,6 +102,15 @@ const HEADERS_TRIP_GEAR = [
   "quantity",
 ];
 
+const HEADERS_TRIP_MEMBERS = [
+  "id", // PK
+  "trip_id", // FK
+  "user_id", // FK
+  "role_code", // e.g., 'leader', 'guide', 'member'
+  "created_at",
+  "updated_at",
+];
+
 // ============================================================
 // 個人裝備庫 (GearLibrary)
 // 【未來規劃】owner_key → user_id (會員機制上線後)
@@ -130,13 +137,13 @@ const HEADERS_USERS = [
   "display_name", // 顯示名稱
   "avatar", // 頭像 Emoji
   "role_id", // FK: Roles.id
-  "is_active", // 帳號狀態 (false = 假刪除)
-  "is_verified", // Email 驗證狀態
-  "verification_code",
-  "verification_expiry",
-  "created_at",
-  "updated_at",
-  "last_login_at",
+  "is_active", // 帳號是否啟用
+  "is_verified", // Email 是否已驗證
+  "verification_code", // Email 驗證碼
+  "verification_expiry", // 驗證碼過期時間
+  "created_at", // 建立時間
+  "updated_at", // 更新時間
+  "last_login_at", // 最後登入時間
 ];
 
 const HEADERS_ROLES = [
@@ -200,6 +207,11 @@ const API_ACTIONS = {
   TRIP_GET_FULL: "trip_get_full",
   ITINERARY_LIST: "itinerary_list",
   ITINERARY_UPDATE: "itinerary_update",
+
+  // === 行程成員 (Trip Members) ===
+  TRIP_GET_MEMBERS: "trip_get_members",
+  TRIP_UPDATE_MEMBER_ROLE: "trip_update_member_role",
+  TRIP_REMOVE_MEMBER: "trip_remove_member",
 
   // === 留言 (Messages) ===
   MESSAGE_LIST: "message_list",
@@ -430,6 +442,15 @@ const SHEET_SCHEMA = {
     category: { type: "text" },
     is_checked: { type: "boolean" },
     quantity: { type: "number" },
+  },
+
+  TripMembers: {
+    id: { type: "text" },
+    trip_id: { type: "text" },
+    user_id: { type: "text" },
+    role_code: { type: "text" },
+    created_at: { type: "date" },
+    updated_at: { type: "date" },
   },
 
   GearLibrary: {

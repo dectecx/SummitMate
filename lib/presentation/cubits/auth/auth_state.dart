@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import '../../../data/models/user_profile.dart';
+import '../../../core/constants/role_constants.dart';
 
 /// 認證狀態基類
 sealed class AuthState extends Equatable {
@@ -28,6 +30,12 @@ final class AuthAuthenticated extends AuthState {
   /// 頭像 URL
   final String? avatar;
 
+  /// 角色代碼
+  final String? roleCode;
+
+  /// 權限列表
+  final List<String> permissions;
+
   /// 是否為訪客
   final bool isGuest;
 
@@ -40,6 +48,8 @@ final class AuthAuthenticated extends AuthState {
   /// [userName] 使用者名稱
   /// [email] Email
   /// [avatar] 頭像 URL
+  /// [roleCode] 角色代碼
+  /// [permissions] 權限列表
   /// [isGuest] 是否為訪客
   /// [isOffline] 是否為離線模式
   const AuthAuthenticated({
@@ -47,12 +57,25 @@ final class AuthAuthenticated extends AuthState {
     this.userName,
     this.email,
     this.avatar,
+    this.roleCode,
+    this.permissions = const [],
     this.isGuest = false,
     this.isOffline = false,
   });
 
+  /// 重建 UserProfile 物件 (方便 UI/Service 調用)
+  UserProfile get user => UserProfile(
+    id: userId,
+    email: email ?? '',
+    displayName: userName ?? '',
+    avatar: avatar ?? '🐻',
+    roleCode: roleCode ?? RoleConstants.member,
+    permissions: permissions,
+    isVerified: true, // 假設已認證，若需準確需存更多欄位
+  );
+
   @override
-  List<Object?> get props => [userId, userName, email, avatar, isGuest, isOffline];
+  List<Object?> get props => [userId, userName, email, avatar, roleCode, permissions, isGuest, isOffline];
 }
 
 /// 未認證 (未登入)

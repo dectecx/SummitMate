@@ -2,7 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
-import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
+
 import 'package:summitmate/infrastructure/tools/usage_tracking_service.dart';
 
 import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
@@ -12,13 +12,10 @@ import 'package:summitmate/core/constants/role_constants.dart';
 
 class MockAuthService extends Mock implements IAuthService {}
 
-class MockConnectivityService extends Mock implements IConnectivityService {}
-
 class MockUsageTrackingService extends Mock implements UsageTrackingService {}
 
 void main() {
   late MockAuthService mockAuthService;
-  late MockConnectivityService mockConnectivityService;
   late MockUsageTrackingService mockUsageTrackingService;
   late AuthCubit authCubit;
 
@@ -41,18 +38,13 @@ void main() {
 
   setUp(() {
     mockAuthService = MockAuthService();
-    mockConnectivityService = MockConnectivityService();
     mockUsageTrackingService = MockUsageTrackingService();
 
     // Default mock behavior
     when(() => mockUsageTrackingService.start(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
-    when(() => mockConnectivityService.isOffline).thenReturn(false);
+    when(() => mockAuthService.isOfflineMode).thenReturn(false);
 
-    authCubit = AuthCubit(
-      authService: mockAuthService,
-      connectivityService: mockConnectivityService,
-      usageTrackingService: mockUsageTrackingService,
-    );
+    authCubit = AuthCubit(authService: mockAuthService, usageTrackingService: mockUsageTrackingService);
   });
 
   group('AuthCubit', () {
@@ -75,6 +67,8 @@ void main() {
             .having((s) => s.userName, 'userName', testUser.displayName)
             .having((s) => s.email, 'email', testUser.email)
             .having((s) => s.avatar, 'avatar', testUser.avatar)
+            .having((s) => s.roleCode, 'roleCode', testUser.roleCode)
+            .having((s) => s.permissions, 'permissions', testUser.permissions)
             .having((s) => s.isGuest, 'isGuest', false)
             .having((s) => s.isOffline, 'isOffline', false),
       ],
@@ -105,6 +99,8 @@ void main() {
             .having((s) => s.userId, 'userId', testUser.id)
             .having((s) => s.userName, 'userName', testUser.displayName)
             .having((s) => s.avatar, 'avatar', testUser.avatar)
+            .having((s) => s.roleCode, 'roleCode', testUser.roleCode)
+            .having((s) => s.permissions, 'permissions', testUser.permissions)
             .having((s) => s.isGuest, 'isGuest', false),
       ],
     );

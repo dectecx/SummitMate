@@ -3,8 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
+import 'member_management_screen.dart';
+import '../cubits/auth/auth_cubit.dart';
+import '../cubits/auth/auth_state.dart';
 import '../../data/models/trip.dart';
+import '../../data/models/user_profile.dart';
 import '../../infrastructure/tools/toast_service.dart';
+import '../../core/di.dart';
+import '../../core/services/permission_service.dart';
 import 'trip_cloud_screen.dart';
 
 /// 行程列表畫面
@@ -14,138 +20,160 @@ class TripListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final permissionService = getIt<PermissionService>();
+
     return Scaffold(
       appBar: AppBar(
         actions: [
           IconButton(icon: const Icon(Icons.add), onPressed: () => _showCreateTripDialog(context), tooltip: '新增行程'),
         ],
       ),
-      body: BlocBuilder<TripCubit, TripState>(
-        builder: (context, state) {
-          if (state is TripLoading) {
-            return const Center(child: CircularProgressIndicator());
+      body: BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, authState) {
+          UserProfile? currentUser;
+          if (authState is AuthAuthenticated) {
+            currentUser = authState.user;
           }
 
-          List<Trip> allTrips = [];
-          String? activeTripId;
+          return BlocBuilder<TripCubit, TripState>(
+            builder: (context, state) {
+              if (state is TripLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (state is TripLoaded) {
-            allTrips = state.trips;
-            activeTripId = state.activeTrip?.id;
-          } else if (state is TripError) {
-            // In case of error, just show empty or previous state if possible.
-            // Ideally valid UI. For now treating as empty/error.
-            return Center(child: Text('載入失敗: ${state.message}'));
-          }
+              List<Trip> allTrips = [];
+              String? activeTripId;
 
-          final now = DateTime.now();
-          final today = DateTime(now.year, now.month, now.day);
+              if (state is TripLoaded) {
+                allTrips = state.trips;
+                activeTripId = state.activeTrip?.id;
+              } else if (state is TripError) {
+                return Center(child: Text('載入失敗: ${state.message}'));
+              }
 
-          final ongoingTrips = allTrips.where((t) {
-            if (t.endDate == null) return true;
-            return !t.endDate!.isBefore(today);
-          }).toList();
+              final now = DateTime.now();
+              final today = DateTime(now.year, now.month, now.day);
 
-          final archivedTrips = allTrips.where((t) {
-            if (t.endDate == null) return false;
-            return t.endDate!.isBefore(today);
-          }).toList();
+              final ongoingTrips = allTrips.where((t) {
+                if (t.endDate == null) return true;
+                return !t.endDate!.isBefore(today);
+              }).toList();
 
-          return Column(
-            children: [
-              // 雲端同步管理按鈕 (仿造 GearTab 樣式)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: InkWell(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripCloudScreen())),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.cloud_sync, size: 28, color: Theme.of(context).colorScheme.primary),
-                          const SizedBox(width: 12),
-                          const Text('雲端同步管理', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        ],
+              final archivedTrips = allTrips.where((t) {
+                if (t.endDate == null) return false;
+                return t.endDate!.isBefore(today);
+              }).toList();
+
+              return Column(
+                children: [
+                  // 雲端同步管理按鈕
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: InkWell(
+                        onTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const TripCloudScreen())),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cloud_sync, size: 28, color: Theme.of(context).colorScheme.primary),
+                              const SizedBox(width: 12),
+                              const Text('雲端同步管理', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
 
-              // 列表內容
-              Expanded(
-                child: allTrips.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.hiking, size: 80, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text('尚無行程', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                            const SizedBox(height: 24),
-                            ElevatedButton.icon(
-                              onPressed: () => _showCreateTripDialog(context),
-                              icon: const Icon(Icons.add),
-                              label: const Text('新增行程'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        children: [
-                          // 進行中行程
-                          if (ongoingTrips.isNotEmpty) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8, left: 4),
-                              child: Text(
-                                '進行中 / 未來行程',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
+                  // 列表內容
+                  Expanded(
+                    child: allTrips.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.hiking, size: 80, color: Colors.grey[400]),
+                                const SizedBox(height: 16),
+                                Text('尚無行程', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                                const SizedBox(height: 24),
+                                ElevatedButton.icon(
+                                  onPressed: () => _showCreateTripDialog(context),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('新增行程'),
                                 ),
-                              ),
+                              ],
                             ),
-                            ...ongoingTrips.map(
-                              (trip) => _TripCard(
-                                trip: trip,
-                                isActive: trip.id == activeTripId,
-                                onTap: () => _onTripTap(context, trip, activeTripId),
-                                onDelete: allTrips.length > 1 ? () => _confirmDelete(context, trip) : null,
-                                onUpload: () => _handleFullUpload(context, trip),
-                              ),
-                            ),
-                          ],
+                          )
+                        : ListView(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                            children: [
+                              // 進行中行程
+                              if (ongoingTrips.isNotEmpty) ...[
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8, left: 4),
+                                  child: Text(
+                                    '進行中 / 未來行程',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                ...ongoingTrips.map((trip) {
+                                  final canEdit = permissionService.canEditTripSync(currentUser, trip);
+                                  final canDelete = permissionService.canDeleteTripSync(currentUser, trip);
 
-                          // 已封存行程
-                          if (archivedTrips.isNotEmpty) ...[
-                            if (ongoingTrips.isNotEmpty) const SizedBox(height: 24),
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 8, left: 4),
-                              child: Text(
-                                '已封存 / 結束行程',
-                                style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            ...archivedTrips.map(
-                              (trip) => _TripCard(
-                                trip: trip,
-                                isActive: trip.id == activeTripId,
-                                onTap: () => _onTripTap(context, trip, activeTripId),
-                                onDelete: allTrips.length > 1 ? () => _confirmDelete(context, trip) : null,
-                                onUpload: () => _handleFullUpload(context, trip),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-              ),
-            ],
+                                  return _TripCard(
+                                    trip: trip,
+                                    isActive: trip.id == activeTripId,
+                                    onTap: () => _onTripTap(context, trip, activeTripId, canEdit),
+                                    onDelete: (allTrips.length > 1 && canDelete)
+                                        ? () => _confirmDelete(context, trip)
+                                        : null,
+                                    onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
+                                    onManageMembers: () => _navigateToMembers(context, trip),
+                                  );
+                                }),
+                              ],
+
+                              // 已封存行程
+                              if (archivedTrips.isNotEmpty) ...[
+                                if (ongoingTrips.isNotEmpty) const SizedBox(height: 24),
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 8, left: 4),
+                                  child: Text(
+                                    '已封存 / 結束行程',
+                                    style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                ...archivedTrips.map((trip) {
+                                  final canEdit = permissionService.canEditTripSync(currentUser, trip);
+                                  final canDelete = permissionService.canDeleteTripSync(currentUser, trip);
+
+                                  return _TripCard(
+                                    trip: trip,
+                                    isActive: trip.id == activeTripId,
+                                    onTap: () => _onTripTap(context, trip, activeTripId, canEdit),
+                                    onDelete: (allTrips.length > 1 && canDelete)
+                                        ? () => _confirmDelete(context, trip)
+                                        : null,
+                                    onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
+                                    onManageMembers: () => _navigateToMembers(context, trip),
+                                  );
+                                }),
+                              ],
+                            ],
+                          ),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
@@ -163,8 +191,8 @@ class TripListScreen extends StatelessWidget {
 
   /// 點擊行程項目
   /// 若非當前活動行程 -> 切換為活動行程 (且不進入編輯)
-  /// 若已是活動行程 -> 顯示編輯對話框
-  void _onTripTap(BuildContext context, Trip trip, String? activeTripId) async {
+  /// 若已是活動行程 -> 顯示編輯對話框 (如果有權限)
+  void _onTripTap(BuildContext context, Trip trip, String? activeTripId, bool canEdit) async {
     if (trip.id != activeTripId) {
       await context.read<TripCubit>().setActiveTrip(trip.id);
       if (context.mounted) {
@@ -172,8 +200,12 @@ class TripListScreen extends StatelessWidget {
         Navigator.pop(context); // 返回首頁
       }
     } else {
-      // 編輯行程
-      _showEditTripDialog(context, trip);
+      // 編輯行程 (需檢查權限)
+      if (canEdit) {
+        _showEditTripDialog(context, trip);
+      } else {
+        ToastService.info('您沒有權限編輯此行程');
+      }
     }
   }
 
@@ -198,8 +230,6 @@ class TripListScreen extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await context.read<TripCubit>().deleteTrip(trip.id);
-              // Toast handled locally or rely on Cubit? Cubit logs but doesn't toast.
-              // For consistency with old code adding toast here.
               ToastService.success('已刪除「${trip.name}」');
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -238,6 +268,10 @@ class TripListScreen extends StatelessWidget {
       }
     }
   }
+
+  void _navigateToMembers(BuildContext context, Trip trip) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => MemberManagementScreen(trip: trip)));
+  }
 }
 
 /// 行程卡片 Widget
@@ -247,8 +281,16 @@ class _TripCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onDelete;
   final VoidCallback? onUpload;
+  final VoidCallback? onManageMembers;
 
-  const _TripCard({required this.trip, required this.isActive, required this.onTap, this.onDelete, this.onUpload});
+  const _TripCard({
+    required this.trip,
+    required this.isActive,
+    required this.onTap,
+    this.onDelete,
+    this.onUpload,
+    this.onManageMembers,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -348,6 +390,12 @@ class _TripCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  if (onManageMembers != null)
+                    TextButton.icon(
+                      icon: const Icon(Icons.people, size: 18),
+                      label: const Text('成員'),
+                      onPressed: onManageMembers,
+                    ),
                   if (onDelete != null)
                     TextButton.icon(
                       icon: const Icon(Icons.delete_outline, size: 18),

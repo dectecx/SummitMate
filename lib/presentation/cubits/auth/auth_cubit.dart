@@ -2,7 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/di.dart';
 import '../../../domain/interfaces/i_auth_service.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
+
+import '../../../data/models/user_profile.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/usage_tracking_service.dart';
 import 'auth_state.dart';
@@ -15,17 +16,12 @@ class AuthCubit extends Cubit<AuthState> {
   static const String _source = 'AuthCubit';
 
   final IAuthService _authService;
-  final IConnectivityService _connectivityService;
   final UsageTrackingService _usageTrackingService;
 
-  AuthCubit({
-    IAuthService? authService,
-    IConnectivityService? connectivityService,
-    UsageTrackingService? usageTrackingService,
-  }) : _authService = authService ?? getIt<IAuthService>(),
-       _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
-       _usageTrackingService = usageTrackingService ?? getIt<UsageTrackingService>(),
-       super(AuthInitial());
+  AuthCubit({IAuthService? authService, UsageTrackingService? usageTrackingService})
+    : _authService = authService ?? getIt<IAuthService>(),
+      _usageTrackingService = usageTrackingService ?? getIt<UsageTrackingService>(),
+      super(AuthInitial());
 
   /// 檢查當前認證狀態 (通常在 App 啟動時呼叫)
   Future<void> checkAuthStatus() async {
@@ -36,14 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (isLoggedIn) {
         final cachedUser = await _authService.getCachedUserProfile();
         if (cachedUser != null) {
-          _emitAuthenticated(
-            cachedUser.id,
-            cachedUser.displayName,
-            cachedUser.email,
-            cachedUser.avatar,
-            false,
-            isOffline: _authService.isOfflineMode,
-          );
+          _emitAuthenticated(cachedUser, false, isOffline: _authService.isOfflineMode);
           return;
         }
       }
@@ -82,14 +71,7 @@ class AuthCubit extends Cubit<AuthState> {
         if (result.requiresVerification) {
           emit(AuthRequiresVerification(email));
         } else if (result.user != null) {
-          _emitAuthenticated(
-            result.user!.id,
-            result.user!.displayName,
-            result.user!.email,
-            result.user!.avatar,
-            false,
-            isOffline: result.isOffline,
-          );
+          _emitAuthenticated(result.user!, false, isOffline: result.isOffline);
         } else {
           emit(const AuthError('註冊成功但不需驗證且無使用者回傳 (異常)'));
         }
@@ -116,14 +98,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (result.isSuccess) {
         if (result.user != null) {
           if (result.user!.isVerified) {
-            _emitAuthenticated(
-              result.user!.id,
-              result.user!.displayName,
-              result.user!.email,
-              result.user!.avatar,
-              false,
-              isOffline: result.isOffline,
-            );
+            _emitAuthenticated(result.user!, false, isOffline: result.isOffline);
           } else {
             emit(AuthRequiresVerification(email));
           }
@@ -142,7 +117,9 @@ class AuthCubit extends Cubit<AuthState> {
   /// 訪客登入
   void loginAsGuest() {
     LogService.info('Login as guest', source: _source);
-    _emitAuthenticated('guest', '訪客', null, null, true, isOffline: _connectivityService.isOffline);
+    // 訪客沒有 UserProfile，手動建構 AuthAuthenticated
+    _usageTrackingService.start('訪客', userId: 'guest');
+    emit(AuthAuthenticated(userId: 'guest', userName: '訪客', isGuest: true, isOffline: _authService.isOfflineMode));
   }
 
   /// 驗證 Email
@@ -220,18 +197,10 @@ class AuthCubit extends Cubit<AuthState> {
   /// [avatar] 新頭像 URL (可選)
   Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
     LogService.info('Updating profile: $displayName', source: _source);
-    // Note: We don't emit AuthLoading here to avoid blocking UI during a setting update if handled by dialog
     try {
       final result = await _authService.updateProfile(displayName: displayName, avatar: avatar);
       if (result.isSuccess && result.user != null) {
-        _emitAuthenticated(
-          result.user!.id,
-          result.user!.displayName,
-          result.user!.email,
-          result.user!.avatar,
-          false,
-          isOffline: result.isOffline,
-        );
+        _emitAuthenticated(result.user!, false, isOffline: result.isOffline);
       }
       return result;
     } catch (e) {
@@ -241,25 +210,20 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// 發送已認證狀態並啟動追蹤
-  void _emitAuthenticated(
-    String userId,
-    String? userName,
-    String? email,
-    String? avatar,
-    bool isGuest, {
-    bool isOffline = false,
-  }) {
-    LogService.info('User authenticated: $userId ($userName)', source: _source);
+  void _emitAuthenticated(UserProfile user, bool isGuest, {bool isOffline = false}) {
+    LogService.info('User authenticated: ${user.id} (${user.displayName})', source: _source);
 
     // 啟動使用追蹤
-    _usageTrackingService.start(userName ?? 'Unknown', userId: userId);
+    _usageTrackingService.start(user.displayName, userId: user.id);
 
     emit(
       AuthAuthenticated(
-        userId: userId,
-        userName: userName,
-        email: email,
-        avatar: avatar,
+        userId: user.id,
+        userName: user.displayName,
+        email: user.email,
+        avatar: user.avatar,
+        roleCode: user.roleCode,
+        permissions: user.permissions,
         isGuest: isGuest,
         isOffline: isOffline,
       ),

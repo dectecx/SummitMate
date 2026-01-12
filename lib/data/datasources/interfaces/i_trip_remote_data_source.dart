@@ -33,4 +33,22 @@ abstract class ITripRemoteDataSource {
     required List<dynamic> itineraryItems,
     required List<dynamic> gearItems,
   });
+
+  /// 取得行程成員列表
+  ///
+  /// [tripId] 行程 ID
+  Future<List<Map<String, dynamic>>> getTripMembers(String tripId);
+
+  /// 更新成員角色
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 成員 User ID
+  /// [role] 新角色 (e.g. 'guide', 'member')
+  Future<void> updateMemberRole(String tripId, String userId, String role);
+
+  /// 移除成員
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 成員 User ID
+  Future<void> removeMember(String tripId, String userId);
 }

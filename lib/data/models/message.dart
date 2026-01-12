@@ -24,38 +24,44 @@ class Message extends HiveObject {
   @JsonKey(fromJson: _nullIfEmpty)
   String? parentId;
 
-  /// 發文者暱稱
+  /// 發文者 ID (用於權限判斷)
   @HiveField(3)
+  @JsonKey(defaultValue: '')
+  String userId;
+
+  /// 發文者暱稱
+  @HiveField(4)
   @JsonKey(defaultValue: '')
   String user;
 
+  /// 使用者頭像
+  @HiveField(5, defaultValue: '🐻')
+  @JsonKey(defaultValue: '🐻')
+  String avatar;
+
   /// 留言分類：Gear, Plan, Misc
-  @HiveField(4)
+  @HiveField(6)
   @JsonKey(defaultValue: '')
   String category;
 
   /// 留言內容
-  @HiveField(5)
+  @HiveField(7)
   @JsonKey(defaultValue: '')
   String content;
 
   /// 發文時間
-  @HiveField(6)
+  @HiveField(8)
   DateTime timestamp;
-
-  /// 使用者頭像
-  @HiveField(7, defaultValue: '🐻')
-  @JsonKey(defaultValue: '🐻')
-  String avatar;
 
   Message({
     required this.id,
     this.tripId,
     this.parentId,
+    this.userId = '',
     this.user = '',
+    this.avatar = '🐻',
     this.category = '',
     this.content = '',
-    this.avatar = '🐻',
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 

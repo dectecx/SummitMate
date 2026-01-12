@@ -77,4 +77,22 @@ abstract interface class ITripRepository {
 
   /// 清除所有本地行程資料 (登出時使用)
   Future<void> clearAll();
+
+  /// 取得行程成員列表 (Remote)
+  ///
+  /// [tripId] 行程 ID
+  Future<List<Map<String, dynamic>>> getTripMembers(String tripId);
+
+  /// 更新成員角色 (Remote)
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 目標成員 ID
+  /// [role] 新角色身分代碼 (參考 RoleConstants)
+  Future<void> updateMemberRole(String tripId, String userId, String role);
+
+  /// 移除成員 (Remote)
+  ///
+  /// [tripId] 行程 ID
+  /// [userId] 目標成員 ID
+  Future<void> removeMember(String tripId, String userId);
 }
