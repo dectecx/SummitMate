@@ -13,7 +13,6 @@ class MockItineraryRemoteDataSource extends Mock implements IItineraryRemoteData
 
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
-
 void main() {
   late ItineraryRepository repository;
   late MockItineraryLocalDataSource mockLocalDataSource;
@@ -36,7 +35,6 @@ void main() {
 
     testItem = ItineraryItem(uuid: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point');
 
-
     registerFallbackValue(testItem);
   });
 
@@ -58,8 +56,6 @@ void main() {
         // Assert
         verify(() => mockLocalDataSource.add(testItem)).called(1);
       });
-
-
     });
 
     group('updateItem', () {

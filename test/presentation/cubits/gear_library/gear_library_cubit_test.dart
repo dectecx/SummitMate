@@ -31,8 +31,24 @@ void main() {
     late IAuthService mockAuthService;
     late GearLibraryCubit cubit;
 
-    final libItem1 = GearLibraryItem(id: 'lib1', userId: 'u1', name: 'Tent', weight: 2000, category: 'Sleep', createdAt: DateTime.now(), createdBy: 'u1');
-    final libItem2 = GearLibraryItem(id: 'lib2', userId: 'u1', name: 'Stove', weight: 500, category: 'Cook', createdAt: DateTime.now(), createdBy: 'u1');
+    final libItem1 = GearLibraryItem(
+      id: 'lib1',
+      userId: 'u1',
+      name: 'Tent',
+      weight: 2000,
+      category: 'Sleep',
+      createdAt: DateTime.now(),
+      createdBy: 'u1',
+    );
+    final libItem2 = GearLibraryItem(
+      id: 'lib2',
+      userId: 'u1',
+      name: 'Stove',
+      weight: 500,
+      category: 'Cook',
+      createdAt: DateTime.now(),
+      createdBy: 'u1',
+    );
 
     setUpAll(() {
       registerFallbackValue(FakeGearLibraryItem());
@@ -101,9 +117,17 @@ void main() {
         // Mock sync logic
         final linkedGear = GearItem(uuid: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1');
         when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
-        when(
-          () => mockTripRepo.getTripById('t1'),
-        ).thenReturn(Trip(id: 't1', userId: 'u1', name: 'T1', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now(), createdBy: 'u1'));
+        when(() => mockTripRepo.getTripById('t1')).thenReturn(
+          Trip(
+            id: 't1',
+            userId: 'u1',
+            name: 'T1',
+            startDate: DateTime.now(),
+            isActive: true,
+            createdAt: DateTime.now(),
+            createdBy: 'u1',
+          ),
+        );
         when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async {});
       },
       build: () => cubit,

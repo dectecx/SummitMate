@@ -5,8 +5,26 @@ import '../interfaces/i_gear_library_repository.dart';
 /// 用於教學模式，返回靜態假資料，所有寫入操作皆為空實作。
 class MockGearLibraryRepository implements IGearLibraryRepository {
   final List<GearLibraryItem> _mockItems = [
-    GearLibraryItem(id: 'mock-lib-001', userId: 'guest', category: '睡眠系統', name: '輕量睡袋', weight: 800, notes: '適用 0~10°C', createdAt: DateTime.now(), createdBy: 'guest'),
-    GearLibraryItem(id: 'mock-lib-002', userId: 'guest', category: '穿著系統', name: '風雨衣', weight: 300, notes: 'Gore-Tex', createdAt: DateTime.now(), createdBy: 'guest'),
+    GearLibraryItem(
+      id: 'mock-lib-001',
+      userId: 'guest',
+      category: '睡眠系統',
+      name: '輕量睡袋',
+      weight: 800,
+      notes: '適用 0~10°C',
+      createdAt: DateTime.now(),
+      createdBy: 'guest',
+    ),
+    GearLibraryItem(
+      id: 'mock-lib-002',
+      userId: 'guest',
+      category: '穿著系統',
+      name: '風雨衣',
+      weight: 300,
+      notes: 'Gore-Tex',
+      createdAt: DateTime.now(),
+      createdBy: 'guest',
+    ),
   ];
 
   @override

@@ -15,7 +15,7 @@ class GearLibraryRepository implements IGearLibraryRepository {
   static const String _boxName = HiveBoxNames.gearLibrary;
 
   Box<GearLibraryItem>? _box;
-  
+
   GearLibraryRepository();
 
   /// 開啟 Box
@@ -72,7 +72,7 @@ class GearLibraryRepository implements IGearLibraryRepository {
     // 自動填寫建立者 & Ownership
     // item.createdBy ??= ... (Caller handles)
     // item.userId = ... (Caller handles)
-    
+
     await box.put(item.id, item);
   }
 

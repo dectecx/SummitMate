@@ -31,7 +31,16 @@ void main() {
     when(() => mockAuthService.currentUserEmail).thenReturn('user@example.com');
 
     // Register fallback values if needed
-    registerFallbackValue(Trip(id: 'fallback', userId: 'u1', name: 'fallback', startDate: DateTime.now(), createdAt: DateTime.now(), createdBy: 'u1'));
+    registerFallbackValue(
+      Trip(
+        id: 'fallback',
+        userId: 'u1',
+        name: 'fallback',
+        startDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: 'u1',
+      ),
+    );
   });
 
   group('TripCubit', () {
@@ -55,7 +64,10 @@ void main() {
     );
 
     test('initial state is TripInitial', () {
-      expect(TripCubit(tripRepository: mockTripRepository, syncService: mockSyncService, authService: mockAuthService).state, const TripInitial());
+      expect(
+        TripCubit(tripRepository: mockTripRepository, syncService: mockSyncService, authService: mockAuthService).state,
+        const TripInitial(),
+      );
     });
 
     blocTest<TripCubit, TripState>(
@@ -63,13 +75,14 @@ void main() {
       build: () {
         when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1, trip2]);
         when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
-        return TripCubit(tripRepository: mockTripRepository, syncService: mockSyncService, authService: mockAuthService);
+        return TripCubit(
+          tripRepository: mockTripRepository,
+          syncService: mockSyncService,
+          authService: mockAuthService,
+        );
       },
       act: (cubit) => cubit.loadTrips(),
-      expect: () => [
-        const TripLoading(),
-        isA<TripLoaded>(),
-      ],
+      expect: () => [const TripLoading(), isA<TripLoaded>()],
     );
 
     blocTest<TripCubit, TripState>(
@@ -79,7 +92,11 @@ void main() {
         when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
         when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async {});
         when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async {});
-        return TripCubit(tripRepository: mockTripRepository, syncService: mockSyncService, authService: mockAuthService);
+        return TripCubit(
+          tripRepository: mockTripRepository,
+          syncService: mockSyncService,
+          authService: mockAuthService,
+        );
       },
       act: (cubit) => cubit.addTrip(name: 'New Trip', startDate: DateTime.now()),
       expect: () => [
@@ -105,7 +122,11 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1]);
         when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
         when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async {});
-        return TripCubit(tripRepository: mockTripRepository, syncService: mockSyncService, authService: mockAuthService);
+        return TripCubit(
+          tripRepository: mockTripRepository,
+          syncService: mockSyncService,
+          authService: mockAuthService,
+        );
       },
       act: (cubit) => cubit.importTrip(trip2),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
@@ -120,7 +141,11 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1, trip2]);
         when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
         when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async {});
-        return TripCubit(tripRepository: mockTripRepository, syncService: mockSyncService, authService: mockAuthService);
+        return TripCubit(
+          tripRepository: mockTripRepository,
+          syncService: mockSyncService,
+          authService: mockAuthService,
+        );
       },
       act: (cubit) => cubit.setActiveTrip('trip2'),
       expect: () => [const TripLoading(), isA<TripLoaded>()],

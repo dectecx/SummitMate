@@ -13,11 +13,9 @@ class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
 
-  TripRepository({
-    required ITripLocalDataSource localDataSource,
-    required ITripRemoteDataSource remoteDataSource,
-  }) : _localDataSource = localDataSource,
-       _remoteDataSource = remoteDataSource;
+  TripRepository({required ITripLocalDataSource localDataSource, required ITripRemoteDataSource remoteDataSource})
+    : _localDataSource = localDataSource,
+      _remoteDataSource = remoteDataSource;
 
   /// 初始化本地資料庫
   @override
@@ -59,11 +57,11 @@ class TripRepository implements ITripRepository {
     // 填寫審計欄位 (Audit Fields) & Ownership
     // userId, createdBy, createdAt are final and required in Trip constructor,
     // so they must be populated by the caller (Cubit/Service).
-    
+
     // Ensure updatedBy matches createdBy if not set (constructor handles this default, but explicit here doesn't hurt if mutable)
     // Actually constructor matches them. logic here is redundant if constructor does it.
     // Just save.
-    
+
     await _localDataSource.addTrip(trip);
   }
 

@@ -48,17 +48,17 @@ void main() {
     when(() => mockConnectivity.isOffline).thenReturn(false);
 
     // Default: Active trip
-    when(
-      () => mockTripRepo.getActiveTrip(any()),
-    ).thenReturn(Trip(
-      id: 'test-trip-1',
-      userId: 'u1',
-      name: 'Test Trip',
-      startDate: DateTime.now(),
-      isActive: true,
-      createdAt: DateTime.now(),
-      createdBy: 'u1',
-    ));
+    when(() => mockTripRepo.getActiveTrip(any())).thenReturn(
+      Trip(
+        id: 'test-trip-1',
+        userId: 'u1',
+        name: 'Test Trip',
+        startDate: DateTime.now(),
+        isActive: true,
+        createdAt: DateTime.now(),
+        createdBy: 'u1',
+      ),
+    );
 
     // Default: No last sync time
     when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
@@ -188,7 +188,16 @@ void main() {
 
     test('getCloudTrips delegates to trip repository', () async {
       // Arrange
-      final trips = [Trip(id: '1', userId: 'u1', name: 'Test Trip', startDate: DateTime.now(), createdAt: DateTime.now(), createdBy: 'u1')];
+      final trips = [
+        Trip(
+          id: '1',
+          userId: 'u1',
+          name: 'Test Trip',
+          startDate: DateTime.now(),
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        ),
+      ];
       when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => trips);
 
       // Act
