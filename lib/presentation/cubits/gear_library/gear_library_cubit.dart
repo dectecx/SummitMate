@@ -90,7 +90,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   Future<void> addItem({required String name, required double weight, required String category, String? notes}) async {
     try {
       final userId = _authService.currentUserId ?? 'guest';
-      
+
       final item = GearLibraryItem(
         id: const Uuid().v4(),
         userId: userId,
@@ -117,7 +117,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     try {
       final userId = _authService.currentUserId ?? 'guest';
       item.updatedBy = userId;
-      
+
       await _repository.updateItem(item);
       // 同步更新已連結的裝備項目 (邏輯遷移自 Provider)
       await _syncLinkedGear(item);

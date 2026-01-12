@@ -23,10 +23,7 @@ void main() {
   setUp(() {
     mockLocalDataSource = MockTripLocalDataSource();
     mockRemoteDataSource = MockTripRemoteDataSource();
-    repository = TripRepository(
-      localDataSource: mockLocalDataSource,
-      remoteDataSource: mockRemoteDataSource,
-    );
+    repository = TripRepository(localDataSource: mockLocalDataSource, remoteDataSource: mockRemoteDataSource);
 
     testTrip = Trip(
       id: 'trip_1',

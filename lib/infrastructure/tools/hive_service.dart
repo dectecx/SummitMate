@@ -9,6 +9,8 @@ import '../../data/models/gear_library_item.dart';
 import '../../data/models/weather_data.dart';
 import '../../data/models/poll.dart';
 import '../../data/models/trip.dart';
+import '../../data/models/user_profile.dart';
+import '../../data/models/enums/sync_status.dart';
 
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期
@@ -59,11 +61,17 @@ class HiveService {
     if (!Hive.isAdapterRegistered(7)) {
       Hive.registerAdapter(PollOptionAdapter());
     }
-    if (!Hive.isAdapterRegistered(10)) {
+    if (!Hive.isAdapterRegistered(8)) {
       Hive.registerAdapter(TripAdapter());
+    }
+    if (!Hive.isAdapterRegistered(10)) {
+      Hive.registerAdapter(UserProfileAdapter());
     }
     if (!Hive.isAdapterRegistered(11)) {
       Hive.registerAdapter(GearLibraryItemAdapter());
+    }
+    if (!Hive.isAdapterRegistered(20)) {
+      Hive.registerAdapter(SyncStatusAdapter());
     }
 
     _isInitialized = true;

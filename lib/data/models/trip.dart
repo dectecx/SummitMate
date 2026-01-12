@@ -7,7 +7,7 @@ part 'trip.g.dart';
 /// 行程資料模型
 /// 用於管理多個不同的登山計畫
 @JsonSerializable(fieldRename: FieldRename.snake)
-@HiveType(typeId: 2)
+@HiveType(typeId: 8)
 class Trip extends HiveObject {
   /// 行程 ID
   @HiveField(0)
@@ -87,9 +87,9 @@ class Trip extends HiveObject {
     required this.createdBy,
     DateTime? updatedAt,
     String? updatedBy,
-  })  : dayNames = dayNames ?? [],
-        updatedAt = updatedAt ?? createdAt,
-        updatedBy = updatedBy ?? createdBy;
+  }) : dayNames = dayNames ?? [],
+       updatedAt = updatedAt ?? createdAt,
+       updatedBy = updatedBy ?? createdBy;
 
   /// 行程天數
   int get durationDays {

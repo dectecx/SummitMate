@@ -5,7 +5,14 @@ void main() {
   group('Trip Model Tests', () {
     group('Constructor', () {
       test('creates Trip with required fields', () {
-        final trip = Trip(id: 'trip-123', userId: 'user-1', name: '嘉明湖三日', startDate: DateTime(2024, 1, 15), createdAt: DateTime.now(), createdBy: 'user-1');
+        final trip = Trip(
+          id: 'trip-123',
+          userId: 'user-1',
+          name: '嘉明湖三日',
+          startDate: DateTime(2024, 1, 15),
+          createdAt: DateTime.now(),
+          createdBy: 'user-1',
+        );
 
         expect(trip.id, 'trip-123');
         expect(trip.name, '嘉明湖三日');
@@ -44,19 +51,42 @@ void main() {
 
     group('durationDays', () {
       test('returns 1 when endDate is null', () {
-        final trip = Trip(id: 'trip-1', userId: 'u1', name: 'Test', startDate: DateTime(2024, 1, 1), createdAt: DateTime.now(), createdBy: 'u1');
+        final trip = Trip(
+          id: 'trip-1',
+          userId: 'u1',
+          name: 'Test',
+          startDate: DateTime(2024, 1, 1),
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        );
 
         expect(trip.durationDays, 1);
       });
 
       test('calculates correct duration for same-day trip', () {
-        final trip = Trip(id: 'trip-1', userId: 'u1', name: 'Test', startDate: DateTime(2024, 1, 1), endDate: DateTime(2024, 1, 1), createdAt: DateTime.now(), createdBy: 'u1');
+        final trip = Trip(
+          id: 'trip-1',
+          userId: 'u1',
+          name: 'Test',
+          startDate: DateTime(2024, 1, 1),
+          endDate: DateTime(2024, 1, 1),
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        );
 
         expect(trip.durationDays, 1);
       });
 
       test('calculates correct duration for multi-day trip', () {
-        final trip = Trip(id: 'trip-1', userId: 'u1', name: 'Test', startDate: DateTime(2024, 1, 1), endDate: DateTime(2024, 1, 3), createdAt: DateTime.now(), createdBy: 'u1');
+        final trip = Trip(
+          id: 'trip-1',
+          userId: 'u1',
+          name: 'Test',
+          startDate: DateTime(2024, 1, 1),
+          endDate: DateTime(2024, 1, 3),
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        );
 
         expect(trip.durationDays, 3);
       });
@@ -96,7 +126,7 @@ void main() {
           'name': 'Test Trip',
           'start_date': '2024-01-01T00:00:00.000Z',
           'created_by': 'u1',
-          'created_at': '2024-01-01T00:00:00.000Z'
+          'created_at': '2024-01-01T00:00:00.000Z',
         };
 
         final trip = Trip.fromJson(json);
@@ -109,7 +139,7 @@ void main() {
           'user_id': 'min-user',
           'name': 'Minimal Trip',
           'created_by': 'min-user',
-          'created_at': '2024-01-01T00:00:00.000Z'
+          'created_at': '2024-01-01T00:00:00.000Z',
         };
 
         final trip = Trip.fromJson(json);
@@ -130,7 +160,7 @@ void main() {
           'name': 'Test',
           'is_active': 'TRUE',
           'created_by': 'u1',
-          'created_at': '2024-01-01T00:00:00.000Z'
+          'created_at': '2024-01-01T00:00:00.000Z',
         };
 
         final trip = Trip.fromJson(json);
@@ -170,7 +200,14 @@ void main() {
       });
 
       test('serializes null endDate as null', () {
-        final trip = Trip(id: 'trip-null', userId: 'u1', name: 'No End', startDate: DateTime.utc(2024, 1, 1), createdAt: DateTime.now(), createdBy: 'u1');
+        final trip = Trip(
+          id: 'trip-null',
+          userId: 'u1',
+          name: 'No End',
+          startDate: DateTime.utc(2024, 1, 1),
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        );
 
         final json = trip.toJson();
         expect(json['end_date'], isNull);
@@ -179,9 +216,20 @@ void main() {
 
     group('toString', () {
       test('returns formatted string', () {
-        final trip = Trip(id: 'trip-str', userId: 'u1', name: 'Test Trip', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now(), createdBy: 'u1');
+        final trip = Trip(
+          id: 'trip-str',
+          userId: 'u1',
+          name: 'Test Trip',
+          startDate: DateTime.now(),
+          isActive: true,
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+        );
 
-        expect(trip.toString(), 'Trip(id: trip-str, userId: u1, name: Test Trip, isActive: true, syncStatus: SyncStatus.pendingCreate)');
+        expect(
+          trip.toString(),
+          'Trip(id: trip-str, userId: u1, name: Test Trip, isActive: true, syncStatus: SyncStatus.pendingCreate)',
+        );
       });
     });
   });

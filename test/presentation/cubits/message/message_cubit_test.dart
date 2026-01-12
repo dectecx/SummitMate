@@ -52,10 +52,23 @@ void main() {
 
     // Default setup: active trip 't1'
     when(() => mockTripRepo.getActiveTrip(any())).thenReturn(
-      Trip(id: 't1', userId: 'u1', name: 'Test Trip', startDate: DateTime.now(), isActive: true, createdAt: DateTime.now(), createdBy: 'u1'),
+      Trip(
+        id: 't1',
+        userId: 'u1',
+        name: 'Test Trip',
+        startDate: DateTime.now(),
+        isActive: true,
+        createdAt: DateTime.now(),
+        createdBy: 'u1',
+      ),
     );
 
-    cubit = MessageCubit(repository: mockRepo, tripRepository: mockTripRepo, syncService: mockSyncService, authService: mockAuthService);
+    cubit = MessageCubit(
+      repository: mockRepo,
+      tripRepository: mockTripRepo,
+      syncService: mockSyncService,
+      authService: mockAuthService,
+    );
   });
 
   tearDown(() {

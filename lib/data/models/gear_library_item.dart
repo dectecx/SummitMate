@@ -80,8 +80,8 @@ class GearLibraryItem extends HiveObject {
     required this.createdBy,
     DateTime? updatedAt,
     String? updatedBy,
-  })  : updatedAt = updatedAt ?? createdAt,
-        updatedBy = updatedBy ?? createdBy;
+  }) : updatedAt = updatedAt ?? createdAt,
+       updatedBy = updatedBy ?? createdBy;
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;
@@ -93,5 +93,6 @@ class GearLibraryItem extends HiveObject {
   Map<String, dynamic> toJson() => _$GearLibraryItemToJson(this);
 
   @override
-  String toString() => 'GearLibraryItem(id: $id, name: $name, weight: ${weight}g, category: $category, user: $userId, sync: $syncStatus)';
+  String toString() =>
+      'GearLibraryItem(id: $id, name: $name, weight: ${weight}g, category: $category, user: $userId, sync: $syncStatus)';
 }

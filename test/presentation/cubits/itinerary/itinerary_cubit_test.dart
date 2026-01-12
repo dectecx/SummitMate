@@ -48,7 +48,11 @@ void main() {
     // Default setup: active trip exists
     when(() => mockTripRepository.getActiveTrip(any())).thenReturn(testTrip);
 
-    cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository, authService: mockAuthService);
+    cubit = ItineraryCubit(
+      repository: mockItineraryRepository,
+      tripRepository: mockTripRepository,
+      authService: mockAuthService,
+    );
   });
 
   tearDown(() {
@@ -181,7 +185,11 @@ void main() {
         when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
 
         // Re-initialize cubit with reset mocks
-        cubit = ItineraryCubit(repository: mockItineraryRepository, tripRepository: mockTripRepository, authService: mockAuthService);
+        cubit = ItineraryCubit(
+          repository: mockItineraryRepository,
+          tripRepository: mockTripRepository,
+          authService: mockAuthService,
+        );
       });
 
       blocTest<ItineraryCubit, ItineraryState>(
