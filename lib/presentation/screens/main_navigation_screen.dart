@@ -545,7 +545,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       }
 
       final item = ItineraryItem(
-        uuid: const Uuid().v4(), // Correct property name is uuid, not id
+        id: const Uuid().v4(),
         tripId: tripId,
         day: selectedDay,
         name: result['name'] ?? '',

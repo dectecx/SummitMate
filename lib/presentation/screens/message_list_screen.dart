@@ -169,7 +169,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                                   // Explicit cast to Message if needed, but dynamic should work or type check
                                   // messageState is MessageLoaded, so filteredMessages is List<Message>
                                   final msg = (messageState as MessageLoaded).currentCategoryMessages[index];
-                                  final replies = messageState.getReplies(msg.uuid);
+                                  final replies = messageState.getReplies(msg.id);
 
                                   return Card(
                                     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -195,14 +195,14 @@ class _MessageListScreenState extends State<MessageListScreen> {
                                                     selectedCategory, // pass category for title logic
                                                     username,
                                                     avatar,
-                                                    msg.uuid,
+                                                    msg.id,
                                                   ),
                                             tooltip: '回覆',
                                           ),
                                           IconButton(
                                             icon: const Icon(Icons.delete_outline, size: 20),
                                             onPressed: () =>
-                                                _confirmDelete(context, context.read<MessageCubit>(), msg.uuid),
+                                                _confirmDelete(context, context.read<MessageCubit>(), msg.id),
                                             tooltip: '刪除',
                                           ),
                                         ],
@@ -222,7 +222,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                                               trailing: IconButton(
                                                 icon: const Icon(Icons.delete_outline, size: 18),
                                                 onPressed: () =>
-                                                    _confirmDelete(context, context.read<MessageCubit>(), reply.uuid),
+                                                    _confirmDelete(context, context.read<MessageCubit>(), reply.id),
                                               ),
                                             ),
                                           )

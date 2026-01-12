@@ -35,13 +35,13 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
     return box.values.toList();
   }
 
-  /// 透過 UUID 取得訊息
+  /// 透過 ID 取得訊息
   ///
-  /// [uuid] 訊息 UUID
+  /// [id] 訊息 ID
   @override
-  Message? getByUuid(String uuid) {
+  Message? getById(String id) {
     try {
-      return box.values.firstWhere((m) => m.uuid == uuid);
+      return box.values.firstWhere((m) => m.id == id);
     } catch (e) {
       return null;
     }

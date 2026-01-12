@@ -22,23 +22,23 @@ abstract interface class IMessageRepository {
 
   /// 取得子留言 (回覆)
   ///
-  /// [parentUuid] 父留言的 UUID
-  List<Message> getReplies(String parentUuid);
+  /// [parentId] 父留言的 ID
+  List<Message> getReplies(String parentId);
 
-  /// 依 UUID 取得留言
+  /// 依 ID 取得留言
   ///
-  /// [uuid] 留言 UUID
-  Message? getByUuid(String uuid);
+  /// [id] 留言 ID
+  Message? getById(String id);
 
   /// 新增留言
   ///
   /// [message] 欲新增的留言物件
   Future<void> addMessage(Message message);
 
-  /// 刪除留言 (依 UUID)
+  /// 刪除留言 (依 ID)
   ///
-  /// [uuid] 欲刪除的留言 UUID
-  Future<void> deleteByUuid(String uuid);
+  /// [id] 欲刪除的留言 ID
+  Future<void> deleteById(String id);
 
   /// 批次同步留言 (從雲端)
   ///
@@ -47,8 +47,8 @@ abstract interface class IMessageRepository {
 
   /// 取得待上傳的本地留言
   ///
-  /// [cloudUuids] 已存在於雲端的 UUID 集合 (用於比對)
-  List<Message> getPendingMessages(Set<String> cloudUuids);
+  /// [cloudIds] 已存在於雲端的 ID 集合 (用於比對)
+  List<Message> getPendingMessages(Set<String> cloudIds);
 
   /// 監聽留言變更
   Stream<BoxEvent> watchAllMessages();

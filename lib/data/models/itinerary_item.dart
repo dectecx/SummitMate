@@ -9,7 +9,7 @@ part 'itinerary_item.g.dart';
 class ItineraryItem extends HiveObject {
   /// 節點唯一識別碼 (PK)
   @HiveField(0)
-  String uuid;
+  String id;
 
   /// 關聯的行程 ID (FK → Trip)
   @HiveField(1)
@@ -75,7 +75,7 @@ class ItineraryItem extends HiveObject {
   String? updatedBy;
 
   ItineraryItem({
-    this.uuid = '',
+    required this.id,
     this.tripId = '',
     this.day = '',
     this.name = '',
@@ -97,20 +97,18 @@ class ItineraryItem extends HiveObject {
     final str = value.toString();
     // 如果是 ISO 格式 (包含 T)，解析並提取時間
     if (str.contains('T')) {
-      try {
-        final dt = DateTime.parse(str).toLocal();
-        return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-      } catch (_) {
-        return str;
-      }
+      final dt = DateTime.parse(str).toLocal();
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     }
     return str;
   }
 
-  /// 寬鬆的 DateTime 解析
+  /// DateTime 解析
   static DateTime? _dateTimeFromJson(dynamic value) {
     if (value == null) return null;
-    return DateTime.tryParse(value.toString())?.toLocal();
+    final dt = DateTime.tryParse(value.toString());
+    if (dt == null) throw ArgumentError('Invalid date format: $value');
+    return dt.toLocal();
   }
 
   /// 從 JSON 建立

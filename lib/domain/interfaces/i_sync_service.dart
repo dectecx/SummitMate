@@ -110,8 +110,8 @@ abstract interface class ISyncService {
 
   /// 刪除留言並同步到雲端
   ///
-  /// [uuid] 留言 UUID
-  Future<ApiResult> deleteMessageAndSync(String uuid);
+  /// [id] 留言 ID
+  Future<ApiResult> deleteMessageAndSync(String id);
 
   /// 重設同步時間 (用於測試)
   void resetLastSyncTimes();

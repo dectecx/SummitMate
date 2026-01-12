@@ -14,6 +14,8 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
       notes: '適用 0~10°C',
       createdAt: DateTime.now(),
       createdBy: 'guest',
+      updatedAt: DateTime.now(),
+      updatedBy: 'guest',
     ),
     GearLibraryItem(
       id: 'mock-lib-002',
@@ -24,6 +26,8 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
       notes: 'Gore-Tex',
       createdAt: DateTime.now(),
       createdBy: 'guest',
+      updatedAt: DateTime.now(),
+      updatedBy: 'guest',
     ),
   ];
 

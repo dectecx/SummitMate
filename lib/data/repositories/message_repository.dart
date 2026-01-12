@@ -67,20 +67,20 @@ class MessageRepository implements IMessageRepository {
 
   /// 取得指定留言的回覆列表
   ///
-  /// [parentUuid] 父留言的 UUID
+  /// [parentId] 父留言的 ID
   @override
-  List<Message> getReplies(String parentUuid) {
-    final messages = _localDataSource.getAll().where((m) => m.parentId == parentUuid).toList();
+  List<Message> getReplies(String parentId) {
+    final messages = _localDataSource.getAll().where((m) => m.parentId == parentId).toList();
     messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
     return messages;
   }
 
-  /// 依 UUID 取得留言
+  /// 依 ID 取得留言
   ///
-  /// [uuid] 留言 UUID
+  /// [id] 留言 ID
   @override
-  Message? getByUuid(String uuid) {
-    return _localDataSource.getByUuid(uuid);
+  Message? getById(String id) {
+    return _localDataSource.getById(id);
   }
 
   /// 新增留言
@@ -92,12 +92,12 @@ class MessageRepository implements IMessageRepository {
     // TODO: Trigger Sync or queue?
   }
 
-  /// 刪除留言 (依 UUID)
+  /// 刪除留言 (依 ID)
   ///
-  /// [uuid] 欲刪除的留言 UUID
+  /// [id] 欲刪除的留言 ID
   @override
-  Future<void> deleteByUuid(String uuid) async {
-    final item = _localDataSource.getByUuid(uuid);
+  Future<void> deleteById(String id) async {
+    final item = _localDataSource.getById(id);
     if (item != null) {
       // 若已載入 HiveObject，直接 delete
       if (item.isInBox) {
@@ -147,10 +147,10 @@ class MessageRepository implements IMessageRepository {
 
   /// 取得待上傳的本地留言 (尚未在雲端)
   ///
-  /// [cloudUuids] 已存在於雲端的 UUID 集合
+  /// [cloudIds] 已存在於雲端的 ID 集合
   @override
-  List<Message> getPendingMessages(Set<String> cloudUuids) {
-    return _localDataSource.getAll().where((m) => !cloudUuids.contains(m.uuid)).toList();
+  List<Message> getPendingMessages(Set<String> cloudIds) {
+    return _localDataSource.getAll().where((m) => !cloudIds.contains(m.id)).toList();
   }
 
   /// 監聽留言變更

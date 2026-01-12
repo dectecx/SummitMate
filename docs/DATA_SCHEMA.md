@@ -24,7 +24,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Field       | Type        | Key | Default | Description                     |
 | :---------- | :---------- | :-- | :------ | :------------------------------ |
-| uuid        | `String`    | 0   | -       | **PK** 節點唯一識別碼           |
+| id          | `String`    | 0   | -       | **PK** 節點唯一識別碼           |
 | tripId      | `String`    | 1   | -       | **FK** 關聯的行程 ID            |
 | day         | `String`    | 2   | `''`    | 行程天數 (e.g., "D0", "D1")     |
 | name        | `String`    | 3   | `''`    | 地標名稱                        |
@@ -45,7 +45,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Field     | Type       | Key | Default | Description                      |
 | :-------- | :--------- | :-- | :------ | :------------------------------- |
-| uuid      | `String`   | 0   | -       | **PK** 留言唯一識別碼            |
+| id        | `String`   | 0   | -       | **PK** 留言唯一識別碼            |
 | tripId    | `String?`  | 1   | `null`  | **FK** 關聯行程 ID (null = 全域) |
 | parentId  | `String?`  | 2   | `null`  | **FK** 父留言 ID (Thread)        |
 | user      | `String`   | 3   | `''`    | 發文者暱稱                       |
@@ -60,7 +60,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Field         | Type      | Key | Default   | Description                     |
 | :------------ | :-------- | :-- | :-------- | :------------------------------ |
-| uuid          | `String`  | 0   | -         | **PK** 裝備項目 ID              |
+| id            | `String`  | 0   | -         | **PK** 裝備項目 ID              |
 | tripId        | `String?` | 1   | `null`    | **FK** 關聯行程 ID              |
 | libraryItemId | `String?` | 2   | `null`    | **FK** 關聯裝備庫 ID (連結模式) |
 | name          | `String`  | 3   | `''`      | 裝備名稱 (快取或獨立)           |
@@ -162,7 +162,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Field      | Type        | Key | Default   | Description   |
 | :--------- | :---------- | :-- | :-------- | :------------ |
-| uuid       | `String`    | 0   | -         | **PK** 識別碼 |
+| id         | `String`    | 0   | -         | **PK** 識別碼 |
 | name       | `String`    | 1   | `''`      | 名稱          |
 | weight     | `double`    | 2   | `0.0`     | 重量 (g)      |
 | category   | `String`    | 3   | `'Other'` | 分類          |
@@ -182,7 +182,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field               | Description                |
 | :----------- | :------------------ | :------------------------- |
-| A            | uuid                | **PK** 會員 ID             |
+| A            | id                  | **PK** 會員 ID             |
 | B            | email               | 電子郵件                   |
 | C            | password_hash       | 密碼雜湊                   |
 | D            | display_name        | 顯示名稱                   |
@@ -216,7 +216,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field         | Description                  |
 | :----------- | :------------ | :--------------------------- |
-| A            | uuid          | **PK** 節點 ID               |
+| A            | id            | **PK** 節點 ID               |
 | B            | trip_id       | **FK** 行程 ID               |
 | C            | day           | 天數 (D0, D1...)             |
 | D            | name          | 地標名稱                     |
@@ -234,7 +234,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field     | Description      |
 | :----------- | :-------- | :--------------- |
-| A            | uuid      | **PK** 留言 ID   |
+| A            | id        | **PK** 留言 ID   |
 | B            | trip_id   | **FK** 行程 ID   |
 | C            | parent_id | **FK** 父留言 ID |
 | D            | user      | 發文者           |
@@ -247,7 +247,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field      | Description    |
 | :----------- | :--------- | :------------- |
-| A            | uuid       | **PK** 裝備 ID |
+| A            | id         | **PK** 裝備 ID |
 | B            | trip_id    | **FK** 行程 ID |
 | C            | name       | 名稱           |
 | D            | weight     | 重量           |
@@ -259,7 +259,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field      | Description                           |
 | :----------- | :--------- | :------------------------------------ |
-| A            | uuid       | **PK** 裝備 ID                        |
+| A            | id         | **PK** 裝備 ID                        |
 | B            | owner_key  | **FK** 擁有者 ID (未來遷移至 user_id) |
 | C            | name       | 名稱                                  |
 | D            | weight     | 重量                                  |
@@ -272,7 +272,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field        | Description                       |
 | :----------- | :----------- | :-------------------------------- |
-| A            | uuid         | **PK** 組合 ID                    |
+| A            | id           | **PK** 組合 ID                    |
 | B            | trip_id      | **FK** 來源行程 ID                |
 | C            | title        | 標題                              |
 | D            | author       | 作者                              |
@@ -288,7 +288,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field                | Description    |
 | :----------- | :------------------- | :------------- |
-| A            | poll_id              | **PK** 投票 ID |
+| A            | id                   | **PK** 投票 ID |
 | B            | title                | 標題           |
 | C            | description          | 描述           |
 | D            | creator_id           | 建立者         |
@@ -304,7 +304,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field      | Description    |
 | :----------- | :--------- | :------------- |
-| A            | option_id  | **PK** 選項 ID |
+| A            | id         | **PK** 選項 ID |
 | B            | poll_id    | **FK** 投票 ID |
 | C            | text       | 內容           |
 | D            | creator_id | 建立者         |
@@ -315,7 +315,7 @@ Hive 的 TypeId 必須全域唯一。
 
 | Column Index | Field      | Description    |
 | :----------- | :--------- | :------------- |
-| A            | vote_id    | **PK** 票 ID   |
+| A            | id         | **PK** 票 ID   |
 | B            | poll_id    | **FK** 投票 ID |
 | C            | option_id  | **FK** 選項 ID |
 | D            | user_id    | 投票者 ID      |

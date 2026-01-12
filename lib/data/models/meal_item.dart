@@ -1,3 +1,6 @@
+import 'package:equatable/equatable.dart';
+import 'package:collection/collection.dart';
+
 /// 餐食類型 (早/午/晚/行動糧...)
 enum MealType {
   /// 早早餐 (攻頂前)
@@ -25,8 +28,8 @@ enum MealType {
   const MealType(this.label);
 }
 
-/// 單一餐食項目
-class MealItem {
+/// 餐食項目
+class MealItem extends Equatable {
   /// 唯一識別碼
   final String id;
 
@@ -73,19 +76,25 @@ class MealItem {
 
   /// 從 JSON 建立
   factory MealItem.fromJson(Map<String, dynamic> json) {
+    if (json['id'] == null) throw ArgumentError('MealItem ID is required');
+    if (json['name'] == null) throw ArgumentError('MealItem name is required');
+
     return MealItem(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? 'Unknown',
-      weight: (json['weight'] as num?)?.toDouble() ?? 0,
-      calories: (json['calories'] as num?)?.toDouble() ?? 0,
+      id: json['id'] as String,
+      name: json['name'] as String,
+      weight: (json['weight'] as num).toDouble(),
+      calories: (json['calories'] as num).toDouble(),
       quantity: json['quantity'] as int? ?? 1,
       note: json['note'] as String?,
     );
   }
+
+  @override
+  List<Object?> get props => [id, name, weight, calories, quantity, note];
 }
 
 /// 每日餐食計畫
-class DailyMealPlan {
+class DailyMealPlan extends Equatable {
   /// 天數 (Days), e.g. "D0", "D1"
   final String day;
 
@@ -120,4 +129,21 @@ class DailyMealPlan {
 
     return DailyMealPlan(day: day, meals: parsedMeals);
   }
+
+  @override
+  List<Object?> get props => [day, meals];
+
+  @override
+  bool? get stringify => true;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      super == other &&
+          other is DailyMealPlan &&
+          day == other.day &&
+          const MapEquality(values: ListEquality()).equals(meals, other.meals);
+
+  @override
+  int get hashCode => day.hashCode ^ const MapEquality(values: ListEquality()).hash(meals);
 }

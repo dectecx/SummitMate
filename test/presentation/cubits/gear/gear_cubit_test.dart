@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
 import 'package:summitmate/presentation/cubits/gear/gear_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear/gear_state.dart';
@@ -9,6 +10,8 @@ import 'package:summitmate/presentation/cubits/gear/gear_state.dart';
 class MockGearRepository extends Mock implements IGearRepository {}
 
 class FakeGearItem extends Fake implements GearItem {}
+
+class FakeTrip extends Fake implements Trip {}
 
 void main() {
   group('GearCubit', () {
@@ -21,6 +24,7 @@ void main() {
 
     setUpAll(() {
       registerFallbackValue(FakeGearItem());
+      registerFallbackValue(FakeTrip());
     });
 
     setUp(() {

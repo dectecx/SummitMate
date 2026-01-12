@@ -4,7 +4,7 @@ import 'package:summitmate/data/models/itinerary_item.dart';
 void main() {
   group('ItineraryItem Model Tests', () {
     test('should create with default values', () {
-      final item = ItineraryItem();
+      final item = ItineraryItem(id: 'id-1');
 
       expect(item.day, isEmpty);
       expect(item.name, isEmpty);
@@ -17,7 +17,15 @@ void main() {
     });
 
     test('should create with named parameters', () {
-      final item = ItineraryItem(day: 'D1', name: '向陽山屋', estTime: '11:30', altitude: 2850, distance: 4.3, note: '午餐點');
+      final item = ItineraryItem(
+        id: 'id-2',
+        day: 'D1',
+        name: '向陽山屋',
+        estTime: '11:30',
+        altitude: 2850,
+        distance: 4.3,
+        note: '午餐點',
+      );
 
       expect(item.day, equals('D1'));
       expect(item.name, equals('向陽山屋'));
@@ -28,13 +36,13 @@ void main() {
     });
 
     test('should report not checked in when actualTime is null', () {
-      final item = ItineraryItem();
+      final item = ItineraryItem(id: 'id-3');
 
       expect(item.isCheckedIn, isFalse);
     });
 
     test('should report checked in when isCheckedIn is true', () {
-      final item = ItineraryItem();
+      final item = ItineraryItem(id: 'id-4');
       item.isCheckedIn = true;
       item.checkedInAt = DateTime.now();
 
@@ -42,13 +50,21 @@ void main() {
     });
 
     test('should validate day format', () {
-      final item = ItineraryItem(day: 'D1');
+      final item = ItineraryItem(id: 'id-5', day: 'D1');
 
       expect(item.day, matches(RegExp(r'^D\d$')));
     });
 
     test('should convert to/from JSON', () {
-      final item = ItineraryItem(day: 'D1', name: '向陽山屋', estTime: '11:30', altitude: 2850, distance: 4.3, note: '午餐點');
+      final item = ItineraryItem(
+        id: 'id-6',
+        day: 'D1',
+        name: '向陽山屋',
+        estTime: '11:30',
+        altitude: 2850,
+        distance: 4.3,
+        note: '午餐點',
+      );
 
       final json = item.toJson();
       final restored = ItineraryItem.fromJson(json);

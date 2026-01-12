@@ -11,10 +11,10 @@ abstract class IMessageLocalDataSource {
   /// 取得所有訊息
   List<Message> getAll();
 
-  /// 透過 UUID 取得單一訊息
+  /// 透過 ID 取得單一訊息
   ///
-  /// [uuid] 訊息 UUID
-  Message? getByUuid(String uuid);
+  /// [id] 訊息 ID
+  Message? getById(String id);
 
   /// 新增訊息
   ///

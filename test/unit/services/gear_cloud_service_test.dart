@@ -62,7 +62,7 @@ void main() {
       mockClient.expectedResponseData = {
         'gear_sets': [
           {
-            'uuid': 'uuid1',
+            'id': 'uuid1',
             'title': 'Set 1',
             'author': 'User',
             'total_weight': 1000,
@@ -83,7 +83,7 @@ void main() {
     test('uploadGearSet returns uploaded GearSet', () async {
       mockClient.expectedResponseData = {
         'gear_set': {
-          'uuid': 'new_uuid',
+          'id': 'new_uuid',
           'title': 'New Set',
           'author': 'User',
           'total_weight': 100,
@@ -104,7 +104,7 @@ void main() {
       );
 
       expect(result.isSuccess, true);
-      expect(result.data!.uuid, 'new_uuid');
+      expect(result.data!.id, 'new_uuid');
     });
 
     test('uploadGearSet requires 4-digit key for protected sets', () async {
@@ -126,7 +126,7 @@ void main() {
     test('downloadGearSet returns GearSet with items', () async {
       mockClient.expectedResponseData = {
         'gear_set': {
-          'uuid': 'uuid1',
+          'id': 'uuid1',
           'title': 'Set 1',
           'author': 'User',
           'total_weight': 1000,

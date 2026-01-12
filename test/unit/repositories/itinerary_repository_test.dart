@@ -33,7 +33,7 @@ void main() {
       connectivity: mockConnectivityService,
     );
 
-    testItem = ItineraryItem(uuid: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point');
+    testItem = ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point');
 
     registerFallbackValue(testItem);
   });
@@ -64,10 +64,10 @@ void main() {
         when(() => mockLocalDataSource.update(any(), any())).thenAnswer((_) async {});
 
         // Act
-        await repository.updateItem(testItem.uuid, testItem);
+        await repository.updateItem(testItem.id, testItem);
 
         // Assert
-        verify(() => mockLocalDataSource.update(testItem.uuid, testItem)).called(1);
+        verify(() => mockLocalDataSource.update(testItem.id, testItem)).called(1);
       });
     });
 

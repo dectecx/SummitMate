@@ -205,17 +205,17 @@ class SyncService implements ISyncService {
   Future<ApiResult> addMessageAndSync(Message message) async {
     await _messageRepo.addMessage(message);
     final result = await _sheetsService.addMessage(message);
-    LogService.info('留言已同步: ${message.uuid}', source: 'SyncService');
+    LogService.info('留言已同步: ${message.id}', source: 'SyncService');
     return result;
   }
 
   /// 刪除留言並同步到雲端
   /// 注意：離線模式下 UI 層應禁用此功能
   @override
-  Future<ApiResult> deleteMessageAndSync(String uuid) async {
-    await _messageRepo.deleteByUuid(uuid);
-    final result = await _sheetsService.deleteMessage(uuid);
-    LogService.info('留言已刪除: $uuid', source: 'SyncService');
+  Future<ApiResult> deleteMessageAndSync(String id) async {
+    await _messageRepo.deleteById(id);
+    final result = await _sheetsService.deleteMessage(id);
+    LogService.info('留言已刪除: $id', source: 'SyncService');
     return result;
   }
 

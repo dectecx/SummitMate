@@ -3,9 +3,16 @@ import '../../cubits/meal/meal_state.dart';
 import '../../../data/models/meal_item.dart';
 
 class MealCubit extends Cubit<MealState> {
-  MealCubit() : super(const MealInitial()) {
-    reset();
-  }
+  MealCubit()
+    : super(
+        MealLoaded(
+          dailyPlans: [
+            DailyMealPlan(day: 'D0'),
+            DailyMealPlan(day: 'D1'),
+            DailyMealPlan(day: 'D2'),
+          ],
+        ),
+      );
 
   /// 初始化或重置
   void reset() {
@@ -29,11 +36,13 @@ class MealCubit extends Cubit<MealState> {
   /// [calories] 熱量 (kcal)
   void addMealItem(String day, MealType type, String name, double weight, double calories) {
     if (state is! MealLoaded) return;
+    final loadedState = state as MealLoaded;
 
-    final currentPlans = List<DailyMealPlan>.from((state as MealLoaded).dailyPlans);
+    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.day == day);
 
     if (planIndex != -1) {
+      final oldPlan = currentPlans[planIndex];
       final newItem = MealItem(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
@@ -41,19 +50,14 @@ class MealCubit extends Cubit<MealState> {
         calories: calories,
       );
 
-      // Clone existing map
-      final plan = currentPlans[planIndex];
-      // Note: This relies on MealItem/DailyMealPlan mutability in current Provider logic.
-      // If we strictly follow BLoC, we should deep copy.
-      // For migration simplicity, we use the mutable approach wrapped in new list emittance.
+      // Deep copy meals map and list
+      final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
+      final itemList = List<MealItem>.from(newMeals[type] ?? []);
+      itemList.add(newItem);
+      newMeals[type] = itemList;
 
-      if (plan.meals[type] == null) {
-        plan.meals[type] = [];
-      }
-      plan.meals[type]!.add(newItem);
-
-      // Force emit with new list reference
-      emit((state as MealLoaded).copyWith(dailyPlans: List.from(currentPlans)));
+      currentPlans[planIndex] = DailyMealPlan(day: day, meals: newMeals);
+      emit(loadedState.copyWith(dailyPlans: currentPlans));
     }
   }
 
@@ -64,12 +68,20 @@ class MealCubit extends Cubit<MealState> {
   /// [itemId] 項目 ID
   void removeMealItem(String day, MealType type, String itemId) {
     if (state is! MealLoaded) return;
-    final currentPlans = List<DailyMealPlan>.from((state as MealLoaded).dailyPlans);
+    final loadedState = state as MealLoaded;
+
+    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.day == day);
 
     if (planIndex != -1) {
-      currentPlans[planIndex].meals[type]?.removeWhere((item) => item.id == itemId);
-      emit((state as MealLoaded).copyWith(dailyPlans: List.from(currentPlans)));
+      final oldPlan = currentPlans[planIndex];
+      final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
+      final itemList = List<MealItem>.from(newMeals[type] ?? []);
+      itemList.removeWhere((item) => item.id == itemId);
+      newMeals[type] = itemList;
+
+      currentPlans[planIndex] = DailyMealPlan(day: day, meals: newMeals);
+      emit(loadedState.copyWith(dailyPlans: currentPlans));
     }
   }
 
@@ -81,19 +93,23 @@ class MealCubit extends Cubit<MealState> {
   /// [quantity] 新數量
   void updateMealItemQuantity(String day, MealType type, String itemId, int quantity) {
     if (state is! MealLoaded) return;
+    final loadedState = state as MealLoaded;
     if (quantity < 1) quantity = 1;
 
-    final currentPlans = List<DailyMealPlan>.from((state as MealLoaded).dailyPlans);
+    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.day == day);
 
     if (planIndex != -1) {
-      final items = currentPlans[planIndex].meals[type];
-      if (items != null) {
-        final itemIndex = items.indexWhere((item) => item.id == itemId);
-        if (itemIndex != -1) {
-          items[itemIndex] = items[itemIndex].copyWith(quantity: quantity);
-          emit((state as MealLoaded).copyWith(dailyPlans: List.from(currentPlans)));
-        }
+      final oldPlan = currentPlans[planIndex];
+      final newMeals = Map<MealType, List<MealItem>>.from(oldPlan.meals);
+      final itemList = List<MealItem>.from(newMeals[type] ?? []);
+      final itemIndex = itemList.indexWhere((item) => item.id == itemId);
+
+      if (itemIndex != -1) {
+        itemList[itemIndex] = itemList[itemIndex].copyWith(quantity: quantity);
+        newMeals[type] = itemList;
+        currentPlans[planIndex] = DailyMealPlan(day: day, meals: newMeals);
+        emit(loadedState.copyWith(dailyPlans: currentPlans));
       }
     }
   }

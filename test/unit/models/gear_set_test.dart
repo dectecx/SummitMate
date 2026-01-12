@@ -7,7 +7,7 @@ void main() {
   group('GearSet', () {
     test('fromJson handles actual numbers for weight and count', () {
       final json = {
-        'uuid': 'uuid-123',
+        'id': 'uuid-123',
         'title': 'Test Set',
         'author': 'User',
         'total_weight': 1500.5, // Number
@@ -23,31 +23,17 @@ void main() {
       expect(gearSet.itemCount, 10);
     });
 
-    test('fromJson handles missing or null values gracefully', () {
+    test('fromJson throws when required fields are missing', () {
       final json = {
-        'uuid': 'uuid-123',
-        'title': 'Test Set',
-        // author missing
-        // total_weight missing
-        // item_count missing
-        // visibility missing
-        // uploaded_at missing
-        // items missing
+        'id': 'uuid-123',
+        // title missing
       };
-
-      final gearSet = GearSet.fromJson(json);
-
-      expect(gearSet.author, 'Unknown');
-      expect(gearSet.totalWeight, 0.0);
-      expect(gearSet.itemCount, 0);
-      expect(gearSet.visibility, GearSetVisibility.public); // Default
-      expect(gearSet.items, null);
-      expect(gearSet.meals, null);
+      expect(() => GearSet.fromJson(json), throwsArgumentError);
     });
 
     test('fromJson handles meals correctly', () {
       final json = {
-        'uuid': 'uuid-123',
+        'id': 'uuid-123',
         'title': 'Test Set',
         'author': 'User',
         'total_weight': 10.0,
@@ -59,7 +45,7 @@ void main() {
             'day': 'D1',
             'meals': {
               'breakfast': [
-                {'name': 'Bread', 'weight': 100, 'calories': 300},
+                {'id': 'm1', 'name': 'Bread', 'weight': 100, 'calories': 300},
               ],
             },
           },
@@ -75,7 +61,7 @@ void main() {
 
     test('toJson converts correctly', () {
       final gearSet = GearSet(
-        uuid: 'uuid-123',
+        id: 'uuid-123',
         title: 'Test Set',
         author: 'User',
         totalWeight: 1200.0,
@@ -87,7 +73,7 @@ void main() {
 
       final json = gearSet.toJson();
 
-      expect(json['uuid'], 'uuid-123');
+      expect(json['id'], 'uuid-123');
       expect(json['title'], 'Test Set');
       expect(json['total_weight'], 1200.0);
       expect(json['item_count'], 5);

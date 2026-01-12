@@ -12,6 +12,8 @@ void main() {
           startDate: DateTime(2024, 1, 15),
           createdAt: DateTime.now(),
           createdBy: 'user-1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'user-1',
         );
 
         expect(trip.id, 'trip-123');
@@ -30,12 +32,14 @@ void main() {
           name: '玉山單攻',
           startDate: DateTime(2024, 3, 1),
           endDate: DateTime(2024, 3, 1),
+          dayNames: ['D1', 'D2'],
           description: '玉山主峰單日攻頂',
           coverImage: 'assets/yushan.jpg',
           isActive: true,
           createdAt: DateTime.now(),
           createdBy: 'user-1',
-          dayNames: ['D1', 'D2'],
+          updatedAt: DateTime.now(),
+          updatedBy: 'user-1',
         );
 
         expect(trip.id, 'trip-456');
@@ -95,7 +99,7 @@ void main() {
     group('fromJson', () {
       test('parses complete JSON correctly', () {
         final json = {
-          'trip_id': 'trip-abc',
+          'id': 'trip-abc',
           'user_id': 'user-123',
           'name': '嘉明湖三日',
           'start_date': '2024-01-15T00:00:00.000Z',
@@ -105,6 +109,8 @@ void main() {
           'is_active': true,
           'created_at': '2024-01-01T00:00:00.000Z',
           'created_by': 'user-123',
+          'updated_at': '2024-01-01T00:00:00.000Z',
+          'updated_by': 'user-123',
           'day_names': ['D0', 'D1', 'D2'],
         };
 
@@ -127,6 +133,8 @@ void main() {
           'start_date': '2024-01-01T00:00:00.000Z',
           'created_by': 'u1',
           'created_at': '2024-01-01T00:00:00.000Z',
+          'updated_by': 'u1',
+          'updated_at': '2024-01-01T00:00:00.000Z',
         };
 
         final trip = Trip.fromJson(json);
@@ -135,11 +143,14 @@ void main() {
 
       test('handles missing optional fields', () {
         final json = {
-          'trip_id': 'trip-min',
+          'id': 'trip-min',
           'user_id': 'min-user',
           'name': 'Minimal Trip',
+          'start_date': '2024-01-01T00:00:00.000Z',
           'created_by': 'min-user',
           'created_at': '2024-01-01T00:00:00.000Z',
+          'updated_by': 'min-user',
+          'updated_at': '2024-01-01T00:00:00.000Z',
         };
 
         final trip = Trip.fromJson(json);
@@ -155,12 +166,15 @@ void main() {
 
       test('handles is_active as "TRUE" string', () {
         final json = {
-          'trip_id': 'trip-str',
+          'id': 'trip-str',
           'user_id': 'u1',
           'name': 'Test',
+          'start_date': '2024-01-01T00:00:00.000Z',
           'is_active': 'TRUE',
           'created_by': 'u1',
           'created_at': '2024-01-01T00:00:00.000Z',
+          'updated_by': 'u1',
+          'updated_at': '2024-01-01T00:00:00.000Z',
         };
 
         final trip = Trip.fromJson(json);
@@ -186,7 +200,7 @@ void main() {
 
         final json = trip.toJson();
 
-        expect(json['trip_id'], 'trip-ser');
+        expect(json['id'], 'trip-ser');
         expect(json['user_id'], 'user-1');
         expect(json['name'], '合歡山群峰');
         expect(json['start_date'], '2024-02-01T00:00:00.000Z');

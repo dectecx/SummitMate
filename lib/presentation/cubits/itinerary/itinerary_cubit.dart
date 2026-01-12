@@ -225,7 +225,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       var itemToAdd = item;
       if (item.tripId.isEmpty && _currentTripId != null) {
         itemToAdd = ItineraryItem(
-          uuid: item.uuid,
+          id: item.id,
           tripId: _currentTripId!,
           day: item.day,
           name: item.name,

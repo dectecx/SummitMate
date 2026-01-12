@@ -87,6 +87,7 @@ void main() {
       mockClient.expectedResponseData = {
         'itinerary': [
           {
+            'id': 'test-itinerary-id',
             'day': 'D1',
             'name': 'Mountain Lodge',
             'est_time': '11:30',
@@ -97,7 +98,7 @@ void main() {
         ],
         'messages': [
           {
-            'uuid': 'test-uuid-1',
+            'id': 'test-uuid-1',
             'parent_id': null,
             'user': 'Alex',
             'category': 'Gear',
@@ -127,7 +128,7 @@ void main() {
 
     test('addMessage should post message data', () async {
       final message = Message(
-        uuid: 'new-uuid',
+        id: 'new-uuid',
         user: 'Bob',
         category: 'Plan',
         content: 'Test message',
@@ -139,7 +140,7 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(mockClient.capturedBody, isNotNull);
       expect(mockClient.capturedBody!['action'], ApiConfig.actionMessageCreate);
-      expect(mockClient.capturedBody!['data']['uuid'], 'new-uuid');
+      expect(mockClient.capturedBody!['data']['id'], 'new-uuid');
     });
 
     test('deleteMessage should send delete request', () async {
@@ -148,7 +149,7 @@ void main() {
       expect(result.isSuccess, isTrue);
       expect(mockClient.capturedBody, isNotNull);
       expect(mockClient.capturedBody!['action'], ApiConfig.actionMessageDelete);
-      expect(mockClient.capturedBody!['uuid'], 'uuid-to-delete');
+      expect(mockClient.capturedBody!['id'], 'uuid-to-delete');
     });
   });
 }

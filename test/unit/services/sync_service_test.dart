@@ -57,6 +57,8 @@ void main() {
         isActive: true,
         createdAt: DateTime.now(),
         createdBy: 'u1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'u1',
       ),
     );
 
@@ -79,7 +81,7 @@ void main() {
 
     // Register fallback values
     registerFallbackValue(
-      Message(uuid: 'fallback', user: 'user', category: 'Misc', content: 'content', timestamp: DateTime.now()),
+      Message(id: 'fallback', user: 'user', category: 'Misc', content: 'content', timestamp: DateTime.now()),
     );
     // registerFallbackValue(Settings()); // HiveObject might be hard to instantiate directly without hive
   });
@@ -101,10 +103,18 @@ void main() {
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
       final cloudMessages = [
-        Message(uuid: '1', user: 'Cloud', category: 'Misc', content: 'A', timestamp: DateTime.now()),
+        Message(id: '1', user: 'Cloud', category: 'Misc', content: 'A', timestamp: DateTime.now()),
       ];
       final cloudItinerary = [
-        ItineraryItem(day: 'D1', name: 'Start', estTime: '08:00', altitude: 2000, distance: 0, note: ''),
+        ItineraryItem(
+          id: 'sync-item-1',
+          day: 'D1',
+          name: 'Start',
+          estTime: '08:00',
+          altitude: 2000,
+          distance: 0,
+          note: '',
+        ),
       ];
 
       when(
@@ -196,6 +206,8 @@ void main() {
           startDate: DateTime.now(),
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         ),
       ];
       when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => trips);
@@ -211,7 +223,7 @@ void main() {
 
     test('addMessageAndSync should save locally and upload to cloud', () async {
       // Arrange
-      final newMsg = Message(uuid: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
+      final newMsg = Message(id: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
 
       when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
       when(() => mockDataService.addMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
@@ -227,18 +239,18 @@ void main() {
 
     test('deleteMessageAndSync should delete locally and then from cloud', () async {
       // Arrange
-      const uuid = 'delete-me';
+      const id = 'delete-me';
 
-      when(() => mockMessageRepo.deleteByUuid(any())).thenAnswer((_) async {});
+      when(() => mockMessageRepo.deleteById(any())).thenAnswer((_) async {});
       when(() => mockDataService.deleteMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
 
       // Act
-      final result = await syncService.deleteMessageAndSync(uuid);
+      final result = await syncService.deleteMessageAndSync(id);
 
       // Assert
       expect(result.isSuccess, true);
-      verify(() => mockMessageRepo.deleteByUuid(uuid)).called(1);
-      verify(() => mockDataService.deleteMessage(uuid)).called(1);
+      verify(() => mockMessageRepo.deleteById(id)).called(1);
+      verify(() => mockDataService.deleteMessage(id)).called(1);
     });
   });
 }

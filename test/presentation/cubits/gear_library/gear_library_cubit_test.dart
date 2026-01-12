@@ -23,6 +23,8 @@ class FakeGearLibraryItem extends Fake implements GearLibraryItem {}
 
 class FakeGearItem extends Fake implements GearItem {}
 
+class FakeTrip extends Fake implements Trip {}
+
 void main() {
   group('GearLibraryCubit', () {
     late IGearLibraryRepository mockRepo;
@@ -39,6 +41,8 @@ void main() {
       category: 'Sleep',
       createdAt: DateTime.now(),
       createdBy: 'u1',
+      updatedAt: DateTime.now(),
+      updatedBy: 'u1',
     );
     final libItem2 = GearLibraryItem(
       id: 'lib2',
@@ -48,11 +52,14 @@ void main() {
       category: 'Cook',
       createdAt: DateTime.now(),
       createdBy: 'u1',
+      updatedAt: DateTime.now(),
+      updatedBy: 'u1',
     );
 
     setUpAll(() {
       registerFallbackValue(FakeGearLibraryItem());
       registerFallbackValue(FakeGearItem());
+      registerFallbackValue(FakeTrip());
     });
 
     setUp(() {
@@ -126,6 +133,8 @@ void main() {
             isActive: true,
             createdAt: DateTime.now(),
             createdBy: 'u1',
+            updatedAt: DateTime.now(),
+            updatedBy: 'u1',
           ),
         );
         when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async {});

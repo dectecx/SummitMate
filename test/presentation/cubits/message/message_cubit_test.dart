@@ -21,6 +21,8 @@ class MockAuthService extends Mock implements IAuthService {}
 
 class FakeMessage extends Fake implements Message {}
 
+class FakeTrip extends Fake implements Trip {}
+
 void main() {
   late MockMessageRepository mockRepo;
   late MockTripRepository mockTripRepo;
@@ -28,18 +30,19 @@ void main() {
   late MockAuthService mockAuthService;
   late MessageCubit cubit;
 
-  final testMessage1 = Message(uuid: 'm1', content: 'Hello', category: 'chat', tripId: 't1', timestamp: DateTime.now());
+  final testMessage1 = Message(id: 'm1', content: 'Hello', category: 'chat', tripId: 't1', timestamp: DateTime.now());
   final testMessage2 = Message(
-    uuid: 'm2',
+    id: 'm2',
     content: 'World',
     category: 'chat',
     tripId: 't1',
     timestamp: DateTime.now().add(const Duration(minutes: 1)),
   );
-  final globalMessage = Message(uuid: 'm3', content: 'Global', category: 'chat', timestamp: DateTime.now());
+  final globalMessage = Message(id: 'm3', content: 'Global', category: 'chat', timestamp: DateTime.now());
 
   setUpAll(() {
     registerFallbackValue(FakeMessage());
+    registerFallbackValue(FakeTrip());
   });
 
   setUp(() {
@@ -60,6 +63,8 @@ void main() {
         isActive: true,
         createdAt: DateTime.now(),
         createdBy: 'u1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'u1',
       ),
     );
 
@@ -96,7 +101,7 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'filters messages not belonging to current trip',
       setUp: () {
-        final otherTripMsg = Message(uuid: 'm4', content: 'Other', tripId: 't2');
+        final otherTripMsg = Message(id: 'm4', content: 'Other', tripId: 't2');
         when(() => mockRepo.getAllMessages()).thenReturn([testMessage1, otherTripMsg]);
       },
       build: () => cubit,

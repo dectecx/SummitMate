@@ -100,6 +100,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
         notes: notes,
         createdAt: DateTime.now(),
         createdBy: userId,
+        updatedAt: DateTime.now(),
+        updatedBy: userId,
         syncStatus: SyncStatus.pendingCreate,
       );
       await _repository.addItem(item);
