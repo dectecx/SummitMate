@@ -7,6 +7,7 @@ import 'package:summitmate/domain/interfaces/i_sync_service.dart';
 
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
+import 'package:summitmate/core/error/result.dart';
 
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
@@ -79,8 +80,8 @@ void main() {
     blocTest<TripCubit, TripState>(
       'loadTrips emits TripLoading and TripLoaded',
       build: () {
-        when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1, trip2]);
-        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         return TripCubit(
           tripRepository: mockTripRepository,
           syncService: mockSyncService,
@@ -94,10 +95,10 @@ void main() {
     blocTest<TripCubit, TripState>(
       'addTrip adds trip and reloads',
       build: () {
-        when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1]);
-        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
-        when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async {});
-        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async {});
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
+        when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async => const Success(null));
         return TripCubit(
           tripRepository: mockTripRepository,
           syncService: mockSyncService,
@@ -125,9 +126,9 @@ void main() {
     blocTest<TripCubit, TripState>(
       'importTrip adds trip and reloads',
       build: () {
-        when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1]);
-        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
-        when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async {});
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
+        when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async => const Success(null));
         return TripCubit(
           tripRepository: mockTripRepository,
           syncService: mockSyncService,
@@ -144,9 +145,9 @@ void main() {
     blocTest<TripCubit, TripState>(
       'setActiveTrip calls repo and reloads',
       build: () {
-        when(() => mockTripRepository.getAllTrips(any())).thenReturn([trip1, trip2]);
-        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(trip1);
-        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async {});
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
+        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async => const Success(null));
         return TripCubit(
           tripRepository: mockTripRepository,
           syncService: mockSyncService,

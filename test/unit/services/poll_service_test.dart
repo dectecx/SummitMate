@@ -7,6 +7,7 @@ import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
 import 'package:summitmate/infrastructure/services/poll_service.dart';
 import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/core/error/result.dart'; // Added import
 
 // ============================================================
 // === MOCKS ===
@@ -114,8 +115,10 @@ void main() {
         'polls': [createPollJson(id: 'poll-1', title: 'Poll 1'), createPollJson(id: 'poll-2', title: 'Poll 2')],
       };
 
-      final polls = await pollService.getPolls(userId: 'user-1');
+      final result = await pollService.getPolls(userId: 'user-1');
 
+      expect(result, isA<Success>());
+      final polls = (result as Success).value;
       expect(polls, hasLength(2));
       expect(polls[0].title, 'Poll 1');
       expect(polls[1].title, 'Poll 2');
@@ -125,22 +128,27 @@ void main() {
     test('returns empty list when no polls exist', () async {
       mockClient.mockResponseData = {'polls': []};
 
-      final polls = await pollService.getPolls(userId: 'user-1');
+      final result = await pollService.getPolls(userId: 'user-1');
 
-      expect(polls, isEmpty);
+      expect(result, isA<Success>());
+      expect((result as Success).value, isEmpty);
     });
 
-    test('throws exception on API error', () async {
+    test('returns Failure on API error', () async {
       mockClient.mockResponseCode = '9999';
       mockClient.mockResponseMessage = 'Server error';
 
-      expect(() => pollService.getPolls(userId: 'user-1'), throwsException);
+      final result = await pollService.getPolls(userId: 'user-1');
+
+      expect(result, isA<Failure>());
     });
 
-    test('throws exception on network error', () async {
+    test('returns Failure on network error', () async {
       mockClient.shouldThrowError = true;
 
-      expect(() => pollService.getPolls(userId: 'user-1'), throwsA(isA<DioException>()));
+      final result = await pollService.getPolls(userId: 'user-1');
+
+      expect(result, isA<Failure>());
     });
   });
 
@@ -148,24 +156,27 @@ void main() {
     test('creates poll successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.createPoll(
+      final result = await pollService.createPoll(
         title: 'New Poll',
         description: 'Description',
         creatorId: 'user-1',
         initialOptions: ['Option 1', 'Option 2'],
       );
 
+      expect(result, isA<Success>());
       expect(mockClient.lastPostBody?['title'], 'New Poll');
       expect(mockClient.lastPostBody?['description'], 'Description');
       expect(mockClient.lastPostBody?['creator_id'], 'user-1');
       expect(mockClient.lastPostBody?['initial_options'], ['Option 1', 'Option 2']);
     });
 
-    test('throws exception on API error', () async {
+    test('returns Failure on API error', () async {
       mockClient.mockResponseCode = '9999';
       mockClient.mockResponseMessage = 'Creation failed';
 
-      expect(() => pollService.createPoll(title: 'New Poll', creatorId: 'user-1'), throwsException);
+      final result = await pollService.createPoll(title: 'New Poll', creatorId: 'user-1');
+
+      expect(result, isA<Failure>());
     });
   });
 
@@ -173,19 +184,27 @@ void main() {
     test('votes successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.votePoll(pollId: 'poll-1', optionIds: ['opt-1', 'opt-2'], userId: 'user-1', userName: 'Alice');
+      final result = await pollService.votePoll(
+        pollId: 'poll-1',
+        optionIds: ['opt-1', 'opt-2'],
+        userId: 'user-1',
+        userName: 'Alice',
+      );
 
+      expect(result, isA<Success>());
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
       expect(mockClient.lastPostBody?['option_ids'], ['opt-1', 'opt-2']);
       expect(mockClient.lastPostBody?['user_id'], 'user-1');
       expect(mockClient.lastPostBody?['user_name'], 'Alice');
     });
 
-    test('throws exception on already voted error', () async {
+    test('returns Failure on already voted error', () async {
       mockClient.mockResponseCode = '4001';
       mockClient.mockResponseMessage = 'Already voted';
 
-      expect(() => pollService.votePoll(pollId: 'poll-1', optionIds: ['opt-1'], userId: 'user-1'), throwsException);
+      final result = await pollService.votePoll(pollId: 'poll-1', optionIds: ['opt-1'], userId: 'user-1');
+
+      expect(result, isA<Failure>());
     });
   });
 
@@ -193,18 +212,21 @@ void main() {
     test('adds option successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.addOption(pollId: 'poll-1', text: 'New Option', creatorId: 'user-1');
+      final result = await pollService.addOption(pollId: 'poll-1', text: 'New Option', creatorId: 'user-1');
 
+      expect(result, isA<Success>());
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
       expect(mockClient.lastPostBody?['text'], 'New Option');
       expect(mockClient.lastPostBody?['creator_id'], 'user-1');
     });
 
-    test('throws exception on limit exceeded', () async {
+    test('returns Failure on limit exceeded', () async {
       mockClient.mockResponseCode = '4002';
       mockClient.mockResponseMessage = 'Option limit exceeded';
 
-      expect(() => pollService.addOption(pollId: 'poll-1', text: 'New Option', creatorId: 'user-1'), throwsException);
+      final result = await pollService.addOption(pollId: 'poll-1', text: 'New Option', creatorId: 'user-1');
+
+      expect(result, isA<Failure>());
     });
   });
 
@@ -212,17 +234,20 @@ void main() {
     test('closes poll successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.closePoll(pollId: 'poll-1', userId: 'user-1');
+      final result = await pollService.closePoll(pollId: 'poll-1', userId: 'user-1');
 
+      expect(result, isA<Success>());
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
       expect(mockClient.lastPostBody?['action'], ApiConfig.actionPollClose);
     });
 
-    test('throws exception on unauthorized', () async {
+    test('returns Failure on unauthorized', () async {
       mockClient.mockResponseCode = '4003';
       mockClient.mockResponseMessage = 'Not authorized';
 
-      expect(() => pollService.closePoll(pollId: 'poll-1', userId: 'user-2'), throwsException);
+      final result = await pollService.closePoll(pollId: 'poll-1', userId: 'user-2');
+
+      expect(result, isA<Failure>());
     });
   });
 
@@ -230,17 +255,20 @@ void main() {
     test('deletes poll successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.deletePoll(pollId: 'poll-1', userId: 'user-1');
+      final result = await pollService.deletePoll(pollId: 'poll-1', userId: 'user-1');
 
+      expect(result, isA<Success>());
       expect(mockClient.lastPostBody?['poll_id'], 'poll-1');
       expect(mockClient.lastPostBody?['action'], ApiConfig.actionPollDelete);
     });
 
-    test('throws exception on not found', () async {
+    test('returns Failure on not found', () async {
       mockClient.mockResponseCode = '4004';
       mockClient.mockResponseMessage = 'Poll not found';
 
-      expect(() => pollService.deletePoll(pollId: 'invalid', userId: 'user-1'), throwsException);
+      final result = await pollService.deletePoll(pollId: 'invalid', userId: 'user-1');
+
+      expect(result, isA<Failure>());
     });
   });
 
@@ -248,8 +276,9 @@ void main() {
     test('deletes option successfully', () async {
       mockClient.mockResponseData = {};
 
-      await pollService.deleteOption(optionId: 'opt-1', userId: 'user-1');
+      final result = await pollService.deleteOption(optionId: 'opt-1', userId: 'user-1');
 
+      expect(result, isA<Success>());
       expect(mockClient.lastPostBody?['option_id'], 'opt-1');
       expect(mockClient.lastPostBody?['action'], ApiConfig.actionPollDeleteOption);
     });

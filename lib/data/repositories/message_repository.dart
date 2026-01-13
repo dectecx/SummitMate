@@ -1,4 +1,5 @@
 import '../../core/di.dart';
+import '../../core/error/result.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../models/message.dart';
@@ -27,85 +28,125 @@ class MessageRepository implements IMessageRepository {
 
   /// 初始化 Repository (主要是本地資料庫)
   @override
-  Future<void> init() async {
-    await _localDataSource.init();
+  Future<Result<void, Exception>> init() async {
+    try {
+      await _localDataSource.init();
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 取得所有留言 (依時間倒序)
   @override
-  List<Message> getAllMessages() {
-    final messages = _localDataSource.getAll();
-    messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return messages;
+  @override
+  Future<Result<List<Message>, Exception>> getAllMessages() async {
+    try {
+      final messages = _localDataSource.getAll();
+      messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return Success(messages);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 依分類取得留言
   ///
   /// [category] 留言分類 (e.g., "Gear")
   @override
-  List<Message> getMessagesByCategory(String category) {
-    final messages = _localDataSource.getAll().where((m) => m.category == category).toList();
-    messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return messages;
+  @override
+  Future<Result<List<Message>, Exception>> getMessagesByCategory(String category) async {
+    try {
+      final messages = _localDataSource.getAll().where((m) => m.category == category).toList();
+      messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return Success(messages);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 取得主留言 (非回覆)
   ///
   /// [category] 選擇性篩選分類
   @override
-  List<Message> getMainMessages({String? category}) {
-    var messages = _localDataSource.getAll().where((m) => m.parentId == null);
+  @override
+  Future<Result<List<Message>, Exception>> getMainMessages({String? category}) async {
+    try {
+      var messages = _localDataSource.getAll().where((m) => m.parentId == null);
 
-    if (category != null) {
-      messages = messages.where((m) => m.category == category);
+      if (category != null) {
+        messages = messages.where((m) => m.category == category);
+      }
+
+      final result = messages.toList();
+      result.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return Success(result);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
-
-    final result = messages.toList();
-    result.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    return result;
   }
 
   /// 取得指定留言的回覆列表
   ///
   /// [parentId] 父留言的 ID
   @override
-  List<Message> getReplies(String parentId) {
-    final messages = _localDataSource.getAll().where((m) => m.parentId == parentId).toList();
-    messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-    return messages;
+  @override
+  Future<Result<List<Message>, Exception>> getReplies(String parentId) async {
+    try {
+      final messages = _localDataSource.getAll().where((m) => m.parentId == parentId).toList();
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      return Success(messages);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 依 ID 取得留言
   ///
   /// [id] 留言 ID
   @override
-  Message? getById(String id) {
-    return _localDataSource.getById(id);
+  @override
+  Future<Result<Message?, Exception>> getById(String id) async {
+    try {
+      return Success(_localDataSource.getById(id));
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 新增留言
   ///
   /// [message] 欲新增的留言物件
   @override
-  Future<void> addMessage(Message message) async {
-    await _localDataSource.add(message);
-    // TODO: Trigger Sync or queue?
+  @override
+  Future<Result<void, Exception>> addMessage(Message message) async {
+    try {
+      await _localDataSource.add(message);
+      // TODO: Trigger Sync or queue?
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 刪除留言 (依 ID)
   ///
   /// [id] 欲刪除的留言 ID
   @override
-  Future<void> deleteById(String id) async {
-    final item = _localDataSource.getById(id);
-    if (item != null) {
-      // 若已載入 HiveObject，直接 delete
-      if (item.isInBox) {
-        await item.delete();
-      } else {
-        // 否則透過 LocalDataSource 刪除 (需知道 key)
-        await _localDataSource.delete(item.key);
+  @override
+  Future<Result<void, Exception>> deleteById(String id) async {
+    try {
+      final item = _localDataSource.getById(id);
+      if (item != null) {
+        if (item.isInBox) {
+          await item.delete();
+        } else {
+          await _localDataSource.delete(item.key);
+        }
       }
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
@@ -113,35 +154,41 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [cloudMessages] 雲端下載的留言列表
   @override
-  Future<void> syncFromCloud(List<Message> cloudMessages) async {
-    // 清除現有資料，用雲端資料完全覆蓋
-    await _localDataSource.clear();
-
-    // 寫入雲端資料
-    for (final msg in cloudMessages) {
-      await _localDataSource.add(msg);
+  @override
+  Future<Result<void, Exception>> syncFromCloud(List<Message> cloudMessages) async {
+    try {
+      await _localDataSource.clear();
+      for (final msg in cloudMessages) {
+        await _localDataSource.add(msg);
+      }
+      await saveLastSyncTime(DateTime.now());
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
-    await saveLastSyncTime(DateTime.now());
   }
 
   /// 自動同步 (自主判斷連線狀態)
   ///
   /// [tripId] 當前行程 ID
   @override
-  Future<void> sync(String tripId) async {
+  @override
+  Future<Result<void, Exception>> sync(String tripId) async {
     if (_connectivity.isOffline) {
       LogService.warning('Offline mode, skipping message sync', source: _source);
-      return;
+      return const Success(null);
     }
 
     try {
       LogService.info('Syncing messages for trip: $tripId', source: _source);
       final cloudMessages = await _remoteDataSource.getMessages(tripId);
-      await syncFromCloud(cloudMessages);
+      final result = await syncFromCloud(cloudMessages);
+      if (result is Failure) throw result.exception;
       LogService.info('Sync messages complete', source: _source);
+      return const Success(null);
     } catch (e) {
       LogService.error('Sync messages failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
@@ -149,8 +196,13 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [cloudIds] 已存在於雲端的 ID 集合
   @override
-  List<Message> getPendingMessages(Set<String> cloudIds) {
-    return _localDataSource.getAll().where((m) => !cloudIds.contains(m.id)).toList();
+  @override
+  Future<Result<List<Message>, Exception>> getPendingMessages(Set<String> cloudIds) async {
+    try {
+      return Success(_localDataSource.getAll().where((m) => !cloudIds.contains(m.id)).toList());
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 監聽留言變更
@@ -161,19 +213,36 @@ class MessageRepository implements IMessageRepository {
 
   /// 儲存最後同步時間
   @override
-  Future<void> saveLastSyncTime(DateTime time) async {
-    await _localDataSource.saveLastSyncTime(time);
+  @override
+  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
+    try {
+      await _localDataSource.saveLastSyncTime(time);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 取得最後同步時間
   @override
-  DateTime? getLastSyncTime() {
-    return _localDataSource.getLastSyncTime();
+  @override
+  Future<Result<DateTime?, Exception>> getLastSyncTime() async {
+    try {
+      return Success(_localDataSource.getLastSyncTime());
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 清除所有留言 (Debug 用途)
   @override
-  Future<void> clearAll() async {
-    await _localDataSource.clear();
+  @override
+  Future<Result<void, Exception>> clearAll() async {
+    try {
+      await _localDataSource.clear();
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 }

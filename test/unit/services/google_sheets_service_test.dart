@@ -8,6 +8,8 @@ import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/domain/dto/data_service_result.dart';
 
 // Mock GasApiClient
 class MockGasApiClient extends GasApiClient {
@@ -110,11 +112,12 @@ void main() {
 
       final result = await service.getAll();
 
-      expect(result.isSuccess, isTrue);
-      expect(result.itinerary.length, 1);
-      expect(result.itinerary.first.name, 'Mountain Lodge');
-      expect(result.messages.length, 1);
-      expect(result.messages.first.user, 'Alex');
+      expect(result, isA<Success<DataServiceResult, Exception>>());
+      final data = (result as Success<DataServiceResult, Exception>).value;
+      expect(data.itinerary.length, 1);
+      expect(data.itinerary.first.name, 'Mountain Lodge');
+      expect(data.messages.length, 1);
+      expect(data.messages.first.user, 'Alex');
     });
 
     test('getAll should return error on HTTP failure', () async {
@@ -122,8 +125,8 @@ void main() {
 
       final result = await service.getAll();
 
-      expect(result.isSuccess, isFalse);
-      expect(result.errorMessage, contains('500'));
+      expect(result, isA<Failure>());
+      expect((result as Failure).exception.toString(), contains('500'));
     });
 
     test('addMessage should post message data', () async {
@@ -141,7 +144,7 @@ void main() {
 
       final result = await service.addMessage(message);
 
-      expect(result.isSuccess, isTrue);
+      expect(result, isA<Success>());
       expect(mockClient.capturedBody, isNotNull);
       expect(mockClient.capturedBody!['action'], ApiConfig.actionMessageCreate);
       expect(mockClient.capturedBody!['data']['id'], 'new-uuid');
@@ -150,7 +153,7 @@ void main() {
     test('deleteMessage should send delete request', () async {
       final result = await service.deleteMessage('uuid-to-delete');
 
-      expect(result.isSuccess, isTrue);
+      expect(result, isA<Success>());
       expect(mockClient.capturedBody, isNotNull);
       expect(mockClient.capturedBody!['action'], ApiConfig.actionMessageDelete);
       expect(mockClient.capturedBody!['id'], 'uuid-to-delete');

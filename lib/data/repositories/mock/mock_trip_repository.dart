@@ -1,3 +1,4 @@
+import '../../../core/error/result.dart';
 import '../../models/user_profile.dart';
 import '../../models/enums/sync_status.dart';
 import '../../models/trip.dart';
@@ -22,75 +23,116 @@ class MockTripRepository implements ITripRepository {
   );
 
   @override
-  Future<void> init() async {}
-
-  @override
-  List<Trip> getAllTrips(String userId) => [_mockTrip];
-
-  @override
-  Trip? getActiveTrip(String userId) => _mockTrip;
-
-  @override
-  Trip? getTripById(String id) => id == _mockTrip.id ? _mockTrip : null;
-
-  @override
-  Future<void> addTrip(Trip trip) async {}
-
-  @override
-  Future<void> updateTrip(Trip trip) async {}
-
-  @override
-  Future<void> deleteTrip(String id) async {}
-
-  @override
-  Future<void> setActiveTrip(String tripId) async {}
-
-  @override
-  DateTime? getLastSyncTime() => DateTime.now();
-
-  @override
-  Future<void> saveLastSyncTime(DateTime time) async {}
-  @override
-  Future<List<Trip>> getRemoteTrips() async => [_mockTrip];
-
-  @override
-  Future<String> uploadTripToRemote(Trip trip) async => trip.id;
-
-  @override
-  Future<void> deleteRemoteTrip(String id) async {}
-
-  @override
-  Future<String> uploadFullTrip({
-    required Trip trip,
-    required List<dynamic> itineraryItems,
-    required List<dynamic> gearItems,
-  }) async => trip.id;
-
-  @override
-  Future<void> clearAll() async {}
-
-  @override
-  Future<List<Map<String, dynamic>>> getTripMembers(String tripId) async => [];
-
-  @override
-  Future<void> updateMemberRole(String tripId, String userId, String role) async {}
-
-  @override
-  Future<void> removeMember(String tripId, String userId) async {}
-
-  @override
-  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {}
-
-  @override
-  Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) async {}
-
-  @override
-  Future<UserProfile> searchUserByEmail(String email) async {
-    return UserProfile(id: 'mock-user-2', email: email, displayName: 'Mock User');
+  Future<Result<void, Exception>> init() async {
+    return const Success(null);
   }
 
   @override
-  Future<UserProfile> searchUserById(String userId) async {
-    return UserProfile(id: userId, email: 'mock@example.com', displayName: 'Mock User');
+  Future<Result<List<Trip>, Exception>> getAllTrips(String userId) async {
+    return Success([_mockTrip]);
+  }
+
+  @override
+  Future<Result<Trip?, Exception>> getActiveTrip(String userId) async {
+    return Success(_mockTrip);
+  }
+
+  @override
+  Future<Result<Trip?, Exception>> getTripById(String id) async {
+    return Success(id == _mockTrip.id ? _mockTrip : null);
+  }
+
+  @override
+  Future<Result<void, Exception>> addTrip(Trip trip) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> updateTrip(Trip trip) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteTrip(String id) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> setActiveTrip(String tripId) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<DateTime?, Exception>> getLastSyncTime() async {
+    return Success(DateTime.now());
+  }
+
+  @override
+  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<List<Trip>, Exception>> getRemoteTrips() async {
+    return Success([_mockTrip]);
+  }
+
+  @override
+  Future<Result<String, Exception>> uploadTripToRemote(Trip trip) async {
+    return Success(trip.id);
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteRemoteTrip(String id) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<String, Exception>> uploadFullTrip({
+    required Trip trip,
+    required List<dynamic> itineraryItems,
+    required List<dynamic> gearItems,
+  }) async {
+    return Success(trip.id);
+  }
+
+  @override
+  Future<Result<void, Exception>> clearAll() async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
+    return const Success([]);
+  }
+
+  @override
+  Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> addMemberById(String tripId, String userId, {String role = 'member'}) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<UserProfile, Exception>> searchUserByEmail(String email) async {
+    return Success(UserProfile(id: 'mock-user-2', email: email, displayName: 'Mock User'));
+  }
+
+  @override
+  Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
+    return Success(UserProfile(id: userId, email: 'mock@example.com', displayName: 'Mock User'));
   }
 }

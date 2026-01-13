@@ -1,12 +1,13 @@
 import '../../domain/interfaces/i_poll_service.dart';
 import '../../data/models/poll.dart';
+import '../../core/error/result.dart';
 
 class MockPollService implements IPollService {
   @override
-  Future<List<Poll>> getPolls({required String userId}) async => [];
+  Future<Result<List<Poll>, Exception>> getPolls({required String userId}) async => const Success([]);
 
   @override
-  Future<void> createPoll({
+  Future<Result<void, Exception>> createPoll({
     required String title,
     String description = '',
     required String creatorId,
@@ -15,25 +16,32 @@ class MockPollService implements IPollService {
     int maxOptionLimit = 20,
     bool allowMultipleVotes = false,
     List<String> initialOptions = const [],
-  }) async {}
+  }) async => const Success(null);
 
   @override
-  Future<void> votePoll({
+  Future<Result<void, Exception>> votePoll({
     required String pollId,
     required List<String> optionIds,
     required String userId,
     String userName = 'Anonymous',
-  }) async {}
+  }) async => const Success(null);
 
   @override
-  Future<void> addOption({required String pollId, required String text, required String creatorId}) async {}
+  Future<Result<void, Exception>> addOption({
+    required String pollId,
+    required String text,
+    required String creatorId,
+  }) async => const Success(null);
 
   @override
-  Future<void> closePoll({required String pollId, required String userId}) async {}
+  Future<Result<void, Exception>> closePoll({required String pollId, required String userId}) async =>
+      const Success(null);
 
   @override
-  Future<void> deletePoll({required String pollId, required String userId}) async {}
+  Future<Result<void, Exception>> deletePoll({required String pollId, required String userId}) async =>
+      const Success(null);
 
   @override
-  Future<void> deleteOption({required String optionId, required String userId}) async {}
+  Future<Result<void, Exception>> deleteOption({required String optionId, required String userId}) async =>
+      const Success(null);
 }

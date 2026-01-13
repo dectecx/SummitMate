@@ -11,6 +11,8 @@ import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/data/models/itinerary_item.dart';
 import 'package:summitmate/data/models/trip.dart';
+import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/domain/dto/data_service_result.dart';
 
 // Mocks - use interfaces for better test isolation
 class MockDataService extends Mock implements IDataService {}
@@ -48,27 +50,29 @@ void main() {
     when(() => mockConnectivity.isOffline).thenReturn(false);
 
     // Default: Active trip
-    when(() => mockTripRepo.getActiveTrip(any())).thenReturn(
-      Trip(
-        id: 'test-trip-1',
-        userId: 'u1',
-        name: 'Test Trip',
-        startDate: DateTime.now(),
-        isActive: true,
-        createdAt: DateTime.now(),
-        createdBy: 'u1',
-        updatedAt: DateTime.now(),
-        updatedBy: 'u1',
+    when(() => mockTripRepo.getActiveTrip(any())).thenAnswer(
+      (_) async => Success(
+        Trip(
+          id: 'test-trip-1',
+          userId: 'u1',
+          name: 'Test Trip',
+          startDate: DateTime.now(),
+          isActive: true,
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
+        ),
       ),
     );
 
     // Default: No last sync time
     when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
-    when(() => mockMessageRepo.getLastSyncTime()).thenReturn(null);
+    when(() => mockMessageRepo.getLastSyncTime()).thenAnswer((_) async => const Success(null));
 
     // Default: Save sync time success
-    when(() => mockItineraryRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
-    when(() => mockMessageRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
+    when(() => mockItineraryRepo.saveLastSyncTime(any())).thenAnswer((_) async => const Success(null));
+    when(() => mockMessageRepo.saveLastSyncTime(any())).thenAnswer((_) async => const Success(null));
 
     syncService = SyncService(
       sheetsService: mockDataService,
@@ -139,11 +143,11 @@ void main() {
 
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => GetAllResult(isSuccess: true, itinerary: cloudItinerary, messages: cloudMessages));
+      ).thenAnswer((_) async => const Success(DataServiceResult(itinerary: [], messages: [])));
 
-      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
-      when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
-      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
+      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.getPendingMessages(any())).thenAnswer((_) async => const Success([]));
+      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.syncAll();
@@ -159,9 +163,9 @@ void main() {
       // Arrange
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => GetAllResult(isSuccess: true, itinerary: [], messages: []));
-      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
-      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
+      ).thenAnswer((_) async => const Success(DataServiceResult(itinerary: [], messages: [])));
+      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       await syncService.syncAll();
@@ -175,11 +179,11 @@ void main() {
       // Arrange
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => GetAllResult(isSuccess: true, itinerary: [], messages: []));
+      ).thenAnswer((_) async => const Success(DataServiceResult(itinerary: [], messages: [])));
 
-      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async {});
-      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async {});
-      when(() => mockMessageRepo.getPendingMessages(any())).thenReturn([]);
+      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.getPendingMessages(any())).thenAnswer((_) async => const Success([]));
 
       // Act
       final result = await syncService.syncAll(isAuto: false);
@@ -193,7 +197,7 @@ void main() {
       // Arrange
       // Need to mock sync needed
       when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
-      when(() => mockMessageRepo.getLastSyncTime()).thenReturn(null);
+      when(() => mockMessageRepo.getLastSyncTime()).thenAnswer((_) async => const Success(null));
       // Re-init to load new mock times
       syncService = SyncService(
         sheetsService: mockDataService,
@@ -206,7 +210,7 @@ void main() {
 
       when(
         () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => GetAllResult(isSuccess: false, errorMessage: 'Network Error'));
+      ).thenAnswer((_) async => Failure(GeneralException('Network Error')));
 
       // Act
       final result = await syncService.syncAll(isAuto: false);
@@ -230,14 +234,14 @@ void main() {
           updatedBy: 'u1',
         ),
       ];
-      when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => trips);
+      when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => Success(trips));
 
       // Act
       final result = await syncService.getCloudTrips();
 
       // Assert
-      expect(result.isSuccess, true);
-      expect(result.trips, trips);
+      expect(result is Success, true);
+      expect((result as Success).value, trips);
       verify(() => mockTripRepo.getRemoteTrips()).called(1);
     });
 
@@ -255,14 +259,14 @@ void main() {
         updatedBy: 'Me',
       );
 
-      when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
-      when(() => mockDataService.addMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
+      when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockDataService.addMessage(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.addMessageAndSync(newMsg);
 
       // Assert
-      expect(result.isSuccess, true);
+      expect(result is Success, true);
       verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
       verify(() => mockDataService.addMessage(newMsg)).called(1);
     });
@@ -271,14 +275,14 @@ void main() {
       // Arrange
       const id = 'delete-me';
 
-      when(() => mockMessageRepo.deleteById(any())).thenAnswer((_) async {});
-      when(() => mockDataService.deleteMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
+      when(() => mockMessageRepo.deleteById(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockDataService.deleteMessage(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.deleteMessageAndSync(id);
 
       // Assert
-      expect(result.isSuccess, true);
+      expect(result is Success, true);
       verify(() => mockMessageRepo.deleteById(id)).called(1);
       verify(() => mockDataService.deleteMessage(id)).called(1);
     });

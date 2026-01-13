@@ -1,6 +1,7 @@
 import 'package:summitmate/domain/interfaces/i_sync_service.dart';
-import 'package:summitmate/domain/interfaces/i_data_service.dart';
 import 'package:summitmate/data/models/message.dart';
+import '../../core/error/result.dart';
+import '../../data/models/trip.dart';
 
 /// Mock 同步服務
 /// 用於測試和離線模式
@@ -49,18 +50,18 @@ class MockSyncService implements ISyncService {
   }
 
   @override
-  Future<GetTripsResult> getCloudTrips() async {
-    return GetTripsResult(isSuccess: true, trips: []);
+  Future<Result<List<Trip>, Exception>> getCloudTrips() async {
+    return const Success([]);
   }
 
   @override
-  Future<ApiResult> addMessageAndSync(Message message) async {
-    return ApiResult(isSuccess: true);
+  Future<Result<void, Exception>> addMessageAndSync(Message message) async {
+    return const Success(null);
   }
 
   @override
-  Future<ApiResult> deleteMessageAndSync(String uuid) async {
-    return ApiResult(isSuccess: true);
+  Future<Result<void, Exception>> deleteMessageAndSync(String uuid) async {
+    return const Success(null);
   }
 
   @override

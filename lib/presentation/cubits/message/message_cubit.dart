@@ -7,6 +7,7 @@ import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../domain/interfaces/i_auth_service.dart';
 import '../../../domain/interfaces/i_sync_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
+import '../../../core/error/result.dart';
 import 'message_state.dart';
 
 class MessageCubit extends Cubit<MessageState> {
@@ -30,26 +31,40 @@ class MessageCubit extends Cubit<MessageState> {
        super(const MessageInitial());
 
   /// 取得當前活動行程 ID
-  String? get _currentTripId => _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest')?.id;
+  /// 取得當前活動行程 ID
+  Future<String?> get _currentTripId async {
+    final result = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
+    return switch (result) {
+      Success(value: final trip) => trip?.id,
+      Failure() => null,
+    };
+  }
 
   Future<void> loadMessages() async {
     emit(const MessageLoading());
     try {
-      _refreshLocalMessages();
+      await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Failed to load messages: $e', source: _source);
       emit(MessageError(e.toString()));
     }
   }
 
-  void _refreshLocalMessages() {
-    final allMessages = _repository.getAllMessages();
+  Future<void> _refreshLocalMessages() async {
+    final result = await _repository.getAllMessages();
+
+    final List<Message> allMessages = switch (result) {
+      Success(value: final m) => m,
+      Failure(exception: final e) => throw e,
+    };
+
     // 過濾邏輯：匹配 tripId 或全域 (tripId == null)
     // 且若 _currentTripId 已設定，則顯示該行程的留言
+    final currentTripId = await _currentTripId;
 
     List<Message> filtered;
-    if (_currentTripId != null) {
-      filtered = allMessages.where((msg) => msg.tripId == null || msg.tripId == _currentTripId).toList();
+    if (currentTripId != null) {
+      filtered = allMessages.where((msg) => msg.tripId == null || msg.tripId == currentTripId).toList();
     } else {
       // 若無活動行程 (例如首頁)，顯示全部或僅顯示全域？
       // 目前邏輯為顯示全部
@@ -101,7 +116,7 @@ class MessageCubit extends Cubit<MessageState> {
         category: currentState.selectedCategory,
         content: content,
         avatar: avatar,
-        tripId: _currentTripId,
+        tripId: await _currentTripId,
         userId: _authService.currentUserId ?? '',
         timestamp: DateTime.now(),
         createdAt: DateTime.now(),
@@ -112,15 +127,18 @@ class MessageCubit extends Cubit<MessageState> {
 
       // 使用 SyncService 新增並同步
       // 內部應已處理儲存至 Repository
-      await _syncService.addMessageAndSync(message);
+      final result = await _syncService.addMessageAndSync(message);
+      if (result is Failure) {
+        throw result.exception;
+      }
 
       // 刷新列表
-      _refreshLocalMessages();
+      await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Add message failed: $e', source: _source);
       emit(MessageError(e.toString()));
       // 若需要，可恢復狀態
-      _refreshLocalMessages();
+      await _refreshLocalMessages();
     }
   }
 
@@ -129,12 +147,15 @@ class MessageCubit extends Cubit<MessageState> {
   /// [uuid] 留言 UUID
   Future<void> deleteMessage(String uuid) async {
     try {
-      await _syncService.deleteMessageAndSync(uuid);
-      _refreshLocalMessages();
+      final result = await _syncService.deleteMessageAndSync(uuid);
+      if (result is Failure) {
+        throw result.exception;
+      }
+      await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Delete message failed: $e', source: _source);
       emit(MessageError(e.toString()));
-      _refreshLocalMessages();
+      await _refreshLocalMessages();
     }
   }
 
@@ -150,7 +171,7 @@ class MessageCubit extends Cubit<MessageState> {
         emit(MessageError(result.errors.join(', ')));
       }
 
-      _refreshLocalMessages();
+      await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);
       if (!isAuto) emit(MessageError(e.toString()));

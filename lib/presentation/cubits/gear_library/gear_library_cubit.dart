@@ -7,6 +7,7 @@ import '../../../data/repositories/interfaces/i_gear_library_repository.dart';
 import '../../../domain/interfaces/i_auth_service.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../../core/error/result.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import 'gear_library_state.dart';
 
@@ -198,10 +199,13 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
       for (final gear in linkedItems) {
         if (gear.tripId != null) {
-          final trip = _tripRepository.getTripById(gear.tripId!);
-          if (trip != null) {
-            final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
-            if (isArchived) continue;
+          final tripResult = await _tripRepository.getTripById(gear.tripId!);
+          if (tripResult is Success) {
+            final trip = (tripResult as Success).value;
+            if (trip != null) {
+              final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
+              if (isArchived) continue;
+            }
           }
         }
 
@@ -235,7 +239,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   ///
   /// [libraryItemId] 裝備庫 Item UUID
   /// 回傳: List of {tripName, startDate, tripId}
-  List<Map<String, dynamic>> getLinkedTrips(String libraryItemId) {
+  Future<List<Map<String, dynamic>>> getLinkedTrips(String libraryItemId) async {
     final allGear = _gearRepository.getAllItems();
     final linkedGear = allGear.where((g) => g.libraryItemId == libraryItemId).toList();
 
@@ -243,9 +247,12 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
     final List<Map<String, dynamic>> result = [];
     for (final tid in tripIds) {
-      final trip = _tripRepository.getTripById(tid);
-      if (trip != null) {
-        result.add({'tripName': trip.name, 'startDate': trip.startDate, 'tripId': trip.id});
+      final tripResult = await _tripRepository.getTripById(tid);
+      if (tripResult is Success) {
+        final trip = (tripResult as Success).value;
+        if (trip != null) {
+          result.add({'tripName': trip.name, 'startDate': trip.startDate, 'tripId': trip.id});
+        }
       }
     }
     return result;

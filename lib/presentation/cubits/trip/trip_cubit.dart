@@ -6,9 +6,9 @@ import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
+import '../../../core/error/result.dart';
 import '../../../domain/interfaces/i_sync_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
-import '../../../domain/interfaces/i_data_service.dart';
 import '../../../domain/interfaces/i_auth_service.dart';
 import '../../../data/models/enums/sync_status.dart';
 import 'trip_state.dart';
@@ -34,16 +34,26 @@ class TripCubit extends Cubit<TripState> {
       emit(const TripLoading());
 
       final userId = _authService.currentUserId ?? 'guest';
-      final trips = _tripRepository.getAllTrips(userId);
+      final tripsResult = await _tripRepository.getAllTrips(userId);
+
+      final trips = switch (tripsResult) {
+        Success(value: final v) => v,
+        Failure(exception: final e) => throw e,
+      };
       // 依建立時間排序 (最新的在前)
       trips.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      var activeTrip = _tripRepository.getActiveTrip(userId);
+      final activeTripResult = await _tripRepository.getActiveTrip(userId);
+      var activeTrip = (activeTripResult is Success<Trip?, Exception>) ? activeTripResult.value : null;
 
       // 若無活動行程但有行程資料，強制設定第一筆為活動行程
       if (activeTrip == null && trips.isNotEmpty) {
         await _setActiveTripInternal(trips.first.id);
-        activeTrip = _tripRepository.getActiveTrip(userId);
+        final newActiveResult = await _tripRepository.getActiveTrip(userId);
+        activeTrip = switch (newActiveResult) {
+          Success(value: final v) => v,
+          Failure() => null, // Ignore error when setting default
+        };
       } else if (activeTrip == null && trips.isEmpty) {
         // 若完全無行程，由 UI 決定是否引導建立
       }
@@ -87,19 +97,26 @@ class TripCubit extends Cubit<TripState> {
         createdBy: currentUserId,
       );
 
-      await _tripRepository.addTrip(trip);
+      final result = await _tripRepository.addTrip(trip);
+      switch (result) {
+        case Success():
+          break; // Success
+        case Failure(exception: final e):
+          throw e;
+      }
+
       LogService.info('Added trip: ${trip.name}', source: _source);
 
       if (setAsActive) {
         await setActiveTrip(trip.id);
       } else {
-        loadTrips();
+        await loadTrips();
       }
     } catch (e) {
       LogService.error('Error adding trip: $e', source: _source);
       emit(TripError(e.toString()));
       // 重新載入以確保狀態一致
-      loadTrips();
+      await loadTrips();
     }
   }
 
@@ -109,7 +126,13 @@ class TripCubit extends Cubit<TripState> {
   /// [trip] 欲匯入的行程物件
   Future<void> importTrip(Trip trip) async {
     try {
-      await _tripRepository.addTrip(trip);
+      final result = await _tripRepository.addTrip(trip);
+      switch (result) {
+        case Success():
+          break;
+        case Failure(exception: final e):
+          throw e;
+      }
       LogService.info('Imported trip: ${trip.name} (${trip.id})', source: _source);
       await loadTrips();
     } catch (e) {
@@ -124,7 +147,7 @@ class TripCubit extends Cubit<TripState> {
   Future<void> setActiveTrip(String tripId) async {
     try {
       await _setActiveTripInternal(tripId);
-      loadTrips();
+      await loadTrips();
     } catch (e) {
       LogService.error('Error setting active trip: $e', source: _source);
       emit(TripError(e.toString()));
@@ -132,7 +155,13 @@ class TripCubit extends Cubit<TripState> {
   }
 
   Future<void> _setActiveTripInternal(String tripId) async {
-    await _tripRepository.setActiveTrip(tripId);
+    final result = await _tripRepository.setActiveTrip(tripId);
+    switch (result) {
+      case Success():
+        return;
+      case Failure(exception: final e):
+        throw e;
+    }
     LogService.info('Set active trip: $tripId', source: _source);
   }
 
@@ -152,9 +181,15 @@ class TripCubit extends Cubit<TripState> {
         }
       }
 
-      await _tripRepository.deleteTrip(tripId);
+      final result = await _tripRepository.deleteTrip(tripId);
+      switch (result) {
+        case Success():
+          break;
+        case Failure(exception: final e):
+          throw e;
+      }
       LogService.info('Deleted trip: $tripId', source: _source);
-      loadTrips();
+      await loadTrips();
     } catch (e) {
       LogService.error('Error deleting trip: $e', source: _source);
       emit(TripError(e.toString()));
@@ -166,9 +201,15 @@ class TripCubit extends Cubit<TripState> {
   /// [trip] 更新後的行程物件
   Future<void> updateTrip(Trip trip) async {
     try {
-      await _tripRepository.updateTrip(trip);
+      final result = await _tripRepository.updateTrip(trip);
+      switch (result) {
+        case Success():
+          break;
+        case Failure(exception: final e):
+          throw e;
+      }
       LogService.info('Updated trip: ${trip.name}', source: _source);
-      loadTrips();
+      await loadTrips();
     } catch (e) {
       LogService.error('Error updating trip: $e', source: _source);
       emit(TripError(e.toString()));
@@ -194,7 +235,19 @@ class TripCubit extends Cubit<TripState> {
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
       // 2. 呼叫 Repository 執行上傳
-      await _tripRepository.uploadFullTrip(trip: trip, itineraryItems: tripItineraries, gearItems: tripGear);
+      final result = await _tripRepository.uploadFullTrip(
+        trip: trip,
+        itineraryItems: tripItineraries,
+        gearItems: tripGear,
+      );
+
+      if (result is Failure) {
+        LogService.error(
+          'Full trip upload failed: ${(result as Failure).exception}',
+          source: _source,
+        ); // No cast needed in Dart 3 if flow analysis works, but explicit switch/case is better
+        return false;
+      }
 
       LogService.info('Full trip upload successful: ${trip.name}', source: _source);
       return true;
@@ -205,19 +258,20 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 透過 SyncService 取得雲端行程列表
-  Future<GetTripsResult> getCloudTrips() {
+  Future<Result<List<Trip>, Exception>> getCloudTrips() {
     return _syncService.getCloudTrips();
   }
 
   /// 根據 ID 取得行程 (優先從 State 讀取，若無則查 Repo)
-  Trip? getTripById(String id) {
+  Future<Trip?> getTripById(String id) async {
     if (state is TripLoaded) {
       final loadedParams = state as TripLoaded;
       try {
         return loadedParams.trips.firstWhere((t) => t.id == id);
       } catch (_) {}
     }
-    return _tripRepository.getTripById(id);
+    final result = await _tripRepository.getTripById(id);
+    return result is Success ? (result as Success<Trip?, Exception>).value : null;
   }
 
   // 建立預設行程 (相容 Provider 邏輯)
