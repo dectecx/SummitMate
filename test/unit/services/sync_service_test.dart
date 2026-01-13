@@ -81,7 +81,17 @@ void main() {
 
     // Register fallback values
     registerFallbackValue(
-      Message(id: 'fallback', user: 'user', category: 'Misc', content: 'content', timestamp: DateTime.now()),
+      Message(
+        id: 'fallback',
+        user: 'user',
+        category: 'Misc',
+        content: 'content',
+        timestamp: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: 'user',
+        updatedAt: DateTime.now(),
+        updatedBy: 'user',
+      ),
     );
     // registerFallbackValue(Settings()); // HiveObject might be hard to instantiate directly without hive
   });
@@ -103,7 +113,17 @@ void main() {
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
       final cloudMessages = [
-        Message(id: '1', user: 'Cloud', category: 'Misc', content: 'A', timestamp: DateTime.now()),
+        Message(
+          id: '1',
+          user: 'Cloud',
+          category: 'Misc',
+          content: 'A',
+          timestamp: DateTime.now(),
+          createdAt: DateTime.now(),
+          createdBy: 'Cloud',
+          updatedAt: DateTime.now(),
+          updatedBy: 'Cloud',
+        ),
       ];
       final cloudItinerary = [
         ItineraryItem(
@@ -223,7 +243,17 @@ void main() {
 
     test('addMessageAndSync should save locally and upload to cloud', () async {
       // Arrange
-      final newMsg = Message(id: 'new', user: 'Me', category: 'Plan', content: 'Hi', timestamp: DateTime.now());
+      final newMsg = Message(
+        id: 'new',
+        user: 'Me',
+        category: 'Plan',
+        content: 'Hi',
+        timestamp: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: 'Me',
+        updatedAt: DateTime.now(),
+        updatedBy: 'Me',
+      );
 
       when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async {});
       when(() => mockDataService.addMessage(any())).thenAnswer((_) async => ApiResult(isSuccess: true));

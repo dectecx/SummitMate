@@ -31,7 +31,16 @@ void main() {
   late MockSharedPreferences mockPrefs;
   late PollCubit cubit;
 
-  final testPoll = Poll(id: 'p1', title: 'Poll 1', creatorId: 'u1', createdAt: DateTime.now(), options: []);
+  final testPoll = Poll(
+    id: 'p1',
+    title: 'Poll 1',
+    creatorId: 'u1',
+    createdAt: DateTime.now(),
+    createdBy: 'u1',
+    updatedAt: DateTime.now(),
+    updatedBy: 'u1',
+    options: [],
+  );
 
   setUp(() {
     mockPollService = MockPollService();

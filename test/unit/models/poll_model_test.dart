@@ -45,9 +45,12 @@ void main() {
         id: 'poll-1',
         title: 'Title',
         creatorId: 'c1',
-        createdAt: DateTime.parse('2024-01-01T00:00:00Z'),
-        options: [PollOption(id: 'o1', pollId: 'poll-1', text: 'Opt', creatorId: 'c1', voteCount: 1)],
         totalVotes: 1,
+        createdAt: DateTime.parse('2024-01-01T00:00:00Z'),
+        createdBy: 'c1',
+        updatedAt: DateTime.parse('2024-01-01T00:00:00Z'),
+        updatedBy: 'c1',
+        options: [PollOption(id: 'o1', pollId: 'poll-1', text: 'Opt', creatorId: 'c1', voteCount: 1, createdAt: DateTime.parse('2024-01-01T00:00:00Z'), createdBy: 'c1', updatedAt: DateTime.parse('2024-01-01T00:00:00Z'), updatedBy: 'c1')],
       );
 
       final json = poll.toJson();
@@ -63,6 +66,9 @@ void main() {
         'title': 'Empty Poll',
         'creator_id': 'u2',
         'created_at': '2024-01-01T00:00:00Z',
+        'created_by': 'u2',
+        'updated_at': '2024-01-01T00:00:00Z',
+        'updated_by': 'u2',
       };
 
       final poll = Poll.fromJson(minimalJson);
@@ -78,6 +84,9 @@ void main() {
         'title': 'T',
         'creator_id': 'c',
         'created_at': '2024-01-01T00:00:00Z',
+        'created_by': 'c',
+        'updated_at': '2024-01-01T00:00:00Z',
+        'updated_by': 'c',
         'total_votes': 999999999,
       });
 
@@ -99,6 +108,9 @@ void main() {
         title: 'T',
         creatorId: 'c',
         createdAt: now,
+        createdBy: 'c',
+        updatedAt: now,
+        updatedBy: 'c',
         deadline: now.add(const Duration(days: 1)),
         status: 'active',
       );
@@ -108,11 +120,22 @@ void main() {
         title: 'T',
         creatorId: 'c',
         createdAt: now.subtract(const Duration(days: 2)),
+        createdBy: 'c',
+        updatedAt: now,
+        updatedBy: 'c',
         deadline: now.subtract(const Duration(days: 1)),
         status: 'active',
       );
 
-      final closedPoll = Poll(id: '3', title: 'T', creatorId: 'c', createdAt: now, status: 'ended');
+      final closedPoll = Poll(
+          id: '3',
+          title: 'T',
+          creatorId: 'c',
+          createdAt: now,
+          createdBy: 'c',
+          updatedAt: now,
+          updatedBy: 'c',
+          status: 'ended');
 
       expect(activePoll.isActive, isTrue);
       expect(activePoll.isExpired, isFalse);
