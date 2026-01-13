@@ -53,6 +53,8 @@ Hive 的 TypeId 必須全域唯一。
 | checkedInAt | `DateTime?` | 11  | `null`  | 打卡時間                        |
 | createdBy   | `String?`   | 12  | `null`  | 建立者 ID                       |
 | updatedBy   | `String?`   | 13  | `null`  | 更新者 ID                       |
+| createdAt   | `DateTime?` | 14  | `now`   | 建立時間                        |
+| updatedAt   | `DateTime?` | 15  | `null`  | 更新時間                        |
 
 ### Box: `messages` (TypeId: 2)
 
@@ -68,6 +70,7 @@ Hive 的 TypeId 必須全域唯一。
 | content   | `String`   | 5   | `''`    | 留言內容                         |
 | timestamp | `DateTime` | 6   | `now`   | 發文時間                         |
 | avatar    | `String`   | 7   | `'🐻'`  | 使用者頭像                       |
+| updatedAt | `DateTime?`| 8   | `null`  | 更新時間                        |
 
 ### Box: `gear` (TypeId: 3)
 
@@ -84,6 +87,10 @@ Hive 的 TypeId 必須全域唯一。
 | isChecked     | `bool`    | 6   | `false`   | 是否已打包                      |
 | orderIndex    | `int?`    | 7   | `null`    | 排序索引                        |
 | quantity      | `int`     | 8   | `1`       | 數量 (v0.0.6 新增)              |
+| createdAt     | `DateTime?`| 9  | `now`     | 建立時間                        |
+| createdBy     | `String?` | 10  | `null`    | 建立者 ID                       |
+| updatedAt     | `DateTime?`| 11 | `null`    | 更新時間                        |
+| updatedBy     | `String?` | 12  | `null`    | 更新者 ID                       |
 
 ### Box: `weather` (TypeId: 4)
 
@@ -101,8 +108,8 @@ Hive 的 TypeId 必須全域唯一。
 | timestamp           | `DateTime`            | 7   | 資料更新時間               |
 | locationName        | `String`              | 8   | 地點名稱                   |
 | dailyForecasts      | `List<DailyForecast>` | 9   | 未來 7 天預報              |
-| apparentTemperature | `double?`             | 10  | 體感溫度 (v0.0.6 新增)     |
-| issueTime           | `DateTime?`           | 11  | 官方發布時間 (v0.0.6 新增) |
+| apparentTemperature | `double?`             | 10  | 體感溫度                   |
+| issueTime           | `DateTime?`           | 11  | 官方發布時間               |
 
 ### Type: `DailyForecast` (TypeId: 5)
 
@@ -239,19 +246,20 @@ Hive 的 TypeId 必須全域唯一。
 
 ### Sheet: `Trips` (行程管理)
 
-| Column Index | Field       | Description           |
-| :----------- | :---------- | :-------------------- |
-| A            | id          | **PK** 行程 ID        |
-| B            | name        | 行程名稱              |
-| C            | start_date  | 開始日期 (YYYY-MM-DD) |
-| D            | end_date    | 結束日期 (YYYY-MM-DD) |
-| E            | description | 描述                  |
-| F            | cover_image | 封面圖片              |
-| G            | is_active   | 是否啟用              |
-| H            | created_at  | 建立時間              |
-| I            | day_names   | 天數列表 (JSON)       |
-| J            | created_by  | 建立者 ID             |
-| K            | updated_by  | 更新者 ID             |
+| Column Index | Field       | Description              |
+| :----------- | :---------- | :----------------------- |
+| A            | id          | **PK** 行程 ID           |
+| B            | name        | 行程名稱                 |
+| C            | start_date  | 開始日期 (YYYY-MM-DD)    |
+| D            | end_date    | 結束日期 (YYYY-MM-DD)    |
+| E            | description | 描述                     |
+| F            | cover_image | 封面圖片                 |
+| G            | is_active   | 是否啟用                 |
+| H            | day_names   | 天數列表 (JSON)          |
+| I            | created_at  | 建立時間                 |
+| J            | created_by  | 建立者 ID (User ID)      |
+| K            | updated_at  | 更新時間                 |
+| L            | updated_by  | 更新者 ID (User ID)      |
 
 ### Sheet: `Itinerary` (行程節點)
 
@@ -268,21 +276,34 @@ Hive 的 TypeId 必須全域唯一。
 | I            | image_asset   | 圖片路徑                     |
 | J            | is_checked_in | 是否打卡                     |
 | K            | checked_in_at | 打卡時間                     |
-| L            | created_by    | 建立者 ID                    |
-| M            | updated_by    | 更新者 ID                    |
+| L            | created_at    | 建立時間                     |
+| M            | created_by    | 建立者 ID                    |
+| N            | updated_at    | 更新時間                     |
+| O            | updated_by    | 更新者 ID                    |
 
 ### Sheet: `Messages` (留言)
 
-| Column Index | Field     | Description      |
-| :----------- | :-------- | :--------------- |
-| A            | id        | **PK** 留言 ID   |
-| B            | trip_id   | **FK** 行程 ID   |
-| C            | parent_id | **FK** 父留言 ID |
-| D            | user      | 發文者           |
-| E            | category  | 分類             |
-| F            | content   | 內容             |
-| G            | timestamp | 時間             |
-| H            | avatar    | 頭像             |
+| Column Index | Field      | Description      |
+| :----------- | :--------- | :--------------- |
+| A            | id         | **PK** 留言 ID   |
+| B            | trip_id    | **FK** 行程 ID   |
+| C            | parent_id  | **FK** 父留言 ID |
+| D            | user       | 發文者           |
+| E            | category   | 分類             |
+| Column Index | Field      | Description                 |
+| :----------- | :--------- | :-------------------------- |
+| A            | id         | **PK** 留言 ID              |
+| B            | trip_id    | **FK** 行程 ID              |
+| C            | parent_id  | **FK** 父留言 ID            |
+| D            | user       | 發文者                      |
+| E            | category   | 分類                        |
+| F            | content    | 內容                        |
+| G            | timestamp  | 時間                        |
+| H            | avatar     | 頭像                        |
+| I            | created_at | 建立時間 (v2.5)             |
+| J            | created_by | 建立者 ID (v2.5)            |
+| K            | updated_at | 更新時間                    |
+| L            | updated_by | 更新者 ID (v2.5)            |
 
 ### Sheet: `TripGear` (行程裝備)
 
@@ -295,19 +316,25 @@ Hive 的 TypeId 必須全域唯一。
 | E            | category   | 分類           |
 | F            | is_checked | 是否打包       |
 | G            | quantity   | 數量           |
+| H            | created_at | 建立時間       |
+| I            | created_by | 建立者 ID      |
+| J            | updated_at | 更新時間       |
+| K            | updated_by | 更新者 ID      |
 
 ### Sheet: `GearLibrary` (個人裝備庫)
 
 | Column Index | Field      | Description                           |
 | :----------- | :--------- | :------------------------------------ |
 | A            | id         | **PK** 裝備 ID                        |
-| B            | owner_key  | **FK** 擁有者 ID (未來遷移至 user_id) |
+| B            | user_id    | **FK** 擁有者 ID                      |
 | C            | name       | 名稱                                  |
 | D            | weight     | 重量                                  |
 | E            | category   | 分類                                  |
 | F            | notes      | 備註                                  |
 | G            | created_at | 建立時間                              |
-| H            | updated_at | 更新時間                              |
+| H            | created_by | 建立者 ID                             |
+| I            | updated_at | 更新時間                              |
+| J            | updated_by | 更新者 ID                             |
 
 ### Sheet: `GearSets` (雲端裝備組合)
 
@@ -321,9 +348,24 @@ Hive 的 TypeId 必須全域唯一。
 | F            | key          | 存取金鑰 (4 位數)                 |
 | G            | total_weight | 總重                              |
 | H            | item_count   | 物品數                            |
-| I            | uploaded_at  | 上傳時間                          |
-| J            | items_json   | 裝備列表 (JSON)                   |
-| K            | meals_json   | 糧食列表 (JSON)                   |
+| I            | items_json   | 裝備列表 (JSON)                   |
+| J            | meals_json   | 糧食列表 (JSON)                   |
+| K            | uploaded_at  | 上傳時間 (~created_at)            |
+| L            | updated_at   | 更新時間                          |
+| M            | updated_by   | 更新者 ID                         |
+
+### Sheet: `TripMembers` (行程成員)
+
+| Column Index | Field      | Description             |
+| :----------- | :--------- | :---------------------- |
+| A            | id         | **PK** 關聯 ID          |
+| B            | trip_id    | **FK** 行程 ID          |
+| C            | user_id    | **FK** 成員 ID          |
+| D            | role_code  | 角色 (leader, member)   |
+| E            | created_at | 建立時間                |
+| F            | created_by | 建立者 ID               |
+| G            | updated_at | 更新時間                |
+| H            | updated_by | 更新者 ID               |
 
 ### Sheet: `Polls` (投票)
 
@@ -333,13 +375,16 @@ Hive 的 TypeId 必須全域唯一。
 | B            | title                | 標題           |
 | C            | description          | 描述           |
 | D            | creator_id           | 建立者         |
-| E            | created_at           | 建立時間       |
-| F            | deadline             | 截止時間       |
-| G            | is_allow_add_option  | 允許加選項     |
-| H            | max_option_limit     | 選項上限       |
-| I            | allow_multiple_votes | 允許多選       |
-| J            | result_display_type  | 顯示方式       |
-| K            | status               | 狀態           |
+| E            | deadline             | 截止時間       |
+| F            | is_allow_add_option  | 允許加選項     |
+| G            | max_option_limit     | 選項上限       |
+| H            | allow_multiple_votes | 允許多選       |
+| I            | result_display_type  | 顯示方式       |
+| J            | status               | 狀態           |
+| K            | created_at           | 建立時間       |
+| L            | created_by           | 建立者 ID      |
+| M            | updated_at           | 更新時間       |
+| N            | updated_by           | 更新者 ID      |
 
 ### Sheet: `PollOptions` (投票選項)
 
@@ -349,8 +394,11 @@ Hive 的 TypeId 必須全域唯一。
 | B            | poll_id    | **FK** 投票 ID |
 | C            | text       | 內容           |
 | D            | creator_id | 建立者         |
-| E            | created_at | 建立時間       |
-| F            | image_url  | 圖片 (預留)    |
+| E            | votes      | 票數紀錄       |
+| F            | created_at | 建立時間       |
+| G            | created_by | 建立者 ID      |
+| H            | updated_at | 更新時間       |
+| I            | updated_by | 更新者 ID      |
 
 ### Sheet: `PollVotes` (投票紀錄)
 
@@ -362,6 +410,9 @@ Hive 的 TypeId 必須全域唯一。
 | D            | user_id    | 投票者 ID      |
 | E            | user_name  | 投票者名稱     |
 | F            | created_at | 時間           |
+| G            | created_by | 建立者 ID      |
+| H            | updated_at | 更新時間       |
+| I            | updated_by | 更新者 ID      |
 
 ### Sheet: `Logs` (日誌)
 
