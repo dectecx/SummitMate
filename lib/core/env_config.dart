@@ -29,6 +29,15 @@ class EnvConfig {
   // CWA API Host (Direct or Proxy)
   static const String cwaApiHost = String.fromEnvironment('CWA_API_HOST', defaultValue: 'https://opendata.cwa.gov.tw');
 
+  // AdMob IDs (Optional, fallback to test IDs if empty)
+  static const String admobBannerIdAndroid = String.fromEnvironment('ADMOB_BANNER_ID_ANDROID', defaultValue: '');
+  static const String admobBannerIdiOS = String.fromEnvironment('ADMOB_BANNER_ID_IOS', defaultValue: '');
+  static const String admobInterstitialIdAndroid = String.fromEnvironment(
+    'ADMOB_INTERSTITIAL_ID_ANDROID',
+    defaultValue: '',
+  );
+  static const String admobInterstitialIdiOS = String.fromEnvironment('ADMOB_INTERSTITIAL_ID_IOS', defaultValue: '');
+
   /// 檢查必要的環境變數是否已設定
   static bool get isConfigured => gasBaseUrl.isNotEmpty && cwaApiKey.isNotEmpty;
 

@@ -44,6 +44,7 @@ import '../../data/models/itinerary_item.dart';
 import 'collaboration_tab.dart'; // Ensure this file exists, otherwise adapt
 import 'map/map_screen.dart';
 import 'tutorial_screen.dart';
+import '../widgets/ads/banner_ad_widget.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -372,12 +373,19 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           ],
                         ),
                         drawer: const AppDrawer(), // 使用獨立的 AppDrawer Widget
-                        body: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 250),
-                          transitionBuilder: (child, animation) {
-                            return FadeTransition(opacity: animation, child: child);
-                          },
-                          child: _buildTabContent(_currentIndex),
+                        body: Column(
+                          children: [
+                            Expanded(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                transitionBuilder: (child, animation) {
+                                  return FadeTransition(opacity: animation, child: child);
+                                },
+                                child: _buildTabContent(_currentIndex),
+                              ),
+                            ),
+                            const BannerAdWidget(location: 'navigation_bottom'),
+                          ],
                         ),
                         bottomNavigationBar: NavigationBar(
                           selectedIndex: _currentIndex,

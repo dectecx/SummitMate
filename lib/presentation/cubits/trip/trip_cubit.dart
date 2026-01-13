@@ -10,6 +10,7 @@ import '../../../core/error/result.dart';
 import '../../../domain/interfaces/i_sync_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../domain/interfaces/i_auth_service.dart';
+
 import '../../../data/models/enums/sync_status.dart';
 import 'trip_state.dart';
 
@@ -20,6 +21,7 @@ class TripCubit extends Cubit<TripState> {
   final ITripRepository _tripRepository;
   final ISyncService _syncService;
   final IAuthService _authService;
+
   final Uuid _uuid = const Uuid();
 
   TripCubit({ITripRepository? tripRepository, ISyncService? syncService, IAuthService? authService})

@@ -11,6 +11,7 @@ import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
+import '../widgets/ads/banner_ad_widget.dart';
 
 /// 雲端行程同步畫面
 class TripCloudScreen extends StatefulWidget {
@@ -235,6 +236,10 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
             const SizedBox(height: 24),
             // 雲端行程列表
             _buildCloudTripsSection(),
+            const SizedBox(height: 24),
+            // 廣告區塊
+            const Center(child: BannerAdWidget(location: 'trip_cloud')),
+            const SizedBox(height: 16),
           ],
         );
       },

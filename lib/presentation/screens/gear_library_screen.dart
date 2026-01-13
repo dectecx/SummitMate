@@ -10,6 +10,7 @@ import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/gear_library/gear_library_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
+import '../widgets/ads/banner_ad_widget.dart';
 
 /// 我的裝備庫畫面
 ///
@@ -76,6 +77,9 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
                     ? _buildEmptyState(state.items.isEmpty)
                     : _buildGearList(context, state),
               ),
+              const SizedBox(height: 8),
+              const BannerAdWidget(location: 'gear_library'),
+              const SizedBox(height: 8),
             ],
           );
         },

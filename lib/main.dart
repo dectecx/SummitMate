@@ -20,7 +20,13 @@ void main() async {
   }
 
   // Setup Dependencies
-  await setupDependencies();
+  try {
+    await setupDependencies();
+  } catch (e, stackTrace) {
+    debugPrint('DI Setup Failed: $e');
+    debugPrintStack(stackTrace: stackTrace);
+    // Continue or exit? Continuing might cause crashes later.
+  }
 
   // Setup Global Bloc Observer
   Bloc.observer = GlobalBlocObserver();

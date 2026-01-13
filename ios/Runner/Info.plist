@@ -49,5 +49,7 @@
 		<false/>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>SummitMate needs your location to show your position on the map.</string>
+		<key>GADApplicationIdentifier</key>
+		<string>$(ADMOB_APP_ID)</string>
 	</dict>
 </plist>

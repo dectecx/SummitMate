@@ -17,6 +17,7 @@ import '../infrastructure/services/gear_cloud_service.dart';
 import '../infrastructure/services/gas_auth_service.dart';
 import '../core/services/permission_service.dart';
 import '../infrastructure/services/jwt_token_validator.dart';
+import '../infrastructure/services/ad_service.dart';
 
 // Infrastructure - Clients
 import '../infrastructure/clients/network_aware_client.dart';
@@ -36,6 +37,7 @@ import '../domain/interfaces/i_auth_service.dart';
 import '../domain/interfaces/i_token_validator.dart';
 import '../domain/interfaces/i_sync_service.dart';
 import '../domain/interfaces/i_data_service.dart';
+import '../domain/interfaces/i_ad_service.dart';
 
 // Data - Repositories
 import '../data/repositories/settings_repository.dart';
@@ -217,6 +219,11 @@ Future<void> setupDependencies() async {
       authService: getIt<IAuthService>(),
     ),
   );
+
+  // 6. Ad Service
+  final adService = AdService();
+  await adService.initialize();
+  getIt.registerSingleton<IAdService>(adService);
 }
 
 /// 重置依賴注入 (用於測試)
