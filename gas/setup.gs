@@ -23,7 +23,7 @@ function setupAll() {
   setupGearSheets();
   setupPollSheetsWrapper();
   setupSystemSheets();
-  
+
   //最後统一套用格式
   applyTextFormatToAll();
 
@@ -37,7 +37,7 @@ function setupAll() {
  */
 function setupCoreSheets() {
   const ss = getSpreadsheet();
-  
+
   // 1. Trips
   _setupSheet(ss, SHEET_TRIPS, HEADERS_TRIPS);
   const defaultTripId = _createDefaultTrip(ss);
@@ -84,7 +84,7 @@ function setupCoreSheets() {
   // 4. Users
   _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
   Logger.log("✓ Users 工作表已建立");
-  
+
   _applyTextFormat(ss.getSheetByName(SHEET_TRIPS), SHEET_TRIPS);
   _applyTextFormat(ss.getSheetByName(SHEET_ITINERARY), SHEET_ITINERARY);
   _applyTextFormat(ss.getSheetByName(SHEET_MESSAGES), SHEET_MESSAGES);
@@ -106,7 +106,7 @@ function setupGearSheets() {
 
   _setupSheet(ss, SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
   Logger.log("✓ GearLibrary 工作表已建立");
-  
+
   _applyTextFormat(ss.getSheetByName(SHEET_GEAR_SETS), SHEET_GEAR_SETS);
   _applyTextFormat(ss.getSheetByName(SHEET_TRIP_GEAR), SHEET_TRIP_GEAR);
   _applyTextFormat(ss.getSheetByName(SHEET_GEAR_LIBRARY), SHEET_GEAR_LIBRARY);
@@ -120,8 +120,8 @@ function setupPollSheetsWrapper() {
   if (typeof setupPollSheets === "function") {
     setupPollSheets();
     Logger.log("✓ Poll 工作表已建立");
-    // Poll setup usually handles its own formatting inside svc_polls.gs if well implemented, 
-    // but we can enforce it if we knew the sheet name constant here. 
+    // Poll setup usually handles its own formatting inside svc_polls.gs if well implemented,
+    // but we can enforce it if we knew the sheet name constant here.
     // Assuming standard naming from constants.gs.
   }
 }
@@ -145,12 +145,15 @@ function setupSystemSheets() {
 
   _seedDefaultRoles(ss);
   Logger.log("✓ 角色權限工作表與預設資料已建立");
-  
+
   _applyTextFormat(ss.getSheetByName(SHEET_LOGS), SHEET_LOGS);
   _applyTextFormat(ss.getSheetByName(SHEET_HEARTBEAT), SHEET_HEARTBEAT);
   _applyTextFormat(ss.getSheetByName(SHEET_ROLES), SHEET_ROLES);
   _applyTextFormat(ss.getSheetByName(SHEET_PERMISSIONS), SHEET_PERMISSIONS);
-  _applyTextFormat(ss.getSheetByName(SHEET_ROLE_PERMISSIONS), SHEET_ROLE_PERMISSIONS);
+  _applyTextFormat(
+    ss.getSheetByName(SHEET_ROLE_PERMISSIONS),
+    SHEET_ROLE_PERMISSIONS
+  );
 }
 /**
  * 建立預設行程
