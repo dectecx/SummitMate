@@ -15,25 +15,41 @@
 // ============================================================
 
 /**
- * 初始化所有工作表
- * @description 首次部署時執行一次，建立所有必要的工作表結構
+ * 一鍵初始化所有工作表 (若網路狀況良好)
+ * @description 依序執行所有初始化步驟
  */
-function setupSheets() {
-  const ss = getSpreadsheet();
+function setupAll() {
+  setupCoreSheets();
+  setupGearSheets();
+  setupPollSheetsWrapper();
+  setupSystemSheets();
+  
+  //最後统一套用格式
+  applyTextFormatToAll();
 
-  // 1. 建立 Trips 工作表並建立預設行程
+  Logger.log("========================================");
+  Logger.log("完整初始化設定完成 (Setup All complete)!");
+}
+
+/**
+ * 1. 初始化核心資料工作表
+ * @description 建立 Trips, Itinerary, Messages, Users
+ */
+function setupCoreSheets() {
+  const ss = getSpreadsheet();
+  
+  // 1. Trips
   _setupSheet(ss, SHEET_TRIPS, HEADERS_TRIPS);
   const defaultTripId = _createDefaultTrip(ss);
   Logger.log("✓ Trips 工作表已建立，預設行程 ID: " + defaultTripId);
 
-  // 2. 建立 Itinerary 工作表 (新欄位順序: id, trip_id, day, name, ...)
+  // 2. Itinerary
   const now = new Date().toISOString();
   const sampleItinerary = _getSampleItinerary().map((row) => {
-    // 插入 id 和 trip_id 到前兩位
     return [
-      Utilities.getUuid(), // id (PK)
-      defaultTripId, // trip_id (FK)
-      ...row, // day, name, est_time, altitude, distance, note, image_asset
+      Utilities.getUuid(), // id
+      defaultTripId, // trip_id
+      ...row,
       false, // is_checked_in
       "", // checked_in_at
       now, // created_at
@@ -45,75 +61,97 @@ function setupSheets() {
   _setupSheet(ss, SHEET_ITINERARY, HEADERS_ITINERARY, sampleItinerary);
   Logger.log("✓ Itinerary 工作表已建立");
 
-  // 3. 建立 Messages 工作表 (新欄位順序: id, trip_id, parent_id, user, ...)
+  // 3. Messages
   const msgTimestamp = new Date().toISOString();
   _setupSheet(ss, SHEET_MESSAGES, HEADERS_MESSAGES, [
     [
-      Utilities.getUuid(), // id (PK)
-      defaultTripId, // trip_id (FK)
-      "", // parent_id
-      "Admin", // user (display name)
-      "Chat", // category
-      "歡迎使用 SummitMate！這是行程協作留言板。", // content
-      "'" + msgTimestamp, // timestamp
-      "🤖", // avatar
-      "'" + msgTimestamp, // created_at
-      UUID_SYSTEM, // created_by
-      "'" + msgTimestamp, // updated_at
-      UUID_SYSTEM, // updated_by
+      Utilities.getUuid(),
+      defaultTripId,
+      "",
+      "Admin",
+      "Chat",
+      "歡迎使用 SummitMate！這是行程協作留言板。",
+      "'" + msgTimestamp,
+      "🤖",
+      "'" + msgTimestamp,
+      UUID_SYSTEM,
+      "'" + msgTimestamp,
+      UUID_SYSTEM,
     ],
   ]);
   Logger.log("✓ Messages 工作表已建立");
 
-  // 4. 建立 GearSets 工作表
+  // 4. Users
+  _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
+  Logger.log("✓ Users 工作表已建立");
+  
+  _applyTextFormat(ss.getSheetByName(SHEET_TRIPS), SHEET_TRIPS);
+  _applyTextFormat(ss.getSheetByName(SHEET_ITINERARY), SHEET_ITINERARY);
+  _applyTextFormat(ss.getSheetByName(SHEET_MESSAGES), SHEET_MESSAGES);
+  _applyTextFormat(ss.getSheetByName(SHEET_USERS), SHEET_USERS);
+}
+
+/**
+ * 2. 初始化裝備相關工作表
+ * @description 建立 GearSets, TripGear, GearLibrary
+ */
+function setupGearSheets() {
+  const ss = getSpreadsheet();
+
   _setupSheet(ss, SHEET_GEAR_SETS, HEADERS_GEAR);
   Logger.log("✓ GearSets 工作表已建立");
 
-  // 5. 建立 TripGear 工作表 (隨行程裝備)
   _setupSheet(ss, SHEET_TRIP_GEAR, HEADERS_TRIP_GEAR);
   Logger.log("✓ TripGear 工作表已建立");
 
-  // 6. 建立 GearLibrary 工作表 (個人裝備庫)
-  // 【未來規劃】owner_key → user_id (會員機制上線後)
   _setupSheet(ss, SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
   Logger.log("✓ GearLibrary 工作表已建立");
+  
+  _applyTextFormat(ss.getSheetByName(SHEET_GEAR_SETS), SHEET_GEAR_SETS);
+  _applyTextFormat(ss.getSheetByName(SHEET_TRIP_GEAR), SHEET_TRIP_GEAR);
+  _applyTextFormat(ss.getSheetByName(SHEET_GEAR_LIBRARY), SHEET_GEAR_LIBRARY);
+}
 
-  // 6. 建立 Polls 工作表 (若 svc_polls.gs 存在)
+/**
+ * 3. 初始化投票工作表 (Optional)
+ * @description 建立 Polls
+ */
+function setupPollSheetsWrapper() {
   if (typeof setupPollSheets === "function") {
     setupPollSheets();
     Logger.log("✓ Poll 工作表已建立");
+    // Poll setup usually handles its own formatting inside svc_polls.gs if well implemented, 
+    // but we can enforce it if we knew the sheet name constant here. 
+    // Assuming standard naming from constants.gs.
   }
+}
 
-  // 7. 建立 Logs 工作表
+/**
+ * 4. 初始化系統與權限工作表
+ * @description 建立 Logs, Heartbeat, Roles, Permissions
+ */
+function setupSystemSheets() {
+  const ss = getSpreadsheet();
+
   _setupSheet(ss, SHEET_LOGS, HEADERS_LOGS);
   Logger.log("✓ Logs 工作表已建立");
 
-  // 8. 建立 Heartbeat 工作表
   _setupSheet(ss, SHEET_HEARTBEAT, HEADERS_HEARTBEAT);
   Logger.log("✓ Heartbeat 工作表已建立");
 
-  // 9. 建立 Users 工作表 (會員系統)
-  _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
-  Logger.log("✓ Users 工作表已建立");
-
-  // 10. 建立 Roles, Permissions, RolePermissions
   _setupSheet(ss, SHEET_ROLES, HEADERS_ROLES);
   _setupSheet(ss, SHEET_PERMISSIONS, HEADERS_PERMISSIONS);
   _setupSheet(ss, SHEET_ROLE_PERMISSIONS, HEADERS_ROLE_PERMISSIONS);
 
-  // 檢查是否需要植入預設角色資料
   _seedDefaultRoles(ss);
   Logger.log("✓ 角色權限工作表與預設資料已建立");
-
-  // 11. 套用文字欄位格式到所有工作表 (確保已存在的工作表也有正確格式)
-  applyTextFormatToAll();
-
-  Logger.log("========================================");
-  Logger.log("初始化設定完成 (Setup complete)!");
-  Logger.log("預設行程: 嘉明湖三天兩夜");
-  Logger.log("Trip ID: " + defaultTripId);
+  
+  _applyTextFormat(ss.getSheetByName(SHEET_LOGS), SHEET_LOGS);
+  _applyTextFormat(ss.getSheetByName(SHEET_HEARTBEAT), SHEET_HEARTBEAT);
+  _applyTextFormat(ss.getSheetByName(SHEET_ROLES), SHEET_ROLES);
+  _applyTextFormat(ss.getSheetByName(SHEET_PERMISSIONS), SHEET_PERMISSIONS);
+  _applyTextFormat(ss.getSheetByName(SHEET_ROLE_PERMISSIONS), SHEET_ROLE_PERMISSIONS);
 }
-
 /**
  * 建立預設行程
  * @private
