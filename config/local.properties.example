@@ -1,0 +1,11 @@
+# Android/iOS Local Properties Example
+# Copy this file to android/local.properties (and configured to be read by iOS Podfile script)
+
+# SDK Paths (Automatically set by Android Studio usually)
+# sdk.dir=C:\\Users\\User\\AppData\\Local\\Android\\sdk
+# flutter.sdk=C:\\src\\flutter
+
+# AdMob App ID (Native Configuration)
+# Required for App Launch. Defaults to Test ID if missing.
+# Replace with your REAL AdMob App ID for local debugging with real ads.
+# ADMOB_APP_ID=ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy
