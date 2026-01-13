@@ -69,7 +69,7 @@ function createTrip(tripData) {
   }
 
   // 順序需與 HEADERS_TRIPS 一致
-  // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
+  // [id, name, start_date, end_date, description, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by]
   sheet.appendRow([
     id,
     String(tripData.name || "新行程"),
@@ -78,27 +78,21 @@ function createTrip(tripData) {
     String(tripData.description || ""),
     String(tripData.cover_image || ""),
     tripData.is_active || false,
-    now,
     JSON.stringify(tripData.day_names || []),
-    String(creatorId), // created_by (from Token)
-    String(creatorId), // updated_by
+    now,
+    String(creatorId),
+    now,
+    String(creatorId),
   ]);
 
   // 自動將建立者加入成員列表 (Role: Leader)
   if (creatorId) {
-    Logger.log(
-      `[createTrip] Adding creator ${creatorId} as leader to trip ${id}`
-    );
-    const memberResult = updateMemberRole({
+    updateMemberRole({
       trip_id: id,
       user_id: creatorId,
       role: "leader",
+      operator_id: creatorId,
     });
-    Logger.log(
-      `[createTrip] updateMemberRole result: ${JSON.stringify(memberResult)}`
-    );
-  } else {
-    Logger.log(`[createTrip] No creatorId found, skipping member addition`);
   }
 
   return _success({ id }, "行程已新增");
@@ -128,15 +122,26 @@ function updateTrip(tripData) {
   // 取得 Schema 以判斷欄位型別
   const schema =
     typeof SHEET_SCHEMA !== "undefined" ? SHEET_SCHEMA[SHEET_TRIPS] : null;
+  
+  // 找出需要自動更新的欄位索引
+  const updatedAtIdx = headers.indexOf("updated_at");
+  const updatedByIdx = headers.indexOf("updated_by");
+  
+  // 取得 Operator ID (if available, passed via tripData.accessToken usually, but updateTrip signature doesn't enforce it yet? 
+  // Standard practice: tripData should contain accessToken or we rely on 'updated_by' being passed in payload, or we skip updated_by if unknown.
+  // For now, let's proceed with updated_at.)
+  const now = new Date().toISOString();
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIndex] === tripData.id) {
       // 更新該列
       headers.forEach((header, colIndex) => {
+        // Skip id, created_at, created_by (immutable usually)
         if (
           tripData[header] !== undefined &&
           header !== "id" &&
-          header !== "created_at"
+          header !== "created_at" &&
+          header !== "created_by"
         ) {
           let value = tripData[header];
           // 如果是日期欄位，強制轉為 ISO String
@@ -146,6 +151,12 @@ function updateTrip(tripData) {
           sheet.getRange(i + 1, colIndex + 1).setValue(value);
         }
       });
+      
+      // 自動更新 updated_at
+      if (updatedAtIdx >= 0) {
+        sheet.getRange(i + 1, updatedAtIdx + 1).setValue(now);
+      }
+      
       return _success(null, "行程已更新");
     }
   }
@@ -258,16 +269,7 @@ function syncTripFull(data) {
       }
     }
 
-    // 構建 Trip Row
-    var now = new Date().toISOString();
-    var createdAt = now;
-    if (tripRowIndex > 0) {
-      // 保留原有 created_at (假設在最後一欄)
-      createdAt = tripRows[tripRowIndex - 1][7];
-    } else if (trip.created_at) {
-      createdAt = _toIsoString(trip.created_at);
-    }
-
+    // 構建 Trip Row - [id, name, start, end, desc, cover, active, day_names, created_at, created_by, updated_at, updated_by]
     var tripRowData = [
       tripId,
       String(trip.name || ""),
@@ -276,9 +278,10 @@ function syncTripFull(data) {
       String(trip.description || ""),
       String(trip.cover_image || trip.coverImage || ""),
       trip.is_active || trip.isActive || false,
-      createdAt,
-      JSON.stringify(trip.day_names || []),
+      JSON.stringify(trip.day_names || []), // day_names
+      createdAt, // created_at
       String(trip.created_by || ""),
+      _toIsoString(now), // updated_at
       String(trip.updated_by || ""),
     ];
 
@@ -321,7 +324,7 @@ function syncTripFull(data) {
     if (itinerary && itinerary.length > 0) {
       itinerary.forEach(function (item) {
         // Must match HEADERS_ITINERARY order:
-        // [uuid, trip_id, day, name, est_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at]
+        // [id, trip_id, day, name, est_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at, created_at, created_by, updated_at, updated_by]
         newItinRows.push([
           item.id || Utilities.getUuid(),
           tripId,
@@ -334,24 +337,12 @@ function syncTripFull(data) {
           item.image_asset || item.imageAsset || "",
           item.is_checked_in || item.isCheckedIn || false,
           _toIsoString(item.checked_in_at || item.checkedInAt),
+          createdAt, // created_at (default to trip creation or now)
           String(item.created_by || ""),
+          _toIsoString(now), // updated_at
           String(item.updated_by || ""),
         ]);
       });
-    }
-
-    // Rewrite Itinerary Sheet
-    itinSheet.clearContents();
-    if (newItinRows.length > 0) {
-      if (itinSheet.getMaxColumns() < targetColCount) {
-        itinSheet.insertColumnsAfter(
-          itinSheet.getMaxColumns(),
-          targetColCount - itinSheet.getMaxColumns()
-        );
-      }
-      itinSheet
-        .getRange(1, 1, newItinRows.length, newItinRows[0].length)
-        .setValues(newItinRows);
     }
 
     // 3. Clear & Insert Gear
@@ -359,22 +350,11 @@ function syncTripFull(data) {
     var gearRows = gearSheet.getDataRange().getValues();
     var newGearRows = [];
     var gearTargetColCount = HEADERS_TRIP_GEAR.length;
-
-    if (gearRows.length > 0) {
-      newGearRows.push(HEADERS_TRIP_GEAR);
-      for (var i = 1; i < gearRows.length; i++) {
-        var row = gearRows[i];
-        if (row[1] != tripId) {
-          while (row.length < gearTargetColCount) row.push("");
-          newGearRows.push(row);
-        }
-      }
-    } else {
-      newGearRows.push(HEADERS_TRIP_GEAR);
-    }
+    
 
     if (gear && gear.length > 0) {
       gear.forEach(function (item) {
+        // [id, trip_id, name, weight, category, is_checked, quantity, created_at, created_by, updated_at, updated_by]
         newGearRows.push([
           item.id || Utilities.getUuid(),
           tripId,
@@ -383,10 +363,14 @@ function syncTripFull(data) {
           item.category || "Other",
           item.is_checked || item.isChecked || false,
           item.quantity || 1,
+          createdAt, // created_at
+          "", // created_by
+          _toIsoString(now), // updated_at
+          "", // updated_by
         ]);
       });
     }
-
+    
     gearSheet.clearContents();
     if (newGearRows.length > 0) {
       if (gearSheet.getMaxColumns() < gearTargetColCount) {
@@ -488,11 +472,11 @@ function getTripMembers(tripId) {
 
 /**
  * 更新成員角色
- * @param {Object} payload - { trip_id, user_id, role }
+ * @param {Object} payload - { trip_id, user_id, role, operator_id? }
  * @returns {Object}
  */
 function updateMemberRole(payload) {
-  const { trip_id, user_id, role } = payload;
+  const { trip_id, user_id, role, operator_id } = payload;
   if (!trip_id || !user_id || !role) {
     return _error(API_CODES.INVALID_PARAMS, "缺少必要參數");
   }
@@ -500,16 +484,27 @@ function updateMemberRole(payload) {
   const ss = getSpreadsheet();
   const sheet = _getSheetOrCreate(SHEET_TRIP_MEMBERS, HEADERS_TRIP_MEMBERS);
   const data = sheet.getDataRange().getValues();
+  
+  // Find column indices
+  const headers = data[0];
+  const tripIdIdx = headers.indexOf("trip_id");
+  const userIdIdx = headers.indexOf("user_id");
+  const roleIdx = headers.indexOf("role_code");
+  const updatedAtIdx = headers.indexOf("updated_at");
+  const updatedByIdx = headers.indexOf("updated_by");
+  const createdByIdx = headers.indexOf("created_by");
 
   // 尋找是否已存在
   let found = false;
+  const now = new Date().toISOString();
+  
   for (let i = 1; i < data.length; i++) {
-    // trip_id @ Col 1, user_id @ Col 2
-    if (data[i][1] === trip_id && data[i][2] === user_id) {
-      // Update role @ Col 3 ("role_code")
-      // Data Col 3 -> Sheet Col 4
-      sheet.getRange(i + 1, 4).setValue(role);
-      sheet.getRange(i + 1, 6).setValue(new Date().toISOString()); // updated_at
+    if (data[i][tripIdIdx] === trip_id && data[i][userIdIdx] === user_id) {
+      // Update role
+      sheet.getRange(i + 1, roleIdx + 1).setValue(role);
+      if (updatedAtIdx >= 0) sheet.getRange(i + 1, updatedAtIdx + 1).setValue(now);
+      if (updatedByIdx >= 0 && operator_id) sheet.getRange(i + 1, updatedByIdx + 1).setValue(operator_id);
+      
       found = true;
       break;
     }
@@ -517,8 +512,22 @@ function updateMemberRole(payload) {
 
   if (!found) {
     // Insert new
-    const now = new Date().toISOString();
-    sheet.appendRow([Utilities.getUuid(), trip_id, user_id, role, now, now]);
+    // HEADERS: [id, trip_id, user_id, role_code, created_at, created_by, updated_at, updated_by]
+    const row = [];
+    // Initialize row with strings
+    HEADERS_TRIP_MEMBERS.forEach(() => row.push(""));
+    
+    const h = HEADERS_TRIP_MEMBERS;
+    row[h.indexOf("id")] = Utilities.getUuid();
+    row[h.indexOf("trip_id")] = trip_id;
+    row[h.indexOf("user_id")] = user_id;
+    row[h.indexOf("role_code")] = role;
+    row[h.indexOf("created_at")] = now;
+    if (h.indexOf("created_by") >= 0) row[h.indexOf("created_by")] = operator_id || "";
+    row[h.indexOf("updated_at")] = now;
+    if (h.indexOf("updated_by") >= 0) row[h.indexOf("updated_by")] = operator_id || "";
+    
+    sheet.appendRow(row);
   }
 
   return _success(null, "成員角色已更新");
@@ -680,6 +689,49 @@ function addMemberById(payload) {
     user_id: user_id,
     role: targetRole,
   });
+}
+
+/**
+ * 取得行程成員列表
+ * @param {Object} payload - { trip_id }
+ * @returns {Object} { members: [{ relationship_id, user_id, role_code }] }
+ */
+function getTripMembers(payload) {
+  const { trip_id: tripId } = payload;
+  if (!tripId) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 trip_id 參數");
+  }
+
+  const ss = getSpreadsheet();
+  const tmSheet = ss.getSheetByName(SHEET_TRIP_MEMBERS);
+  if (!tmSheet) {
+    return _error(API_CODES.TRIP_NOT_FOUND, "成員表不存在");
+  }
+
+  // 1. 取得該行程的所有成員關聯
+  const tmData = tmSheet.getDataRange().getValues();
+  // Dynamic Headers
+  const tmHeaders = tmData[0];
+  const idx = {
+    id: tmHeaders.indexOf("id"),
+    trip_id: tmHeaders.indexOf("trip_id"),
+    user_id: tmHeaders.indexOf("user_id"),
+    role_code: tmHeaders.indexOf("role_code"),
+  };
+
+  const tripMembers = [];
+  // Skip header
+  for (let i = 1; i < tmData.length; i++) {
+    if (tmData[i][idx.trip_id] === tripId) {
+      tripMembers.push({
+        relationship_id: tmData[i][idx.id],
+        user_id: tmData[i][idx.user_id],
+        role_code: tmData[i][idx.role_code],
+      });
+    }
+  }
+
+  return _success({ members: tripMembers });
 }
 
 /**

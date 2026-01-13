@@ -67,30 +67,43 @@ function createPoll(data) {
   const description = String(data.description || "");
   const creatorId = String(data.creator_id || "anonymous");
 
-  sheet.appendRow([
+  // 新增投票主資料
+  const now = new Date().toISOString();
+  const createdBy = String(data.created_by || creatorId);
+
+  // 組合資料行 (對應 HEADERS_POLLS)
+  const rowData = [
     id,
     title,
     description,
     creatorId,
-    createdAt,
     data.deadline || "",
     isAllowAdd,
     maxOptions,
     allowMulti,
     displayType,
     "active",
-  ]);
+    "'" + createdAt,
+    createdBy,
+    "'" + now,
+    createdBy,
+  ];
+
+  sheet.appendRow(rowData);
 
   // 新增初始選項
   if (data.initial_options && Array.isArray(data.initial_options)) {
     data.initial_options.forEach((optText) => {
+      const optId = Utilities.getUuid();
       optionsSheet.appendRow([
-        Utilities.getUuid(), // id (PK)
+        optId, // id (PK)
         id, // poll_id (FK)
         String(optText),
-        String(data.creator_id || ""),
-        createdAt,
-        "",
+        creatorId,
+        "'" + createdAt,
+        createdBy,
+        "'" + now,
+        createdBy,
       ]);
     });
   }
@@ -209,7 +222,9 @@ function votePoll(data) {
   toDelete.forEach((rowIndex) => voteSheet.deleteRow(rowIndex));
 
   // 3. 寫入新票
-  const createdAt = new Date().toISOString();
+  const now = new Date().toISOString();
+  const createdBy = String(data.user_id || UUID_SYSTEM);
+  
   optionIds.forEach((optId) => {
     voteSheet.appendRow([
       Utilities.getUuid(),
@@ -217,7 +232,10 @@ function votePoll(data) {
       optId,
       userId,
       String(data.user_name || "Anonymous"),
-      createdAt,
+      "'" + now,
+      createdBy,
+      "'" + now,
+      createdBy,
     ]);
   });
 
@@ -254,13 +272,18 @@ function addOption(data) {
     return _error(API_CODES.POLL_OPTION_LIMIT, "已達選項數量上限");
   }
 
+  const now = new Date().toISOString();
+  const createdBy = String(data.user_id || UUID_SYSTEM);
+
   optSheet.appendRow([
     Utilities.getUuid(), // id (PK)
     pollId, // FK
     String(text || ""),
-    String(data.creator_id || ""),
-    new Date().toISOString(),
-    "",
+    createdBy, // creator_id
+    "'" + now, // created_at
+    createdBy, // created_by
+    "'" + now, // updated_at
+    createdBy, // updated_by
   ]);
 
   return _success(null, "選項已新增");
@@ -398,44 +421,15 @@ function setupPollSheets() {
   const ss = getSpreadsheet();
 
   if (!ss.getSheetByName("Polls")) {
-    const s = ss.insertSheet("Polls");
-    s.appendRow([
-      "id",
-      "title",
-      "description",
-      "creator_id",
-      "created_at",
-      "deadline",
-      "is_allow_add_option",
-      "max_option_limit",
-      "allow_multiple_votes",
-      "result_display_type",
-      "status",
-    ]);
+    _setupSheet(ss, "Polls", HEADERS_POLLS);
   }
 
   if (!ss.getSheetByName("PollOptions")) {
-    const s = ss.insertSheet("PollOptions");
-    s.appendRow([
-      "id",
-      "poll_id",
-      "text",
-      "creator_id",
-      "created_at",
-      "image_url",
-    ]);
+    _setupSheet(ss, "PollOptions", HEADERS_POLL_OPTIONS);
   }
 
   if (!ss.getSheetByName("PollVotes")) {
-    const s = ss.insertSheet("PollVotes");
-    s.appendRow([
-      "id",
-      "poll_id",
-      "option_id",
-      "user_id",
-      "user_name",
-      "created_at",
-    ]);
+    _setupSheet(ss, "PollVotes", HEADERS_POLL_VOTES);
   }
 
   Logger.log("投票工作表 (Polls, Options, Votes) 初始化完成");

@@ -64,13 +64,23 @@ class ItineraryItem extends HiveObject {
   @JsonKey(fromJson: _dateTimeFromJson)
   DateTime? checkedInAt;
 
-  /// 建立者 ID
+  /// 建立時間
   @HiveField(12)
+  @JsonKey(name: 'created_at', fromJson: _dateTimeFromJson)
+  DateTime? createdAt;
+
+  /// 建立者
+  @HiveField(13)
   @JsonKey(name: 'created_by')
   String? createdBy;
 
-  /// 更新者 ID
-  @HiveField(13)
+  /// 更新時間
+  @HiveField(14)
+  @JsonKey(name: 'updated_at', fromJson: _dateTimeFromJson)
+  DateTime? updatedAt;
+
+  /// 更新者
+  @HiveField(15)
   @JsonKey(name: 'updated_by')
   String? updatedBy;
 
@@ -87,7 +97,9 @@ class ItineraryItem extends HiveObject {
     this.imageAsset,
     this.isCheckedIn = false,
     this.checkedInAt,
+    this.createdAt,
     this.createdBy,
+    this.updatedAt,
     this.updatedBy,
   });
 

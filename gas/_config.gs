@@ -46,9 +46,10 @@ const HEADERS_TRIPS = [
   "description",
   "cover_image",
   "is_active",
-  "created_at",
   "day_names",
+  "created_at",
   "created_by", // 建立者 (User Email/ID)
+  "updated_at", // 更新時間
   "updated_by", // 更新者 (User Email/ID)
 ];
 
@@ -64,7 +65,9 @@ const HEADERS_ITINERARY = [
   "image_asset",
   "is_checked_in",
   "checked_in_at",
+  "created_at", // 建立時間
   "created_by", // 建立者
+  "updated_at", // 更新時間
   "updated_by", // 更新者
 ];
 
@@ -77,6 +80,10 @@ const HEADERS_MESSAGES = [
   "content",
   "timestamp",
   "avatar",
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
 ];
 
 const HEADERS_GEAR = [
@@ -88,9 +95,11 @@ const HEADERS_GEAR = [
   "key",
   "total_weight",
   "item_count",
-  "uploaded_at",
   "items_json",
   "meals_json",
+  "uploaded_at", // ~ created_at
+  "updated_at",
+  "updated_by",
 ];
 
 const HEADERS_TRIP_GEAR = [
@@ -101,6 +110,10 @@ const HEADERS_TRIP_GEAR = [
   "category",
   "is_checked",
   "quantity",
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
 ];
 
 const HEADERS_TRIP_MEMBERS = [
@@ -109,7 +122,9 @@ const HEADERS_TRIP_MEMBERS = [
   "user_id", // FK
   "role_code", // e.g., 'leader', 'guide', 'member'
   "created_at",
+  "created_by",
   "updated_at",
+  "updated_by",
 ];
 
 // ============================================================
@@ -124,7 +139,49 @@ const HEADERS_GEAR_LIBRARY = [
   "category",
   "notes",
   "created_at",
+  "created_by",
   "updated_at",
+  "updated_by",
+];
+
+const HEADERS_POLLS = [
+  "id", // PK
+  "title",
+  "description",
+  "creator_id",
+  "deadline",
+  "is_allow_add_option",
+  "max_option_limit",
+  "allow_multiple_votes",
+  "result_display_type",
+  "status",
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+];
+
+const HEADERS_POLL_OPTIONS = [
+  "id", // PK
+  "poll_id", // FK
+  "text",
+  "creator_id",
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+];
+
+const HEADERS_POLL_VOTES = [
+  "id", // PK
+  "poll_id", // FK
+  "option_id", // FK
+  "user_id",
+  "user_name",
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
 ];
 
 // ============================================================
@@ -194,6 +251,10 @@ const HEADERS_HEARTBEAT = [
 const DEFAULT_AVATAR = "🐻";
 const DEFAULT_USER = "Anonymous";
 const DEFAULT_CATEGORY = "Misc";
+
+// 系統預設 UUID (用於 Audit Fields)
+const UUID_SYSTEM = "9999-9999-9999-9999"; // 系統操作
+const UUID_GUEST = "8888-8888-8888-8888";  // 訪客操作
 
 const API_ACTIONS = {
   // === 行程 (Trips) ===
@@ -377,16 +438,7 @@ const API_CODES = {
   AUTH_ACCESS_TOKEN_EXPIRED: "0809",
 };
 
-// ============================================================
-// 工作表欄位 Schema 定義
-// type: 'text' | 'number' | 'boolean' | 'date'
-// ============================================================
 
-/**
- * 工作表欄位 Schema 定義
- * @description 定義每個工作表的欄位名稱與型別，用於設定欄位格式
- * @readonly
- */
 const SHEET_SCHEMA = {
   Trips: {
     id: { type: "text" },
@@ -396,8 +448,10 @@ const SHEET_SCHEMA = {
     description: { type: "text" },
     cover_image: { type: "text" },
     is_active: { type: "boolean" },
+    day_names: { type: "text" },
     created_at: { type: "date" },
     created_by: { type: "text" },
+    updated_at: { type: "date" },
     updated_by: { type: "text" },
   },
 
@@ -413,7 +467,9 @@ const SHEET_SCHEMA = {
     image_asset: { type: "text" },
     is_checked_in: { type: "boolean" },
     checked_in_at: { type: "date" },
+    created_at: { type: "date" },
     created_by: { type: "text" },
+    updated_at: { type: "date" },
     updated_by: { type: "text" },
   },
 
@@ -426,19 +482,26 @@ const SHEET_SCHEMA = {
     content: { type: "text" },
     timestamp: { type: "date" },
     avatar: { type: "text" },
+    created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   GearSets: {
     id: { type: "text" },
+    trip_id: { type: "text" },
     title: { type: "text" },
     author: { type: "text" },
     total_weight: { type: "number" },
     item_count: { type: "number" },
     visibility: { type: "text" },
     key: { type: "text" },
-    uploaded_at: { type: "date" },
     items_json: { type: "text" },
     meals_json: { type: "text" },
+    uploaded_at: { type: "date" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   TripGear: {
@@ -449,6 +512,10 @@ const SHEET_SCHEMA = {
     category: { type: "text" },
     is_checked: { type: "boolean" },
     quantity: { type: "number" },
+    created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   TripMembers: {
@@ -457,7 +524,9 @@ const SHEET_SCHEMA = {
     user_id: { type: "text" },
     role_code: { type: "text" },
     created_at: { type: "date" },
+    created_by: { type: "text" },
     updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   GearLibrary: {
@@ -468,7 +537,9 @@ const SHEET_SCHEMA = {
     category: { type: "text" },
     notes: { type: "text" },
     created_at: { type: "date" },
+    created_by: { type: "text" },
     updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   Polls: {
@@ -476,13 +547,16 @@ const SHEET_SCHEMA = {
     title: { type: "text" },
     description: { type: "text" },
     creator_id: { type: "text" },
-    created_at: { type: "date" },
     deadline: { type: "date" },
     is_allow_add_option: { type: "boolean" },
     max_option_limit: { type: "number" },
     allow_multiple_votes: { type: "boolean" },
     result_display_type: { type: "text" },
     status: { type: "text" },
+    created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   PollOptions: {
@@ -490,8 +564,11 @@ const SHEET_SCHEMA = {
     poll_id: { type: "text" },
     text: { type: "text" },
     creator_id: { type: "text" },
-    created_at: { type: "date" },
     votes: { type: "text" },
+    created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   PollVotes: {
@@ -501,6 +578,9 @@ const SHEET_SCHEMA = {
     user_id: { type: "text" },
     user_name: { type: "text" },
     created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
   },
 
   Logs: {
@@ -529,11 +609,11 @@ const SHEET_SCHEMA = {
     password_hash: { type: "text" },
     display_name: { type: "text" },
     avatar: { type: "text" },
-    role_id: { type: "text" }, // Changed from role
+    role_id: { type: "text" },
     is_active: { type: "boolean" },
-    is_verified: { type: "boolean" }, // Email 驗證狀態
-    verification_code: { type: "text" }, // 驗證碼 (6碼)
-    verification_expiry: { type: "date" }, // 驗證碼過期時間
+    is_verified: { type: "boolean" },
+    verification_code: { type: "text" },
+    verification_expiry: { type: "date" },
     created_at: { type: "date" },
     updated_at: { type: "date" },
     last_login_at: { type: "date" },
