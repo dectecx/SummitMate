@@ -18,6 +18,10 @@ class MockMessageRepository implements IMessageRepository {
       content: '歡迎使用 SummitMate！這是行程協作留言板。',
       avatar: '🤖',
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      createdBy: 'Admin',
+      updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
+      updatedBy: 'Admin',
     ),
     Message(
       id: 'mock-msg-002',
@@ -28,6 +32,10 @@ class MockMessageRepository implements IMessageRepository {
       content: '大家好！期待這次的登山之旅～',
       avatar: '🐻',
       timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      createdBy: '小明',
+      updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
+      updatedBy: '小明',
     ),
     Message(
       id: 'mock-msg-003',
@@ -38,6 +46,10 @@ class MockMessageRepository implements IMessageRepository {
       content: '我也是！裝備都準備好了',
       avatar: '🐰',
       timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+      createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      createdBy: '小華',
+      updatedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      updatedBy: '小華',
     ),
   ];
 

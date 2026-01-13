@@ -27,6 +27,7 @@ function setupSheets() {
   Logger.log("✓ Trips 工作表已建立，預設行程 ID: " + defaultTripId);
 
   // 2. 建立 Itinerary 工作表 (新欄位順序: id, trip_id, day, name, ...)
+  const now = new Date().toISOString();
   const sampleItinerary = _getSampleItinerary().map((row) => {
     // 插入 id 和 trip_id 到前兩位
     return [
@@ -35,24 +36,31 @@ function setupSheets() {
       ...row, // day, name, est_time, altitude, distance, note, image_asset
       false, // is_checked_in
       "", // checked_in_at
-      "System", // created_by
-      "System", // updated_by
+      now, // created_at
+      UUID_SYSTEM, // created_by
+      now, // updated_at
+      UUID_SYSTEM, // updated_by
     ];
   });
   _setupSheet(ss, SHEET_ITINERARY, HEADERS_ITINERARY, sampleItinerary);
   Logger.log("✓ Itinerary 工作表已建立");
 
   // 3. 建立 Messages 工作表 (新欄位順序: id, trip_id, parent_id, user, ...)
+  const msgTimestamp = new Date().toISOString();
   _setupSheet(ss, SHEET_MESSAGES, HEADERS_MESSAGES, [
     [
       Utilities.getUuid(), // id (PK)
       defaultTripId, // trip_id (FK)
       "", // parent_id
-      "Admin", // user
+      "Admin", // user (display name)
       "Chat", // category
       "歡迎使用 SummitMate！這是行程協作留言板。", // content
-      "'" + new Date().toISOString(), // timestamp
+      "'" + msgTimestamp, // timestamp
       "🤖", // avatar
+      "'" + msgTimestamp, // created_at
+      UUID_SYSTEM, // created_by
+      "'" + msgTimestamp, // updated_at
+      UUID_SYSTEM, // updated_by
     ],
   ]);
   Logger.log("✓ Messages 工作表已建立");
@@ -88,11 +96,7 @@ function setupSheets() {
   _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
   Logger.log("✓ Users 工作表已建立");
 
-  // 9. 建立 Users 工作表 (會員系統)
-  _setupSheet(ss, SHEET_USERS, HEADERS_USERS);
-  Logger.log("✓ Users 工作表已建立");
-
-  // 10. 建立角色權限相關工作表
+  // 10. 建立 Roles, Permissions, RolePermissions
   _setupSheet(ss, SHEET_ROLES, HEADERS_ROLES);
   _setupSheet(ss, SHEET_PERMISSIONS, HEADERS_PERMISSIONS);
   _setupSheet(ss, SHEET_ROLE_PERMISSIONS, HEADERS_ROLE_PERMISSIONS);
@@ -138,7 +142,11 @@ function _createDefaultTrip(ss) {
     "向陽山屋 → 嘉明湖避難山屋 → 嘉明湖 → 三叉山",
     "",
     true,
-    now,
+    "[]", // day_names
+    now, // created_at
+    UUID_SYSTEM, // created_by
+    now, // updated_at
+    UUID_SYSTEM, // updated_by
   ]);
 
   return tripId;
@@ -236,7 +244,7 @@ function applyTextFormatToAll() {
  * @private
  * @returns {Array[]} 範例資料
  * @description 欄位順序: day, name, est_time, altitude, distance, note, image_asset
- *              (id 和 trip_id 由 setupSheets 補上)
+ *              (需在 setupSheets 中補上: id, trip_id, created_at, created_by, updated_at, updated_by 等)
  */
 function _getSampleItinerary() {
   return [

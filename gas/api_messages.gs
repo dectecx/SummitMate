@@ -94,6 +94,10 @@ function createMessage(messageData) {
     String(messageData.content || ""),
     messageData.timestamp || new Date().toISOString(),
     String(messageData.avatar || DEFAULT_AVATAR),
+    messageData.timestamp || new Date().toISOString(),
+    String(messageData.user || DEFAULT_USER),
+    messageData.timestamp || new Date().toISOString(),
+    String(messageData.user || DEFAULT_USER),
   ]);
 
   return _success(null, "訊息已新增");
@@ -124,6 +128,10 @@ function batchCreateMessages(messages) {
     String(messageData.content || ""),
     messageData.timestamp || new Date().toISOString(),
     String(messageData.avatar || DEFAULT_AVATAR),
+    messageData.timestamp || new Date().toISOString(),
+    String(messageData.user || DEFAULT_USER),
+    messageData.timestamp || new Date().toISOString(),
+    String(messageData.user || DEFAULT_USER),
   ]);
 
   if (rows.length > 0) {

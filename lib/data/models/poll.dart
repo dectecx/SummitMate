@@ -23,60 +23,75 @@ class Poll {
   @HiveField(3)
   final String creatorId;
 
-  /// 建立時間
-  @HiveField(4)
-  final DateTime createdAt;
-
   /// 截止時間
-  @HiveField(5)
+  @HiveField(4)
   final DateTime? deadline;
 
   /// 是否允許新增選項
-  @HiveField(6)
+  @HiveField(5)
   @JsonKey(defaultValue: false)
   final bool isAllowAddOption;
 
   /// 選項上限
-  @HiveField(7)
+  @HiveField(6)
   @JsonKey(defaultValue: 20, fromJson: _parseInt)
   final int maxOptionLimit;
 
   /// 是否允許複選
-  @HiveField(8)
+  @HiveField(7)
   @JsonKey(defaultValue: false)
   final bool allowMultipleVotes;
 
   /// 結果顯示方式 ('realtime' 或 'blind')
-  @HiveField(9)
+  @HiveField(8)
   @JsonKey(defaultValue: 'realtime')
   final String resultDisplayType;
 
   /// 狀態 ('active' 或 'ended')
-  @HiveField(10)
+  @HiveField(9)
   @JsonKey(defaultValue: 'active')
   final String status;
 
   /// 投票選項列表
-  @HiveField(11)
+  @HiveField(10)
   @JsonKey(defaultValue: [])
   final List<PollOption> options;
 
   /// 我的投票紀錄 (選項 ID 列表)
-  @HiveField(12)
+  @HiveField(11)
   @JsonKey(defaultValue: [], fromJson: _parseStringList)
   final List<String> myVotes;
 
   /// 總票數
-  @HiveField(13)
+  @HiveField(12)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int totalVotes;
+
+  /// 建立時間
+  @HiveField(13)
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+
+  /// 建立者 ID
+  @HiveField(14)
+  @JsonKey(name: 'created_by')
+  final String createdBy;
+
+  /// 更新時間
+  @HiveField(15)
+  @JsonKey(name: 'updated_at')
+  final DateTime updatedAt;
+
+  /// 更新者 ID
+  @HiveField(16)
+  @JsonKey(name: 'updated_by')
+  final String updatedBy;
 
   Poll({
     required this.id,
     required this.title,
     this.description = '',
     required this.creatorId,
-    required this.createdAt,
     this.deadline,
     this.isAllowAddOption = false,
     this.maxOptionLimit = 20,
@@ -86,6 +101,10 @@ class Poll {
     this.options = const [],
     this.myVotes = const [],
     this.totalVotes = 0,
+    required this.createdAt,
+    required this.createdBy,
+    required this.updatedAt,
+    required this.updatedBy,
   });
 
   /// 是否已過期
@@ -146,6 +165,26 @@ class PollOption {
   @JsonKey(defaultValue: [], fromJson: _parseVoters)
   final List<Map<String, dynamic>> voters;
 
+  /// 建立時間
+  @HiveField(6)
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+
+  /// 建立者 ID
+  @HiveField(7)
+  @JsonKey(name: 'created_by')
+  final String createdBy;
+
+  /// 更新時間
+  @HiveField(8)
+  @JsonKey(name: 'updated_at')
+  final DateTime updatedAt;
+
+  /// 更新者 ID
+  @HiveField(9)
+  @JsonKey(name: 'updated_by')
+  final String updatedBy;
+
   PollOption({
     required this.id,
     required this.pollId,
@@ -153,6 +192,10 @@ class PollOption {
     required this.creatorId,
     this.voteCount = 0,
     this.voters = const [],
+    required this.createdAt,
+    required this.createdBy,
+    required this.updatedAt,
+    required this.updatedBy,
   });
 
   static List<Map<String, dynamic>> _parseVoters(dynamic value) {

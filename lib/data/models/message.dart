@@ -53,6 +53,26 @@ class Message extends HiveObject {
   @HiveField(8)
   DateTime timestamp;
 
+  /// 建立時間
+  @HiveField(9)
+  @JsonKey(name: 'created_at')
+  DateTime createdAt;
+
+  /// 建立者 ID
+  @HiveField(10)
+  @JsonKey(name: 'created_by')
+  String createdBy;
+
+  /// 更新時間
+  @HiveField(11)
+  @JsonKey(name: 'updated_at')
+  DateTime updatedAt;
+
+  /// 更新者 ID
+  @HiveField(12)
+  @JsonKey(name: 'updated_by')
+  String updatedBy;
+
   Message({
     required this.id,
     this.tripId,
@@ -63,7 +83,11 @@ class Message extends HiveObject {
     this.category = '',
     this.content = '',
     DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+    required this.createdAt,
+    required this.createdBy,
+    required this.updatedAt,
+    required this.updatedBy,
+  }) : timestamp = timestamp ?? createdAt;
 
   /// 是否為回覆留言
   bool get isReply => parentId != null;

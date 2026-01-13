@@ -65,6 +65,26 @@ class GearItem extends HiveObject {
   @HiveField(7)
   int? orderIndex;
 
+  /// 建立時間
+  @HiveField(9)
+  @JsonKey(name: 'created_at')
+  DateTime? createdAt;
+
+  /// 建立者
+  @HiveField(10)
+  @JsonKey(name: 'created_by')
+  String? createdBy;
+
+  /// 更新時間
+  @HiveField(11)
+  @JsonKey(name: 'updated_at')
+  DateTime? updatedAt;
+
+  /// 更新者
+  @HiveField(12)
+  @JsonKey(name: 'updated_by')
+  String? updatedBy;
+
   // ========================================
   // Constructor
   // ========================================
@@ -79,6 +99,10 @@ class GearItem extends HiveObject {
     this.isChecked = false,
     this.orderIndex,
     this.quantity = 1,
+    this.createdAt,
+    this.createdBy,
+    this.updatedAt,
+    this.updatedBy,
   }) : uuid = uuid?.isNotEmpty == true ? uuid! : const Uuid().v4();
 
   // ========================================

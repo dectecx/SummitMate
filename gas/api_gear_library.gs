@@ -56,7 +56,9 @@ function uploadGearLibrary(accessToken, items) {
         String(item.category || "Other"),
         String(item.notes || ""),
         item.created_at || now,
+        String(userId), // created_by
         item.updated_at || now,
+        String(userId), // updated_by
       ]);
 
       sheet

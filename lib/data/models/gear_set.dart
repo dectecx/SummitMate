@@ -36,6 +36,18 @@ class GearSet {
   /// 上傳時間
   final DateTime uploadedAt;
 
+  /// 建立時間
+  DateTime get createdAt => uploadedAt;
+
+  /// 建立者
+  String get createdBy => author;
+
+  /// 更新時間
+  final DateTime updatedAt;
+
+  /// 更新者
+  final String updatedBy;
+
   /// 裝備列表 (下載時才有完整資料)
   final List<GearItem>? items;
 
@@ -50,6 +62,8 @@ class GearSet {
     required this.itemCount,
     required this.visibility,
     required this.uploadedAt,
+    required this.updatedAt,
+    required this.updatedBy,
     this.items,
     this.meals,
   });
@@ -61,14 +75,19 @@ class GearSet {
     if (json['author'] == null) throw ArgumentError('GearSet author is required');
     if (json['uploaded_at'] == null) throw ArgumentError('GearSet uploaded_at is required');
 
+    final uploadedAt = DateTime.parse(json['uploaded_at'] as String).toLocal();
+    final author = json['author'] as String;
+
     return GearSet(
       id: json['id'] as String,
       title: json['title'] as String,
-      author: json['author'] as String,
+      author: author,
       totalWeight: (json['total_weight'] as num?)?.toDouble() ?? 0.0,
       itemCount: json['item_count'] as int? ?? 0,
       visibility: _parseVisibility(json['visibility'] as String?),
-      uploadedAt: DateTime.parse(json['uploaded_at'] as String).toLocal(),
+      uploadedAt: uploadedAt,
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String).toLocal() : uploadedAt,
+      updatedBy: json['updated_by'] as String? ?? author,
       items: (json['items'] as List<dynamic>?)?.map((item) => GearItem.fromJson(item as Map<String, dynamic>)).toList(),
       meals: (json['meals'] as List<dynamic>?)?.map((m) => DailyMealPlan.fromJson(m as Map<String, dynamic>)).toList(),
     );
@@ -84,6 +103,10 @@ class GearSet {
       'item_count': itemCount,
       'visibility': visibility.name,
       'uploaded_at': uploadedAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'created_by': createdBy,
+      'updated_at': updatedAt.toIso8601String(),
+      'updated_by': updatedBy,
       if (items != null) 'items': items!.map((item) => item.toJson()).toList(),
       if (meals != null) 'meals': meals!.map((m) => m.toJson()).toList(),
     };
