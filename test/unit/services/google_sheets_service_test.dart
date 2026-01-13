@@ -133,6 +133,10 @@ void main() {
         category: 'Plan',
         content: 'Test message',
         timestamp: DateTime(2024, 12, 15, 10, 0),
+        createdAt: DateTime(2024, 12, 15, 10, 0),
+        createdBy: 'Bob',
+        updatedAt: DateTime(2024, 12, 15, 10, 0),
+        updatedBy: 'Bob',
       );
 
       final result = await service.addMessage(message);

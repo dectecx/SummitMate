@@ -104,6 +104,10 @@ class MessageCubit extends Cubit<MessageState> {
         tripId: _currentTripId,
         userId: _authService.currentUserId ?? '',
         timestamp: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: _authService.currentUserId ?? '',
+        updatedAt: DateTime.now(),
+        updatedBy: _authService.currentUserId ?? '',
       );
 
       // 使用 SyncService 新增並同步
