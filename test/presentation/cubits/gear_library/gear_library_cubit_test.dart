@@ -10,6 +10,7 @@ import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockGearLibraryRepository extends Mock implements IGearLibraryRepository {}
 
@@ -124,17 +125,19 @@ void main() {
         // Mock sync logic
         final linkedGear = GearItem(uuid: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1');
         when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
-        when(() => mockTripRepo.getTripById('t1')).thenReturn(
-          Trip(
-            id: 't1',
-            userId: 'u1',
-            name: 'T1',
-            startDate: DateTime.now(),
-            isActive: true,
-            createdAt: DateTime.now(),
-            createdBy: 'u1',
-            updatedAt: DateTime.now(),
-            updatedBy: 'u1',
+        when(() => mockTripRepo.getTripById('t1')).thenAnswer(
+          (_) async => Success(
+            Trip(
+              id: 't1',
+              userId: 'u1',
+              name: 'T1',
+              startDate: DateTime.now(),
+              isActive: true,
+              createdAt: DateTime.now(),
+              createdBy: 'u1',
+              updatedAt: DateTime.now(),
+              updatedBy: 'u1',
+            ),
           ),
         );
         when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async {});

@@ -10,6 +10,7 @@ import 'package:summitmate/domain/interfaces/i_poll_service.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/poll/poll_cubit.dart';
 import 'package:summitmate/presentation/cubits/poll/poll_state.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockPollService extends Mock implements IPollService {}
 
@@ -92,7 +93,7 @@ void main() {
       'fetches polls from service and saves to repo',
       setUp: () {
         when(() => mockRepo.getAllPolls()).thenReturn([]);
-        when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => [testPoll]);
+        when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
         when(() => mockRepo.savePolls([testPoll])).thenAnswer((_) async {});
         when(() => mockRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
       },
@@ -135,10 +136,10 @@ void main() {
             allowMultipleVotes: false, // default
             initialOptions: const [],
           ),
-        ).thenAnswer((_) async {});
+        ).thenAnswer((_) async => const Success(null));
 
         // Mock fetchPolls called internally
-        when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => [testPoll]);
+        when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
         when(() => mockRepo.savePolls(any())).thenAnswer((_) async {});
         when(() => mockRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
       },

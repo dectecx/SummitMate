@@ -50,7 +50,19 @@ void main() {
         createdBy: 'c1',
         updatedAt: DateTime.parse('2024-01-01T00:00:00Z'),
         updatedBy: 'c1',
-        options: [PollOption(id: 'o1', pollId: 'poll-1', text: 'Opt', creatorId: 'c1', voteCount: 1, createdAt: DateTime.parse('2024-01-01T00:00:00Z'), createdBy: 'c1', updatedAt: DateTime.parse('2024-01-01T00:00:00Z'), updatedBy: 'c1')],
+        options: [
+          PollOption(
+            id: 'o1',
+            pollId: 'poll-1',
+            text: 'Opt',
+            creatorId: 'c1',
+            voteCount: 1,
+            createdAt: DateTime.parse('2024-01-01T00:00:00Z'),
+            createdBy: 'c1',
+            updatedAt: DateTime.parse('2024-01-01T00:00:00Z'),
+            updatedBy: 'c1',
+          ),
+        ],
       );
 
       final json = poll.toJson();
@@ -128,14 +140,15 @@ void main() {
       );
 
       final closedPoll = Poll(
-          id: '3',
-          title: 'T',
-          creatorId: 'c',
-          createdAt: now,
-          createdBy: 'c',
-          updatedAt: now,
-          updatedBy: 'c',
-          status: 'ended');
+        id: '3',
+        title: 'T',
+        creatorId: 'c',
+        createdAt: now,
+        createdBy: 'c',
+        updatedAt: now,
+        updatedBy: 'c',
+        status: 'ended',
+      );
 
       expect(activePoll.isActive, isTrue);
       expect(activePoll.isExpired, isFalse);

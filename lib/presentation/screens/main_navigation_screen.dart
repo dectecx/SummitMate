@@ -16,6 +16,7 @@ import '../../infrastructure/tools/usage_tracking_service.dart';
 import '../../infrastructure/tools/hive_service.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
+import '../../core/error/result.dart';
 
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
@@ -454,12 +455,12 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!context.mounted) return;
     Navigator.pop(context); // Close Loading
 
-    if (!result.isSuccess) {
-      ToastService.error(result.errorMessage ?? '無法取得雲端行程列表');
+    if (result is Failure) {
+      ToastService.error((result as Failure).exception.toString());
       return;
     }
 
-    final cloudTrips = result.trips;
+    final cloudTrips = (result as Success<List<Trip>, Exception>).value;
     if (cloudTrips.isEmpty) {
       ToastService.info('雲端目前沒有行程資料');
       return;
@@ -515,7 +516,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
       // 1. 新增/更新 Trip Meta 到本地
       // 先檢查本地是否已有此 ID
-      final existing = tripCubit.getTripById(cloudTrip.id);
+      final existing = await tripCubit.getTripById(cloudTrip.id);
       if (existing != null) {
         await tripCubit.updateTrip(cloudTrip);
       } else {

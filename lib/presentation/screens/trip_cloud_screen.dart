@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
+import '../../core/error/result.dart';
 import '../../core/di.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import '../cubits/trip/trip_cubit.dart';
@@ -51,7 +52,12 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     });
 
     try {
-      final trips = await _tripRepository.getRemoteTrips();
+      final result = await _tripRepository.getRemoteTrips();
+      final trips = switch (result) {
+        Success(value: final t) => t,
+        Failure(exception: final e) => throw e,
+      };
+
       setState(() {
         _isLoading = false;
         _cloudTrips = trips;
@@ -68,7 +74,9 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _tripRepository.uploadTripToRemote(trip);
+      final result = await _tripRepository.uploadTripToRemote(trip);
+      if (result case Failure(exception: final e)) throw e;
+
       setState(() => _isLoading = false);
       ToastService.success('已上傳: ${trip.name}');
       _getCloudTrips(); // 刷新列表
@@ -136,7 +144,9 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _tripRepository.deleteRemoteTrip(trip.id);
+      final result = await _tripRepository.deleteRemoteTrip(trip.id);
+      if (result case Failure(exception: final e)) throw e;
+
       setState(() => _isLoading = false);
       ToastService.success('已從雲端刪除: ${trip.name}');
       _getCloudTrips();

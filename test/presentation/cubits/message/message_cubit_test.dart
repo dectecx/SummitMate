@@ -6,10 +6,10 @@ import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/interfaces/i_sync_service.dart';
-import 'package:summitmate/domain/interfaces/i_data_service.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/message/message_cubit.dart';
 import 'package:summitmate/presentation/cubits/message/message_state.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockMessageRepository extends Mock implements IMessageRepository {}
 
@@ -77,17 +77,19 @@ void main() {
     when(() => mockAuthService.currentUserId).thenReturn('u1');
 
     // Default setup: active trip 't1'
-    when(() => mockTripRepo.getActiveTrip(any())).thenReturn(
-      Trip(
-        id: 't1',
-        userId: 'u1',
-        name: 'Test Trip',
-        startDate: DateTime.now(),
-        isActive: true,
-        createdAt: DateTime.now(),
-        createdBy: 'u1',
-        updatedAt: DateTime.now(),
-        updatedBy: 'u1',
+    when(() => mockTripRepo.getActiveTrip(any())).thenAnswer(
+      (_) async => Success(
+        Trip(
+          id: 't1',
+          userId: 'u1',
+          name: 'Test Trip',
+          startDate: DateTime.now(),
+          isActive: true,
+          createdAt: DateTime.now(),
+          createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
+        ),
       ),
     );
 
@@ -111,7 +113,9 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'emits [MessageLoading, MessageLoaded] with filtered messages',
       setUp: () {
-        when(() => mockRepo.getAllMessages()).thenReturn([testMessage1, testMessage2, globalMessage]);
+        when(
+          () => mockRepo.getAllMessages(),
+        ).thenAnswer((_) async => Success([testMessage1, testMessage2, globalMessage]));
       },
       build: () => cubit,
       act: (cubit) => cubit.loadMessages(),
@@ -133,7 +137,7 @@ void main() {
           updatedAt: DateTime.now(),
           updatedBy: 'u2',
         );
-        when(() => mockRepo.getAllMessages()).thenReturn([testMessage1, otherTripMsg]);
+        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1, otherTripMsg]));
       },
       build: () => cubit,
       act: (cubit) => cubit.loadMessages(),
@@ -148,8 +152,8 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'calls syncService.addMessageAndSync and reloads',
       setUp: () {
-        when(() => mockRepo.getAllMessages()).thenReturn([testMessage1]);
-        when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => ApiResult(isSuccess: true));
+        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
+        when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => const Success(null));
       },
       build: () => cubit,
       seed: () => MessageLoaded(allMessages: [testMessage1]),
@@ -168,7 +172,7 @@ void main() {
         when(
           () => mockSyncService.syncMessages(isAuto: false),
         ).thenAnswer((_) async => SyncResult.success(messagesSynced: true));
-        when(() => mockRepo.getAllMessages()).thenReturn([testMessage1]);
+        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
       },
       build: () => cubit,
       seed: () => MessageLoaded(allMessages: []),
@@ -190,7 +194,7 @@ void main() {
         when(
           () => mockSyncService.syncMessages(isAuto: false),
         ).thenAnswer((_) async => SyncResult.failure('Network error'));
-        when(() => mockRepo.getAllMessages()).thenReturn([]);
+        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => const Success([]));
       },
       build: () => cubit,
       seed: () => const MessageLoaded(allMessages: []),

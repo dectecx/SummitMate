@@ -7,6 +7,7 @@ import '../../core/constants.dart';
 
 import '../../core/di.dart';
 import '../services/google_sheets_service.dart';
+import '../../core/error/result.dart';
 
 /// 日誌等級
 enum LogLevel { debug, info, warning, error }
@@ -236,14 +237,22 @@ class LogService {
       final sheetsService = getIt<GoogleSheetsService>();
       final result = await sheetsService.uploadLogs(logs, deviceName: deviceName);
 
-      if (result.isSuccess) {
-        info('日誌上傳成功', source: 'LogUpload');
-        return (true, result.errorMessage ?? '上傳成功');
-      } else {
-        final msg = result.errorMessage ?? '未知錯誤';
-        error('日誌上傳失敗: $msg', source: 'LogUpload');
-        return (false, msg);
-      }
+      return switch (result) {
+        Success(value: final msg) => (
+          true,
+          (() {
+            info('日誌上傳成功', source: 'LogUpload');
+            return msg;
+          })(),
+        ),
+        Failure(exception: final e) => (
+          false,
+          (() {
+            error('日誌上傳失敗: $e', source: 'LogUpload');
+            return e.toString();
+          })(),
+        ),
+      };
     } catch (e) {
       error('日誌上傳異常: $e', source: 'LogUpload');
       return (false, '上傳錯誤: $e');

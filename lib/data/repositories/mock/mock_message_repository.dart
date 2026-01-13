@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:hive/hive.dart';
 import '../../models/message.dart';
 import '../interfaces/i_message_repository.dart';
+import '../../../core/error/result.dart';
 import 'mock_itinerary_repository.dart';
 
 /// 模擬留言資料庫
@@ -54,49 +55,52 @@ class MockMessageRepository implements IMessageRepository {
   ];
 
   @override
-  Future<void> init() async {}
+  Future<Result<void, Exception>> init() async => const Success(null);
 
   @override
-  List<Message> getAllMessages() => List.unmodifiable(_mockMessages);
+  Future<Result<List<Message>, Exception>> getAllMessages() async => Success(List.unmodifiable(_mockMessages));
 
   @override
-  List<Message> getMessagesByCategory(String category) =>
-      _mockMessages.where((msg) => msg.category == category).toList();
+  Future<Result<List<Message>, Exception>> getMessagesByCategory(String category) async =>
+      Success(_mockMessages.where((msg) => msg.category == category).toList());
 
   @override
-  List<Message> getMainMessages({String? category}) =>
-      _mockMessages.where((msg) => msg.parentId == null && (category == null || msg.category == category)).toList();
+  Future<Result<List<Message>, Exception>> getMainMessages({String? category}) async => Success(
+    _mockMessages.where((msg) => msg.parentId == null && (category == null || msg.category == category)).toList(),
+  );
 
   @override
-  List<Message> getReplies(String parentId) => _mockMessages.where((msg) => msg.parentId == parentId).toList();
+  Future<Result<List<Message>, Exception>> getReplies(String parentId) async =>
+      Success(_mockMessages.where((msg) => msg.parentId == parentId).toList());
 
   @override
-  Message? getById(String id) => _mockMessages.cast<Message?>().firstWhere((msg) => msg?.id == id, orElse: () => null);
+  Future<Result<Message?, Exception>> getById(String id) async =>
+      Success(_mockMessages.cast<Message?>().firstWhere((msg) => msg?.id == id, orElse: () => null));
 
   @override
-  Future<void> addMessage(Message message) async {}
+  Future<Result<void, Exception>> addMessage(Message message) async => const Success(null);
 
   @override
-  Future<void> deleteById(String id) async {}
+  Future<Result<void, Exception>> deleteById(String id) async => const Success(null);
 
   @override
-  Future<void> syncFromCloud(List<Message> cloudMessages) async {}
+  Future<Result<void, Exception>> syncFromCloud(List<Message> cloudMessages) async => const Success(null);
 
   @override
-  List<Message> getPendingMessages(Set<String> cloudIds) => [];
+  Future<Result<List<Message>, Exception>> getPendingMessages(Set<String> cloudIds) async => const Success([]);
 
   @override
   Stream<BoxEvent> watchAllMessages() => const Stream.empty();
 
   @override
-  Future<void> saveLastSyncTime(DateTime time) async {}
+  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async => const Success(null);
 
   @override
-  DateTime? getLastSyncTime() => DateTime.now();
+  Future<Result<DateTime?, Exception>> getLastSyncTime() async => Success(DateTime.now());
 
   @override
-  Future<void> sync(String tripId) async {}
+  Future<Result<void, Exception>> sync(String tripId) async => const Success(null);
 
   @override
-  Future<void> clearAll() async {}
+  Future<Result<void, Exception>> clearAll() async => const Success(null);
 }

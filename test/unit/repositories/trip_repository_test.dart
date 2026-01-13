@@ -5,6 +5,7 @@ import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/trip_repository.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/core/error/result.dart';
 
 // Mocks
 class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
@@ -49,17 +50,19 @@ void main() {
       verify(() => mockLocalDataSource.init()).called(1);
     });
 
-    test('getAllTrips delegates to localDataSource', () {
+    test('getAllTrips delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getAllTrips()).thenReturn([testTrip]);
-      final result = repository.getAllTrips('user_1');
-      expect(result, [testTrip]);
+      final result = await repository.getAllTrips('user_1');
+      expect(result, isA<Success>());
+      expect((result as Success).value, [testTrip]);
       verify(() => mockLocalDataSource.getAllTrips()).called(1);
     });
 
-    test('getTripById delegates to localDataSource', () {
+    test('getTripById delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getTripById('trip_1')).thenReturn(testTrip);
-      final result = repository.getTripById('trip_1');
-      expect(result, testTrip);
+      final result = await repository.getTripById('trip_1');
+      expect(result, isA<Success>());
+      expect((result as Success).value, testTrip);
       verify(() => mockLocalDataSource.getTripById('trip_1')).called(1);
     });
 
@@ -69,10 +72,11 @@ void main() {
       verify(() => mockLocalDataSource.deleteTrip('trip_1')).called(1);
     });
 
-    test('Negative: getTripById returns null if not found', () {
+    test('Negative: getTripById returns null if not found', () async {
       when(() => mockLocalDataSource.getTripById('unknown')).thenReturn(null);
-      final result = repository.getTripById('unknown');
-      expect(result, isNull);
+      final result = await repository.getTripById('unknown');
+      expect(result, isA<Success>());
+      expect((result as Success).value, isNull);
     });
 
     test('Positive: getRemoteTrips fetches from remote and returns list', () async {
@@ -81,11 +85,12 @@ void main() {
 
       final result = await repository.getRemoteTrips();
 
-      expect(result, remoteTrips);
+      expect(result, isA<Success>());
+      expect((result as Success).value, remoteTrips);
       verify(() => mockRemoteDataSource.getTrips()).called(1);
     });
 
-    test('Extreme: getAllTrips handles large number of trips', () {
+    test('Extreme: getAllTrips handles large number of trips', () async {
       final manyTrips = List.generate(
         100,
         (i) => Trip(
@@ -101,10 +106,12 @@ void main() {
       );
       when(() => mockLocalDataSource.getAllTrips()).thenReturn(manyTrips);
 
-      final result = repository.getAllTrips('u1');
+      final result = await repository.getAllTrips('u1');
 
-      expect(result.length, 100);
-      expect(result[99].name, 'Trip 99');
+      expect(result, isA<Success>());
+      final trips = (result as Success).value as List<Trip>;
+      expect(trips.length, 100);
+      expect(trips[99].name, 'Trip 99');
     });
   });
 }

@@ -295,7 +295,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
 
   void _showDeleteImpactDialog(BuildContext context, GearLibraryItem item) async {
     final cubit = context.read<GearLibraryCubit>();
-    final linkedTrips = cubit.getLinkedTrips(item.id);
+    final linkedTrips = await cubit.getLinkedTrips(item.id);
 
     if (linkedTrips.isEmpty) {
       _confirmDelete(context, item);

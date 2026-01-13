@@ -1,9 +1,10 @@
-import '../models/trip.dart';
+import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
 import '../models/user_profile.dart';
+import '../models/trip.dart';
 
 /// 行程 Repository (支援離線優先)
 ///
@@ -20,96 +21,129 @@ class TripRepository implements ITripRepository {
 
   /// 初始化本地資料庫
   @override
-  Future<void> init() async {
-    await _localDataSource.init();
+  Future<Result<void, Exception>> init() async {
+    try {
+      await _localDataSource.init();
+      return const Success(null);
+    } catch (e) {
+      LogService.error('Init failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 取得所有本地行程 (僅限目前登入使用者)
   @override
-  List<Trip> getAllTrips(String userId) {
-    return _localDataSource.getAllTrips().where((t) => t.userId == userId).toList();
+  Future<Result<List<Trip>, Exception>> getAllTrips(String userId) async {
+    try {
+      final trips = _localDataSource.getAllTrips().where((t) => t.userId == userId).toList();
+      return Success(trips);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 取得當前活動行程 (僅限目前登入使用者)
   @override
-  Trip? getActiveTrip(String userId) {
-    final trip = _localDataSource.getActiveTrip();
-    if (trip != null && trip.userId == userId) {
-      return trip;
+  Future<Result<Trip?, Exception>> getActiveTrip(String userId) async {
+    try {
+      final trip = _localDataSource.getActiveTrip();
+      if (trip != null && trip.userId == userId) {
+        return Success(trip);
+      }
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
-    return null;
   }
 
   /// 根據 ID 取得行程
   ///
   /// [id] 行程 ID
   @override
-  Trip? getTripById(String id) {
-    return _localDataSource.getTripById(id);
+  Future<Result<Trip?, Exception>> getTripById(String id) async {
+    try {
+      return Success(_localDataSource.getTripById(id));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 新增行程 (本地)
   ///
   /// [trip] 欲新增的行程物件
   @override
-  Future<void> addTrip(Trip trip) async {
-    LogService.info('Adding trip: ${trip.name} (Local)', source: _source);
-
-    // 填寫審計欄位 (Audit Fields) & Ownership
-    // userId, createdBy, createdAt are final and required in Trip constructor,
-    // so they must be populated by the caller (Cubit/Service).
-
-    // Ensure updatedBy matches createdBy if not set (constructor handles this default, but explicit here doesn't hurt if mutable)
-    // Actually constructor matches them. logic here is redundant if constructor does it.
-    // Just save.
-
-    await _localDataSource.addTrip(trip);
+  Future<Result<void, Exception>> addTrip(Trip trip) async {
+    try {
+      LogService.info('Adding trip: ${trip.name} (Local)', source: _source);
+      await _localDataSource.addTrip(trip);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 更新行程 (本地)
   ///
   /// [trip] 更新後的行程物件
   @override
-  Future<void> updateTrip(Trip trip) async {
-    // 呼叫者負責更新 updatedBy / updatedAt
-    await _localDataSource.updateTrip(trip);
+  Future<Result<void, Exception>> updateTrip(Trip trip) async {
+    try {
+      await _localDataSource.updateTrip(trip);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 刪除行程 (本地)
   ///
   /// [id] 欲刪除的行程 ID
   @override
-  Future<void> deleteTrip(String id) async {
-    await _localDataSource.deleteTrip(id);
+  Future<Result<void, Exception>> deleteTrip(String id) async {
+    try {
+      await _localDataSource.deleteTrip(id);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 設定當前活動行程
   ///
   /// [tripId] 要設為 Active 的行程 ID
   @override
-  Future<void> setActiveTrip(String tripId) async {
-    await _localDataSource.setActiveTrip(tripId);
+  Future<Result<void, Exception>> setActiveTrip(String tripId) async {
+    try {
+      await _localDataSource.setActiveTrip(tripId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 取得最後同步時間 (暫未實作)
   @override
-  DateTime? getLastSyncTime() {
+  Future<Result<DateTime?, Exception>> getLastSyncTime() async {
     // Moved to Settings or Metadata repository if needed, or kept here if we implement sync timestamps in LocalDataSource
-    return null;
+    return const Success(null);
   }
 
   /// 儲存最後同步時間 (暫未實作)
   ///
   /// [time] 同步時間
   @override
-  Future<void> saveLastSyncTime(DateTime time) async {
-    //
+  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
+    return const Success(null);
   }
 
   /// 取得雲端行程列表
   @override
-  Future<List<Trip>> getRemoteTrips() async {
-    return _remoteDataSource.getTrips();
+  Future<Result<List<Trip>, Exception>> getRemoteTrips() async {
+    try {
+      return Success(await _remoteDataSource.getTrips());
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 上傳行程至雲端
@@ -117,16 +151,25 @@ class TripRepository implements ITripRepository {
   /// [trip] 欲上傳的行程
   /// 回傳: 上傳結果訊息
   @override
-  Future<String> uploadTripToRemote(Trip trip) async {
-    return _remoteDataSource.uploadTrip(trip);
+  Future<Result<String, Exception>> uploadTripToRemote(Trip trip) async {
+    try {
+      return Success(await _remoteDataSource.uploadTrip(trip));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 刪除雲端行程
   ///
   /// [id] 欲刪除的遠端行程 ID
   @override
-  Future<void> deleteRemoteTrip(String id) async {
-    await _remoteDataSource.deleteTrip(id);
+  Future<Result<void, Exception>> deleteRemoteTrip(String id) async {
+    try {
+      await _remoteDataSource.deleteTrip(id);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 完整備份行程至雲端 (包含細節與裝備)
@@ -136,59 +179,102 @@ class TripRepository implements ITripRepository {
   /// [gearItems] 裝備列表
   /// 回傳: 上傳結果訊息
   @override
-  Future<String> uploadFullTrip({
+  Future<Result<String, Exception>> uploadFullTrip({
     required Trip trip,
     required List<dynamic> itineraryItems,
     required List<dynamic> gearItems,
   }) async {
-    return _remoteDataSource.uploadFullTrip(trip: trip, itineraryItems: itineraryItems, gearItems: gearItems);
+    try {
+      return Success(
+        await _remoteDataSource.uploadFullTrip(trip: trip, itineraryItems: itineraryItems, gearItems: gearItems),
+      );
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 清除所有本地行程
   @override
-  Future<void> clearAll() async {
-    LogService.info('Clearing all trips (Local)', source: _source);
-    await _localDataSource.clear();
+  Future<Result<void, Exception>> clearAll() async {
+    try {
+      LogService.info('Clearing all trips (Local)', source: _source);
+      await _localDataSource.clear();
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 取得行程成員列表
   @override
-  Future<List<Map<String, dynamic>>> getTripMembers(String tripId) {
-    return _remoteDataSource.getTripMembers(tripId);
+  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
+    try {
+      return Success(await _remoteDataSource.getTripMembers(tripId));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 更新成員角色
   @override
-  Future<void> updateMemberRole(String tripId, String userId, String role) {
-    return _remoteDataSource.updateMemberRole(tripId, userId, role);
+  Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role) async {
+    try {
+      await _remoteDataSource.updateMemberRole(tripId, userId, role);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 移除成員
   @override
-  Future<void> removeMember(String tripId, String userId) {
-    return _remoteDataSource.removeMember(tripId, userId);
+  Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
+    try {
+      await _remoteDataSource.removeMember(tripId, userId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 新增成員 (透過 Email)
   @override
-  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) {
-    return _remoteDataSource.addMemberByEmail(tripId, email, role: role);
+  Future<Result<void, Exception>> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
+    try {
+      await _remoteDataSource.addMemberByEmail(tripId, email, role: role);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 新增成員 (透過 User ID)
   @override
-  Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) {
-    return _remoteDataSource.addMemberById(tripId, userId, role: role);
+  Future<Result<void, Exception>> addMemberById(String tripId, String userId, {String role = 'member'}) async {
+    try {
+      await _remoteDataSource.addMemberById(tripId, userId, role: role);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   /// 搜尋使用者
   @override
-  Future<UserProfile> searchUserByEmail(String email) async {
-    return _remoteDataSource.searchUserByEmail(email);
+  Future<Result<UserProfile, Exception>> searchUserByEmail(String email) async {
+    try {
+      return Success(await _remoteDataSource.searchUserByEmail(email));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
   @override
-  Future<UserProfile> searchUserById(String userId) async {
-    return _remoteDataSource.searchUserById(userId);
+  Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
+    try {
+      return Success(await _remoteDataSource.searchUserById(userId));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 }

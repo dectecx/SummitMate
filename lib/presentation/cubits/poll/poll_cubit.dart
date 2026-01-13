@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/di.dart';
 import '../../../data/repositories/interfaces/i_poll_repository.dart';
+import '../../../core/error/result.dart';
 import '../../../domain/interfaces/i_connectivity_service.dart';
 import '../../../domain/interfaces/i_poll_service.dart';
 import '../../../domain/interfaces/i_auth_service.dart';
@@ -84,7 +85,11 @@ class PollCubit extends Cubit<PollState> {
     }
 
     try {
-      final fetchedPolls = await _pollService.getPolls(userId: _currentUserId);
+      final result = await _pollService.getPolls(userId: _currentUserId);
+      final fetchedPolls = switch (result) {
+        Success(value: final p) => p,
+        Failure(exception: final e) => throw e,
+      };
 
       // 儲存至 Repo
       await _pollRepository.savePolls(fetchedPolls);
@@ -114,7 +119,7 @@ class PollCubit extends Cubit<PollState> {
   }
 
   /// Action Helper
-  Future<bool> _performAction(Future<void> Function() action, String offlineMessage) async {
+  Future<bool> _performAction(Future<Result<void, Exception>> Function() action, String offlineMessage) async {
     if (_isOffline) {
       ToastService.error(offlineMessage);
       return false;
@@ -123,7 +128,8 @@ class PollCubit extends Cubit<PollState> {
     if (state is PollLoaded) emit((state as PollLoaded).copyWith(isSyncing: true));
 
     try {
-      await action();
+      final result = await action();
+      if (result is Failure) throw result.exception;
       // Refetch to get updated state
       await fetchPolls(isAuto: false); // Force sync after action
       return true;

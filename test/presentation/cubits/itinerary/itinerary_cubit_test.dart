@@ -8,6 +8,7 @@ import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_cubit.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_state.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
@@ -56,7 +57,8 @@ void main() {
     when(() => mockAuthService.currentUserId).thenReturn('user_1');
 
     // Default setup: active trip exists
-    when(() => mockTripRepository.getActiveTrip(any())).thenReturn(testTrip);
+    when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(testTrip));
+    when(() => mockTripRepository.getTripById(any())).thenAnswer((_) async => Success(testTrip));
 
     cubit = ItineraryCubit(
       repository: mockItineraryRepository,
@@ -92,7 +94,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'loadItinerary emits empty list when no active trip',
       setUp: () {
-        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(null);
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => const Success(null));
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItinerary(),
@@ -134,7 +136,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'addItem calls repository and reloads',
       setUp: () {
-        when(() => mockItineraryRepository.addItem(any())).thenAnswer((_) async {});
+        when(() => mockItineraryRepository.addItem(any())).thenAnswer((_) async => const Success(null));
         when(() => mockItineraryRepository.getAllItems()).thenReturn([testItem]);
       },
       build: () => cubit,
@@ -148,7 +150,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'checkIn calls repository and reloads',
       setUp: () {
-        when(() => mockItineraryRepository.checkIn(any(), any())).thenAnswer((_) async {});
+        when(() => mockItineraryRepository.checkIn(any(), any())).thenAnswer((_) async => const Success(null));
         when(() => mockItineraryRepository.getAllItems()).thenReturn([testItem]);
       },
       build: () => cubit,
@@ -161,7 +163,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'deleteItem calls repository and reloads',
       setUp: () {
-        when(() => mockItineraryRepository.deleteItem(any())).thenAnswer((_) async {});
+        when(() => mockItineraryRepository.deleteItem(any())).thenAnswer((_) async => const Success(null));
         when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
       },
       build: () => cubit,
@@ -189,9 +191,11 @@ void main() {
 
         // Reset mocks relative to Day Management to ensure clean state
         reset(mockTripRepository);
-        when(() => mockTripRepository.getActiveTrip(any())).thenReturn(testTrip);
-        when(() => mockTripRepository.getTripById(any())).thenReturn(testTrip); // For loadItinerary
-        when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async {});
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(testTrip));
+        when(
+          () => mockTripRepository.getTripById(any()),
+        ).thenAnswer((_) async => Success(testTrip)); // For loadItinerary
+        when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async => const Success(null));
 
         // Also stub getAllItems for loadItinerary which is called after addDay
         when(() => mockItineraryRepository.getAllItems()).thenReturn([]);

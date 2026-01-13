@@ -45,23 +45,25 @@ void main() {
 
     test('should report isReply false when parentId is null', () {
       final message = Message(
-          id: 'no-reply-id',
-          createdAt: DateTime.now(),
-          createdBy: '',
-          updatedAt: DateTime.now(),
-          updatedBy: '');
+        id: 'no-reply-id',
+        createdAt: DateTime.now(),
+        createdBy: '',
+        updatedAt: DateTime.now(),
+        updatedBy: '',
+      );
 
       expect(message.isReply, isFalse);
     });
 
     test('should report isReply true when parentId is set', () {
       final message = Message(
-          id: 'test-id-3',
-          parentId: 'parent-uuid',
-          createdAt: DateTime.now(),
-          createdBy: '',
-          updatedAt: DateTime.now(),
-          updatedBy: '');
+        id: 'test-id-3',
+        parentId: 'parent-uuid',
+        createdAt: DateTime.now(),
+        createdBy: '',
+        updatedAt: DateTime.now(),
+        updatedBy: '',
+      );
 
       expect(message.isReply, isTrue);
     });
@@ -90,20 +92,22 @@ void main() {
 
     test('should handle nested reply structure', () {
       final parent = Message(
-          id: 'parent-uuid',
-          content: '主留言',
-          createdAt: DateTime.now(),
-          createdBy: '',
-          updatedAt: DateTime.now(),
-          updatedBy: '');
+        id: 'parent-uuid',
+        content: '主留言',
+        createdAt: DateTime.now(),
+        createdBy: '',
+        updatedAt: DateTime.now(),
+        updatedBy: '',
+      );
       final reply = Message(
-          id: 'reply-uuid',
-          parentId: parent.id,
-          content: '回覆',
-          createdAt: DateTime.now(),
-          createdBy: '',
-          updatedAt: DateTime.now(),
-          updatedBy: '');
+        id: 'reply-uuid',
+        parentId: parent.id,
+        content: '回覆',
+        createdAt: DateTime.now(),
+        createdBy: '',
+        updatedAt: DateTime.now(),
+        updatedBy: '',
+      );
 
       expect(reply.isReply, isTrue);
       expect(reply.parentId, equals(parent.id));

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../core/offline_config.dart';
 import '../../data/models/message.dart';
+import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_message_repository.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
@@ -9,6 +10,7 @@ import '../../domain/interfaces/i_connectivity_service.dart';
 import '../../domain/interfaces/i_sync_service.dart';
 import '../../domain/interfaces/i_data_service.dart';
 import '../../domain/interfaces/i_auth_service.dart';
+import '../../core/error/result.dart';
 
 /// 同步服務
 /// 管理本地資料與 Google Sheets 的雙向同步
@@ -36,15 +38,24 @@ class SyncService implements ISyncService {
     _loadLastSyncTimes();
   }
 
-  void _loadLastSyncTimes() {
+  Future<void> _loadLastSyncTimes() async {
     _lastItinerarySyncTime = _itineraryRepo.getLastSyncTime();
-    _lastMessagesSyncTime = _messageRepo.getLastSyncTime();
+    final result = await _messageRepo.getLastSyncTime();
+    if (result is Success<DateTime?, Exception>) {
+      _lastMessagesSyncTime = result.value;
+    }
   }
 
   bool get _isOffline => _connectivity.isOffline;
 
   /// 取得當前活動行程 ID
-  String? get _activeTripId => _tripRepo.getActiveTrip(_authService.currentUserId ?? 'guest')?.id;
+  Future<String?> get _activeTripId async {
+    final result = await _tripRepo.getActiveTrip(_authService.currentUserId ?? 'guest');
+    return switch (result) {
+      Success(value: final trip) => trip?.id,
+      Failure() => null,
+    };
+  }
 
   /// 上次同步行程的時間
   DateTime? _lastItinerarySyncTime;
@@ -83,48 +94,50 @@ class SyncService implements ISyncService {
 
     // Case 1: 兩者皆需要 -> 使用 fetchAll (節省一次請求)
     if (itinNeeded && msgNeeded) {
-      final tripId = _activeTripId;
+      final tripId = await _activeTripId;
       LogService.info(
         'SyncAll: Fetching ALL (Itinerary + Messages)${tripId != null ? " for trip: $tripId" : ""}',
         source: 'SyncService',
       );
       final fetchResult = await _sheetsService.getAll(tripId: tripId);
 
-      if (!fetchResult.isSuccess) {
-        return SyncResult(isSuccess: false, errors: [fetchResult.errorMessage ?? '網路連線失敗'], syncedAt: now);
+      switch (fetchResult) {
+        case Failure(exception: final e):
+          return SyncResult(isSuccess: false, errors: [e.toString()], syncedAt: now);
+
+        case Success(value: final data):
+          var itinSuccess = false;
+          var msgSuccess = false;
+          final errors = <String>[];
+
+          // 處理行程
+          try {
+            await _itineraryRepo.syncFromCloud(data.itinerary);
+            _lastItinerarySyncTime = DateTime.now();
+            await _itineraryRepo.saveLastSyncTime(_lastItinerarySyncTime!);
+            itinSuccess = true;
+          } catch (e) {
+            errors.add('行程同步失敗: $e');
+          }
+
+          // 處理留言
+          try {
+            await _syncMessages(data.messages);
+            _lastMessagesSyncTime = DateTime.now();
+            await _messageRepo.saveLastSyncTime(_lastMessagesSyncTime!);
+            msgSuccess = true;
+          } catch (e) {
+            errors.add('留言同步失敗: $e');
+          }
+
+          return SyncResult(
+            isSuccess: errors.isEmpty,
+            itinerarySynced: itinSuccess,
+            messagesSynced: msgSuccess,
+            errors: errors,
+            syncedAt: DateTime.now(),
+          );
       }
-
-      var itinSuccess = false;
-      var msgSuccess = false;
-      final errors = <String>[];
-
-      // 處理行程
-      try {
-        await _itineraryRepo.syncFromCloud(fetchResult.itinerary);
-        _lastItinerarySyncTime = DateTime.now();
-        await _itineraryRepo.saveLastSyncTime(_lastItinerarySyncTime!);
-        itinSuccess = true;
-      } catch (e) {
-        errors.add('行程同步失敗: $e');
-      }
-
-      // 處理留言
-      try {
-        await _syncMessages(fetchResult.messages);
-        _lastMessagesSyncTime = DateTime.now();
-        await _messageRepo.saveLastSyncTime(_lastMessagesSyncTime!);
-        msgSuccess = true;
-      } catch (e) {
-        errors.add('留言同步失敗: $e');
-      }
-
-      return SyncResult(
-        isSuccess: errors.isEmpty,
-        itinerarySynced: itinSuccess,
-        messagesSynced: msgSuccess,
-        errors: errors,
-        syncedAt: DateTime.now(),
-      );
     }
 
     // Case 2: 僅需行程
@@ -157,7 +170,7 @@ class SyncService implements ISyncService {
       return SyncResult(isSuccess: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
     }
 
-    final tripId = _activeTripId;
+    final tripId = await _activeTripId;
     if (tripId == null) {
       return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
     }
@@ -185,7 +198,7 @@ class SyncService implements ISyncService {
       return SyncResult(isSuccess: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
     }
 
-    final tripId = _activeTripId;
+    final tripId = await _activeTripId;
     if (tripId == null) {
       return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
     }
@@ -202,7 +215,7 @@ class SyncService implements ISyncService {
   /// 新增留言並同步到雲端
   /// 注意：離線模式下 UI 層應禁用此功能
   @override
-  Future<ApiResult> addMessageAndSync(Message message) async {
+  Future<Result<void, Exception>> addMessageAndSync(Message message) async {
     await _messageRepo.addMessage(message);
     final result = await _sheetsService.addMessage(message);
     LogService.info('留言已同步: ${message.id}', source: 'SyncService');
@@ -212,7 +225,7 @@ class SyncService implements ISyncService {
   /// 刪除留言並同步到雲端
   /// 注意：離線模式下 UI 層應禁用此功能
   @override
-  Future<ApiResult> deleteMessageAndSync(String id) async {
+  Future<Result<void, Exception>> deleteMessageAndSync(String id) async {
     await _messageRepo.deleteById(id);
     final result = await _sheetsService.deleteMessage(id);
     LogService.info('留言已刪除: $id', source: 'SyncService');
@@ -221,12 +234,6 @@ class SyncService implements ISyncService {
 
   SyncResult _offlineSyncResult() {
     return SyncResult(isSuccess: false, errors: ['目前為離線模式，無法同步'], syncedAt: DateTime.now());
-  }
-
-  ApiResult returnApiResult({required bool isSuccess, String? message}) {
-    // Helper to return ApiResult since it's defined in google_sheets_service.dart
-    // Assuming ApiResult constructor is public
-    return ApiResult(isSuccess: isSuccess, errorMessage: isSuccess ? null : message);
   }
 
   /// 內部方法：單向同步留言 (雲端覆蓋本地)
@@ -240,17 +247,15 @@ class SyncService implements ISyncService {
   /// 回傳 true 表示有衝突 (雲端資料與本地不一致)
   @override
   Future<bool> checkItineraryConflict() async {
-    final tripId = _activeTripId;
+    final tripId = await _activeTripId;
     final fetchResult = await _sheetsService.getAll(tripId: tripId);
 
-    if (!fetchResult.isSuccess) {
-      // 若無法取得雲端資料，視為無衝突 (或拋出錯誤，這裡選擇保守策略: 讓用戶決定是否硬上傳)
-      // 但為了安全，若連線失敗應無法上傳，故回傳 false 讓上傳流程繼續但因為連線失敗而報錯
-      // 這裡僅做比對。若 fetch 失敗，通常後續上傳也會失敗。
-      return false;
-    }
+    final cloudItems = switch (fetchResult) {
+      Success(value: final data) => data.itinerary,
+      Failure() => null, // 若無法取得雲端資料，視為無衝突
+    };
 
-    final cloudItems = fetchResult.itinerary;
+    if (cloudItems == null) return false;
     final localItems = _itineraryRepo.getAllItems();
 
     // 簡單比對: 數量不同 -> 衝突
@@ -286,27 +291,26 @@ class SyncService implements ISyncService {
   /// 強制上傳行程 (覆寫雲端)
   @override
   Future<SyncResult> uploadItinerary() async {
-    final tripId = _activeTripId;
+    final tripId = await _activeTripId;
     final localItems = _itineraryRepo.getAllItems().where((item) => item.tripId == tripId).toList();
     final result = await _sheetsService.updateItinerary(localItems);
-    if (result.isSuccess) {
-      return SyncResult.success(itinerarySynced: true, messagesSynced: false);
-    } else {
-      return SyncResult.failure(result.errorMessage ?? 'Failed to upload itinerary');
-    }
+
+    return switch (result) {
+      Success() => SyncResult.success(itinerarySynced: true, messagesSynced: false),
+      Failure(exception: final e) => SyncResult.failure(e.toString()),
+    };
   }
 
   /// 取得雲端行程列表
   @override
-  Future<GetTripsResult> getCloudTrips() async {
+  Future<Result<List<Trip>, Exception>> getCloudTrips() async {
     if (_isOffline) {
-      return GetTripsResult(isSuccess: false, errorMessage: '離線模式無法取得行程列表');
+      return Failure(GeneralException('離線模式無法取得行程列表'));
     }
     try {
-      final trips = await _tripRepo.getRemoteTrips();
-      return GetTripsResult(isSuccess: true, trips: trips);
+      return await _tripRepo.getRemoteTrips();
     } catch (e) {
-      return GetTripsResult(isSuccess: false, errorMessage: e.toString());
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 

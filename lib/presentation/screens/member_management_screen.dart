@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di.dart';
 // import '../../core/services/permission_service.dart';
+import '../../core/error/result.dart';
 import '../../core/constants/role_constants.dart';
 import '../../data/models/trip.dart';
 import '../../data/models/user_profile.dart';
@@ -47,7 +48,11 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   Future<void> _loadMembers() async {
     setState(() => _isLoading = true);
     try {
-      final members = await _tripRepository.getTripMembers(widget.trip.id);
+      final result = await _tripRepository.getTripMembers(widget.trip.id);
+      final members = switch (result) {
+        Success(value: final m) => m,
+        Failure(exception: final e) => throw e,
+      };
 
       // 異常狀態檢查：若無成員 (理論上不應發生)
       if (members.isEmpty) {
@@ -71,7 +76,9 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [userName] 成員顯示名稱 (用於顯示 Toast)
   Future<void> _updateRole(String userId, String newRole, String userName) async {
     try {
-      await _tripRepository.updateMemberRole(widget.trip.id, userId, newRole);
+      final result = await _tripRepository.updateMemberRole(widget.trip.id, userId, newRole);
+      if (result is Failure) throw result.exception;
+
       final roleName = _getRoleName(newRole);
       ToastService.success('已將 $userName 更新為 $roleName');
       _loadMembers();
@@ -86,7 +93,9 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [userName] 成員顯示名稱 (用於顯示 Toast)
   Future<void> _removeMember(String userId, String userName) async {
     try {
-      await _tripRepository.removeMember(widget.trip.id, userId);
+      final result = await _tripRepository.removeMember(widget.trip.id, userId);
+      if (result is Failure) throw result.exception;
+
       ToastService.success('已移除 $userName');
       _loadMembers();
     } catch (e) {
@@ -199,9 +208,20 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               setState(() => _isLoading = true);
               try {
                 // 1. Promote Target to Leader
-                await _tripRepository.updateMemberRole(widget.trip.id, targetMember['id'], RoleConstants.leader);
+                final r1 = await _tripRepository.updateMemberRole(
+                  widget.trip.id,
+                  targetMember['id'],
+                  RoleConstants.leader,
+                );
+                if (r1 is Failure) throw r1.exception;
+
                 // 2. Demote Self to Member
-                await _tripRepository.updateMemberRole(widget.trip.id, _currentUserId!, RoleConstants.member);
+                final r2 = await _tripRepository.updateMemberRole(
+                  widget.trip.id,
+                  _currentUserId!,
+                  RoleConstants.member,
+                );
+                if (r2 is Failure) throw r2.exception;
 
                 ToastService.success('已移轉團長身分給 ${targetMember['display_name']}');
                 _loadMembers();
@@ -456,11 +476,17 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                             try {
                               // Split Search Logic
                               final UserProfile user;
+                              final Result<UserProfile, Exception> result;
                               if (searchType == SearchType.email) {
-                                user = await _tripRepository.searchUserByEmail(query);
+                                result = await _tripRepository.searchUserByEmail(query);
                               } else {
-                                user = await _tripRepository.searchUserById(query);
+                                result = await _tripRepository.searchUserById(query);
                               }
+
+                              user = switch (result) {
+                                Success(value: final u) => u,
+                                Failure(exception: final e) => throw e,
+                              };
 
                               if (mounted) {
                                 setState(() {
@@ -507,12 +533,22 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                               setState(() => localLoading = true);
                               try {
                                 final userId = searchResult!['id'];
+                                final Result<void, Exception> result;
                                 if (searchType == SearchType.email) {
                                   // Use ID to add for safer reference
-                                  await _tripRepository.addMemberById(widget.trip.id, userId, role: selectedRole);
+                                  result = await _tripRepository.addMemberById(
+                                    widget.trip.id,
+                                    userId,
+                                    role: selectedRole,
+                                  );
                                 } else {
-                                  await _tripRepository.addMemberById(widget.trip.id, userId, role: selectedRole);
+                                  result = await _tripRepository.addMemberById(
+                                    widget.trip.id,
+                                    userId,
+                                    role: selectedRole,
+                                  );
                                 }
+                                if (result is Failure) throw result.exception;
 
                                 if (mounted) {
                                   Navigator.pop(ctx);

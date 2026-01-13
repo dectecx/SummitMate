@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:hive/hive.dart';
 import '../../models/itinerary_item.dart';
 import '../interfaces/i_itinerary_repository.dart';
+import '../../../core/error/result.dart'; // Added import
 
 /// 模擬行程資料庫
 /// 用於教學模式，返回靜態假資料，所有寫入操作皆為空實作。
@@ -66,7 +67,7 @@ class MockItineraryRepository implements IItineraryRepository {
   ];
 
   @override
-  Future<void> init() async {}
+  Future<Result<void, Exception>> init() async => const Success(null);
 
   @override
   List<ItineraryItem> getAllItems() => List.unmodifiable(_mockItems);
@@ -79,29 +80,30 @@ class MockItineraryRepository implements IItineraryRepository {
       _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.id == key, orElse: () => null);
 
   @override
-  Future<void> checkIn(dynamic key, DateTime time) async {}
+  Future<Result<void, Exception>> checkIn(dynamic key, DateTime time) async => const Success(null);
 
   @override
-  Future<void> clearCheckIn(dynamic key) async {}
+  Future<Result<void, Exception>> clearCheckIn(dynamic key) async => const Success(null);
 
   @override
-  Future<void> syncFromCloud(List<ItineraryItem> cloudItems) async {}
+  Future<Result<void, Exception>> syncFromCloud(List<ItineraryItem> cloudItems) async => const Success(null);
 
   @override
   Stream<BoxEvent> watchAllItems() => const Stream.empty();
 
   @override
-  Future<void> resetAllCheckIns() async {}
+  Future<Result<void, Exception>> resetAllCheckIns() async => const Success(null);
 
   @override
-  Future<void> addItem(ItineraryItem item) async {}
+  Future<Result<void, Exception>> addItem(ItineraryItem item) async => const Success(null);
 
   @override
-  Future<void> updateItem(dynamic key, ItineraryItem item) async {}
+  Future<Result<void, Exception>> updateItem(dynamic key, ItineraryItem item) async => const Success(null);
 
   @override
-  Future<void> saveLastSyncTime(DateTime time) async {
+  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
     _lastSyncTime = time;
+    return const Success(null);
   }
 
   @override
@@ -110,13 +112,11 @@ class MockItineraryRepository implements IItineraryRepository {
   }
 
   @override
-  Future<void> sync(String tripId) async {
-    // Mock sync
-  }
+  Future<Result<void, Exception>> sync(String tripId) async => const Success(null);
 
   @override
-  Future<void> deleteItem(dynamic key) async {}
+  Future<Result<void, Exception>> deleteItem(dynamic key) async => const Success(null);
 
   @override
-  Future<void> clearAll() async {}
+  Future<Result<void, Exception>> clearAll() async => const Success(null);
 }
