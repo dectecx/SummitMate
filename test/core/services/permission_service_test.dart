@@ -79,18 +79,32 @@ void main() {
     group('canEditTrip()', () {
       final trip = MockTrip();
 
+      setUp(() {
+         // Default to including the testing user if not specified otherwise
+         // Individual tests can override this
+         when(() => trip.members).thenReturn([]);
+      });
+
       test('Admin can always edit', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => adminUser);
         expect(await permissionService.canEditTrip(trip), isTrue);
       });
 
-      test('User with trip.edit permission can edit', () async {
+      test('User with trip.edit permission AND membership can edit', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => superMemberUser);
+        when(() => trip.members).thenReturn([superMemberUser.id]);
         expect(await permissionService.canEditTrip(trip), isTrue);
+      });
+
+      test('User with trip.edit permission BUT NOT membership cannot edit', () async {
+        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => superMemberUser);
+        when(() => trip.members).thenReturn([]); // Not in list
+        expect(await permissionService.canEditTrip(trip), isFalse);
       });
 
       test('User without trip.edit permission cannot edit', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => memberUser);
+        when(() => trip.members).thenReturn([memberUser.id]);
         expect(await permissionService.canEditTrip(trip), isFalse);
       });
     });
@@ -102,6 +116,9 @@ void main() {
       setUp(() {
         when(() => myTrip.createdBy).thenReturn('leader-id');
         when(() => otherTrip.createdBy).thenReturn('other-id');
+        
+        when(() => myTrip.members).thenReturn(['leader-id']);
+        when(() => otherTrip.members).thenReturn(['other-id']); 
       });
 
       test('Admin can always delete', () async {
@@ -109,20 +126,20 @@ void main() {
         expect(await permissionService.canDeleteTrip(myTrip), isTrue);
       });
 
-      test('Leader can delete their own trip', () async {
-        when(
-          () => mockAuthService.getCachedUserProfile(),
-        ).thenAnswer((_) async => leaderUser); // Leader has trip.delete
+      test('Leader can delete their own trip (is member)', () async {
+        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
+        // leaderUser.id is 'leader-id', which is in myTrip.members
         expect(await permissionService.canDeleteTrip(myTrip), isTrue);
       });
 
-      test('Leader can delete others trip (permission-based)', () async {
+      test('Leader cannot delete trip if not member (even if createdBy match conceptually, logic checks members)', () async {
+         // This scenario assumes membership is sync'd. If removed from members, permission lost.
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
-        expect(await permissionService.canDeleteTrip(otherTrip), isTrue);
+        when(() => otherTrip.members).thenReturn([]); // Not a member
+        expect(await permissionService.canDeleteTrip(otherTrip), isFalse);
       });
 
       test('Member cannot delete even if they own it (missing permission)', () async {
-        // Create a member who somehow authored a trip but has no delete permission
         final authorMember = UserProfile(
           id: 'mem-id',
           email: '',
@@ -131,6 +148,7 @@ void main() {
           permissions: [],
         );
         when(() => myTrip.createdBy).thenReturn('mem-id');
+        when(() => myTrip.members).thenReturn(['mem-id']);
 
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => authorMember);
         expect(await permissionService.canDeleteTrip(myTrip), isFalse);
@@ -139,11 +157,9 @@ void main() {
 
     group('canManageMembers()', () {
       final myTrip = MockTrip();
-      final otherTrip = MockTrip();
 
       setUp(() {
-        when(() => myTrip.createdBy).thenReturn('leader-id');
-        when(() => otherTrip.createdBy).thenReturn('other-id');
+        when(() => myTrip.members).thenReturn(['leader-id']);
       });
 
       test('Admin can always manage members', () async {
@@ -151,14 +167,15 @@ void main() {
         expect(await permissionService.canManageMembers(myTrip), isTrue);
       });
 
-      test('Leader can manage members of their own trip', () async {
+      test('Leader can manage members if valid member', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
         expect(await permissionService.canManageMembers(myTrip), isTrue);
       });
 
-      test('Leader can manage members of others trip (permission-based)', () async {
+      test('Leader cannot manage members if NOT member', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
-        expect(await permissionService.canManageMembers(otherTrip), isTrue);
+        when(() => myTrip.members).thenReturn([]);
+        expect(await permissionService.canManageMembers(myTrip), isFalse);
       });
     });
   });

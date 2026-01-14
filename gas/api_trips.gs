@@ -16,16 +16,38 @@
 function getTrips() {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_TRIPS);
+  const tmSheet = ss.getSheetByName(SHEET_TRIP_MEMBERS);
 
   if (!sheet) {
     return _success({ trips: [] }, "尚無行程資料");
   }
 
+  // 1. 取得行程資料
   const data = sheet.getDataRange().getValues();
   if (data.length <= 1) {
     return _success({ trips: [] }, "尚無行程資料");
   }
 
+  // 2. 取得成員資料並分組 (Join TripMembers)
+  const memberMap = {}; // trip_id -> [user_id, ...]
+  if (tmSheet) {
+    const tmData = tmSheet.getDataRange().getValues();
+    // Headers: id, trip_id, user_id, role_code, ...
+    const tmHeaders = tmData[0];
+    const tripIdIdx = tmHeaders.indexOf("trip_id");
+    const userIdIdx = tmHeaders.indexOf("user_id");
+
+    for (let i = 1; i < tmData.length; i++) {
+      const tId = tmData[i][tripIdIdx];
+      const uId = tmData[i][userIdIdx];
+      if (tId && uId) {
+        if (!memberMap[tId]) memberMap[tId] = [];
+        memberMap[tId].push(uId);
+      }
+    }
+  }
+
+  // 3. 組合結果
   const headers = data[0];
   const trips = data
     .slice(1)
@@ -35,7 +57,12 @@ function getTrips() {
         let value = row[index];
         trip[header] = value;
       });
-      return _formatData(trip, SHEET_TRIPS);
+      const formattedTrip = _formatData(trip, SHEET_TRIPS);
+
+      // 填入成員列表 (若無成員資料則回傳空陣列，由前端決定顯示邏輯)
+      formattedTrip.members = memberMap[formattedTrip.id] || [];
+
+      return formattedTrip;
     })
     .filter((trip) => trip.id); // 過濾空行
 
@@ -122,12 +149,12 @@ function updateTrip(tripData) {
   // 取得 Schema 以判斷欄位型別
   const schema =
     typeof SHEET_SCHEMA !== "undefined" ? SHEET_SCHEMA[SHEET_TRIPS] : null;
-  
+
   // 找出需要自動更新的欄位索引
   const updatedAtIdx = headers.indexOf("updated_at");
   const updatedByIdx = headers.indexOf("updated_by");
-  
-  // 取得 Operator ID (if available, passed via tripData.accessToken usually, but updateTrip signature doesn't enforce it yet? 
+
+  // 取得 Operator ID (if available, passed via tripData.accessToken usually, but updateTrip signature doesn't enforce it yet?
   // Standard practice: tripData should contain accessToken or we rely on 'updated_by' being passed in payload, or we skip updated_by if unknown.
   // For now, let's proceed with updated_at.)
   const now = new Date().toISOString();
@@ -151,12 +178,12 @@ function updateTrip(tripData) {
           sheet.getRange(i + 1, colIndex + 1).setValue(value);
         }
       });
-      
+
       // 自動更新 updated_at
       if (updatedAtIdx >= 0) {
         sheet.getRange(i + 1, updatedAtIdx + 1).setValue(now);
       }
-      
+
       return _success(null, "行程已更新");
     }
   }
@@ -350,7 +377,6 @@ function syncTripFull(data) {
     var gearRows = gearSheet.getDataRange().getValues();
     var newGearRows = [];
     var gearTargetColCount = HEADERS_TRIP_GEAR.length;
-    
 
     if (gear && gear.length > 0) {
       gear.forEach(function (item) {
@@ -370,7 +396,7 @@ function syncTripFull(data) {
         ]);
       });
     }
-    
+
     gearSheet.clearContents();
     if (newGearRows.length > 0) {
       if (gearSheet.getMaxColumns() < gearTargetColCount) {
@@ -484,7 +510,7 @@ function updateMemberRole(payload) {
   const ss = getSpreadsheet();
   const sheet = _getSheetOrCreate(SHEET_TRIP_MEMBERS, HEADERS_TRIP_MEMBERS);
   const data = sheet.getDataRange().getValues();
-  
+
   // Find column indices
   const headers = data[0];
   const tripIdIdx = headers.indexOf("trip_id");
@@ -497,14 +523,16 @@ function updateMemberRole(payload) {
   // 尋找是否已存在
   let found = false;
   const now = new Date().toISOString();
-  
+
   for (let i = 1; i < data.length; i++) {
     if (data[i][tripIdIdx] === trip_id && data[i][userIdIdx] === user_id) {
       // Update role
       sheet.getRange(i + 1, roleIdx + 1).setValue(role);
-      if (updatedAtIdx >= 0) sheet.getRange(i + 1, updatedAtIdx + 1).setValue(now);
-      if (updatedByIdx >= 0 && operator_id) sheet.getRange(i + 1, updatedByIdx + 1).setValue(operator_id);
-      
+      if (updatedAtIdx >= 0)
+        sheet.getRange(i + 1, updatedAtIdx + 1).setValue(now);
+      if (updatedByIdx >= 0 && operator_id)
+        sheet.getRange(i + 1, updatedByIdx + 1).setValue(operator_id);
+
       found = true;
       break;
     }
@@ -516,17 +544,19 @@ function updateMemberRole(payload) {
     const row = [];
     // Initialize row with strings
     HEADERS_TRIP_MEMBERS.forEach(() => row.push(""));
-    
+
     const h = HEADERS_TRIP_MEMBERS;
     row[h.indexOf("id")] = Utilities.getUuid();
     row[h.indexOf("trip_id")] = trip_id;
     row[h.indexOf("user_id")] = user_id;
     row[h.indexOf("role_code")] = role;
     row[h.indexOf("created_at")] = now;
-    if (h.indexOf("created_by") >= 0) row[h.indexOf("created_by")] = operator_id || "";
+    if (h.indexOf("created_by") >= 0)
+      row[h.indexOf("created_by")] = operator_id || "";
     row[h.indexOf("updated_at")] = now;
-    if (h.indexOf("updated_by") >= 0) row[h.indexOf("updated_by")] = operator_id || "";
-    
+    if (h.indexOf("updated_by") >= 0)
+      row[h.indexOf("updated_by")] = operator_id || "";
+
     sheet.appendRow(row);
   }
 

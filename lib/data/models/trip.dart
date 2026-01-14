@@ -21,72 +21,79 @@ class Trip extends HiveObject {
   @HiveField(2)
   String name;
 
-  /// 開始日期
+  /// 行程描述
   @HiveField(3)
+  String? description;
+
+  /// 開始日期
+  @HiveField(4)
   @JsonKey(fromJson: _parseDate)
   DateTime startDate;
 
   /// 結束日期
-  @HiveField(4)
+  @HiveField(5)
   @JsonKey(fromJson: _parseDateNullable)
   DateTime? endDate;
 
-  /// 每天的名稱 (自定義)
-  @HiveField(5)
-  @JsonKey(defaultValue: <String>[])
-  List<String> dayNames;
-
-  /// 行程描述
-  @HiveField(6)
-  String? description;
-
   /// 封面圖片 URL
-  @HiveField(7)
+  @HiveField(6)
   String? coverImage;
 
   /// 是否為當前作用中行程
-  @HiveField(8)
+  @HiveField(7)
   @JsonKey(name: 'is_active', defaultValue: false, fromJson: _parseBool)
   bool isActive;
 
-  /// 同步狀態
+  /// 行程成員 (User IDs)
+  @HiveField(8)
+  @JsonKey(defaultValue: <String>[])
+  List<String> members;
+
+  /// 每天的名稱 (自定義)
   @HiveField(9)
+  @JsonKey(defaultValue: <String>[])
+  List<String> dayNames;
+
+  /// 同步狀態
+  @HiveField(10)
   @JsonKey(defaultValue: SyncStatus.pendingCreate)
   SyncStatus syncStatus;
 
   /// 建立時間
-  @HiveField(10)
+  @HiveField(11)
   @JsonKey(fromJson: _parseDate)
   final DateTime createdAt;
 
   /// 建立者
-  @HiveField(11)
+  @HiveField(12)
   final String createdBy;
 
   /// 更新時間
-  @HiveField(12)
+  @HiveField(13)
   DateTime updatedAt;
 
   /// 更新者
-  @HiveField(13)
+  @HiveField(14)
   String updatedBy;
 
   Trip({
     required this.id,
     required this.userId,
     required this.name,
+    this.description,
     required this.startDate,
     this.endDate,
-    List<String>? dayNames,
-    this.description,
     this.coverImage,
     this.isActive = false,
+    List<String>? members,
+    List<String>? dayNames,
     this.syncStatus = SyncStatus.pendingCreate,
     required this.createdAt,
     required this.createdBy,
     DateTime? updatedAt,
     String? updatedBy,
-  }) : dayNames = dayNames ?? [],
+  }) : members = members ?? [userId], // 預設包含 owner (userId)
+       dayNames = dayNames ?? [],
        updatedAt = updatedAt ?? createdAt,
        updatedBy = updatedBy ?? createdBy;
 
