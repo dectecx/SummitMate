@@ -112,7 +112,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       return;
     }
 
-    trip.dayNames = List.from(trip.dayNames)..add(name);
+    trip.dayNames = List<String>.from(trip.dayNames)..add(name);
     final updateResult = await _tripRepository.updateTrip(trip);
     if (updateResult is Failure) {
       emit(ItineraryError(updateResult.exception.toString()));

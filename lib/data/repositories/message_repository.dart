@@ -39,7 +39,6 @@ class MessageRepository implements IMessageRepository {
 
   /// 取得所有留言 (依時間倒序)
   @override
-  @override
   Future<Result<List<Message>, Exception>> getAllMessages() async {
     try {
       final messages = _localDataSource.getAll();
@@ -54,7 +53,6 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [category] 留言分類 (e.g., "Gear")
   @override
-  @override
   Future<Result<List<Message>, Exception>> getMessagesByCategory(String category) async {
     try {
       final messages = _localDataSource.getAll().where((m) => m.category == category).toList();
@@ -68,7 +66,6 @@ class MessageRepository implements IMessageRepository {
   /// 取得主留言 (非回覆)
   ///
   /// [category] 選擇性篩選分類
-  @override
   @override
   Future<Result<List<Message>, Exception>> getMainMessages({String? category}) async {
     try {
@@ -90,7 +87,6 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [parentId] 父留言的 ID
   @override
-  @override
   Future<Result<List<Message>, Exception>> getReplies(String parentId) async {
     try {
       final messages = _localDataSource.getAll().where((m) => m.parentId == parentId).toList();
@@ -105,7 +101,6 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [id] 留言 ID
   @override
-  @override
   Future<Result<Message?, Exception>> getById(String id) async {
     try {
       return Success(_localDataSource.getById(id));
@@ -117,7 +112,6 @@ class MessageRepository implements IMessageRepository {
   /// 新增留言
   ///
   /// [message] 欲新增的留言物件
-  @override
   @override
   Future<Result<void, Exception>> addMessage(Message message) async {
     try {
@@ -132,7 +126,6 @@ class MessageRepository implements IMessageRepository {
   /// 刪除留言 (依 ID)
   ///
   /// [id] 欲刪除的留言 ID
-  @override
   @override
   Future<Result<void, Exception>> deleteById(String id) async {
     try {
@@ -154,7 +147,6 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [cloudMessages] 雲端下載的留言列表
   @override
-  @override
   Future<Result<void, Exception>> syncFromCloud(List<Message> cloudMessages) async {
     try {
       await _localDataSource.clear();
@@ -171,7 +163,6 @@ class MessageRepository implements IMessageRepository {
   /// 自動同步 (自主判斷連線狀態)
   ///
   /// [tripId] 當前行程 ID
-  @override
   @override
   Future<Result<void, Exception>> sync(String tripId) async {
     if (_connectivity.isOffline) {
@@ -196,7 +187,6 @@ class MessageRepository implements IMessageRepository {
   ///
   /// [cloudIds] 已存在於雲端的 ID 集合
   @override
-  @override
   Future<Result<List<Message>, Exception>> getPendingMessages(Set<String> cloudIds) async {
     try {
       return Success(_localDataSource.getAll().where((m) => !cloudIds.contains(m.id)).toList());
@@ -213,7 +203,6 @@ class MessageRepository implements IMessageRepository {
 
   /// 儲存最後同步時間
   @override
-  @override
   Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
     try {
       await _localDataSource.saveLastSyncTime(time);
@@ -225,7 +214,6 @@ class MessageRepository implements IMessageRepository {
 
   /// 取得最後同步時間
   @override
-  @override
   Future<Result<DateTime?, Exception>> getLastSyncTime() async {
     try {
       return Success(_localDataSource.getLastSyncTime());
@@ -235,7 +223,6 @@ class MessageRepository implements IMessageRepository {
   }
 
   /// 清除所有留言 (Debug 用途)
-  @override
   @override
   Future<Result<void, Exception>> clearAll() async {
     try {

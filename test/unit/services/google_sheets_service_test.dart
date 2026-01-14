@@ -106,6 +106,10 @@ void main() {
             'category': 'Gear',
             'content': 'Test message',
             'timestamp': '2024-12-15T09:00:00Z',
+            'created_at': '2024-12-15T09:00:00Z',
+            'created_by': 'Alex',
+            'updated_at': '2024-12-15T09:00:00Z',
+            'updated_by': 'Alex',
           },
         ],
       };

@@ -11,12 +11,15 @@ class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   static const String _boxName = HiveBoxNames.itinerary;
   static const String _prefKeyLastSync = 'itin_last_sync_time';
 
+  final HiveService _hiveService;
   Box<ItineraryItem>? _box;
+
+  ItineraryLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
 
   /// 初始化 Hive Box
   @override
   Future<void> init() async {
-    _box = await HiveService().openBox<ItineraryItem>(_boxName);
+    _box = await _hiveService.openBox<ItineraryItem>(_boxName);
   }
 
   Box<ItineraryItem> get box {

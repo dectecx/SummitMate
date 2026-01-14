@@ -10,12 +10,15 @@ class SettingsRepository implements ISettingsRepository {
   static const String _boxName = HiveBoxNames.settings;
   static const String _settingsKey = 'app_settings';
 
+  final HiveService _hiveService;
   Box<Settings>? _box;
+
+  SettingsRepository({required HiveService hiveService}) : _hiveService = hiveService;
 
   /// 開啟 Box
   @override
   Future<void> init() async {
-    _box = await HiveService().openBox<Settings>(_boxName);
+    _box = await _hiveService.openBox<Settings>(_boxName);
   }
 
   /// 取得 Box
