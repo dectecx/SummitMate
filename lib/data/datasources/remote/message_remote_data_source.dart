@@ -48,4 +48,48 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
       rethrow;
     }
   }
+
+  /// 新增留言
+  ///
+  /// [message] 欲新增的留言物件
+  @override
+  Future<void> addMessage(Message message) async {
+    try {
+      final response = await _apiClient.post({'action': ApiConfig.actionMessageCreate, 'data': message.toJson()});
+
+      if (response.statusCode != 200) {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
+      }
+    } catch (e) {
+      LogService.error('AddMessage failed: $e', source: _source);
+      rethrow;
+    }
+  }
+
+  /// 刪除留言
+  ///
+  /// [id] 留言 ID
+  @override
+  Future<void> deleteMessage(String id) async {
+    try {
+      final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'id': id});
+
+      if (response.statusCode != 200) {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+
+      final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+      if (!gasResponse.isSuccess) {
+        throw Exception(gasResponse.message);
+      }
+    } catch (e) {
+      LogService.error('DeleteMessage failed: $e', source: _source);
+      rethrow;
+    }
+  }
 }

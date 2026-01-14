@@ -216,9 +216,8 @@ class SyncService implements ISyncService {
   /// 注意：離線模式下 UI 層應禁用此功能
   @override
   Future<Result<void, Exception>> addMessageAndSync(Message message) async {
-    await _messageRepo.addMessage(message);
-    final result = await _sheetsService.addMessage(message);
-    LogService.info('留言已同步: ${message.id}', source: 'SyncService');
+    final result = await _messageRepo.addMessage(message);
+    LogService.info('Message processed (add): ${message.id}', source: 'SyncService');
     return result;
   }
 
@@ -226,9 +225,8 @@ class SyncService implements ISyncService {
   /// 注意：離線模式下 UI 層應禁用此功能
   @override
   Future<Result<void, Exception>> deleteMessageAndSync(String id) async {
-    await _messageRepo.deleteById(id);
-    final result = await _sheetsService.deleteMessage(id);
-    LogService.info('留言已刪除: $id', source: 'SyncService');
+    final result = await _messageRepo.deleteById(id);
+    LogService.info('Message processed (delete): $id', source: 'SyncService');
     return result;
   }
 
