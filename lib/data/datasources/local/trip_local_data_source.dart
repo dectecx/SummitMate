@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import '../../models/trip.dart';
 import '../../../core/constants.dart';
 import '../../datasources/interfaces/i_trip_local_data_source.dart';
+import '../../../infrastructure/tools/hive_service.dart';
 
 /// 行程 (Trip) 的本地資料來源實作 (使用 Hive)
 class TripLocalDataSource implements ITripLocalDataSource {
@@ -11,7 +12,7 @@ class TripLocalDataSource implements ITripLocalDataSource {
   @override
   Future<void> init() async {
     if (_box == null || !_box!.isOpen) {
-      _box = await Hive.openBox<Trip>(HiveBoxNames.trips);
+      _box = await HiveService().openBox<Trip>(HiveBoxNames.trips);
     }
   }
 

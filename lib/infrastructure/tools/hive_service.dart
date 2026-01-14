@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
+import 'log_service.dart';
 import '../../data/models/settings.dart';
 import '../../data/models/itinerary_item.dart';
 import '../../data/models/message.dart';
@@ -13,10 +18,13 @@ import '../../data/models/user_profile.dart';
 import '../../data/models/enums/sync_status.dart';
 
 /// Hive 資料庫服務
-/// 管理資料庫的初始化與生命週期
+/// 管理資料庫的初始化與生命週期，以及加密邏輯
 class HiveService {
   static HiveService? _instance;
   bool _isInitialized = false;
+  Uint8List? _encryptionKey;
+  final _secureStorage = const FlutterSecureStorage();
+  static const _keyStorageKey = 'hive_encryption_key';
 
   /// 單例模式
   factory HiveService() {
@@ -35,6 +43,11 @@ class HiveService {
 
     // 初始化 Hive Flutter
     await Hive.initFlutter();
+
+    // 初始化加密金鑰 (若為 Web 則跳過，因為 flutter_secure_storage 在 web 行為不同且通常不支援 Hive 非同步加密同樣方式)
+    if (!kIsWeb) {
+      _encryptionKey = await _checkAndGenerateEncryptionKey();
+    }
 
     // 註冊 Adapters (由 build_runner 生成)
     if (!Hive.isAdapterRegistered(0)) {
@@ -75,6 +88,62 @@ class HiveService {
     }
 
     _isInitialized = true;
+  }
+
+  /// 取得或生成加密金鑰
+  Future<Uint8List> _checkAndGenerateEncryptionKey() async {
+    // 嘗試讀取現有金鑰
+    final keyString = await _secureStorage.read(key: _keyStorageKey);
+    if (keyString != null) {
+      final key = base64Url.decode(keyString);
+      if (kDebugMode) {
+        debugPrint('🔐 Hive Encryption Key (Loaded): $keyString');
+      }
+      return key;
+    } else {
+      // 生成新的 32-byte 金鑰
+      final key = Hive.generateSecureKey();
+      final encodedKey = base64Url.encode(key);
+      await _secureStorage.write(key: _keyStorageKey, value: encodedKey);
+      if (kDebugMode) {
+        debugPrint('🔐 Hive Encryption Key (Generated): $encodedKey');
+      }
+      return Uint8List.fromList(key);
+    }
+  }
+
+  /// 開啟 Box
+  ///
+  /// [boxName] Box 名稱
+  Future<Box<T>> openBox<T>(String boxName) async {
+    if (!_isInitialized) await init();
+
+    // 1. Web 或無金鑰環境：直接開啟明文 Box
+    if (_encryptionKey == null) {
+      return await Hive.openBox<T>(boxName);
+    }
+
+    // 2. 加密環境：直接開啟加密 Box
+    // 由於 openBox 是 idempotent (冪等) 的，Hive 會自動檢查是否已開啟。
+    // 如果已開啟，它會直接回傳 instance，不會重複 IO 操作。
+    // 因此不需要寫 if (!Hive.isBoxOpen) ...
+    try {
+      return await Hive.openBox<T>(boxName, encryptionCipher: HiveAesCipher(_encryptionKey!));
+    } catch (e) {
+      // 若因為金鑰不匹配或檔案損壞導致無法開啟，這裡選擇拋出異常，
+      // 而不是自動刪除 (為了避免意外資料遺失)。
+      // 若確定是全新開發環境，遇到錯誤建議手動解除安裝 App 重裝。
+      LogService.error('無法開啟加密 Box ($boxName): $e', source: 'HiveService');
+
+      // 除錯用：若是開發階段遇到 Key 不合，可以考慮在這裡清空重建，
+      // 但正式版不建議。
+      if (kDebugMode) {
+        debugPrint('Debug: Box開啟失敗，嘗試刪除重建...');
+        await Hive.deleteBoxFromDisk(boxName);
+        return await Hive.openBox<T>(boxName, encryptionCipher: HiveAesCipher(_encryptionKey!));
+      }
+      rethrow;
+    }
   }
 
   /// 關閉所有 Box
@@ -154,5 +223,8 @@ class HiveService {
     if (clearLogs) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.logs);
     }
+
+    // 如果清除了任何資料，建議重新初始化以確保 Encryption Key 狀態正確 (雖然 Key 是 persistent 的)
+    // 但因為 close() 了，下次使用前會自動 init()
   }
 }

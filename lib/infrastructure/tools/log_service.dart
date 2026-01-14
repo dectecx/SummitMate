@@ -8,6 +8,7 @@ import '../../core/constants.dart';
 import '../../core/di.dart';
 import '../services/google_sheets_service.dart';
 import '../../core/error/result.dart';
+import 'hive_service.dart';
 
 /// 日誌等級
 enum LogLevel { debug, info, warning, error }
@@ -69,7 +70,7 @@ class LogService {
 
   /// 初始化日誌服務
   static Future<void> init() async {
-    _box = await Hive.openBox<String>(_boxName);
+    _box = await HiveService().openBox<String>(_boxName);
     _loadFromStorage();
   }
 

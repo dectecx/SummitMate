@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import '../../../core/constants.dart';
 import '../../models/gear_item.dart';
 import '../interfaces/i_gear_local_data_source.dart';
+import '../../../infrastructure/tools/hive_service.dart';
 
 /// 裝備項目 (GearItem) 的本地資料來源實作 (使用 Hive)
 class GearLocalDataSource implements IGearLocalDataSource {
@@ -11,11 +12,7 @@ class GearLocalDataSource implements IGearLocalDataSource {
   /// 初始化 Hive Box
   @override
   Future<void> init() async {
-    if (!Hive.isBoxOpen(_boxName)) {
-      _box = await Hive.openBox<GearItem>(_boxName);
-    } else {
-      _box = Hive.box<GearItem>(_boxName);
-    }
+    _box = await HiveService().openBox<GearItem>(_boxName);
   }
 
   Box<GearItem> get box {
