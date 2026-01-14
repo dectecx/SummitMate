@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/di.dart';
+import '../../domain/interfaces/i_connectivity_service.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/gear/gear_cubit.dart';
@@ -175,8 +176,8 @@ class AppDrawer extends StatelessWidget {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
-    // Check network status
-    final hasConnection = await InternetConnectionChecker.instance.hasConnection;
+    // Check network status (Synchronous check via Service)
+    final hasConnection = getIt<IConnectivityService>().hasConnection;
 
     if (!hasConnection) {
       // Offline - show warning
