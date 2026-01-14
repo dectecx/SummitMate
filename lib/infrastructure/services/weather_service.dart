@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/models/weather_data.dart';
 import '../tools/log_service.dart';
+import '../tools/hive_service.dart';
 import '../../core/env_config.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
@@ -37,11 +38,7 @@ class WeatherService implements IWeatherService {
   /// 初始化天氣服務 (開啟 Hive Local Storage)
   @override
   Future<void> init() async {
-    if (!Hive.isBoxOpen(_boxName)) {
-      _box = await Hive.openBox<WeatherData>(_boxName);
-    } else {
-      _box = Hive.box<WeatherData>(_boxName);
-    }
+    _box = await HiveService().openBox<WeatherData>(_boxName);
   }
 
   // 取得快取天氣。僅在 forceRefresh 為真或無快取時取得新資料。

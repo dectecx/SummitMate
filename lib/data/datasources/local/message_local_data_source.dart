@@ -4,6 +4,7 @@ import '../../../core/constants.dart';
 import '../../../core/di.dart';
 import '../../models/message.dart';
 import '../interfaces/i_message_local_data_source.dart';
+import '../../../infrastructure/tools/hive_service.dart';
 
 /// 留言訊息 (Message) 的本地資料來源實作 (使用 Hive)
 class MessageLocalDataSource implements IMessageLocalDataSource {
@@ -15,11 +16,7 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   /// 初始化 Hive Box
   @override
   Future<void> init() async {
-    if (!Hive.isBoxOpen(_boxName)) {
-      _box = await Hive.openBox<Message>(_boxName);
-    } else {
-      _box = Hive.box<Message>(_boxName);
-    }
+    _box = await HiveService().openBox<Message>(_boxName);
   }
 
   Box<Message> get box {

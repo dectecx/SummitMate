@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import '../../core/constants.dart';
 import '../models/settings.dart';
 import 'interfaces/i_settings_repository.dart';
+import '../../infrastructure/tools/hive_service.dart';
 
 /// Settings Repository
 /// 管理全域設定的 CRUD 操作
@@ -14,7 +15,7 @@ class SettingsRepository implements ISettingsRepository {
   /// 開啟 Box
   @override
   Future<void> init() async {
-    _box = await Hive.openBox<Settings>(_boxName);
+    _box = await HiveService().openBox<Settings>(_boxName);
   }
 
   /// 取得 Box

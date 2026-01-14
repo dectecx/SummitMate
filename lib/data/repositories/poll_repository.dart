@@ -4,6 +4,7 @@ import '../models/poll.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import 'interfaces/i_poll_repository.dart';
+import '../../infrastructure/tools/hive_service.dart';
 
 class PollRepository implements IPollRepository {
   static const String _boxName = HiveBoxNames.polls;
@@ -14,7 +15,7 @@ class PollRepository implements IPollRepository {
   /// 初始化 Box
   @override
   Future<void> init() async {
-    _box = await Hive.openBox<Poll>(_boxName);
+    _box = await HiveService().openBox<Poll>(_boxName);
   }
 
   /// 取得 Box (確保已初始化)

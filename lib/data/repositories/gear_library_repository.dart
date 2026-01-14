@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import '../../core/constants.dart';
 import '../models/gear_library_item.dart';
 import 'interfaces/i_gear_library_repository.dart';
+import '../../infrastructure/tools/hive_service.dart';
 
 /// 裝備庫 Repository
 ///
@@ -21,7 +22,7 @@ class GearLibraryRepository implements IGearLibraryRepository {
   /// 開啟 Box
   @override
   Future<void> init() async {
-    _box = await Hive.openBox<GearLibraryItem>(_boxName);
+    _box = await HiveService().openBox<GearLibraryItem>(_boxName);
   }
 
   /// 取得 Box

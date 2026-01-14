@@ -4,6 +4,7 @@ import '../../../core/constants.dart';
 import '../../../core/di.dart';
 import '../../models/itinerary_item.dart';
 import '../interfaces/i_itinerary_local_data_source.dart';
+import '../../../infrastructure/tools/hive_service.dart';
 
 /// 行程項目 (ItineraryItem) 的本地資料來源實作 (使用 Hive)
 class ItineraryLocalDataSource implements IItineraryLocalDataSource {
@@ -15,11 +16,7 @@ class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   /// 初始化 Hive Box
   @override
   Future<void> init() async {
-    if (!Hive.isBoxOpen(_boxName)) {
-      _box = await Hive.openBox<ItineraryItem>(_boxName);
-    } else {
-      _box = Hive.box<ItineraryItem>(_boxName);
-    }
+    _box = await HiveService().openBox<ItineraryItem>(_boxName);
   }
 
   Box<ItineraryItem> get box {
