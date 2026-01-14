@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // for kIsWeb
 import 'package:flutter/services.dart'; // for SystemNavigator
 import 'package:url_launcher/url_launcher.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../core/di.dart';
 import '../../infrastructure/tools/log_service.dart';
@@ -21,8 +19,6 @@ import '../../core/error/result.dart';
 
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
-// import '../providers/message_provider.dart';
-// import '../providers/poll_provider.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../cubits/sync/sync_cubit.dart';
@@ -43,7 +39,7 @@ import '../widgets/settings_dialog.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/itinerary_item.dart';
 
-import 'collaboration_tab.dart'; // Ensure this file exists, otherwise adapt
+import 'collaboration_tab.dart';
 import 'map/map_screen.dart';
 import 'tutorial_screen.dart';
 import '../widgets/ads/banner_ad_widget.dart';

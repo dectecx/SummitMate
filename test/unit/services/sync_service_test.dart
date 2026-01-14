@@ -245,7 +245,7 @@ void main() {
       verify(() => mockTripRepo.getRemoteTrips()).called(1);
     });
 
-    test('addMessageAndSync should save locally and upload to cloud', () async {
+    test('addMessageAndSync should call repository', () async {
       // Arrange
       final newMsg = Message(
         id: 'new',
@@ -260,7 +260,6 @@ void main() {
       );
 
       when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockDataService.addMessage(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.addMessageAndSync(newMsg);
@@ -268,15 +267,15 @@ void main() {
       // Assert
       expect(result is Success, true);
       verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
-      verify(() => mockDataService.addMessage(newMsg)).called(1);
+      // DataService should NOT be called directly by SyncService anymore
+      verifyNever(() => mockDataService.addMessage(any()));
     });
 
-    test('deleteMessageAndSync should delete locally and then from cloud', () async {
+    test('deleteMessageAndSync should call repository', () async {
       // Arrange
       const id = 'delete-me';
 
       when(() => mockMessageRepo.deleteById(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockDataService.deleteMessage(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.deleteMessageAndSync(id);
@@ -284,7 +283,8 @@ void main() {
       // Assert
       expect(result is Success, true);
       verify(() => mockMessageRepo.deleteById(id)).called(1);
-      verify(() => mockDataService.deleteMessage(id)).called(1);
+      // DataService should NOT be called directly by SyncService anymore
+      verifyNever(() => mockDataService.deleteMessage(any()));
     });
   });
 }

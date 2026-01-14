@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/config/ad_helper.dart';
 
 // Note: AdService interacts with static GoogleMobileAds singleton which is hard to mock directly

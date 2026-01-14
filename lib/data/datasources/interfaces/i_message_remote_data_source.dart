@@ -8,4 +8,14 @@ abstract class IMessageRemoteDataSource {
   ///
   /// [tripId] 指定的行程 ID
   Future<List<Message>> getMessages(String tripId);
+
+  /// 新增留言
+  ///
+  /// [message] 欲新增的留言物件
+  Future<void> addMessage(Message message);
+
+  /// 刪除留言
+  ///
+  /// [id] 留言 ID
+  Future<void> deleteMessage(String id);
 }

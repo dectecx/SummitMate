@@ -114,9 +114,23 @@ class MessageRepository implements IMessageRepository {
   /// [message] 欲新增的留言物件
   @override
   Future<Result<void, Exception>> addMessage(Message message) async {
+    if (_connectivity.isOffline) {
+      return Failure(GeneralException('目前為離線模式，無法新增留言'));
+    }
+
     try {
+      // 1. Save Local
       await _localDataSource.add(message);
-      // TODO: Trigger Sync or queue?
+
+      // 2. Best Effort Sync
+      try {
+        await _remoteDataSource.addMessage(message);
+        LogService.info('Auto-sync message success: ${message.id}', source: _source);
+      } catch (syncError) {
+        LogService.warning('Auto-sync message failed: $syncError', source: _source);
+        // Don't fail the operation, just log. SyncService will catch up later.
+      }
+
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -128,7 +142,12 @@ class MessageRepository implements IMessageRepository {
   /// [id] 欲刪除的留言 ID
   @override
   Future<Result<void, Exception>> deleteById(String id) async {
+    if (_connectivity.isOffline) {
+      return Failure(GeneralException('目前為離線模式，無法刪除留言'));
+    }
+
     try {
+      // 1. Delete Local
       final item = _localDataSource.getById(id);
       if (item != null) {
         if (item.isInBox) {
@@ -137,6 +156,15 @@ class MessageRepository implements IMessageRepository {
           await _localDataSource.delete(item.key);
         }
       }
+
+      // 2. Best Effort Sync
+      try {
+        await _remoteDataSource.deleteMessage(id);
+        LogService.info('Auto-sync delete message success: $id', source: _source);
+      } catch (syncError) {
+        LogService.warning('Auto-sync delete message failed: $syncError', source: _source);
+      }
+
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

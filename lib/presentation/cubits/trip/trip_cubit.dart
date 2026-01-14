@@ -149,6 +149,7 @@ class TripCubit extends Cubit<TripState> {
   Future<void> setActiveTrip(String tripId) async {
     try {
       await _setActiveTripInternal(tripId);
+      LogService.info('Set active trip: $tripId', source: _source);
       await loadTrips();
     } catch (e) {
       LogService.error('Error setting active trip: $e', source: _source);
@@ -164,7 +165,6 @@ class TripCubit extends Cubit<TripState> {
       case Failure(exception: final e):
         throw e;
     }
-    LogService.info('Set active trip: $tripId', source: _source);
   }
 
   /// 刪除行程
