@@ -15,14 +15,15 @@ import '../../infrastructure/tools/hive_service.dart';
 class GearLibraryRepository implements IGearLibraryRepository {
   static const String _boxName = HiveBoxNames.gearLibrary;
 
+  final HiveService _hiveService;
   Box<GearLibraryItem>? _box;
 
-  GearLibraryRepository();
+  GearLibraryRepository({required HiveService hiveService}) : _hiveService = hiveService;
 
   /// 開啟 Box
   @override
   Future<void> init() async {
-    _box = await HiveService().openBox<GearLibraryItem>(_boxName);
+    _box = await _hiveService.openBox<GearLibraryItem>(_boxName);
   }
 
   /// 取得 Box

@@ -7,12 +7,15 @@ import '../../../infrastructure/tools/hive_service.dart';
 /// 裝備項目 (GearItem) 的本地資料來源實作 (使用 Hive)
 class GearLocalDataSource implements IGearLocalDataSource {
   static const String _boxName = HiveBoxNames.gear;
+  final HiveService _hiveService;
   Box<GearItem>? _box;
+
+  GearLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
 
   /// 初始化 Hive Box
   @override
   Future<void> init() async {
-    _box = await HiveService().openBox<GearItem>(_boxName);
+    _box = await _hiveService.openBox<GearItem>(_boxName);
   }
 
   Box<GearItem> get box {

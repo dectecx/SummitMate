@@ -11,12 +11,15 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   static const String _boxName = HiveBoxNames.messages;
   static const String _prefKeyLastSync = 'msg_last_sync_time';
 
+  final HiveService _hiveService;
   Box<Message>? _box;
+
+  MessageLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
 
   /// 初始化 Hive Box
   @override
   Future<void> init() async {
-    _box = await HiveService().openBox<Message>(_boxName);
+    _box = await _hiveService.openBox<Message>(_boxName);
   }
 
   Box<Message> get box {

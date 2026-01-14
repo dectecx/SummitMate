@@ -10,12 +10,15 @@ class PollRepository implements IPollRepository {
   static const String _boxName = HiveBoxNames.polls;
   static const String _lastSyncKey = 'poll_last_sync_time';
 
+  final HiveService _hiveService;
   Box<Poll>? _box;
+
+  PollRepository({required HiveService hiveService}) : _hiveService = hiveService;
 
   /// 初始化 Box
   @override
   Future<void> init() async {
-    _box = await HiveService().openBox<Poll>(_boxName);
+    _box = await _hiveService.openBox<Poll>(_boxName);
   }
 
   /// 取得 Box (確保已初始化)

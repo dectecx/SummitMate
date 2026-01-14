@@ -109,7 +109,7 @@ Future<void> setupDependencies() async {
 
   // 2. 設定與身份驗證基礎 (Settings, Auth Core, Network Core)
   // Settings Repository (Early initialization needed for Connectivity and Sync)
-  final settingsRepo = SettingsRepository();
+  final settingsRepo = SettingsRepository(hiveService: hiveService);
   await settingsRepo.init();
   getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
@@ -139,19 +139,19 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<UsageTrackingService>(() => UsageTrackingService(apiClient: getIt<GasApiClient>()));
 
   // 3. Data Sources (Depends on Network Core)
-  final tripLocalDS = TripLocalDataSource();
+  final tripLocalDS = TripLocalDataSource(hiveService: hiveService);
   await tripLocalDS.init();
   getIt.registerSingleton<ITripLocalDataSource>(tripLocalDS);
 
-  final itineraryLocalDS = ItineraryLocalDataSource();
+  final itineraryLocalDS = ItineraryLocalDataSource(hiveService: hiveService);
   await itineraryLocalDS.init();
   getIt.registerSingleton<IItineraryLocalDataSource>(itineraryLocalDS);
 
-  final gearLocalDS = GearLocalDataSource();
+  final gearLocalDS = GearLocalDataSource(hiveService: hiveService);
   await gearLocalDS.init();
   getIt.registerSingleton<IGearLocalDataSource>(gearLocalDS);
 
-  final messageLocalDS = MessageLocalDataSource();
+  final messageLocalDS = MessageLocalDataSource(hiveService: hiveService);
   await messageLocalDS.init();
   getIt.registerSingleton<IMessageLocalDataSource>(messageLocalDS);
 
@@ -187,11 +187,11 @@ Future<void> setupDependencies() async {
   await gearRepo.init();
   getIt.registerSingleton<IGearRepository>(gearRepo);
 
-  final gearLibraryRepo = GearLibraryRepository();
+  final gearLibraryRepo = GearLibraryRepository(hiveService: hiveService);
   await gearLibraryRepo.init();
   getIt.registerSingleton<IGearLibraryRepository>(gearLibraryRepo);
 
-  final pollRepo = PollRepository();
+  final pollRepo = PollRepository(hiveService: hiveService);
   await pollRepo.init();
   getIt.registerSingleton<IPollRepository>(pollRepo);
 

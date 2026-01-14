@@ -20,19 +20,16 @@ import '../../data/models/enums/sync_status.dart';
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期，以及加密邏輯
 class HiveService {
-  static HiveService? _instance;
-  bool _isInitialized = false;
-  Uint8List? _encryptionKey;
-  final _secureStorage = const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage;
   static const _keyStorageKey = 'hive_encryption_key';
 
-  /// 單例模式
-  factory HiveService() {
-    _instance ??= HiveService._internal();
-    return _instance!;
-  }
+  bool _isInitialized = false;
+  List<int>? _encryptionKey;
 
-  HiveService._internal();
+  /// 建構子
+  ///
+  /// [secureStorage] 可選的 SecureStorage 實例 (用於測試或自定義，預設為 [FlutterSecureStorage])
+  HiveService({FlutterSecureStorage? secureStorage}) : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   /// 是否已初始化
   bool get isInitialized => _isInitialized;

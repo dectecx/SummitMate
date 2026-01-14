@@ -9,12 +9,19 @@ void main() {
       'description': 'Description',
       'creator_id': 'user-1',
       'created_at': '2024-01-01T00:00:00Z',
+      'created_by': 'user-1',
+      'updated_at': '2024-01-01T00:00:00Z',
+      'updated_by': 'user-1',
       'options': [
         {
           'id': 'opt-1',
           'poll_id': 'poll-1',
           'text': 'Option 1',
           'creator_id': 'user-1',
+          'created_at': '2024-01-01T00:00:00Z',
+          'created_by': 'user-1',
+          'updated_at': '2024-01-01T00:00:00Z',
+          'updated_by': 'user-1',
           'vote_count': 5,
           'voters': [
             {'user_id': 'u1', 'user_name': 'User 1'},
