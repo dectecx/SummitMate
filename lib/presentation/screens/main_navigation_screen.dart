@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart'; // for kIsWeb
 import 'package:flutter/services.dart'; // for SystemNavigator
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/di.dart';
 import '../../infrastructure/tools/log_service.dart';
@@ -870,6 +871,43 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             border: OutlineInputBorder(),
                           ),
                         ),
+                        // User ID & Copy
+                        if (authState is AuthAuthenticated && !authState.isGuest) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.fingerprint, size: 20, color: Colors.grey),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'ID: ${authState.userId}',
+                                  style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'monospace'),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.copy, size: 16, color: Colors.grey),
+                                tooltip: '複製 ID',
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: authState.userId));
+                                  ToastService.success('ID 已複製');
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.share, size: 16, color: Colors.grey),
+                                tooltip: '分享 ID',
+                                onPressed: () async {
+                                  // ignore: deprecated_member_use
+                                  await Share.share(
+                                    '我的 SummitMate ID 是: ${authState.userId}',
+                                    subject: 'SummitMate ID',
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+
                         // Guest mode indicator
                         if (authState is! AuthAuthenticated || authState.isGuest) ...[
                           const SizedBox(height: 12),
@@ -944,6 +982,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             },
                           ),
                         ),
+
                         const Divider(height: 32),
 
                         // ====== 重看教學引導 ======
