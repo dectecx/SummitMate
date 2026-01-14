@@ -172,11 +172,13 @@ Hive 的 TypeId 必須全域唯一。
 | endDate     | `DateTime?` | 3   | `null`  | 結束日期       |
 | description | `String?`   | 4   | `null`  | 描述           |
 | coverImage  | `String?`   | 5   | `null`  | 封面圖片       |
-| isActive    | `bool`         | 6   | `false` | 是否為當前行程 |
-| createdAt   | `DateTime`     | 7   | `now`   | 建立時間       |
+| isActive    | `bool`         | 7   | `false` | 是否為當前行程 |
 | dayNames    | `List<String>` | 8   | `[]`    | 行程天數列表   |
-| createdBy   | `String?`      | 9   | `null`  | 建立者 ID      |
-| updatedBy   | `String?`      | 10  | `null`  | 更新者 ID      |
+| syncStatus  | `SyncStatus`   | 9   | `PENDING`| 同步狀態       |
+| createdAt   | `DateTime`     | 10  | `now`   | 建立時間       |
+| createdBy   | `String?`      | 11  | `null`  | 建立者 ID      |
+| updatedAt   | `DateTime`     | 12  | `null`  | 更新時間       |
+| updatedBy   | `String?`      | 13  | `null`  | 更新者 ID      |
 
 ### Box: `gearLibrary` (TypeId: 11)
 

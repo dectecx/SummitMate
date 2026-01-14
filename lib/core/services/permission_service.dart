@@ -39,10 +39,12 @@ class PermissionService {
     if (user == null) return false;
     if (user.roleCode == RoleConstants.admin) return true;
 
-    // 必須擁有 'trip.edit' 權限
+    // 1. 必須是行程成員 (基本門檻)
+    if (!trip.members.contains(user.id)) return false;
+
+    // 2. 必須擁有 'trip.edit' 權限 (角色賦予)
     if (!user.permissions.contains('trip.edit')) return false;
 
-    // 目前簡易邏輯，有 edit 權限即可編輯
     return true;
   }
 
@@ -57,6 +59,9 @@ class PermissionService {
     if (user == null) return false;
     if (user.roleCode == RoleConstants.admin) return true;
 
+    // 1. 必須是行程成員 (通常只有團長/嚮導能刪除)
+    if (!trip.members.contains(user.id)) return false;
+    
     return user.permissions.contains('trip.delete');
   }
 
@@ -71,6 +76,8 @@ class PermissionService {
     if (user == null) return false;
     if (user.roleCode == RoleConstants.admin) return true;
 
+    if (!trip.members.contains(user.id)) return false;
+
     return user.permissions.contains('trip.transfer');
   }
 
@@ -84,6 +91,8 @@ class PermissionService {
   bool canManageMembersSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
     if (user.roleCode == RoleConstants.admin) return true;
+
+    if (!trip.members.contains(user.id)) return false;
 
     return user.permissions.contains('member.manage');
   }
