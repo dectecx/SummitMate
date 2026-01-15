@@ -37,17 +37,15 @@ function doGet(e) {
         return _createJsonResponse(getTripFull(tripId));
       case API_ACTIONS.ITINERARY_LIST:
         return _createJsonResponse(
-          _success({ itinerary: getItinerary(getSpreadsheet(), tripId) })
+          _success({ itinerary: getItinerary(tripId) })
         );
       case API_ACTIONS.MESSAGE_LIST:
-        return _createJsonResponse(
-          _success({ messages: getMessages(getSpreadsheet(), tripId) })
-        );
+        return _createJsonResponse(_success({ messages: getMessages(tripId) }));
 
       // === 投票 (Polls) ===
       // Flattened for RESTful resource style
       case API_ACTIONS.POLL_LIST:
-        return _createJsonResponse(handlePollAction("get", e.parameter));
+        return _createJsonResponse(getPolls(e.parameter.user_id));
 
       // === 氣象 (Weather) ===
       case API_ACTIONS.WEATHER_GET:
@@ -146,19 +144,19 @@ function doPost(e) {
 
       // === 投票 (Polls) ===
       case API_ACTIONS.POLL_LIST:
-        return _createJsonResponse(handlePollAction("get", data));
+        return _createJsonResponse(getPolls(data.user_id));
       case API_ACTIONS.POLL_CREATE:
-        return _createJsonResponse(handlePollAction("create", data));
+        return _createJsonResponse(createPoll(data));
       case API_ACTIONS.POLL_VOTE:
-        return _createJsonResponse(handlePollAction("vote", data));
+        return _createJsonResponse(votePoll(data));
       case API_ACTIONS.POLL_ADD_OPTION:
-        return _createJsonResponse(handlePollAction("add_option", data));
+        return _createJsonResponse(addOption(data));
       case API_ACTIONS.POLL_DELETE_OPTION:
-        return _createJsonResponse(handlePollAction("delete_option", data));
+        return _createJsonResponse(deleteOption(data));
       case API_ACTIONS.POLL_CLOSE:
-        return _createJsonResponse(handlePollAction("close", data));
+        return _createJsonResponse(closePoll(data));
       case API_ACTIONS.POLL_DELETE:
-        return _createJsonResponse(handlePollAction("delete", data));
+        return _createJsonResponse(deletePoll(data));
 
       // === 監控 (Logs/Heartbeat) ===
       case API_ACTIONS.LOG_UPLOAD:
@@ -288,25 +286,6 @@ function _toIsoString(value) {
   }
 
   return "";
-}
-
-/**
- * 取得或建立工作表
- * @private
- * @param {string} name - 工作表名稱
- * @param {string[]} headers - 欄位標題陣列
- * @returns {Sheet} 工作表物件
- */
-function _getSheetOrCreate(name, headers) {
-  const ss = getSpreadsheet();
-  let sheet = ss.getSheetByName(name);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(name);
-    sheet.appendRow(headers);
-  }
-
-  return sheet;
 }
 
 /**

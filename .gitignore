@@ -25,6 +25,9 @@ build/
 *.ipr
 *.iws
 
+# Agent
+.agent/
+
 # macOS
 .DS_Store
 *.swp

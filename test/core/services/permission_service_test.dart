@@ -80,9 +80,9 @@ void main() {
       final trip = MockTrip();
 
       setUp(() {
-         // Default to including the testing user if not specified otherwise
-         // Individual tests can override this
-         when(() => trip.members).thenReturn([]);
+        // Default to including the testing user if not specified otherwise
+        // Individual tests can override this
+        when(() => trip.members).thenReturn([]);
       });
 
       test('Admin can always edit', () async {
@@ -116,9 +116,9 @@ void main() {
       setUp(() {
         when(() => myTrip.createdBy).thenReturn('leader-id');
         when(() => otherTrip.createdBy).thenReturn('other-id');
-        
+
         when(() => myTrip.members).thenReturn(['leader-id']);
-        when(() => otherTrip.members).thenReturn(['other-id']); 
+        when(() => otherTrip.members).thenReturn(['other-id']);
       });
 
       test('Admin can always delete', () async {
@@ -132,12 +132,15 @@ void main() {
         expect(await permissionService.canDeleteTrip(myTrip), isTrue);
       });
 
-      test('Leader cannot delete trip if not member (even if createdBy match conceptually, logic checks members)', () async {
-         // This scenario assumes membership is sync'd. If removed from members, permission lost.
-        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
-        when(() => otherTrip.members).thenReturn([]); // Not a member
-        expect(await permissionService.canDeleteTrip(otherTrip), isFalse);
-      });
+      test(
+        'Leader cannot delete trip if not member (even if createdBy match conceptually, logic checks members)',
+        () async {
+          // This scenario assumes membership is sync'd. If removed from members, permission lost.
+          when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
+          when(() => otherTrip.members).thenReturn([]); // Not a member
+          expect(await permissionService.canDeleteTrip(otherTrip), isFalse);
+        },
+      );
 
       test('Member cannot delete even if they own it (missing permission)', () async {
         final authorMember = UserProfile(

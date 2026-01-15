@@ -61,7 +61,7 @@ class PermissionService {
 
     // 1. 必須是行程成員 (通常只有團長/嚮導能刪除)
     if (!trip.members.contains(user.id)) return false;
-    
+
     return user.permissions.contains('trip.delete');
   }
 

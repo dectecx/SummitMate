@@ -10,7 +10,7 @@
  */
 
 // ============================================================
-// === PUBLIC API (doPost Handlers integration) ===
+// === PUBLIC API ===
 // ============================================================
 
 /**
@@ -19,8 +19,7 @@
  */
 function getAvailableRoles() {
   const roles = _getAllRoles();
-  // 僅回傳 id, code, name, description
-  return buildResponse(API_CODES.SUCCESS, { roles: roles });
+  return _success({ roles: roles }, "取得角色列表成功");
 }
 
 /**
@@ -32,37 +31,28 @@ function assignUserRole(payload) {
   const { accessToken, targetUserId, newRoleId } = payload;
 
   if (!accessToken || !targetUserId || !newRoleId) {
-    return buildResponse(API_CODES.INVALID_PARAMS, null, "缺少必要參數");
+    return _error(API_CODES.INVALID_PARAMS, "缺少必要參數");
   }
 
   // 1. 驗證呼叫者權限 (必須是 Admin 或 Leader)
-  // 注意: 這裡需要 _getUserPermissions 尚未實作在 api_auth.gs，暫時先檢查是否為 Admin Code
+  // TODO: 注意: 這裡需要 _getUserPermissions 尚未實作在 api_auth.gs，暫時先檢查是否為 Admin Code
   // 理想上應該檢查 permissions.include('user.manage')
 
   const validation = validateToken(accessToken);
-  if (!validation.isValid)
-    return buildResponse(
-      API_CODES.AUTH_ACCESS_TOKEN_INVALID,
-      null,
-      "Token 無效"
-    );
+  if (!validation.isValid) {
+    return _error(API_CODES.AUTH_ACCESS_TOKEN_INVALID, "Token 無效");
+  }
 
   const callerId = validation.payload.uid;
-
-  // 檢查呼叫者是否具有權限 (這裡先簡單實作，後續需整合 PermissionService)
-  // const callerPermissions = _getUserPermissions(callerId); // TODO: implement in api_auth
 
   // 2. 更新使用者角色
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_USERS);
   const result = _findUserById(sheet, targetUserId);
 
-  if (!result)
-    return buildResponse(
-      API_CODES.AUTH_INVALID_CREDENTIALS,
-      null,
-      "找不到目標使用者"
-    );
+  if (!result) {
+    return _error(API_CODES.AUTH_INVALID_CREDENTIALS, "找不到目標使用者");
+  }
 
   const { rowIndex } = result;
 
@@ -78,7 +68,7 @@ function assignUserRole(payload) {
     sheet.getRange(rowIndex, updatedAtCol).setValue(new Date().toISOString());
   }
 
-  return buildResponse(API_CODES.SUCCESS, null, "角色更新成功");
+  return _success(null, "角色更新成功");
 }
 
 // ============================================================

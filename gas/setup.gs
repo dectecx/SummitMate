@@ -23,6 +23,7 @@ function setupAll() {
   setupGearSheets();
   setupPollSheetsWrapper();
   setupSystemSheets();
+  setupWeatherSheets();
 
   //最後统一套用格式
   applyTextFormatToAll();
@@ -134,17 +135,20 @@ function setupSystemSheets() {
   const ss = getSpreadsheet();
 
   _setupSheet(ss, SHEET_LOGS, HEADERS_LOGS);
-  Logger.log("✓ Logs 工作表已建立");
+  Logger.log(`✓ ${SHEET_LOGS} 工作表已建立`);
 
   _setupSheet(ss, SHEET_HEARTBEAT, HEADERS_HEARTBEAT);
-  Logger.log("✓ Heartbeat 工作表已建立");
+  Logger.log(`✓ ${SHEET_HEARTBEAT} 工作表已建立`);
 
   _setupSheet(ss, SHEET_ROLES, HEADERS_ROLES);
+  Logger.log(`✓ ${SHEET_ROLES} 工作表已建立`);
   _setupSheet(ss, SHEET_PERMISSIONS, HEADERS_PERMISSIONS);
+  Logger.log(`✓ ${SHEET_PERMISSIONS} 工作表已建立`);
   _setupSheet(ss, SHEET_ROLE_PERMISSIONS, HEADERS_ROLE_PERMISSIONS);
+  Logger.log(`✓ ${SHEET_ROLE_PERMISSIONS} 工作表已建立`);
 
   _seedDefaultRoles(ss);
-  Logger.log("✓ 角色權限工作表與預設資料已建立");
+  Logger.log(`✓ 角色權限預設資料已建立`);
 
   _applyTextFormat(ss.getSheetByName(SHEET_LOGS), SHEET_LOGS);
   _applyTextFormat(ss.getSheetByName(SHEET_HEARTBEAT), SHEET_HEARTBEAT);
@@ -155,6 +159,25 @@ function setupSystemSheets() {
     SHEET_ROLE_PERMISSIONS
   );
 }
+
+/**
+ * 5. 初始化氣象相關工作表
+ * @description 建立 Weather_Hiking_App, Weather_CWA_Hiking_Raw
+ */
+function setupWeatherSheets() {
+  const ss = getSpreadsheet();
+
+  if (!ss.getSheetByName(SHEET_WEATHER)) {
+    ss.insertSheet(SHEET_WEATHER);
+    Logger.log(`✓ ${SHEET_WEATHER} 工作表已建立`);
+  }
+
+  if (!ss.getSheetByName(SHEET_WEATHER_RAW)) {
+    ss.insertSheet(SHEET_WEATHER_RAW);
+    Logger.log(`✓ ${SHEET_WEATHER_RAW} 工作表已建立`);
+  }
+}
+
 /**
  * 建立預設行程
  * @private

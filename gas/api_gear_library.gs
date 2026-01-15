@@ -32,7 +32,9 @@ function uploadGearLibrary(accessToken, items) {
     }
 
     const userId = validation.payload.uid;
-    const sheet = _getSheetOrCreate(SHEET_GEAR_LIBRARY, HEADERS_GEAR_LIBRARY);
+    const ss = getSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_GEAR_LIBRARY);
+    if (!sheet) return _error(API_CODES.SYSTEM_ERROR, "GearLibrary sheet not found");
 
     // 刪除該 user_id 的所有舊資料
     const existingData = sheet.getDataRange().getValues();
@@ -45,21 +47,13 @@ function uploadGearLibrary(accessToken, items) {
       }
     }
 
-    // 寫入新資料 (文字格式由工作表的 @ 格式處理，不需要 ' 前綴)
+    // 使用 Mapper 轉換為 Persistence 格式
     if (items && items.length > 0) {
-      const now = new Date().toISOString();
-      const rows = items.map((item) => [
-        String(item.id || Utilities.getUuid()),
-        String(userId),
-        String(item.name || ""),
-        item.weight || 0,
-        String(item.category || "Other"),
-        String(item.notes || ""),
-        item.created_at || now,
-        String(userId), // created_by
-        item.updated_at || now,
-        String(userId), // updated_by
-      ]);
+      const rows = items.map((item) => {
+        item.id = item.id || Utilities.getUuid();
+        const pObj = Mapper.GearLibrary.toPersistence(item, userId);
+        return HEADERS_GEAR_LIBRARY.map(h => pObj[h] !== undefined ? pObj[h] : "");
+      });
 
       sheet
         .getRange(
@@ -113,17 +107,16 @@ function downloadGearLibrary(accessToken) {
     const headers = data[0];
     const userIdCol = headers.indexOf("user_id");
 
-    // 篩選該 user_id 的資料
+    // 篩選該 user_id 的資料並使用 Mapper 轉換為 DTO
     const items = [];
     for (let i = 1; i < data.length; i++) {
       if (String(data[i][userIdCol]) === String(userId)) {
-        const item = {};
+        const row = {};
         headers.forEach((header, index) => {
-          if (header !== "user_id") {
-            item[header] = data[i][index];
-          }
+          row[header] = data[i][index];
         });
-        items.push(_formatData(item, SHEET_GEAR_LIBRARY));
+        const formattedRow = _formatData(row, SHEET_GEAR_LIBRARY);
+        items.push(Mapper.GearLibrary.toDTO(formattedRow));
       }
     }
 
@@ -132,3 +125,4 @@ function downloadGearLibrary(accessToken) {
     return _error(API_CODES.SYSTEM_ERROR, e.toString());
   }
 }
+

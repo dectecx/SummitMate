@@ -14,7 +14,10 @@
  * @returns {Object} { code, data, message }
  */
 function getGearSets() {
-  const sheet = _initGearSheet();
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_GEAR_SETS);
+  if (!sheet)
+    return _error(API_CODES.GEAR_NOT_FOUND, "GearSets sheet not found");
   const data = sheet.getDataRange().getValues();
 
   if (data.length <= 1) {
@@ -25,23 +28,17 @@ function getGearSets() {
   const gearSets = [];
 
   for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    const visibility = row[headers.indexOf("visibility")];
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = data[i][index];
+    });
+    const formattedRow = _formatData(row, SHEET_GEAR_SETS);
 
     // 私人組合不顯示在列表中
-    if (visibility === "private") continue;
+    if (formattedRow.visibility === "private") continue;
 
-    const gearSet = {
-      id: row[headers.indexOf("id")],
-      title: row[headers.indexOf("title")],
-      author: row[headers.indexOf("author")],
-      total_weight: row[headers.indexOf("total_weight")],
-      item_count: row[headers.indexOf("item_count")],
-      visibility: visibility,
-      uploaded_at: row[headers.indexOf("uploaded_at")],
-      // 不包含 items，減少傳輸量
-    };
-    gearSets.push(_formatData(gearSet, SHEET_GEAR_SETS));
+    // 使用 Mapper 轉換為 Summary DTO (不含 items/meals)
+    gearSets.push(Mapper.GearSet.toSummaryDTO(formattedRow));
   }
 
   return _success({ gear_sets: gearSets }, "取得裝備組合列表成功");
@@ -57,32 +54,25 @@ function getGearSet(key) {
     return _error(API_CODES.GEAR_KEY_INVALID, "請輸入 4 位數 Key");
   }
 
-  const sheet = _initGearSheet();
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_GEAR_SETS);
+  if (!sheet)
+    return _error(API_CODES.GEAR_NOT_FOUND, "GearSets sheet not found");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const keyIndex = headers.indexOf("key");
 
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][keyIndex]) === String(key)) {
-      const row = data[i];
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = data[i][index];
+      });
+      const formattedRow = _formatData(row, SHEET_GEAR_SETS);
+
+      // 使用 Mapper 轉換為完整 DTO (含 items/meals)
       return _success(
-        {
-          gear_set: _formatData(
-            {
-              id: row[headers.indexOf("id")],
-              title: row[headers.indexOf("title")],
-              author: row[headers.indexOf("author")],
-              total_weight: row[headers.indexOf("total_weight")],
-              item_count: row[headers.indexOf("item_count")],
-              visibility: row[headers.indexOf("visibility")],
-              uploaded_at: row[headers.indexOf("uploaded_at")],
-              updated_at: row[headers.indexOf("updated_at")],
-              items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
-              meals: JSON.parse(row[headers.indexOf("meals_json")] || "[]"),
-            },
-            SHEET_GEAR_SETS
-          ),
-        },
+        { gear_set: Mapper.GearSet.toDTO(formattedRow) },
         "取得裝備組合成功"
       );
     }
@@ -102,40 +92,35 @@ function downloadGearSet(id, key) {
     return _error(API_CODES.INVALID_PARAMS, "缺少 ID");
   }
 
-  const sheet = _initGearSheet();
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_GEAR_SETS);
+  if (!sheet)
+    return _error(API_CODES.GEAR_NOT_FOUND, "GearSets sheet not found");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const idIndex = headers.indexOf("id");
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][idIndex] === id) {
-      const row = data[i];
-      const visibility = row[headers.indexOf("visibility")];
-      const storedKey = row[headers.indexOf("key")];
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = data[i][index];
+      });
+      const formattedRow = _formatData(row, SHEET_GEAR_SETS);
+      const storedKey = formattedRow.key;
 
       // Protected/Private 需要正確的 key
       if (
-        (visibility === "protected" || visibility === "private") &&
+        (formattedRow.visibility === "protected" ||
+          formattedRow.visibility === "private") &&
         String(storedKey) !== String(key)
       ) {
         return _error(API_CODES.GEAR_KEY_REQUIRED, "需要正確的 Key 才能下載");
       }
 
+      // 使用 Mapper 轉換為完整 DTO
       return _success(
-        {
-          gear_set: {
-            id: row[headers.indexOf("id")],
-            title: row[headers.indexOf("title")],
-            author: row[headers.indexOf("author")],
-            total_weight: row[headers.indexOf("total_weight")],
-            item_count: row[headers.indexOf("item_count")],
-            visibility: visibility,
-            uploaded_at: row[headers.indexOf("uploaded_at")],
-            updated_at: row[headers.indexOf("updated_at")],
-            items: JSON.parse(row[headers.indexOf("items_json")] || "[]"),
-            meals: JSON.parse(row[headers.indexOf("meals_json")] || "[]"),
-          },
-        },
+        { gear_set: Mapper.GearSet.toDTO(formattedRow) },
         "下載裝備組合成功"
       );
     }
@@ -182,7 +167,10 @@ function uploadGearSet(data) {
 
   // 檢查 key 是否重複
   if (key) {
-    const sheet = _initGearSheet();
+    const ss = getSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_GEAR_SETS);
+    if (!sheet)
+      return _error(API_CODES.GEAR_NOT_FOUND, "GearSets sheet not found");
     const existingData = sheet.getDataRange().getValues();
     const headers = existingData[0];
     const keyIndex = headers.indexOf("key");
@@ -197,46 +185,34 @@ function uploadGearSet(data) {
     }
   }
 
-  // 產生 ID
-  const id = Utilities.getUuid();
-  const uploadedAt = new Date().toISOString();
-  const itemsJson = JSON.stringify(items || []);
-  const mealsJson = JSON.stringify(meals || []);
-
-  // 建立 row 物件 (key-value)
-  const rowData = {
-    id: id,
-    trip_id: trip_id || "",
+  // 準備資料
+  const gearData = {
+    id: Utilities.getUuid(),
+    trip_id: trip_id,
     title: title,
     author: author,
-    visibility: visibility || "public",
-    key: key || "",
-    total_weight: total_weight || 0,
-    item_count: item_count || 0,
-    uploaded_at: uploadedAt,
-    updated_at: uploadedAt,
-    updated_by: author,
-    items_json: itemsJson,
-    meals_json: mealsJson,
+    visibility: visibility,
+    key: key,
+    total_weight: total_weight,
+    item_count: item_count,
+    items: items,
+    meals: meals,
   };
 
-  // 依 HEADERS_GEAR 順序自動轉成陣列 (不再依賴手動順序)
-  const sheet = _initGearSheet();
-  const row = HEADERS_GEAR.map((header) => rowData[header] ?? "");
+  // 使用 Mapper 轉換為 Persistence 格式
+  const pObj = Mapper.GearSet.toPersistence(gearData, author);
+
+  // 依 HEADERS_GEAR 順序自動轉成陣列
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_GEAR_SETS);
+  if (!sheet)
+    return _error(API_CODES.GEAR_NOT_FOUND, "GearSets sheet not found");
+  const row = HEADERS_GEAR.map((header) => pObj[header] ?? "");
   sheet.appendRow(row);
 
+  // 回傳 Summary DTO
   return _success(
-    {
-      gear_set: {
-        id: id,
-        title: title,
-        author: author,
-        total_weight: total_weight || 0,
-        item_count: item_count || 0,
-        visibility: visibility || "public",
-        uploaded_at: uploadedAt,
-      },
-    },
+    { gear_set: Mapper.GearSet.toSummaryDTO(pObj) },
     "裝備組合已上傳"
   );
 }
@@ -252,7 +228,10 @@ function deleteGearSet(id, key) {
     return _error(API_CODES.INVALID_PARAMS, "缺少 ID");
   }
 
-  const sheet = _initGearSheet();
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_GEAR_SETS);
+  if (!sheet)
+    return _error(API_CODES.GEAR_NOT_FOUND, "GearSets sheet not found");
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const idIndex = headers.indexOf("id");
@@ -282,17 +261,4 @@ function deleteGearSet(id, key) {
   }
 
   return _error(API_CODES.GEAR_NOT_FOUND, "找不到指定的裝備組合");
-}
-
-// ============================================================
-// === INTERNAL HELPERS ===
-// ============================================================
-
-/**
- * 初始化 GearSets 工作表
- * @private
- * @returns {Sheet} 工作表物件
- */
-function _initGearSheet() {
-  return _getSheetOrCreate(SHEET_GEAR_SETS, HEADERS_GEAR);
 }

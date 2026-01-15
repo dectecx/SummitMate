@@ -32,7 +32,6 @@ function getTrips() {
   const memberMap = {}; // trip_id -> [user_id, ...]
   if (tmSheet) {
     const tmData = tmSheet.getDataRange().getValues();
-    // Headers: id, trip_id, user_id, role_code, ...
     const tmHeaders = tmData[0];
     const tripIdIdx = tmHeaders.indexOf("trip_id");
     const userIdIdx = tmHeaders.indexOf("user_id");
@@ -47,24 +46,22 @@ function getTrips() {
     }
   }
 
-  // 3. 組合結果
+  // 3. 組合結果 (使用 Mapper 轉換)
   const headers = data[0];
   const trips = data
     .slice(1)
     .map((row) => {
       const trip = {};
       headers.forEach((header, index) => {
-        let value = row[index];
-        trip[header] = value;
+        trip[header] = row[index];
       });
       const formattedTrip = _formatData(trip, SHEET_TRIPS);
+      const memberIds = memberMap[formattedTrip.id] || [];
 
-      // 填入成員列表 (若無成員資料則回傳空陣列，由前端決定顯示邏輯)
-      formattedTrip.members = memberMap[formattedTrip.id] || [];
-
-      return formattedTrip;
+      // 使用 Mapper 轉換為 DTO
+      return Mapper.Trip.toDTO(formattedTrip, memberIds);
     })
-    .filter((trip) => trip.id); // 過濾空行
+    .filter((trip) => trip && trip.id); // 過濾空行
 
   return _success({ trips }, "取得行程列表成功");
 }
@@ -75,10 +72,10 @@ function getTrips() {
  * @returns {Object} { code, data, message }
  */
 function createTrip(tripData) {
-  const sheet = _getSheetOrCreate(SHEET_TRIPS, HEADERS_TRIPS);
-
-  const id = tripData.id || Utilities.getUuid();
-  const now = new Date().toISOString();
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_TRIPS);
+  if (!sheet)
+    return _error(API_CODES.TRIP_SHEET_MISSING, "Trips sheet not found");
 
   // 解析 Access Token 取得 User ID
   if (!tripData.accessToken) {
@@ -95,34 +92,27 @@ function createTrip(tripData) {
     return _error(API_CODES.AUTH_ACCESS_TOKEN_INVALID, "Token Payload 異常");
   }
 
-  // 順序需與 HEADERS_TRIPS 一致
-  // [id, name, start_date, end_date, description, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by]
-  sheet.appendRow([
-    id,
-    String(tripData.name || "新行程"),
-    _toIsoString(tripData.start_date || now),
-    _toIsoString(tripData.end_date || ""),
-    String(tripData.description || ""),
-    String(tripData.cover_image || ""),
-    tripData.is_active || false,
-    JSON.stringify(tripData.day_names || []),
-    now,
-    String(creatorId),
-    now,
-    String(creatorId),
-  ]);
+  // 準備資料
+  tripData.id = tripData.id || Utilities.getUuid();
+
+  // 使用 Mapper 轉換為 Persistence 格式
+  const pObj = Mapper.Trip.toPersistence(tripData, creatorId);
+
+  // 依 HEADERS_TRIPS 順序組成陣列
+  const row = HEADERS_TRIPS.map((h) => (pObj[h] !== undefined ? pObj[h] : ""));
+  sheet.appendRow(row);
 
   // 自動將建立者加入成員列表 (Role: Leader)
   if (creatorId) {
     updateMemberRole({
-      trip_id: id,
+      trip_id: tripData.id,
       user_id: creatorId,
       role: "leader",
       operator_id: creatorId,
     });
   }
 
-  return _success({ id }, "行程已新增");
+  return _success({ id: tripData.id }, "行程已新增");
 }
 
 /**
@@ -283,7 +273,9 @@ function syncTripFull(data) {
     var ss = getSpreadsheet();
 
     // 1. Update/Insert Trip Sheet
-    var tripSheet = _getSheetOrCreate(SHEET_TRIPS, HEADERS_TRIPS);
+    var tripSheet = ss.getSheetByName(SHEET_TRIPS);
+    if (!tripSheet)
+      return _error(API_CODES.TRIP_SHEET_MISSING, "Trips sheet not found");
     var tripRows = tripSheet.getDataRange().getValues();
     var tripRowIndex = -1;
     var idIndex = 0; // 假設 ID 在第一欄 (既有邏輯)
@@ -323,7 +315,12 @@ function syncTripFull(data) {
     }
 
     // 2. Clear & Insert Itinerary
-    var itinSheet = _getSheetOrCreate(SHEET_ITINERARY, HEADERS_ITINERARY);
+    var itinSheet = ss.getSheetByName(SHEET_ITINERARY);
+    if (!itinSheet)
+      return _error(
+        API_CODES.ITINERARY_SHEET_MISSING,
+        "Itinerary sheet not found"
+      );
 
     // Filter out old items for this trip (Simple logical delete & rewrite)
     var itinRows = itinSheet.getDataRange().getValues();
@@ -372,8 +369,24 @@ function syncTripFull(data) {
       });
     }
 
+    // Write itinerary data to sheet
+    itinSheet.clearContents();
+    if (newItinRows.length > 0) {
+      if (itinSheet.getMaxColumns() < targetColCount) {
+        itinSheet.insertColumnsAfter(
+          itinSheet.getMaxColumns(),
+          targetColCount - itinSheet.getMaxColumns()
+        );
+      }
+      itinSheet
+        .getRange(1, 1, newItinRows.length, newItinRows[0].length)
+        .setValues(newItinRows);
+    }
+
     // 3. Clear & Insert Gear
-    var gearSheet = _getSheetOrCreate(SHEET_TRIP_GEAR, HEADERS_TRIP_GEAR);
+    var gearSheet = ss.getSheetByName(SHEET_TRIP_GEAR);
+    if (!gearSheet)
+      return _error(API_CODES.SYSTEM_ERROR, "TripGear sheet not found");
     var gearRows = gearSheet.getDataRange().getValues();
     var newGearRows = [];
     var gearTargetColCount = HEADERS_TRIP_GEAR.length;
@@ -508,7 +521,9 @@ function updateMemberRole(payload) {
   }
 
   const ss = getSpreadsheet();
-  const sheet = _getSheetOrCreate(SHEET_TRIP_MEMBERS, HEADERS_TRIP_MEMBERS);
+  const sheet = ss.getSheetByName(SHEET_TRIP_MEMBERS);
+  if (!sheet)
+    return _error(API_CODES.TRIP_SHEET_MISSING, "TripMembers sheet not found");
   const data = sheet.getDataRange().getValues();
 
   // Find column indices
