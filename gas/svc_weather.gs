@@ -397,15 +397,3 @@ function getWeatherData() {
 
   return _success({ weather: weatherData }, "取得氣象資料成功");
 }
-
-/**
- * (選用) 首次安裝初始化氣象工作表
- */
-function setupWeatherSheets() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss.getSheetByName("Weather_CWA_Hiking_Raw"))
-    ss.insertSheet("Weather_CWA_Hiking_Raw");
-  if (!ss.getSheetByName("Weather_Hiking_App"))
-    ss.insertSheet("Weather_Hiking_App");
-  Logger.log("氣象工作表初始化完成");
-}

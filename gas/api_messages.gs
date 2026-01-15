@@ -11,11 +11,11 @@
 
 /**
  * 取得留言資料
- * @param {Spreadsheet} ss - 試算表物件
  * @param {string} [tripId] - 可選，篩選特定行程的資料 (含全域留言)
- * @returns {Object[]} 留言陣列
+ * @returns {Object[]} 留言陣列 (DTO)
  */
-function getMessages(ss, tripId) {
+function getMessages(tripId) {
+  const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_MESSAGES);
   if (!sheet) return [];
 
@@ -30,28 +30,12 @@ function getMessages(ss, tripId) {
     .map((row) => {
       const msg = {};
       headers.forEach((header, index) => {
-        const key = _headerToKey(header);
-        let value = row[index];
-
-        // 處理空的 parent_id
-        if (key === "parent_id") {
-          value = value || null;
-        }
-        // 若無頭像則提供預設值
-        if (key === "avatar" && (value === null || value === "")) {
-          value = DEFAULT_AVATAR;
-        }
-
-        msg[key] = value;
+        msg[header] = row[index];
       });
+      const formattedMsg = _formatData(msg, SHEET_MESSAGES);
 
-      // 向下相容：若 avatar 欄位不存在
-      if (!msg.avatar) {
-        msg.avatar = DEFAULT_AVATAR;
-      }
-
-      // 統一格式化 (強制轉型)
-      return _formatData(msg, SHEET_MESSAGES);
+      // 使用 Mapper 轉換為 DTO
+      return Mapper.Message.toDTO(formattedMsg);
     })
     .filter((msg) => {
       if (!msg.id) return false;
@@ -69,9 +53,12 @@ function getMessages(ss, tripId) {
  * @returns {Object} { code, data, message }
  */
 function createMessage(messageData) {
-  const sheet = _getSheetOrCreate(SHEET_MESSAGES, HEADERS_MESSAGES);
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_MESSAGES);
+  if (!sheet)
+    return _error(API_CODES.MESSAGE_SHEET_MISSING, "Messages sheet not found");
 
-  // 確保有 avatar 欄位
+  // 確保有必要欄位
   _ensureColumn(sheet, "avatar");
   _ensureColumn(sheet, "trip_id");
 
@@ -83,24 +70,18 @@ function createMessage(messageData) {
     }
   }
 
-  // 新增資料列 (順序需與 HEADERS_MESSAGES 一致)
-  // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
-  sheet.appendRow([
-    String(messageData.id || Utilities.getUuid()),
-    String(messageData.trip_id || ""),
-    String(messageData.parent_id || ""),
-    String(messageData.user || DEFAULT_USER),
-    String(messageData.category || DEFAULT_CATEGORY),
-    String(messageData.content || ""),
-    messageData.timestamp || new Date().toISOString(),
-    String(messageData.avatar || DEFAULT_AVATAR),
-    messageData.timestamp || new Date().toISOString(),
-    String(messageData.user || DEFAULT_USER),
-    messageData.timestamp || new Date().toISOString(),
-    String(messageData.user || DEFAULT_USER),
-  ]);
+  // 準備資料
+  messageData.id = messageData.id || Utilities.getUuid();
+  const operatorId = messageData.user || DEFAULT_USER;
 
-  return _success(null, "訊息已新增");
+  // 使用 Mapper 轉換為 Persistence 格式
+  const pObj = Mapper.Message.toPersistence(messageData, operatorId);
+  const row = HEADERS_MESSAGES.map((h) =>
+    pObj[h] !== undefined ? pObj[h] : ""
+  );
+  sheet.appendRow(row);
+
+  return _success({ id: messageData.id }, "訊息已新增");
 }
 
 /**
@@ -113,26 +94,20 @@ function batchCreateMessages(messages) {
     return _success(null, "無訊息可新增");
   }
 
-  const sheet = _getSheetOrCreate(SHEET_MESSAGES, HEADERS_MESSAGES);
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_MESSAGES);
+  if (!sheet)
+    return _error(API_CODES.MESSAGE_SHEET_MISSING, "Messages sheet not found");
   _ensureColumn(sheet, "avatar");
   _ensureColumn(sheet, "trip_id");
 
-  // 順序需與 HEADERS_MESSAGES 一致
-  // 文字格式由工作表的 @ 格式處理，不需要 ' 前綴
-  const rows = messages.map((messageData) => [
-    String(messageData.id || Utilities.getUuid()),
-    String(messageData.trip_id || ""),
-    String(messageData.parent_id || ""),
-    String(messageData.user || DEFAULT_USER),
-    String(messageData.category || DEFAULT_CATEGORY),
-    String(messageData.content || ""),
-    messageData.timestamp || new Date().toISOString(),
-    String(messageData.avatar || DEFAULT_AVATAR),
-    messageData.timestamp || new Date().toISOString(),
-    String(messageData.user || DEFAULT_USER),
-    messageData.timestamp || new Date().toISOString(),
-    String(messageData.user || DEFAULT_USER),
-  ]);
+  // 使用 Mapper 轉換為 Persistence 格式
+  const rows = messages.map((messageData) => {
+    messageData.id = messageData.id || Utilities.getUuid();
+    const operatorId = messageData.user || DEFAULT_USER;
+    const pObj = Mapper.Message.toPersistence(messageData, operatorId);
+    return HEADERS_MESSAGES.map((h) => (pObj[h] !== undefined ? pObj[h] : ""));
+  });
 
   if (rows.length > 0) {
     sheet

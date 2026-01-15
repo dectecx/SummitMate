@@ -1,45 +1,31 @@
-// ============================================================
-// SummitMate - 投票功能 (Polls)
-// ============================================================
-
 /**
- * 處理投票相關的操作請求
- * @param {string} subAction - 子動作：'create', 'get', 'vote', 'add_option', 'delete_option'
- * @param {Object} data - 請求資料 payload
- * @returns {Object} { code, data, message }
+ * ============================================================
+ * 投票功能 API
+ * ============================================================
+ * @fileoverview 投票 (Polls) 相關 CRUD 操作
+ *
+ * API Actions:
+ *   - poll_create: 建立投票
+ *   - poll_list: 取得投票列表
+ *   - poll_vote: 執行投票
+ *   - poll_add_option: 新增選項
+ *   - poll_delete_option: 刪除選項
+ *   - poll_close: 關閉投票
+ *   - poll_delete: 刪除投票
  */
-function handlePollAction(subAction, data) {
-  switch (subAction) {
-    case "create":
-      return createPoll(data);
-    case "get":
-      return getPolls(data.user_id);
-    case "vote":
-      return votePoll(data);
-    case "add_option":
-      return addOption(data);
-    case "delete_option":
-      return deleteOption(data);
-    case "close":
-      return closePoll(data);
-    case "delete":
-      return deletePoll(data);
-    default:
-      return _error(API_CODES.UNKNOWN_ACTION, "未知的投票子動作: " + subAction);
-  }
-}
 
 // ============================================================
-// 核心邏輯函式
+// === PUBLIC API ===
 // ============================================================
 
 /**
  * 建立新投票
+ * @param {Object} data - 投票資料
  * @returns {Object} { code, data, message }
  */
 function createPoll(data) {
   const ss = getSpreadsheet();
-  let sheet = ss.getSheetByName("Polls");
+  const sheet = ss.getSheetByName("Polls");
   if (!sheet) {
     return _error(
       API_CODES.POLL_SHEET_MISSING,
@@ -52,67 +38,55 @@ function createPoll(data) {
     return _error(API_CODES.POLL_SHEET_MISSING, "缺少 PollOptions 工作表。");
   }
 
-  const id = data.id || Utilities.getUuid();
-  const createdAt = data.created_at || new Date().toISOString();
+  // 準備資料
+  const pollId = data.id || Utilities.getUuid();
+  const creatorId = String(data.creator_id || "anonymous");
 
   // 讀取設定
   const config = data.config || {};
-  const isAllowAdd = config.is_allow_add_option === true;
-  const maxOptions = config.max_option_limit || 20;
-  const allowMulti = config.allow_multiple_votes === true;
-  const displayType = config.result_display_type || "realtime";
+  const pollData = {
+    id: pollId,
+    title: data.title,
+    description: data.description,
+    creator_id: creatorId,
+    deadline: data.deadline,
+    is_allow_add_option: config.is_allow_add_option === true,
+    max_option_limit: config.max_option_limit || 20,
+    allow_multiple_votes: config.allow_multiple_votes === true,
+    result_display_type: config.result_display_type || "realtime",
+    status: "active",
+  };
 
-  // 新增投票主資料 (文字格式由工作表的 @ 格式處理，不需要 ' 前綴)
-  const title = String(data.title || "未命名投票");
-  const description = String(data.description || "");
-  const creatorId = String(data.creator_id || "anonymous");
-
-  // 新增投票主資料
-  const now = new Date().toISOString();
-  const createdBy = String(data.created_by || creatorId);
-
-  // 組合資料行 (對應 HEADERS_POLLS)
-  const rowData = [
-    id,
-    title,
-    description,
-    creatorId,
-    data.deadline || "",
-    isAllowAdd,
-    maxOptions,
-    allowMulti,
-    displayType,
-    "active",
-    "'" + createdAt,
-    createdBy,
-    "'" + now,
-    createdBy,
-  ];
-
-  sheet.appendRow(rowData);
+  // 使用 Mapper 轉換為 Persistence 格式
+  const pObj = Mapper.Poll.toPersistence(pollData, creatorId);
+  const row = HEADERS_POLLS.map((h) => (pObj[h] !== undefined ? pObj[h] : ""));
+  sheet.appendRow(row);
 
   // 新增初始選項
   if (data.initial_options && Array.isArray(data.initial_options)) {
+    const now = new Date().toISOString();
     data.initial_options.forEach((optText) => {
       const optId = Utilities.getUuid();
-      optionsSheet.appendRow([
+      const optRow = [
         optId, // id (PK)
-        id, // poll_id (FK)
-        String(optText),
-        creatorId,
-        "'" + createdAt,
-        createdBy,
-        "'" + now,
-        createdBy,
-      ]);
+        pollId, // poll_id (FK)
+        String(optText), // text
+        creatorId, // creator_id
+        now, // created_at
+        creatorId, // created_by
+        now, // updated_at
+        creatorId, // updated_by
+      ];
+      optionsSheet.appendRow(optRow);
     });
   }
 
-  return _success({ id: id }, "投票建立成功");
+  return _success({ id: pollId }, "投票建立成功");
 }
 
 /**
  * 取得投票列表 (包含選項與我的投票狀態)
+ * @param {string} [userId] - 可選，當前使用者 ID (用於計算 my_votes)
  * @returns {Object} { code, data, message }
  */
 function getPolls(userId) {
@@ -125,52 +99,16 @@ function getPolls(userId) {
     return _error(API_CODES.POLL_SHEET_MISSING, "相關工作表缺失");
   }
 
-  const polls = getDataAsObjects(pollSheet);
-  const options = getDataAsObjects(optSheet);
-  const votes = getDataAsObjects(voteSheet);
+  const pollsRaw = getDataAsObjects(pollSheet);
+  const optionsRaw = getDataAsObjects(optSheet);
+  const votesRaw = getDataAsObjects(voteSheet);
 
-  // 建立投票對照表 Map
-  const pollsMap = {};
-  polls.forEach((p) => {
-    p.is_allow_add_option =
-      p.is_allow_add_option === true || p.is_allow_add_option === "TRUE";
-    p.allow_multiple_votes =
-      p.allow_multiple_votes === true || p.allow_multiple_votes === "TRUE";
+  // 使用 Mapper 轉換為 DTO
+  const polls = pollsRaw.map((pollRow) =>
+    Mapper.Poll.toDTO(pollRow, optionsRaw, votesRaw, userId)
+  );
 
-    p.options = [];
-    p.my_votes = [];
-    p.total_votes = 0;
-    pollsMap[p.id] = p;
-  });
-
-  // 計算每個選項的票數與投票者
-  const voteCounts = {};
-  const voteVoters = {};
-
-  votes.forEach((v) => {
-    voteCounts[v.option_id] = (voteCounts[v.option_id] || 0) + 1;
-
-    if (!voteVoters[v.option_id]) voteVoters[v.option_id] = [];
-    voteVoters[v.option_id].push({
-      user_id: v.user_id,
-      user_name: v.user_name,
-    });
-
-    if (userId && v.user_id === userId && pollsMap[v.poll_id]) {
-      pollsMap[v.poll_id].my_votes.push(v.option_id);
-    }
-  });
-
-  options.forEach((o) => {
-    if (pollsMap[o.poll_id]) {
-      o.vote_count = voteCounts[o.id] || 0;
-      o.voters = voteVoters[o.id] || [];
-      pollsMap[o.poll_id].options.push(o);
-      pollsMap[o.poll_id].total_votes += o.vote_count;
-    }
-  });
-
-  return _success({ polls: Object.values(pollsMap) }, "取得投票列表成功");
+  return _success({ polls }, "取得投票列表成功");
 }
 
 /**
@@ -224,7 +162,7 @@ function votePoll(data) {
   // 3. 寫入新票
   const now = new Date().toISOString();
   const createdBy = String(data.user_id || UUID_SYSTEM);
-  
+
   optionIds.forEach((optId) => {
     voteSheet.appendRow([
       Utilities.getUuid(),

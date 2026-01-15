@@ -16,7 +16,9 @@
  * @returns {Object} { code, data, message }
  */
 function uploadLogs(logs, deviceInfo) {
-  const sheet = _getSheetOrCreate(SHEET_LOGS, HEADERS_LOGS);
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_LOGS);
+  if (!sheet) return _error(API_CODES.SYSTEM_ERROR, "Logs sheet not found");
 
   if (!logs || logs.length === 0) {
     return _error(API_CODES.INVALID_PARAMS, "未提供日誌資料");
