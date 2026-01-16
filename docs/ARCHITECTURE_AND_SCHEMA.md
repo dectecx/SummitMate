@@ -75,11 +75,14 @@ lib/
 │   │   ├── gear_item.dart             # [TypeId: 3] 個人裝備
 │   │   ├── weather_data.dart          # [TypeId: 4,5] 氣象資料
 │   │   ├── poll.dart                  # [TypeId: 6,7] 投票
-│   │   ├── trip.dart                  # [TypeId: 10] 行程
+│   │   ├── trip.dart                  # [TypeId: 8] 行程
+│   │   ├── user_profile.dart          # [TypeId: 10] 用戶資料
+│   │   ├── gear_library_item.dart     # [TypeId: 11] 裝備庫
+│   │   ├── group_event.dart           # [TypeId: 12] 揪團
+│   │   ├── group_event.dart (App)     # [TypeId: 13] 報名
 │   │   ├── gear_set.dart              # 雲端裝備組合 (非 Hive)
 │   │   ├── gear_key_record.dart       # 本地 Key 記錄 (非 Hive)
-│   │   ├── meal_item.dart             # 菜單項目 (非 Hive, 記憶體)
-│   │   └── user_profile.dart          # 用戶資料 (非 Hive, Secure Storage)
+│   │   └── meal_item.dart             # 菜單項目 (非 Hive, 記憶體)
 │   ├── datasources/                   # 資料來源層 (Offline-First)
 │   │   ├── interfaces/                # DataSource 介面
 │   │   │   ├── i_trip_local_data_source.dart
@@ -100,7 +103,6 @@ lib/
 │   │   ├── local/                     # 本地儲存 (Hive)
 │   │   │   ├── trip_local_data_source.dart
 │   │   │   ├── itinerary_local_data_source.dart
-│   │   │   ├── message_local_data_source.dart
 │   │   │   ├── gear_local_data_source.dart
 │   │   │   ├── gear_key_local_data_source.dart
 │   │   │   ├── group_event_local_data_source.dart

@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/group_event.dart';
 import '../cubits/group_event/group_event_state.dart';
+import '../../data/models/enums/group_event_status.dart';
+import '../../data/models/enums/group_event_application_status.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
@@ -134,7 +136,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             const SizedBox(height: 16),
 
             // TODO: 報名成功訊息 (審核通過後顯示)
-            if (_event.myApplicationStatus == 'approved' && _event.privateMessage.isNotEmpty)
+            if (_event.myApplicationStatus == GroupEventApplicationStatus.approved && _event.privateMessage.isNotEmpty)
               Card(
                 color: Colors.green.withValues(alpha: 0.1),
                 child: Padding(
@@ -225,16 +227,14 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     return '$startStr - $endStr';
   }
 
-  String _getStatusText(String status) {
+  String _getStatusText(GroupEventStatus status) {
     switch (status) {
-      case 'open':
+      case GroupEventStatus.open:
         return '招募中';
-      case 'closed':
+      case GroupEventStatus.closed:
         return '已截止';
-      case 'cancelled':
+      case GroupEventStatus.cancelled:
         return '已取消';
-      default:
-        return status;
     }
   }
 }

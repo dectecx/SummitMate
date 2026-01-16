@@ -1,10 +1,12 @@
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'enums/group_event_status.dart';
+import 'enums/group_event_application_status.dart';
 
 part 'group_event.g.dart';
 
 /// 揪團活動
-@HiveType(typeId: 10)
+@HiveType(typeId: 12)
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GroupEvent {
   /// 揪團 ID (PK)
@@ -42,10 +44,10 @@ class GroupEvent {
   @JsonKey(defaultValue: 10, fromJson: _parseInt)
   final int maxMembers;
 
-  /// 狀態 ('open', 'closed', 'cancelled')
+  /// 狀態
   @HiveField(8)
-  @JsonKey(defaultValue: 'open')
-  final String status;
+  @JsonKey(defaultValue: GroupEventStatus.open)
+  final GroupEventStatus status;
 
   /// 是否需審核
   @HiveField(9)
@@ -105,14 +107,14 @@ class GroupEvent {
   @JsonKey(defaultValue: '🐻')
   final String creatorAvatar;
 
-  /// 當前使用者是否已喜歡 (本地計算)
+  /// 當前使用者是否已喜歡
   @HiveField(21)
   @JsonKey(defaultValue: false)
   final bool isLiked;
 
-  /// 當前使用者報名狀態 (null=未報名, pending/approved/rejected)
+  /// 當前使用者報名狀態 (null=未報名)
   @HiveField(22)
-  final String? myApplicationStatus;
+  final GroupEventApplicationStatus? myApplicationStatus;
 
   GroupEvent({
     required this.id,
@@ -123,7 +125,7 @@ class GroupEvent {
     required this.startDate,
     this.endDate,
     this.maxMembers = 10,
-    this.status = 'open',
+    this.status = GroupEventStatus.open,
     this.approvalRequired = false,
     this.privateMessage = '',
     this.linkedTripId,
@@ -141,7 +143,7 @@ class GroupEvent {
   });
 
   /// 是否開放報名
-  bool get isOpen => status == 'open';
+  bool get isOpen => status == GroupEventStatus.open;
 
   /// 是否已額滿
   bool get isFull => applicationCount >= maxMembers;
@@ -161,7 +163,8 @@ class GroupEvent {
 
   static int _parseInt(dynamic value) {
     if (value is int) return value;
-    return int.tryParse(value?.toString() ?? '') ?? 0;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 
   factory GroupEvent.fromJson(Map<String, dynamic> json) =>
@@ -177,7 +180,7 @@ class GroupEvent {
     DateTime? startDate,
     DateTime? endDate,
     int? maxMembers,
-    String? status,
+    GroupEventStatus? status,
     bool? approvalRequired,
     String? privateMessage,
     String? linkedTripId,
@@ -191,7 +194,7 @@ class GroupEvent {
     String? creatorName,
     String? creatorAvatar,
     bool? isLiked,
-    String? myApplicationStatus,
+    GroupEventApplicationStatus? myApplicationStatus,
   }) {
     return GroupEvent(
       id: id ?? this.id,
@@ -222,7 +225,7 @@ class GroupEvent {
 }
 
 /// 揪團報名紀錄
-@HiveType(typeId: 11)
+@HiveType(typeId: 13)
 @JsonSerializable(fieldRename: FieldRename.snake)
 class GroupEventApplication {
   /// 報名 ID (PK)
@@ -237,10 +240,10 @@ class GroupEventApplication {
   @HiveField(2)
   final String userId;
 
-  /// 狀態 ('pending', 'approved', 'rejected', 'cancelled')
+  /// 狀態
   @HiveField(3)
-  @JsonKey(defaultValue: 'pending')
-  final String status;
+  @JsonKey(defaultValue: GroupEventApplicationStatus.pending)
+  final GroupEventApplicationStatus status;
 
   /// 報名留言
   @HiveField(4)
@@ -252,27 +255,22 @@ class GroupEventApplication {
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
-  /// 建立者 ID
-  @HiveField(6)
-  @JsonKey(name: 'created_by')
-  final String createdBy;
-
   /// 更新時間
-  @HiveField(7)
+  @HiveField(6)
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  /// 更新者 ID
-  @HiveField(8)
+  /// 更新者
+  @HiveField(7)
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
   /// 報名者資訊 (快照)
-  @HiveField(9)
+  @HiveField(8)
   @JsonKey(defaultValue: '')
   final String userName;
 
-  @HiveField(10)
+  @HiveField(9)
   @JsonKey(defaultValue: '🐻')
   final String userAvatar;
 
@@ -280,10 +278,9 @@ class GroupEventApplication {
     required this.id,
     required this.eventId,
     required this.userId,
-    this.status = 'pending',
+    this.status = GroupEventApplicationStatus.pending,
     this.message = '',
     required this.createdAt,
-    required this.createdBy,
     required this.updatedAt,
     required this.updatedBy,
     this.userName = '',
