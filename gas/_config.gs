@@ -23,6 +23,12 @@ const SHEET_POLL_OPTIONS = "PollOptions";
 const SHEET_POLL_VOTES = "PollVotes";
 const SHEET_TRIP_MEMBERS = "TripMembers";
 
+// 揪團模組
+const SHEET_GROUP_EVENTS = "GroupEvents";
+const SHEET_GROUP_EVENT_APPLICATIONS = "GroupEventApplications";
+const SHEET_GROUP_EVENT_LIKES = "GroupEventLikes"; // TODO
+const SHEET_GROUP_EVENT_COMMENTS = "GroupEventComments"; // TODO
+
 // 會員系統
 const SHEET_USERS = "Users";
 const SHEET_ROLES = "Roles";
@@ -186,6 +192,46 @@ const HEADERS_POLL_VOTES = [
 ];
 
 // ============================================================
+// 揪團模組 (GroupEvents)
+// ============================================================
+const HEADERS_GROUP_EVENTS = [
+  "id", // PK
+  "creator_id", // FK → Users.id
+  "title",
+  "description",
+  "location",
+  "start_date",
+  "end_date",
+  "max_members",
+  "status", // open, closed, cancelled
+  "approval_required",
+  "private_message",
+  "linked_trip_id", // FK → Trips.id (TODO)
+  "like_count", // 快取
+  "comment_count", // 快取
+  "creator_name", // 快照
+  "creator_avatar", // 快照
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+];
+
+const HEADERS_GROUP_EVENT_APPLICATIONS = [
+  "id", // PK
+  "event_id", // FK → GroupEvents.id
+  "user_id", // FK → Users.id
+  "status", // pending, approved, rejected, cancelled
+  "message",
+  "user_name", // 快照
+  "user_avatar", // 快照
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+];
+
+// ============================================================
 // 會員系統 (Users)
 // role_id: 關聯 Roles 表的 UUID
 // ============================================================
@@ -325,6 +371,18 @@ const API_ACTIONS = {
   AUTH_UPDATE_PROFILE: "auth_update_profile",
   AUTH_GET_ROLES: "auth_get_roles", // 取得角色列表
   AUTH_ASSIGN_ROLE: "auth_assign_role", // 指派角色
+
+  // === 揪團 (Group Events) ===
+  GROUP_EVENT_LIST: "group_event_list",
+  GROUP_EVENT_GET: "group_event_get",
+  GROUP_EVENT_CREATE: "group_event_create",
+  GROUP_EVENT_UPDATE: "group_event_update",
+  GROUP_EVENT_CLOSE: "group_event_close",
+  GROUP_EVENT_DELETE: "group_event_delete",
+  GROUP_EVENT_APPLY: "group_event_apply",
+  GROUP_EVENT_CANCEL_APPLICATION: "group_event_cancel_application",
+  GROUP_EVENT_REVIEW_APPLICATION: "group_event_review_application",
+  GROUP_EVENT_MY: "group_event_my",
 };
 
 const SHEET_SCHEMA = {

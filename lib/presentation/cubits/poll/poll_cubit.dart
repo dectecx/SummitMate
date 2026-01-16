@@ -41,7 +41,7 @@ class PollCubit extends Cubit<PollState> {
     emit(const PollLoading());
 
     // 從本地 Repo 載入
-    final polls = _pollRepository.getAllPolls();
+    final polls = _pollRepository.getAll();
     final lastSync = _pollRepository.getLastSyncTime();
 
     // 初始載入
@@ -92,9 +92,8 @@ class PollCubit extends Cubit<PollState> {
       };
 
       // 儲存至 Repo
-      await _pollRepository.savePolls(fetchedPolls);
+      await _pollRepository.saveAll(fetchedPolls);
       final now = DateTime.now();
-      await _pollRepository.saveLastSyncTime(now);
 
       emit(PollLoaded(polls: fetchedPolls, currentUserId: _currentUserId, lastSyncTime: now, isSyncing: false));
 
@@ -105,7 +104,7 @@ class PollCubit extends Cubit<PollState> {
         emit(PollError(e.toString()));
         // 若失敗，恢復為舊資料的 Loaded 狀態?
         // 較好的策略：emit Loaded 但 isSyncing=false 並顯示 Toast
-        final polls = _pollRepository.getAllPolls();
+        final polls = _pollRepository.getAll();
         final lastSync = _pollRepository.getLastSyncTime();
         emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: lastSync, isSyncing: false));
         ToastService.error('同步失敗: $e');

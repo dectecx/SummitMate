@@ -1,132 +1,88 @@
-import 'package:hive/hive.dart';
-import '../../core/constants.dart';
-import '../models/gear_library_item.dart';
+import '../../core/error/result.dart';
+import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_gear_library_repository.dart';
-import '../../infrastructure/tools/hive_service.dart';
+import '../datasources/interfaces/i_gear_library_local_data_source.dart';
+import '../models/gear_library_item.dart';
 
-/// 裝備庫 Repository
+/// 裝備庫 Repository (支援 Offline-First)
 ///
-/// 管理個人裝備庫的 CRUD 操作 (本地儲存)
-///
-/// 【雲端備份】
-/// - 透過 GearLibraryCloudService 進行
-/// - 私人模式 + owner_key 識別
-/// - 上傳覆寫雲端，下載覆寫本地
+/// 協調 LocalDataSource (Hive) 的資料存取。
+/// 雲端備份透過 GearLibraryCloudService 進行。
 class GearLibraryRepository implements IGearLibraryRepository {
-  static const String _boxName = HiveBoxNames.gearLibrary;
+  static const String _source = 'GearLibraryRepository';
 
-  final HiveService _hiveService;
-  Box<GearLibraryItem>? _box;
+  final IGearLibraryLocalDataSource _localDataSource;
 
-  GearLibraryRepository({required HiveService hiveService}) : _hiveService = hiveService;
+  GearLibraryRepository({required IGearLibraryLocalDataSource localDataSource})
+      : _localDataSource = localDataSource;
 
-  /// 開啟 Box
+  // ========== Init ==========
+
   @override
-  Future<void> init() async {
-    _box = await _hiveService.openBox<GearLibraryItem>(_boxName);
-  }
-
-  /// 取得 Box
-  Box<GearLibraryItem> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('GearLibraryRepository not initialized. Call init() first.');
+  Future<Result<void, Exception>> init() async {
+    try {
+      await _localDataSource.init();
+      return const Success(null);
+    } catch (e) {
+      LogService.error('Init failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
-    return _box!;
   }
 
-  /// 取得特定使用者的裝備列表 (過濾後的 views)
-  Iterable<GearLibraryItem> _getUserItems(String userId) {
-    return box.values.where((item) => item.userId == userId);
-  }
+  // ========== Data Operations ==========
 
-  /// 取得所有裝備庫項目 (按使用者過濾)
   @override
-  List<GearLibraryItem> getAllItems(String userId) {
-    final items = _getUserItems(userId).toList();
-    // 依名稱排序
+  List<GearLibraryItem> getAll(String userId) {
+    final items = _localDataSource.getAllItems().where((i) => i.userId == userId).toList();
     items.sort((a, b) => a.name.compareTo(b.name));
     return items;
   }
 
-  /// 依 UUID 取得裝備項目
-  ///
-  /// [uuid] 裝備 UUID
   @override
-  GearLibraryItem? getById(String id) {
-    if (_box == null || !_box!.isOpen) return null;
-    return box.get(id);
-  }
+  GearLibraryItem? getById(String id) => _localDataSource.getById(id);
 
-  /// 依類別取得裝備項目
-  ///
-  /// [userId] 使用者 ID
-  /// [category] 裝備類別
   @override
   List<GearLibraryItem> getByCategory(String userId, String category) {
-    return _getUserItems(userId).where((item) => item.category == category).toList();
+    return getAll(userId).where((i) => i.category == category).toList();
   }
 
-  /// 新增裝備項目
-  ///
-  /// [item] 欲新增的裝備
   @override
-  Future<void> addItem(GearLibraryItem item) async {
-    // 自動填寫建立者 & Ownership
-    // item.createdBy ??= ... (Caller handles)
-    // item.userId = ... (Caller handles)
+  Future<void> add(GearLibraryItem item) => _localDataSource.saveItem(item);
 
-    await box.put(item.id, item);
-  }
-
-  /// 更新裝備項目
-  ///
-  /// [item] 更新後的裝備
   @override
-  Future<void> updateItem(GearLibraryItem item) async {
-    // 呼叫者負責更新 updatedAt, updatedBy, syncStatus
-    await box.put(item.id, item);
-  }
+  Future<void> update(GearLibraryItem item) => _localDataSource.saveItem(item);
 
-  /// 刪除裝備項目
-  ///
-  /// [uuid] 裝備 UUID
   @override
-  Future<void> deleteItem(String id) async {
-    await box.delete(id);
-  }
+  Future<void> delete(String id) => _localDataSource.deleteItem(id);
 
-  /// 清除所有項目
   @override
-  Future<void> clearAll() async {
-    await box.clear();
-  }
+  Future<void> importAll(List<GearLibraryItem> items) => _localDataSource.saveItems(items);
 
-  /// 批次匯入項目 (覆寫模式)
-  ///
-  /// [items] 欲匯入的裝備列表
   @override
-  Future<void> importItems(List<GearLibraryItem> items) async {
-    await box.clear();
-    for (final item in items) {
-      await box.put(item.id, item);
+  Future<Result<void, Exception>> clearAll() async {
+    try {
+      LogService.info('Clearing all gear library items (Local)', source: _source);
+      await _localDataSource.clear();
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
-  /// 取得項目數量
-  @override
-  int getItemCount(String userId) => _getUserItems(userId).length;
+  // ========== Statistics ==========
 
-  /// 計算總重量 (g)
+  @override
+  int getCount(String userId) => getAll(userId).length;
+
   @override
   double getTotalWeight(String userId) {
-    return _getUserItems(userId).fold<double>(0.0, (sum, item) => sum + item.weight);
+    return getAll(userId).fold<double>(0.0, (sum, item) => sum + item.weight);
   }
 
-  /// 依類別統計重量
   @override
   Map<String, double> getWeightByCategory(String userId) {
     final result = <String, double>{};
-    for (final item in _getUserItems(userId)) {
+    for (final item in getAll(userId)) {
       result[item.category] = (result[item.category] ?? 0) + item.weight;
     }
     return result;

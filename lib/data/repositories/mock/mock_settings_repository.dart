@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:hive/hive.dart';
 import '../../models/settings.dart';
 import '../interfaces/i_settings_repository.dart';
+import '../../../core/error/result.dart';
 
-/// 模擬設定資料庫
+/// 模擬設定資料倉庫
+///
 /// 用於教學模式，返回靜態假設定，所有寫入操作皆為空實作。
 class MockSettingsRepository implements ISettingsRepository {
   final Settings _mockSettings = Settings(
@@ -13,8 +15,12 @@ class MockSettingsRepository implements ISettingsRepository {
     lastSyncTime: DateTime.now(),
   );
 
+  // ========== Init ==========
+
   @override
-  Future<void> init() async {}
+  Future<Result<void, Exception>> init() async => const Success(null);
+
+  // ========== Data Operations ==========
 
   @override
   Settings getSettings() => _mockSettings;
@@ -32,8 +38,10 @@ class MockSettingsRepository implements ISettingsRepository {
   Future<void> updateOfflineMode(bool isOffline) async {}
 
   @override
-  Stream<BoxEvent> watchSettings() => const Stream.empty();
+  Future<void> resetSettings() async {}
+
+  // ========== Watch ==========
 
   @override
-  Future<void> resetSettings() async {}
+  Stream<BoxEvent> watchSettings() => const Stream.empty();
 }

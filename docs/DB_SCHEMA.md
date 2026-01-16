@@ -27,6 +27,14 @@ erDiagram
     Roles ||--o{ RolePermissions : "has"
     Permissions ||--o{ RolePermissions : "included in"
 
+    Users ||--o{ GroupEvents : "creates"
+    GroupEvents ||--o{ GroupEventApplications : "has"
+    Users ||--o{ GroupEventApplications : "applies"
+    Users ||--o{ GroupEventLikes : "likes"
+    GroupEvents ||--o{ GroupEventLikes : "has"
+    GroupEvents ||--o{ GroupEventComments : "has"
+    Users ||--o{ GroupEventComments : "writes"
+
     Users {
         UUID id PK
         string email UK
@@ -52,6 +60,20 @@ erDiagram
         UUID id PK
         UUID trip_id FK
         string items_json
+    }
+
+    GroupEvents {
+        UUID id PK
+        UUID creator_id FK
+        string title
+        string status
+    }
+
+    GroupEventApplications {
+        UUID id PK
+        UUID event_id FK
+        UUID user_id FK
+        string status
     }
 ```
 
@@ -229,7 +251,69 @@ erDiagram
 | updated_at    | Date |             | 更新時間            |
 | updated_by    | Text |             | 更新者 ID           |
 
-### 3.4 會員與權限模組 (Auth & RBAC)
+### 3.4 揪團模組 (Group Events)
+
+#### Table: `GroupEvents` (揪團活動)
+
+| Column            | Type    | Constraints    | Description                    |
+| :---------------- | :------ | :------------- | :----------------------------- |
+| **id**            | UUID    | **PK**         |                                |
+| **creator_id**    | UUID    | **FK**         | Ref: Users.id                  |
+| title             | Text    | Not Null       | 活動名稱                       |
+| description       | Text    |                | 活動說明                       |
+| location          | Text    |                | 地點                           |
+| start_date        | Date    |                | 開始日期                       |
+| end_date          | Date    |                | 結束日期                       |
+| max_members       | Number  |                | 招募人數上限                   |
+| status            | Text    | Default: open  | `open`, `closed`, `cancelled`  |
+| approval_required | Boolean | Default: false | 是否需審核                     |
+| private_message   | Text    |                | 報名成功訊息 (審核通過後顯示)  |
+| linked_trip_id    | UUID    | **FK**         | Ref: Trips.id (TODO: 整合行程) |
+| like_count        | Number  | Default: 0     | 快取 (TODO)                    |
+| comment_count     | Number  | Default: 0     | 快取 (TODO)                    |
+| created_at        | Date    |                | 建立時間                       |
+| created_by        | Text    |                | 建立者 ID                      |
+| updated_at        | Date    |                | 更新時間                       |
+| updated_by        | Text    |                | 更新者 ID                      |
+
+#### Table: `GroupEventApplications` (報名紀錄)
+
+| Column       | Type | Constraints      | Description                                    |
+| :----------- | :--- | :--------------- | :--------------------------------------------- |
+| **id**       | UUID | **PK**           |                                                |
+| **event_id** | UUID | **FK**           | Ref: GroupEvents.id                            |
+| **user_id**  | UUID | **FK**           | Ref: Users.id                                  |
+| status       | Text | Default: pending | `pending`, `approved`, `rejected`, `cancelled` |
+| message      | Text |                  | 報名留言                                       |
+| created_at   | Date |                  | 報名時間                                       |
+| created_by   | Text |                  | 建立者 ID                                      |
+| updated_at   | Date |                  | 更新時間                                       |
+| updated_by   | Text |                  | 更新者 ID                                      |
+
+#### Table: `GroupEventLikes` (喜歡紀錄) - TODO
+
+| Column       | Type | Constraints | Description         |
+| :----------- | :--- | :---------- | :------------------ |
+| **id**       | UUID | **PK**      |                     |
+| **event_id** | UUID | **FK**      | Ref: GroupEvents.id |
+| **user_id**  | UUID | **FK**      | Ref: Users.id       |
+| created_at   | Date |             | 建立時間            |
+
+#### Table: `GroupEventComments` (留言紀錄) - TODO
+
+| Column        | Type | Constraints | Description                |
+| :------------ | :--- | :---------- | :------------------------- |
+| **id**        | UUID | **PK**      |                            |
+| **event_id**  | UUID | **FK**      | Ref: GroupEvents.id        |
+| **parent_id** | UUID | **FK**      | Ref: GroupEventComments.id |
+| **user_id**   | UUID | **FK**      | Ref: Users.id              |
+| content       | Text |             |                            |
+| created_at    | Date |             | 建立時間                   |
+| created_by    | Text |             | 建立者 ID                  |
+| updated_at    | Date |             | 更新時間                   |
+| updated_by    | Text |             | 更新者 ID                  |
+
+### 3.5 會員與權限模組 (Auth & RBAC)
 
 #### Table: `Users` (會員)
 
@@ -273,7 +357,7 @@ erDiagram
 | **role_id**       | UUID | **FK**      | Ref: Roles.id       |
 | **permission_id** | UUID | **FK**      | Ref: Permissions.id |
 
-### 3.5 系統監控 (System)
+### 3.6 系統監控 (System)
 
 #### Table: `Logs` (日誌)
 

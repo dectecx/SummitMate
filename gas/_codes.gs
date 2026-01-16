@@ -110,4 +110,20 @@ const API_CODES = {
   AUTH_CODE_EXPIRED: "0808",
   /** Token 已過期 */
   AUTH_ACCESS_TOKEN_EXPIRED: "0809",
+
+  // ========== 09XX - GroupEvents API ==========
+  /** 工作表缺失 */
+  GROUP_EVENT_SHEET_MISSING: "0901",
+  /** 找不到揪團 */
+  GROUP_EVENT_NOT_FOUND: "0902",
+  /** 權限不足 (非建立者) */
+  GROUP_EVENT_PERMISSION_DENIED: "0903",
+  /** 揪團已截止 */
+  GROUP_EVENT_CLOSED: "0904",
+  /** 揪團已額滿 */
+  GROUP_EVENT_FULL: "0905",
+  /** 已報名過此揪團 */
+  GROUP_EVENT_ALREADY_APPLIED: "0906",
+  /** 報名紀錄不存在 */
+  GROUP_EVENT_APPLICATION_NOT_FOUND: "0907",
 };
