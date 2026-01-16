@@ -39,7 +39,9 @@ import '../cubits/settings/settings_cubit.dart';
 
 /// 教學引導畫面
 class TutorialScreen extends StatefulWidget {
-  const TutorialScreen({super.key});
+  final TutorialTopic? topic;
+
+  const TutorialScreen({super.key, this.topic});
 
   @override
   State<TutorialScreen> createState() => _TutorialScreenState();
@@ -153,6 +155,9 @@ class _TutorialScreenState extends State<TutorialScreen> {
   }
 
   void _startTutorial() {
+    final topic = widget.topic ?? TutorialTopic.all;
+    final isFullTutorial = topic == TutorialTopic.all;
+
     _tutorialEntry = OverlayEntry(
       builder: (context) => TutorialOverlay(
         targets: TutorialService.initTargets(
@@ -166,6 +171,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           keyTabPolls: _keyTabPolls,
           keyInfoElevation: _keyInfoElevation,
           keyInfoTimeMap: _keyInfoTimeMap,
+          topic: topic,
           onSwitchToItinerary: () async {
             Future.delayed(const Duration(milliseconds: 400), () {
               if (mounted) setState(() => _currentTab = 0);
@@ -215,6 +221,99 @@ class _TutorialScreenState extends State<TutorialScreen> {
         ),
         onFinish: _finishTutorial,
         onSkip: _finishTutorial,
+        showSkipTopic: isFullTutorial,
+        onSkipTopic: isFullTutorial
+            ? (nextIndex) {
+                // 重建 overlay 並跳到指定索引
+                _tutorialEntry?.remove();
+                _startTutorialFromIndex(nextIndex);
+              }
+            : null,
+      ),
+    );
+
+    Overlay.of(context).insert(_tutorialEntry!);
+  }
+
+  void _startTutorialFromIndex(int startIndex) {
+    final topic = widget.topic ?? TutorialTopic.all;
+    final isFullTutorial = topic == TutorialTopic.all;
+    final targets = TutorialService.initTargets(
+      keyTabItinerary: _keyTabItinerary,
+      keyTabMessage: _keyTabMessage,
+      keyTabGear: _keyTabGear,
+      keyTabInfo: _keyTabInfo,
+      keyBtnEdit: _keyBtnEdit,
+      keyBtnUpload: _keyBtnUpload,
+      keyBtnSync: _keyBtnSync,
+      keyTabPolls: _keyTabPolls,
+      keyInfoElevation: _keyInfoElevation,
+      keyInfoTimeMap: _keyInfoTimeMap,
+      topic: topic,
+      onSwitchToItinerary: () async {
+        Future.delayed(const Duration(milliseconds: 400), () {
+          if (mounted) setState(() => _currentTab = 0);
+        });
+        if (_isEditMode) setState(() => _isEditMode = false);
+      },
+      onFocusUpload: () async {
+        setState(() {
+          _currentTab = 0;
+          _isEditMode = true;
+        });
+      },
+      onFocusSync: () async {
+        if (_isEditMode) setState(() => _isEditMode = false);
+      },
+      onSwitchToGear: () async {
+        Future.delayed(const Duration(milliseconds: 400), () {
+          if (mounted) setState(() => _currentTab = 1);
+        });
+      },
+      onSwitchToMessage: () async {
+        Future.delayed(const Duration(milliseconds: 400), () {
+          if (mounted) setState(() => _currentTab = 2);
+        });
+      },
+      onSwitchToInfo: () async {
+        Future.delayed(const Duration(milliseconds: 400), () {
+          if (mounted) setState(() => _currentTab = 3);
+        });
+      },
+      onFocusElevation: () async {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) setState(() => _currentTab = 3);
+        });
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _keyInfoTab.currentState?.expandElevation();
+        });
+      },
+      onFocusTimeMap: () async {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) setState(() => _currentTab = 3);
+        });
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _keyInfoTab.currentState?.expandTimeMap();
+        });
+      },
+    );
+
+    // 從指定索引開始的子集
+    final remainingTargets = targets.sublist(startIndex);
+
+    _tutorialEntry = OverlayEntry(
+      builder: (context) => TutorialOverlay(
+        targets: remainingTargets,
+        onFinish: _finishTutorial,
+        onSkip: _finishTutorial,
+        showSkipTopic: isFullTutorial,
+        onSkipTopic: isFullTutorial
+            ? (nextIndex) {
+                _tutorialEntry?.remove();
+                // nextIndex 是相對於 remainingTargets 的索引，需要轉換
+                _startTutorialFromIndex(startIndex + nextIndex);
+              }
+            : null,
       ),
     );
 

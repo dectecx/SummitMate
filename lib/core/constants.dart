@@ -5,7 +5,7 @@ library;
 class AppInfo {
   static const String appName = 'SummitMate';
   static const String appNameChinese = '山友';
-  static const String version = '0.0.8';
+  static const String version = '0.0.9';
   static const int verificationCodeExpiryMinutes = 10; // 驗證碼有效時間 (分鐘)
 }
 
