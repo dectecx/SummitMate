@@ -7,6 +7,7 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
+import '../../data/models/enums/group_event_status.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
@@ -204,29 +205,25 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
     );
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(GroupEventStatus status) {
     switch (status) {
-      case 'open':
+      case GroupEventStatus.open:
         return Colors.green;
-      case 'closed':
+      case GroupEventStatus.closed:
         return Colors.grey;
-      case 'cancelled':
+      case GroupEventStatus.cancelled:
         return Colors.red;
-      default:
-        return Colors.grey;
     }
   }
 
-  String _getStatusText(String status) {
+  String _getStatusText(GroupEventStatus status) {
     switch (status) {
-      case 'open':
+      case GroupEventStatus.open:
         return '招募中';
-      case 'closed':
+      case GroupEventStatus.closed:
         return '已截止';
-      case 'cancelled':
+      case GroupEventStatus.cancelled:
         return '已取消';
-      default:
-        return status;
     }
   }
 
@@ -290,19 +287,19 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
         List<GroupEvent> filteredEvents;
         switch (_selectedFilter) {
           case 0: // 全部
-            filteredEvents = events.where((e) => e.status == 'open').toList();
+            filteredEvents = events.where((e) => e.status == GroupEventStatus.open).toList();
             break;
           case 1: // 熱門 (by likeCount)
-            filteredEvents = events.where((e) => e.status == 'open').toList()
+            filteredEvents = events.where((e) => e.status == GroupEventStatus.open).toList()
               ..sort((a, b) => b.likeCount.compareTo(a.likeCount));
             break;
           case 2: // 即將出發 (by startDate)
             final now = DateTime.now();
-            filteredEvents = events.where((e) => e.status == 'open' && e.startDate.isAfter(now)).toList()
+            filteredEvents = events.where((e) => e.status == GroupEventStatus.open && e.startDate.isAfter(now)).toList()
               ..sort((a, b) => a.startDate.compareTo(b.startDate));
             break;
           default:
-            filteredEvents = events.where((e) => e.status == 'open').toList();
+            filteredEvents = events.where((e) => e.status == GroupEventStatus.open).toList();
         }
 
         return Scaffold(
