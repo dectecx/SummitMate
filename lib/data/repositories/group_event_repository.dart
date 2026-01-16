@@ -21,8 +21,8 @@ class GroupEventRepository implements IGroupEventRepository {
   GroupEventRepository({
     required IGroupEventLocalDataSource localDataSource,
     required IGroupEventRemoteDataSource remoteDataSource,
-  })  : _localDataSource = localDataSource,
-        _remoteDataSource = remoteDataSource;
+  }) : _localDataSource = localDataSource,
+       _remoteDataSource = remoteDataSource;
 
   // ========== Init ==========
 
@@ -90,12 +90,10 @@ class GroupEventRepository implements IGroupEventRepository {
       // Note: Remote API takes userId and status, category filtering done locally
       final userId = _getCurrentUserId();
       final events = await _remoteDataSource.getEvents(userId: userId, status: 'open');
-      
+
       // Filter by category if specified
-      final filtered = category != null 
-          ? events.where((e) => e.description.contains(category)).toList() 
-          : events;
-      
+      final filtered = category != null ? events.where((e) => e.description.contains(category)).toList() : events;
+
       await _localDataSource.saveEvents(filtered);
       await _saveLastSyncTime(DateTime.now());
       LogService.info('Synced ${filtered.length} events', source: _source);
@@ -207,11 +205,7 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   @override
-  Future<Result<void, Exception>> apply({
-    required String eventId,
-    required String userId,
-    String? note,
-  }) async {
+  Future<Result<void, Exception>> apply({required String eventId, required String userId, String? note}) async {
     try {
       await _remoteDataSource.applyEvent(eventId: eventId, userId: userId, message: note);
       return const Success(null);
@@ -222,10 +216,7 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   @override
-  Future<Result<void, Exception>> cancelApplication({
-    required String eventId,
-    required String userId,
-  }) async {
+  Future<Result<void, Exception>> cancelApplication({required String eventId, required String userId}) async {
     try {
       await _remoteDataSource.cancelApplication(applicationId: eventId, userId: userId);
       return const Success(null);
@@ -244,11 +235,7 @@ class GroupEventRepository implements IGroupEventRepository {
     String? note,
   }) async {
     try {
-      await _remoteDataSource.reviewApplication(
-        applicationId: eventId,
-        action: action,
-        userId: reviewerId,
-      );
+      await _remoteDataSource.reviewApplication(applicationId: eventId, action: action, userId: reviewerId);
       return const Success(null);
     } catch (e) {
       LogService.error('Review application failed: $e', source: _source);

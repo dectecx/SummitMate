@@ -46,12 +46,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
             ToastService.warning('請登入以查看揪團詳情');
             return;
           }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => GroupEventDetailScreen(event: event),
-            ),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => GroupEventDetailScreen(event: event)));
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -67,19 +62,14 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                   Expanded(
                     child: Text(
                       event.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   // 狀態 Chip
                   Chip(
-                    label: Text(
-                      statusText,
-                      style: TextStyle(fontSize: 10, color: statusColor),
-                    ),
+                    label: Text(statusText, style: TextStyle(fontSize: 10, color: statusColor)),
                     visualDensity: VisualDensity.compact,
                     side: BorderSide(color: statusColor),
                     backgroundColor: statusColor.withValues(alpha: 0.1),
@@ -93,10 +83,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                 children: [
                   const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text(
-                    _formatDateRange(event.startDate, event.endDate),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  Text(_formatDateRange(event.startDate, event.endDate), style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
               const SizedBox(height: 4),
@@ -121,15 +108,9 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
               Row(
                 children: [
                   // 主辦人
-                  Text(
-                    event.creatorAvatar,
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                  Text(event.creatorAvatar, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 4),
-                  Text(
-                    isCreator ? '我' : event.creatorName,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  Text(isCreator ? '我' : event.creatorName, style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(width: 8),
                   const Text('·', style: TextStyle(color: Colors.grey)),
                   const SizedBox(width: 8),
@@ -154,10 +135,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                         color: event.isLiked ? Colors.red : Colors.grey,
                       ),
                       const SizedBox(width: 2),
-                      Text(
-                        '${event.likeCount}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text('${event.likeCount}', style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                   const SizedBox(width: 8),
@@ -168,10 +146,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                     children: [
                       const Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey),
                       const SizedBox(width: 2),
-                      Text(
-                        '${event.commentCount}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text('${event.commentCount}', style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                 ],
@@ -191,10 +166,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                     children: [
                       Icon(Icons.lock, size: 12, color: Colors.orange),
                       SizedBox(width: 4),
-                      Text(
-                        '需登入查看',
-                        style: TextStyle(fontSize: 11, color: Colors.orange),
-                      ),
+                      Text('需登入查看', style: TextStyle(fontSize: 11, color: Colors.orange)),
                     ],
                   ),
                 ),
@@ -356,8 +328,8 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                                     isOffline
                                         ? '離線'
                                         : (lastSyncTime != null
-                                            ? DateFormat('HH:mm').format(lastSyncTime.toLocal())
-                                            : '同步'),
+                                              ? DateFormat('HH:mm').format(lastSyncTime.toLocal())
+                                              : '同步'),
                                     style: const TextStyle(fontSize: 11, color: Colors.grey),
                                   ),
                                   const SizedBox(width: 4),
@@ -394,10 +366,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                     children: [
                       Icon(Icons.info_outline, size: 16, color: Colors.amber),
                       SizedBox(width: 8),
-                      Text(
-                        '請登入以查看揪團詳情',
-                        style: TextStyle(fontSize: 12, color: Colors.amber),
-                      ),
+                      Text('請登入以查看揪團詳情', style: TextStyle(fontSize: 12, color: Colors.amber)),
                     ],
                   ),
                 ),
@@ -424,12 +393,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                           itemCount: filteredEvents.length,
                           padding: const EdgeInsets.only(bottom: 80),
                           itemBuilder: (context, index) {
-                            return _buildEventCard(
-                              context,
-                              filteredEvents[index],
-                              currentUserId,
-                              isGuest,
-                            );
+                            return _buildEventCard(context, filteredEvents[index], currentUserId, isGuest);
                           },
                         ),
                       ),
@@ -439,7 +403,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
           floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
             builder: (context, settingsState) {
               final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-              
+
               // 訪客模式下隱藏 FAB
               if (isGuest) {
                 return const SizedBox.shrink();
@@ -451,10 +415,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                     ToastService.warning('離線模式無法建立揪團');
                     return;
                   }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()));
                 },
                 backgroundColor: isOffline ? Colors.grey : null,
                 icon: const Icon(Icons.add),

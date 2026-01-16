@@ -95,7 +95,6 @@ void main() {
         when(() => mockRepo.getAll()).thenReturn([testPoll]);
         when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
         when(() => mockRepo.saveAll([testPoll])).thenAnswer((_) async {});
-
       },
       build: () => cubit,
       act: (cubit) => cubit.fetchPolls(),
@@ -141,7 +140,6 @@ void main() {
         // Mock fetchPolls called internally
         when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
         when(() => mockRepo.saveAll(any())).thenAnswer((_) async {});
-
       },
       build: () => cubit,
       seed: () => const PollLoaded(polls: [], currentUserId: 'u1'),

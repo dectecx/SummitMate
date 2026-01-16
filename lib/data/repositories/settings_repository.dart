@@ -13,12 +13,11 @@ class SettingsRepository implements ISettingsRepository {
   static const String _source = 'SettingsRepository';
 
   final ISettingsLocalDataSource _localDataSource;
-  
+
   /// 快取設定供同步讀取
   Settings? _cachedSettings;
 
-  SettingsRepository({required ISettingsLocalDataSource localDataSource})
-      : _localDataSource = localDataSource;
+  SettingsRepository({required ISettingsLocalDataSource localDataSource}) : _localDataSource = localDataSource;
 
   // ========== Init ==========
 

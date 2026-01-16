@@ -13,8 +13,7 @@ class GearLibraryRepository implements IGearLibraryRepository {
 
   final IGearLibraryLocalDataSource _localDataSource;
 
-  GearLibraryRepository({required IGearLibraryLocalDataSource localDataSource})
-      : _localDataSource = localDataSource;
+  GearLibraryRepository({required IGearLibraryLocalDataSource localDataSource}) : _localDataSource = localDataSource;
 
   // ========== Init ==========
 

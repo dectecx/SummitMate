@@ -146,7 +146,11 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> reviewApplication({required String applicationId, required String action, required String userId}) async {
+  Future<void> reviewApplication({
+    required String applicationId,
+    required String action,
+    required String userId,
+  }) async {
     LogService.info('Reviewing application: $applicationId (action: $action)', source: _source);
     final response = await _apiClient.post({
       'action': ApiConfig.actionGroupEventReviewApplication,
@@ -162,11 +166,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   @override
   Future<List<GroupEvent>> getMyEvents({required String userId, required String type}) async {
     LogService.info('Fetching my events for user: $userId, type: $type', source: _source);
-    final response = await _apiClient.post({
-      'action': ApiConfig.actionGroupEventMy,
-      'user_id': userId,
-      'type': type,
-    });
+    final response = await _apiClient.post({'action': ApiConfig.actionGroupEventMy, 'user_id': userId, 'type': type});
 
     final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
     if (!gasResponse.isSuccess) throw Exception(gasResponse.message);

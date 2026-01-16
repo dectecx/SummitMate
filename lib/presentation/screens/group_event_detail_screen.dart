@@ -40,9 +40,11 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isCreator = _event.isCreator(context.read<GroupEventCubit>().state is GroupEventLoaded
-        ? (context.read<GroupEventCubit>().state as GroupEventLoaded).currentUserId
-        : '');
+    final isCreator = _event.isCreator(
+      context.read<GroupEventCubit>().state is GroupEventLoaded
+          ? (context.read<GroupEventCubit>().state as GroupEventLoaded).currentUserId
+          : '',
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -65,12 +67,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 標題
-            Text(
-              _event.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(_event.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
 
             // 基本資訊 Card
@@ -79,29 +76,13 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildInfoRow(
-                      Icons.calendar_today,
-                      '日期',
-                      _formatDateRange(_event.startDate, _event.endDate),
-                    ),
+                    _buildInfoRow(Icons.calendar_today, '日期', _formatDateRange(_event.startDate, _event.endDate)),
                     const Divider(),
-                    _buildInfoRow(
-                      Icons.location_on,
-                      '地點',
-                      _event.location.isNotEmpty ? _event.location : '未指定',
-                    ),
+                    _buildInfoRow(Icons.location_on, '地點', _event.location.isNotEmpty ? _event.location : '未指定'),
                     const Divider(),
-                    _buildInfoRow(
-                      Icons.people,
-                      '人數',
-                      '${_event.applicationCount} / ${_event.maxMembers} 人',
-                    ),
+                    _buildInfoRow(Icons.people, '人數', '${_event.applicationCount} / ${_event.maxMembers} 人'),
                     const Divider(),
-                    _buildInfoRow(
-                      Icons.info_outline,
-                      '狀態',
-                      _getStatusText(_event.status),
-                    ),
+                    _buildInfoRow(Icons.info_outline, '狀態', _getStatusText(_event.status)),
                   ],
                 ),
               ),
@@ -114,9 +95,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                 leading: Text(_event.creatorAvatar, style: const TextStyle(fontSize: 28)),
                 title: const Text('主辦人'),
                 subtitle: Text(_event.creatorName),
-                trailing: isCreator
-                    ? const Chip(label: Text('我'), visualDensity: VisualDensity.compact)
-                    : null,
+                trailing: isCreator ? const Chip(label: Text('我'), visualDensity: VisualDensity.compact) : null,
               ),
             ),
             const SizedBox(height: 16),
@@ -187,15 +166,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           return Container(
             padding: const EdgeInsets.all(16),
             child: FilledButton.icon(
-              onPressed: isOffline || !_event.canApply
-                  ? null
-                  : _handleApply,
+              onPressed: isOffline || !_event.canApply ? null : _handleApply,
               icon: const Icon(Icons.person_add),
-              label: Text(
-                _event.isFull
-                    ? '已額滿'
-                    : (_event.approvalRequired ? '送出報名申請' : '我要報名'),
-              ),
+              label: Text(_event.isFull ? '已額滿' : (_event.approvalRequired ? '送出報名申請' : '我要報名')),
             ),
           );
         },

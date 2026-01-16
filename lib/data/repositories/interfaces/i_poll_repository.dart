@@ -57,11 +57,7 @@ abstract interface class IPollRepository {
   });
 
   /// 新增選項 (雲端)
-  Future<Result<void, Exception>> addOption({
-    required String pollId,
-    required String text,
-    required String creatorId,
-  });
+  Future<Result<void, Exception>> addOption({required String pollId, required String text, required String creatorId});
 
   /// 關閉投票 (雲端)
   Future<Result<void, Exception>> close({required String pollId, required String userId});

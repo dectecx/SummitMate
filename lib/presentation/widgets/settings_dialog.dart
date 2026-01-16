@@ -9,10 +9,14 @@ import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
 import 'package:summitmate/infrastructure/tools/toast_service.dart';
+import '../widgets/log_viewer_sheet.dart';
+import '../widgets/clear_data_dialog.dart';
 import 'package:summitmate/infrastructure/tools/hive_service.dart';
 
 class SettingsDialog extends StatefulWidget {
-  const SettingsDialog({super.key});
+  final VoidCallback? onRestartTutorial;
+
+  const SettingsDialog({super.key, this.onRestartTutorial});
 
   @override
   State<SettingsDialog> createState() => _SettingsDialogState();
@@ -232,7 +236,11 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     title: const Text('重看教學引導'),
                     onTap: () {
                       Navigator.pop(context);
-                      ToastService.info('請在首頁重新觸發教學');
+                      if (widget.onRestartTutorial != null) {
+                        widget.onRestartTutorial!.call();
+                      } else {
+                        ToastService.info('請在首頁重新觸發教學');
+                      }
                     },
                   ),
 
@@ -244,23 +252,63 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     onTap: () async {
                       final packageInfo = await PackageInfo.fromPlatform();
                       if (context.mounted) {
-                        showAboutDialog(
+                        showDialog(
                           context: context,
-                          applicationName: packageInfo.appName,
-                          applicationVersion: '${packageInfo.version} (${packageInfo.buildNumber})',
-                          applicationIcon: const SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Center(child: Text('🏔️', style: TextStyle(fontSize: 32))),
+                          builder: (context) => AlertDialog(
+                            title: Row(
+                              children: [
+                                const SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: Center(child: Text('🏔️', style: TextStyle(fontSize: 24))),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(packageInfo.appName),
+                                      Text(
+                                        'v${packageInfo.version} (${packageInfo.buildNumber})',
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('SummitMate 是一款專為登山愛好者設計的協作 App。'),
+                                const SizedBox(height: 16),
+                                const Text('除錯資訊:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 4),
+                                Text('Auth State: ${context.read<AuthCubit>().state.runtimeType}'),
+                                Text('Sync State: ${context.read<SyncCubit>().state.runtimeType}'),
+                                Text('Hive Initialized: ${HiveService().isInitialized}'),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  showLogViewerSheet(context);
+                                },
+                                child: const Text('查看日誌'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  showClearDataDialog(context);
+                                },
+                                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                child: const Text('清除資料'),
+                              ),
+                              TextButton(onPressed: () => Navigator.pop(context), child: const Text('關閉')),
+                            ],
                           ),
-                          children: [
-                            const Text('SummitMate 是一款專為登山愛好者設計的協作 App。'),
-                            const SizedBox(height: 16),
-                            const Text('除錯資訊:'),
-                            Text('Auth State: ${context.read<AuthCubit>().state.runtimeType}'),
-                            Text('Sync State: ${context.read<SyncCubit>().state.runtimeType}'),
-                            Text('Hive Initialized: ${HiveService().isInitialized}'),
-                          ],
                         );
                       }
                     },

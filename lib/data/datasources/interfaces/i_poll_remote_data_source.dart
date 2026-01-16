@@ -55,11 +55,7 @@ abstract class IPollRemoteDataSource {
   /// [text] 選項文字
   /// [creatorId] 新增者 ID
   /// 拋出: Exception 當 API 呼叫失敗或不允許新增選項
-  Future<void> addOption({
-    required String pollId,
-    required String text,
-    required String creatorId,
-  });
+  Future<void> addOption({required String pollId, required String text, required String creatorId});
 
   /// 關閉投票
   ///

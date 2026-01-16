@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // for kIsWeb
-import 'package:flutter/services.dart'; // for SystemNavigator
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/di.dart';
-import '../../infrastructure/tools/log_service.dart';
 import '../../infrastructure/tools/toast_service.dart';
 import '../cubits/message/message_cubit.dart';
 import '../cubits/message/message_state.dart';
@@ -12,7 +8,7 @@ import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
 import '../../core/constants/role_constants.dart';
 import '../../infrastructure/tools/usage_tracking_service.dart';
-import '../../infrastructure/tools/hive_service.dart';
+
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 import '../../core/error/result.dart';
@@ -34,7 +30,7 @@ import '../widgets/itinerary_tab.dart';
 import '../widgets/gear_tab.dart';
 import '../widgets/info_tab.dart';
 import '../widgets/itinerary_edit_dialog.dart';
-import '../widgets/tutorial_overlay.dart';
+
 import '../widgets/settings_dialog.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/models/itinerary_item.dart';
@@ -607,150 +603,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  /// 顯示清除資料對話框
-  ///
-  /// 這是 Debug 工具，但在正式版保留以解決極端異常狀況。
-  /// 允許用戶選擇性清除特定類型的本地 Hive 資料。
-  void _showClearDataDialog(BuildContext context) {
-    // 預設選項狀態
-    bool clearItinerary = true;
-    bool clearMessages = true;
-    bool clearGear = true;
-    bool clearGearLibrary = true;
-    bool clearWeather = true;
-    bool clearSettings = false;
-    bool clearLogs = false;
-    bool clearPolls = true;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (innerContext, setState) => AlertDialog(
-          title: const Text('⚠️ 清除本地資料'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('選擇要清除的資料類型：', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                CheckboxListTile(
-                  title: const Text('行程資料'),
-                  subtitle: const Text('包含所有行程與內容', style: TextStyle(fontSize: 11)),
-                  value: clearItinerary,
-                  onChanged: (v) => setState(() => clearItinerary = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('留言資料'),
-                  value: clearMessages,
-                  onChanged: (v) => setState(() => clearMessages = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('裝備清單'),
-                  subtitle: const Text('公開/標準裝備組合', style: TextStyle(fontSize: 11)),
-                  value: clearGear,
-                  onChanged: (v) => setState(() => clearGear = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('個人裝備庫'),
-                  value: clearGearLibrary,
-                  onChanged: (v) => setState(() => clearGearLibrary = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('天氣快取'),
-                  value: clearWeather,
-                  onChanged: (v) => setState(() => clearWeather = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('設定與身分'),
-                  subtitle: const Text('清除後需重新設定暱稱', style: TextStyle(fontSize: 11)),
-                  value: clearSettings,
-                  onChanged: (v) => setState(() => clearSettings = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('App 日誌'),
-                  value: clearLogs,
-                  onChanged: (v) => setState(() => clearLogs = v ?? false),
-                ),
-                CheckboxListTile(
-                  title: const Text('投票資料'),
-                  value: clearPolls,
-                  onChanged: (v) => setState(() => clearPolls = v ?? false),
-                ),
-                const Divider(),
-                const Text(
-                  '此操作無法復原！',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
-            FilledButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-
-                // 執行選擇性清除
-                await getIt<HiveService>().clearSelectedData(
-                  clearTrips: clearItinerary,
-                  clearItinerary: clearItinerary,
-                  clearMessages: clearMessages,
-                  clearGear: clearGear,
-                  clearGearLibrary: clearGearLibrary,
-                  clearWeather: clearWeather,
-                  clearSettings: clearSettings,
-                  clearLogs: clearLogs,
-                  clearPolls: clearPolls,
-                );
-
-                // 顯示重啟提示對話框 (不可取消)
-                if (context.mounted) {
-                  await showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (c) => AlertDialog(
-                      title: const Text('✅ 清除完成'),
-                      content: Text(kIsWeb ? '資料已清除，請重新載入網頁以完成操作。' : '資料已清除，請重新啟動 App 以完成操作。'),
-                      actions: [
-                        FilledButton(
-                          onPressed: () {
-                            if (kIsWeb) {
-                              // Web: Reload the page
-                              launchUrl(Uri.base, webOnlyWindowName: '_self');
-                            } else {
-                              // Mobile: Close the app
-                              SystemNavigator.pop();
-                            }
-                          },
-                          child: Text(kIsWeb ? '重新載入' : '關閉 App'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              },
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('確定清除'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showTutorial(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        pageBuilder: (p0, p1, st) => TutorialOverlay(
-          targets: const [], // TODO: Restore original targets if possible
-          onFinish: () => Navigator.pop(context),
-          onSkip: () => Navigator.pop(context),
-        ),
-      ),
-    );
-  }
-
   void _handleCloudUpload(BuildContext context) async {
     // 檢查離線模式
     final state = context.read<SettingsCubit>().state;
@@ -818,102 +670,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
       );
-    }
-  }
-
-  void _showLogViewer(BuildContext context) {
-    final logs = LogService.getRecentLogs(count: 100);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            // 標題列
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('應用日誌 (${logs.length})', style: Theme.of(context).textTheme.titleLarge),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () async {
-                          ToastService.info('正在上傳...');
-                          final (isSuccess, message) = await LogService.uploadToCloud();
-                          if (isSuccess) {
-                            ToastService.success(message);
-                          } else {
-                            ToastService.error(message);
-                          }
-                        },
-                        icon: const Icon(Icons.cloud_upload_outlined, size: 18),
-                        label: const Text('上傳'),
-                      ),
-                      TextButton.icon(
-                        onPressed: () async {
-                          await LogService.clearAll();
-                          if (context.mounted) Navigator.pop(context);
-                          ToastService.info('日誌已清除');
-                        },
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                        label: const Text('清除'),
-                      ),
-                      IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            // 日誌列表
-            Expanded(
-              child: logs.isEmpty
-                  ? const Center(child: Text('暫無日誌'))
-                  : ListView.builder(
-                      controller: scrollController,
-                      itemCount: logs.length,
-                      itemBuilder: (context, index) {
-                        final log = logs[index];
-                        return ListTile(
-                          dense: true,
-                          leading: _getLogIcon(log.level),
-                          title: Text(
-                            log.message,
-                            style: const TextStyle(fontSize: 13),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            '${log.formatted.substring(0, 8)} ${log.source ?? ''}',
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _getLogIcon(LogLevel level) {
-    switch (level) {
-      case LogLevel.debug:
-        return const Icon(Icons.bug_report, size: 18, color: Colors.grey);
-      case LogLevel.info:
-        return const Icon(Icons.info_outline, size: 18, color: Colors.blue);
-      case LogLevel.warning:
-        return const Icon(Icons.warning_amber, size: 18, color: Colors.orange);
-      case LogLevel.error:
-        return const Icon(Icons.error_outline, size: 18, color: Colors.red);
     }
   }
 }

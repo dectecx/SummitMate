@@ -12,8 +12,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   final IAuthSessionLocalDataSource _localDataSource;
 
-  AuthSessionRepository({required IAuthSessionLocalDataSource localDataSource})
-      : _localDataSource = localDataSource;
+  AuthSessionRepository({required IAuthSessionLocalDataSource localDataSource}) : _localDataSource = localDataSource;
 
   // ========== Session Operations ==========
 
@@ -75,12 +74,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
       if (userId == null || email == null) return null;
 
-      return UserProfile(
-        id: userId,
-        email: email,
-        displayName: username ?? '',
-        avatar: avatar ?? '🐻',
-      );
+      return UserProfile(id: userId, email: email, displayName: username ?? '', avatar: avatar ?? '🐻');
     } catch (e) {
       LogService.warning('Failed to get user profile: $e', source: _source);
       return null;
