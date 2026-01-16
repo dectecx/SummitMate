@@ -34,7 +34,8 @@ function uploadGearLibrary(accessToken, items) {
     const userId = validation.payload.uid;
     const ss = getSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_GEAR_LIBRARY);
-    if (!sheet) return _error(API_CODES.SYSTEM_ERROR, "GearLibrary sheet not found");
+    if (!sheet)
+      return _error(API_CODES.SYSTEM_ERROR, "GearLibrary sheet not found");
 
     // 刪除該 user_id 的所有舊資料
     const existingData = sheet.getDataRange().getValues();
@@ -52,7 +53,9 @@ function uploadGearLibrary(accessToken, items) {
       const rows = items.map((item) => {
         item.id = item.id || Utilities.getUuid();
         const pObj = Mapper.GearLibrary.toPersistence(item, userId);
-        return HEADERS_GEAR_LIBRARY.map(h => pObj[h] !== undefined ? pObj[h] : "");
+        return HEADERS_GEAR_LIBRARY.map((h) =>
+          pObj[h] !== undefined ? pObj[h] : ""
+        );
       });
 
       sheet
@@ -125,4 +128,3 @@ function downloadGearLibrary(accessToken) {
     return _error(API_CODES.SYSTEM_ERROR, e.toString());
   }
 }
-

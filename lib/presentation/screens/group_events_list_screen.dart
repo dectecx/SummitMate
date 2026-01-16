@@ -216,7 +216,10 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
       },
       builder: (context, state) {
         if (state is GroupEventLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Scaffold(
+            appBar: AppBar(title: const Text('揪團活動')),
+            body: const Center(child: CircularProgressIndicator()),
+          );
         }
 
         List<GroupEvent> events = [];
@@ -237,20 +240,23 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
         }
 
         if (errorMessage != null && events.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.grey),
-                const SizedBox(height: 16),
-                Text('載入失敗: $errorMessage'),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () => context.read<GroupEventCubit>().fetchEvents(),
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('重試'),
-                ),
-              ],
+          return Scaffold(
+            appBar: AppBar(title: const Text('揪團活動')),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text('載入失敗: $errorMessage'),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () => context.read<GroupEventCubit>().fetchEvents(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('重試'),
+                  ),
+                ],
+              ),
             ),
           );
         }
