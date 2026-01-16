@@ -425,4 +425,138 @@ const Mapper = {
       };
     },
   },
+
+  // ============================================================
+  // GroupEvent Mapper
+  // ============================================================
+  GroupEvent: {
+    /**
+     * DB Row → API DTO
+     * @param {Object} row - 來自 GroupEvents Sheet 的物件
+     * @param {Object} extra - { application_count, my_application_status, is_liked }
+     * @returns {Object} DTO
+     */
+    toDTO: function (row, extra = {}) {
+      if (!row) return null;
+
+      return {
+        // PK
+        id: row.id,
+        // FK
+        creator_id: row.creator_id,
+        // Required
+        title: row.title || "",
+        description: row.description || "",
+        location: row.location || "",
+        start_date: row.start_date,
+        end_date: row.end_date || null,
+        max_members: Number(row.max_members) || 10,
+        status: row.status || "open",
+        // Optional
+        approval_required:
+          row.approval_required === "TRUE" || row.approval_required === true,
+        private_message: row.private_message || "",
+        linked_trip_id: row.linked_trip_id || null,
+        // 快取
+        like_count: Number(row.like_count) || 0,
+        comment_count: Number(row.comment_count) || 0,
+        // 快照
+        creator_name: row.creator_name || "",
+        creator_avatar: row.creator_avatar || DEFAULT_AVATAR,
+        // Computed (from extra)
+        application_count: extra.application_count || 0,
+        my_application_status: extra.my_application_status || null,
+        is_liked: extra.is_liked || false,
+        // Audit
+        created_at: row.created_at,
+        created_by: row.created_by,
+        updated_at: row.updated_at,
+        updated_by: row.updated_by,
+      };
+    },
+
+    /**
+     * API Request → DB Row Object
+     * @param {Object} dto - 前端傳來的 GroupEvent JSON
+     * @param {string} operatorId - 操作者 ID
+     * @param {Object} userInfo - { name, avatar } 建立者資訊快照
+     * @returns {Object} Persistence Object (key-value)
+     */
+    toPersistence: function (dto, operatorId, userInfo = {}) {
+      const now = new Date().toISOString();
+      return {
+        id: dto.id || Utilities.getUuid(),
+        creator_id: dto.creator_id || operatorId,
+        title: dto.title || "",
+        description: dto.description || "",
+        location: dto.location || "",
+        start_date: dto.start_date || "",
+        end_date: dto.end_date || "",
+        max_members: dto.max_members || 10,
+        status: dto.status || "open",
+        approval_required: dto.approval_required === true ? "TRUE" : "FALSE",
+        private_message: dto.private_message || "",
+        linked_trip_id: dto.linked_trip_id || "",
+        like_count: 0,
+        comment_count: 0,
+        creator_name: userInfo.name || "",
+        creator_avatar: userInfo.avatar || DEFAULT_AVATAR,
+        created_at: dto.created_at || now,
+        created_by: dto.created_by || operatorId,
+        updated_at: now,
+        updated_by: operatorId,
+      };
+    },
+  },
+
+  // ============================================================
+  // GroupEventApplication Mapper
+  // ============================================================
+  GroupEventApplication: {
+    /**
+     * DB Row → API DTO
+     */
+    toDTO: function (row) {
+      if (!row) return null;
+
+      return {
+        // PK
+        id: row.id,
+        // FK
+        event_id: row.event_id,
+        user_id: row.user_id,
+        // Data
+        status: row.status || "pending",
+        message: row.message || "",
+        // 快照
+        user_name: row.user_name || "",
+        user_avatar: row.user_avatar || DEFAULT_AVATAR,
+        // Audit
+        created_at: row.created_at,
+        created_by: row.created_by,
+        updated_at: row.updated_at,
+        updated_by: row.updated_by,
+      };
+    },
+
+    /**
+     * API Request → DB Row Object
+     */
+    toPersistence: function (dto, operatorId, userInfo = {}) {
+      const now = new Date().toISOString();
+      return {
+        id: dto.id || Utilities.getUuid(),
+        event_id: dto.event_id,
+        user_id: dto.user_id || operatorId,
+        status: dto.status || "pending",
+        message: dto.message || "",
+        user_name: userInfo.name || "",
+        user_avatar: userInfo.avatar || DEFAULT_AVATAR,
+        created_at: dto.created_at || now,
+        created_by: dto.created_by || operatorId,
+        updated_at: now,
+        updated_by: operatorId,
+      };
+    },
+  },
 };

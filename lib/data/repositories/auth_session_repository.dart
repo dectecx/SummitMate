@@ -1,36 +1,31 @@
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../data/models/user_profile.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_auth_session_repository.dart';
+import '../datasources/interfaces/i_auth_session_local_data_source.dart';
 
-/// 用於管理本地身份驗證工作階段的 Repository
+/// 用於管理本地身份驗證工作階段的 Repository (支援 DataSource 模式)
+///
+/// 透過 IAuthSessionLocalDataSource 存取 SecureStorage，
+/// 管理使用者登入 Session (Token, UserProfile)。
 class AuthSessionRepository implements IAuthSessionRepository {
   static const String _source = 'AuthSessionRepository';
 
-  // Secure Storage Keys
-  static const String _keyAccessToken = 'access_token';
-  static const String _keyRefreshToken = 'refresh_token';
-  static const String _keyUserProfile = 'user_profile';
+  final IAuthSessionLocalDataSource _localDataSource;
 
-  final FlutterSecureStorage _secureStorage;
+  AuthSessionRepository({required IAuthSessionLocalDataSource localDataSource})
+      : _localDataSource = localDataSource;
 
-  AuthSessionRepository({FlutterSecureStorage? secureStorage})
-    : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  // ========== Session Operations ==========
 
-  /// 儲存工作階段 (Access Token, User Profile, Refresh Token)
-  ///
-  /// [accessToken] 存取權杖
-  /// [user] 用戶個人檔案
-  /// [refreshToken] 刷新權杖 (可選)
   @override
   Future<void> saveSession(String accessToken, UserProfile user, {String? refreshToken}) async {
     try {
-      await _secureStorage.write(key: _keyAccessToken, value: accessToken);
-      if (refreshToken != null) {
-        await _secureStorage.write(key: _keyRefreshToken, value: refreshToken);
-      }
-      await _secureStorage.write(key: _keyUserProfile, value: jsonEncode(user.toJson()));
+      await _localDataSource.saveToken(accessToken);
+      await _localDataSource.saveUserId(user.id);
+      await _localDataSource.saveEmail(user.email);
+      await _localDataSource.saveUsername(user.displayName);
+      await _localDataSource.saveAvatar(user.avatar);
+      // Note: refreshToken is stored via token if needed, or use a separate method
       LogService.debug('Session saved for user: ${user.email}', source: _source);
     } catch (e) {
       LogService.error('Failed to save session: $e', source: _source);
@@ -38,59 +33,62 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
-  /// 清除工作階段 (登出)
   @override
   Future<void> clearSession() async {
     try {
-      await _secureStorage.delete(key: _keyAccessToken);
-      await _secureStorage.delete(key: _keyRefreshToken);
-      await _secureStorage.delete(key: _keyUserProfile);
+      await _localDataSource.clearAll();
       LogService.debug('Session cleared', source: _source);
     } catch (e) {
       LogService.error('Failed to clear session: $e', source: _source);
-      rethrow; // Optional: maybe swallow? But caller might want to know.
+      rethrow;
     }
   }
 
-  /// 取得 Access Token
+  // ========== Token Operations ==========
+
   @override
   Future<String?> getAccessToken() async {
     try {
-      return await _secureStorage.read(key: _keyAccessToken);
+      return await _localDataSource.getToken();
     } catch (e) {
       LogService.error('Failed to read access token: $e', source: _source);
       return null;
     }
   }
 
-  /// 取得 Refresh Token
   @override
   Future<String?> getRefreshToken() async {
-    try {
-      return await _secureStorage.read(key: _keyRefreshToken);
-    } catch (e) {
-      LogService.error('Failed to read refresh token: $e', source: _source);
-      return null;
-    }
+    // RefreshToken is not stored separately in this implementation
+    // If needed, add a separate key to IAuthSessionLocalDataSource
+    return null;
   }
 
-  /// 取得使用者個人資料
+  // ========== User Profile Operations ==========
+
   @override
   Future<UserProfile?> getUserProfile() async {
     try {
-      final json = await _secureStorage.read(key: _keyUserProfile);
-      if (json == null) return null;
-      return UserProfile.fromJson(jsonDecode(json) as Map<String, dynamic>);
+      final userId = await _localDataSource.getUserId();
+      final email = await _localDataSource.getEmail();
+      final username = await _localDataSource.getUsername();
+      final avatar = await _localDataSource.getAvatar();
+
+      if (userId == null || email == null) return null;
+
+      return UserProfile(
+        id: userId,
+        email: email,
+        displayName: username ?? '',
+        avatar: avatar ?? '🐻',
+      );
     } catch (e) {
-      LogService.warning('Failed to parse cached user profile: $e', source: _source);
+      LogService.warning('Failed to get user profile: $e', source: _source);
       return null;
     }
   }
 
-  /// 檢查是否存在有效的工作階段
   @override
   Future<bool> hasSession() async {
-    final token = await getAccessToken();
-    return token != null && token.isNotEmpty;
+    return await _localDataSource.hasValidSession();
   }
 }

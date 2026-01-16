@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -164,6 +163,7 @@ class HiveService {
       clearGear: true,
       clearGearLibrary: true,
       clearPolls: true,
+      clearGroupEvents: true,
       clearWeather: true,
       clearSettings: true,
       clearLogs: false, // 保留 logs
@@ -179,6 +179,7 @@ class HiveService {
     bool clearGear = false,
     bool clearGearLibrary = false,
     bool clearPolls = false,
+    bool clearGroupEvents = false,
     bool clearWeather = false,
     bool clearSettings = false,
     bool clearLogs = false,
@@ -206,6 +207,10 @@ class HiveService {
     }
     if (clearPolls) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.polls);
+    }
+    if (clearGroupEvents) {
+      await Hive.deleteBoxFromDisk(HiveBoxNames.groupEvents);
+      await Hive.deleteBoxFromDisk(HiveBoxNames.groupEventApplications);
     }
     if (clearWeather) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.weather);

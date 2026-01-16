@@ -17,8 +17,6 @@ import 'presentation/cubits/meal/meal_cubit.dart';
 import 'presentation/cubits/map/map_cubit.dart';
 import 'presentation/cubits/map/offline_map_cubit.dart';
 import 'presentation/cubits/settings/settings_cubit.dart';
-// import 'presentation/providers/map_provider.dart'; // Removed
-// import 'presentation/providers/meal_provider.dart'; // Removed
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
 
@@ -40,12 +38,12 @@ class SummitMateApp extends StatelessWidget {
         BlocProvider(create: (context) => PollCubit()..loadPolls()),
         BlocProvider(create: (_) => MealCubit()),
         BlocProvider(create: (_) => MapCubit()..initLocation()),
-        BlocProvider(create: (_) => OfflineMapCubit()), // Register MealCubit
+        BlocProvider(create: (_) => OfflineMapCubit()),
         BlocProvider(
           create: (context) =>
               SettingsCubit(repository: getIt<ISettingsRepository>(), prefs: getIt<SharedPreferences>())
                 ..loadSettings(),
-        ), // Register SettingsCubit
+        ),
       ],
       child: _buildMaterialApp(),
     );

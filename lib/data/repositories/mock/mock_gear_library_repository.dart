@@ -1,7 +1,9 @@
 import '../../models/gear_library_item.dart';
 import '../interfaces/i_gear_library_repository.dart';
+import '../../../core/error/result.dart';
 
-/// 模擬裝備庫資料庫
+/// 模擬裝備庫資料倉庫
+///
 /// 用於教學模式，返回靜態假資料，所有寫入操作皆為空實作。
 class MockGearLibraryRepository implements IGearLibraryRepository {
   final List<GearLibraryItem> _mockItems = [
@@ -31,37 +33,48 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
     ),
   ];
 
-  @override
-  Future<void> init() async {}
+  // ========== Init ==========
 
   @override
-  List<GearLibraryItem> getAllItems(String userId) => List.unmodifiable(_mockItems);
+  Future<Result<void, Exception>> init() async => const Success(null);
+
+  // ========== Data Operations ==========
 
   @override
-  GearLibraryItem? getById(String id) =>
-      _mockItems.cast<GearLibraryItem?>().firstWhere((item) => item?.id == id, orElse: () => null);
+  List<GearLibraryItem> getAll(String userId) => List.unmodifiable(_mockItems);
+
+  @override
+  GearLibraryItem? getById(String id) {
+    try {
+      return _mockItems.firstWhere((item) => item.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   List<GearLibraryItem> getByCategory(String userId, String category) =>
       _mockItems.where((item) => item.category == category).toList();
 
   @override
-  Future<void> addItem(GearLibraryItem item) async {}
+  Future<void> add(GearLibraryItem item) async {}
 
   @override
-  Future<void> updateItem(GearLibraryItem item) async {}
+  Future<void> update(GearLibraryItem item) async {}
 
   @override
-  Future<void> deleteItem(String id) async {}
+  Future<void> delete(String id) async {}
 
   @override
-  Future<void> clearAll() async {}
+  Future<void> importAll(List<GearLibraryItem> items) async {}
 
   @override
-  Future<void> importItems(List<GearLibraryItem> items) async {}
+  Future<Result<void, Exception>> clearAll() async => const Success(null);
+
+  // ========== Statistics ==========
 
   @override
-  int getItemCount(String userId) => _mockItems.length;
+  int getCount(String userId) => _mockItems.length;
 
   @override
   double getTotalWeight(String userId) => _mockItems.fold(0, (sum, item) => sum + item.weight);

@@ -89,17 +89,31 @@ lib/
 │   │   │   ├── i_message_local_data_source.dart
 │   │   │   ├── i_message_remote_data_source.dart
 │   │   │   ├── i_gear_local_data_source.dart
-│   │   │   └── i_gear_key_local_data_source.dart
+│   │   │   ├── i_gear_key_local_data_source.dart
+│   │   │   ├── i_group_event_local_data_source.dart
+│   │   │   ├── i_group_event_remote_data_source.dart
+│   │   │   ├── i_poll_local_data_source.dart
+│   │   │   ├── i_poll_remote_data_source.dart
+│   │   │   ├── i_gear_library_local_data_source.dart
+│   │   │   ├── i_settings_local_data_source.dart
+│   │   │   └── i_auth_session_local_data_source.dart
 │   │   ├── local/                     # 本地儲存 (Hive)
 │   │   │   ├── trip_local_data_source.dart
 │   │   │   ├── itinerary_local_data_source.dart
 │   │   │   ├── message_local_data_source.dart
 │   │   │   ├── gear_local_data_source.dart
-│   │   │   └── gear_key_local_data_source.dart
+│   │   │   ├── gear_key_local_data_source.dart
+│   │   │   ├── group_event_local_data_source.dart
+│   │   │   ├── poll_local_data_source.dart
+│   │   │   ├── gear_library_local_data_source.dart
+│   │   │   ├── settings_local_data_source.dart
+│   │   │   └── auth_session_local_data_source.dart
 │   │   └── remote/                    # 遠端 API
 │   │       ├── trip_remote_data_source.dart
 │   │       ├── itinerary_remote_data_source.dart
-│   │       └── message_remote_data_source.dart
+│   │       ├── message_remote_data_source.dart
+│   │       ├── group_event_remote_data_source.dart
+│   │       └── poll_remote_data_source.dart
 │   └── repositories/                  # Repository 層 (DataSource Coordinator)
 │       ├── interfaces/                # Repository 介面
 │       │   ├── i_trip_repository.dart
@@ -109,6 +123,7 @@ lib/
 │       │   ├── i_gear_library_repository.dart
 │       │   ├── i_gear_set_repository.dart
 │       │   ├── i_poll_repository.dart
+│       │   ├── i_group_event_repository.dart
 │       │   ├── i_settings_repository.dart
 │       │   └── i_auth_session_repository.dart
 │       ├── mock/                      # 測試用 Mock 實作
@@ -120,6 +135,7 @@ lib/
 │       ├── gear_library_repository.dart
 │       ├── gear_set_repository.dart   # 雲端裝備組合
 │       ├── poll_repository.dart
+│       ├── group_event_repository.dart    # 協調 Local + Remote DataSource
 │       ├── settings_repository.dart
 │       └── auth_session_repository.dart
 ├── services/                          # 服務層
@@ -263,16 +279,23 @@ flowchart TB
 
 ### DataSource 清單
 
-| DataSource                  | 類型   | Interface                    | 說明             |
-| --------------------------- | ------ | ---------------------------- | ---------------- |
-| `TripLocalDataSource`       | Local  | `ITripLocalDataSource`       | 行程本地儲存     |
-| `TripRemoteDataSource`      | Remote | `ITripRemoteDataSource`      | 行程雲端 API     |
-| `ItineraryLocalDataSource`  | Local  | `IItineraryLocalDataSource`  | 行程節點本地儲存 |
-| `ItineraryRemoteDataSource` | Remote | `IItineraryRemoteDataSource` | 行程節點雲端 API |
-| `MessageLocalDataSource`    | Local  | `IMessageLocalDataSource`    | 留言本地儲存     |
-| `MessageRemoteDataSource`   | Remote | `IMessageRemoteDataSource`   | 留言雲端 API     |
-| `GearLocalDataSource`       | Local  | `IGearLocalDataSource`       | 裝備本地儲存     |
-| `GearKeyLocalDataSource`    | Local  | `IGearKeyLocalDataSource`    | 裝備 Key 記錄    |
+| DataSource                   | 類型   | Interface                     | 說明             |
+| ---------------------------- | ------ | ----------------------------- | ---------------- |
+| `TripLocalDataSource`        | Local  | `ITripLocalDataSource`        | 行程本地儲存     |
+| `TripRemoteDataSource`       | Remote | `ITripRemoteDataSource`       | 行程雲端 API     |
+| `ItineraryLocalDataSource`   | Local  | `IItineraryLocalDataSource`   | 行程節點本地儲存 |
+| `ItineraryRemoteDataSource`  | Remote | `IItineraryRemoteDataSource`  | 行程節點雲端 API |
+| `MessageLocalDataSource`     | Local  | `IMessageLocalDataSource`     | 留言本地儲存     |
+| `MessageRemoteDataSource`    | Remote | `IMessageRemoteDataSource`    | 留言雲端 API     |
+| `GearLocalDataSource`        | Local  | `IGearLocalDataSource`        | 裝備本地儲存     |
+| `GearKeyLocalDataSource`     | Local  | `IGearKeyLocalDataSource`     | 裝備 Key 記錄    |
+| `GroupEventLocalDataSource`  | Local  | `IGroupEventLocalDataSource`  | 揪團本地儲存     |
+| `GroupEventRemoteDataSource` | Remote | `IGroupEventRemoteDataSource` | 揪團雲端 API     |
+| `PollLocalDataSource`        | Local  | `IPollLocalDataSource`        | 投票本地儲存     |
+| `PollRemoteDataSource`       | Remote | `IPollRemoteDataSource`       | 投票雲端 API     |
+| `GearLibraryLocalDataSource` | Local  | `IGearLibraryLocalDataSource` | 裝備庫本地儲存   |
+| `SettingsLocalDataSource`    | Local  | `ISettingsLocalDataSource`    | 設定本地儲存     |
+| `AuthSessionLocalDataSource` | Local  | `IAuthSessionLocalDataSource` | 認證 Session    |
 
 ### Repository 運作模式
 
@@ -300,12 +323,12 @@ class TripRepository implements ITripRepository {
 
 本專案支援 **Provider** 與 **Cubit** 並存，依據功能複雜度選擇適合的方案：
 
-| 方案         | 適用場景                       | 採用狀態    |
-| ------------ | ------------------------------ | ----------- |
-| **Provider** | 簡單狀態、Legacy Migration     | ⚠️ 遷移中 (逐步移除) |
-| **Cubit**    | 主要狀態管理                   | ✅ 主流採用         |
-| **BLoC**     | 複雜事件流                     | ❌ 暫不採用         |
-| **Riverpod** | 編譯時安全                     | ❌ 暫不採用         |
+| 方案         | 適用場景                   | 採用狀態             |
+| ------------ | -------------------------- | -------------------- |
+| **Provider** | 簡單狀態、Legacy Migration | ⚠️ 遷移中 (逐步移除) |
+| **Cubit**    | 主要狀態管理               | ✅ 主流採用          |
+| **BLoC**     | 複雜事件流                 | ❌ 暫不採用          |
+| **Riverpod** | 編譯時安全                 | ❌ 暫不採用          |
 
 ### Provider 使用場景 (Legacy)
 
@@ -398,7 +421,6 @@ sequenceDiagram
 - **Cloud (Sheets)**: 使用 Google Sheets 模擬資料表，嚴格定義欄位順序 (Column Index)。
 
 ---
-
 
 ## 5. API 介面 (Google Apps Script)
 
@@ -732,6 +754,7 @@ lib/
 ```
 
 **架構優勢**:
+
 - ✅ 職責分離：Domain 定義 `Interface`，Infrastructure 負責 `Implementation`。
 - ✅ 測試性：各層皆可透過 Interface 進行 Mock 測試。
 - ✅ 擴展性：未來可輕鬆替換底層實作 (如 GAS -> AWS) 而不影響業務邏輯。

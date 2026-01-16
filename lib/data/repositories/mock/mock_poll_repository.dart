@@ -1,5 +1,6 @@
 import '../../models/poll.dart';
 import '../interfaces/i_poll_repository.dart';
+import '../../../core/error/result.dart';
 
 /// 模擬投票資料庫
 /// 用於教學模式，返回靜態假資料，所有寫入操作皆為空實作。
@@ -36,80 +37,87 @@ class MockPollRepository implements IPollRepository {
           updatedAt: DateTime.now(),
           updatedBy: 'admin',
         ),
-        PollOption(
-          id: 'opt-3',
-          pollId: 'mock-poll-001',
-          text: '自熱鍋',
-          creatorId: 'admin',
-          voteCount: 0,
-          createdAt: DateTime.now(),
-          createdBy: 'admin',
-          updatedAt: DateTime.now(),
-          updatedBy: 'admin',
-        ),
-      ],
-    ),
-    Poll(
-      id: 'mock-poll-002',
-      title: '明日出發時間',
-      creatorId: 'user-1',
-      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      createdBy: 'user-1',
-      updatedAt: DateTime.now(),
-      updatedBy: 'user-1',
-      options: [
-        PollOption(
-          id: 'opt-4',
-          pollId: 'mock-poll-002',
-          text: '04:00',
-          creatorId: 'user-1',
-          voteCount: 1,
-          createdAt: DateTime.now(),
-          createdBy: 'user-1',
-          updatedAt: DateTime.now(),
-          updatedBy: 'user-1',
-        ),
-        PollOption(
-          id: 'opt-5',
-          pollId: 'mock-poll-002',
-          text: '05:00',
-          creatorId: 'user-1',
-          voteCount: 2,
-          createdAt: DateTime.now(),
-          createdBy: 'user-1',
-          updatedAt: DateTime.now(),
-          updatedBy: 'user-1',
-        ),
-        PollOption(
-          id: 'opt-6',
-          pollId: 'mock-poll-002',
-          text: '06:00',
-          creatorId: 'user-1',
-          voteCount: 1,
-          createdAt: DateTime.now(),
-          createdBy: 'user-1',
-          updatedAt: DateTime.now(),
-          updatedBy: 'user-1',
-        ),
       ],
     ),
   ];
 
-  @override
-  Future<void> init() async {}
+  // ========== Init ==========
 
   @override
-  List<Poll> getAllPolls() => List.from(_mockPolls);
+  Future<Result<void, Exception>> init() async => const Success(null);
+
+  // ========== Data Operations ==========
 
   @override
-  Future<void> savePolls(List<Poll> polls) async {}
+  List<Poll> getAll() => List.from(_mockPolls);
 
   @override
-  Future<void> clearAll() async {}
+  Poll? getById(String id) {
+    try {
+      return _mockPolls.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
-  Future<void> saveLastSyncTime(DateTime time) async {}
+  Future<void> saveAll(List<Poll> polls) async {}
+
+  @override
+  Future<void> save(Poll poll) async {}
+
+  @override
+  Future<void> delete(String id) async {}
+
+  @override
+  Future<Result<void, Exception>> clearAll() async => const Success(null);
+
+  // ========== Sync Operations ==========
+
+  @override
+  Future<Result<void, Exception>> sync({required String userId}) async => const Success(null);
 
   @override
   DateTime? getLastSyncTime() => DateTime.now();
+
+  // ========== Remote Write Operations ==========
+
+  @override
+  Future<Result<String, Exception>> create({
+    required String title,
+    String description = '',
+    required String creatorId,
+    DateTime? deadline,
+    bool isAllowAddOption = false,
+    int maxOptionLimit = 20,
+    bool allowMultipleVotes = false,
+    List<String> initialOptions = const [],
+  }) async => const Success('mock-new-poll-id');
+
+  @override
+  Future<Result<void, Exception>> vote({
+    required String pollId,
+    required List<String> optionIds,
+    required String userId,
+    String userName = 'Anonymous',
+  }) async => const Success(null);
+
+  @override
+  Future<Result<void, Exception>> addOption({
+    required String pollId,
+    required String text,
+    required String creatorId,
+  }) async => const Success(null);
+
+  @override
+  Future<Result<void, Exception>> close({required String pollId, required String userId}) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void, Exception>> remove({required String pollId, required String userId}) async =>
+      const Success(null);
+
+  @override
+  Future<Result<void, Exception>> removeOption({required String optionId, required String userId}) async =>
+      const Success(null);
 }

@@ -456,9 +456,131 @@ _無_
 
 ---
 
-## 8. 會員模組 (Auth)
+## 8. 揪團模組 (Group Events)
 
-### 8.1 註冊 (auth_register)
+> [!NOTE]
+> 僅限線上模式使用。訪客僅能查看列表，需登入才能操作。
+
+### 8.1 取得揪團列表 (group_event_list)
+
+**Request (`data`):**
+
+| Field  | Type   | Required | Description                   |
+| :----- | :----- | :------- | :---------------------------- |
+| filter | String | No       | `all`, `popular`, `upcoming`  |
+| status | String | No       | `open`, `closed` (預設: open) |
+
+**Response (`data`):**
+
+| Field  | Type              | Description |
+| :----- | :---------------- | :---------- |
+| events | Array[GroupEvent] | 揪團列表    |
+
+### 8.2 取得揪團詳情 (group_event_get)
+
+**Request (`data`):**
+
+| Field    | Type   | Required | Description |
+| :------- | :----- | :------- | :---------- |
+| event_id | String | Yes      |             |
+
+**Response (`data`):**
+
+| Field | Type       | Description |
+| :---- | :--------- | :---------- |
+| event | GroupEvent | 揪團詳情    |
+
+### 8.3 建立揪團 (group_event_create)
+
+**Request (`data`):**
+
+| Field             | Type    | Required | Description                   |
+| :---------------- | :------ | :------- | :---------------------------- |
+| title             | String  | Yes      |                               |
+| description       | String  | No       |                               |
+| location          | String  | No       |                               |
+| start_date        | String  | Yes      | ISO8601                       |
+| end_date          | String  | No       | ISO8601                       |
+| max_members       | Number  | Yes      |                               |
+| approval_required | Boolean | No       | Default: false                |
+| private_message   | String  | No       | 報名成功訊息 (審核通過後顯示) |
+
+**Response (`data`):**
+
+| Field | Type   | Description |
+| :---- | :----- | :---------- |
+| id    | String | Event ID    |
+
+### 8.4 更新揪團 (group_event_update)
+
+**Request (`data`):**
+
+| Field    | Type   | Required | Description |
+| :------- | :----- | :------- | :---------- |
+| event_id | String | Yes      |             |
+| ...      | ...    | No       | 同 create   |
+
+**Response (`data`):** `null`
+
+### 8.5 刪除/關閉揪團 (group_event_close / group_event_delete)
+
+**Request (`data`):**
+
+| Field    | Type   | Required | Description |
+| :------- | :----- | :------- | :---------- |
+| event_id | String | Yes      |             |
+
+**Response (`data`):** `null`
+
+### 8.6 報名揪團 (group_event_apply)
+
+**Request (`data`):**
+
+| Field    | Type   | Required | Description |
+| :------- | :----- | :------- | :---------- |
+| event_id | String | Yes      |             |
+| message  | String | No       | 報名留言    |
+
+**Response (`data`):**
+
+| Field | Type   | Description    |
+| :---- | :----- | :------------- |
+| id    | String | Application ID |
+
+### 8.7 審核報名 (group_event_review_application)
+
+**Request (`data`):**
+
+| Field          | Type   | Required | Description         |
+| :------------- | :----- | :------- | :------------------ |
+| application_id | String | Yes      |                     |
+| action         | String | Yes      | `approve`, `reject` |
+
+**Response (`data`):** `null`
+
+### 8.8 我的揪團 (group_event_my)
+
+**Request (`data`):**
+
+| Field | Type   | Required | Description                   |
+| :---- | :----- | :------- | :---------------------------- |
+| type  | String | Yes      | `created`, `applied`, `liked` |
+
+**Response (`data`):**
+
+| Field  | Type              | Description |
+| :----- | :---------------- | :---------- |
+| events | Array[GroupEvent] |             |
+
+### 8.9 喜歡揪團 (group_event_like) - TODO
+
+### 8.10 留言 (group_event_comment) - TODO
+
+---
+
+## 9. 會員模組 (Auth)
+
+### 9.1 註冊 (auth_register)
 
 **Request (`data`):**
 
@@ -474,7 +596,7 @@ _無_
 | :---- | :----- | :---------- |
 | id    | String | User ID     |
 
-### 8.2 登入 (auth_login)
+### 9.2 登入 (auth_login)
 
 **Request (`data`):**
 
@@ -490,7 +612,7 @@ _無_
 | token | String      | Session Token |
 | user  | UserProfile | 使用者資料    |
 
-### 8.3 驗證 Token (auth_validate / auth_refresh_token)
+### 9.3 驗證 Token (auth_validate / auth_refresh_token)
 
 **Request (`data`):**
 
@@ -500,7 +622,7 @@ _無_
 
 **Response (`data`):** `User` or `New Token`
 
-### 8.4 更新個人資料 (auth_update_profile)
+### 9.4 更新個人資料 (auth_update_profile)
 
 **Request (`data`):**
 
@@ -510,7 +632,7 @@ _無_
 
 **Response (`data`):** `null`
 
-### 8.5 角色管理 (auth_get_roles / auth_assign_role)
+### 9.5 角色管理 (auth_get_roles / auth_assign_role)
 
 **Request (`data`):**
 
@@ -521,9 +643,9 @@ _無_
 
 ---
 
-## 9. 系統模組 (System)
+## 10. 系統模組 (System)
 
-### 9.1 上傳日誌 (log_upload)
+### 10.1 上傳日誌 (log_upload)
 
 **Request (`data`):**
 
@@ -531,7 +653,7 @@ _無_
 | :---- | :--------- | :------- | :---------- |
 | logs  | Array[Log] | Yes      |             |
 
-### 9.2 心跳檢測 (system_heartbeat)
+### 10.2 心跳檢測 (system_heartbeat)
 
 **Request (`data`):**
 
@@ -541,7 +663,7 @@ _無_
 | view      | String | No       |             |
 | timestamp | String | Yes      |             |
 
-### 9.3 氣象資訊 (weather_get)
+### 10.3 氣象資訊 (weather_get)
 
 **Request (`data`):**
 _無參數_ (GET 請求)

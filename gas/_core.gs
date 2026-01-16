@@ -158,6 +158,28 @@ function doPost(e) {
       case API_ACTIONS.POLL_DELETE:
         return _createJsonResponse(deletePoll(data));
 
+      // === 揪團 (Group Events) ===
+      case API_ACTIONS.GROUP_EVENT_LIST:
+        return _createJsonResponse(getGroupEvents(data));
+      case API_ACTIONS.GROUP_EVENT_GET:
+        return _createJsonResponse(getGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_CREATE:
+        return _createJsonResponse(createGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_UPDATE:
+        return _createJsonResponse(updateGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_CLOSE:
+        return _createJsonResponse(closeGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_DELETE:
+        return _createJsonResponse(deleteGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_APPLY:
+        return _createJsonResponse(applyGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_CANCEL_APPLICATION:
+        return _createJsonResponse(cancelGroupEventApplication(data));
+      case API_ACTIONS.GROUP_EVENT_REVIEW_APPLICATION:
+        return _createJsonResponse(reviewGroupEventApplication(data));
+      case API_ACTIONS.GROUP_EVENT_MY:
+        return _createJsonResponse(getMyGroupEvents(data));
+
       // === 監控 (Logs/Heartbeat) ===
       case API_ACTIONS.LOG_UPLOAD:
         return _createJsonResponse(uploadLogs(data.logs, data.device_info));

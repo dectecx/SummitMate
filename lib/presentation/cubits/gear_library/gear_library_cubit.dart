@@ -40,7 +40,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     emit(const GearLibraryLoading());
     try {
       final userId = _authService.currentUserId ?? 'guest';
-      final items = _repository.getAllItems(userId);
+      final items = _repository.getAll(userId);
       emit(GearLibraryLoaded(items: items));
     } catch (e) {
       LogService.error('Failed to load gear library: $e', source: 'GearLibraryCubit');
@@ -51,7 +51,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   void reload() {
     try {
       final userId = _authService.currentUserId ?? 'guest';
-      final items = _repository.getAllItems(userId);
+      final items = _repository.getAll(userId);
       if (state is GearLibraryLoaded) {
         emit((state as GearLibraryLoaded).copyWith(items: items));
       } else {
@@ -105,7 +105,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
         updatedBy: userId,
         syncStatus: SyncStatus.pendingCreate,
       );
-      await _repository.addItem(item);
+      await _repository.add(item);
       reload();
     } catch (e) {
       LogService.error('Failed to add library item: $e', source: 'GearLibraryCubit');
@@ -121,7 +121,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final userId = _authService.currentUserId ?? 'guest';
       item.updatedBy = userId;
 
-      await _repository.updateItem(item);
+      await _repository.update(item);
       // 同步更新已連結的裝備項目 (邏輯遷移自 Provider)
       await _syncLinkedGear(item);
       reload();
@@ -145,7 +145,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
         await _gearRepository.updateItem(gear); // 假設 updateItem 會處理 save
       }
 
-      await _repository.deleteItem(id);
+      await _repository.delete(id);
       reload();
     } catch (e) {
       LogService.error('Failed to delete library item: $e', source: 'GearLibraryCubit');
@@ -161,7 +161,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final item = _repository.getById(id);
       if (item != null) {
         item.isArchived = !item.isArchived;
-        await _repository.updateItem(item);
+        await _repository.update(item);
         reload();
       }
     } catch (e) {
@@ -179,7 +179,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   /// [items] 欲匯入的項目清單
   Future<void> importItems(List<GearLibraryItem> items) async {
     try {
-      await _repository.importItems(items);
+      await _repository.importAll(items);
       reload();
     } catch (e) {
       LogService.error('Failed to import items: $e', source: 'GearLibraryCubit');

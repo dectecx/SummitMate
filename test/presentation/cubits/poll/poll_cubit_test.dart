@@ -53,7 +53,7 @@ void main() {
     when(() => mockAuthService.currentUserId).thenReturn('u1');
     when(() => mockPrefs.getString(PrefKeys.username)).thenReturn('u1');
     when(() => mockConnectivity.isOffline).thenReturn(false);
-    when(() => mockRepo.getAllPolls()).thenReturn([]);
+    when(() => mockRepo.getAll()).thenReturn([]);
     when(() => mockRepo.getLastSyncTime()).thenReturn(null);
 
     cubit = PollCubit(
@@ -77,7 +77,7 @@ void main() {
     blocTest<PollCubit, PollState>(
       'loads polls from repository',
       setUp: () {
-        when(() => mockRepo.getAllPolls()).thenReturn([testPoll]);
+        when(() => mockRepo.getAll()).thenReturn([testPoll]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadPolls(),
@@ -92,16 +92,16 @@ void main() {
     blocTest<PollCubit, PollState>(
       'fetches polls from service and saves to repo',
       setUp: () {
-        when(() => mockRepo.getAllPolls()).thenReturn([]);
+        when(() => mockRepo.getAll()).thenReturn([testPoll]);
         when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
-        when(() => mockRepo.savePolls([testPoll])).thenAnswer((_) async {});
-        when(() => mockRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
+        when(() => mockRepo.saveAll([testPoll])).thenAnswer((_) async {});
+
       },
       build: () => cubit,
       act: (cubit) => cubit.fetchPolls(),
       verify: (_) {
         verify(() => mockPollService.getPolls(userId: 'u1')).called(1);
-        verify(() => mockRepo.savePolls([testPoll])).called(1);
+        verify(() => mockRepo.saveAll([testPoll])).called(1);
       },
       expect: () => [
         const PollLoading(),
@@ -140,8 +140,8 @@ void main() {
 
         // Mock fetchPolls called internally
         when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
-        when(() => mockRepo.savePolls(any())).thenAnswer((_) async {});
-        when(() => mockRepo.saveLastSyncTime(any())).thenAnswer((_) async {});
+        when(() => mockRepo.saveAll(any())).thenAnswer((_) async {});
+
       },
       build: () => cubit,
       seed: () => const PollLoaded(polls: [], currentUserId: 'u1'),

@@ -12,6 +12,7 @@ import '../infrastructure/services/sync_service.dart';
 import '../infrastructure/services/connectivity_service.dart';
 import '../infrastructure/services/weather_service.dart';
 import '../infrastructure/services/poll_service.dart';
+import '../infrastructure/services/group_event_service.dart';
 import '../infrastructure/services/geolocator_service.dart';
 import '../infrastructure/services/gear_cloud_service.dart';
 import '../infrastructure/services/gas_auth_service.dart';
@@ -31,6 +32,7 @@ import '../infrastructure/interceptors/auth_interceptor.dart';
 import '../domain/interfaces/i_connectivity_service.dart';
 import '../domain/interfaces/i_weather_service.dart';
 import '../domain/interfaces/i_poll_service.dart';
+import '../domain/interfaces/i_group_event_service.dart';
 import '../domain/interfaces/i_geolocator_service.dart';
 import '../domain/interfaces/i_gear_cloud_service.dart';
 import '../domain/interfaces/i_auth_service.dart';
@@ -46,6 +48,7 @@ import '../data/repositories/message_repository.dart';
 import '../data/repositories/gear_repository.dart';
 import '../data/repositories/gear_library_repository.dart';
 import '../data/repositories/poll_repository.dart';
+import '../data/repositories/group_event_repository.dart';
 import '../data/repositories/trip_repository.dart';
 import '../data/repositories/gear_set_repository.dart';
 import '../data/repositories/auth_session_repository.dart';
@@ -58,6 +61,15 @@ import '../data/repositories/interfaces/i_settings_repository.dart';
 import '../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../data/repositories/interfaces/i_message_repository.dart';
 import '../data/repositories/interfaces/i_poll_repository.dart';
+import '../data/repositories/interfaces/i_group_event_repository.dart';
+import '../data/datasources/interfaces/i_group_event_local_data_source.dart';
+import '../data/datasources/interfaces/i_group_event_remote_data_source.dart';
+import '../data/datasources/local/group_event_local_data_source.dart';
+import '../data/datasources/remote/group_event_remote_data_source.dart';
+import '../data/datasources/interfaces/i_poll_local_data_source.dart';
+import '../data/datasources/interfaces/i_poll_remote_data_source.dart';
+import '../data/datasources/local/poll_local_data_source.dart';
+import '../data/datasources/remote/poll_remote_data_source.dart';
 import '../data/repositories/interfaces/i_trip_repository.dart';
 import '../data/repositories/interfaces/i_gear_set_repository.dart';
 
@@ -78,6 +90,12 @@ import '../data/datasources/remote/itinerary_remote_data_source.dart';
 import '../data/datasources/interfaces/i_itinerary_remote_data_source.dart';
 import '../data/datasources/local/gear_key_local_data_source.dart';
 import '../data/datasources/interfaces/i_gear_key_local_data_source.dart';
+import '../data/datasources/interfaces/i_gear_library_local_data_source.dart';
+import '../data/datasources/local/gear_library_local_data_source.dart';
+import '../data/datasources/interfaces/i_settings_local_data_source.dart';
+import '../data/datasources/local/settings_local_data_source.dart';
+import '../data/datasources/interfaces/i_auth_session_local_data_source.dart';
+import '../data/datasources/local/auth_session_local_data_source.dart';
 
 // Presentation
 
@@ -108,8 +126,12 @@ Future<void> setupDependencies() async {
   LogService.info('App 啟動', source: 'DI');
 
   // 2. 設定與身份驗證基礎 (Settings, Auth Core, Network Core)
-  // Settings Repository (Early initialization needed for Connectivity and Sync)
-  final settingsRepo = SettingsRepository(hiveService: hiveService);
+  // Settings Repository
+  final settingsLocalDS = SettingsLocalDataSource(hiveService: hiveService);
+  await settingsLocalDS.init();
+  getIt.registerSingleton<ISettingsLocalDataSource>(settingsLocalDS);
+
+  final settingsRepo = SettingsRepository(localDataSource: getIt<ISettingsLocalDataSource>());
   await settingsRepo.init();
   getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
@@ -117,7 +139,10 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
 
   // Auth Core
-  final authSessionRepo = AuthSessionRepository();
+  final authSessionLocalDS = AuthSessionLocalDataSource();
+  getIt.registerSingleton<IAuthSessionLocalDataSource>(authSessionLocalDS);
+
+  final authSessionRepo = AuthSessionRepository(localDataSource: getIt<IAuthSessionLocalDataSource>());
   getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
   getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
   getIt.registerLazySingleton<IAuthService>(
@@ -187,16 +212,38 @@ Future<void> setupDependencies() async {
   await gearRepo.init();
   getIt.registerSingleton<IGearRepository>(gearRepo);
 
-  final gearLibraryRepo = GearLibraryRepository(hiveService: hiveService);
-  await gearLibraryRepo.init();
+  final gearLibraryLocalDS = GearLibraryLocalDataSource(hiveService: hiveService);
+  await gearLibraryLocalDS.init();
+  getIt.registerSingleton<IGearLibraryLocalDataSource>(gearLibraryLocalDS);
+
+  final gearLibraryRepo = GearLibraryRepository(localDataSource: getIt<IGearLibraryLocalDataSource>());
   getIt.registerSingleton<IGearLibraryRepository>(gearLibraryRepo);
 
-  final pollRepo = PollRepository(hiveService: hiveService);
-  await pollRepo.init();
+  final pollLocalDS = PollLocalDataSource(hiveService: hiveService);
+  await pollLocalDS.init();
+  getIt.registerSingleton<IPollLocalDataSource>(pollLocalDS);
+  getIt.registerLazySingleton<IPollRemoteDataSource>(() => PollRemoteDataSource());
+
+  final pollRepo = PollRepository(
+    localDataSource: getIt<IPollLocalDataSource>(),
+    remoteDataSource: getIt<IPollRemoteDataSource>(),
+  );
   getIt.registerSingleton<IPollRepository>(pollRepo);
 
   final gearSetRepo = GearSetRepository();
   getIt.registerSingleton<IGearSetRepository>(gearSetRepo);
+
+  final groupEventLocalDS = GroupEventLocalDataSource(hiveService: hiveService);
+  await groupEventLocalDS.init();
+  getIt.registerSingleton<IGroupEventLocalDataSource>(groupEventLocalDS);
+  getIt.registerLazySingleton<IGroupEventRemoteDataSource>(() => GroupEventRemoteDataSource());
+
+  final groupEventRepo = GroupEventRepository(
+    localDataSource: getIt<IGroupEventLocalDataSource>(),
+    remoteDataSource: getIt<IGroupEventRemoteDataSource>(),
+  );
+  getIt.registerSingleton<IGroupEventRepository>(groupEventRepo);
+  getIt.registerSingleton<IGroupEventService>(GroupEventService());
 
   // 5. Additional Services & Utils
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
@@ -207,6 +254,7 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<IWeatherService>(weatherService);
 
   getIt.registerSingleton<IPollService>(PollService());
+
   getIt.registerLazySingleton<IDataService>(() => GoogleSheetsService());
 
   getIt.registerLazySingleton<ISyncService>(

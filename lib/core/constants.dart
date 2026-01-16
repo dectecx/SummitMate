@@ -125,6 +125,18 @@ class ApiConfig {
   static const String actionAuthDeleteUser = 'auth_delete_user';
   static const String actionAuthRefreshToken = 'auth_refresh_token';
   static const String actionAuthUpdateProfile = 'auth_update_profile';
+
+  // GroupEvent API Actions (揪團)
+  static const String actionGroupEventList = 'group_event_list';
+  static const String actionGroupEventGet = 'group_event_get';
+  static const String actionGroupEventCreate = 'group_event_create';
+  static const String actionGroupEventUpdate = 'group_event_update';
+  static const String actionGroupEventClose = 'group_event_close';
+  static const String actionGroupEventDelete = 'group_event_delete';
+  static const String actionGroupEventApply = 'group_event_apply';
+  static const String actionGroupEventCancelApplication = 'group_event_cancel_application';
+  static const String actionGroupEventReviewApplication = 'group_event_review_application';
+  static const String actionGroupEventMy = 'group_event_my';
 }
 
 /// Hive Box 名稱
@@ -138,6 +150,8 @@ class HiveBoxNames {
   static const String gear = 'gear';
   static const String gearLibrary = 'gear_library';
   static const String polls = 'polls';
+  static const String groupEvents = 'group_events';
+  static const String groupEventApplications = 'group_event_applications';
   static const String weather = 'weather_cache';
 
   // 監控與設定

@@ -13,9 +13,9 @@ import '../cubits/settings/settings_state.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
-// import '../providers/meal_provider.dart'; // Removed
 import '../cubits/meal/meal_cubit.dart';
 import '../screens/trip_list_screen.dart';
+import '../screens/group_events_list_screen.dart';
 import '../../data/models/trip.dart';
 
 /// 應用程式側邊欄 (Drawer)
@@ -83,6 +83,16 @@ class AppDrawer extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context); // 關閉抽屜
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const TripListScreen()));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.hiking),
+                title: const Text('揪團活動'),
+                subtitle: const Text('找隊友 / 建立揪團'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context); // 關閉抽屜
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupEventsListScreen()));
                 },
               ),
               const Divider(),
