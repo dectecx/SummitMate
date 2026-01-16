@@ -17,7 +17,8 @@
 function recordHeartbeat(data) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(SHEET_HEARTBEAT);
-  if (!sheet) return _error(API_CODES.SYSTEM_ERROR, "Heartbeat sheet not found");
+  if (!sheet)
+    return _error(API_CODES.SYSTEM_ERROR, "Heartbeat sheet not found");
 
   // 判斷使用者類型與處理邏輯
   const isMember = !!data.user_id;
