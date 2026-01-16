@@ -110,12 +110,10 @@ class MockPollRepository implements IPollRepository {
   }) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> close({required String pollId, required String userId}) async =>
-      const Success(null);
+  Future<Result<void, Exception>> close({required String pollId, required String userId}) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> remove({required String pollId, required String userId}) async =>
-      const Success(null);
+  Future<Result<void, Exception>> remove({required String pollId, required String userId}) async => const Success(null);
 
   @override
   Future<Result<void, Exception>> removeOption({required String optionId, required String userId}) async =>

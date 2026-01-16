@@ -97,11 +97,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
           TextButton(
             onPressed: _isSubmitting ? null : _submit,
             child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Text('發布'),
           ),
         ],
@@ -135,10 +131,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                   child: InkWell(
                     onTap: () => _selectDate(context, true),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: '開始日期 *',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: const InputDecoration(labelText: '開始日期 *', border: OutlineInputBorder()),
                       child: Text(DateFormat('yyyy/MM/dd').format(_startDate)),
                     ),
                   ),
@@ -150,15 +143,8 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                   child: InkWell(
                     onTap: () => _selectDate(context, false),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: '結束日期',
-                        border: OutlineInputBorder(),
-                      ),
-                      child: Text(
-                        _endDate != null
-                            ? DateFormat('yyyy/MM/dd').format(_endDate!)
-                            : '同日',
-                      ),
+                      decoration: const InputDecoration(labelText: '結束日期', border: OutlineInputBorder()),
+                      child: Text(_endDate != null ? DateFormat('yyyy/MM/dd').format(_endDate!) : '同日'),
                     ),
                   ),
                 ),
@@ -169,21 +155,14 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
             // 地點
             TextFormField(
               controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: '地點',
-                hintText: '例如：向陽登山口',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '地點', hintText: '例如：向陽登山口', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 16),
 
             // 招募人數
             TextFormField(
               controller: _maxMembersController,
-              decoration: const InputDecoration(
-                labelText: '招募人數 *',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '招募人數 *', border: OutlineInputBorder()),
               keyboardType: TextInputType.number,
               validator: (value) {
                 final num = int.tryParse(value ?? '');

@@ -72,17 +72,10 @@ abstract interface class IGroupEventRepository {
   Future<Result<void, Exception>> remove({required String eventId, required String userId});
 
   /// 報名揪團 (雲端)
-  Future<Result<void, Exception>> apply({
-    required String eventId,
-    required String userId,
-    String? note,
-  });
+  Future<Result<void, Exception>> apply({required String eventId, required String userId, String? note});
 
   /// 取消報名 (雲端)
-  Future<Result<void, Exception>> cancelApplication({
-    required String eventId,
-    required String userId,
-  });
+  Future<Result<void, Exception>> cancelApplication({required String eventId, required String userId});
 
   /// 審核報名 (雲端)
   Future<Result<void, Exception>> reviewApplication({

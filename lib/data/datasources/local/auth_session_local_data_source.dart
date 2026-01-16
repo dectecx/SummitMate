@@ -12,7 +12,7 @@ class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   final FlutterSecureStorage _secureStorage;
 
   AuthSessionLocalDataSource({FlutterSecureStorage? secureStorage})
-      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+    : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   @override
   Future<void> saveToken(String token) async {

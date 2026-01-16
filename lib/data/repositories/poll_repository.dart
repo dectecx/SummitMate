@@ -17,11 +17,9 @@ class PollRepository implements IPollRepository {
   final IPollLocalDataSource _localDataSource;
   final IPollRemoteDataSource _remoteDataSource;
 
-  PollRepository({
-    required IPollLocalDataSource localDataSource,
-    required IPollRemoteDataSource remoteDataSource,
-  })  : _localDataSource = localDataSource,
-        _remoteDataSource = remoteDataSource;
+  PollRepository({required IPollLocalDataSource localDataSource, required IPollRemoteDataSource remoteDataSource})
+    : _localDataSource = localDataSource,
+      _remoteDataSource = remoteDataSource;
 
   // ========== Init ==========
 
@@ -134,12 +132,7 @@ class PollRepository implements IPollRepository {
     String userName = 'Anonymous',
   }) async {
     try {
-      await _remoteDataSource.votePoll(
-        pollId: pollId,
-        optionIds: optionIds,
-        userId: userId,
-        userName: userName,
-      );
+      await _remoteDataSource.votePoll(pollId: pollId, optionIds: optionIds, userId: userId, userName: userName);
       return const Success(null);
     } catch (e) {
       LogService.error('Vote failed: $e', source: _source);

@@ -24,11 +24,11 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     IGroupEventRepository? groupEventRepository,
     IConnectivityService? connectivity,
     IAuthService? authService,
-  })  : _groupEventService = groupEventService ?? getIt<IGroupEventService>(),
-        _groupEventRepository = groupEventRepository ?? getIt<IGroupEventRepository>(),
-        _connectivity = connectivity ?? getIt<IConnectivityService>(),
-        _authService = authService ?? getIt<IAuthService>(),
-        super(const GroupEventInitial());
+  }) : _groupEventService = groupEventService ?? getIt<IGroupEventService>(),
+       _groupEventRepository = groupEventRepository ?? getIt<IGroupEventRepository>(),
+       _connectivity = connectivity ?? getIt<IConnectivityService>(),
+       _authService = authService ?? getIt<IAuthService>(),
+       super(const GroupEventInitial());
 
   String get _currentUserId => _authService.currentUserId ?? _guestUserId;
   bool get _isGuest => _currentUserId == _guestUserId || _currentUserId.isEmpty;
@@ -41,12 +41,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     final events = _groupEventRepository.getAll();
     final lastSync = _groupEventRepository.getLastSyncTime();
 
-    emit(GroupEventLoaded(
-      events: events,
-      currentUserId: _currentUserId,
-      lastSyncTime: lastSync,
-      isGuest: _isGuest,
-    ));
+    emit(GroupEventLoaded(events: events, currentUserId: _currentUserId, lastSyncTime: lastSync, isGuest: _isGuest));
   }
 
   /// Fetch events from API
@@ -82,13 +77,15 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       await _groupEventRepository.saveAll(fetchedEvents);
       final now = DateTime.now();
 
-      emit(GroupEventLoaded(
-        events: fetchedEvents,
-        currentUserId: _currentUserId,
-        lastSyncTime: now,
-        isSyncing: false,
-        isGuest: _isGuest,
-      ));
+      emit(
+        GroupEventLoaded(
+          events: fetchedEvents,
+          currentUserId: _currentUserId,
+          lastSyncTime: now,
+          isSyncing: false,
+          isGuest: _isGuest,
+        ),
+      );
 
       if (!isAuto) ToastService.success('揪團同步成功');
     } catch (e) {
@@ -96,13 +93,15 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       if (!isAuto) {
         final events = _groupEventRepository.getAll();
         final lastSync = DateTime.now();
-        emit(GroupEventLoaded(
-          events: events,
-          currentUserId: _currentUserId,
-          lastSyncTime: lastSync,
-          isSyncing: false,
-          isGuest: _isGuest,
-        ));
+        emit(
+          GroupEventLoaded(
+            events: events,
+            currentUserId: _currentUserId,
+            lastSyncTime: lastSync,
+            isSyncing: false,
+            isGuest: _isGuest,
+          ),
+        );
         ToastService.error('同步失敗: $e');
       } else {
         if (state is GroupEventLoaded) {
@@ -177,11 +176,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   /// Apply to an event
   Future<bool> applyEvent({required String eventId, String message = ''}) async {
     return await _performAction(
-      () => _groupEventService.applyEvent(
-        eventId: eventId,
-        userId: _currentUserId,
-        message: message,
-      ),
+      () => _groupEventService.applyEvent(eventId: eventId, userId: _currentUserId, message: message),
       '離線模式無法報名',
       '請登入以報名揪團',
     );
@@ -199,11 +194,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   /// Review application (approve/reject)
   Future<bool> reviewApplication({required String applicationId, required String action}) async {
     return await _performAction(
-      () => _groupEventService.reviewApplication(
-        applicationId: applicationId,
-        action: action,
-        userId: _currentUserId,
-      ),
+      () => _groupEventService.reviewApplication(applicationId: applicationId, action: action, userId: _currentUserId),
       '離線模式無法審核報名',
       '請登入以審核報名',
     );

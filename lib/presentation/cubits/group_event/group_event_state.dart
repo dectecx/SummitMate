@@ -32,20 +32,20 @@ class GroupEventLoaded extends GroupEventState {
   });
 
   /// Open events (recruiting)
-  List<GroupEvent> get openEvents => events.where((e) => e.status == 'open').toList()
-    ..sort((a, b) => a.startDate.compareTo(b.startDate));
+  List<GroupEvent> get openEvents =>
+      events.where((e) => e.status == 'open').toList()..sort((a, b) => a.startDate.compareTo(b.startDate));
 
   /// My created events
-  List<GroupEvent> get myCreatedEvents => events.where((e) => e.creatorId == currentUserId).toList()
-    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  List<GroupEvent> get myCreatedEvents =>
+      events.where((e) => e.creatorId == currentUserId).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// My applied events
-  List<GroupEvent> get myAppliedEvents => events.where((e) => e.myApplicationStatus != null).toList()
-    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  List<GroupEvent> get myAppliedEvents =>
+      events.where((e) => e.myApplicationStatus != null).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// My liked events
-  List<GroupEvent> get myLikedEvents => events.where((e) => e.isLiked).toList()
-    ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  List<GroupEvent> get myLikedEvents =>
+      events.where((e) => e.isLiked).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   GroupEventLoaded copyWith({
     List<GroupEvent>? events,

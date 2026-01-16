@@ -12,15 +12,12 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
 
   final NetworkAwareClient _apiClient;
 
-  PollRemoteDataSource({NetworkAwareClient? apiClient})
-      : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
+  PollRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
 
   @override
   Future<List<Poll>> getPolls({required String userId}) async {
     LogService.info('Fetching polls for user: $userId', source: _source);
-    final response = await _apiClient.get(
-      queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId},
-    );
+    final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId});
 
     final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
     if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
@@ -87,18 +84,9 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   }
 
   @override
-  Future<void> addOption({
-    required String pollId,
-    required String text,
-    required String creatorId,
-  }) async {
+  Future<void> addOption({required String pollId, required String text, required String creatorId}) async {
     LogService.info('Adding option "$text" to poll $pollId', source: _source);
-    final payload = {
-      'action': ApiConfig.actionPollAddOption,
-      'poll_id': pollId,
-      'text': text,
-      'creator_id': creatorId,
-    };
+    final payload = {'action': ApiConfig.actionPollAddOption, 'poll_id': pollId, 'text': text, 'creator_id': creatorId};
 
     final response = await _apiClient.post(payload);
     final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -108,11 +96,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   @override
   Future<void> closePoll({required String pollId, required String userId}) async {
     LogService.info('Closing poll: $pollId', source: _source);
-    final payload = {
-      'action': ApiConfig.actionPollClose,
-      'poll_id': pollId,
-      'user_id': userId,
-    };
+    final payload = {'action': ApiConfig.actionPollClose, 'poll_id': pollId, 'user_id': userId};
 
     final response = await _apiClient.post(payload);
     final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -122,11 +106,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   @override
   Future<void> deletePoll({required String pollId, required String userId}) async {
     LogService.info('Deleting poll: $pollId', source: _source);
-    final payload = {
-      'action': ApiConfig.actionPollDelete,
-      'poll_id': pollId,
-      'user_id': userId,
-    };
+    final payload = {'action': ApiConfig.actionPollDelete, 'poll_id': pollId, 'user_id': userId};
 
     final response = await _apiClient.post(payload);
     final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -136,11 +116,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   @override
   Future<void> deleteOption({required String optionId, required String userId}) async {
     LogService.info('Deleting option: $optionId', source: _source);
-    final payload = {
-      'action': ApiConfig.actionPollDeleteOption,
-      'option_id': optionId,
-      'user_id': userId,
-    };
+    final payload = {'action': ApiConfig.actionPollDeleteOption, 'option_id': optionId, 'user_id': userId};
 
     final response = await _apiClient.post(payload);
     final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);

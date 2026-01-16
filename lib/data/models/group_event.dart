@@ -167,8 +167,7 @@ class GroupEvent {
     return 0;
   }
 
-  factory GroupEvent.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventFromJson(json);
+  factory GroupEvent.fromJson(Map<String, dynamic> json) => _$GroupEventFromJson(json);
   Map<String, dynamic> toJson() => _$GroupEventToJson(this);
 
   GroupEvent copyWith({
@@ -296,7 +295,6 @@ class GroupEventApplication {
   /// 是否已拒絕
   bool get isRejected => status == 'rejected';
 
-  factory GroupEventApplication.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventApplicationFromJson(json);
+  factory GroupEventApplication.fromJson(Map<String, dynamic> json) => _$GroupEventApplicationFromJson(json);
   Map<String, dynamic> toJson() => _$GroupEventApplicationToJson(this);
 }
