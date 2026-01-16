@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../infrastructure/tools/tutorial_service.dart';
 
 /// 導覽目標模型
 class TutorialTarget {
   final String identify;
+  final TutorialTopic topic;
   final GlobalKey? keyTarget; // Ensure this is nullable
   final String content;
   final ContentAlign align;
@@ -11,6 +13,7 @@ class TutorialTarget {
 
   TutorialTarget({
     required this.identify,
+    required this.topic,
     this.keyTarget,
     required this.content,
     this.align = ContentAlign.bottom,
@@ -26,8 +29,17 @@ class TutorialOverlay extends StatefulWidget {
   final List<TutorialTarget> targets;
   final VoidCallback onFinish;
   final VoidCallback onSkip;
+  final bool showSkipTopic;
+  final void Function(int nextIndex)? onSkipTopic;
 
-  const TutorialOverlay({super.key, required this.targets, required this.onFinish, required this.onSkip});
+  const TutorialOverlay({
+    super.key,
+    required this.targets,
+    required this.onFinish,
+    required this.onSkip,
+    this.showSkipTopic = false,
+    this.onSkipTopic,
+  });
 
   @override
   State<TutorialOverlay> createState() => _TutorialOverlayState();
@@ -238,17 +250,40 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
               ),
             ),
 
-          // 3. 跳過按鈕
+          // 3. 跳過按鈕區域
           Positioned(
             top: 40,
             right: 20,
             child: SafeArea(
-              child: TextButton(
-                onPressed: widget.onSkip,
-                child: const Text(
-                  "跳過教學",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 跳過此主題 (僅在完整教學模式顯示)
+                  if (widget.showSkipTopic)
+                    TextButton(
+                      onPressed: () {
+                        final nextIndex = TutorialService.getNextTopicIndex(widget.targets, _currentIndex);
+                        if (nextIndex != null && widget.onSkipTopic != null) {
+                          widget.onSkipTopic!(nextIndex);
+                        } else {
+                          // 無下一主題，等同完成
+                          widget.onFinish();
+                        }
+                      },
+                      child: const Text(
+                        "跳過此主題",
+                        style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  // 跳過教學
+                  TextButton(
+                    onPressed: widget.onSkip,
+                    child: const Text(
+                      "跳過教學",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/di.dart';
+import '../../infrastructure/tools/tutorial_service.dart';
 import '../../infrastructure/tools/toast_service.dart';
+import '../../core/di.dart';
 import '../cubits/message/message_cubit.dart';
 import '../cubits/message/message_state.dart';
 import '../cubits/poll/poll_cubit.dart';
@@ -120,7 +121,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _showSettingsDialog(BuildContext context) {
-    showDialog(context: context, builder: (context) => const SettingsDialog());
+    showDialog(
+      context: context,
+      builder: (dialogContext) => SettingsDialog(onRestartTutorial: (topic) => _showTutorial(context, topic)),
+    );
   }
 
   void _showWelcomeDialog(BuildContext context) {
@@ -671,5 +675,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
       );
     }
+  }
+
+  void _showTutorial(BuildContext context, TutorialTopic topic) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => TutorialScreen(topic: topic)));
   }
 }

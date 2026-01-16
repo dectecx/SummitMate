@@ -11,10 +11,12 @@ import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
 import 'package:summitmate/infrastructure/tools/toast_service.dart';
 import '../widgets/log_viewer_sheet.dart';
 import '../widgets/clear_data_dialog.dart';
+import '../widgets/tutorial_topic_selection_dialog.dart';
 import 'package:summitmate/infrastructure/tools/hive_service.dart';
+import '../../infrastructure/tools/tutorial_service.dart';
 
 class SettingsDialog extends StatefulWidget {
-  final VoidCallback? onRestartTutorial;
+  final void Function(TutorialTopic topic)? onRestartTutorial;
 
   const SettingsDialog({super.key, this.onRestartTutorial});
 
@@ -234,11 +236,17 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   ListTile(
                     leading: const Icon(Icons.help_outline),
                     title: const Text('重看教學引導'),
-                    onTap: () {
-                      Navigator.pop(context);
+                    onTap: () async {
                       if (widget.onRestartTutorial != null) {
-                        widget.onRestartTutorial!.call();
+                        // 先顯示主題選擇對話框 (context 尚有效)
+                        final topic = await showTutorialTopicSelectionDialog(context);
+                        if (topic != null && context.mounted) {
+                          // 關閉設定對話框後才啟動教學
+                          Navigator.pop(context);
+                          widget.onRestartTutorial!(topic);
+                        }
                       } else {
+                        Navigator.pop(context);
                         ToastService.info('請在首頁重新觸發教學');
                       }
                     },
