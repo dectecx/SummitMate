@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
 import '../../core/di.dart';
 import '../../infrastructure/mock/mock_connectivity_service.dart';
@@ -177,10 +178,9 @@ class _TutorialScreenState extends State<TutorialScreen> {
           keyExpandedTimeMap: _keyExpandedTimeMap,
           topic: topic,
           onSwitchToItinerary: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentTab = 0);
-            });
+            if (mounted) setState(() => _currentTab = 0);
             if (_isEditMode) setState(() => _isEditMode = false);
+            await _waitForUI();
           },
           onFocusUpload: () async {
             setState(() {
@@ -192,35 +192,38 @@ class _TutorialScreenState extends State<TutorialScreen> {
             if (_isEditMode) setState(() => _isEditMode = false);
           },
           onSwitchToGear: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentTab = 1);
-            });
+            if (mounted) setState(() => _currentTab = 1);
+            await _waitForUI();
           },
           onSwitchToMessage: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentTab = 2);
-            });
+            if (mounted) setState(() => _currentTab = 2);
+            await _waitForUI();
           },
           onSwitchToInfo: () async {
-            Future.delayed(const Duration(milliseconds: 400), () {
-              if (mounted) setState(() => _currentTab = 3);
-            });
+            if (mounted) setState(() => _currentTab = 3);
+            await _waitForUI();
           },
           onFocusElevation: () async {
-            await Future.delayed(const Duration(milliseconds: 300));
+            // 切換分頁並等待渲染
             if (mounted) setState(() => _currentTab = 3);
-            await Future.delayed(const Duration(milliseconds: 200));
+            await _waitForUI();
+            
+            // 展開高度圖
             _keyInfoTab.currentState?.expandElevation();
-            // 等待展開動畫完成
-            await Future.delayed(const Duration(milliseconds: 500));
+            
+            // 等待動畫 (AnimatedCrossFade duration is 300ms)
+            await Future.delayed(const Duration(milliseconds: 350));
           },
           onFocusTimeMap: () async {
-            await Future.delayed(const Duration(milliseconds: 300));
+            // 切換分頁並等待渲染
             if (mounted) setState(() => _currentTab = 3);
-            await Future.delayed(const Duration(milliseconds: 200));
+            await _waitForUI();
+
+            // 展開時間圖
             _keyInfoTab.currentState?.expandTimeMap();
-            // 等待展開動畫完成
-            await Future.delayed(const Duration(milliseconds: 500));
+            
+            // 等待動畫
+            await Future.delayed(const Duration(milliseconds: 350));
           },
         ),
         onFinish: _finishTutorial,
@@ -257,9 +260,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
       keyExpandedTimeMap: _keyExpandedTimeMap,
       topic: topic,
       onSwitchToItinerary: () async {
-        Future.delayed(const Duration(milliseconds: 400), () {
-          if (mounted) setState(() => _currentTab = 0);
-        });
+        if (mounted) setState(() => _currentTab = 0);
+        await _waitForUI();
         if (_isEditMode) setState(() => _isEditMode = false);
       },
       onFocusUpload: () async {
@@ -272,35 +274,38 @@ class _TutorialScreenState extends State<TutorialScreen> {
         if (_isEditMode) setState(() => _isEditMode = false);
       },
       onSwitchToGear: () async {
-        Future.delayed(const Duration(milliseconds: 400), () {
-          if (mounted) setState(() => _currentTab = 1);
-        });
+        if (mounted) setState(() => _currentTab = 1);
+        await _waitForUI();
       },
       onSwitchToMessage: () async {
-        Future.delayed(const Duration(milliseconds: 400), () {
-          if (mounted) setState(() => _currentTab = 2);
-        });
+        if (mounted) setState(() => _currentTab = 2);
+        await _waitForUI();
       },
       onSwitchToInfo: () async {
-        Future.delayed(const Duration(milliseconds: 400), () {
-          if (mounted) setState(() => _currentTab = 3);
-        });
+        if (mounted) setState(() => _currentTab = 3);
+        await _waitForUI();
       },
       onFocusElevation: () async {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted) setState(() => _currentTab = 3);
-        });
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _keyInfoTab.currentState?.expandElevation();
-        });
+        // 切換分頁並等待渲染
+        if (mounted) setState(() => _currentTab = 3);
+        await _waitForUI();
+        
+        // 展開高度圖
+        _keyInfoTab.currentState?.expandElevation();
+        
+        // 等待動畫
+        await Future.delayed(const Duration(milliseconds: 350));
       },
       onFocusTimeMap: () async {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted) setState(() => _currentTab = 3);
-        });
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _keyInfoTab.currentState?.expandTimeMap();
-        });
+        // 切換分頁並等待渲染
+        if (mounted) setState(() => _currentTab = 3);
+        await _waitForUI();
+
+        // 展開時間圖
+        _keyInfoTab.currentState?.expandTimeMap();
+        
+        // 等待動畫
+        await Future.delayed(const Duration(milliseconds: 350));
       },
     );
 
@@ -426,13 +431,16 @@ class _TutorialScreenState extends State<TutorialScreen> {
       case 2:
         return const CollaborationTab(key: ValueKey('tutorial_collab'));
       case 3:
-        return InfoTab(
-          key: _keyInfoTab,
-          expandedElevationKey: _keyExpandedElevation,
-          expandedTimeMapKey: _keyExpandedTimeMap,
-        );
+        return InfoTab(key: _keyInfoTab, expandedElevationKey: _keyExpandedElevation, expandedTimeMapKey: _keyExpandedTimeMap);
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  /// 等待 UI 渲染完成
+  Future<void> _waitForUI() {
+    final completer = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) => completer.complete());
+    return completer.future;
   }
 }
