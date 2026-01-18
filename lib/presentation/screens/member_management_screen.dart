@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di.dart';
-// import '../../core/services/permission_service.dart';
 import '../../core/error/result.dart';
 import '../../core/constants/role_constants.dart';
 import '../../data/models/trip.dart';
@@ -11,6 +10,7 @@ import '../../infrastructure/tools/log_service.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../../infrastructure/tools/toast_service.dart';
+import '../utils/tutorial_keys.dart';
 
 /// 成員管理畫面
 ///
@@ -329,6 +329,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                           errorText: errorMsg,
                           isDense: true,
                         ),
+                        key: TutorialKeys.memberSearchInput,
                         onSubmitted: (_) {
                           // Trigger search
                         },
@@ -510,6 +511,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                               }
                             }
                           },
+                    key: TutorialKeys.memberSearchBtn,
                     child: const Text('搜尋'),
                   ),
                 ] else ...[
@@ -564,6 +566,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                                 }
                               }
                             },
+                      key: TutorialKeys.memberConfirmBtn,
                       child: const Text('確認加入'),
                     ),
                 ],
@@ -617,6 +620,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               onPressed: _showSearchAddMemberDialog,
               icon: const Icon(Icons.person_add),
               label: const Text('新增成員'),
+              key: TutorialKeys.memberFab,
             )
           : null,
       body: _isLoading

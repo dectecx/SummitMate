@@ -37,9 +37,11 @@ import 'package:uuid/uuid.dart';
 import '../../data/models/itinerary_item.dart';
 
 import 'collaboration_tab.dart';
+import 'trip_list_screen.dart';
 import 'map/map_screen.dart';
-import 'tutorial_screen.dart';
+
 import '../widgets/ads/banner_ad_widget.dart';
+import '../utils/tutorial_keys.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -147,7 +149,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             onPressed: () async {
               Navigator.pop(dialogContext);
               // 進入教學 -> 結束後顯示匯入行程
-              await Navigator.push(context, MaterialPageRoute(builder: (_) => const TutorialScreen()));
+              await TutorialService.start(topic: TutorialTopic.all);
               if (context.mounted) {
                 // 教學結束後，自動跳出匯入選單
                 _showTripSelectionDialog(context);
@@ -274,6 +276,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                         appBar: AppBar(
                           leading: Builder(
                             builder: (context) => IconButton(
+                              key: TutorialKeys.mainDrawerMenu,
                               icon: const Icon(Icons.menu),
                               onPressed: () => Scaffold.of(context).openDrawer(),
                               tooltip: '選單',
@@ -368,6 +371,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             ],
                             // 設定按鈕
                             IconButton(
+                              key: TutorialKeys.mainSettings,
                               icon: const Icon(Icons.settings),
                               onPressed: () => _showSettingsDialog(context),
                               tooltip: '設定',
@@ -399,24 +403,28 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             }
                           },
                           destinations: [
-                            const NavigationDestination(
-                              icon: Icon(Icons.schedule),
-                              selectedIcon: Icon(Icons.schedule),
+                            NavigationDestination(
+                              key: TutorialKeys.tabItinerary,
+                              icon: const Icon(Icons.schedule),
+                              selectedIcon: const Icon(Icons.schedule),
                               label: '行程',
                             ),
-                            const NavigationDestination(
-                              icon: Icon(Icons.backpack_outlined),
-                              selectedIcon: Icon(Icons.backpack),
+                            NavigationDestination(
+                              key: TutorialKeys.tabGear,
+                              icon: const Icon(Icons.backpack_outlined),
+                              selectedIcon: const Icon(Icons.backpack),
                               label: '裝備',
                             ),
-                            const NavigationDestination(
-                              icon: Icon(Icons.forum_outlined),
-                              selectedIcon: Icon(Icons.forum),
+                            NavigationDestination(
+                              key: TutorialKeys.tabMessage,
+                              icon: const Icon(Icons.forum_outlined),
+                              selectedIcon: const Icon(Icons.forum),
                               label: '互動',
                             ),
-                            const NavigationDestination(
-                              icon: Icon(Icons.info_outline),
-                              selectedIcon: Icon(Icons.info),
+                            NavigationDestination(
+                              key: TutorialKeys.tabInfo,
+                              icon: const Icon(Icons.info_outline),
+                              selectedIcon: const Icon(Icons.info),
                               label: '資訊',
                             ),
                           ],
@@ -678,6 +686,71 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _showTutorial(BuildContext context, TutorialTopic topic) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => TutorialScreen(topic: topic)));
+    TutorialService.start(
+      topic: topic,
+      // 1. Navigation Tabs
+      onSwitchToItinerary: () async {
+        setState(() => _currentIndex = 0);
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onSwitchToGear: () async {
+        setState(() => _currentIndex = 1);
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onSwitchToMessage: () async {
+        setState(() => _currentIndex = 2);
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onSwitchToInfo: () async {
+        setState(() => _currentIndex = 3);
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      // 2. Drawer / Settings
+      onFocusDrawer: () async {
+        Scaffold.of(context).openDrawer();
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onFocusSettings: () async {
+        // Warning: App Bar actions are hard to trigger programmatically without key access or rebuilding?
+        // But the tutorial just points to them. The USER clicks them.
+        // Wait, onFocus is PREPARATION.
+        // If the drawer is needed, we open it.
+        // If settings is needed, we usually don't need to do anything if it's on AppBar.
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      // 3. Actions that might need context or state
+      onFocusUpload: () async {
+        // Ensure we are on Itinerary Tab
+        if (_currentIndex != 0) setState(() => _currentIndex = 0);
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onFocusSync: () async {
+         // Ensure on Message Tab? Or just wait.
+         if (_currentIndex != 2) setState(() => _currentIndex = 2); // Message Tab usually has Sync
+         await Future.delayed(const Duration(milliseconds: 300));
+      },
+      // 4. Member Management Flow (Complex)
+      onFocusManageTrips: () async {
+        // Open Drawer to show "Manage Trips" item
+        Scaffold.of(context).openDrawer();
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onFocusTripListMember: () async {
+        // This usually requires navigating to TripListScreen via Drawer Item click.
+        // We can simulate it?
+        Navigator.pop(context); // Close Drawer
+        await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TripListScreen()));
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      onFocusMemberFab: () async {
+         // Requires being on MemberManagementScreen.
+         // This is hard because TripListScreen -> MemberManagementScreen requires Trip ID.
+         // We might need to skip this automation or just point to it.
+         // PASS-THROUGH allows user to click.
+         // IMPORTANT: TutorialService uses onFocus to PREPARE.
+         // If we rely on User Action, we might not need to do anything here except wait.
+         await Future.delayed(const Duration(milliseconds: 300));
+      },
+    );
   }
 }

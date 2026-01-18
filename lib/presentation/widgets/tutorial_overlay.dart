@@ -215,12 +215,84 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
       duration: const Duration(milliseconds: 500),
       child: Stack(
         children: [
-          // 1. 繪製遮罩與開孔
-          GestureDetector(
-            onTap: _next, // 點擊任意處下一步 (可依需求改為只點擊目標或按鈕)
+          // 0. Background Tap Listener (Catch-all for blank space)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _next,
+              behavior: HitTestBehavior.translucent,
+              child: const SizedBox.expand(),
+            ),
+          ),
+
+          // 1. 繪製遮罩與開孔 (Blockers + Pass-Through Logic)
+          // Uses CustomPaint for visuals, but Blockers for input handling.
+
+          // Visual Layer (IgnorePointer ensures it doesn't mess with hits, we handle hits below)
+          IgnorePointer(
             child: CustomPaint(
               size: MediaQuery.of(context).size,
               painter: _HolePainter(hole: currentHole),
+            ),
+          ),
+
+          // Input Layer - Blockers
+          // Top
+          if (currentHole.top > 0)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: currentHole.top,
+              child: GestureDetector(
+                onTap: _next, // Block and Next
+                behavior: HitTestBehavior.opaque,
+              ),
+            ),
+          // Bottom
+          if (currentHole.bottom < MediaQuery.of(context).size.height)
+            Positioned(
+              top: currentHole.bottom,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: _next, // Block and Next
+                behavior: HitTestBehavior.opaque,
+              ),
+            ),
+          // Left (between top/bottom)
+          if (currentHole.left > 0)
+            Positioned(
+              top: currentHole.top,
+              bottom: MediaQuery.of(context).size.height - currentHole.bottom,
+              left: 0,
+              width: currentHole.left,
+              child: GestureDetector(
+                onTap: _next, // Block and Next
+                behavior: HitTestBehavior.opaque,
+              ),
+            ),
+          // Right (between top/bottom)
+          if (currentHole.right < MediaQuery.of(context).size.width)
+            Positioned(
+              top: currentHole.top,
+              bottom: MediaQuery.of(context).size.height - currentHole.bottom,
+              left: currentHole.right,
+              right: 0,
+              child: GestureDetector(
+                onTap: _next, // Block and Next
+                behavior: HitTestBehavior.opaque,
+              ),
+            ),
+
+          // Hole Pass-Through Listener
+          // Detects tap in the hole, triggers _next, but lets it pass through to app
+          Positioned.fromRect(
+            rect: currentHole,
+            child: Listener(
+              onPointerDown: (_) => _next(), // Trigger next on tap
+              behavior: HitTestBehavior.translucent, // Allow pass-through
+              child: const SizedBox.expand(),
             ),
           ),
 
