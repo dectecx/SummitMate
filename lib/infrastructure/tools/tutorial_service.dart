@@ -67,6 +67,8 @@ class TutorialService {
     required GlobalKey keyTabPolls,
     required GlobalKey keyInfoElevation,
     required GlobalKey keyInfoTimeMap,
+    required GlobalKey keyExpandedElevation,
+    required GlobalKey keyExpandedTimeMap,
     GlobalKey? keyBtnCopyUserId,
     GlobalKey? keyBtnAddMember,
     GlobalKey? keyTabGroupEvent,
@@ -210,28 +212,28 @@ class TutorialService {
       ),
     );
 
-    // 海拔高度圖
+    // 海拔高度圖 - 使用展開後的內容 key
     allTargets.add(
       TutorialTarget(
         identify: "Target Elevation",
         topic: TutorialTopic.info,
-        keyTarget: keyInfoElevation,
+        keyTarget: keyExpandedElevation,
         alignSkip: Alignment.topLeft,
         align: ContentAlign.bottom,
-        content: "海拔高度 ⛰️\n想知道爬升多少？\n點一下這裡就會展開高度圖給你看",
+        content: "⛰️ 海拔高度\n高度的爬升變化一目了然",
         onFocus: onFocusElevation,
       ),
     );
 
-    // 路程時間圖
+    // 路程時間圖 - 使用展開後的內容 key
     allTargets.add(
       TutorialTarget(
         identify: "Target TimeMap",
         topic: TutorialTopic.info,
-        keyTarget: keyInfoTimeMap,
+        keyTarget: keyExpandedTimeMap,
         alignSkip: Alignment.topLeft,
         align: ContentAlign.bottom,
-        content: "路程時間 ⏱️\n還有路程時間圖\n點一下就能參考各路段要走多久",
+        content: "⏱️ 路程時間\n查看各段路程需要的時間",
         onFocus: onFocusTimeMap,
       ),
     );
