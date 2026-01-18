@@ -62,6 +62,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
   final _keyTabPolls = GlobalKey();
   final _keyInfoElevation = GlobalKey();
   final _keyInfoTimeMap = GlobalKey();
+  final _keyExpandedElevation = GlobalKey();
+  final _keyExpandedTimeMap = GlobalKey();
   final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
 
   late final MockItineraryRepository _mockItineraryRepo;
@@ -171,6 +173,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
           keyTabPolls: _keyTabPolls,
           keyInfoElevation: _keyInfoElevation,
           keyInfoTimeMap: _keyInfoTimeMap,
+          keyExpandedElevation: _keyExpandedElevation,
+          keyExpandedTimeMap: _keyExpandedTimeMap,
           topic: topic,
           onSwitchToItinerary: () async {
             Future.delayed(const Duration(milliseconds: 400), () {
@@ -249,6 +253,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
       keyTabPolls: _keyTabPolls,
       keyInfoElevation: _keyInfoElevation,
       keyInfoTimeMap: _keyInfoTimeMap,
+      keyExpandedElevation: _keyExpandedElevation,
+      keyExpandedTimeMap: _keyExpandedTimeMap,
       topic: topic,
       onSwitchToItinerary: () async {
         Future.delayed(const Duration(milliseconds: 400), () {
@@ -420,7 +426,11 @@ class _TutorialScreenState extends State<TutorialScreen> {
       case 2:
         return const CollaborationTab(key: ValueKey('tutorial_collab'));
       case 3:
-        return InfoTab(key: _keyInfoTab);
+        return InfoTab(
+          key: _keyInfoTab,
+          expandedElevationKey: _keyExpandedElevation,
+          expandedTimeMapKey: _keyExpandedTimeMap,
+        );
       default:
         return const SizedBox.shrink();
     }

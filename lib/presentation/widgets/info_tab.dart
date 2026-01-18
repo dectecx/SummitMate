@@ -16,7 +16,10 @@ import '../screens/beginner_peaks_screen.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
 class InfoTab extends StatefulWidget {
-  const InfoTab({super.key});
+  final GlobalKey? expandedElevationKey;
+  final GlobalKey? expandedTimeMapKey;
+
+  const InfoTab({super.key, this.expandedElevationKey, this.expandedTimeMapKey});
 
   @override
   State<InfoTab> createState() => InfoTabState();
@@ -229,6 +232,7 @@ class InfoTabState extends State<InfoTab> {
                       AnimatedCrossFade(
                         firstChild: const SizedBox(height: 0, width: double.infinity),
                         secondChild: Padding(
+                          key: widget.expandedElevationKey, // 綁定 GlobalKey 給展開的內容
                           padding: const EdgeInsets.only(top: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,6 +258,7 @@ class InfoTabState extends State<InfoTab> {
                       AnimatedCrossFade(
                         firstChild: const SizedBox(height: 0, width: double.infinity),
                         secondChild: Padding(
+                          key: widget.expandedTimeMapKey, // 綁定 GlobalKey 給展開的內容
                           padding: const EdgeInsets.only(top: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
