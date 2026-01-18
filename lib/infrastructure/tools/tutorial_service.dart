@@ -94,7 +94,7 @@ class TutorialService {
         keyTarget: keyTabItinerary,
         alignSkip: Alignment.topRight,
         align: ContentAlign.top,
-        content: "行程表 📅\n這是這次的行程安排\n隊友們隨時都可以查看喔",
+        content: "📅 行程表\n查看這次的行程安排",
         onFocus: onSwitchToItinerary,
       ),
     );
@@ -107,7 +107,7 @@ class TutorialService {
         keyTarget: keyBtnEdit,
         alignSkip: Alignment.bottomLeft,
         align: ContentAlign.bottom,
-        content: "編輯行程 ✏️\n想調整行程點這裡\n(📣建議由領隊統一維護)",
+        content: "✒️ 編輯行程\n點這裡調整行程\n（建議由領隊統一維護）",
       ),
     );
 
@@ -119,7 +119,7 @@ class TutorialService {
         keyTarget: keyBtnUpload,
         alignSkip: Alignment.bottomLeft,
         align: ContentAlign.bottom,
-        content: "上傳雲端 ☁️\n編輯完記得按這裡上傳\n(⚠️小心會把雲端原本的資料覆蓋掉)",
+        content: "☁️ 上傳雲端\n編輯完記得上傳到雲端\n（會覆蓋雲端原本的資料）",
         onFocus: onFocusUpload,
       ),
     );
@@ -131,7 +131,7 @@ class TutorialService {
         topic: TutorialTopic.itinerary,
         keyTarget: null, // 無 UI 綁定，顯示文字說明
         align: ContentAlign.center,
-        content: "複製 ID 📋\n在「設定」中可以查看並複製你的專屬 ID\n分享給隊友，讓他們把你加入行程！",
+        content: "📋 複製 ID\n在「設定」中查看並複製你的專屬 ID\n分享給隊友，讓他們加你入行程！",
       ),
     );
 
@@ -142,7 +142,7 @@ class TutorialService {
         topic: TutorialTopic.itinerary,
         keyTarget: null,
         align: ContentAlign.center,
-        content: "加入成員 👤\n在行程列表點擊「成員管理」\n輸入隊友的 ID 就能把他們加入！",
+        content: "👤 加入成員\n在行程列表點「成員管理」\n輸入隊友 ID 就能把他們加入！",
       ),
     );
 
