@@ -65,7 +65,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
   final _keyInfoTimeMap = GlobalKey();
   final _keyExpandedElevation = GlobalKey();
   final _keyExpandedTimeMap = GlobalKey();
+  final _keyBtnCopyId = GlobalKey();
+  final _keyBtnAddMember = GlobalKey();
   final GlobalKey<InfoTabState> _keyInfoTab = GlobalKey();
+
+  // Mock UI Flags
+  bool _showMockSettings = false;
+  bool _showMockMembers = false;
 
   late final MockItineraryRepository _mockItineraryRepo;
   late final MockTripRepository _mockTripRepo;
@@ -176,10 +182,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
           keyInfoTimeMap: _keyInfoTimeMap,
           keyExpandedElevation: _keyExpandedElevation,
           keyExpandedTimeMap: _keyExpandedTimeMap,
+          keyBtnCopyUserId: _keyBtnCopyId,
+          keyBtnAddMember: _keyBtnAddMember,
           topic: topic,
           onSwitchToItinerary: () async {
             if (mounted) setState(() => _currentTab = 0);
             if (_isEditMode) setState(() => _isEditMode = false);
+            _resetMockModels();
             await _waitForUI();
           },
           onFocusUpload: () async {
@@ -193,26 +202,38 @@ class _TutorialScreenState extends State<TutorialScreen> {
           },
           onSwitchToGear: () async {
             if (mounted) setState(() => _currentTab = 1);
+            _resetMockModels();
             await _waitForUI();
           },
           onSwitchToMessage: () async {
             if (mounted) setState(() => _currentTab = 2);
+            _resetMockModels();
             await _waitForUI();
           },
           onSwitchToInfo: () async {
             if (mounted) setState(() => _currentTab = 3);
+            _resetMockModels();
             await _waitForUI();
           },
           onFocusElevation: () async {
             // 切換分頁並等待渲染
             if (mounted) setState(() => _currentTab = 3);
             await _waitForUI();
-            
+
             // 展開高度圖
             _keyInfoTab.currentState?.expandElevation();
-            
+
             // 等待動畫 (AnimatedCrossFade duration is 300ms)
             await Future.delayed(const Duration(milliseconds: 350));
+
+            // 滾動到可見範圍
+            if (_keyExpandedElevation.currentContext != null) {
+              Scrollable.ensureVisible(
+                _keyExpandedElevation.currentContext!,
+                duration: const Duration(milliseconds: 300),
+                alignment: 0.5,
+              );
+            }
           },
           onFocusTimeMap: () async {
             // 切換分頁並等待渲染
@@ -221,9 +242,38 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
             // 展開時間圖
             _keyInfoTab.currentState?.expandTimeMap();
-            
+
             // 等待動畫
             await Future.delayed(const Duration(milliseconds: 350));
+
+            // 滾動到可見範圍
+            if (_keyExpandedTimeMap.currentContext != null) {
+              Scrollable.ensureVisible(
+                _keyExpandedTimeMap.currentContext!,
+                duration: const Duration(milliseconds: 300),
+                alignment: 0.5,
+              );
+            }
+          },
+          onFocusCopyUserId: () async {
+            if (mounted) {
+              setState(() {
+                _currentTab = 0; // Assume in Itinerary or Gear, doesn't matter much as overlay covers it
+                _showMockSettings = true;
+                _showMockMembers = false;
+              });
+            }
+            await _waitForUI();
+          },
+          onFocusAddMember: () async {
+            if (mounted) {
+              setState(() {
+                _currentTab = 0; // Or wherever appropriate
+                _showMockMembers = true;
+                _showMockSettings = false;
+              });
+            }
+            await _waitForUI();
           },
         ),
         onFinish: _finishTutorial,
@@ -258,10 +308,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
       keyInfoTimeMap: _keyInfoTimeMap,
       keyExpandedElevation: _keyExpandedElevation,
       keyExpandedTimeMap: _keyExpandedTimeMap,
+      keyBtnCopyUserId: _keyBtnCopyId,
+      keyBtnAddMember: _keyBtnAddMember,
       topic: topic,
       onSwitchToItinerary: () async {
         if (mounted) setState(() => _currentTab = 0);
         await _waitForUI();
+        _resetMockModels();
         if (_isEditMode) setState(() => _isEditMode = false);
       },
       onFocusUpload: () async {
@@ -275,26 +328,38 @@ class _TutorialScreenState extends State<TutorialScreen> {
       },
       onSwitchToGear: () async {
         if (mounted) setState(() => _currentTab = 1);
+        _resetMockModels();
         await _waitForUI();
       },
       onSwitchToMessage: () async {
         if (mounted) setState(() => _currentTab = 2);
+        _resetMockModels();
         await _waitForUI();
       },
       onSwitchToInfo: () async {
         if (mounted) setState(() => _currentTab = 3);
+        _resetMockModels();
         await _waitForUI();
       },
       onFocusElevation: () async {
         // 切換分頁並等待渲染
         if (mounted) setState(() => _currentTab = 3);
         await _waitForUI();
-        
+
         // 展開高度圖
         _keyInfoTab.currentState?.expandElevation();
-        
+
         // 等待動畫
         await Future.delayed(const Duration(milliseconds: 350));
+
+        // 滾動到可見範圍
+        if (_keyExpandedElevation.currentContext != null) {
+          Scrollable.ensureVisible(
+            _keyExpandedElevation.currentContext!,
+            duration: const Duration(milliseconds: 300),
+            alignment: 0.5,
+          );
+        }
       },
       onFocusTimeMap: () async {
         // 切換分頁並等待渲染
@@ -303,9 +368,36 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
         // 展開時間圖
         _keyInfoTab.currentState?.expandTimeMap();
-        
+
         // 等待動畫
         await Future.delayed(const Duration(milliseconds: 350));
+
+        // 滾動到可見範圍
+        if (_keyExpandedTimeMap.currentContext != null) {
+          Scrollable.ensureVisible(
+            _keyExpandedTimeMap.currentContext!,
+            duration: const Duration(milliseconds: 300),
+            alignment: 0.5,
+          );
+        }
+      },
+      onFocusCopyUserId: () async {
+        if (mounted) {
+          setState(() {
+            _showMockSettings = true;
+            _showMockMembers = false;
+          });
+        }
+        await _waitForUI();
+      },
+      onFocusAddMember: () async {
+        if (mounted) {
+          setState(() {
+            _showMockMembers = true;
+            _showMockSettings = false;
+          });
+        }
+        await _waitForUI();
       },
     );
 
@@ -362,7 +454,17 @@ class _TutorialScreenState extends State<TutorialScreen> {
               title: const Text('SummitMate 山友'),
               actions: _buildAppBarActions(context),
             ),
-            body: AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: _buildTabContent(_currentTab)),
+            body: Stack(
+              children: [
+                AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: _buildTabContent(_currentTab)),
+
+                // Mock Settings Overlay
+                if (_showMockSettings) _buildMockSettings(),
+
+                // Mock Member Management Overlay
+                if (_showMockMembers) _buildMockMembers(),
+              ],
+            ),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _currentTab,
               onDestinationSelected: (_) {},
@@ -431,7 +533,11 @@ class _TutorialScreenState extends State<TutorialScreen> {
       case 2:
         return const CollaborationTab(key: ValueKey('tutorial_collab'));
       case 3:
-        return InfoTab(key: _keyInfoTab, expandedElevationKey: _keyExpandedElevation, expandedTimeMapKey: _keyExpandedTimeMap);
+        return InfoTab(
+          key: _keyInfoTab,
+          expandedElevationKey: _keyExpandedElevation,
+          expandedTimeMapKey: _keyExpandedTimeMap,
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -442,5 +548,100 @@ class _TutorialScreenState extends State<TutorialScreen> {
     final completer = Completer<void>();
     WidgetsBinding.instance.addPostFrameCallback((_) => completer.complete());
     return completer.future;
+  }
+
+  void _resetMockModels() {
+    if (_showMockSettings || _showMockMembers) {
+      if (mounted) {
+        setState(() {
+          _showMockSettings = false;
+          _showMockMembers = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildMockSettings() {
+    return Container(
+      color: Colors.black54,
+      child: Center(
+        child: Container(
+          width: 300,
+          margin: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('設定', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              const CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.person, size: 36, color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              const Text('王小明', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('User123456', style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 24),
+              ListTile(
+                key: _keyBtnCopyId,
+                leading: const Icon(Icons.copy),
+                title: const Text('複製 ID'),
+                onTap: () {}, // Mock, no action needed
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton(onPressed: () => setState(() => _showMockSettings = false), child: const Text('關閉')),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMockMembers() {
+    return Container(
+      color: Colors.white,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('成員管理'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => setState(() => _showMockMembers = false),
+          ),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            ListTile(
+              leading: const CircleAvatar(child: Text('Me')),
+              title: const Text('王小明 (你)'),
+              subtitle: const Text('主辦人'),
+              trailing: const Chip(label: Text('嚮導')),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const CircleAvatar(child: Text('A')),
+              title: const Text('隊友 A'),
+              subtitle: const Text('成員'),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          key: _keyBtnAddMember,
+          onPressed: () {}, // Mock
+          icon: const Icon(Icons.person_add),
+          label: const Text('加入成員'),
+        ),
+      ),
+    );
   }
 }
