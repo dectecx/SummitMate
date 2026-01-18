@@ -126,25 +126,29 @@ class TutorialService {
       ),
     );
 
-    // 4. 複製 userId (文字說明，無需 Key)
+    // 4. 複製 userId (Mock UI)
     allTargets.add(
       TutorialTarget(
         identify: "Target CopyUserId",
         topic: TutorialTopic.itinerary,
-        keyTarget: null, // 無 UI 綁定，顯示文字說明
-        align: ContentAlign.center,
-        content: "📋 複製 ID\n在「設定」中查看並複製你的專屬 ID\n分享給隊友，讓他們加你入行程！",
+        keyTarget: keyBtnCopyUserId, // 綁定到 Mock Settings 的按鈕
+        alignSkip: Alignment.bottomLeft,
+        align: ContentAlign.bottom,
+        content: "📋 複製 ID\n這是你的專屬 ID\n點擊複製並分享給隊友",
+        onFocus: onFocusCopyUserId,
       ),
     );
 
-    // 5. 加入成員 (文字說明，無需 Key)
+    // 5. 加入成員 (Mock UI)
     allTargets.add(
       TutorialTarget(
         identify: "Target AddMember",
         topic: TutorialTopic.itinerary,
-        keyTarget: null,
-        align: ContentAlign.center,
-        content: "👤 加入成員\n在行程列表點「成員管理」\n輸入隊友 ID 就能把他們加入！",
+        keyTarget: keyBtnAddMember, // 綁定到 Mock Member List 的按鈕
+        alignSkip: Alignment.bottomLeft,
+        align: ContentAlign.top,
+        content: "👤 加入成員\n輸入隊友 ID 就能把他們加入！",
+        onFocus: onFocusAddMember,
       ),
     );
 
