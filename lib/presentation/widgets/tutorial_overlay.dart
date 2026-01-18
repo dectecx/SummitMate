@@ -131,6 +131,13 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
       await Future.delayed(const Duration(milliseconds: 100));
     }
 
+    // 如果有執行過 onFocus（如展開動作），再等待一下並重新查詢位置
+    // 確保光圈跟隨展開後的內容
+    if (target.onFocus != null && renderBox != null && renderBox.hasSize) {
+      await Future.delayed(const Duration(milliseconds: 50));
+      renderBox = target.keyTarget!.currentContext?.findRenderObject() as RenderBox?;
+    }
+
     if (renderBox != null && renderBox.hasSize) {
       final size = renderBox.size;
       final offset = renderBox.localToGlobal(Offset.zero);
@@ -164,9 +171,9 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
   void _next() {
     // 防止快速連續點擊
     if (_isTransitioning) return;
-    
+
     _isTransitioning = true;
-    
+
     if (_currentIndex < widget.targets.length - 1) {
       _currentIndex++;
       _initTarget().then((_) {
@@ -255,10 +262,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
                             offset: const Offset(0, 5),
                           ),
                         ],
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
                       ),
                       child: Text(
                         currentTarget.content,
