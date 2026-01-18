@@ -14,6 +14,7 @@ import '../widgets/clear_data_dialog.dart';
 import '../widgets/tutorial_topic_selection_dialog.dart';
 import 'package:summitmate/infrastructure/tools/hive_service.dart';
 import '../../infrastructure/tools/tutorial_service.dart';
+import '../utils/tutorial_keys.dart';
 
 class SettingsDialog extends StatefulWidget {
   final void Function(TutorialTopic topic)? onRestartTutorial;
@@ -131,6 +132,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                           ),
                         ),
                         IconButton(
+                          key: TutorialKeys.settingsCopyId,
                           icon: const Icon(Icons.copy, size: 16, color: Colors.grey),
                           tooltip: '複製 ID',
                           onPressed: () {

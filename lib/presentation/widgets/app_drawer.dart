@@ -17,6 +17,7 @@ import '../cubits/meal/meal_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../screens/group_events_list_screen.dart';
 import '../../data/models/trip.dart';
+import '../utils/tutorial_keys.dart';
 
 /// 應用程式側邊欄 (Drawer)
 class AppDrawer extends StatelessWidget {
@@ -80,6 +81,7 @@ class AppDrawer extends StatelessWidget {
                 title: const Text('管理行程'),
                 subtitle: Text('共 ${allTrips.length} 個行程'),
                 trailing: const Icon(Icons.chevron_right),
+                key: TutorialKeys.drawerManageTrips,
                 onTap: () {
                   Navigator.pop(context); // 關閉抽屜
                   Navigator.push(context, MaterialPageRoute(builder: (_) => const TripListScreen()));

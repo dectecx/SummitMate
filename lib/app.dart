@@ -20,6 +20,7 @@ import 'presentation/cubits/settings/settings_cubit.dart';
 import 'presentation/cubits/group_event/group_event_cubit.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
+import 'presentation/widgets/global_tutorial_wrapper.dart';
 
 /// SummitMate 主應用程式
 class SummitMateApp extends StatelessWidget {
@@ -66,7 +67,9 @@ class SummitMateApp extends StatelessWidget {
 
       // 錯誤監聽與 Overlay
       builder: (context, child) {
-        return GlobalErrorListener(child: child ?? const SizedBox.shrink());
+        return GlobalTutorialWrapper(
+          child: GlobalErrorListener(child: child ?? const SizedBox.shrink()),
+        );
       },
 
       // 初始頁面

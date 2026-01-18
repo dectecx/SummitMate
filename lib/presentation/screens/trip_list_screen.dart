@@ -13,6 +13,7 @@ import '../../infrastructure/tools/toast_service.dart';
 import '../../core/di.dart';
 import '../../core/services/permission_service.dart';
 import 'trip_cloud_screen.dart';
+import '../utils/tutorial_keys.dart';
 
 /// 行程列表畫面
 /// 管理多個登山計畫
@@ -144,6 +145,7 @@ class TripListScreen extends StatelessWidget {
                                     onDelete: canDelete ? () => _confirmDelete(context, trip) : null,
                                     onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
                                     onManageMembers: () => _navigateToMembers(context, trip),
+                                    memberBtnKey: trip.id == activeTripId ? TutorialKeys.tripListActiveMemberBtn : null,
                                   );
                                 }),
                               ],
@@ -176,6 +178,7 @@ class TripListScreen extends StatelessWidget {
                                     onDelete: canDelete ? () => _confirmDelete(context, trip) : null,
                                     onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
                                     onManageMembers: () => _navigateToMembers(context, trip),
+                                    memberBtnKey: trip.id == activeTripId ? TutorialKeys.tripListActiveMemberBtn : null,
                                   );
                                 }),
                               ],
@@ -290,6 +293,7 @@ class _TripCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onUpload;
   final VoidCallback? onManageMembers;
+  final Key? memberBtnKey;
 
   const _TripCard({
     required this.trip,
@@ -300,6 +304,7 @@ class _TripCard extends StatelessWidget {
     this.onDelete,
     this.onUpload,
     this.onManageMembers,
+    this.memberBtnKey,
   });
 
   @override
@@ -428,6 +433,7 @@ class _TripCard extends StatelessWidget {
                 children: [
                   if (onManageMembers != null)
                     TextButton.icon(
+                      key: memberBtnKey,
                       icon: const Icon(Icons.people, size: 18),
                       label: const Text('成員'),
                       onPressed: onManageMembers,
