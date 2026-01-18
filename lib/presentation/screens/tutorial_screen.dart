@@ -203,20 +203,20 @@ class _TutorialScreenState extends State<TutorialScreen> {
             });
           },
           onFocusElevation: () async {
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (mounted) setState(() => _currentTab = 3);
-            });
-            Future.delayed(const Duration(milliseconds: 500), () {
-              _keyInfoTab.currentState?.expandElevation();
-            });
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (mounted) setState(() => _currentTab = 3);
+            await Future.delayed(const Duration(milliseconds: 200));
+            _keyInfoTab.currentState?.expandElevation();
+            // 等待展開動畫完成
+            await Future.delayed(const Duration(milliseconds: 500));
           },
           onFocusTimeMap: () async {
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (mounted) setState(() => _currentTab = 3);
-            });
-            Future.delayed(const Duration(milliseconds: 500), () {
-              _keyInfoTab.currentState?.expandTimeMap();
-            });
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (mounted) setState(() => _currentTab = 3);
+            await Future.delayed(const Duration(milliseconds: 200));
+            _keyInfoTab.currentState?.expandTimeMap();
+            // 等待展開動畫完成
+            await Future.delayed(const Duration(milliseconds: 500));
           },
         ),
         onFinish: _finishTutorial,

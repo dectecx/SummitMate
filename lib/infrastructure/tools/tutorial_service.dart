@@ -255,7 +255,7 @@ class TutorialService {
         topic: TutorialTopic.all, // 完成畫面屬於 all，永遠顯示在最後
         keyTarget: null,
         align: ContentAlign.center,
-        content: "教學完成 🎉\n恭喜你已熟悉所有功能\n點擊畫面開始你的旅程吧！",
+        content: "🎉 教學完成！\n點擊畫面開始你的旅程",
       ),
     );
 
