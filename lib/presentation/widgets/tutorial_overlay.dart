@@ -54,6 +54,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
   Rect? _targetRect;
 
   bool _isInit = false;
+  bool _isTransitioning = false; // 防止快速連續點擊
 
   double _opacity = 1.0; // Control opacity for fade-out
 
@@ -161,13 +162,26 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
   }
 
   void _next() {
+    // 防止快速連續點擊
+    if (_isTransitioning) return;
+    
+    _isTransitioning = true;
+    
     if (_currentIndex < widget.targets.length - 1) {
       _currentIndex++;
-      _initTarget();
+      _initTarget().then((_) {
+        if (mounted) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) _isTransitioning = false;
+          });
+        }
+      });
     } else {
       // If user clicks "Next" on the last step, we restart initTarget which handles finish
       _currentIndex++;
-      _initTarget();
+      _initTarget().then((_) {
+        if (mounted) _isTransitioning = false;
+      });
     }
   }
 
