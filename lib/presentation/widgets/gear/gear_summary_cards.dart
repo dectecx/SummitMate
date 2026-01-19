@@ -1,0 +1,160 @@
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/constants.dart';
+import '../../screens/gear_cloud_screen.dart';
+import '../../screens/gear_library_screen.dart';
+import '../../screens/meal_planner_screen.dart';
+
+/// 快速連結按鈕列 (官方清單、雲端庫、我的庫)
+class GearQuickLinks extends StatelessWidget {
+  const GearQuickLinks({super.key});
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        debugPrint('無法開啟連結: $url');
+      }
+    } catch (e) {
+      debugPrint('無法開啟連結: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // 官方建議裝備清單
+        Expanded(
+          child: Card(
+            child: InkWell(
+              onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
+              borderRadius: BorderRadius.circular(12),
+              child: const Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Icon(Icons.description, color: Colors.green, size: 28),
+                    SizedBox(height: 8),
+                    Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // 雲端裝備庫 (分享用)
+        Expanded(
+          child: Card(
+            child: InkWell(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
+              borderRadius: BorderRadius.circular(12),
+              child: const Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Icon(Icons.cloud, color: Colors.blue, size: 28),
+                    SizedBox(height: 8),
+                    Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        // 我的裝備庫 (個人)
+        Expanded(
+          child: Card(
+            child: InkWell(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GearLibraryScreen())),
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    Icon(Icons.backpack, color: Colors.orange.shade700, size: 28),
+                    const SizedBox(height: 8),
+                    const Text('我的庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 總重量卡片
+class GearTotalWeightCard extends StatelessWidget {
+  final double totalWeight;
+
+  const GearTotalWeightCard({super.key, required this.totalWeight});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('總重量 (含糧食)', style: TextStyle(fontSize: 18)),
+            Text(
+              '${totalWeight.toStringAsFixed(2)} kg',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 糧食計畫入口卡片
+class GearMealCard extends StatelessWidget {
+  final double mealWeight;
+
+  const GearMealCard({super.key, required this.mealWeight});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.bento, color: Colors.orange, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      mealWeight > 0 ? '已規劃 ${mealWeight.toStringAsFixed(2)} kg' : '尚未規劃',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
