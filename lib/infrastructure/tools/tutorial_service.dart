@@ -54,7 +54,7 @@ extension TutorialTopicExtension on TutorialTopic {
 class TutorialService {
   /// 當前教學目標列表 (Notifier)
   static final ValueNotifier<List<TutorialTarget>?> tutorialState = ValueNotifier(null);
-  
+
   /// 教學完成 Completer
   static Completer<void>? _activeTutorialCompleter;
 
@@ -83,9 +83,9 @@ class TutorialService {
     if (_activeTutorialCompleter != null && !_activeTutorialCompleter!.isCompleted) {
       stop();
     }
-    
+
     _activeTutorialCompleter = Completer<void>();
-    
+
     final targets = _createTargets(
       topic: topic,
       onSwitchToItinerary: onSwitchToItinerary,
@@ -106,7 +106,7 @@ class TutorialService {
       onFocusMemberResult: onFocusMemberResult,
     );
     tutorialState.value = targets;
-    
+
     return _activeTutorialCompleter!.future;
   }
 

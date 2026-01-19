@@ -67,9 +67,7 @@ class SummitMateApp extends StatelessWidget {
 
       // 錯誤監聽與 Overlay
       builder: (context, child) {
-        return GlobalTutorialWrapper(
-          child: GlobalErrorListener(child: child ?? const SizedBox.shrink()),
-        );
+        return GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
       },
 
       // 初始頁面

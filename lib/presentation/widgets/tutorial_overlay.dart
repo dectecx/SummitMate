@@ -217,11 +217,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
         children: [
           // 0. Background Tap Listener (Catch-all for blank space)
           Positioned.fill(
-            child: GestureDetector(
-              onTap: _next,
-              behavior: HitTestBehavior.translucent,
-              child: const SizedBox.expand(),
-            ),
+            child: GestureDetector(onTap: _next, behavior: HitTestBehavior.translucent, child: const SizedBox.expand()),
           ),
 
           // 1. 繪製遮罩與開孔 (Blockers + Pass-Through Logic)
