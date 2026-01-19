@@ -62,8 +62,8 @@ class ExternalLinks {
   static const String gearPdfUrl =
       'https://recreation.forest.gov.tw/Files/RT/UploadFiles/Package/139_%E5%98%89%E6%98%8E%E6%B9%96%E5%9C%8B%E5%AE%B6%E6%AD%A5%E9%81%93_%E5%A4%9A%E6%97%A5%E7%99%BB%E5%B1%B1%E5%9E%8B%E6%AD%A5%E9%81%93%E5%BB%BA%E8%AD%B0%E8%A3%9D%E5%82%99%E6%B8%85%E5%96%AE.pdf';
 
-  static const String accommodationUrl =
-      'https://www.booking.com/hotel/tw/farming-hostel.zh-tw.html?aid=399012&label=pu-li-hnxFhu60_gPvpQoVknixWASM392942680216%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap%3Aneg%3Afi%3Atiaud-2382347442848%3Akwd-55863106651%3Alp9197983%3Ali%3Adem%3Adm%3Appccp%3DUmFuZG9tSVYkc2RlIyh9YR10fBTovuitswFzoSdli7I-nJpMwLg%401765802782&sid=cdaeaa92c377688191f979ae73a24f94&all_sr_blocks=226294003_103750000_0_0_0&checkin=2025-12-30&checkout=2025-12-31&dest_id=-2627848&dest_type=city&dist=0&group_adults=1&group_children=0&hapos=1&highlighted_blocks=226294003_103750000_0_0_0&hpos=1&matching_block_id=226294003_103750000_0_0_0&no_rooms=1&req_adults=1&req_children=0&room1=A&sb_price_type=total&sr_order=popularity&sr_pri_blocks=226294003_103750000_0_0_0__86850&srepoch=1766398689&srpvid=3c8743972d03168e582b5cf3dff69155&type=total&ucfs=1&';
+  // 住宿推薦
+  static const String accommodationUrl = 'https://www.booking.com/hotel/tw/farming-hostel.zh-tw.html';
 }
 
 /// SharedPreferences Keys

@@ -287,13 +287,13 @@ class GroupEventApplication {
   });
 
   /// 是否待審核
-  bool get isPending => status == 'pending';
+  bool get isPending => status == GroupEventApplicationStatus.pending;
 
   /// 是否已通過
-  bool get isApproved => status == 'approved';
+  bool get isApproved => status == GroupEventApplicationStatus.approved;
 
   /// 是否已拒絕
-  bool get isRejected => status == 'rejected';
+  bool get isRejected => status == GroupEventApplicationStatus.rejected;
 
   factory GroupEventApplication.fromJson(Map<String, dynamic> json) => _$GroupEventApplicationFromJson(json);
   Map<String, dynamic> toJson() => _$GroupEventApplicationToJson(this);

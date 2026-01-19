@@ -725,9 +725,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         await Future.delayed(const Duration(milliseconds: 300));
       },
       onFocusSync: () async {
-         // Ensure on Message Tab? Or just wait.
-         if (_currentIndex != 2) setState(() => _currentIndex = 2); // Message Tab usually has Sync
-         await Future.delayed(const Duration(milliseconds: 300));
+        // Ensure on Message Tab? Or just wait.
+        if (_currentIndex != 2) setState(() => _currentIndex = 2); // Message Tab usually has Sync
+        await Future.delayed(const Duration(milliseconds: 300));
       },
       // 4. Member Management Flow (Complex)
       onFocusManageTrips: () async {
@@ -743,13 +743,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         await Future.delayed(const Duration(milliseconds: 300));
       },
       onFocusMemberFab: () async {
-         // Requires being on MemberManagementScreen.
-         // This is hard because TripListScreen -> MemberManagementScreen requires Trip ID.
-         // We might need to skip this automation or just point to it.
-         // PASS-THROUGH allows user to click.
-         // IMPORTANT: TutorialService uses onFocus to PREPARE.
-         // If we rely on User Action, we might not need to do anything here except wait.
-         await Future.delayed(const Duration(milliseconds: 300));
+        // Requires being on MemberManagementScreen.
+        // This is hard because TripListScreen -> MemberManagementScreen requires Trip ID.
+        // We might need to skip this automation or just point to it.
+        // PASS-THROUGH allows user to click.
+        // IMPORTANT: TutorialService uses onFocus to PREPARE.
+        // If we rely on User Action, we might not need to do anything here except wait.
+        await Future.delayed(const Duration(milliseconds: 300));
       },
     );
   }
