@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/error/result.dart';
 import '../../core/di.dart';
+import '../../domain/interfaces/i_auth_service.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_group_event_repository.dart';
 import '../datasources/interfaces/i_group_event_local_data_source.dart';
@@ -133,8 +134,14 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   String _getCurrentUserId() {
-    // Get from auth service or return guest
-    return 'guest'; // TODO: Inject auth service for proper user ID
+    // Get from auth service via DI
+    try {
+      final authService = getIt<IAuthService>();
+      return authService.currentUserId ?? 'guest';
+    } catch (e) {
+      LogService.warning('Auth service not available, using guest', source: _source);
+      return 'guest';
+    }
   }
 
   Future<void> _saveLastSyncTime(DateTime time) async {
