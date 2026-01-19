@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/constants.dart';
 import '../../core/gear_helpers.dart';
 import '../cubits/gear/gear_cubit.dart';
 import '../cubits/gear/gear_state.dart';
@@ -10,14 +8,13 @@ import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
-import '../screens/gear_cloud_screen.dart';
-import '../screens/gear_library_screen.dart';
-import '../screens/meal_planner_screen.dart';
 import 'gear/dialogs/add_gear_dialog.dart';
 import 'gear/dialogs/edit_gear_dialog.dart';
 import 'gear/dialogs/delete_gear_dialog.dart';
-
-enum GearListMode { view, edit, sort }
+import 'gear/gear_mode_selector.dart';
+import 'gear/gear_search_bar.dart';
+import 'gear/gear_summary_cards.dart';
+import 'gear/gear_item_tile.dart';
 
 class GearTab extends StatefulWidget {
   final String? tripId;
@@ -97,12 +94,6 @@ class _GearTabState extends State<GearTab> {
           }
 
           if (state is GearLoading && (state as dynamic).items == null) {
-            // Ideally GearLoading shouldn't wipe data if re-loading.
-            // Our GearLoading is failing to preserve data in copyWith?
-            // No, GearLoading is a separate class.
-            // If we want to show loading over content, we need stack or similar.
-            // For now, full page loader if items implies empty?
-            // Let's just show indicator if Items are empty.
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -118,64 +109,21 @@ class _GearTabState extends State<GearTab> {
             body: Column(
               children: [
                 // 搜尋欄
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: '搜尋本地裝備...',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                context.read<GearCubit>().setSearchQuery('');
-                                setState(() {});
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      filled: true,
-                      fillColor: Theme.of(context).cardColor,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                    ),
-                    onChanged: (value) {
-                      context.read<GearCubit>().setSearchQuery(value);
-                      setState(() {});
-                    },
-                  ),
+                GearSearchBar(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    context.read<GearCubit>().setSearchQuery(value);
+                    setState(() {});
+                  },
+                  onClear: () {
+                    _searchController.clear();
+                    context.read<GearCubit>().setSearchQuery('');
+                    setState(() {});
+                  },
                 ),
 
                 // 模式切換器
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<GearListMode>(
-                      segments: const [
-                        ButtonSegment(
-                          value: GearListMode.view,
-                          icon: Icon(Icons.visibility_outlined),
-                          label: Text('檢視'),
-                        ),
-                        ButtonSegment(value: GearListMode.edit, icon: Icon(Icons.edit_outlined), label: Text('編輯')),
-                        ButtonSegment(value: GearListMode.sort, icon: Icon(Icons.sort), label: Text('排序')),
-                      ],
-                      selected: {_mode},
-                      onSelectionChanged: (Set<GearListMode> newSelection) {
-                        setState(() {
-                          _mode = newSelection.first;
-                        });
-                      },
-                      showSelectedIcon: false,
-                      style: const ButtonStyle(
-                        visualDensity: VisualDensity.compact,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                    ),
-                  ),
-                ),
+                GearModeSelector(selectedMode: _mode, onModeChanged: (newMode) => setState(() => _mode = newMode)),
                 const SizedBox(height: 8),
 
                 // 列表內容
@@ -183,134 +131,14 @@ class _GearTabState extends State<GearTab> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     children: [
-                      // 官方建議裝備 + 雲端裝備庫 + 我的裝備庫 (並排)
-                      Row(
-                        children: [
-                          // 官方建議裝備清單
-                          Expanded(
-                            child: Card(
-                              child: InkWell(
-                                onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
-                                borderRadius: BorderRadius.circular(12),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.description, color: Colors.green, size: 28),
-                                      SizedBox(height: 8),
-                                      Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // 雲端裝備庫 (分享用)
-                          Expanded(
-                            child: Card(
-                              child: InkWell(
-                                onTap: () =>
-                                    Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
-                                borderRadius: BorderRadius.circular(12),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.cloud, color: Colors.blue, size: 28),
-                                      SizedBox(height: 8),
-                                      Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // 我的裝備庫 (個人)
-                          Expanded(
-                            child: Card(
-                              child: InkWell(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const GearLibraryScreen()),
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    children: [
-                                      Icon(Icons.backpack, color: Colors.orange.shade700, size: 28),
-                                      const SizedBox(height: 8),
-                                      const Text('我的庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // 快速連結 (官方/雲端/個人庫)
+                      const GearQuickLinks(),
                       const SizedBox(height: 8),
                       // 總重量
-                      Card(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('總重量 (含糧食)', style: TextStyle(fontSize: 18)),
-                              Text(
-                                '${totalWeight.toStringAsFixed(2)} kg',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      GearTotalWeightCard(totalWeight: totalWeight),
                       const SizedBox(height: 8),
-                      // 糧食計畫卡片
-                      Card(
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () =>
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MealPlannerScreen())),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.bento, color: Colors.orange, size: 28),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      Text(
-                                        mealWeight > 0 ? '已規劃 ${mealWeight.toStringAsFixed(2)} kg' : '尚未規劃',
-                                        style: TextStyle(color: Colors.grey[600]),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                      // 糧食計畫
+                      GearMealCard(mealWeight: mealWeight),
                       const SizedBox(height: 16),
 
                       // 分類清單
@@ -350,114 +178,24 @@ class _GearTabState extends State<GearTab> {
                                     context.read<GearCubit>().reorderItem(oldIndex, newIndex, category: entry.key);
                                   },
                                   children: entry.value.map((item) {
-                                    return ListTile(
+                                    return GearItemTile(
                                       key: ValueKey(item.key),
-                                      leading: _mode == GearListMode.view
-                                          ? Checkbox(
-                                              value: item.isChecked,
-                                              onChanged: (_) => context.read<GearCubit>().toggleChecked(item.key),
-                                            )
-                                          : null,
-                                      title: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              item.name,
-                                              style: TextStyle(
-                                                decoration: item.isChecked ? TextDecoration.lineThrough : null,
-                                                color: item.isChecked ? Colors.grey : null,
-                                                fontSize: 16,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (item.quantity > 1) ...[
-                                            const SizedBox(width: 4),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue.withValues(alpha: 0.1),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                'x${item.quantity}',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.blue,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                          if (item.libraryItemId != null && _mode == GearListMode.view) ...[
-                                            const SizedBox(width: 4),
-                                            const Icon(Icons.link, size: 16, color: Colors.blue),
-                                          ],
-                                        ],
-                                      ),
-                                      subtitle: _mode == GearListMode.view
-                                          ? Text(
-                                              '${item.totalWeight.toStringAsFixed(0)}g${item.quantity > 1 ? ' (${item.weight.toStringAsFixed(0)}g×${item.quantity})' : ''}',
-                                            )
-                                          : null,
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (_mode == GearListMode.edit) ...[
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.remove_circle_outline,
-                                                size: 24,
-                                                color: Colors.grey,
-                                              ),
-                                              onPressed: item.quantity > 1
-                                                  ? () => context.read<GearCubit>().updateQuantity(
-                                                      item,
-                                                      item.quantity - 1,
-                                                    )
-                                                  : null,
-                                              padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
-                                            ),
-                                            SizedBox(
-                                              width: 32,
-                                              child: Text(
-                                                '${item.quantity}',
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                              ),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.add_circle_outline, size: 24, color: Colors.blue),
-                                              onPressed: () =>
-                                                  context.read<GearCubit>().updateQuantity(item, item.quantity + 1),
-                                              padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, size: 24, color: Colors.blueGrey),
-                                              onPressed: () => EditGearDialog.show(context, item),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete_outline, size: 24, color: Colors.red),
-                                              onPressed: () => DeleteGearDialog.show(context, item),
-                                            ),
-                                          ],
-                                          if (_mode == GearListMode.sort)
-                                            ReorderableDragStartListener(
-                                              index: entry.value.indexOf(item),
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(8.0),
-                                                child: Icon(Icons.drag_handle, color: Colors.grey, size: 28),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                      onTap: _mode == GearListMode.view
-                                          ? () => context.read<GearCubit>().toggleChecked(item.key)
-                                          : null,
+                                      item: item,
+                                      mode: _mode,
+                                      onToggle: () => context.read<GearCubit>().toggleChecked(item.key),
+                                      onTap: () {
+                                        if (_mode == GearListMode.view) {
+                                          EditGearDialog.show(context, item);
+                                        }
+                                      },
+                                      onDelete: () => DeleteGearDialog.show(context, item),
+                                      onIncrease: () =>
+                                          context.read<GearCubit>().updateQuantity(item, item.quantity + 1),
+                                      onDecrease: () {
+                                        if (item.quantity > 1) {
+                                          context.read<GearCubit>().updateQuantity(item, item.quantity - 1);
+                                        }
+                                      },
                                     );
                                   }).toList(),
                                 ),
@@ -465,6 +203,7 @@ class _GearTabState extends State<GearTab> {
                             ),
                           ),
                         ),
+                      const SizedBox(height: 80),
                     ],
                   ),
                 ),
@@ -478,14 +217,5 @@ class _GearTabState extends State<GearTab> {
         },
       ),
     );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    try {
-      await launchUrl(uri, mode: LaunchMode.platformDefault);
-    } catch (e) {
-      debugPrint('無法開啟連結: $e');
-    }
   }
 }
