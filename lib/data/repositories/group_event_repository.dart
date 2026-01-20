@@ -94,7 +94,7 @@ class GroupEventRepository implements IGroupEventRepository {
   Future<Result<List<GroupEvent>, Exception>> syncEvents({String? category}) async {
     try {
       // Note: Remote API takes userId and status, category filtering done locally
-      final userId = _getCurrentUserId();
+      final userId = _getCurrentUserId() ?? 'guest';
       final events = await _remoteDataSource.getEvents(userId: userId, status: 'open');
 
       // Filter by category if specified
@@ -113,7 +113,7 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId) async {
     try {
-      final userId = _getCurrentUserId();
+      final userId = _getCurrentUserId() ?? 'guest';
       final event = await _remoteDataSource.getEvent(eventId: eventId, userId: userId);
       await _localDataSource.saveEvent(event);
       return Success(event);
@@ -138,11 +138,10 @@ class GroupEventRepository implements IGroupEventRepository {
     }
   }
 
-  String _getCurrentUserId() {
+  String? _getCurrentUserId() {
     final userId = _authService.currentUserId;
     if (userId == null || userId.isEmpty) {
-      LogService.warning('Auth service returned null user, using guest', source: _source);
-      return 'guest';
+      return null;
     }
     return userId;
   }
@@ -166,6 +165,10 @@ class GroupEventRepository implements IGroupEventRepository {
     required String creatorId,
   }) async {
     try {
+      final currentUserId = _getCurrentUserId();
+      if (currentUserId == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to create events'));
+      }
       final event = GroupEvent(
         id: '',
         title: title,
@@ -204,6 +207,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> remove({required String eventId, required String userId}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to remove events'));
+      }
       await _remoteDataSource.deleteEvent(eventId: eventId, userId: userId);
       await _localDataSource.deleteEvent(eventId);
       LogService.info('Removed event: $eventId', source: _source);
@@ -217,6 +223,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> apply({required String eventId, required String userId, String? note}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to apply'));
+      }
       await _remoteDataSource.applyEvent(eventId: eventId, userId: userId, message: note);
       return const Success(null);
     } catch (e) {
@@ -228,6 +237,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> cancelApplication({required String eventId, required String userId}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to cancel application'));
+      }
       await _remoteDataSource.cancelApplication(applicationId: eventId, userId: userId);
       return const Success(null);
     } catch (e) {
@@ -245,6 +257,9 @@ class GroupEventRepository implements IGroupEventRepository {
     String? note,
   }) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to review applications'));
+      }
       await _remoteDataSource.reviewApplication(applicationId: eventId, action: action, userId: reviewerId);
       return const Success(null);
     } catch (e) {
@@ -258,6 +273,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> likeEvent({required String eventId, required String userId}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to like events'));
+      }
       // 1. 更新本地快取 (立即持久化)
       final event = _localDataSource.getEventById(eventId);
       if (event != null) {
@@ -284,6 +302,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> unlikeEvent({required String eventId, required String userId}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to unlike events'));
+      }
       // 1. 更新本地快取 (立即持久化)
       final event = _localDataSource.getEventById(eventId);
       if (event != null) {
@@ -310,6 +331,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> closeEvent({required String eventId, required String userId}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to close events'));
+      }
       await _remoteDataSource.closeEvent(eventId: eventId, userId: userId);
       // 更新本地快取狀態
       final event = _localDataSource.getEventById(eventId);
@@ -334,6 +358,9 @@ class GroupEventRepository implements IGroupEventRepository {
     required String content,
   }) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to add comments'));
+      }
       final comment = await _remoteDataSource.addComment(eventId: eventId, userId: userId, content: content);
       return Success(comment);
     } catch (e) {
@@ -356,6 +383,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> deleteComment({required String commentId, required String userId}) async {
     try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to delete comments'));
+      }
       await _remoteDataSource.deleteComment(commentId: commentId, userId: userId);
       return const Success(null);
     } catch (e) {
