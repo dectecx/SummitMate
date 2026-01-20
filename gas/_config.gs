@@ -27,7 +27,7 @@ const SHEET_TRIP_MEMBERS = "TripMembers";
 const SHEET_GROUP_EVENTS = "GroupEvents";
 const SHEET_GROUP_EVENT_APPLICATIONS = "GroupEventApplications";
 const SHEET_GROUP_EVENT_LIKES = "GroupEventLikes"; // TODO
-const SHEET_GROUP_EVENT_COMMENTS = "GroupEventComments"; // TODO
+const SHEET_GROUP_EVENT_COMMENTS = "GroupEventComments";
 
 // 會員系統
 const SHEET_USERS = "Users";
@@ -231,6 +231,19 @@ const HEADERS_GROUP_EVENT_APPLICATIONS = [
   "updated_by",
 ];
 
+const HEADERS_GROUP_EVENT_COMMENTS = [
+  "id", // PK
+  "event_id", // FK → GroupEvents.id
+  "user_id", // FK → Users.id
+  "content",
+  "user_name", // 快照
+  "user_avatar", // 快照
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+];
+
 // ============================================================
 // 會員系統 (Users)
 // role_id: 關聯 Roles 表的 UUID
@@ -383,6 +396,9 @@ const API_ACTIONS = {
   GROUP_EVENT_CANCEL_APPLICATION: "group_event_cancel_application",
   GROUP_EVENT_REVIEW_APPLICATION: "group_event_review_application",
   GROUP_EVENT_MY: "group_event_my",
+  GROUP_EVENT_ADD_COMMENT: "group_event_add_comment",
+  GROUP_EVENT_GET_COMMENTS: "group_event_get_comments",
+  GROUP_EVENT_DELETE_COMMENT: "group_event_delete_comment",
 };
 
 const SHEET_SCHEMA = {
@@ -395,6 +411,19 @@ const SHEET_SCHEMA = {
     cover_image: { type: "text" },
     is_active: { type: "boolean" },
     day_names: { type: "text" },
+    created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
+  },
+
+  GroupEventComments: {
+    id: { type: "text" },
+    event_id: { type: "text" },
+    user_id: { type: "text" },
+    content: { type: "text" },
+    user_name: { type: "text" },
+    user_avatar: { type: "text" },
     created_at: { type: "date" },
     created_by: { type: "text" },
     updated_at: { type: "date" },

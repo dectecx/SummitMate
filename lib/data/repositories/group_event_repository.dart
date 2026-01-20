@@ -8,6 +8,7 @@ import '../datasources/interfaces/i_group_event_local_data_source.dart';
 import '../datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../models/group_event.dart';
 import '../models/enums/group_event_status.dart';
+import '../models/group_event_comment.dart';
 
 /// 揪團 Repository (支援 Offline-First)
 ///
@@ -319,6 +320,45 @@ class GroupEventRepository implements IGroupEventRepository {
       return const Success(null);
     } catch (e) {
       LogService.error('Close event failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  // ========== Comment Operations ==========
+
+  @override
+  Future<Result<GroupEventComment, Exception>> addComment({
+    required String eventId,
+    required String userId,
+    required String content,
+  }) async {
+    try {
+      final comment = await _remoteDataSource.addComment(eventId: eventId, userId: userId, content: content);
+      return Success(comment);
+    } catch (e) {
+      LogService.error('Add comment failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<List<GroupEventComment>, Exception>> getComments({required String eventId}) async {
+    try {
+      final comments = await _remoteDataSource.getComments(eventId: eventId);
+      return Success(comments);
+    } catch (e) {
+      LogService.error('Get comments failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteComment({required String commentId, required String userId}) async {
+    try {
+      await _remoteDataSource.deleteComment(commentId: commentId, userId: userId);
+      return const Success(null);
+    } catch (e) {
+      LogService.error('Delete comment failed: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }

@@ -24,6 +24,7 @@ function setupAll() {
   setupPollSheetsWrapper();
   setupSystemSheets();
   setupWeatherSheets();
+  setupGroupEventSheets();
 
   //最後统一套用格式
   applyTextFormatToAll();
@@ -176,6 +177,43 @@ function setupWeatherSheets() {
     ss.insertSheet(SHEET_WEATHER_RAW);
     Logger.log(`✓ ${SHEET_WEATHER_RAW} 工作表已建立`);
   }
+}
+
+/**
+ * 6. 初始化揪團相關工作表
+ * @description 建立 GroupEvents, GroupEventApplications, GroupEventComments
+ */
+function setupGroupEventSheets() {
+  const ss = getSpreadsheet();
+
+  if (!ss.getSheetByName(SHEET_GROUP_EVENTS)) {
+    _setupSheet(ss, SHEET_GROUP_EVENTS, HEADERS_GROUP_EVENTS);
+    Logger.log(`✓ ${SHEET_GROUP_EVENTS} 工作表已建立`);
+  }
+
+  if (!ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS)) {
+    _setupSheet(
+      ss,
+      SHEET_GROUP_EVENT_APPLICATIONS,
+      HEADERS_GROUP_EVENT_APPLICATIONS
+    );
+    Logger.log(`✓ ${SHEET_GROUP_EVENT_APPLICATIONS} 工作表已建立`);
+  }
+
+  if (!ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS)) {
+    _setupSheet(ss, SHEET_GROUP_EVENT_COMMENTS, HEADERS_GROUP_EVENT_COMMENTS);
+    Logger.log(`✓ ${SHEET_GROUP_EVENT_COMMENTS} 工作表已建立`);
+  }
+
+  _applyTextFormat(ss.getSheetByName(SHEET_GROUP_EVENTS), SHEET_GROUP_EVENTS);
+  _applyTextFormat(
+    ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS),
+    SHEET_GROUP_EVENT_APPLICATIONS
+  );
+  _applyTextFormat(
+    ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS),
+    SHEET_GROUP_EVENT_COMMENTS
+  );
 }
 
 /**

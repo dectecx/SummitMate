@@ -4,6 +4,7 @@ import '../../../core/di.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../models/group_event.dart';
+import '../../models/group_event_comment.dart';
 import '../interfaces/i_group_event_remote_data_source.dart';
 
 /// 揪團遠端資料來源實作 (GAS API)
@@ -194,6 +195,51 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     final response = await _apiClient.post({
       'action': ApiConfig.actionGroupEventUnlike,
       'event_id': eventId,
+      'user_id': userId,
+    });
+
+    final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+    if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+  }
+
+  @override
+  Future<GroupEventComment> addComment({
+    required String eventId,
+    required String userId,
+    required String content,
+  }) async {
+    LogService.info('Adding comment to event: $eventId by user: $userId', source: _source);
+    final response = await _apiClient.post({
+      'action': ApiConfig.actionGroupEventAddComment,
+      'event_id': eventId,
+      'user_id': userId,
+      'content': content,
+    });
+
+    final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+    if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+
+    return GroupEventComment.fromJson(gasResponse.data['comment'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<List<GroupEventComment>> getComments({required String eventId}) async {
+    LogService.info('Fetching comments for event: $eventId', source: _source);
+    final response = await _apiClient.post({'action': ApiConfig.actionGroupEventGetComments, 'event_id': eventId});
+
+    final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+    if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+
+    final List<dynamic> commentsJson = gasResponse.data['comments'] ?? [];
+    return commentsJson.map((c) => GroupEventComment.fromJson(c as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<void> deleteComment({required String commentId, required String userId}) async {
+    LogService.info('Deleting comment: $commentId by user: $userId', source: _source);
+    final response = await _apiClient.post({
+      'action': ApiConfig.actionGroupEventDeleteComment,
+      'comment_id': commentId,
       'user_id': userId,
     });
 

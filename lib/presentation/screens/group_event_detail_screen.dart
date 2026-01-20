@@ -10,6 +10,7 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../../infrastructure/tools/toast_service.dart';
+import '../widgets/group_event/group_event_comment_sheet.dart';
 
 /// 揪團詳情畫面
 class GroupEventDetailScreen extends StatefulWidget {
@@ -137,15 +138,25 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                 ),
               ),
 
-            // TODO: 留言區
+            // 留言區
             const SizedBox(height: 16),
             Text('留言 (${_event.commentCount})', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(
-                  child: Text('留言功能開發中...', style: TextStyle(color: Colors.grey)),
+            Card(
+              child: InkWell(
+                onTap: () => GroupEventCommentSheet.show(context, _event.id),
+                borderRadius: BorderRadius.circular(12),
+                child: const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.chat_bubble_outline, color: Colors.grey),
+                      SizedBox(width: 12),
+                      Text('查看所有留言...', style: TextStyle(color: Colors.grey)),
+                      Spacer(),
+                      Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    ],
+                  ),
                 ),
               ),
             ),
