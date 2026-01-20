@@ -6,6 +6,7 @@ import '../../data/models/group_event.dart';
 import '../tools/log_service.dart';
 import '../../domain/interfaces/i_group_event_service.dart';
 import '../../core/error/result.dart';
+import '../../data/datasources/interfaces/i_group_event_remote_data_source.dart';
 
 /// 揪團服務
 ///
@@ -19,8 +20,13 @@ class GroupEventService implements IGroupEventService {
   static const String _source = 'GroupEventService';
 
   final NetworkAwareClient _apiClient;
+  final IGroupEventRemoteDataSource _remoteDataSource;
 
-  GroupEventService({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
+  GroupEventService({
+    NetworkAwareClient? apiClient,
+    IGroupEventRemoteDataSource? remoteDataSource,
+  }) : _apiClient = apiClient ?? getIt<NetworkAwareClient>(),
+       _remoteDataSource = remoteDataSource ?? getIt<IGroupEventRemoteDataSource>();
 
   /// 取得揪團列表
   @override
@@ -352,17 +358,31 @@ class GroupEventService implements IGroupEventService {
     }
   }
 
-  /// 喜歡揪團 (TODO)
+  /// 喜歡揪團
+  ///
+  /// 委派呼叫 [IGroupEventRemoteDataSource.likeEvent]
   @override
   Future<Result<void, Exception>> likeEvent({required String eventId, required String userId}) async {
-    // TODO: Implement when GroupEventLikes is ready
-    return const Success(null);
+    try {
+      await _remoteDataSource.likeEvent(eventId: eventId, userId: userId);
+      return const Success(null);
+    } catch (e) {
+      LogService.error('Error liking event: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 
-  /// 取消喜歡 (TODO)
+  /// 取消喜歡
+  ///
+  /// 委派呼叫 [IGroupEventRemoteDataSource.unlikeEvent]
   @override
   Future<Result<void, Exception>> unlikeEvent({required String eventId, required String userId}) async {
-    // TODO: Implement when GroupEventLikes is ready
-    return const Success(null);
+    try {
+      await _remoteDataSource.unlikeEvent(eventId: eventId, userId: userId);
+      return const Success(null);
+    } catch (e) {
+      LogService.error('Error unliking event: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 }

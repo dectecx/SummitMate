@@ -137,6 +137,8 @@ class ApiConfig {
   static const String actionGroupEventCancelApplication = 'group_event_cancel_application';
   static const String actionGroupEventReviewApplication = 'group_event_review_application';
   static const String actionGroupEventMy = 'group_event_my';
+  static const String actionGroupEventLike = 'group_event_like';
+  static const String actionGroupEventUnlike = 'group_event_unlike';
 }
 
 /// Hive Box 名稱

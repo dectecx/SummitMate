@@ -66,4 +66,16 @@ abstract class IGroupEventRemoteDataSource {
   /// [userId] 使用者 ID
   /// [type] created, applied, liked
   Future<List<GroupEvent>> getMyEvents({required String userId, required String type});
+
+  /// 喜歡揪團
+  ///
+  /// [eventId] 揪團 ID
+  /// [userId] 使用者 ID
+  Future<void> likeEvent({required String eventId, required String userId});
+
+  /// 取消喜歡
+  ///
+  /// [eventId] 揪團 ID
+  /// [userId] 使用者 ID
+  Future<void> unlikeEvent({required String eventId, required String userId});
 }
