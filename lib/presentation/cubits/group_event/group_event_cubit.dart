@@ -7,6 +7,7 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/toast_service.dart';
 import '../../../data/repositories/interfaces/i_group_event_repository.dart';
 import '../../../domain/interfaces/i_group_event_service.dart';
+import '../../../data/models/group_event.dart';
 import 'group_event_state.dart';
 
 class GroupEventCubit extends Cubit<GroupEventState> {
@@ -209,11 +210,66 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     );
   }
 
-  /// Like event (TODO)
+  /// Like/Unlike event
   Future<bool> likeEvent({required String eventId}) async {
-    // TODO: Implement like functionality
-    ToastService.info('喜歡功能開發中');
-    return false;
+    if (_isGuest) {
+      ToastService.warning('請登入以收藏揪團');
+      return false;
+    }
+    if (_isOffline) {
+      ToastService.error('離線模式無法操作');
+      return false;
+    }
+
+    final currentState = state;
+    if (currentState is! GroupEventLoaded) return false;
+
+    // Find event
+    final eventIndex = currentState.events.indexWhere((e) => e.id == eventId);
+    if (eventIndex == -1) return false;
+
+    final event = currentState.events[eventIndex];
+    final originalIsLiked = event.isLiked;
+    final originalCount = event.likeCount;
+
+    // Optimistic Update
+    final updatedEvent = event.copyWith(
+      isLiked: !originalIsLiked,
+      likeCount: originalIsLiked ? originalCount - 1 : originalCount + 1,
+    );
+
+    final updatedEvents = List<GroupEvent>.from(currentState.events);
+    updatedEvents[eventIndex] = updatedEvent;
+
+    emit(currentState.copyWith(events: updatedEvents));
+
+    // Call API
+    try {
+      final action = originalIsLiked ? _groupEventService.unlikeEvent : _groupEventService.likeEvent;
+      final result = await action(eventId: eventId, userId: _currentUserId);
+
+      if (result is Failure) throw result.exception;
+
+      // 註：此處選擇不立即呼叫 _groupEventRepository.saveAll(updatedEvents) 來持久化 isLiked 狀態。
+      // 理由：Like 狀態會在下次 fetchEvents() 同步時自動更新，避免頻繁寫入本地儲存。
+
+      return true;
+    } catch (e) {
+      LogService.error('Like event failed: $e', source: _source);
+      ToastService.error('操作失敗');
+
+      // Rollback
+      if (!isClosed && state is GroupEventLoaded) {
+        // Re-read state in case it changed
+        final currentEvents = List<GroupEvent>.from((state as GroupEventLoaded).events);
+        final idx = currentEvents.indexWhere((e) => e.id == eventId);
+        if (idx != -1) {
+          currentEvents[idx] = event; // Revert to original
+          emit((state as GroupEventLoaded).copyWith(events: currentEvents));
+        }
+      }
+      return false;
+    }
   }
 
   void reset() {

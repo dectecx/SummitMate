@@ -174,4 +174,30 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     final List<dynamic> eventsJson = gasResponse.data['events'] ?? [];
     return eventsJson.map((e) => GroupEvent.fromJson(e)).toList();
   }
+
+  @override
+  Future<void> likeEvent({required String eventId, required String userId}) async {
+    LogService.info('Liking event: $eventId by user: $userId', source: _source);
+    final response = await _apiClient.post({
+      'action': ApiConfig.actionGroupEventLike,
+      'event_id': eventId,
+      'user_id': userId,
+    });
+
+    final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+    if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+  }
+
+  @override
+  Future<void> unlikeEvent({required String eventId, required String userId}) async {
+    LogService.info('Unliking event: $eventId by user: $userId', source: _source);
+    final response = await _apiClient.post({
+      'action': ApiConfig.actionGroupEventUnlike,
+      'event_id': eventId,
+      'user_id': userId,
+    });
+
+    final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+    if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+  }
 }
