@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/gear_helpers.dart';
 import '../cubits/gear/gear_cubit.dart';
 import '../cubits/gear/gear_state.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
-import 'gear/dialogs/add_gear_dialog.dart';
-import 'gear/dialogs/edit_gear_dialog.dart';
-import 'gear/dialogs/delete_gear_dialog.dart';
 import 'gear/gear_mode_selector.dart';
 import 'gear/gear_search_bar.dart';
 import 'gear/gear_summary_cards.dart';
-import 'gear/gear_item_tile.dart';
+import 'gear/gear_category_section.dart';
+import 'gear/dialogs/add_gear_dialog.dart';
 
 class GearTab extends StatefulWidget {
   final String? tripId;
@@ -157,51 +154,7 @@ class _GearTabState extends State<GearTab> {
                         )
                       else
                         ...state.itemsByCategory.entries.map(
-                          (entry) => Card(
-                            child: ExpansionTile(
-                              maintainState: true,
-                              initiallyExpanded: true,
-                              leading: Icon(GearCategoryHelper.getIcon(entry.key)),
-                              title: Text('${GearCategoryHelper.getName(entry.key)} (${entry.value.length}件)'),
-                              subtitle: Text(
-                                WeightFormatter.format(
-                                  entry.value.fold<double>(0, (sum, item) => sum + item.totalWeight),
-                                  decimals: 0,
-                                ),
-                              ),
-                              children: [
-                                ReorderableListView(
-                                  buildDefaultDragHandles: false,
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  onReorder: (oldIndex, newIndex) {
-                                    context.read<GearCubit>().reorderItem(oldIndex, newIndex, category: entry.key);
-                                  },
-                                  children: entry.value.map((item) {
-                                    return GearItemTile(
-                                      key: ValueKey(item.key),
-                                      item: item,
-                                      mode: _mode,
-                                      onToggle: () => context.read<GearCubit>().toggleChecked(item.key),
-                                      onTap: () {
-                                        if (_mode == GearListMode.view) {
-                                          EditGearDialog.show(context, item);
-                                        }
-                                      },
-                                      onDelete: () => DeleteGearDialog.show(context, item),
-                                      onIncrease: () =>
-                                          context.read<GearCubit>().updateQuantity(item, item.quantity + 1),
-                                      onDecrease: () {
-                                        if (item.quantity > 1) {
-                                          context.read<GearCubit>().updateQuantity(item, item.quantity - 1);
-                                        }
-                                      },
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
+                          (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
                         ),
                       const SizedBox(height: 80),
                     ],
