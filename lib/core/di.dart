@@ -239,6 +239,7 @@ Future<void> setupDependencies() async {
   final groupEventRepo = GroupEventRepository(
     localDataSource: getIt<IGroupEventLocalDataSource>(),
     remoteDataSource: getIt<IGroupEventRemoteDataSource>(),
+    authService: getIt<IAuthService>(),
   );
   getIt.registerSingleton<IGroupEventRepository>(groupEventRepo);
 

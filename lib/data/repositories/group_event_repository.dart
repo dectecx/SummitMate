@@ -20,12 +20,15 @@ class GroupEventRepository implements IGroupEventRepository {
 
   final IGroupEventLocalDataSource _localDataSource;
   final IGroupEventRemoteDataSource _remoteDataSource;
+  final IAuthService _authService;
 
   GroupEventRepository({
     required IGroupEventLocalDataSource localDataSource,
     required IGroupEventRemoteDataSource remoteDataSource,
+    required IAuthService authService,
   }) : _localDataSource = localDataSource,
-       _remoteDataSource = remoteDataSource;
+       _remoteDataSource = remoteDataSource,
+       _authService = authService;
 
   // ========== Init ==========
 
@@ -136,14 +139,12 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   String _getCurrentUserId() {
-    // Get from auth service via DI
-    try {
-      final authService = getIt<IAuthService>();
-      return authService.currentUserId ?? 'guest';
-    } catch (e) {
-      LogService.warning('Auth service not available, using guest', source: _source);
+    final userId = _authService.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      LogService.warning('Auth service returned null user, using guest', source: _source);
       return 'guest';
     }
+    return userId;
   }
 
   Future<void> _saveLastSyncTime(DateTime time) async {
