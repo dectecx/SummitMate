@@ -115,7 +115,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             ),
             const SizedBox(height: 16),
 
-            // TODO: 報名成功訊息 (審核通過後顯示)
+            // 報名成功訊息 (審核通過後顯示)
             if (_event.myApplicationStatus == GroupEventApplicationStatus.approved && _event.privateMessage.isNotEmpty)
               Card(
                 color: Colors.green.withValues(alpha: 0.1),
