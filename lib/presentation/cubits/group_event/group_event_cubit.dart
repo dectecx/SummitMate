@@ -17,6 +17,8 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   static const Duration _syncCooldown = Duration(minutes: 5);
   static const String _guestUserId = 'guest';
 
+  final Map<String, DateTime> _likeDebounceMap = {};
+
   GroupEventCubit({
     IGroupEventRepository? groupEventRepository,
     IConnectivityService? connectivity,
@@ -223,6 +225,17 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       ToastService.error('離線模式無法操作');
       return false;
     }
+
+    // Debounce/Throttle (300ms) to prevent rapid clicks
+    final now = DateTime.now();
+    if (_likeDebounceMap.containsKey(eventId)) {
+      final lastClick = _likeDebounceMap[eventId]!;
+      if (now.difference(lastClick) < const Duration(milliseconds: 300)) {
+        LogService.debug('Like event throttled for $eventId', source: _source);
+        return false;
+      }
+    }
+    _likeDebounceMap[eventId] = now;
 
     final currentState = state;
     if (currentState is! GroupEventLoaded) return false;
