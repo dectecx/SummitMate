@@ -1,47 +1,44 @@
 import 'package:flutter/material.dart';
-
-import '../../infrastructure/tools/tutorial_service.dart';
-import '../../infrastructure/tools/toast_service.dart';
-import '../../core/di.dart';
-import '../cubits/message/message_cubit.dart';
-import '../cubits/message/message_state.dart';
-import '../cubits/poll/poll_cubit.dart';
-import '../cubits/poll/poll_state.dart';
-import '../../core/constants/role_constants.dart';
-import '../../infrastructure/tools/usage_tracking_service.dart';
-
-import '../../data/models/trip.dart';
-import '../../data/repositories/interfaces/i_auth_session_repository.dart';
-import '../../core/error/result.dart';
-
-import '../cubits/trip/trip_cubit.dart';
-import '../cubits/trip/trip_state.dart';
-import '../cubits/auth/auth_cubit.dart';
-import '../cubits/auth/auth_state.dart';
-import '../cubits/sync/sync_cubit.dart';
-import '../cubits/sync/sync_state.dart';
-import '../cubits/itinerary/itinerary_cubit.dart';
-import '../cubits/itinerary/itinerary_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../widgets/app_drawer.dart';
-import '../widgets/itinerary_tab.dart';
-import '../widgets/gear_tab.dart';
-import '../widgets/info_tab.dart';
-import '../widgets/itinerary_edit_dialog.dart';
-
-import '../widgets/settings_dialog.dart';
 import 'package:uuid/uuid.dart';
-import '../../data/models/itinerary_item.dart';
 
-import 'collaboration_tab.dart';
-import 'trip_list_screen.dart';
-import 'map/map_screen.dart';
+import '../../../core/di.dart';
+import '../../../infrastructure/tools/toast_service.dart';
+import '../../../infrastructure/tools/tutorial_service.dart';
+import '../../../infrastructure/tools/usage_tracking_service.dart';
+import '../../../data/models/itinerary_item.dart';
+import '../../../data/repositories/interfaces/i_auth_session_repository.dart';
 
-import '../widgets/ads/banner_ad_widget.dart';
-import '../utils/tutorial_keys.dart';
+import '../../cubits/message/message_cubit.dart';
+import '../../cubits/message/message_state.dart';
+import '../../cubits/poll/poll_cubit.dart';
+import '../../cubits/poll/poll_state.dart';
+import '../../cubits/trip/trip_cubit.dart';
+import '../../cubits/trip/trip_state.dart';
+import '../../cubits/sync/sync_cubit.dart';
+import '../../cubits/sync/sync_state.dart';
+import '../../cubits/itinerary/itinerary_cubit.dart';
+import '../../cubits/itinerary/itinerary_state.dart';
+import '../../cubits/settings/settings_cubit.dart';
+import '../../cubits/settings/settings_state.dart';
+
+import '../../../data/models/trip.dart';
+import '../map/map_screen.dart';
+
+import '../../widgets/app_drawer.dart';
+import '../../widgets/itinerary_tab.dart';
+import '../../widgets/gear_tab.dart';
+import '../../widgets/info_tab.dart';
+import '../../widgets/itinerary_edit_dialog.dart';
+import '../../widgets/settings_dialog.dart';
+import '../../widgets/ads/banner_ad_widget.dart';
+
+import '../collaboration_tab.dart';
+import '../trip_list_screen.dart';
+
+import 'widgets/main_app_bar.dart';
+import 'widgets/main_bottom_nav_bar.dart';
+import 'dialogs/trip_selection_dialog.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -52,6 +49,7 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class MainNavigationScreenState extends State<MainNavigationScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
 
   UsageTrackingService? _usageTrackingService;
@@ -152,7 +150,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
               await TutorialService.start(topic: TutorialTopic.all);
               if (context.mounted) {
                 // 教學結束後，自動跳出匯入選單
-                _showTripSelectionDialog(context);
+                TripSelectionDialog.show(context);
               }
             },
             child: const Text('教學引導'),
@@ -219,13 +217,12 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       // 如果沒有行程，顯示空狀態 (Import / Create)
                       if (!hasTrips && !isTripLoading) {
                         return Scaffold(
+                          key: _scaffoldKey, // Use key to control drawer
                           appBar: AppBar(
-                            leading: Builder(
-                              builder: (context) => IconButton(
-                                icon: const Icon(Icons.menu),
-                                onPressed: () => Scaffold.of(context).openDrawer(),
-                                tooltip: '選單',
-                              ),
+                            leading: IconButton(
+                              icon: const Icon(Icons.menu),
+                              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                              tooltip: '選單',
                             ),
                             title: const Text('SummitMate 山友'),
                             actions: [
@@ -256,7 +253,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                 const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
                                 const SizedBox(height: 32),
                                 FilledButton.icon(
-                                  onPressed: () => _showTripSelectionDialog(context),
+                                  onPressed: () => TripSelectionDialog.show(context),
                                   icon: const Icon(Icons.cloud_download),
                                   label: const Text('從雲端匯入行程'),
                                 ),
@@ -273,110 +270,18 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                       }
 
                       final scaffold = Scaffold(
-                        appBar: AppBar(
-                          leading: Builder(
-                            builder: (context) => IconButton(
-                              key: TutorialKeys.mainDrawerMenu,
-                              icon: const Icon(Icons.menu),
-                              onPressed: () => Scaffold.of(context).openDrawer(),
-                              tooltip: '選單',
-                            ),
-                          ),
-                          title: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(activeTrip?.name ?? 'SummitMate 山友', overflow: TextOverflow.ellipsis),
-                              ),
-                              if (activeTrip != null) ...[
-                                const SizedBox(width: 8),
-                                Builder(
-                                  builder: (context) {
-                                    // Determine Role
-                                    final authState = context.read<AuthCubit>().state;
-                                    final userId = (authState is AuthAuthenticated) ? authState.userId : '';
-                                    final isOwner = activeTrip.userId == userId;
-                                    final roleLabel = isOwner
-                                        ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
-                                        : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
-                                    final color = isOwner ? Colors.orange : Colors.blueGrey;
-
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: color, // Solid color for better contrast
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
-                                      ),
-                                      child: Text(
-                                        roleLabel,
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                              if (isOffline) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.cloud_off, size: 12, color: Colors.white),
-                                      SizedBox(width: 4),
-                                      Text('離線', style: TextStyle(fontSize: 11, color: Colors.white)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                          bottom: isLoading
-                              ? const PreferredSize(
-                                  preferredSize: Size.fromHeight(4.0),
-                                  child: LinearProgressIndicator(),
-                                )
-                              : null,
-                          actions: [
-                            // Tab 0: 行程編輯與地圖 (僅在有行程時顯示)
-                            if (_currentIndex == 0) ...[
-                              IconButton(
-                                icon: Icon(isEditMode ? Icons.check : Icons.edit),
-                                tooltip: isEditMode ? '完成' : '編輯行程',
-                                onPressed: () => context.read<ItineraryCubit>().toggleEditMode(),
-                              ),
-                              if (isEditMode)
-                                IconButton(
-                                  icon: const Icon(Icons.cloud_upload_outlined),
-                                  tooltip: '上傳至雲端',
-                                  onPressed: () => _handleCloudUpload(context),
-                                ),
-                              if (!isEditMode) ...[
-                                IconButton(
-                                  icon: const Icon(Icons.map_outlined),
-                                  tooltip: '查看地圖',
-                                  onPressed: () =>
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
-                                ),
-                              ],
-                            ],
-                            // 設定按鈕
-                            IconButton(
-                              key: TutorialKeys.mainSettings,
-                              icon: const Icon(Icons.settings),
-                              onPressed: () => _showSettingsDialog(context),
-                              tooltip: '設定',
-                            ),
-                          ],
+                        key: _scaffoldKey,
+                        appBar: MainAppBar(
+                          activeTrip: activeTrip,
+                          isOffline: isOffline,
+                          isLoading: isLoading,
+                          currentIndex: _currentIndex,
+                          isEditMode: isEditMode,
+                          onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                          onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
+                          onUpload: () => _handleCloudUpload(context),
+                          onMap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
+                          onSettings: () => _showSettingsDialog(context),
                         ),
                         drawer: const AppDrawer(), // 使用獨立的 AppDrawer Widget
                         body: Column(
@@ -393,8 +298,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             const BannerAdWidget(location: 'navigation_bottom'),
                           ],
                         ),
-                        bottomNavigationBar: NavigationBar(
-                          selectedIndex: _currentIndex,
+                        bottomNavigationBar: MainBottomNavigationBar(
+                          currentIndex: _currentIndex,
                           onDestinationSelected: (index) {
                             setState(() => _currentIndex = index);
                             // 切換分頁時關閉編輯模式
@@ -402,32 +307,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                               context.read<ItineraryCubit>().toggleEditMode();
                             }
                           },
-                          destinations: [
-                            NavigationDestination(
-                              key: TutorialKeys.tabItinerary,
-                              icon: const Icon(Icons.schedule),
-                              selectedIcon: const Icon(Icons.schedule),
-                              label: '行程',
-                            ),
-                            NavigationDestination(
-                              key: TutorialKeys.tabGear,
-                              icon: const Icon(Icons.backpack_outlined),
-                              selectedIcon: const Icon(Icons.backpack),
-                              label: '裝備',
-                            ),
-                            NavigationDestination(
-                              key: TutorialKeys.tabMessage,
-                              icon: const Icon(Icons.forum_outlined),
-                              selectedIcon: const Icon(Icons.forum),
-                              label: '互動',
-                            ),
-                            NavigationDestination(
-                              key: TutorialKeys.tabInfo,
-                              icon: const Icon(Icons.info_outline),
-                              selectedIcon: const Icon(Icons.info),
-                              label: '資訊',
-                            ),
-                          ],
                         ),
                         floatingActionButton: (_currentIndex == 0 && isEditMode)
                             ? FloatingActionButton(
@@ -451,112 +330,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         },
       ), // Itinerary
     );
-  }
-
-  /// 顯示行程選擇對話框 (從雲端匯入)
-  ///
-  /// 流程：
-  /// 1. 呼叫 [TripCubit.getCloudTrips] 取得雲端列表
-  /// 2. 顯示列表供用戶選擇
-  /// 3. 選定後呼叫 [_importAndSwitchTrip] 進行匯入
-  Future<void> _showTripSelectionDialog(BuildContext context) async {
-    final tripCubit = context.read<TripCubit>();
-
-    // 1. 顯示 Loading 並取得 Trip List
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (c) => const Center(child: CircularProgressIndicator()),
-    );
-
-    final result = await tripCubit.getCloudTrips();
-    if (!context.mounted) return;
-    Navigator.pop(context); // Close Loading
-
-    if (result is Failure) {
-      ToastService.error((result as Failure).exception.toString());
-      return;
-    }
-
-    final cloudTrips = (result as Success<List<Trip>, Exception>).value;
-    if (cloudTrips.isEmpty) {
-      ToastService.info('雲端目前沒有行程資料');
-      return;
-    }
-
-    // 2. 顯示選擇列表
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('選擇要匯入的行程'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: cloudTrips.length,
-            itemBuilder: (itemContext, index) {
-              final trip = cloudTrips[index];
-              return ListTile(
-                leading: const Icon(Icons.map),
-                title: Text(trip.name),
-                subtitle: Text(trip.startDate.toIso8601String().split('T').first),
-                onTap: () {
-                  Navigator.pop(dialogContext);
-                  // 使用最外層穩定的 context
-                  _importAndSwitchTrip(context, trip);
-                },
-              );
-            },
-          ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消'))],
-      ),
-    );
-  }
-
-  /// 匯入並切換行程
-  ///
-  /// 此過程包含：
-  /// 1. 將 [Trip] 資料存入本地 (若存在則更新，不存在則新增)
-  /// 2. 設定為當前活動行程 (Active Trip)
-  /// 3. 呼叫 [SyncCubit.syncAll] 下載該行程的完整資料 (行程表、留言)
-  ///
-  /// [cloudTrip] 欲匯入的雲端行程物件
-  Future<void> _importAndSwitchTrip(BuildContext context, Trip cloudTrip) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (c) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final tripCubit = context.read<TripCubit>();
-
-      // 1. 新增/更新 Trip Meta 到本地
-      // 先檢查本地是否已有此 ID
-      final existing = await tripCubit.getTripById(cloudTrip.id);
-      if (existing != null) {
-        await tripCubit.updateTrip(cloudTrip);
-      } else {
-        await tripCubit.importTrip(cloudTrip);
-      }
-
-      // 2. 切換為 Active
-      await tripCubit.setActiveTrip(cloudTrip.id);
-
-      // 3. 觸發 Sync (下載該 Trip 的 itinerary/messages)
-      // 使用 SyncCubit 統一執行同步
-      if (!context.mounted) return;
-      await context.read<SyncCubit>().syncAll(force: true);
-
-      if (context.mounted) {
-        Navigator.pop(context); // Close Loading
-      }
-      ToastService.success('行程匯入成功');
-    } catch (e) {
-      if (context.mounted) Navigator.pop(context);
-      ToastService.error('匯入失敗: $e');
-    }
   }
 
   /// 建立對應頁籤內容 (帶 key 以支援 AnimatedSwitcher)
@@ -707,7 +480,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       },
       // 2. Drawer / Settings
       onFocusDrawer: () async {
-        Scaffold.of(context).openDrawer();
+        _scaffoldKey.currentState?.openDrawer();
         await Future.delayed(const Duration(milliseconds: 300));
       },
       onFocusSettings: () async {
@@ -732,7 +505,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       // 4. Member Management Flow (Complex)
       onFocusManageTrips: () async {
         // Open Drawer to show "Manage Trips" item
-        Scaffold.of(context).openDrawer();
+        _scaffoldKey.currentState?.openDrawer();
         await Future.delayed(const Duration(milliseconds: 300));
       },
       onFocusTripListMember: () async {
