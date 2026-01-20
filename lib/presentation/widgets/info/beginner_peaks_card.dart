@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../screens/beginner_peaks_screen.dart';
+import '../../screens/beginner_peaks/beginner_peaks_screen.dart';
 
 /// 新手入門百岳推薦卡片
 ///
