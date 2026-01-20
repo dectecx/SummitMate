@@ -9,9 +9,9 @@ build/
 
 # Generated files
 *.g.dart
-*.freezed.dart
-*.mocks.dart
-*.isar
+
+# Local Documentation (Not tracked)
+_local_docs/
 
 # IDE - VSCode
 .vscode/
