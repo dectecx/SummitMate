@@ -281,6 +281,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
         }
 
         return Scaffold(
+          appBar: AppBar(title: const Text('揪團活動'), centerTitle: true),
           body: Column(
             children: [
               // Filter Bar
