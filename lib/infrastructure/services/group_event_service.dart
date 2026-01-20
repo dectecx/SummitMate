@@ -22,11 +22,9 @@ class GroupEventService implements IGroupEventService {
   final NetworkAwareClient _apiClient;
   final IGroupEventRemoteDataSource _remoteDataSource;
 
-  GroupEventService({
-    NetworkAwareClient? apiClient,
-    IGroupEventRemoteDataSource? remoteDataSource,
-  }) : _apiClient = apiClient ?? getIt<NetworkAwareClient>(),
-       _remoteDataSource = remoteDataSource ?? getIt<IGroupEventRemoteDataSource>();
+  GroupEventService({NetworkAwareClient? apiClient, IGroupEventRemoteDataSource? remoteDataSource})
+    : _apiClient = apiClient ?? getIt<NetworkAwareClient>(),
+      _remoteDataSource = remoteDataSource ?? getIt<IGroupEventRemoteDataSource>();
 
   /// 取得揪團列表
   @override

@@ -7,6 +7,7 @@ import 'interfaces/i_group_event_repository.dart';
 import '../datasources/interfaces/i_group_event_local_data_source.dart';
 import '../datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../models/group_event.dart';
+import '../models/enums/group_event_status.dart';
 
 /// 揪團 Repository (支援 Offline-First)
 ///
@@ -300,6 +301,24 @@ class GroupEventRepository implements IGroupEventRepository {
         await _localDataSource.saveEvent(rollback);
       }
       LogService.error('Unlike event failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> closeEvent({required String eventId, required String userId}) async {
+    try {
+      await _remoteDataSource.closeEvent(eventId: eventId, userId: userId);
+      // 更新本地快取狀態
+      final event = _localDataSource.getEventById(eventId);
+      if (event != null) {
+        final updated = event.copyWith(status: GroupEventStatus.closed);
+        await _localDataSource.saveEvent(updated);
+      }
+      LogService.info('Closed event: $eventId', source: _source);
+      return const Success(null);
+    } catch (e) {
+      LogService.error('Close event failed: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }

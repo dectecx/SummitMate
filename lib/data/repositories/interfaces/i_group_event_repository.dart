@@ -99,4 +99,10 @@ abstract interface class IGroupEventRepository {
   /// [eventId] 揪團 ID
   /// [userId] 使用者 ID
   Future<Result<void, Exception>> unlikeEvent({required String eventId, required String userId});
+
+  /// 關閉揪團 (雲端)
+  ///
+  /// [eventId] 揪團 ID
+  /// [userId] 操作者 ID
+  Future<Result<void, Exception>> closeEvent({required String eventId, required String userId});
 }
