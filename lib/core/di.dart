@@ -12,7 +12,6 @@ import '../infrastructure/services/sync_service.dart';
 import '../infrastructure/services/connectivity_service.dart';
 import '../infrastructure/services/weather_service.dart';
 import '../infrastructure/services/poll_service.dart';
-import '../infrastructure/services/group_event_service.dart';
 import '../infrastructure/services/geolocator_service.dart';
 import '../infrastructure/services/gear_cloud_service.dart';
 import '../infrastructure/services/gas_auth_service.dart';
@@ -32,7 +31,6 @@ import '../infrastructure/interceptors/auth_interceptor.dart';
 import '../domain/interfaces/i_connectivity_service.dart';
 import '../domain/interfaces/i_weather_service.dart';
 import '../domain/interfaces/i_poll_service.dart';
-import '../domain/interfaces/i_group_event_service.dart';
 import '../domain/interfaces/i_geolocator_service.dart';
 import '../domain/interfaces/i_gear_cloud_service.dart';
 import '../domain/interfaces/i_auth_service.dart';
@@ -243,7 +241,6 @@ Future<void> setupDependencies() async {
     remoteDataSource: getIt<IGroupEventRemoteDataSource>(),
   );
   getIt.registerSingleton<IGroupEventRepository>(groupEventRepo);
-  getIt.registerSingleton<IGroupEventService>(GroupEventService());
 
   // 5. Additional Services & Utils
   getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
