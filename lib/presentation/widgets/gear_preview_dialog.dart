@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants.dart';
 import '../../core/gear_helpers.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
@@ -40,7 +41,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
   Map<String, List<GearItem>> get groupedItems {
     final map = <String, List<GearItem>>{};
     for (final item in items) {
-      final category = item.category.isEmpty ? GearCategoryHelper.other : item.category;
+      final category = item.category.isEmpty ? GearCategory.other : item.category;
       map.putIfAbsent(category, () => []).add(item);
     }
     return map;

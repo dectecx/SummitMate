@@ -1,29 +1,21 @@
 import 'package:flutter/material.dart';
+import 'constants.dart';
 
 /// 裝備分類輔助工具
 /// 集中管理分類相關的 icon、名稱、顏色等，避免重複定義
 class GearCategoryHelper {
   GearCategoryHelper._();
 
-  /// 分類常數
-  static const String sleep = 'Sleep';
-  static const String cook = 'Cook';
-  static const String wear = 'Wear';
-  static const String other = 'Other';
-
-  /// 所有分類 (有序)
-  static const List<String> allCategories = [sleep, cook, wear, other];
-
   /// 取得分類 Icon
   static IconData getIcon(String category) {
     switch (category) {
-      case sleep:
+      case GearCategory.sleep:
         return Icons.bed;
-      case cook:
+      case GearCategory.cook:
         return Icons.restaurant;
-      case wear:
+      case GearCategory.wear:
         return Icons.checkroom;
-      case other:
+      case GearCategory.other:
         return Icons.category;
       default:
         return Icons.inventory_2;
@@ -33,13 +25,13 @@ class GearCategoryHelper {
   /// 取得分類顯示名稱
   static String getName(String category) {
     switch (category) {
-      case sleep:
+      case GearCategory.sleep:
         return '睡眠系統';
-      case cook:
+      case GearCategory.cook:
         return '炊具與飲食';
-      case wear:
+      case GearCategory.wear:
         return '穿著';
-      case other:
+      case GearCategory.other:
         return '其他';
       default:
         return category;
@@ -49,13 +41,13 @@ class GearCategoryHelper {
   /// 取得分類顏色
   static Color getColor(String category) {
     switch (category) {
-      case sleep:
+      case GearCategory.sleep:
         return Colors.indigo;
-      case cook:
+      case GearCategory.cook:
         return Colors.orange;
-      case wear:
+      case GearCategory.wear:
         return Colors.teal;
-      case other:
+      case GearCategory.other:
         return Colors.grey;
       default:
         return Colors.grey;
@@ -64,7 +56,7 @@ class GearCategoryHelper {
 
   /// 取得分類排序索引 (用於排序)
   static int getSortIndex(String category) {
-    final index = allCategories.indexOf(category);
+    final index = GearCategory.all.indexOf(category);
     return index == -1 ? 999 : index;
   }
 
