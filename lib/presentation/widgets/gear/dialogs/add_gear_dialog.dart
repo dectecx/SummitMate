@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/constants.dart';
 import '../../../../core/gear_helpers.dart';
 import '../../../../data/models/gear_library_item.dart';
 import '../../../../infrastructure/tools/toast_service.dart';
@@ -39,7 +40,7 @@ class _AddGearDialogState extends State<AddGearDialog> {
   final _quantityController = TextEditingController(text: '1');
   final _focusNode = FocusNode();
 
-  String _selectedCategory = 'Other';
+  String _selectedCategory = GearCategory.other;
   GearLibraryItem? _linkedItem;
 
   @override
@@ -162,10 +163,10 @@ class _AddGearDialogState extends State<AddGearDialog> {
                     initialValue: _selectedCategory,
                     decoration: const InputDecoration(labelText: '分類'),
                     items: const [
-                      DropdownMenuItem(value: 'Sleep', child: Text('睡眠系統')),
-                      DropdownMenuItem(value: 'Cook', child: Text('炊具與飲食')),
-                      DropdownMenuItem(value: 'Wear', child: Text('穿著')),
-                      DropdownMenuItem(value: 'Other', child: Text('其他')),
+                      DropdownMenuItem(value: GearCategory.sleep, child: Text('睡眠系統')),
+                      DropdownMenuItem(value: GearCategory.cook, child: Text('炊具與飲食')),
+                      DropdownMenuItem(value: GearCategory.wear, child: Text('穿著')),
+                      DropdownMenuItem(value: GearCategory.other, child: Text('其他')),
                     ],
                     onChanged: _linkedItem == null ? (value) => setState(() => _selectedCategory = value!) : null,
                   ),

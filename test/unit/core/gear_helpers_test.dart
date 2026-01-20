@@ -1,61 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/core/gear_helpers.dart';
 
 void main() {
   group('GearCategoryHelper Tests', () {
     test('allCategories constant contains expected values', () {
       expect(
-        GearCategoryHelper.allCategories,
+        GearCategory.all,
         containsAll([
-          GearCategoryHelper.sleep,
-          GearCategoryHelper.cook,
-          GearCategoryHelper.wear,
-          GearCategoryHelper.other,
+          GearCategory.sleep,
+          GearCategory.cook,
+          GearCategory.wear,
+          GearCategory.other,
         ]),
       );
-      expect(GearCategoryHelper.allCategories.length, 4);
+      expect(GearCategory.all.length, 4);
     });
 
     test('getIcon returns correct icon for each category', () {
-      expect(GearCategoryHelper.getIcon(GearCategoryHelper.sleep), Icons.bed);
-      expect(GearCategoryHelper.getIcon(GearCategoryHelper.cook), Icons.restaurant);
-      expect(GearCategoryHelper.getIcon(GearCategoryHelper.wear), Icons.checkroom);
-      expect(GearCategoryHelper.getIcon(GearCategoryHelper.other), Icons.category);
+      expect(GearCategoryHelper.getIcon(GearCategory.sleep), Icons.bed);
+      expect(GearCategoryHelper.getIcon(GearCategory.cook), Icons.restaurant);
+      expect(GearCategoryHelper.getIcon(GearCategory.wear), Icons.checkroom);
+      expect(GearCategoryHelper.getIcon(GearCategory.other), Icons.category);
       expect(GearCategoryHelper.getIcon('Unknown'), Icons.inventory_2);
     });
 
     test('getName returns correct name for each category', () {
-      expect(GearCategoryHelper.getName(GearCategoryHelper.sleep), '睡眠系統');
-      expect(GearCategoryHelper.getName(GearCategoryHelper.cook), '炊具與飲食');
-      expect(GearCategoryHelper.getName(GearCategoryHelper.wear), '穿著');
-      expect(GearCategoryHelper.getName(GearCategoryHelper.other), '其他');
+      expect(GearCategoryHelper.getName(GearCategory.sleep), '睡眠系統');
+      expect(GearCategoryHelper.getName(GearCategory.cook), '炊具與飲食');
+      expect(GearCategoryHelper.getName(GearCategory.wear), '穿著');
+      expect(GearCategoryHelper.getName(GearCategory.other), '其他');
       expect(GearCategoryHelper.getName('Unknown'), 'Unknown');
     });
 
     test('getColor returns correct color for each category', () {
-      expect(GearCategoryHelper.getColor(GearCategoryHelper.sleep), Colors.indigo);
-      expect(GearCategoryHelper.getColor(GearCategoryHelper.cook), Colors.orange);
-      expect(GearCategoryHelper.getColor(GearCategoryHelper.wear), Colors.teal);
-      expect(GearCategoryHelper.getColor(GearCategoryHelper.other), Colors.grey);
+      expect(GearCategoryHelper.getColor(GearCategory.sleep), Colors.indigo);
+      expect(GearCategoryHelper.getColor(GearCategory.cook), Colors.orange);
+      expect(GearCategoryHelper.getColor(GearCategory.wear), Colors.teal);
+      expect(GearCategoryHelper.getColor(GearCategory.other), Colors.grey);
       expect(GearCategoryHelper.getColor('Unknown'), Colors.grey);
     });
 
     test('compareCategories sorts categories correctly', () {
       final categories = [
-        GearCategoryHelper.other,
-        GearCategoryHelper.sleep,
-        GearCategoryHelper.wear,
-        GearCategoryHelper.cook,
+        GearCategory.other,
+        GearCategory.sleep,
+        GearCategory.wear,
+        GearCategory.cook,
       ];
 
       categories.sort(GearCategoryHelper.compareCategories);
 
       expect(categories, [
-        GearCategoryHelper.sleep,
-        GearCategoryHelper.cook,
-        GearCategoryHelper.wear,
-        GearCategoryHelper.other,
+        GearCategory.sleep,
+        GearCategory.cook,
+        GearCategory.wear,
+        GearCategory.other,
       ]);
     });
   });
