@@ -601,25 +601,147 @@ function _getUserInfoForGE(ss, userId) {
 }
 
 /**
- * 初始化揪團相關工作表
- * (請在 GAS 編輯器中手動執行一次)
+ * 新增留言
+ * @param {Object} data - { event_id, user_id, content }
+ * @returns {Object} { code, data, message }
  */
-function setupGroupEventSheets() {
+function addGroupEventComment(data) {
   const ss = getSpreadsheet();
+  const commentSheet = ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS);
+  const eventSheet = ss.getSheetByName(SHEET_GROUP_EVENTS);
 
-  if (!ss.getSheetByName(SHEET_GROUP_EVENTS)) {
-    _setupSheet(ss, SHEET_GROUP_EVENTS, HEADERS_GROUP_EVENTS);
-    Logger.log(`✓ ${SHEET_GROUP_EVENTS} 工作表已建立`);
-  }
-
-  if (!ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS)) {
-    _setupSheet(
-      ss,
-      SHEET_GROUP_EVENT_APPLICATIONS,
-      HEADERS_GROUP_EVENT_APPLICATIONS
+  if (!commentSheet) {
+    return _error(
+      API_CODES.GROUP_EVENT_SHEET_MISSING,
+      "缺少 GroupEventComments 工作表"
     );
-    Logger.log(`✓ ${SHEET_GROUP_EVENT_APPLICATIONS} 工作表已建立`);
   }
 
-  Logger.log("揪團工作表 (GroupEvents, Applications) 初始化完成");
+  const eventId = data.event_id;
+  const userId = String(data.user_id || "");
+  const content = data.content;
+
+  if (!userId || userId === "guest") {
+    return _error(API_CODES.AUTH_REQUIRED, "請先登入以留言");
+  }
+
+  if (!eventId) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 event_id");
+  }
+
+  if (!content) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少留言內容");
+  }
+
+  // 檢查揪團是否存在
+  const events = _getSheetDataAsObjects(eventSheet, HEADERS_GROUP_EVENTS);
+  const event = events.find((e) => e.id === eventId);
+  if (!event) {
+    return _error(API_CODES.GROUP_EVENT_NOT_FOUND, "找不到此揪團");
+  }
+
+  // 取得使用者資訊 (快照)
+  const userInfo = _getUserInfoForGE(ss, userId);
+
+  // 建立留言物件 (使用 Mapper)
+  const commentData = {
+    event_id: eventId,
+    user_id: userId,
+    content: content,
+    user_name: userInfo.name, // 雖然 Mapper 會處理，但這裡為了明確傳入
+    user_avatar: userInfo.avatar,
+  };
+
+  const pObj = Mapper.GroupEventComment.toPersistence(
+    commentData,
+    userId,
+    userInfo
+  );
+
+  // 寫入 Sheet
+  const row = HEADERS_GROUP_EVENT_COMMENTS.map((h) =>
+    pObj[h] !== undefined ? pObj[h] : ""
+  );
+  commentSheet.appendRow(row);
+
+  // 回傳 DTO
+  const dto = Mapper.GroupEventComment.toDTO(pObj);
+
+  return _success({ comment: dto }, "留言已新增");
+}
+
+/**
+ * 取得留言列表
+ * @param {Object} data - { event_id }
+ * @returns {Object} { code, data, message }
+ */
+function getGroupEventComments(data) {
+  const ss = getSpreadsheet();
+  const commentSheet = ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS);
+
+  if (!commentSheet) {
+    return _error(
+      API_CODES.GROUP_EVENT_SHEET_MISSING,
+      "缺少 GroupEventComments 工作表"
+    );
+  }
+
+  const eventId = data.event_id;
+  if (!eventId) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 event_id");
+  }
+
+  const commentsRaw = _getSheetDataAsObjects(
+    commentSheet,
+    HEADERS_GROUP_EVENT_COMMENTS
+  );
+
+  // 過濾並排序 (最早的在前)，並轉換為 DTO
+  const comments = commentsRaw
+    .filter((c) => c.event_id === eventId)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    .map((c) => Mapper.GroupEventComment.toDTO(c));
+
+  return _success({ comments: comments }, "取得留言列表成功");
+}
+
+/**
+ * 刪除留言
+ * @param {Object} data - { comment_id, user_id }
+ * @returns {Object} { code, data, message }
+ */
+function deleteGroupEventComment(data) {
+  const ss = getSpreadsheet();
+  const commentSheet = ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS);
+
+  const commentId = data.comment_id;
+  const userId = String(data.user_id || "");
+
+  if (!userId || userId === "guest") {
+    return _error(API_CODES.AUTH_REQUIRED, "權限不足");
+  }
+
+  const allData = commentSheet.getDataRange().getValues();
+  let foundIndex = -1;
+
+  for (let i = 1; i < allData.length; i++) {
+    if (allData[i][0] === commentId) {
+      // 權限檢查: 只能刪除自己的留言 (TODO: 揪團主也能刪除?)
+      if (allData[i][2] !== userId) {
+        return _error(
+          API_CODES.GROUP_EVENT_PERMISSION_DENIED,
+          "無法刪除他人留言"
+        );
+      }
+      foundIndex = i + 1;
+      break;
+    }
+  }
+
+  if (foundIndex === -1) {
+    return _error(API_CODES.GROUP_EVENT_COMMENT_NOT_FOUND, "找不到此留言");
+  }
+
+  commentSheet.deleteRow(foundIndex);
+  return _success(null, "留言已刪除");
 }

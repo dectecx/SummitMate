@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/models/group_event.dart';
+import 'package:summitmate/data/models/group_event_comment.dart';
 import 'package:summitmate/data/repositories/interfaces/i_group_event_repository.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
@@ -114,6 +115,32 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   }) async => const Success(null);
   @override
   Future<Result<void, Exception>> closeEvent({required String eventId, required String userId}) async =>
+      const Success(null);
+
+  // Comment stubs
+  @override
+  Future<Result<List<GroupEventComment>, Exception>> getComments({required String eventId}) async => const Success([]);
+
+  @override
+  Future<Result<GroupEventComment, Exception>> addComment({
+    required String eventId,
+    required String userId,
+    required String content,
+  }) async => Success(
+    GroupEventComment(
+      id: 'c1',
+      eventId: eventId,
+      userId: userId,
+      content: content,
+      userName: 'Test User',
+      userAvatar: '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    ),
+  );
+
+  @override
+  Future<Result<void, Exception>> deleteComment({required String commentId, required String userId}) async =>
       const Success(null);
 }
 

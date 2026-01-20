@@ -559,4 +559,54 @@ const Mapper = {
       };
     },
   },
+
+  // ============================================================
+  // GroupEventComment Mapper
+  // ============================================================
+  GroupEventComment: {
+    /**
+     * DB Row → API DTO
+     * @param {Object} row - 來自 GroupEventComments Sheet 的物件
+     * @returns {Object} DTO
+     */
+    toDTO: function (row) {
+      if (!row) return null;
+
+      return {
+        id: row.id,
+        event_id: row.event_id,
+        user_id: row.user_id,
+        content: row.content,
+        user_name: row.user_name || "",
+        user_avatar: row.user_avatar || DEFAULT_AVATAR,
+        created_at: row.created_at,
+        created_by: row.created_by,
+        updated_at: row.updated_at,
+        updated_by: row.updated_by,
+      };
+    },
+
+    /**
+     * API Request → DB Row Object
+     * @param {Object} dto - 前端傳來的 Comment JSON (or partial)
+     * @param {string} operatorId - 操作者 ID
+     * @param {Object} userInfo - { name, avatar }
+     * @returns {Object} Persistence Object (key-value)
+     */
+    toPersistence: function (dto, operatorId, userInfo = {}) {
+      const now = new Date().toISOString();
+      return {
+        id: dto.id || Utilities.getUuid(),
+        event_id: dto.event_id,
+        user_id: dto.user_id || operatorId,
+        content: dto.content,
+        user_name: userInfo.name || "",
+        user_avatar: userInfo.avatar || DEFAULT_AVATAR,
+        created_at: dto.created_at || now,
+        created_by: dto.created_by || operatorId,
+        updated_at: now,
+        updated_by: operatorId,
+      };
+    },
+  },
 };

@@ -1,4 +1,5 @@
 import '../../models/group_event.dart';
+import '../../models/group_event_comment.dart';
 
 /// 揪團 (GroupEvent) 的遠端資料來源介面
 ///
@@ -78,4 +79,22 @@ abstract class IGroupEventRemoteDataSource {
   /// [eventId] 揪團 ID
   /// [userId] 使用者 ID
   Future<void> unlikeEvent({required String eventId, required String userId});
+
+  /// 新增留言
+  ///
+  /// [eventId] 揪團 ID
+  /// [userId] 使用者 ID
+  /// [content] 留言內容
+  Future<GroupEventComment> addComment({required String eventId, required String userId, required String content});
+
+  /// 取得留言列表
+  ///
+  /// [eventId] 揪團 ID
+  Future<List<GroupEventComment>> getComments({required String eventId});
+
+  /// 刪除留言
+  ///
+  /// [commentId] 留言 ID
+  /// [userId] 使用者 ID
+  Future<void> deleteComment({required String commentId, required String userId});
 }

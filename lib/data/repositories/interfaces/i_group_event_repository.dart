@@ -1,5 +1,6 @@
-import '../../models/group_event.dart';
 import '../../../core/error/result.dart';
+import '../../models/group_event.dart';
+import '../../models/group_event_comment.dart';
 
 /// 揪團 Repository 抽象介面
 /// 定義揪團資料存取的契約 (支援 Offline-First)
@@ -105,4 +106,28 @@ abstract interface class IGroupEventRepository {
   /// [eventId] 揪團 ID
   /// [userId] 操作者 ID
   Future<Result<void, Exception>> closeEvent({required String eventId, required String userId});
+
+  // ========== Comment Operations ==========
+
+  /// 取得留言列表 (雲端)
+  ///
+  /// [eventId] 揪團 ID
+  Future<Result<List<GroupEventComment>, Exception>> getComments({required String eventId});
+
+  /// 新增留言 (雲端)
+  ///
+  /// [eventId] 揪團 ID
+  /// [userId] 使用者 ID
+  /// [content] 留言內容
+  Future<Result<GroupEventComment, Exception>> addComment({
+    required String eventId,
+    required String userId,
+    required String content,
+  });
+
+  /// 刪除留言 (雲端)
+  ///
+  /// [commentId] 留言 ID
+  /// [userId] 使用者 ID
+  Future<Result<void, Exception>> deleteComment({required String commentId, required String userId});
 }
