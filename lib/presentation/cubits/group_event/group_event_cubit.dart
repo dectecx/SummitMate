@@ -7,7 +7,6 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/toast_service.dart';
 import '../../../data/repositories/interfaces/i_group_event_repository.dart';
 import '../../../domain/interfaces/i_group_event_service.dart';
-import '../../../data/models/group_event.dart';
 import 'group_event_state.dart';
 
 class GroupEventCubit extends Cubit<GroupEventState> {
@@ -210,7 +209,10 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     );
   }
 
-  /// Like/Unlike event
+  /// 喜歡/取消喜歡揪團
+  ///
+  /// 委派呼叫 [IGroupEventRepository.likeEvent] 或 [unlikeEvent]，
+  /// Repository 負責本地持久化和遠端 API 呼叫。
   Future<bool> likeEvent({required String eventId}) async {
     if (_isGuest) {
       ToastService.warning('請登入以收藏揪團');
@@ -224,52 +226,38 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     final currentState = state;
     if (currentState is! GroupEventLoaded) return false;
 
-    // Find event
-    final eventIndex = currentState.events.indexWhere((e) => e.id == eventId);
-    if (eventIndex == -1) return false;
+    // 找到目前的 event
+    final event = currentState.events.firstWhere((e) => e.id == eventId, orElse: () => currentState.events.first);
+    final wasLiked = event.isLiked;
 
-    final event = currentState.events[eventIndex];
-    final originalIsLiked = event.isLiked;
-    final originalCount = event.likeCount;
-
-    // Optimistic Update
-    final updatedEvent = event.copyWith(
-      isLiked: !originalIsLiked,
-      likeCount: originalIsLiked ? originalCount - 1 : originalCount + 1,
-    );
-
-    final updatedEvents = List<GroupEvent>.from(currentState.events);
-    updatedEvents[eventIndex] = updatedEvent;
-
+    // Optimistic UI Update
+    final updatedEvents = currentState.events.map((e) {
+      if (e.id == eventId) {
+        return e.copyWith(
+          isLiked: !wasLiked,
+          likeCount: wasLiked ? e.likeCount - 1 : e.likeCount + 1,
+        );
+      }
+      return e;
+    }).toList();
     emit(currentState.copyWith(events: updatedEvents));
 
-    // Call API
-    try {
-      final action = originalIsLiked ? _groupEventService.unlikeEvent : _groupEventService.likeEvent;
-      final result = await action(eventId: eventId, userId: _currentUserId);
+    // 委派給 Repository (含本地持久化 + API 呼叫)
+    final result = wasLiked
+        ? await _groupEventRepository.unlikeEvent(eventId: eventId, userId: _currentUserId)
+        : await _groupEventRepository.likeEvent(eventId: eventId, userId: _currentUserId);
 
-      if (result is Failure) throw result.exception;
-
-      // 註：此處選擇不立即呼叫 _groupEventRepository.saveAll(updatedEvents) 來持久化 isLiked 狀態。
-      // 理由：Like 狀態會在下次 fetchEvents() 同步時自動更新，避免頻繁寫入本地儲存。
-
-      return true;
-    } catch (e) {
-      LogService.error('Like event failed: $e', source: _source);
+    if (result is Failure) {
+      LogService.error('Like event failed: ${result.exception}', source: _source);
       ToastService.error('操作失敗');
 
-      // Rollback
-      if (!isClosed && state is GroupEventLoaded) {
-        // Re-read state in case it changed
-        final currentEvents = List<GroupEvent>.from((state as GroupEventLoaded).events);
-        final idx = currentEvents.indexWhere((e) => e.id == eventId);
-        if (idx != -1) {
-          currentEvents[idx] = event; // Revert to original
-          emit((state as GroupEventLoaded).copyWith(events: currentEvents));
-        }
-      }
+      // Repository 已處理 rollback，重新載入本地資料以同步 UI
+      final freshEvents = _groupEventRepository.getAll();
+      emit(currentState.copyWith(events: freshEvents));
       return false;
     }
+
+    return true;
   }
 
   void reset() {

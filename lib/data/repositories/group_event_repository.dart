@@ -249,4 +249,58 @@ class GroupEventRepository implements IGroupEventRepository {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
+
+  // ========== Like Operations ==========
+
+  @override
+  Future<Result<void, Exception>> likeEvent({required String eventId, required String userId}) async {
+    try {
+      // 1. 更新本地快取 (立即持久化)
+      final event = _localDataSource.getEventById(eventId);
+      if (event != null) {
+        final updated = event.copyWith(isLiked: true, likeCount: event.likeCount + 1);
+        await _localDataSource.saveEvent(updated);
+      }
+
+      // 2. 呼叫遠端 API
+      await _remoteDataSource.likeEvent(eventId: eventId, userId: userId);
+      LogService.info('Liked event: $eventId', source: _source);
+      return const Success(null);
+    } catch (e) {
+      // Rollback 本地快取
+      final event = _localDataSource.getEventById(eventId);
+      if (event != null && event.isLiked) {
+        final rollback = event.copyWith(isLiked: false, likeCount: event.likeCount - 1);
+        await _localDataSource.saveEvent(rollback);
+      }
+      LogService.error('Like event failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> unlikeEvent({required String eventId, required String userId}) async {
+    try {
+      // 1. 更新本地快取 (立即持久化)
+      final event = _localDataSource.getEventById(eventId);
+      if (event != null) {
+        final updated = event.copyWith(isLiked: false, likeCount: (event.likeCount - 1).clamp(0, 999999));
+        await _localDataSource.saveEvent(updated);
+      }
+
+      // 2. 呼叫遠端 API
+      await _remoteDataSource.unlikeEvent(eventId: eventId, userId: userId);
+      LogService.info('Unliked event: $eventId', source: _source);
+      return const Success(null);
+    } catch (e) {
+      // Rollback 本地快取
+      final event = _localDataSource.getEventById(eventId);
+      if (event != null && !event.isLiked) {
+        final rollback = event.copyWith(isLiked: true, likeCount: event.likeCount + 1);
+        await _localDataSource.saveEvent(rollback);
+      }
+      LogService.error('Unlike event failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
 }
