@@ -51,8 +51,8 @@ class ItineraryDay {
 
 /// 外部連結
 class ExternalLinks {
-  static const String windyUrl = 'https://www.windy.com/23.293/121.034?23.284,121.034,14';
-  static const String cwaUrl = 'https://www.cwa.gov.tw/V8/C/L/Mountain/Mountain.html?PID=D055';
+  static const String windyUrl = 'https://www.windy.com/';
+  static const String cwaUrl = 'https://www.cwa.gov.tw/V8/C/L/Mountain/Mountain.html';
 
   // 嘉明湖步道資訊
   static const String trailPageUrl = 'https://recreation.forest.gov.tw/Trail/RT?tr_id=139';
