@@ -102,123 +102,167 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // 活動名稱
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: '活動名稱 *',
-                hintText: '例如：嘉明湖三天兩夜',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return '請輸入活動名稱';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // 活動名稱
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: '活動名稱 *',
+                      hintText: '例如：嘉明湖三天兩夜',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return '請輸入活動名稱';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-            // 活動日期
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _selectDate(context, true),
-                    child: InputDecorator(
-                      decoration: const InputDecoration(labelText: '開始日期 *', border: OutlineInputBorder()),
-                      child: Text(DateFormat('yyyy/MM/dd').format(_startDate)),
+                  // 活動日期
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _selectDate(context, true),
+                          child: InputDecorator(
+                            decoration: const InputDecoration(labelText: '開始日期 *', border: OutlineInputBorder()),
+                            child: Text(DateFormat('yyyy/MM/dd').format(_startDate)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('~'),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => _selectDate(context, false),
+                          child: InputDecorator(
+                            decoration: const InputDecoration(labelText: '結束日期', border: OutlineInputBorder()),
+                            child: Text(_endDate != null ? DateFormat('yyyy/MM/dd').format(_endDate!) : '同日'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 地點
+                  TextFormField(
+                    controller: _locationController,
+                    decoration: const InputDecoration(
+                      labelText: '地點',
+                      hintText: '例如：向陽登山口',
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                const Text('~'),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _selectDate(context, false),
-                    child: InputDecorator(
-                      decoration: const InputDecoration(labelText: '結束日期', border: OutlineInputBorder()),
-                      child: Text(_endDate != null ? DateFormat('yyyy/MM/dd').format(_endDate!) : '同日'),
+                  const SizedBox(height: 16),
+
+                  // 招募人數
+                  TextFormField(
+                    controller: _maxMembersController,
+                    decoration: const InputDecoration(labelText: '招募人數 *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      final num = int.tryParse(value ?? '');
+                      if (num == null || num < 1) {
+                        return '請輸入有效人數';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 活動說明
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: '活動說明',
+                      hintText: '描述行程內容、難度、注意事項等...',
+                      border: OutlineInputBorder(),
                     ),
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 進階設定
+                  Text('進階設定', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+
+                  Card(
+                    child: Column(
+                      children: [
+                        SwitchListTile(
+                          title: const Text('需審核報名'),
+                          subtitle: const Text('開啟後需手動審核報名申請'),
+                          value: _approvalRequired,
+                          onChanged: (value) => setState(() => _approvalRequired = value),
+                        ),
+                        if (_approvalRequired) ...[
+                          const Divider(height: 1),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: TextFormField(
+                              controller: _privateMessageController,
+                              decoration: const InputDecoration(
+                                labelText: '報名成功訊息',
+                                hintText: '審核通過後報名者才能看見此訊息 (例如：集合地點)',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 3,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24), // Add bottom padding for better spacing on mobile
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), offset: const Offset(0, -1), blurRadius: 4),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                    child: const Text('取消'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _isSubmitting ? null : _submit,
+                    style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('建立'),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // 地點
-            TextFormField(
-              controller: _locationController,
-              decoration: const InputDecoration(labelText: '地點', hintText: '例如：向陽登山口', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 16),
-
-            // 招募人數
-            TextFormField(
-              controller: _maxMembersController,
-              decoration: const InputDecoration(labelText: '招募人數 *', border: OutlineInputBorder()),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                final num = int.tryParse(value ?? '');
-                if (num == null || num < 1) {
-                  return '請輸入有效人數';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // 活動說明
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: '活動說明',
-                hintText: '描述行程內容、難度、注意事項等...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 4,
-            ),
-            const SizedBox(height: 24),
-
-            // 進階設定
-            Text('進階設定', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-
-            Card(
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    title: const Text('需審核報名'),
-                    subtitle: const Text('開啟後需手動審核報名申請'),
-                    value: _approvalRequired,
-                    onChanged: (value) => setState(() => _approvalRequired = value),
-                  ),
-                  if (_approvalRequired) ...[
-                    const Divider(height: 1),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: TextFormField(
-                        controller: _privateMessageController,
-                        decoration: const InputDecoration(
-                          labelText: '報名成功訊息',
-                          hintText: '審核通過後報名者才能看見此訊息 (例如：集合地點)',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

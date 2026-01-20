@@ -14,6 +14,9 @@ import '../../data/models/weather_data.dart';
 import '../../data/models/poll.dart';
 import '../../data/models/trip.dart';
 import '../../data/models/user_profile.dart';
+import '../../data/models/group_event.dart';
+import '../../data/models/enums/group_event_status.dart';
+import '../../data/models/enums/group_event_application_status.dart';
 import '../../data/models/enums/sync_status.dart';
 
 /// Hive 資料庫服務
@@ -78,6 +81,18 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(11)) {
       Hive.registerAdapter(GearLibraryItemAdapter());
+    }
+    if (!Hive.isAdapterRegistered(12)) {
+      Hive.registerAdapter(GroupEventAdapter());
+    }
+    if (!Hive.isAdapterRegistered(13)) {
+      Hive.registerAdapter(GroupEventApplicationAdapter());
+    }
+    if (!Hive.isAdapterRegistered(14)) {
+      Hive.registerAdapter(GroupEventStatusAdapter());
+    }
+    if (!Hive.isAdapterRegistered(15)) {
+      Hive.registerAdapter(GroupEventApplicationStatusAdapter());
     }
     if (!Hive.isAdapterRegistered(20)) {
       Hive.registerAdapter(SyncStatusAdapter());
