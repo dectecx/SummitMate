@@ -1,8 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di.dart';
-import '../../../core/error/result.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
-import '../../../domain/interfaces/i_auth_service.dart';
+import '../../../core/core.dart';
+import '../../../domain/domain.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/toast_service.dart';
 import '../../../data/repositories/interfaces/i_group_event_repository.dart';

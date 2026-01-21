@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/error/result.dart';
+import '../../core/core.dart';
 import '../../core/di.dart';
-import '../../domain/interfaces/i_auth_service.dart';
+import '../../domain/domain.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_group_event_repository.dart';
 import '../datasources/interfaces/i_group_event_local_data_source.dart';

@@ -104,7 +104,7 @@ void main() {
 
       for (final cat in validCategories) {
         final item = GearLibraryItem(
-          id: 'cat-${cat}',
+          id: 'cat-$cat',
           name: 'Test',
           weight: 100,
           category: cat,
