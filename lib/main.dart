@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
+import 'package:intl/date_symbol_data_local.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app.dart';
 import 'core/di.dart';
@@ -11,6 +13,9 @@ import 'infrastructure/tools/log_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Locale Data
+  await initializeDateFormatting('zh_TW', null);
 
   // Initialize Hive
   await HiveService().init();
