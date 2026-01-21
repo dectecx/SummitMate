@@ -33,11 +33,13 @@ import '../../widgets/settings_dialog.dart';
 import '../../widgets/ads/banner_ad_widget.dart';
 
 import '../collaboration_tab.dart';
-import '../trip_list_screen.dart';
 
 import 'widgets/main_app_bar.dart';
 import 'widgets/main_bottom_nav_bar.dart';
 import 'dialogs/trip_selection_dialog.dart';
+import 'dialogs/welcome_dialog.dart';
+import 'utils/cloud_upload_helper.dart';
+import 'utils/tutorial_helper.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -127,36 +129,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _showWelcomeDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('歡迎來到 SummitMate'),
-        content: const Text('為了讓您快速上手，我們準備了簡易的教學引導。\n您想要現在觀看嗎？'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              // 略過教學：標記完成
-              context.read<SettingsCubit>().completeOnboarding();
-            },
-            child: const Text('直接開始 (略過)'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              // 進入教學 -> 結束後顯示匯入行程
-              await TutorialService.start(topic: TutorialTopic.all);
-              if (context.mounted) {
-                // 教學結束後，自動跳出匯入選單
-                TripSelectionDialog.show(context);
-              }
-            },
-            child: const Text('教學引導'),
-          ),
-        ],
-      ),
-    );
+    WelcomeDialog.show(context);
   }
 
   @override
@@ -278,7 +251,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           isEditMode: isEditMode,
                           onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                           onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
-                          onUpload: () => _handleCloudUpload(context),
+                          onUpload: () => CloudUploadHelper.handleCloudUpload(context),
                           onMap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
                           onSettings: () => _showSettingsDialog(context),
                         ),
@@ -387,142 +360,12 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  void _handleCloudUpload(BuildContext context) async {
-    // 檢查離線模式
-    final state = context.read<SettingsCubit>().state;
-    final settingsIsOffline = state is SettingsLoaded && state.isOfflineMode;
-    if (settingsIsOffline) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('⚠️ 目前為離線模式，無法上傳行程'), backgroundColor: Colors.orange));
-      return;
-    }
-
-    // 1. 顯示檢查中 Loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    // 2. 檢查衝突 (Use SyncCubit)
-    final hasConflict = await context.read<SyncCubit>().checkItineraryConflict();
-
-    if (!context.mounted) return;
-    Navigator.pop(context); // 關閉 Loading
-
-    if (hasConflict) {
-      // 3. 有衝突，顯示警告
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('⚠️ 雲端資料衝突'),
-          content: const Text(
-            '雲端上的行程資料與您目前的版本不同。\n\n'
-            '若選擇「強制覆蓋」，雲端的資料將被您的版本完全取代。\n'
-            '確定要繼續嗎？',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context); // 關閉 Dialog
-                context.read<SyncCubit>().uploadItinerary(); // 執行上傳
-              },
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('強制覆蓋'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // 4. 無衝突，直接確認上傳
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('上傳行程'),
-          content: const Text('確定將目前的行程計畫上傳至雲端嗎？此操作將覆寫雲端資料。'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<SyncCubit>().uploadItinerary();
-              },
-              child: const Text('上傳'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   void _showTutorial(BuildContext context, TutorialTopic topic) {
-    TutorialService.start(
+    MainNavigationTutorialHelper.showTutorial(
+      context: context,
       topic: topic,
-      // 1. Navigation Tabs
-      onSwitchToItinerary: () async {
-        setState(() => _currentIndex = 0);
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onSwitchToGear: () async {
-        setState(() => _currentIndex = 1);
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onSwitchToMessage: () async {
-        setState(() => _currentIndex = 2);
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onSwitchToInfo: () async {
-        setState(() => _currentIndex = 3);
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      // 2. Drawer / Settings
-      onFocusDrawer: () async {
-        _scaffoldKey.currentState?.openDrawer();
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onFocusSettings: () async {
-        // Warning: App Bar actions are hard to trigger programmatically without key access or rebuilding?
-        // But the tutorial just points to them. The USER clicks them.
-        // Wait, onFocus is PREPARATION.
-        // If the drawer is needed, we open it.
-        // If settings is needed, we usually don't need to do anything if it's on AppBar.
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      // 3. Actions that might need context or state
-      onFocusUpload: () async {
-        // Ensure we are on Itinerary Tab
-        if (_currentIndex != 0) setState(() => _currentIndex = 0);
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onFocusSync: () async {
-        // Ensure on Message Tab? Or just wait.
-        if (_currentIndex != 2) setState(() => _currentIndex = 2); // Message Tab usually has Sync
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      // 4. Member Management Flow (Complex)
-      onFocusManageTrips: () async {
-        // Open Drawer to show "Manage Trips" item
-        _scaffoldKey.currentState?.openDrawer();
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onFocusTripListMember: () async {
-        // This usually requires navigating to TripListScreen via Drawer Item click.
-        // We can simulate it?
-        Navigator.pop(context); // Close Drawer
-        await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TripListScreen()));
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
-      onFocusMemberFab: () async {
-        // Requires being on MemberManagementScreen.
-        // This is hard because TripListScreen -> MemberManagementScreen requires Trip ID.
-        // We might need to skip this automation or just point to it.
-        // PASS-THROUGH allows user to click.
-        // IMPORTANT: TutorialService uses onFocus to PREPARE.
-        // If we rely on User Action, we might not need to do anything here except wait.
-        await Future.delayed(const Duration(milliseconds: 300));
-      },
+      onTabSwitch: (index) => setState(() => _currentIndex = index),
+      scaffoldKey: _scaffoldKey,
     );
   }
 }
