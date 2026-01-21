@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/core/core.dart';
 import '../tools/log_service.dart';
 
 class GlobalBlocObserver extends BlocObserver {
@@ -40,7 +41,12 @@ class GlobalBlocObserver extends BlocObserver {
   @override
   void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
-    LogService.error('onError: ${bloc.runtimeType} - $error', source: _source, stackTrace: stackTrace);
+    final userMessage = AppErrorHandler.getUserMessage(error);
+    LogService.error(
+      'onError: ${bloc.runtimeType} - $userMessage\nRaw: $error',
+      source: _source,
+      stackTrace: stackTrace,
+    );
   }
 
   @override
