@@ -65,6 +65,11 @@ class GearItem extends HiveObject {
   @HiveField(7)
   int? orderIndex;
 
+  /// 數量 (預設 1)
+  @HiveField(8, defaultValue: 1)
+  @JsonKey(defaultValue: 1)
+  int quantity;
+
   /// 建立時間
   @HiveField(9)
   @JsonKey(name: 'created_at')
@@ -111,11 +116,6 @@ class GearItem extends HiveObject {
 
   /// 重量轉換為公斤
   double get weightInKg => weight / 1000;
-
-  /// 數量 (預設 1)
-  @HiveField(8, defaultValue: 1)
-  @JsonKey(defaultValue: 1)
-  int quantity;
 
   /// 總重量 (重量 × 數量)
   double get totalWeight => weight * quantity;

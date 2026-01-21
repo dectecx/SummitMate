@@ -8,12 +8,7 @@ void main() {
     test('allCategories constant contains expected values', () {
       expect(
         GearCategory.all,
-        containsAll([
-          GearCategory.sleep,
-          GearCategory.cook,
-          GearCategory.wear,
-          GearCategory.other,
-        ]),
+        containsAll([GearCategory.sleep, GearCategory.cook, GearCategory.wear, GearCategory.other]),
       );
       expect(GearCategory.all.length, 4);
     });
@@ -43,21 +38,11 @@ void main() {
     });
 
     test('compareCategories sorts categories correctly', () {
-      final categories = [
-        GearCategory.other,
-        GearCategory.sleep,
-        GearCategory.wear,
-        GearCategory.cook,
-      ];
+      final categories = [GearCategory.other, GearCategory.sleep, GearCategory.wear, GearCategory.cook];
 
       categories.sort(GearCategoryHelper.compareCategories);
 
-      expect(categories, [
-        GearCategory.sleep,
-        GearCategory.cook,
-        GearCategory.wear,
-        GearCategory.other,
-      ]);
+      expect(categories, [GearCategory.sleep, GearCategory.cook, GearCategory.wear, GearCategory.other]);
     });
   });
 
