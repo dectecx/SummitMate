@@ -9,7 +9,7 @@ import '../../data/models/enums/group_event_application_status.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/group_event/group_event_comment_sheet.dart';
 
 /// 揪團詳情畫面

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../infrastructure/tools/tutorial_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 導覽目標模型
 class TutorialTarget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di.dart';
-import '../../domain/interfaces/i_connectivity_service.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/gear/gear_cubit.dart';

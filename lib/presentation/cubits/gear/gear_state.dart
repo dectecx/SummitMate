@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../data/models/gear_item.dart';
-import '../../../core/constants.dart';
+import 'package:summitmate/core/core.dart';
 
 /// 裝備清單狀態
 ///

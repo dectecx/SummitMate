@@ -10,7 +10,7 @@ import '../cubits/poll/poll_state.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 投票列表畫面
 ///

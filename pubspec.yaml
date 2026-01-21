@@ -75,6 +75,8 @@ dev_dependencies:
   bloc_test: ^10.0.0
 
 # App Icon 配置
+  path_provider_platform_interface: any
+  plugin_platform_interface: any
 flutter_launcher_icons:
   android: true
   ios: true

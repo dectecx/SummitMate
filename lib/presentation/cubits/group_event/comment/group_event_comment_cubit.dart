@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/error/result.dart';
+import 'package:summitmate/core/core.dart';
 import '../../../../data/models/group_event_comment.dart';
 import '../../../../data/repositories/interfaces/i_group_event_repository.dart';
-import '../../../../domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'group_event_comment_state.dart';
 
 class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {

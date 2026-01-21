@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/constants.dart';
+import 'package:summitmate/core/core.dart';
 import '../../screens/gear_cloud_screen.dart';
 import '../../screens/gear_library_screen.dart';
 import '../../screens/meal_planner_screen.dart';

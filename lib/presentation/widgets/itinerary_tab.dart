@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';

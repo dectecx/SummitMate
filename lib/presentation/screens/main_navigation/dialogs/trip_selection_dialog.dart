@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/error/result.dart';
+import 'package:summitmate/core/core.dart';
 import '../../../../data/models/trip.dart';
 import '../../../cubits/sync/sync_cubit.dart';
 import '../../../cubits/trip/trip_cubit.dart';
-import '../../../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 class TripSelectionDialog {
   static Future<void> show(BuildContext context) async {

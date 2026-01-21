@@ -8,7 +8,7 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:gpx/gpx.dart';
 
 import '../../../core/gpx_utils.dart';
-import '../../../infrastructure/tools/log_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'map_state.dart';
 
 class MapCubit extends Cubit<MapState> {

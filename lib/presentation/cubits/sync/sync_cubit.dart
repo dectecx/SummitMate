@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/di.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
-import '../../../domain/interfaces/i_sync_service.dart';
-import '../../../infrastructure/tools/log_service.dart';
+import 'package:summitmate/domain/domain.dart';
+
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'sync_state.dart';
 
 /// 管理資料同步狀態的 Cubit

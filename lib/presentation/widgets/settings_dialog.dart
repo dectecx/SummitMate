@@ -8,12 +8,11 @@ import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
-import 'package:summitmate/infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/log_viewer_sheet.dart';
 import '../widgets/clear_data_dialog.dart';
 import '../widgets/tutorial_topic_selection_dialog.dart';
-import 'package:summitmate/infrastructure/tools/hive_service.dart';
-import '../../infrastructure/tools/tutorial_service.dart';
+
 import '../utils/tutorial_keys.dart';
 
 class SettingsDialog extends StatefulWidget {
