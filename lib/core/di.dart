@@ -20,27 +20,9 @@ import '../domain/interfaces/i_sync_service.dart';
 import '../domain/interfaces/i_data_service.dart';
 import '../domain/interfaces/i_ad_service.dart';
 
-// Data - Repositories
-import '../data/repositories/settings_repository.dart';
-import '../data/repositories/itinerary_repository.dart';
-import '../data/repositories/message_repository.dart';
-import '../data/repositories/gear_repository.dart';
-import '../data/repositories/gear_library_repository.dart';
-import '../data/repositories/poll_repository.dart';
-import '../data/repositories/group_event_repository.dart';
-import '../data/repositories/trip_repository.dart';
-import '../data/repositories/gear_set_repository.dart';
-import '../data/repositories/auth_session_repository.dart';
-
-// Data - Repository Interfaces
-import '../data/repositories/interfaces/i_gear_repository.dart';
-import '../data/repositories/interfaces/i_gear_library_repository.dart';
-import '../data/repositories/interfaces/i_auth_session_repository.dart';
-import '../data/repositories/interfaces/i_settings_repository.dart';
-import '../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../data/repositories/interfaces/i_message_repository.dart';
-import '../data/repositories/interfaces/i_poll_repository.dart';
-import '../data/repositories/interfaces/i_group_event_repository.dart';
+// Data
+import '../data/data.dart';
+// Data Sources Interfaces & Implementations
 import '../data/datasources/interfaces/i_group_event_local_data_source.dart';
 import '../data/datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../data/datasources/local/group_event_local_data_source.dart';
@@ -49,8 +31,7 @@ import '../data/datasources/interfaces/i_poll_local_data_source.dart';
 import '../data/datasources/interfaces/i_poll_remote_data_source.dart';
 import '../data/datasources/local/poll_local_data_source.dart';
 import '../data/datasources/remote/poll_remote_data_source.dart';
-import '../data/repositories/interfaces/i_trip_repository.dart';
-import '../data/repositories/interfaces/i_gear_set_repository.dart';
+
 
 // Data - DataSources
 import '../data/datasources/local/trip_local_data_source.dart';
