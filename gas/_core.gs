@@ -179,6 +179,16 @@ function doPost(e) {
         return _createJsonResponse(reviewGroupEventApplication(data));
       case API_ACTIONS.GROUP_EVENT_MY:
         return _createJsonResponse(getMyGroupEvents(data));
+      case API_ACTIONS.GROUP_EVENT_LIKE:
+        return _createJsonResponse(likeGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_UNLIKE:
+        return _createJsonResponse(unlikeGroupEvent(data));
+      case API_ACTIONS.GROUP_EVENT_ADD_COMMENT:
+        return _createJsonResponse(addGroupEventComment(data));
+      case API_ACTIONS.GROUP_EVENT_GET_COMMENTS:
+        return _createJsonResponse(getGroupEventComments(data));
+      case API_ACTIONS.GROUP_EVENT_DELETE_COMMENT:
+        return _createJsonResponse(deleteGroupEventComment(data));
 
       // === 監控 (Logs/Heartbeat) ===
       case API_ACTIONS.LOG_UPLOAD:

@@ -205,6 +205,11 @@ function setupGroupEventSheets() {
     Logger.log(`✓ ${SHEET_GROUP_EVENT_COMMENTS} 工作表已建立`);
   }
 
+  if (!ss.getSheetByName(SHEET_GROUP_EVENT_LIKES)) {
+    _setupSheet(ss, SHEET_GROUP_EVENT_LIKES, HEADERS_GROUP_EVENT_LIKES);
+    Logger.log(`✓ ${SHEET_GROUP_EVENT_LIKES} 工作表已建立`);
+  }
+
   _applyTextFormat(ss.getSheetByName(SHEET_GROUP_EVENTS), SHEET_GROUP_EVENTS);
   _applyTextFormat(
     ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS),
@@ -213,6 +218,10 @@ function setupGroupEventSheets() {
   _applyTextFormat(
     ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS),
     SHEET_GROUP_EVENT_COMMENTS
+  );
+  _applyTextFormat(
+    ss.getSheetByName(SHEET_GROUP_EVENT_LIKES),
+    SHEET_GROUP_EVENT_LIKES
   );
 }
 

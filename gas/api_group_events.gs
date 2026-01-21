@@ -48,6 +48,12 @@ function getGroupEvents(data) {
     ? _getSheetDataAsObjects(appSheet, HEADERS_GROUP_EVENT_APPLICATIONS)
     : [];
 
+  // 取得按讚資料
+  const likeSheet = ss.getSheetByName(SHEET_GROUP_EVENT_LIKES);
+  const likesRaw = likeSheet
+    ? _getSheetDataAsObjects(likeSheet, HEADERS_GROUP_EVENT_LIKES)
+    : [];
+
   // 過濾條件
   let events = eventsRaw;
   if (statusFilter && statusFilter !== "all") {
@@ -63,10 +69,17 @@ function getGroupEvents(data) {
       ? appsRaw.find((a) => a.event_id === row.id && a.user_id === userId)
       : null;
 
+    // 計算按讚
+    const likeCount = likesRaw.filter((l) => l.event_id === row.id).length;
+    const isLiked = userId
+      ? likesRaw.some((l) => l.event_id === row.id && l.user_id === userId)
+      : false;
+
     return Mapper.GroupEvent.toDTO(row, {
       application_count: eventApps.length,
       my_application_status: myApp ? myApp.status : null,
-      is_liked: false, // TODO: 從 GroupEventLikes 計算
+      is_liked: isLiked,
+      like_count: likeCount,
     });
   });
 
@@ -110,10 +123,21 @@ function getGroupEvent(data) {
     ? appsRaw.find((a) => a.event_id === eventId && a.user_id === userId)
     : null;
 
+  // 取得按讚資料
+  const likeSheet = ss.getSheetByName(SHEET_GROUP_EVENT_LIKES);
+  const likesRaw = likeSheet
+    ? _getSheetDataAsObjects(likeSheet, HEADERS_GROUP_EVENT_LIKES)
+    : [];
+  const likeCount = likesRaw.filter((l) => l.event_id === eventId).length;
+  const isLiked = userId
+    ? likesRaw.some((l) => l.event_id === eventId && l.user_id === userId)
+    : false;
+
   const dto = Mapper.GroupEvent.toDTO(row, {
     application_count: eventApps.length,
     my_application_status: myApp ? myApp.status : null,
-    is_liked: false,
+    is_liked: isLiked,
+    like_count: likeCount,
   });
 
   return _success({ event: dto }, "取得揪團詳情成功");
@@ -744,4 +768,105 @@ function deleteGroupEventComment(data) {
 
   commentSheet.deleteRow(foundIndex);
   return _success(null, "留言已刪除");
+}
+
+/**
+ * 收藏揪團 (Like)
+ * @param {Object} data - { event_id, user_id }
+ * @returns {Object} { code, data, message }
+ */
+function likeGroupEvent(data) {
+  const ss = getSpreadsheet();
+  const likeSheet = ss.getSheetByName(SHEET_GROUP_EVENT_LIKES);
+  const eventSheet = ss.getSheetByName(SHEET_GROUP_EVENTS);
+
+  if (!likeSheet) {
+    return _error(
+      API_CODES.GROUP_EVENT_SHEET_MISSING,
+      "缺少 GroupEventLikes 工作表"
+    );
+  }
+
+  const eventId = data.event_id;
+  const userId = String(data.user_id || "");
+
+  if (!userId || userId === "guest") {
+    return _error(API_CODES.AUTH_REQUIRED, "請先登入以收藏");
+  }
+
+  // 檢查揪團是否存在
+  const events = _getSheetDataAsObjects(eventSheet, HEADERS_GROUP_EVENTS);
+  const event = events.find((e) => e.id === eventId);
+  if (!event) {
+    return _error(API_CODES.GROUP_EVENT_NOT_FOUND, "找不到此揪團");
+  }
+
+  // 檢查是否已收藏
+  const likes = _getSheetDataAsObjects(likeSheet, HEADERS_GROUP_EVENT_LIKES);
+  const existingLike = likes.find(
+    (l) => l.event_id === eventId && l.user_id === userId
+  );
+
+  if (existingLike) {
+    return _success(null, "已收藏過此揪團");
+  }
+
+  // 新增收藏
+  const likeData = {
+    id: Utilities.getUuid(),
+    event_id: eventId,
+    user_id: userId,
+    created_at: new Date().toISOString(),
+    created_by: userId,
+  };
+
+  const row = HEADERS_GROUP_EVENT_LIKES.map((h) =>
+    likeData[h] !== undefined ? likeData[h] : ""
+  );
+  likeSheet.appendRow(row);
+
+  return _success({ id: likeData.id }, "已收藏");
+}
+
+/**
+ * 取消收藏揪團 (Unlike)
+ * @param {Object} data - { event_id, user_id }
+ * @returns {Object} { code, data, message }
+ */
+function unlikeGroupEvent(data) {
+  const ss = getSpreadsheet();
+  const likeSheet = ss.getSheetByName(SHEET_GROUP_EVENT_LIKES);
+
+  if (!likeSheet) {
+    return _error(
+      API_CODES.GROUP_EVENT_SHEET_MISSING,
+      "缺少 GroupEventLikes 工作表"
+    );
+  }
+
+  const eventId = data.event_id;
+  const userId = String(data.user_id || "");
+
+  if (!userId || userId === "guest") {
+    return _error(API_CODES.AUTH_REQUIRED, "請先登入");
+  }
+
+  const allData = likeSheet.getDataRange().getValues();
+  let foundIndex = -1;
+
+  for (let i = 1; i < allData.length; i++) {
+    // Column 2 is event_id (index 1), Column 3 is user_id (index 2)
+    // Assuming HEADERS_GROUP_EVENT_LIKES order: id, event_id, user_id...
+    if (allData[i][1] === eventId && allData[i][2] === userId) {
+      foundIndex = i + 1;
+      break;
+    }
+  }
+
+  if (foundIndex === -1) {
+    return _error(API_CODES.GROUP_EVENT_NOT_FOUND, "未收藏此揪團");
+  }
+
+  likeSheet.deleteRow(foundIndex);
+  return _success(null, "已取消收藏");
 }
