@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
+import '../cubits/auth/auth_cubit.dart';
+import '../cubits/auth/auth_state.dart';
 
 /// 全域錯誤監聽器
 ///
@@ -28,7 +30,16 @@ class GlobalErrorListener extends StatelessWidget {
             }
           },
         ),
-        // 如果未來有其他全域錯誤 (如 Auth session 過期) 可在此加入
+        // 監聽認證錯誤
+        BlocListener<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthError) {
+              ToastService.error('認證錯誤: ${state.message}');
+            } else if (state is AuthRequiresVerification) {
+              ToastService.info('請驗證您的 Email: ${state.email}');
+            }
+          },
+        ),
       ],
       child: child,
     );
