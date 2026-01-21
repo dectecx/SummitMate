@@ -2,30 +2,11 @@ import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Infrastructure - Tools
-import '../infrastructure/tools/hive_service.dart';
-import '../infrastructure/tools/log_service.dart';
+// Infrastructure
+import '../infrastructure/infrastructure.dart';
 
-// Infrastructure - Services
-import '../infrastructure/services/google_sheets_service.dart';
-import '../infrastructure/services/sync_service.dart';
-import '../infrastructure/services/connectivity_service.dart';
-import '../infrastructure/services/weather_service.dart';
-import '../infrastructure/services/poll_service.dart';
-import '../infrastructure/services/geolocator_service.dart';
-import '../infrastructure/services/gear_cloud_service.dart';
-import '../infrastructure/services/gas_auth_service.dart';
+// Core Services
 import '../core/services/permission_service.dart';
-import '../infrastructure/services/jwt_token_validator.dart';
-import '../infrastructure/services/ad_service.dart';
-
-// Infrastructure - Clients
-import '../infrastructure/clients/network_aware_client.dart';
-import '../infrastructure/clients/gas_api_client.dart';
-import '../infrastructure/tools/usage_tracking_service.dart';
-
-// Infrastructure - Interceptors
-import '../infrastructure/interceptors/auth_interceptor.dart';
 
 // Domain - Interfaces
 import '../domain/interfaces/i_connectivity_service.dart';
