@@ -49,7 +49,7 @@ class UserProfile extends HiveObject {
     this.isVerified = false,
   });
 
-  /// 角色顯示名稱 (暫時簡單對應，之後可移動到 Service 或 i18n)
+  /// 角色顯示名稱 (暫時簡單對應，之後建議移動到 Service 或 i18n)
   String get roleName {
     switch (roleCode) {
       case RoleConstants.admin:
