@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
-import 'package:intl/intl.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import 'package:summitmate/data/data.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
@@ -12,7 +11,8 @@ import '../cubits/itinerary/itinerary_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import 'itinerary_edit_dialog.dart';
-import 'day_management_dialog.dart';
+import 'itinerary/itinerary_day_selector.dart';
+import 'itinerary/itinerary_list_view.dart';
 
 /// Tab 1: 行程頁
 class ItineraryTab extends StatefulWidget {
@@ -32,6 +32,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     });
   }
 
+  /// 自動同步 (冷卻檢查由 Cubit 處理)
   Future<void> _autoSync() async {
     if (!mounted) return;
     final cubit = context.read<SyncCubit>();
@@ -67,6 +68,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     cubit.syncAll();
   }
 
+  /// 手動觸發同步
   Future<void> _manualSync(BuildContext context) async {
     context.read<SyncCubit>().syncAll(force: true);
   }
@@ -77,29 +79,14 @@ class _ItineraryTabState extends State<ItineraryTab> {
       builder: (context, state) {
         return BlocBuilder<SyncCubit, SyncState>(
           builder: (context, syncState) {
-            DateTime? lastSync;
-            bool isSyncing = false;
-
-            if (syncState is SyncInitial) {
-              lastSync = syncState.lastSyncTime;
-            } else if (syncState is SyncSuccess) {
-              lastSync = syncState.timestamp;
-            } else if (syncState is SyncInProgress) {
-              isSyncing = true;
-            } else if (syncState is SyncFailure) {
-              lastSync = syncState.lastSuccessTime;
-            }
-
-            final timeStr = lastSync != null ? DateFormat('MM/dd HH:mm').format(lastSync.toLocal()) : '尚未同步';
-
             // Cubit Logic
             bool isLoading = state is ItineraryLoading;
-            List items = [];
+            List<ItineraryItem> items = [];
             String selectedDay = 'D1';
             bool isEditMode = false;
 
             if (state is ItineraryLoaded) {
-              items = state.items;
+              items = state.currentDayItems;
               selectedDay = state.selectedDay;
               isEditMode = state.isEditMode;
             }
@@ -108,173 +95,29 @@ class _ItineraryTabState extends State<ItineraryTab> {
               return const Center(child: CircularProgressIndicator());
             }
 
-            Widget content;
-            if (items.isEmpty && state is! ItineraryLoading) {
-              content = CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.schedule, size: 64, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text('尚無行程資料'),
-                        Text('請下拉刷新以同步行程'),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              // Prepare specific day items
-              // Effectively, if items is not empty, state must be ItineraryLoaded
-              if (state is! ItineraryLoaded) return const SizedBox.shrink();
-              final loadedState = state;
-              final currentDayItems = loadedState.currentDayItems;
+            final dayNames = state is ItineraryLoaded ? state.dayNames : <String>[];
 
-              content = Column(
-                children: [
-                  // 天數切換與狀態列
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // 天數選擇器 (可滑動)
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(context).copyWith(
-                                dragDevices: {
-                                  // Enable touch and mouse drag for desktop web support
-                                  PointerDeviceKind.touch,
-                                  PointerDeviceKind.mouse,
-                                },
-                              ),
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: loadedState.dayNames.length,
-                                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                                itemBuilder: (ctx, index) {
-                                  final dayName = loadedState.dayNames[index];
-                                  final isSelected = dayName == selectedDay;
-                                  return ChoiceChip(
-                                    label: Text(dayName),
-                                    selected: isSelected,
-                                    onSelected: (_) => context.read<ItineraryCubit>().selectDay(dayName),
-                                    showCheckmark: false,
-                                    visualDensity: VisualDensity.compact,
-                                    labelStyle: TextStyle(
-                                      color: isSelected ? Theme.of(context).colorScheme.onPrimaryContainer : null,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                        // 管理天數按鈕
-                        IconButton(
-                          icon: const Icon(Icons.edit_calendar, size: 20),
-                          tooltip: '管理天數',
-                          onPressed: () => showDialog(context: context, builder: (_) => const DayManagementDialog()),
-                        ),
-                        const SizedBox(width: 4),
-                        // 更新時間與按鈕 (置右)
-                        Material(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          child: InkWell(
-                            onTap: () => _manualSync(context),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                  const SizedBox(width: 4),
-                                  if (isSyncing)
-                                    const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  else
-                                    const Icon(Icons.sync, size: 16, color: Colors.grey),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+            Widget content = Column(
+              children: [
+                if (dayNames.isNotEmpty)
+                  ItineraryDaySelector(
+                    dayNames: dayNames,
+                    selectedDay: selectedDay,
+                    onManualSync: () => _manualSync(context),
                   ),
 
-                  // 行程列表
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 80), // 避免被 FAB 遮擋
-                      itemCount: currentDayItems.length,
-                      itemBuilder: (context, index) {
-                        final item = currentDayItems[index];
-                        // 計算累積距離
-                        double cumulativeDistance = 0;
-                        for (int i = 0; i <= index; i++) {
-                          cumulativeDistance += currentDayItems[i].distance;
-                        }
-
-                        return Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: item.isCheckedIn ? Colors.green : Theme.of(context).colorScheme.primary,
-                              child: item.isCheckedIn
-                                  ? const Icon(Icons.check, color: Colors.white)
-                                  : Text('${index + 1}', style: const TextStyle(color: Colors.white)),
-                            ),
-                            title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.isCheckedIn
-                                      ? '✓ 打卡: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
-                                      : '預計: ${item.estTime}',
-                                  style: TextStyle(color: item.isCheckedIn ? Colors.green : null),
-                                ),
-                                Text(
-                                  '海拔 ${item.altitude}m  |  累計 ${cumulativeDistance.toStringAsFixed(1)} km',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                            isThreeLine: true,
-                            trailing: isEditMode
-                                ? IconButton(
-                                    icon: const Icon(Icons.remove_circle, color: Colors.red),
-                                    onPressed: () => _confirmDelete(context, item.key),
-                                  )
-                                : (item.note.isNotEmpty ? const Icon(Icons.info_outline, size: 20) : null),
-                            onTap: () {
-                              if (isEditMode) {
-                                _showEditDialog(context, item, selectedDay);
-                              } else {
-                                _showCheckInDialog(context, item);
-                              }
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                Expanded(
+                  child: ItineraryListView(
+                    items: items,
+                    selectedDay: selectedDay,
+                    isEditMode: isEditMode,
+                    onConfirmDelete: _confirmDelete,
+                    onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
+                    onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
                   ),
-                ],
-              );
-            }
+                ),
+              ],
+            );
 
             return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);
           },
@@ -283,6 +126,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     );
   }
 
+  /// 確認並刪除行程節點
   void _confirmDelete(BuildContext context, dynamic key) {
     showDialog(
       context: context,
@@ -303,6 +147,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     );
   }
 
+  /// 顯示編輯行程節點對話框
   void _showEditDialog(BuildContext context, dynamic item, String currentDay) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -322,6 +167,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     }
   }
 
+  /// 顯示打卡對話框
   void _showCheckInDialog(BuildContext context, dynamic item) {
     showModalBottomSheet(
       context: context,

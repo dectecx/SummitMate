@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'group_event_comment.g.dart';
 
 /// 揪團留言
-@HiveType(typeId: 20) // Use a new typeId, ensure no conflict
+@HiveType(typeId: 16)
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GroupEventComment {
   /// 留言 ID (PK)

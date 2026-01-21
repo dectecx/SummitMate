@@ -32,7 +32,6 @@ import '../data/datasources/interfaces/i_poll_remote_data_source.dart';
 import '../data/datasources/local/poll_local_data_source.dart';
 import '../data/datasources/remote/poll_remote_data_source.dart';
 
-
 // Data - DataSources
 import '../data/datasources/local/trip_local_data_source.dart';
 import '../data/datasources/remote/trip_remote_data_source.dart';
