@@ -48,7 +48,7 @@ class MealItem extends Equatable {
   /// 備註
   final String? note;
 
-  MealItem({
+  const MealItem({
     required this.id,
     required this.name,
     required this.weight,

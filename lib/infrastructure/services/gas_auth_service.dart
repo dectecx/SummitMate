@@ -457,8 +457,8 @@ class GasAuthService implements IAuthService {
   Future<UserProfile?> getCachedUserProfile() async {
     final user = await _sessionRepo.getUserProfile();
     if (user != null) {
-      if (_currentUserId == null) _currentUserId = user.id;
-      if (_currentUserEmail == null) _currentUserEmail = user.email;
+      _currentUserId ??= user.id;
+      _currentUserEmail ??= user.email;
     }
     return user;
   }
