@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/constants.dart';
+import 'package:summitmate/core/core.dart';
 
 /// 外部資訊連結卡片
 ///

@@ -2,6 +2,7 @@
 ///
 /// This file exports all domain layer components including interfaces, failures, and DTOs.
 /// Usage: import 'package:summitmate/domain/domain.dart';
+library;
 
 // Failures
 export 'failures/failure.dart' hide Failure;

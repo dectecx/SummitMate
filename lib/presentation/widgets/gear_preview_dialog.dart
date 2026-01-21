@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants.dart';
-import '../../core/gear_helpers.dart';
+import 'package:summitmate/core/core.dart';
+
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
 

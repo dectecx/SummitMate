@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/foundation.dart';
-import '../../../infrastructure/tools/log_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../data/models/download_task.dart';
 import 'offline_map_state.dart';
 

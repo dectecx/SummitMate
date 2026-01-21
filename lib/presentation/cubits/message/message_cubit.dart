@@ -4,10 +4,10 @@ import '../../../core/di.dart';
 import '../../../data/models/message.dart';
 import '../../../data/repositories/interfaces/i_message_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../../domain/interfaces/i_auth_service.dart';
-import '../../../domain/interfaces/i_sync_service.dart';
-import '../../../infrastructure/tools/log_service.dart';
-import '../../../core/error/result.dart';
+import 'package:summitmate/domain/domain.dart';
+
+import 'package:summitmate/infrastructure/infrastructure.dart';
+import 'package:summitmate/core/core.dart';
 import 'message_state.dart';
 
 class MessageCubit extends Cubit<MessageState> {

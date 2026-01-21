@@ -6,7 +6,7 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:twicon/twicon.dart';
 
-import '../../../infrastructure/tools/log_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../cubits/map/map_cubit.dart';
 import '../../cubits/map/map_state.dart';
 import '../../cubits/map/offline_map_cubit.dart';

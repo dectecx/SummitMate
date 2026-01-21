@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../core/error/result.dart';
+import 'package:summitmate/core/core.dart';
 import '../../core/di.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../cubits/settings/settings_cubit.dart';

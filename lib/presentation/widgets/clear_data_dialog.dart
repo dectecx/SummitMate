@@ -4,7 +4,7 @@ import 'package:flutter/services.dart'; // for SystemNavigator
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/di.dart';
-import '../../infrastructure/tools/hive_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 顯示清除資料對話框
 ///

@@ -6,7 +6,7 @@ import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 投票詳情畫面
 ///

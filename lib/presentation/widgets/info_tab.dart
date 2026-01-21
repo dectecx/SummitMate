@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/di.dart';
-import '../../domain/interfaces/i_weather_service.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../data/models/weather_data.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';

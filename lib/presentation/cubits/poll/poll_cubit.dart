@@ -2,10 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/di.dart';
 import '../../../data/repositories/interfaces/i_poll_repository.dart';
-import '../../../core/error/result.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
-import '../../../domain/interfaces/i_poll_service.dart';
-import '../../../domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/core/core.dart';
+import 'package:summitmate/domain/domain.dart';
+
 import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/toast_service.dart';
 import 'poll_state.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../../core/config/ad_helper.dart';
-import '../../../infrastructure/tools/log_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 共用橫幅廣告 Widget
 /// 自動管理廣告生命週期

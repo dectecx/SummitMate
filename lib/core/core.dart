@@ -1,6 +1,7 @@
-library core;
+library;
 
 export 'constants.dart';
+export 'constants/role_constants.dart';
 export 'env_config.dart';
 export 'extensions.dart';
 export 'gear_helpers.dart';

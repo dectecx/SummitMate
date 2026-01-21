@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../data/models/user_profile.dart';
-import '../../../core/constants/role_constants.dart';
+import 'package:summitmate/core/core.dart';
 
 /// 認證狀態基類
 sealed class AuthState extends Equatable {

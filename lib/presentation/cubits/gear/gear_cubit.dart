@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/gear_item.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../../infrastructure/tools/log_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../core/di.dart';
 import '../../cubits/gear/gear_state.dart';
 

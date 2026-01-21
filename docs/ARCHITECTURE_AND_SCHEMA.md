@@ -297,7 +297,7 @@ flowchart TB
 | `PollRemoteDataSource`       | Remote | `IPollRemoteDataSource`       | 投票雲端 API     |
 | `GearLibraryLocalDataSource` | Local  | `IGearLibraryLocalDataSource` | 裝備庫本地儲存   |
 | `SettingsLocalDataSource`    | Local  | `ISettingsLocalDataSource`    | 設定本地儲存     |
-| `AuthSessionLocalDataSource` | Local  | `IAuthSessionLocalDataSource` | 認證 Session    |
+| `AuthSessionLocalDataSource` | Local  | `IAuthSessionLocalDataSource` | 認證 Session     |
 
 ### Repository 運作模式
 
@@ -762,3 +762,43 @@ lib/
 - ✅ 擴展性：未來可輕鬆替換底層實作 (如 GAS -> AWS) 而不影響業務邏輯。
 
 > 目前架構已穩定，後續開發請遵循此分層原則。
+
+## 9. 模組導出規範 (Module Exports / Barrel Files)
+
+為了簡化 Import 路徑並保持架構整潔，本專案在特定層級採用 **Barrel Files (Export Files)** 策略。
+為了避免循環依賴 (Circular Dependency) 與編譯效能問題，請嚴格遵守以下規範。
+
+### 9.1 導出策略 (Export Strategy)
+
+| 層級               | Barrel File                              | 內容規範                                 | 禁止事項                               |
+| ------------------ | ---------------------------------------- | ---------------------------------------- | -------------------------------------- |
+| **Domain**         | `lib/domain/domain.dart`                 | 導出純介面、DTO、Failures                | **嚴禁**導出任何 Widget 或具體實作類別 |
+| **Core**           | `lib/core/core.dart`                     | 導出通用工具、常數、擴充方法             | **嚴禁**導出 `di.dart` (避免循環依賴)  |
+| **Infrastructure** | `lib/infrastructure/infrastructure.dart` | 導出 Services, Clients, Tools 等具體實作 | -                                      |
+| **Presentation**   | **❌ 不建立**                            | UI 層變動頻繁，不建議建立全域 Barrel     | -                                      |
+
+### 9.2 Import 優化原則 (Import Optimization)
+
+- **Consumer-Only Strategy (僅針對消費者優化)**:
+  - 僅在 **`lib/presentation/` (Widget/Cubit)** 層級使用 Barrel Files 進行 Import。
+  - **原因**: UI 層是依賴樹的末端 (Leaf Node)，引用底層 Barrel 安全無虞。
+- **Core Logic Isolation (核心邏輯隔離)**:
+  - 在 `lib/domain/`, `lib/data/` 內部，**避免**使用 Barrel Imports，應維持明確的 File-to-File Import。
+  - **原因**: 避免因 Barrel 包含未預期的依賴而導致底層邏輯產生循環引用。
+
+### 9.3 範例
+
+**推薦 (Good):**
+
+```dart
+// lib/presentation/cubits/auth_cubit.dart
+import 'package:summitmate/domain/domain.dart'; // ✅ 引用 Domain Barrel
+import 'package:summitmate/core/core.dart';     // ✅ 引用 Core Barrel
+```
+
+**禁止 (Bad):**
+
+```dart
+// lib/domain/interfaces/i_auth_service.dart
+import 'package:summitmate/domain/domain.dart'; // ❌ 禁止自我引用 Barrel (可能造成循環)
+```

@@ -8,7 +8,7 @@ import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
 import '../../data/models/enums/group_event_status.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
 

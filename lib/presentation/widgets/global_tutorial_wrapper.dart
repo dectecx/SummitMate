@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../infrastructure/tools/tutorial_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'tutorial_overlay.dart';
 
 /// 全域教學遮罩包裹器

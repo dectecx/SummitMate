@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../cubits/group_event/group_event_cubit.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 建立揪團畫面
 class CreateGroupEventScreen extends StatefulWidget {

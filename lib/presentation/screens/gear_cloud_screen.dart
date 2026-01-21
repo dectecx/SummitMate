@@ -8,7 +8,7 @@ import '../../data/models/meal_item.dart';
 import '../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../data/repositories/interfaces/i_gear_set_repository.dart';
 import '../../data/models/gear_key_record.dart';
-import '../../infrastructure/tools/toast_service.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 // import '../providers/meal_provider.dart'; // Removed

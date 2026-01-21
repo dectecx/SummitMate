@@ -6,10 +6,9 @@ import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../../core/error/result.dart';
-import '../../../domain/interfaces/i_sync_service.dart';
-import '../../../infrastructure/tools/log_service.dart';
-import '../../../domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/core/core.dart';
+import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../../../data/models/enums/sync_status.dart';
 import 'trip_state.dart';
