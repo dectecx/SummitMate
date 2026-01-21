@@ -11,21 +11,44 @@ import 'package:summitmate/core/error/result.dart';
 
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
+import 'package:get_it/get_it.dart';
+import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
+
 class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockSyncService extends Mock implements ISyncService {}
 
 class MockAuthService extends Mock implements IAuthService {}
 
+class MockItineraryRepository extends Mock implements IItineraryRepository {}
+
+class MockGearRepository extends Mock implements IGearRepository {}
+
 void main() {
   late MockTripRepository mockTripRepository;
   late MockSyncService mockSyncService;
   late MockAuthService mockAuthService;
+  late MockItineraryRepository mockItineraryRepository;
+  late MockGearRepository mockGearRepository;
 
   setUp(() {
     mockTripRepository = MockTripRepository();
     mockSyncService = MockSyncService();
     mockAuthService = MockAuthService();
+    mockItineraryRepository = MockItineraryRepository();
+    mockGearRepository = MockGearRepository();
+
+    // Reset GetIt to clear previous registrations
+    GetIt.I.reset();
+
+    // Register mocks needed by TripCubit's internal DI calls (e.g., in uploadFullTrip)
+    GetIt.I.registerSingleton<IItineraryRepository>(mockItineraryRepository);
+    GetIt.I.registerSingleton<IGearRepository>(mockGearRepository);
+    // Explicitly register others just in case code falls back to DI (though constructor injection is used for main deps)
+    GetIt.I.registerSingleton<ITripRepository>(mockTripRepository);
+    GetIt.I.registerSingleton<ISyncService>(mockSyncService);
+    GetIt.I.registerSingleton<IAuthService>(mockAuthService);
 
     // Default stubs
     when(() => mockAuthService.currentUserId).thenReturn('user-1');
@@ -160,5 +183,103 @@ void main() {
         verify(() => mockTripRepository.setActiveTrip('trip2')).called(1);
       },
     );
+
+    blocTest<TripCubit, TripState>(
+      'deleteTrip deletes trip and reloads',
+      build: () {
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip2])); // After delete
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
+        when(() => mockTripRepository.deleteTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async => const Success(null));
+        return TripCubit(
+          tripRepository: mockTripRepository,
+          syncService: mockSyncService,
+          authService: mockAuthService,
+        );
+      },
+      seed: () => TripLoaded(trips: [trip1, trip2], activeTrip: trip2), // Start with state
+      act: (cubit) => cubit.deleteTrip('trip1'),
+      expect: () => [const TripLoading(), isA<TripLoaded>()], // Should just reload
+      verify: (_) {
+        verify(() => mockTripRepository.deleteTrip('trip1')).called(1);
+      },
+    );
+
+    blocTest<TripCubit, TripState>(
+      'deleteTrip switches active trip if active trip is deleted',
+      build: () {
+        // Initial: [trip1, trip2], active: trip1
+        // Action: delete trip1
+        // Logic: Should switch to trip2, then delete trip1
+
+        // Mock sequence for getAllTrips:
+        // 1. Called during auto-switch logic? No, internal switch uses ID.
+        // 2. Called at end (loadTrips).
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip2]));
+
+        // Mock logic for setActiveTrip (logic searches otherTrips.first -> trip2)
+        when(() => mockTripRepository.setActiveTrip('trip2')).thenAnswer((_) async => const Success(null));
+
+        when(() => mockTripRepository.deleteTrip('trip1')).thenAnswer((_) async => const Success(null));
+
+        // End state active trip
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip2));
+
+        return TripCubit(
+          tripRepository: mockTripRepository,
+          syncService: mockSyncService,
+          authService: mockAuthService,
+        );
+      },
+      seed: () => TripLoaded(trips: [trip1, trip2], activeTrip: trip1),
+      act: (cubit) => cubit.deleteTrip('trip1'),
+      expect: () => [const TripLoading(), isA<TripLoaded>()],
+      verify: (_) {
+        // Verify implicit switch
+        verify(() => mockTripRepository.setActiveTrip('trip2')).called(1);
+        verify(() => mockTripRepository.deleteTrip('trip1')).called(1);
+      },
+    );
+
+    test('uploadFullTrip gathers data and calls repo', () async {
+      // Setup
+      when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
+      when(() => mockGearRepository.getAllItems()).thenReturn([]);
+      when(
+        () => mockTripRepository.uploadFullTrip(
+          trip: any(named: 'trip'),
+          itineraryItems: any(named: 'itineraryItems'),
+          gearItems: any(named: 'gearItems'),
+        ),
+      ).thenAnswer((_) async => const Success('mock-id'));
+
+      final cubit = TripCubit(
+        tripRepository: mockTripRepository,
+        syncService: mockSyncService,
+        authService: mockAuthService,
+      );
+
+      final result = await cubit.uploadFullTrip(trip1);
+
+      expect(result, true);
+      verify(() => mockTripRepository.uploadFullTrip(trip: trip1, itineraryItems: [], gearItems: [])).called(1);
+    });
+
+    test('loadTrips emits TripError on failure', () async {
+      when(
+        () => mockTripRepository.getAllTrips(any()),
+      ).thenAnswer((_) async => Failure(GeneralException('Load failed')));
+
+      final cubit = TripCubit(
+        tripRepository: mockTripRepository,
+        syncService: mockSyncService,
+        authService: mockAuthService,
+      );
+
+      expectLater(cubit.stream, emitsInOrder([const TripLoading(), isA<TripError>()]));
+
+      await cubit.loadTrips();
+      await cubit.close();
+    });
   });
 }
