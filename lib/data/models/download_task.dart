@@ -27,7 +27,7 @@ class DownloadTask {
   /// 任務 ID (UUID)
   final String id;
 
-  /// 區塊名稱 (Region ID)
+  /// 區塊名稱 (例如 Region ID 或自定義名稱)
   final String name;
 
   /// 地圖邊界

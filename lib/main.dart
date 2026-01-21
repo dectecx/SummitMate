@@ -7,6 +7,7 @@ import 'app.dart';
 import 'core/di.dart';
 import 'infrastructure/tools/hive_service.dart';
 import 'infrastructure/observers/global_bloc_observer.dart';
+import 'infrastructure/tools/log_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,8 +35,7 @@ void main() async {
   // Global Error Handling
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
-    // TODO: Log to Crashlytics or LogService
-    debugPrint('Flutter Error: ${details.exception}');
+    LogService.error('Flutter Error: ${details.exception}', source: 'Global (main)', stackTrace: details.stack);
   };
 
   runApp(const SummitMateApp());
