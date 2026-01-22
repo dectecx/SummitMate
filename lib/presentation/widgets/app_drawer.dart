@@ -121,7 +121,9 @@ class AppDrawer extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                   child: Text(
                     '已封存 / 結束行程',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.outline),
                   ),
                 ),
                 ...archivedTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),

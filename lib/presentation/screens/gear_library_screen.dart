@@ -11,6 +11,7 @@ import '../cubits/gear_library/gear_library_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../widgets/ads/banner_ad_widget.dart';
+import '../widgets/common/summit_app_bar.dart';
 
 /// 我的裝備庫畫面
 ///
@@ -35,7 +36,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: SummitAppBar(
         title: const Text('🎒 我的裝備庫'),
         actions: [IconButton(icon: const Icon(Icons.cloud_sync), tooltip: '雲端備份', onPressed: _showCloudSyncDialog)],
       ),

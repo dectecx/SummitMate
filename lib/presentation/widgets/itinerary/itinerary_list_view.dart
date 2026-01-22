@@ -67,38 +67,44 @@ class ItineraryListView extends StatelessWidget {
           cumulativeDistance += items[i].distance;
         }
 
+        final isCheckedIn = item.isCheckedIn;
+        final primaryColor = Theme.of(context).colorScheme.primary;
+
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: item.isCheckedIn ? Colors.green : Theme.of(context).colorScheme.primary,
-              child: item.isCheckedIn
-                  ? const Icon(Icons.check, color: Colors.white)
-                  : Text('${index + 1}', style: const TextStyle(color: Colors.white)),
+              backgroundColor: isCheckedIn ? primaryColor : Theme.of(context).colorScheme.surfaceContainerHighest,
+              foregroundColor: isCheckedIn
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+              child: isCheckedIn ? const Icon(Icons.check) : Text('${index + 1}'),
             ),
             title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.isCheckedIn
+                  isCheckedIn
                       ? '✓ 打卡: ${item.actualTime?.hour.toString().padLeft(2, '0')}:${item.actualTime?.minute.toString().padLeft(2, '0')}'
                       : '預計: ${item.estTime}',
-                  style: TextStyle(color: item.isCheckedIn ? Colors.green : null),
+                  style: TextStyle(color: isCheckedIn ? primaryColor : Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
                 Text(
                   '海拔 ${item.altitude}m  |  累計 ${cumulativeDistance.toStringAsFixed(1)} km',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
                 ),
               ],
             ),
             isThreeLine: true,
             trailing: isEditMode
                 ? IconButton(
-                    icon: const Icon(Icons.remove_circle, color: Colors.red),
+                    icon: Icon(Icons.remove_circle, color: Theme.of(context).colorScheme.error),
                     onPressed: () => onConfirmDelete(context, item.key),
                   )
-                : (item.note.isNotEmpty ? const Icon(Icons.info_outline, size: 20) : null),
+                : (item.note.isNotEmpty
+                      ? Icon(Icons.info_outline, size: 20, color: Theme.of(context).colorScheme.primary)
+                      : null),
             onTap: () {
               if (isEditMode) {
                 onShowEditDialog(context, item, selectedDay);

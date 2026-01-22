@@ -11,6 +11,7 @@ import '../../data/models/enums/group_event_status.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
+import '../widgets/common/summit_app_bar.dart';
 
 /// 揪團列表畫面
 ///
@@ -217,7 +218,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
       builder: (context, state) {
         if (state is GroupEventLoading) {
           return Scaffold(
-            appBar: AppBar(title: const Text('揪團活動')),
+            appBar: SummitAppBar(title: const Text('揪團活動')),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -241,7 +242,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
 
         if (errorMessage != null && events.isEmpty) {
           return Scaffold(
-            appBar: AppBar(title: const Text('揪團活動')),
+            appBar: SummitAppBar(title: const Text('揪團活動')),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -281,7 +282,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
         }
 
         return Scaffold(
-          appBar: AppBar(title: const Text('揪團活動'), centerTitle: true),
+          appBar: SummitAppBar(title: const Text('揪團活動'), centerTitle: true),
           body: Column(
             children: [
               // Filter Bar

@@ -7,6 +7,7 @@ import '../cubits/poll/poll_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../widgets/common/summit_app_bar.dart';
 
 /// 投票詳情畫面
 ///
@@ -123,7 +124,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         }
 
         return Scaffold(
-          appBar: AppBar(title: const Text('投票詳情')),
+          appBar: SummitAppBar(title: const Text('投票詳情')),
           body: _isSubmitting || (state is PollLoading && state is! PollLoaded)
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(

@@ -14,20 +14,6 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/group_event/group_event_comment_sheet.dart';
 import 'group_event_review_screen.dart';
 
-/// 莫蘭迪綠色系 (Green Morandi Color Palette)
-class _MorandiColors {
-  // Primary (Forest Green)
-  static const Color forestGreen = Color(0xFF4A6C56);
-  // Secondary (Sage Green)
-  static const Color sageGreen = Color(0xFF8FA89B);
-  // Accent (Earth/Brown)
-  static const Color earthBrown = Color(0xFFBCAAA4);
-  // Background (Pale Mist)
-  static const Color paleMist = Color(0xFFF7F9F7);
-  // Text (Dark Charcoal)
-  static const Color charcoal = Color(0xFF2C3E34);
-}
-
 class GroupEventDetailScreen extends StatefulWidget {
   final GroupEvent event;
 
@@ -56,6 +42,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     final cubitState = context.watch<GroupEventCubit>().state;
     final isSyncing = cubitState is GroupEventLoaded && cubitState.isSyncing;
 
@@ -69,14 +58,14 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     final isCreator = _event.isCreator(cubitState is GroupEventLoaded ? cubitState.currentUserId : '');
 
     return Scaffold(
-      backgroundColor: _MorandiColors.paleMist,
+      backgroundColor: colorScheme.surface,
       body: CustomScrollView(
         slivers: [
           // 1. Expanded Header
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
-            backgroundColor: _MorandiColors.forestGreen,
+            backgroundColor: colorScheme.primary,
             leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
             actions: [
               Padding(
@@ -92,14 +81,14 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [_MorandiColors.forestGreen, _MorandiColors.sageGreen],
+                    colors: [colorScheme.primary, colorScheme.secondary],
                   ),
                 ),
-                child: Center(child: Icon(Icons.terrain, size: 80, color: Colors.white.withOpacity(0.2))),
+                child: Center(child: Icon(Icons.terrain, size: 80, color: Colors.white.withValues(alpha: 0.2))),
               ),
             ),
           ),
@@ -109,10 +98,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             child: Transform.translate(
               offset: const Offset(0, -20),
               child: Container(
-                decoration: const BoxDecoration(
-                  color: _MorandiColors.paleMist,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 32, 24, 100),
@@ -134,11 +123,11 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardTheme.color,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: _MorandiColors.forestGreen.withOpacity(0.05),
+                              color: colorScheme.primary.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -167,7 +156,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                             const SizedBox(height: 12),
                             Text(
                               '※ 預計人數僅供參考，實際可報名人數無上限',
-                              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -180,17 +169,17 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                       const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                        decoration: BoxDecoration(
+                          color: theme.cardTheme.color,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Row(
                           children: [
                             Container(
                               width: 50,
                               height: 50,
                               alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: _MorandiColors.sageGreen.withOpacity(0.2),
-                                shape: BoxShape.circle,
-                              ),
+                              decoration: BoxDecoration(color: colorScheme.primaryContainer, shape: BoxShape.circle),
                               child: Text(_event.creatorAvatar, style: const TextStyle(fontSize: 24)),
                             ),
                             const SizedBox(width: 16),
@@ -200,23 +189,26 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                 children: [
                                   Text(
                                     _event.creatorName,
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: _MorandiColors.charcoal,
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('發起人', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                                  Text(
+                                    '發起人',
+                                    style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                                  ),
                                 ],
                               ),
                             ),
                             if (isCreator)
-                              const Chip(
-                                label: Text('我', style: TextStyle(color: Colors.white, fontSize: 12)),
-                                backgroundColor: _MorandiColors.forestGreen,
+                              Chip(
+                                label: const Text('我', style: TextStyle(color: Colors.white, fontSize: 12)),
+                                backgroundColor: colorScheme.primary,
                                 padding: EdgeInsets.zero,
                                 visualDensity: VisualDensity.compact,
+                                side: BorderSide.none,
                               ),
                           ],
                         ),
@@ -234,30 +226,33 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: _MorandiColors.sageGreen.withOpacity(0.1),
+                            color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: _MorandiColors.sageGreen.withOpacity(0.3)),
+                            border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.3)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Row(
+                              Row(
                                 children: [
-                                  Icon(Icons.check_circle_outline, color: _MorandiColors.forestGreen),
-                                  SizedBox(width: 8),
+                                  Icon(Icons.check_circle_outline, color: colorScheme.primary),
+                                  const SizedBox(width: 8),
                                   Text(
                                     '報名成功訊息',
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: _MorandiColors.forestGreen),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 8),
                               (isCreator || _event.myApplicationStatus == GroupEventApplicationStatus.approved)
-                                  ? Text(_event.privateMessage, style: TextStyle(color: Colors.grey[800]))
+                                  ? Text(_event.privateMessage, style: TextStyle(color: colorScheme.onSurface))
                                   : ClipRect(
                                       child: ImageFiltered(
                                         imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                                        child: Text(_event.privateMessage, style: TextStyle(color: Colors.grey[800])),
+                                        child: Text(
+                                          _event.privateMessage,
+                                          style: TextStyle(color: colorScheme.onSurface),
+                                        ),
                                       ),
                                     ),
                               if (!isCreator && _event.myApplicationStatus != GroupEventApplicationStatus.approved)
@@ -265,7 +260,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                   padding: const EdgeInsets.only(top: 8),
                                   child: Text(
                                     '※ 此訊息將於審核通過後顯示',
-                                    style: TextStyle(fontSize: 12, color: _MorandiColors.forestGreen.withOpacity(0.8)),
+                                    style: TextStyle(fontSize: 12, color: colorScheme.primary.withValues(alpha: 0.8)),
                                   ),
                                 ),
                             ],
@@ -279,7 +274,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                       const SizedBox(height: 12),
                       Text(
                         _event.description.isNotEmpty ? _event.description : '無詳細說明',
-                        style: TextStyle(fontSize: 15, color: _MorandiColors.charcoal, height: 1.6),
+                        style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
                       ),
                       const SizedBox(height: 24),
 
@@ -290,7 +285,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                           Text('留言板 (${_event.commentCount})', style: _sectionTitleStyle),
                           TextButton(
                             onPressed: () => GroupEventCommentSheet.show(context, _event.id),
-                            child: const Text('查看全部', style: TextStyle(color: _MorandiColors.forestGreen)),
+                            child: Text('查看全部', style: TextStyle(color: colorScheme.primary)),
                           ),
                         ],
                       ),
@@ -304,7 +299,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                   margin: const EdgeInsets.only(bottom: 12),
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: theme.cardTheme.color,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
@@ -312,7 +307,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                     children: [
                                       CircleAvatar(
                                         radius: 16,
-                                        backgroundColor: _MorandiColors.sageGreen.withOpacity(0.2),
+                                        backgroundColor: colorScheme.secondaryContainer,
                                         child: Text(comment.userAvatar, style: const TextStyle(fontSize: 14)),
                                       ),
                                       const SizedBox(width: 12),
@@ -329,7 +324,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                                 ),
                                                 Text(
                                                   DateFormat('MM/dd HH:mm').format(comment.createdAt),
-                                                  style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
                                                 ),
                                               ],
                                             ),
@@ -338,7 +333,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                               comment.content,
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: colorScheme.onSurface.withValues(alpha: 0.8),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -356,13 +354,13 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: _MorandiColors.forestGreen.withOpacity(0.05),
+                            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
                             child: Text(
                               _event.latestComments.isEmpty ? '尚無留言，成為第一個留言者！' : '查看更多留言...',
-                              style: const TextStyle(color: _MorandiColors.forestGreen, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -377,9 +375,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
+        decoration: BoxDecoration(
+          color: theme.cardTheme.color,
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
         ),
         child: SafeArea(
           child: BlocBuilder<SettingsCubit, SettingsState>(
@@ -401,19 +399,34 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                       context.read<GroupEventCubit>().fetchEvents(isAuto: false);
                     }
                   },
-                  style: _primaryButtonStyle,
                   icon: const Icon(Icons.rate_review_rounded),
                   label: const Text('審核報名'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
                 );
               }
 
               if (_event.myApplicationStatus != null) {
-                return FilledButton(onPressed: null, style: _disabledButtonStyle, child: const Text('已報名'));
+                return FilledButton(
+                  onPressed: null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
+                    foregroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('已報名'),
+                );
               }
 
               return FilledButton(
                 onPressed: isOffline || !_event.canApply || isSyncing ? null : _handleApply,
-                style: _primaryButtonStyle,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
                 child: isSyncing
                     ? const SizedBox(
                         width: 20,
@@ -431,37 +444,19 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
 
   // Styles
   TextStyle get _sectionTitleStyle =>
-      const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _MorandiColors.charcoal);
-
-  ButtonStyle get _primaryButtonStyle => FilledButton.styleFrom(
-    backgroundColor: _MorandiColors.forestGreen,
-    foregroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(vertical: 16),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-    elevation: 0,
-  );
-
-  ButtonStyle get _disabledButtonStyle => FilledButton.styleFrom(
-    backgroundColor: Colors.grey[300],
-    foregroundColor: Colors.grey[600],
-    padding: const EdgeInsets.symmetric(vertical: 16),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-    elevation: 0,
-  );
+      const TextStyle(fontSize: 18, fontWeight: FontWeight.bold); // Let Theme handle color
 
   // Helper Widgets
   Widget _buildVerticalDivider() {
-    return Container(height: 30, width: 1, color: Colors.grey[200]);
+    return Container(height: 30, width: 1, color: Theme.of(context).colorScheme.outlineVariant);
   }
 
   Widget _buildGlassIconButton({required IconData icon, required VoidCallback onTap, Color color = Colors.white}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: IconButton(
         icon: Icon(icon, color: color),
@@ -473,39 +468,38 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
   }
 
   Widget _buildInfoItem(IconData icon, String value, String label) {
+    final theme = Theme.of(context);
     return Column(
       children: [
-        Icon(icon, color: _MorandiColors.forestGreen, size: 24),
+        Icon(icon, color: theme.colorScheme.primary, size: 24),
         const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: _MorandiColors.charcoal, fontSize: 14),
-        ),
+        Text(value, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+        Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
       ],
     );
   }
 
   Widget _buildStatusChip(GroupEventStatus status) {
+    final theme = Theme.of(context);
     Color bg;
     Color text;
     String label;
 
     switch (status) {
       case GroupEventStatus.open:
-        bg = _MorandiColors.forestGreen;
-        text = Colors.white;
+        bg = theme.colorScheme.primary;
+        text = theme.colorScheme.onPrimary;
         label = '招募中';
         break;
       case GroupEventStatus.closed:
-        bg = Colors.grey;
-        text = Colors.white;
+        bg = theme.colorScheme.onSurfaceVariant;
+        text = theme.colorScheme.surface;
         label = '已截止';
         break;
       case GroupEventStatus.cancelled:
-        bg = _MorandiColors.earthBrown;
-        text = Colors.white;
+        bg = theme.colorScheme.error;
+        text = theme.colorScheme.onError;
         label = '已取消';
         break;
     }
@@ -521,6 +515,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
   }
 
   Widget _buildStatusCard(GroupEventApplicationStatus status) {
+    final theme = Theme.of(context);
     Color color;
     IconData icon;
     String text;
@@ -532,17 +527,17 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
         text = '審核中';
         break;
       case GroupEventApplicationStatus.approved:
-        color = _MorandiColors.forestGreen;
+        color = theme.colorScheme.primary;
         icon = Icons.check_circle;
         text = '已通過';
         break;
       case GroupEventApplicationStatus.rejected:
-        color = _MorandiColors.earthBrown;
+        color = theme.colorScheme.error;
         icon = Icons.cancel;
         text = '未通過';
         break;
       default:
-        color = Colors.grey;
+        color = theme.colorScheme.outline;
         icon = Icons.info;
         text = '未知';
     }
@@ -550,9 +545,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -593,21 +588,11 @@ class _ExpandableTitleState extends State<_ExpandableTitle> {
           widget.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: _MorandiColors.charcoal,
-            height: 1.2,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, height: 1.2),
         ),
         secondChild: Text(
           widget.title,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: _MorandiColors.charcoal,
-            height: 1.2,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, height: 1.2),
         ),
         crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
         duration: const Duration(milliseconds: 200),

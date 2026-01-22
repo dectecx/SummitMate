@@ -140,14 +140,14 @@ class _GearTabState extends State<GearTab> {
 
                       // 分類清單
                       if (state.items.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 32),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 32),
                           child: Center(
                             child: Column(
                               children: [
-                                Icon(Icons.backpack_outlined, size: 48, color: Colors.grey),
-                                SizedBox(height: 8),
-                                Text('目前沒有自定義裝備', style: TextStyle(color: Colors.grey)),
+                                Icon(Icons.backpack_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+                                const SizedBox(height: 8),
+                                Text('目前沒有自定義裝備', style: TextStyle(color: Theme.of(context).colorScheme.outline)),
                               ],
                             ),
                           ),

@@ -180,7 +180,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     try {
       LogService.info('Update theme: $theme', source: _source);
-      
+
       await _repository.updateTheme(theme);
       final updatedSettings = _repository.getSettings();
 

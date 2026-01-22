@@ -12,6 +12,8 @@ import '../../data/models/user_profile.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../core/di.dart';
 import '../../core/services/permission_service.dart';
+import '../widgets/common/summit_app_bar.dart';
+
 import 'trip_cloud_screen.dart';
 import '../utils/tutorial_keys.dart';
 
@@ -25,7 +27,8 @@ class TripListScreen extends StatelessWidget {
     final permissionService = getIt<PermissionService>();
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: SummitAppBar(
+        title: const Text('行程管理'),
         actions: [
           IconButton(icon: const Icon(Icons.add), onPressed: () => _showCreateTripDialog(context), tooltip: '新增行程'),
         ],

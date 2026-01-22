@@ -31,13 +31,13 @@ class GearQuickLinks extends StatelessWidget {
             child: InkWell(
               onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
               borderRadius: BorderRadius.circular(12),
-              child: const Padding(
-                padding: EdgeInsets.all(12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
-                    Icon(Icons.description, color: Colors.green, size: 28),
-                    SizedBox(height: 8),
-                    Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    Icon(Icons.description, color: Theme.of(context).colorScheme.primary, size: 28),
+                    const SizedBox(height: 8),
+                    const Text('官方清單', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
@@ -51,13 +51,13 @@ class GearQuickLinks extends StatelessWidget {
             child: InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GearCloudScreen())),
               borderRadius: BorderRadius.circular(12),
-              child: const Padding(
-                padding: EdgeInsets.all(12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
-                    Icon(Icons.cloud, color: Colors.blue, size: 28),
-                    SizedBox(height: 8),
-                    Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    Icon(Icons.cloud, color: Theme.of(context).colorScheme.secondary, size: 28),
+                    const SizedBox(height: 8),
+                    const Text('雲端庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
@@ -75,7 +75,7 @@ class GearQuickLinks extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
-                    Icon(Icons.backpack, color: Colors.orange.shade700, size: 28),
+                    Icon(Icons.backpack, color: Theme.of(context).colorScheme.tertiary, size: 28),
                     const SizedBox(height: 8),
                     const Text('我的庫', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                   ],
@@ -104,7 +104,7 @@ class GearTotalWeightCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('總重量 (含糧食)', style: TextStyle(fontSize: 18)),
+            Text('總重量 (含糧食)', style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onPrimaryContainer)),
             Text(
               '${totalWeight.toStringAsFixed(2)} kg',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
@@ -134,8 +134,11 @@ class GearMealCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), shape: BoxShape.circle),
-                child: const Icon(Icons.bento, color: Colors.orange, size: 28),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.tertiaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.bento, color: Theme.of(context).colorScheme.tertiary, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -145,12 +148,12 @@ class GearMealCard extends StatelessWidget {
                     const Text('糧食計畫', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     Text(
                       mealWeight > 0 ? '已規劃 ${mealWeight.toStringAsFixed(2)} kg' : '尚未規劃',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              Icon(Icons.arrow_forward_ios, size: 16, color: Theme.of(context).colorScheme.outline),
             ],
           ),
         ),
