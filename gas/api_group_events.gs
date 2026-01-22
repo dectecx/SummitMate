@@ -54,6 +54,12 @@ function getGroupEvents(data) {
     ? _getSheetDataAsObjects(likeSheet, HEADERS_GROUP_EVENT_LIKES)
     : [];
 
+  // 取得留言資料
+  const commentSheet = ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS);
+  const commentsRaw = commentSheet
+    ? _getSheetDataAsObjects(commentSheet, HEADERS_GROUP_EVENT_COMMENTS)
+    : [];
+
   // 過濾條件
   let events = eventsRaw;
   if (statusFilter && statusFilter !== "all") {
@@ -75,6 +81,11 @@ function getGroupEvents(data) {
       ? likesRaw.some((l) => l.event_id === row.id && l.user_id === userId)
       : false;
 
+    // 計算留言
+    const commentCount = commentsRaw.filter(
+      (c) => c.event_id === row.id
+    ).length;
+
     // 計算總報名數 (含 pending, approved) - 不含 cancelled/rejected
     const validApps = appsRaw.filter(
       (a) =>
@@ -87,6 +98,7 @@ function getGroupEvents(data) {
       my_application_status: myApp ? myApp.status : null,
       is_liked: isLiked,
       like_count: likeCount,
+      comment_count: commentCount,
       total_application_count: validApps.length,
     });
   });
@@ -95,6 +107,42 @@ function getGroupEvents(data) {
   result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return _success({ events: result }, "取得揪團列表成功");
+}
+
+/**
+ * 取得揪團留言列表
+ * @param {Object} data - { event_id, user_id }
+ * @returns {Object} { code, data, message }
+ */
+function getGroupEventComments(data) {
+  const ss = getSpreadsheet();
+  const commentSheet = ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS);
+
+  const eventId = data.event_id;
+  if (!eventId) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 event_id");
+  }
+
+  if (!commentSheet) {
+    return _error(
+      API_CODES.GROUP_EVENT_COMMENT_SHEET_MISSING,
+      "缺少 GroupEventComments 工作表"
+    );
+  }
+
+  const commentsRaw = _getSheetDataAsObjects(
+    commentSheet,
+    HEADERS_GROUP_EVENT_COMMENTS
+  );
+
+  const result = commentsRaw
+    .filter((c) => c.event_id === eventId)
+    .map((c) => Mapper.GroupEventComment.toDTO(c));
+
+  // 排序: 最新在前
+  result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  return _success({ comments: result }, "取得留言列表成功");
 }
 
 /**
@@ -141,6 +189,13 @@ function getGroupEvent(data) {
     ? likesRaw.some((l) => l.event_id === eventId && l.user_id === userId)
     : false;
 
+  // 計算留言
+  const commentSheet = ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS);
+  const commentsRaw = commentSheet
+    ? _getSheetDataAsObjects(commentSheet, HEADERS_GROUP_EVENT_COMMENTS)
+    : [];
+  const commentCount = commentsRaw.filter((c) => c.event_id === eventId).length;
+
   // 計算總報名數
   const validApps = appsRaw.filter(
     (a) =>
@@ -148,12 +203,23 @@ function getGroupEvent(data) {
       (a.status === "approved" || a.status === "pending")
   );
 
+  // 處理留言 (最新 3 則)
+  const sortedComments = commentsRaw
+    .filter((c) => c.event_id === eventId)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const latestComments = sortedComments
+    .slice(0, 3)
+    .map((c) => Mapper.GroupEventComment.toDTO(c));
+
   const dto = Mapper.GroupEvent.toDTO(row, {
     application_count: eventApps.length,
     my_application_status: myApp ? myApp.status : null,
     is_liked: isLiked,
     like_count: likeCount,
+    comment_count: commentCount,
     total_application_count: validApps.length,
+    latest_comments: latestComments,
   });
 
   return _success({ event: dto }, "取得揪團詳情成功");
@@ -438,7 +504,7 @@ function getGroupEventApplications(data) {
     return _error(API_CODES.INVALID_PARAMS, "缺少 event_id");
   }
 
-    // 檢查是否為活動建立者
+  // 檢查是否為活動建立者
   const events = _getSheetDataAsObjects(eventSheet, HEADERS_GROUP_EVENTS);
   const event = events.find((e) => e.id === eventId);
 
@@ -463,7 +529,7 @@ function getGroupEventApplications(data) {
     .filter((a) => a.event_id === eventId)
     .map((a) => Mapper.GroupEventApplication.toDTO(a)); // 使用 Mapper 轉換
 
-    // 排序: pending 優先, 然後是時間 (最新在前)
+  // 排序: pending 優先, 然後是時間 (最新在前)
   apps.sort((a, b) => {
     if (a.status === "pending" && b.status !== "pending") return -1;
     if (a.status !== "pending" && b.status === "pending") return 1;
