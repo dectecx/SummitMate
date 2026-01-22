@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/poll/poll_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../widgets/common/summit_app_bar.dart';
 
 /// 建立投票畫面
 ///
@@ -122,7 +123,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('發起投票')),
+      appBar: SummitAppBar(title: const Text('發起投票')),
       body: Form(
         key: _formKey,
         child: ListView(

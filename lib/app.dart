@@ -78,14 +78,13 @@ class SummitMateApp extends StatelessWidget {
           // 動態主題配色
           theme: AppTheme.getThemeData(currentTheme),
           themeMode: ThemeMode.light, // 目前強制 Light Mode，由 Strategy 控制顏色
+          // 錯誤監聽與 Overlay
+          builder: (context, child) {
+            return GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
+          },
 
-      // 錯誤監聽與 Overlay
-      builder: (context, child) {
-        return GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
-      },
-
-      // 初始頁面
-      home: const HomeScreen(),
+          // 初始頁面
+          home: const HomeScreen(),
         );
       },
     );

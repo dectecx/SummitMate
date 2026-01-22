@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
+import '../../../cubits/settings/settings_cubit.dart';
+import '../../../cubits/settings/settings_state.dart';
 import '../../../cubits/auth/auth_cubit.dart';
 import '../../../cubits/auth/auth_state.dart';
 import '../../../../data/models/trip.dart';
@@ -37,7 +39,18 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = context.watch<SettingsCubit>().state;
+    final themeType = settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.morandi;
+
     return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).appBarTheme.backgroundColor, // Fallback
+          gradient: AppTheme.getStrategy(themeType).appBarGradient,
+        ),
+      ),
       leading: IconButton(
         key: TutorialKeys.mainDrawerMenu,
         icon: const Icon(Icons.menu),
@@ -59,18 +72,23 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
                 final roleLabel = isOwner
                     ? RoleConstants.displayName[RoleConstants.leader] ?? 'Leader'
                     : RoleConstants.displayName[RoleConstants.member] ?? 'Member';
-                final color = isOwner ? Colors.orange : Colors.blueGrey;
+
+                // Use Theme Colors for Role Badge
+                final color = isOwner ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.secondary;
+                final onColor = isOwner
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSecondary;
 
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: color, // Solid color for better contrast
+                    color: color,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
+                    border: Border.all(color: onColor.withValues(alpha: 0.3), width: 1),
                   ),
                   child: Text(
                     roleLabel,
-                    style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 11, color: onColor, fontWeight: FontWeight.bold),
                   ),
                 );
               },
@@ -80,13 +98,16 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(10)),
-              child: const Row(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.error, // Use error color for offline warning
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.cloud_off, size: 12, color: Colors.white),
-                  SizedBox(width: 4),
-                  Text('離線', style: TextStyle(fontSize: 11, color: Colors.white)),
+                  Icon(Icons.cloud_off, size: 12, color: Theme.of(context).colorScheme.onError),
+                  const SizedBox(width: 4),
+                  Text('離線', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onError)),
                 ],
               ),
             ),

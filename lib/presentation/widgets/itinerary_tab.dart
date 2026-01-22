@@ -140,7 +140,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
               context.read<ItineraryCubit>().deleteItem(key);
               Navigator.pop(context);
             },
-            child: const Text('刪除', style: TextStyle(color: Colors.red)),
+            child: Text('刪除', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),

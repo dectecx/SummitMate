@@ -18,10 +18,7 @@ class ThemeSelectionSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            '選擇主題',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+          const Text('選擇主題', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
           Flexible(
             child: SingleChildScrollView(
@@ -44,15 +41,10 @@ class ThemeSelectionSheet extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: strategy.themeData.primaryColor,
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.grey.withOpacity(0.3),
-                              width: 1,
-                            ),
+                            border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
                           ),
                           child: type == AppThemeType.creative
-                              ? Center(
-                                  child: Icon(Icons.bolt, color: Colors.white, size: 20),
-                                )
+                              ? Center(child: Icon(Icons.bolt, color: Colors.white, size: 20))
                               : null,
                         ),
                         title: Text(strategy.name),

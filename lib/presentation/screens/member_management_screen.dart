@@ -7,6 +7,7 @@ import '../../data/models/trip.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../widgets/common/summit_app_bar.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 
@@ -611,7 +612,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     final canManage = isOwner || myRole == RoleConstants.leader || myRole == RoleConstants.admin;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: SummitAppBar(
         title: const Text('成員管理'),
         actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _loadMembers)],
       ),

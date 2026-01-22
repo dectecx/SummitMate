@@ -49,37 +49,36 @@ class _SignalInfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          const Icon(Icons.location_on, size: 16, color: Colors.grey),
+          Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.outline),
           const SizedBox(width: 8),
           Expanded(
             child: Text(location, style: const TextStyle(fontWeight: FontWeight.w500)),
           ),
-          _buildSignalChip(signal),
+          Builder(
+            builder: (context) {
+              Color color;
+              if (signal.contains('無訊號')) {
+                color = Theme.of(context).colorScheme.error;
+              } else if (signal.contains('微弱')) {
+                color = Theme.of(context).colorScheme.tertiary;
+              } else {
+                color = Theme.of(context).colorScheme.primary;
+              }
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: color.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  signal,
+                  style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
+                ),
+              );
+            },
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSignalChip(String signal) {
-    Color color;
-    if (signal.contains('無訊號')) {
-      color = Colors.red;
-    } else if (signal.contains('微弱')) {
-      color = Colors.orange;
-    } else {
-      color = Colors.green;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        signal,
-        style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
       ),
     );
   }

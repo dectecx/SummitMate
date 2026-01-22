@@ -11,7 +11,6 @@ import '../../data/models/gear_key_record.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
-// import '../providers/meal_provider.dart'; // Removed
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import '../cubits/gear/gear_cubit.dart';
@@ -23,6 +22,7 @@ import '../widgets/gear_upload_dialog.dart';
 import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
 import '../widgets/gear_preview_dialog.dart';
+import '../widgets/common/summit_app_bar.dart';
 
 /// 雲端裝備庫畫面
 class GearCloudScreen extends StatefulWidget {
@@ -302,7 +302,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: SummitAppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

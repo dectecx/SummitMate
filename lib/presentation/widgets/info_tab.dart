@@ -92,7 +92,7 @@ class InfoTabState extends State<InfoTab> {
               // 天氣預報
               Card(
                 child: ExpansionTile(
-                  leading: const Icon(Icons.cloud, color: Colors.blue),
+                  leading: Icon(Icons.cloud, color: Theme.of(context).colorScheme.primary),
                   title: const Text('天氣預報', style: TextStyle(fontWeight: FontWeight.bold)),
                   initiallyExpanded: true,
                   children: [

@@ -48,7 +48,13 @@ class Settings extends HiveObject {
   factory Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);
   Map<String, dynamic> toJson() => _$SettingsToJson(this);
 
-  Settings copyWith({String? username, DateTime? lastSyncTime, String? avatar, bool? isOfflineMode, AppThemeType? theme}) {
+  Settings copyWith({
+    String? username,
+    DateTime? lastSyncTime,
+    String? avatar,
+    bool? isOfflineMode,
+    AppThemeType? theme,
+  }) {
     return Settings(
       username: username ?? this.username,
       lastSyncTime: lastSyncTime ?? this.lastSyncTime,

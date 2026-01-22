@@ -93,7 +93,7 @@ class ItineraryDaySelector extends StatelessWidget {
               const SizedBox(width: 4),
               // 更新時間與按鈕 (置右)
               Material(
-                color: Colors.grey.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
                 child: InkWell(
                   onTap: onManualSync,
@@ -103,12 +103,22 @@ class ItineraryDaySelector extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          timeStr,
+                          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        ),
                         const SizedBox(width: 4),
                         if (isSyncing)
-                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          )
                         else
-                          const Icon(Icons.sync, size: 16, color: Colors.grey),
+                          Icon(Icons.sync, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       ],
                     ),
                   ),
