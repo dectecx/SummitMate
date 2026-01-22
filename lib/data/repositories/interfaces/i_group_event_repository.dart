@@ -87,6 +87,9 @@ abstract interface class IGroupEventRepository {
     String? note,
   });
 
+  /// 取得報名列表 (雲端)
+  Future<Result<List<GroupEventApplication>, Exception>> getApplications({required String eventId});
+
   // ========== Like Operations ==========
 
   /// 喜歡揪團 (雲端 + 本地持久化)

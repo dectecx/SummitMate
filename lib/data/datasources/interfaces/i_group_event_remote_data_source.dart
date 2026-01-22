@@ -60,7 +60,14 @@ abstract class IGroupEventRemoteDataSource {
   /// [applicationId] 報名紀錄 ID
   /// [action] approve 或 reject
   /// [userId] 審核者 ID
+  /// 回傳: void
   Future<void> reviewApplication({required String applicationId, required String action, required String userId});
+
+  /// 取得報名列表 (團主用)
+  ///
+  /// [eventId] 揪團 ID
+  /// [userId] 團主 ID
+  Future<List<GroupEventApplication>> getApplications({required String eventId, required String userId});
 
   /// 取得我的揪團
   ///
