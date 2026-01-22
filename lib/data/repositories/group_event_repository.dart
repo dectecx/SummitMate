@@ -268,6 +268,21 @@ class GroupEventRepository implements IGroupEventRepository {
     }
   }
 
+  @override
+  Future<Result<List<GroupEventApplication>, Exception>> getApplications({required String eventId}) async {
+    try {
+      if (_getCurrentUserId() == null) {
+        return const Failure(GeneralException('Unauthorized: User must be logged in to view applications'));
+      }
+      // Note: This data is not cached locally for now as it's dynamic and for creator only
+      final applications = await _remoteDataSource.getApplications(eventId: eventId, userId: _getCurrentUserId()!);
+      return Success(applications);
+    } catch (e) {
+      LogService.error('Get applications failed: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
   // ========== Like Operations ==========
 
   @override

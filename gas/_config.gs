@@ -411,6 +411,7 @@ const API_ACTIONS = {
   GROUP_EVENT_UNLIKE: "group_event_unlike",
   GROUP_EVENT_LIKE: "group_event_like",
   GROUP_EVENT_UNLIKE: "group_event_unlike",
+  GROUP_EVENT_GET_APPLICATIONS: "group_event_get_applications",
 };
 
 const SHEET_SCHEMA = {

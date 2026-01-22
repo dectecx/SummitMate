@@ -13,6 +13,8 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/group_event/group_event_comment_sheet.dart';
 
 /// 揪團詳情畫面
+import 'group_event_review_screen.dart';
+
 class GroupEventDetailScreen extends StatefulWidget {
   final GroupEvent event;
 
@@ -185,7 +187,29 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
           // 已報名或創建者不顯示報名按鈕
-          if (isCreator || _event.myApplicationStatus != null) {
+          // 創建者顯示管理按鈕
+          if (isCreator) {
+            return Container(
+              padding: const EdgeInsets.all(16),
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => GroupEventReviewScreen(
+                        eventId: _event.id,
+                        currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.rate_review),
+                label: const Text('審核報名'),
+              ),
+            );
+          }
+
+          // 已報名不顯示報名按鈕 (狀態卡片已顯示)
+          if (_event.myApplicationStatus != null) {
             return const SizedBox.shrink();
           }
 

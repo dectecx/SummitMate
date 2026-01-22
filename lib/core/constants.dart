@@ -5,7 +5,7 @@ library;
 class AppInfo {
   static const String appName = 'SummitMate';
   static const String appNameChinese = '山友';
-  static const String version = '0.0.9';
+  static const String version = '0.0.10';
   static const int verificationCodeExpiryMinutes = 10; // 驗證碼有效時間 (分鐘)
 }
 
@@ -142,6 +142,7 @@ class ApiConfig {
   static const String actionGroupEventAddComment = 'group_event_add_comment';
   static const String actionGroupEventGetComments = 'group_event_get_comments';
   static const String actionGroupEventDeleteComment = 'group_event_delete_comment';
+  static const String actionGroupEventGetApplications = 'group_event_get_applications';
 }
 
 /// Hive Box 名稱

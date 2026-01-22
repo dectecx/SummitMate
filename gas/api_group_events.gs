@@ -415,6 +415,65 @@ function applyGroupEvent(data) {
 }
 
 /**
+ * 取得報名列表 (for Creator)
+ * @param {Object} data - { event_id, user_id }
+ * @returns {Object} { code, data, message }
+ */
+function getGroupEventApplications(data) {
+  const ss = getSpreadsheet();
+  const eventSheet = ss.getSheetByName(SHEET_GROUP_EVENTS);
+  const appSheet = ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS);
+
+  if (!appSheet) {
+    return _error(
+      API_CODES.GROUP_EVENT_SHEET_MISSING,
+      "缺少 GroupEventApplications 工作表"
+    );
+  }
+
+  const eventId = data.event_id;
+  const userId = String(data.user_id || "");
+
+  if (!eventId) {
+    return _error(API_CODES.INVALID_PARAMS, "缺少 event_id");
+  }
+
+    // 檢查是否為活動建立者
+  const events = _getSheetDataAsObjects(eventSheet, HEADERS_GROUP_EVENTS);
+  const event = events.find((e) => e.id === eventId);
+
+  if (!event) {
+    return _error(API_CODES.GROUP_EVENT_NOT_FOUND, "找不到此揪團活動");
+  }
+
+  if (event.creator_id !== userId) {
+    return _error(
+      API_CODES.GROUP_EVENT_PERMISSION_DENIED,
+      "只有活動建立者可以查看報名列表"
+    );
+  }
+
+  const appsRaw = _getSheetDataAsObjects(
+    appSheet,
+    HEADERS_GROUP_EVENT_APPLICATIONS
+  );
+
+  // 取得該活動的報名紀錄
+  const apps = appsRaw
+    .filter((a) => a.event_id === eventId)
+    .map((a) => Mapper.GroupEventApplication.toDTO(a)); // 使用 Mapper 轉換
+
+    // 排序: pending 優先, 然後是時間 (最新在前)
+  apps.sort((a, b) => {
+    if (a.status === "pending" && b.status !== "pending") return -1;
+    if (a.status !== "pending" && b.status === "pending") return 1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  return _success({ applications: apps }, "取得報名列表成功");
+}
+
+/**
  * 取消報名
  * @param {Object} data - { application_id, user_id }
  * @returns {Object} { code, data, message }
@@ -467,7 +526,7 @@ function reviewGroupEventApplication(data) {
   const appSheet = ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS);
 
   const appId = data.application_id;
-  const action = data.action; // approve or reject
+  const action = data.review_action;
   const userId = String(data.user_id || "");
 
   if (!["approve", "reject"].includes(action)) {

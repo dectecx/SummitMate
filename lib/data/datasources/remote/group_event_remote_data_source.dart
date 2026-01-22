@@ -165,6 +165,22 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
+  Future<List<GroupEventApplication>> getApplications({required String eventId, required String userId}) async {
+    LogService.info('Fetching applications for event: $eventId by creator: $userId', source: _source);
+    final response = await _apiClient.post({
+      'action': ApiConfig.actionGroupEventGetApplications,
+      'event_id': eventId,
+      'user_id': userId,
+    });
+
+    final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
+    if (!gasResponse.isSuccess) throw Exception(gasResponse.message);
+
+    final List<dynamic> appsJson = gasResponse.data['applications'] ?? [];
+    return appsJson.map((a) => GroupEventApplication.fromJson(a as Map<String, dynamic>)).toList();
+  }
+
+  @override
   Future<List<GroupEvent>> getMyEvents({required String userId, required String type}) async {
     LogService.info('Fetching my events for user: $userId, type: $type', source: _source);
     final response = await _apiClient.post({'action': ApiConfig.actionGroupEventMy, 'user_id': userId, 'type': type});

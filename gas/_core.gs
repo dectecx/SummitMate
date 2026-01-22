@@ -189,6 +189,8 @@ function doPost(e) {
         return _createJsonResponse(getGroupEventComments(data));
       case API_ACTIONS.GROUP_EVENT_DELETE_COMMENT:
         return _createJsonResponse(deleteGroupEventComment(data));
+      case API_ACTIONS.GROUP_EVENT_GET_APPLICATIONS:
+        return _createJsonResponse(getGroupEventApplications(data));
 
       // === 監控 (Logs/Heartbeat) ===
       case API_ACTIONS.LOG_UPLOAD:
