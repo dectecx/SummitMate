@@ -47,7 +47,7 @@ class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
 
     switch (result) {
       case Success(value: final newComment):
-        final updatedComments = List<GroupEventComment>.from(currentState.comments)..add(newComment);
+        final updatedComments = List<GroupEventComment>.from(currentState.comments)..insert(0, newComment);
         emit(currentState.copyWith(comments: updatedComments, isSending: false));
       case Failure(exception: final error):
         // 恢復原狀並顯示錯誤 (實際應用可能需要一次性錯誤事件)

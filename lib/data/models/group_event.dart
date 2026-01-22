@@ -3,6 +3,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'enums/group_event_status.dart';
 import 'enums/group_event_application_status.dart';
 
+import 'group_event_comment.dart';
+
 part 'group_event.g.dart';
 
 /// 揪團活動
@@ -123,6 +125,11 @@ class GroupEvent {
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
+  /// 最新留言 (Preview)
+  @HiveField(24)
+  @JsonKey(defaultValue: [])
+  final List<GroupEventComment> latestComments;
+
   GroupEvent({
     required this.id,
     required this.creatorId,
@@ -144,6 +151,7 @@ class GroupEvent {
     this.myApplicationStatus,
     this.creatorName = '',
     this.creatorAvatar = '🐻',
+    this.latestComments = const [],
     required this.createdAt,
     required this.createdBy,
     required this.updatedAt,
@@ -203,6 +211,7 @@ class GroupEvent {
     String? createdBy,
     DateTime? updatedAt,
     String? updatedBy,
+    List<GroupEventComment>? latestComments,
   }) {
     return GroupEvent(
       id: id ?? this.id,
@@ -225,6 +234,7 @@ class GroupEvent {
       myApplicationStatus: myApplicationStatus ?? this.myApplicationStatus,
       creatorName: creatorName ?? this.creatorName,
       creatorAvatar: creatorAvatar ?? this.creatorAvatar,
+      latestComments: latestComments ?? this.latestComments,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
       updatedAt: updatedAt ?? this.updatedAt,

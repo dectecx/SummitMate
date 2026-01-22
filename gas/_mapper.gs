@@ -457,9 +457,15 @@ const Mapper = {
           row.approval_required === "TRUE" || row.approval_required === true,
         private_message: row.private_message || "",
         linked_trip_id: row.linked_trip_id || null,
-        // 快取
-        like_count: Number(row.like_count) || 0,
-        comment_count: Number(row.comment_count) || 0,
+        // 快取/計算
+        like_count:
+          extra.like_count !== undefined
+            ? extra.like_count
+            : Number(row.like_count) || 0,
+        comment_count:
+          extra.comment_count !== undefined
+            ? extra.comment_count
+            : Number(row.comment_count) || 0,
         // 快照
         creator_name: row.creator_name || "",
         creator_avatar: row.creator_avatar || DEFAULT_AVATAR,
@@ -468,6 +474,7 @@ const Mapper = {
         my_application_status: extra.my_application_status || null,
         is_liked: extra.is_liked || false,
         total_application_count: extra.total_application_count || 0,
+        latest_comments: extra.latest_comments || [],
         // Audit
         created_at: row.created_at,
         created_by: row.created_by,
