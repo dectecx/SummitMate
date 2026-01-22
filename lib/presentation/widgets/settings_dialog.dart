@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:summitmate/core/theme.dart';
+import 'package:summitmate/presentation/widgets/settings/theme_selection_sheet.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
@@ -212,6 +214,29 @@ class _SettingsDialogState extends State<SettingsDialog> {
                       child: const Text('儲存設定'),
                     ),
                   ),
+
+                  const Divider(height: 32),
+
+                  // Theme Selection
+                  if (settingsState is SettingsLoaded)
+                    ListTile(
+                      leading: const Icon(Icons.palette_outlined),
+                      title: const Text('主題配色'),
+                      subtitle: Text(
+                        AppTheme.getStrategy(settingsState.settings.theme).name,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          builder: (context) => const ThemeSelectionSheet(),
+                        );
+                      },
+                    ),
 
                   const Divider(height: 32),
 

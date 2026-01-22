@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:summitmate/infrastructure/adapters/app_theme_type_adapter.dart';
 import '../../core/constants.dart';
 import 'log_service.dart';
 import '../../data/models/settings.dart';
@@ -96,6 +97,9 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(20)) {
       Hive.registerAdapter(SyncStatusAdapter());
+    }
+    if (!Hive.isAdapterRegistered(30)) {
+      Hive.registerAdapter(AppThemeTypeAdapter());
     }
 
     _isInitialized = true;

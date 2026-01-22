@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:summitmate/core/theme.dart';
 
 part 'settings.g.dart';
 
@@ -26,11 +27,17 @@ class Settings extends HiveObject {
   @JsonKey(defaultValue: false)
   bool isOfflineMode;
 
+  /// App 主題
+  @HiveField(4, defaultValue: AppThemeType.morandi)
+  @JsonKey(defaultValue: AppThemeType.morandi)
+  AppThemeType theme;
+
   Settings({
     this.username = '',
     this.lastSyncTime,
     this.avatar = '🐻', // 預設熊頭像
     this.isOfflineMode = false, // 預設連線模式
+    this.theme = AppThemeType.morandi, // 預設莫蘭迪
   });
 
   /// 建立預設設定
@@ -41,12 +48,13 @@ class Settings extends HiveObject {
   factory Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);
   Map<String, dynamic> toJson() => _$SettingsToJson(this);
 
-  Settings copyWith({String? username, DateTime? lastSyncTime, String? avatar, bool? isOfflineMode}) {
+  Settings copyWith({String? username, DateTime? lastSyncTime, String? avatar, bool? isOfflineMode, AppThemeType? theme}) {
     return Settings(
       username: username ?? this.username,
       lastSyncTime: lastSyncTime ?? this.lastSyncTime,
       avatar: avatar ?? this.avatar,
       isOfflineMode: isOfflineMode ?? this.isOfflineMode,
+      theme: theme ?? this.theme,
     );
   }
 }

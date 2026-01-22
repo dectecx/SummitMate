@@ -17,6 +17,7 @@ import 'presentation/cubits/meal/meal_cubit.dart';
 import 'presentation/cubits/map/map_cubit.dart';
 import 'presentation/cubits/map/offline_map_cubit.dart';
 import 'presentation/cubits/settings/settings_cubit.dart';
+import 'presentation/cubits/settings/settings_state.dart';
 import 'presentation/cubits/group_event/group_event_cubit.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
@@ -53,17 +54,30 @@ class SummitMateApp extends StatelessWidget {
   }
 
   Widget _buildMaterialApp() {
-    return MaterialApp(
-      title: 'SummitMate',
-      debugShowCheckedModeBanner: false,
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (previous, current) {
+        if (previous is SettingsLoaded && current is SettingsLoaded) {
+          return previous.settings.theme != current.settings.theme;
+        }
+        return true;
+      },
+      builder: (context, state) {
+        // Default to Morandi if not loaded
+        AppThemeType currentTheme = AppThemeType.morandi;
+        if (state is SettingsLoaded) {
+          currentTheme = state.settings.theme;
+        }
 
-      // Toast 訊息的 key
-      scaffoldMessengerKey: ToastService.messengerKey,
+        return MaterialApp(
+          title: 'SummitMate',
+          debugShowCheckedModeBanner: false,
 
-      // 大自然主題配色
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+          // Toast 訊息的 key
+          scaffoldMessengerKey: ToastService.messengerKey,
+
+          // 動態主題配色
+          theme: AppTheme.getThemeData(currentTheme),
+          themeMode: ThemeMode.light, // 目前強制 Light Mode，由 Strategy 控制顏色
 
       // 錯誤監聽與 Overlay
       builder: (context, child) {
@@ -72,6 +86,8 @@ class SummitMateApp extends StatelessWidget {
 
       // 初始頁面
       home: const HomeScreen(),
+        );
+      },
     );
   }
 }
