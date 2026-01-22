@@ -33,88 +33,95 @@ class GroupEvent {
 
   /// 開始日期
   @HiveField(5)
+  @JsonKey(name: 'start_date')
   final DateTime startDate;
 
   /// 結束日期
   @HiveField(6)
+  @JsonKey(name: 'end_date')
   final DateTime? endDate;
 
-  /// 招募人數上限
-  @HiveField(7)
-  @JsonKey(defaultValue: 10, fromJson: _parseInt)
-  final int maxMembers;
-
   /// 狀態
-  @HiveField(8)
+  @HiveField(7)
   @JsonKey(defaultValue: GroupEventStatus.open)
   final GroupEventStatus status;
 
-  /// 是否需審核
+  /// 招募人數上限
+  @HiveField(8)
+  @JsonKey(defaultValue: 10, fromJson: _parseInt)
+  final int maxMembers;
+
+  /// 已報名人數 (計算欄位)
   @HiveField(9)
+  @JsonKey(defaultValue: 0, fromJson: _parseInt)
+  final int applicationCount;
+
+  /// 總報名人數 (含審核中)
+  @HiveField(10)
+  @JsonKey(defaultValue: 0, fromJson: _parseInt)
+  final int totalApplicationCount;
+
+  /// 是否需審核
+  @HiveField(11)
   @JsonKey(defaultValue: false)
   final bool approvalRequired;
 
   /// 報名成功訊息 (審核通過後顯示)
-  @HiveField(10)
+  @HiveField(12)
   @JsonKey(defaultValue: '')
   final String privateMessage;
 
   /// 關聯的行程 ID (TODO: 整合行程)
-  @HiveField(11)
+  @HiveField(13)
   final String? linkedTripId;
 
   /// 喜歡數量 (快取)
-  @HiveField(12)
+  @HiveField(14)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int likeCount;
 
   /// 留言數量 (快取)
-  @HiveField(13)
+  @HiveField(15)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int commentCount;
 
-  /// 已報名人數 (計算欄位)
-  @HiveField(14)
-  @JsonKey(defaultValue: 0, fromJson: _parseInt)
-  final int applicationCount;
-
-  /// 建立時間
-  @HiveField(15)
-  @JsonKey(name: 'created_at')
-  final DateTime createdAt;
-
-  /// 建立者 ID
-  @HiveField(16)
-  @JsonKey(name: 'created_by')
-  final String createdBy;
-
-  /// 更新時間
-  @HiveField(17)
-  @JsonKey(name: 'updated_at')
-  final DateTime updatedAt;
-
-  /// 更新者 ID
-  @HiveField(18)
-  @JsonKey(name: 'updated_by')
-  final String updatedBy;
-
-  /// 建立者資訊 (快照)
-  @HiveField(19)
-  @JsonKey(defaultValue: '')
-  final String creatorName;
-
-  @HiveField(20)
-  @JsonKey(defaultValue: '🐻')
-  final String creatorAvatar;
-
   /// 當前使用者是否已喜歡
-  @HiveField(21)
+  @HiveField(16)
   @JsonKey(defaultValue: false)
   final bool isLiked;
 
   /// 當前使用者報名狀態 (null=未報名)
-  @HiveField(22)
+  @HiveField(17)
   final GroupEventApplicationStatus? myApplicationStatus;
+
+  /// 建立者資訊 (快照)
+  @HiveField(18)
+  @JsonKey(defaultValue: '')
+  final String creatorName;
+
+  @HiveField(19)
+  @JsonKey(defaultValue: '🐻')
+  final String creatorAvatar;
+
+  /// 建立時間
+  @HiveField(20)
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+
+  /// 建立者 ID
+  @HiveField(21)
+  @JsonKey(name: 'created_by')
+  final String createdBy;
+
+  /// 更新時間
+  @HiveField(22)
+  @JsonKey(name: 'updated_at')
+  final DateTime updatedAt;
+
+  /// 更新者 ID
+  @HiveField(23)
+  @JsonKey(name: 'updated_by')
+  final String updatedBy;
 
   GroupEvent({
     required this.id,
@@ -124,32 +131,33 @@ class GroupEvent {
     this.location = '',
     required this.startDate,
     this.endDate,
-    this.maxMembers = 10,
     this.status = GroupEventStatus.open,
+    this.maxMembers = 10,
+    this.applicationCount = 0,
+    this.totalApplicationCount = 0,
     this.approvalRequired = false,
     this.privateMessage = '',
     this.linkedTripId,
     this.likeCount = 0,
     this.commentCount = 0,
-    this.applicationCount = 0,
+    this.isLiked = false,
+    this.myApplicationStatus,
+    this.creatorName = '',
+    this.creatorAvatar = '🐻',
     required this.createdAt,
     required this.createdBy,
     required this.updatedAt,
     required this.updatedBy,
-    this.creatorName = '',
-    this.creatorAvatar = '🐻',
-    this.isLiked = false,
-    this.myApplicationStatus,
   });
 
   /// 是否開放報名
   bool get isOpen => status == GroupEventStatus.open;
 
-  /// 是否已額滿
+  /// 是否已額滿 (前端不再強制阻擋，改以 isFull 提示，但 canApply 可放寬)
   bool get isFull => applicationCount >= maxMembers;
 
-  /// 可報名 (開放中且未額滿)
-  bool get canApply => isOpen && !isFull;
+  /// 可報名 (開放中且未額滿 - isFull 只是顯示用，開放中即可報名)
+  bool get canApply => isOpen; // && !isFull (已放寬)
 
   /// 是否為創建者
   bool isCreator(String userId) => creatorId == userId;
@@ -178,22 +186,23 @@ class GroupEvent {
     String? location,
     DateTime? startDate,
     DateTime? endDate,
-    int? maxMembers,
     GroupEventStatus? status,
+    int? maxMembers,
+    int? applicationCount,
+    int? totalApplicationCount,
     bool? approvalRequired,
     String? privateMessage,
     String? linkedTripId,
     int? likeCount,
     int? commentCount,
-    int? applicationCount,
+    bool? isLiked,
+    GroupEventApplicationStatus? myApplicationStatus,
+    String? creatorName,
+    String? creatorAvatar,
     DateTime? createdAt,
     String? createdBy,
     DateTime? updatedAt,
     String? updatedBy,
-    String? creatorName,
-    String? creatorAvatar,
-    bool? isLiked,
-    GroupEventApplicationStatus? myApplicationStatus,
   }) {
     return GroupEvent(
       id: id ?? this.id,
@@ -203,22 +212,23 @@ class GroupEvent {
       location: location ?? this.location,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
-      maxMembers: maxMembers ?? this.maxMembers,
       status: status ?? this.status,
+      maxMembers: maxMembers ?? this.maxMembers,
+      applicationCount: applicationCount ?? this.applicationCount,
+      totalApplicationCount: totalApplicationCount ?? this.totalApplicationCount,
       approvalRequired: approvalRequired ?? this.approvalRequired,
       privateMessage: privateMessage ?? this.privateMessage,
       linkedTripId: linkedTripId ?? this.linkedTripId,
       likeCount: likeCount ?? this.likeCount,
       commentCount: commentCount ?? this.commentCount,
-      applicationCount: applicationCount ?? this.applicationCount,
+      isLiked: isLiked ?? this.isLiked,
+      myApplicationStatus: myApplicationStatus ?? this.myApplicationStatus,
+      creatorName: creatorName ?? this.creatorName,
+      creatorAvatar: creatorAvatar ?? this.creatorAvatar,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
       updatedAt: updatedAt ?? this.updatedAt,
       updatedBy: updatedBy ?? this.updatedBy,
-      creatorName: creatorName ?? this.creatorName,
-      creatorAvatar: creatorAvatar ?? this.creatorAvatar,
-      isLiked: isLiked ?? this.isLiked,
-      myApplicationStatus: myApplicationStatus ?? this.myApplicationStatus,
     );
   }
 }

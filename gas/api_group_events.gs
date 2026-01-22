@@ -75,11 +75,19 @@ function getGroupEvents(data) {
       ? likesRaw.some((l) => l.event_id === row.id && l.user_id === userId)
       : false;
 
+    // 計算總報名數 (含 pending, approved) - 不含 cancelled/rejected
+    const validApps = appsRaw.filter(
+      (a) =>
+        a.event_id === row.id &&
+        (a.status === "approved" || a.status === "pending")
+    );
+
     return Mapper.GroupEvent.toDTO(row, {
-      application_count: eventApps.length,
+      application_count: eventApps.length, // approved count
       my_application_status: myApp ? myApp.status : null,
       is_liked: isLiked,
       like_count: likeCount,
+      total_application_count: validApps.length,
     });
   });
 
@@ -133,11 +141,19 @@ function getGroupEvent(data) {
     ? likesRaw.some((l) => l.event_id === eventId && l.user_id === userId)
     : false;
 
+  // 計算總報名數
+  const validApps = appsRaw.filter(
+    (a) =>
+      a.event_id === eventId &&
+      (a.status === "approved" || a.status === "pending")
+  );
+
   const dto = Mapper.GroupEvent.toDTO(row, {
     application_count: eventApps.length,
     my_application_status: myApp ? myApp.status : null,
     is_liked: isLiked,
     like_count: likeCount,
+    total_application_count: validApps.length,
   });
 
   return _success({ event: dto }, "取得揪團詳情成功");
@@ -364,15 +380,6 @@ function applyGroupEvent(data) {
 
   if (existingApp) {
     return _error(API_CODES.GROUP_EVENT_ALREADY_APPLIED, "您已報名過此揪團");
-  }
-
-  // 檢查人數上限
-  const approvedCount = apps.filter(
-    (a) => a.event_id === eventId && a.status === "approved"
-  ).length;
-
-  if (approvedCount >= (event.max_members || 10)) {
-    return _error(API_CODES.GROUP_EVENT_FULL, "此揪團已額滿");
   }
 
   // 取得報名者資訊
