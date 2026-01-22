@@ -1,3 +1,4 @@
+import 'package:summitmate/core/theme.dart';
 import 'package:hive/hive.dart';
 import '../../models/settings.dart';
 import '../../../core/error/result.dart';
@@ -24,6 +25,9 @@ abstract interface class ISettingsRepository {
 
   /// 更新離線模式
   Future<void> updateOfflineMode(bool isOffline);
+
+  /// 更新主題
+  Future<void> updateTheme(AppThemeType theme);
 
   /// 重置設定
   Future<void> resetSettings();

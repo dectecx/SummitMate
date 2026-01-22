@@ -124,7 +124,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         final isLoading = state is AuthLoading;
 
         return Scaffold(
-          backgroundColor: AppTheme.primaryColor,
+          backgroundColor: Theme.of(context).primaryColor,
           appBar: AppBar(
             title: const Text('驗證信箱'),
             backgroundColor: Colors.transparent,
@@ -224,7 +224,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                             onPressed: (_canResend && !isLoading) ? () => _handleResend(context) : null,
                             child: Text(
                               _canResend ? '重新發送驗證碼' : '重新發送 (${_countdown}s)',
-                              style: TextStyle(color: _canResend ? AppTheme.primaryColor : Colors.grey),
+                              style: TextStyle(color: _canResend ? Theme.of(context).colorScheme.primary : Colors.grey),
                             ),
                           ),
                         ],

@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:summitmate/core/theme.dart';
 import '../../core/error/result.dart';
 import '../models/settings.dart';
 import 'interfaces/i_settings_repository.dart';
@@ -51,33 +52,41 @@ class SettingsRepository implements ISettingsRepository {
   @override
   Future<void> updateUsername(String username) async {
     final settings = getSettings();
-    settings.username = username;
-    await _localDataSource.saveSettings(settings);
-    _cachedSettings = settings;
+    final newSettings = settings.copyWith(username: username);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateLastSyncTime(DateTime? time) async {
     final settings = getSettings();
-    settings.lastSyncTime = time;
-    await _localDataSource.saveSettings(settings);
-    _cachedSettings = settings;
+    final newSettings = settings.copyWith(lastSyncTime: time);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateAvatar(String avatar) async {
     final settings = getSettings();
-    settings.avatar = avatar;
-    await _localDataSource.saveSettings(settings);
-    _cachedSettings = settings;
+    final newSettings = settings.copyWith(avatar: avatar);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateOfflineMode(bool isOffline) async {
     final settings = getSettings();
-    settings.isOfflineMode = isOffline;
-    await _localDataSource.saveSettings(settings);
-    _cachedSettings = settings;
+    final newSettings = settings.copyWith(isOfflineMode: isOffline);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
+  }
+
+  @override
+  Future<void> updateTheme(AppThemeType theme) async {
+    final settings = getSettings();
+    final newSettings = settings.copyWith(theme: theme);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
   }
 
   @override

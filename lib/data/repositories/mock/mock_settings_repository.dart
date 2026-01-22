@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:hive/hive.dart';
+import 'package:summitmate/core/theme.dart';
 import '../../models/settings.dart';
 import '../interfaces/i_settings_repository.dart';
 import '../../../core/error/result.dart';
@@ -36,6 +37,9 @@ class MockSettingsRepository implements ISettingsRepository {
 
   @override
   Future<void> updateOfflineMode(bool isOffline) async {}
+
+  @override
+  Future<void> updateTheme(AppThemeType theme) async {}
 
   @override
   Future<void> resetSettings() async {}

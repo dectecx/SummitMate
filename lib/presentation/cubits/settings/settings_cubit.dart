@@ -171,6 +171,26 @@ class SettingsCubit extends Cubit<SettingsState> {
     }
   }
 
+  /// 更新主題
+  ///
+  /// [theme] 新的主題
+  Future<void> updateTheme(AppThemeType theme) async {
+    if (state is! SettingsLoaded) return;
+    final currentState = state as SettingsLoaded;
+
+    try {
+      LogService.info('Update theme: $theme', source: _source);
+      
+      await _repository.updateTheme(theme);
+      final updatedSettings = _repository.getSettings();
+
+      emit(currentState.copyWith(settings: updatedSettings));
+    } catch (e) {
+      LogService.error('Failed to update theme: $e', source: _source);
+      emit(SettingsError(e.toString()));
+    }
+  }
+
   /// 重設身分 (Logout + Reset)
   Future<void> resetIdentity() async {
     try {
