@@ -467,6 +467,7 @@ const Mapper = {
         application_count: extra.application_count || 0,
         my_application_status: extra.my_application_status || null,
         is_liked: extra.is_liked || false,
+        total_application_count: extra.total_application_count || 0,
         // Audit
         created_at: row.created_at,
         created_by: row.created_by,

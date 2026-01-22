@@ -41,11 +41,18 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isCreator = _event.isCreator(
-      context.read<GroupEventCubit>().state is GroupEventLoaded
-          ? (context.read<GroupEventCubit>().state as GroupEventLoaded).currentUserId
-          : '',
-    );
+    final cubitState = context.watch<GroupEventCubit>().state;
+    final isSyncing = cubitState is GroupEventLoaded && cubitState.isSyncing;
+
+    // Use event from state if available for verified freshness
+    if (cubitState is GroupEventLoaded) {
+      final loadedEvent = cubitState.events.where((e) => e.id == widget.event.id).firstOrNull;
+      if (loadedEvent != null) {
+        _event = loadedEvent;
+      }
+    }
+
+    final isCreator = _event.isCreator(cubitState is GroupEventLoaded ? cubitState.currentUserId : '');
 
     return Scaffold(
       appBar: AppBar(
@@ -71,6 +78,13 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             Text(_event.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
 
+            // 申請狀態卡片
+            if (_event.myApplicationStatus != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: _buildStatusCard(_event.myApplicationStatus!),
+              ),
+
             // 基本資訊 Card
             Card(
               child: Padding(
@@ -81,7 +95,8 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                     const Divider(),
                     _buildInfoRow(Icons.location_on, '地點', _event.location.isNotEmpty ? _event.location : '未指定'),
                     const Divider(),
-                    _buildInfoRow(Icons.people, '人數', '${_event.applicationCount} / ${_event.maxMembers} 人'),
+                    // 人數 Row (更新顯示)
+                    _buildPeopleRow(),
                     const Divider(),
                     _buildInfoRow(Icons.info_outline, '狀態', _getStatusText(_event.status)),
                   ],
@@ -177,12 +192,111 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           return Container(
             padding: const EdgeInsets.all(16),
             child: FilledButton.icon(
-              onPressed: isOffline || !_event.canApply ? null : _handleApply,
-              icon: const Icon(Icons.person_add),
-              label: Text(_event.isFull ? '已額滿' : (_event.approvalRequired ? '送出報名申請' : '我要報名')),
+              onPressed: isOffline || !_event.canApply || isSyncing ? null : _handleApply,
+              icon: isSyncing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.person_add),
+              label: Text(
+                isSyncing ? '處理中...' : (_event.isFull ? '已額滿 (仍可報名)' : (_event.approvalRequired ? '送出報名申請' : '我要報名')),
+              ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildStatusCard(GroupEventApplicationStatus status) {
+    Color color;
+    IconData icon;
+    String text;
+
+    switch (status) {
+      case GroupEventApplicationStatus.pending:
+        color = Colors.orange;
+        icon = Icons.hourglass_empty;
+        text = '報名審核中';
+        break;
+      case GroupEventApplicationStatus.approved:
+        color = Colors.green;
+        icon = Icons.check_circle;
+        text = '報名已通過';
+        break;
+      case GroupEventApplicationStatus.rejected:
+        color = Colors.red;
+        icon = Icons.cancel;
+        text = '報名未通過';
+        break;
+      default:
+        color = Colors.grey;
+        icon = Icons.info;
+        text = '未知狀態';
+    }
+
+    return Card(
+      color: color.withValues(alpha: 0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: 12),
+            Text(
+              text,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeopleRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.people, size: 20, color: Colors.grey),
+          const SizedBox(width: 12),
+          const Text('人數', style: TextStyle(color: Colors.grey)),
+          const Spacer(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // 主要顯示: 用 "確定 / 預計" 格式
+              RichText(
+                text: TextSpan(
+                  style: DefaultTextStyle.of(context).style,
+                  children: [
+                    TextSpan(
+                      text: '${_event.applicationCount}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                    ),
+                    const TextSpan(text: ' / '),
+                    TextSpan(
+                      text: '${_event.maxMembers}',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    const TextSpan(
+                      text: ' 人 (預計)',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              // 次要顯示: 總報名數 (如果有差異)
+              if (_event.totalApplicationCount > _event.applicationCount)
+                Text(
+                  '總報名: ${_event.totalApplicationCount} 人',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
