@@ -15,7 +15,7 @@ class MainBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settingsState = context.watch<SettingsCubit>().state;
     final themeStrategy = AppTheme.getStrategy(
-      settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.morandi,
+      settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.nature,
     );
 
     return Container(

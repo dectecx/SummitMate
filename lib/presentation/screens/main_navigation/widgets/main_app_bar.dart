@@ -40,7 +40,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final settingsState = context.watch<SettingsCubit>().state;
-    final themeType = settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.morandi;
+    final themeType = settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.nature;
 
     return AppBar(
       backgroundColor: Colors.transparent,

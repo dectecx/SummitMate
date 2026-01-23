@@ -13,7 +13,7 @@ class AppThemeTypeAdapter extends TypeAdapter<AppThemeType> {
     final index = reader.readByte();
     // 簡單邊界檢查，若越界則回傳預設值 (0: morandi)
     if (index < 0 || index >= AppThemeType.values.length) {
-      return AppThemeType.morandi;
+      return AppThemeType.nature;
     }
     return AppThemeType.values[index];
   }
