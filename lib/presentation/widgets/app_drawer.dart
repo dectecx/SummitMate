@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di.dart';
+import '../../core/theme.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
@@ -25,117 +26,135 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: BlocBuilder<TripCubit, TripState>(
-        builder: (context, tripState) {
-          final activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
-          final allTrips = tripState is TripLoaded ? tripState.trips : <Trip>[];
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
+        // Prepare Theme Strategy
+        AppThemeType currentTheme = AppThemeType.nature;
+        if (settingsState is SettingsLoaded) {
+          currentTheme = settingsState.settings.theme;
+        }
+        final strategy = AppTheme.getStrategy(currentTheme);
 
-          final now = DateTime.now();
-          final today = DateTime(now.year, now.month, now.day);
+        return Drawer(
+          backgroundColor: Colors.transparent, // Transparent to show gradient
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              gradient: strategy.drawerGradient,
+            ),
+            child: BlocBuilder<TripCubit, TripState>(
+              builder: (context, tripState) {
+                final activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
+                final allTrips = tripState is TripLoaded ? tripState.trips : <Trip>[];
 
-          final ongoingTrips = allTrips.where((t) {
-            if (t.endDate == null) return true;
-            return !t.endDate!.isBefore(today);
-          }).toList();
+                final now = DateTime.now();
+                final today = DateTime(now.year, now.month, now.day);
 
-          final archivedTrips = allTrips.where((t) {
-            if (t.endDate == null) return false;
-            return t.endDate!.isBefore(today);
-          }).toList();
+                final ongoingTrips = allTrips.where((t) {
+                  if (t.endDate == null) return true;
+                  return !t.endDate!.isBefore(today);
+                }).toList();
 
-          return ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
+                final archivedTrips = allTrips.where((t) {
+                  if (t.endDate == null) return false;
+                  return t.endDate!.isBefore(today);
+                }).toList();
+
+                return ListView(
+                  padding: EdgeInsets.zero,
                   children: [
-                    Icon(Icons.terrain, size: 48, color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(height: 8),
-                    Text(
-                      activeTrip?.name ?? '選擇行程',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    DrawerHeader(
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primaryContainer),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Icon(Icons.terrain, size: 48, color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(height: 8),
+                          Text(
+                            activeTrip?.name ?? '選擇行程',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (activeTrip != null)
+                            Text(
+                              '${activeTrip.durationDays} 天行程',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                              ),
+                            ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (activeTrip != null)
-                      Text(
-                        '${activeTrip.durationDays} 天行程',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                    ListTile(
+                      leading: const Icon(Icons.list),
+                      title: const Text('管理行程'),
+                      subtitle: Text('共 ${allTrips.length} 個行程'),
+                      trailing: const Icon(Icons.chevron_right),
+                      key: TutorialKeys.drawerManageTrips,
+                      onTap: () {
+                        Navigator.pop(context); // 關閉抽屜
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const TripListScreen()));
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.hiking),
+                      title: const Text('揪團活動'),
+                      subtitle: const Text('找隊友 / 建立揪團'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.pop(context); // 關閉抽屜
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupEventsListScreen()));
+                      },
+                    ),
+                    const Divider(),
+
+                    // 進行中行程
+                    if (ongoingTrips.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Text(
+                          '進行中 / 未來行程',
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
+                      ...ongoingTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
+                    ],
+
+                    // 已封存行程
+                    if (archivedTrips.isNotEmpty) ...[
+                      if (ongoingTrips.isNotEmpty) const Divider(indent: 16, endIndent: 16),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Text(
+                          '已封存 / 結束行程',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.outline),
+                        ),
+                      ),
+                      ...archivedTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
+                    ],
+
+                    // Auth Section
+                    const Divider(),
+                    _buildAuthSection(context),
                   ],
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.list),
-                title: const Text('管理行程'),
-                subtitle: Text('共 ${allTrips.length} 個行程'),
-                trailing: const Icon(Icons.chevron_right),
-                key: TutorialKeys.drawerManageTrips,
-                onTap: () {
-                  Navigator.pop(context); // 關閉抽屜
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const TripListScreen()));
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.hiking),
-                title: const Text('揪團活動'),
-                subtitle: const Text('找隊友 / 建立揪團'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.pop(context); // 關閉抽屜
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GroupEventsListScreen()));
-                },
-              ),
-              const Divider(),
-
-              // 進行中行程
-              if (ongoingTrips.isNotEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Text(
-                    '進行中 / 未來行程',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ...ongoingTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
-              ],
-
-              // 已封存行程
-              if (archivedTrips.isNotEmpty) ...[
-                if (ongoingTrips.isNotEmpty) const Divider(indent: 16, endIndent: 16),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Text(
-                    '已封存 / 結束行程',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.outline),
-                  ),
-                ),
-                ...archivedTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
-              ],
-
-              // Auth Section
-              const Divider(),
-              _buildAuthSection(context),
-            ],
-          );
-        },
-      ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 

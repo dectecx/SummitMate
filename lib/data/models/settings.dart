@@ -28,8 +28,8 @@ class Settings extends HiveObject {
   bool isOfflineMode;
 
   /// App 主題
-  @HiveField(4, defaultValue: AppThemeType.morandi)
-  @JsonKey(defaultValue: AppThemeType.morandi)
+  @HiveField(4, defaultValue: AppThemeType.nature)
+  @JsonKey(defaultValue: AppThemeType.nature)
   AppThemeType theme;
 
   Settings({
@@ -37,7 +37,7 @@ class Settings extends HiveObject {
     this.lastSyncTime,
     this.avatar = '🐻', // 預設熊頭像
     this.isOfflineMode = false, // 預設連線模式
-    this.theme = AppThemeType.morandi, // 預設莫蘭迪
+    this.theme = AppThemeType.nature, // 預設自然山林
   });
 
   /// 建立預設設定

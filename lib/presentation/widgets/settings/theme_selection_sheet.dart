@@ -11,9 +11,9 @@ class ThemeSelectionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -24,7 +24,7 @@ class ThemeSelectionSheet extends StatelessWidget {
             child: SingleChildScrollView(
               child: BlocBuilder<SettingsCubit, SettingsState>(
                 builder: (context, state) {
-                  AppThemeType currentTheme = AppThemeType.morandi;
+                  AppThemeType currentTheme = AppThemeType.nature;
                   if (state is SettingsLoaded) {
                     currentTheme = state.settings.theme;
                   }

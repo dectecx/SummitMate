@@ -63,7 +63,7 @@ class SummitMateApp extends StatelessWidget {
       },
       builder: (context, state) {
         // Default to Morandi if not loaded
-        AppThemeType currentTheme = AppThemeType.morandi;
+        AppThemeType currentTheme = AppThemeType.nature;
         if (state is SettingsLoaded) {
           currentTheme = state.settings.theme;
         }
