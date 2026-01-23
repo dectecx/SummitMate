@@ -5,21 +5,13 @@ import 'package:summitmate/core/core.dart';
 import '../../screens/gear_cloud_screen.dart';
 import '../../screens/gear_library_screen.dart';
 import '../../screens/meal_planner_screen.dart';
+import 'package:summitmate/data/models/mountain_location.dart';
 
 /// 快速連結按鈕列 (官方清單、雲端庫、我的庫)
 class GearQuickLinks extends StatelessWidget {
   const GearQuickLinks({super.key});
 
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    try {
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        debugPrint('無法開啟連結: $url');
-      }
-    } catch (e) {
-      debugPrint('無法開啟連結: $e');
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +21,16 @@ class GearQuickLinks extends StatelessWidget {
         Expanded(
           child: Card(
             child: InkWell(
-              onTap: () => _launchUrl(ExternalLinks.gearPdfUrl),
+              onTap: () async {
+                final url = MountainData.jiamingLake.getLinkUrl(LinkType.gearPdf);
+                if (url != null) {
+                  final uri = Uri.parse(url);
+                  if (!await launchUrl(uri,
+                      mode: LaunchMode.externalApplication)) {
+                    debugPrint('無法開啟連結: $url');
+                  }
+                }
+              },
               borderRadius: BorderRadius.circular(12),
               child: Padding(
                 padding: const EdgeInsets.all(12),
