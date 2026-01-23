@@ -11,8 +11,6 @@ import 'package:summitmate/data/models/mountain_location.dart';
 class GearQuickLinks extends StatelessWidget {
   const GearQuickLinks({super.key});
 
-
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -25,8 +23,7 @@ class GearQuickLinks extends StatelessWidget {
                 final url = MountainData.jiamingLake.getLinkUrl(LinkType.gearPdf);
                 if (url != null) {
                   final uri = Uri.parse(url);
-                  if (!await launchUrl(uri,
-                      mode: LaunchMode.externalApplication)) {
+                  if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
                     debugPrint('無法開啟連結: $url');
                   }
                 }
