@@ -1,34 +1,60 @@
 import 'package:equatable/equatable.dart';
-import 'package:collection/collection.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'meal_item.g.dart';
 
 /// 餐食類型 (早/午/晚/行動糧...)
 enum MealType {
   /// 早早餐 (攻頂前)
-  preBreakfast('早早餐'),
+  @JsonValue('pre_breakfast')
+  preBreakfast,
 
   /// 早餐
-  breakfast('早餐'),
+  @JsonValue('breakfast')
+  breakfast,
 
   /// 午餐
-  lunch('午餐'),
+  @JsonValue('lunch')
+  lunch,
 
   /// 下午點心
-  teatime('下午點心'),
+  @JsonValue('teatime')
+  teatime,
 
   /// 晚餐
-  dinner('晚餐'),
+  @JsonValue('dinner')
+  dinner,
 
   /// 行動糧
-  action('行動糧'),
+  @JsonValue('action')
+  action,
 
   /// 緊急/備用糧
-  emergency('緊急/備用糧');
+  @JsonValue('emergency')
+  emergency;
 
-  final String label;
-  const MealType(this.label);
+  String get label {
+    switch (this) {
+      case MealType.preBreakfast:
+        return '早早餐';
+      case MealType.breakfast:
+        return '早餐';
+      case MealType.lunch:
+        return '午餐';
+      case MealType.teatime:
+        return '下午點心';
+      case MealType.dinner:
+        return '晚餐';
+      case MealType.action:
+        return '行動糧';
+      case MealType.emergency:
+        return '緊急/備用糧';
+    }
+  }
 }
 
 /// 餐食項目
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MealItem extends Equatable {
   /// 唯一識別碼
   final String id;
@@ -43,6 +69,7 @@ class MealItem extends Equatable {
   final double calories;
 
   /// 數量
+  @JsonKey(defaultValue: 1)
   final int quantity;
 
   /// 備註
@@ -69,36 +96,22 @@ class MealItem extends Equatable {
     );
   }
 
-  /// 轉換為 JSON
-  Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'weight': weight, 'calories': calories, 'quantity': quantity, 'note': note};
-  }
-
-  /// 從 JSON 建立
-  factory MealItem.fromJson(Map<String, dynamic> json) {
-    if (json['id'] == null) throw ArgumentError('MealItem ID is required');
-    if (json['name'] == null) throw ArgumentError('MealItem name is required');
-
-    return MealItem(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      weight: (json['weight'] as num).toDouble(),
-      calories: (json['calories'] as num).toDouble(),
-      quantity: json['quantity'] as int? ?? 1,
-      note: json['note'] as String?,
-    );
-  }
+  factory MealItem.fromJson(Map<String, dynamic> json) => _$MealItemFromJson(json);
+  Map<String, dynamic> toJson() => _$MealItemToJson(this);
 
   @override
   List<Object?> get props => [id, name, weight, calories, quantity, note];
 }
 
 /// 每日餐食計畫
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DailyMealPlan extends Equatable {
   /// 天數 (Days), e.g. "D0", "D1"
   final String day;
 
   /// 餐食 map: MealType -> List<MealItem>
+  /// Note: 使用自定義轉換，因為 Map<Enum, List> 需要特殊處理
+  @JsonKey(fromJson: _mealsFromJson, toJson: _mealsToJson)
   final Map<MealType, List<MealItem>> meals;
 
   DailyMealPlan({required this.day, Map<MealType, List<MealItem>>? meals})
@@ -110,25 +123,8 @@ class DailyMealPlan extends Equatable {
   double get totalCalories =>
       meals.values.expand((items) => items).fold(0, (sum, item) => sum + (item.calories * item.quantity));
 
-  Map<String, dynamic> toJson() {
-    return {
-      'day': day,
-      'meals': meals.map((type, items) => MapEntry(type.name, items.map((e) => e.toJson()).toList())),
-    };
-  }
-
-  factory DailyMealPlan.fromJson(Map<String, dynamic> json) {
-    final day = json['day'] as String;
-    final mealsJson = json['meals'] as Map<String, dynamic>? ?? {};
-
-    final Map<MealType, List<MealItem>> parsedMeals = {};
-    for (var type in MealType.values) {
-      final itemsJson = mealsJson[type.name] as List<dynamic>? ?? [];
-      parsedMeals[type] = itemsJson.map((e) => MealItem.fromJson(e as Map<String, dynamic>)).toList();
-    }
-
-    return DailyMealPlan(day: day, meals: parsedMeals);
-  }
+  factory DailyMealPlan.fromJson(Map<String, dynamic> json) => _$DailyMealPlanFromJson(json);
+  Map<String, dynamic> toJson() => _$DailyMealPlanToJson(this);
 
   @override
   List<Object?> get props => [day, meals];
@@ -136,14 +132,19 @@ class DailyMealPlan extends Equatable {
   @override
   bool? get stringify => true;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      super == other &&
-          other is DailyMealPlan &&
-          day == other.day &&
-          const MapEquality(values: ListEquality()).equals(meals, other.meals);
+  // Custom converters for meals map
+  static Map<MealType, List<MealItem>> _mealsFromJson(Map<String, dynamic>? json) {
+    if (json == null) return {for (var type in MealType.values) type: []};
 
-  @override
-  int get hashCode => day.hashCode ^ const MapEquality(values: ListEquality()).hash(meals);
+    final Map<MealType, List<MealItem>> result = {};
+    for (var type in MealType.values) {
+      final itemsJson = json[type.name] as List<dynamic>? ?? [];
+      result[type] = itemsJson.map((e) => MealItem.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    return result;
+  }
+
+  static Map<String, dynamic> _mealsToJson(Map<MealType, List<MealItem>> meals) {
+    return meals.map((type, items) => MapEntry(type.name, items.map((e) => e.toJson()).toList()));
+  }
 }

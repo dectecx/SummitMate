@@ -639,6 +639,8 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
           isActive: widget.tripToEdit!.isActive,
           createdAt: widget.tripToEdit!.createdAt,
           createdBy: widget.tripToEdit!.createdBy,
+          updatedAt: widget.tripToEdit!.updatedAt,
+          updatedBy: widget.tripToEdit!.updatedBy,
           // repository will update updatedAt/updatedBy
         );
         await context.read<TripCubit>().updateTrip(updatedTrip);

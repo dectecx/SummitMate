@@ -1,4 +1,3 @@
-import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../core/constants/role_constants.dart';
 
@@ -11,31 +10,22 @@ part 'user_profile.g.dart';
 /// - 'member': 一般會員 (預設)
 /// - 'leader': 團長 (TODO: 未來開發)
 /// - 'admin': 管理員 (TODO: 未來開發)
-@HiveType(typeId: 10)
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
-class UserProfile extends HiveObject {
-  @HiveField(0)
+class UserProfile {
   final String id;
 
-  @HiveField(1)
   final String email;
 
-  @HiveField(2)
   final String displayName;
 
-  @HiveField(3)
   final String avatar;
 
-  @HiveField(4)
   final String roleId; // Role UUID
 
-  @HiveField(5)
   final String roleCode; // e.g., 'ADMIN', 'LEADER'
 
-  @HiveField(6)
   final List<String> permissions; // e.g., ['trip.edit', 'trip.view']
 
-  @HiveField(7)
   final bool isVerified;
 
   UserProfile({
