@@ -62,6 +62,8 @@ void main() {
           startDate: DateTime(2024, 1, 1),
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         );
 
         expect(trip.durationDays, 1);
@@ -76,6 +78,8 @@ void main() {
           endDate: DateTime(2024, 1, 1),
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         );
 
         expect(trip.durationDays, 1);
@@ -90,6 +94,8 @@ void main() {
           endDate: DateTime(2024, 1, 3),
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         );
 
         expect(trip.durationDays, 3);
@@ -195,6 +201,8 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           createdBy: 'user-1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'user-1',
           dayNames: ['D1', 'D2'],
         );
 
@@ -221,6 +229,8 @@ void main() {
           startDate: DateTime.utc(2024, 1, 1),
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         );
 
         final json = trip.toJson();
@@ -238,6 +248,8 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           createdBy: 'u1',
+          updatedAt: DateTime.now(),
+          updatedBy: 'u1',
         );
 
         expect(

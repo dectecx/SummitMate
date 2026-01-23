@@ -14,6 +14,10 @@ void main() {
         'item_count': 10, // Number
         'visibility': 'public',
         'uploaded_at': '2025-01-01T10:00:00.000Z',
+        'created_at': '2025-01-01T10:00:00.000Z',
+        'created_by': 'User',
+        'updated_at': '2025-01-01T10:00:00.000Z',
+        'updated_by': 'User',
         'items': [],
       };
 
@@ -40,6 +44,10 @@ void main() {
         'item_count': 1,
         'visibility': 'public',
         'uploaded_at': '2025-01-01T10:00:00.000Z',
+        'created_at': '2025-01-01T10:00:00.000Z',
+        'created_by': 'User',
+        'updated_at': '2025-01-01T10:00:00.000Z',
+        'updated_by': 'User',
         'meals': [
           {
             'day': 'D1',
@@ -68,6 +76,8 @@ void main() {
         itemCount: 5,
         visibility: GearSetVisibility.private,
         uploadedAt: DateTime.utc(2025, 1, 1, 10, 0, 0),
+        createdAt: DateTime.utc(2025, 1, 1, 10, 0, 0),
+        createdBy: 'User',
         updatedAt: DateTime.utc(2025, 1, 1, 10, 0, 0),
         updatedBy: 'User',
         items: [GearItem(name: 'Item 1', weight: 100, category: 'Misc', tripId: 'trip1')],

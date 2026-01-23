@@ -96,6 +96,8 @@ class TripCubit extends Cubit<TripState> {
         syncStatus: SyncStatus.pendingCreate,
         createdAt: DateTime.now(),
         createdBy: currentUserId,
+        updatedAt: DateTime.now(),
+        updatedBy: currentUserId,
       );
 
       final result = await _tripRepository.addTrip(trip);

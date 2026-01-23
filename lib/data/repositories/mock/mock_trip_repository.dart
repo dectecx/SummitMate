@@ -20,6 +20,8 @@ class MockTripRepository implements ITripRepository {
     syncStatus: SyncStatus.synced,
     createdAt: DateTime.now().subtract(const Duration(days: 7)),
     createdBy: 'mock-user-1',
+    updatedAt: DateTime.now().subtract(const Duration(days: 7)),
+    updatedBy: 'mock-user-1',
   );
 
   @override

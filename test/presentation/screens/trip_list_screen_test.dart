@@ -34,6 +34,8 @@ void main() {
         startDate: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: 'user',
+        updatedAt: DateTime.now(),
+        updatedBy: 'user',
       ),
     );
     registerFallbackValue(UserProfile(id: 'fallback', email: 'a@a.com', displayName: 'Fallback'));
@@ -94,6 +96,8 @@ void main() {
       startDate: DateTime.now().add(const Duration(days: 1)),
       createdAt: DateTime.now(),
       createdBy: 'u1',
+      updatedAt: DateTime.now(),
+      updatedBy: 'u1',
     );
 
     when(

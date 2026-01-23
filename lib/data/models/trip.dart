@@ -90,12 +90,10 @@ class Trip extends HiveObject {
     this.syncStatus = SyncStatus.pendingCreate,
     required this.createdAt,
     required this.createdBy,
-    DateTime? updatedAt,
-    String? updatedBy,
+    required this.updatedAt,
+    required this.updatedBy,
   }) : members = members ?? [userId], // 預設包含 owner (userId)
-       dayNames = dayNames ?? [],
-       updatedAt = updatedAt ?? createdAt,
-       updatedBy = updatedBy ?? createdBy;
+       dayNames = dayNames ?? [];
 
   /// 行程天數
   int get durationDays {

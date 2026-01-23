@@ -14,7 +14,6 @@ import '../../data/models/gear_library_item.dart';
 import '../../data/models/weather_data.dart';
 import '../../data/models/poll.dart';
 import '../../data/models/trip.dart';
-import '../../data/models/user_profile.dart';
 import '../../data/models/group_event.dart';
 import '../../data/models/enums/group_event_status.dart';
 import '../../data/models/enums/group_event_application_status.dart';
@@ -76,9 +75,6 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(8)) {
       Hive.registerAdapter(TripAdapter());
-    }
-    if (!Hive.isAdapterRegistered(10)) {
-      Hive.registerAdapter(UserProfileAdapter());
     }
     if (!Hive.isAdapterRegistered(11)) {
       Hive.registerAdapter(GearLibraryItemAdapter());

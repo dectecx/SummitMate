@@ -1,19 +1,26 @@
+import 'package:json_annotation/json_annotation.dart';
 import 'gear_item.dart';
 import 'meal_item.dart';
+
+part 'gear_set.g.dart';
 
 /// 裝備組合可見性
 enum GearSetVisibility {
   /// 公開 - 任何人可查看和下載
+  @JsonValue('public')
   public,
 
   /// 保護 - 可見標題，需輸入 Key 下載
+  @JsonValue('protected')
   protected,
 
   /// 私人 - 不可見，需 Key 才能查看/下載
+  @JsonValue('private')
   private,
 }
 
 /// 雲端裝備組合
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GearSet {
   /// 唯一識別碼
   final String id;
@@ -25,24 +32,30 @@ class GearSet {
   final String author;
 
   /// 總重量 (g)
+  @JsonKey(defaultValue: 0.0)
   final double totalWeight;
 
   /// 裝備數量
+  @JsonKey(defaultValue: 0)
   final int itemCount;
 
   /// 可見性
+  @JsonKey(defaultValue: GearSetVisibility.public)
   final GearSetVisibility visibility;
 
   /// 上傳時間
+  @JsonKey(fromJson: _parseDateTime)
   final DateTime uploadedAt;
 
   /// 建立時間
-  DateTime get createdAt => uploadedAt;
+  @JsonKey(fromJson: _parseDateTime)
+  final DateTime createdAt;
 
   /// 建立者
-  String get createdBy => author;
+  final String createdBy;
 
   /// 更新時間
+  @JsonKey(fromJson: _parseDateTime)
   final DateTime updatedAt;
 
   /// 更新者
@@ -58,73 +71,20 @@ class GearSet {
     required this.id,
     required this.title,
     required this.author,
-    required this.totalWeight,
-    required this.itemCount,
-    required this.visibility,
+    this.totalWeight = 0.0,
+    this.itemCount = 0,
+    this.visibility = GearSetVisibility.public,
     required this.uploadedAt,
+    required this.createdAt,
+    required this.createdBy,
     required this.updatedAt,
     required this.updatedBy,
     this.items,
     this.meals,
   });
 
-  /// 從 JSON 建立 (API 回應)
-  factory GearSet.fromJson(Map<String, dynamic> json) {
-    if (json['id'] == null) throw ArgumentError('GearSet ID is required');
-    if (json['title'] == null) throw ArgumentError('GearSet title is required');
-    if (json['author'] == null) throw ArgumentError('GearSet author is required');
-    if (json['uploaded_at'] == null) throw ArgumentError('GearSet uploaded_at is required');
-
-    final uploadedAt = DateTime.parse(json['uploaded_at'] as String).toLocal();
-    final author = json['author'] as String;
-
-    return GearSet(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      author: author,
-      totalWeight: (json['total_weight'] as num?)?.toDouble() ?? 0.0,
-      itemCount: json['item_count'] as int? ?? 0,
-      visibility: _parseVisibility(json['visibility'] as String?),
-      uploadedAt: uploadedAt,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String).toLocal() : uploadedAt,
-      updatedBy: json['updated_by'] as String? ?? author,
-      items: (json['items'] as List<dynamic>?)?.map((item) => GearItem.fromJson(item as Map<String, dynamic>)).toList(),
-      meals: (json['meals'] as List<dynamic>?)?.map((m) => DailyMealPlan.fromJson(m as Map<String, dynamic>)).toList(),
-    );
-  }
-
-  /// 轉換為 JSON (上傳用)
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'author': author,
-      'total_weight': totalWeight,
-      'item_count': itemCount,
-      'visibility': visibility.name,
-      'uploaded_at': uploadedAt.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
-      'created_by': createdBy,
-      'updated_at': updatedAt.toIso8601String(),
-      'updated_by': updatedBy,
-      if (items != null) 'items': items!.map((item) => item.toJson()).toList(),
-      if (meals != null) 'meals': meals!.map((m) => m.toJson()).toList(),
-    };
-  }
-
-  /// 解析可見性字串
-  static GearSetVisibility _parseVisibility(String? value) {
-    switch (value) {
-      case 'public':
-        return GearSetVisibility.public;
-      case 'protected':
-        return GearSetVisibility.protected;
-      case 'private':
-        return GearSetVisibility.private;
-      default:
-        return GearSetVisibility.public;
-    }
-  }
+  factory GearSet.fromJson(Map<String, dynamic> json) => _$GearSetFromJson(json);
+  Map<String, dynamic> toJson() => _$GearSetToJson(this);
 
   /// 可見性圖示
   String get visibilityIcon {
@@ -144,5 +104,12 @@ class GearSet {
       return '${(totalWeight / 1000).toStringAsFixed(1)} kg';
     }
     return '${totalWeight.toStringAsFixed(0)} g';
+  }
+
+  // DateTime parsing helper
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) throw ArgumentError('DateTime is required');
+    if (value is DateTime) return value;
+    return DateTime.parse(value.toString()).toLocal();
   }
 }

@@ -69,6 +69,10 @@ void main() {
             'item_count': 5,
             'visibility': 'public',
             'uploaded_at': '2025-01-01T00:00:00.000Z',
+            'created_at': '2025-01-01T00:00:00.000Z',
+            'created_by': 'User',
+            'updated_at': '2025-01-01T00:00:00.000Z',
+            'updated_by': 'User',
           },
         ],
       };
@@ -90,6 +94,10 @@ void main() {
           'item_count': 1,
           'visibility': 'public',
           'uploaded_at': '2025-01-01T00:00:00.000Z',
+          'created_at': '2025-01-01T00:00:00.000Z',
+          'created_by': 'User',
+          'updated_at': '2025-01-01T00:00:00.000Z',
+          'updated_by': 'User',
         },
       };
 
@@ -133,6 +141,10 @@ void main() {
           'item_count': 5,
           'visibility': 'public',
           'uploaded_at': '2025-01-01T00:00:00.000Z',
+          'created_at': '2025-01-01T00:00:00.000Z',
+          'created_by': 'User',
+          'updated_at': '2025-01-01T00:00:00.000Z',
+          'updated_by': 'User',
           'items': [],
         },
       };
