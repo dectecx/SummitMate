@@ -14,6 +14,7 @@ import 'info/external_links_card.dart';
 import 'info/signal_info_card.dart';
 import 'info/beginner_peaks_card.dart';
 import 'info/trail_overview_card.dart';
+import 'info/adventure_encyclopedia_card.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
 class InfoTab extends StatefulWidget {
@@ -77,6 +78,10 @@ class InfoTabState extends State<InfoTab> {
               // 目前位置天氣警報
               const WeatherAlertCard(),
               const SizedBox(height: 16),
+
+              // 台灣山岳百科入口
+              const AdventureEncyclopediaCard(),
+              const SizedBox(height: 8),
 
               // 新手百岳推薦入口
               const BeginnerPeaksCard(),

@@ -30,28 +30,28 @@ class ExternalLinksCard extends StatelessWidget {
     return Card(
       child: ExpansionTile(
         leading: const Icon(Icons.link),
-        title: Text('相關連結 - ${target.name}',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('相關連結 - ${target.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
         children: [
-          ...target.links.map((link) => Column(
-                children: [
-                  _buildLinkTile(
-                    icon: _getLinkIcon(link.type),
-                    iconColor: _getLinkColor(link.type),
-                    title: link.title,
-                    url: link.url,
-                    trailing: link.type == LinkType.gpx
-                        ? Icons.download
-                        : Icons.open_in_new,
-                  ),
-                  const Divider(height: 1),
-                ],
-              )),
+          ...target.links.map(
+            (link) => Column(
+              children: [
+                _buildLinkTile(
+                  icon: _getLinkIcon(link.type),
+                  iconColor: _getLinkColor(link.type),
+                  title: link.title,
+                  url: link.url,
+                  trailing: link.type == LinkType.gpx ? Icons.download : Icons.open_in_new,
+                ),
+                const Divider(height: 1),
+              ],
+            ),
+          ),
           _buildLinkTile(
-              icon: Icons.cloud,
-              iconColor: Colors.blue,
-              title: 'Windy 天氣預報',
-              url: '${ExternalLinks.windyUrl}${target.windyParams}'),
+            icon: Icons.cloud,
+            iconColor: Colors.blue,
+            title: 'Windy 天氣預報',
+            url: '${ExternalLinks.windyUrl}${target.windyParams}',
+          ),
           const Divider(height: 1),
           _buildLinkTile(
             icon: Icons.wb_sunny,
