@@ -1,5 +1,6 @@
-/// SummitMate 核心常數定義
 library;
+
+import '../data/models/mountain_location.dart';
 
 /// App 基本資訊
 class AppInfo {
@@ -53,17 +54,52 @@ class ItineraryDay {
 class ExternalLinks {
   static const String windyUrl = 'https://www.windy.com/';
   static const String cwaUrl = 'https://www.cwa.gov.tw/V8/C/L/Mountain/Mountain.html';
+}
 
-  // 嘉明湖步道資訊
-  static const String trailPageUrl = 'https://recreation.forest.gov.tw/Trail/RT?tr_id=139';
-  static const String permitUrl = 'https://hike.taiwan.gov.tw/';
-  static const String cabinUrl = 'https://jmlnt.forest.gov.tw/room/';
-  static const String gpxUrl = 'https://hiking.biji.co/index.php?q=trail&act=gpx_list&city=全部&keyword=嘉明湖國家步道';
-  static const String gearPdfUrl =
-      'https://recreation.forest.gov.tw/Files/RT/UploadFiles/Package/139_%E5%98%89%E6%98%8E%E6%B9%96%E5%9C%8B%E5%AE%B6%E6%AD%A5%E9%81%93_%E5%A4%9A%E6%97%A5%E7%99%BB%E5%B1%B1%E5%9E%8B%E6%AD%A5%E9%81%93%E5%BB%BA%E8%AD%B0%E8%A3%9D%E5%82%99%E6%B8%85%E5%96%AE.pdf';
+/// 山岳資料
+class MountainData {
+  static const MountainLocation jiamingLake = MountainLocation(
+    id: 'jiaming_lake',
+    name: '三叉山 (嘉明湖)',
+    cwaPid: 'D055',
+    windyParams: '23.293/121.034?23.284,121.034,14',
+    links: [
+      MountainLink(
+        type: LinkType.permit,
+        title: '申請入山證',
+        url: 'https://hike.taiwan.gov.tw/',
+      ),
+      MountainLink(
+        type: LinkType.cabin,
+        title: '山屋預約申請',
+        url: 'https://jmlnt.forest.gov.tw/room/',
+      ),
+      MountainLink(
+        type: LinkType.trail,
+        title: '台灣山林悠遊網 (官網)',
+        url: 'https://recreation.forest.gov.tw/Trail/RT?tr_id=139',
+      ),
+      MountainLink(
+        type: LinkType.gpx,
+        title: 'GPX 軌跡檔下載 (健行筆記)',
+        url:
+            'https://hiking.biji.co/index.php?q=trail&act=gpx_list&city=全部&keyword=嘉明湖國家步道',
+      ),
+      MountainLink(
+        type: LinkType.gearPdf,
+        title: '官方建議裝備清單',
+        url:
+            'https://recreation.forest.gov.tw/Files/RT/UploadFiles/Package/139_%E5%98%89%E6%98%8E%E6%B9%96%E5%9C%8B%E5%AE%B6%E6%AD%A5%E9%81%93_%E5%A4%9A%E6%97%A5%E7%99%BB%E5%B1%B1%E5%9E%8B%E6%AD%A5%E9%81%93%E5%BB%BA%E8%AD%B0%E8%A3%9D%E5%82%99%E6%B8%85%E5%96%AE.pdf',
+      ),
+      MountainLink(
+        type: LinkType.accommodation,
+        title: '鋤禾日好-站前館 (住宿)',
+        url: 'https://www.booking.com/hotel/tw/farming-hostel.zh-tw.html',
+      ),
+    ],
+  );
 
-  // 住宿推薦
-  static const String accommodationUrl = 'https://www.booking.com/hotel/tw/farming-hostel.zh-tw.html';
+  static const List<MountainLocation> all = [jiamingLake];
 }
 
 /// SharedPreferences Keys
