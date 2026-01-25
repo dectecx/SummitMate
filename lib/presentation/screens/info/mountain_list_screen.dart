@@ -21,12 +21,9 @@ class _MountainListScreenState extends State<MountainListScreen> {
 
   List<MountainLocation> get _filteredMountains {
     return MountainData.all.where((m) {
-      final matchesSearch =
-          m.name.contains(_searchQuery) || m.id.contains(_searchQuery);
-      final matchesRegion =
-          _selectedRegion == null || m.region == _selectedRegion;
-      final matchesCategory =
-          _selectedCategory == null || m.category == _selectedCategory;
+      final matchesSearch = m.name.contains(_searchQuery) || m.id.contains(_searchQuery);
+      final matchesRegion = _selectedRegion == null || m.region == _selectedRegion;
+      final matchesCategory = _selectedCategory == null || m.category == _selectedCategory;
       final matchesBeginner = !_onlyBeginnerFriendly || m.isBeginnerFriendly;
 
       return matchesSearch && matchesRegion && matchesCategory && matchesBeginner;
@@ -70,8 +67,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
                 alignment: Alignment.bottomRight,
                 padding: const EdgeInsets.all(24),
                 // 這裡可以放一個淡淡的背景圖案
-                child: Icon(Icons.terrain,
-                    size: 100, color: colorScheme.primary.withValues(alpha: 0.1)),
+                child: Icon(Icons.terrain, size: 100, color: colorScheme.primary.withValues(alpha: 0.1)),
               ),
             ),
           ),
@@ -105,8 +101,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
                       decoration: InputDecoration(
                         hintText: '搜尋山岳名稱...',
                         hintStyle: TextStyle(color: theme.hintColor),
-                        prefixIcon:
-                            Icon(Icons.search, color: theme.hintColor),
+                        prefixIcon: Icon(Icons.search, color: theme.hintColor),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear),
@@ -117,8 +112,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
                               )
                             : null,
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
                     ),
                   ),
@@ -133,10 +127,12 @@ class _MountainListScreenState extends State<MountainListScreen> {
                         _buildCategoryPill(context, null, '全部'),
                         const SizedBox(width: 8),
                         ...MountainCategory.values
-                            .map((c) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: _buildCategoryPill(context, c, c.label),
-                                ))
+                            .map(
+                              (c) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: _buildCategoryPill(context, c, c.label),
+                              ),
+                            )
                             .toList(),
                       ],
                     ),
@@ -157,8 +153,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
                                 const SizedBox(width: 8),
                                 Chip(
                                   label: Text(_selectedRegion!.label),
-                                  onDeleted: () =>
-                                      setState(() => _selectedRegion = null),
+                                  onDeleted: () => setState(() => _selectedRegion = null),
                                   backgroundColor: colorScheme.secondaryContainer,
                                   labelStyle: TextStyle(color: colorScheme.onSecondaryContainer),
                                   deleteIconColor: colorScheme.onSecondaryContainer,
@@ -171,21 +166,17 @@ class _MountainListScreenState extends State<MountainListScreen> {
                       ),
                       // 新手友善開關 (獨立)
                       InkWell(
-                        onTap: () => setState(
-                            () => _onlyBeginnerFriendly = !_onlyBeginnerFriendly),
+                        onTap: () => setState(() => _onlyBeginnerFriendly = !_onlyBeginnerFriendly),
                         borderRadius: BorderRadius.circular(20),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             color: _onlyBeginnerFriendly
                                 ? Colors.green.withValues(alpha: 0.2)
                                 : theme.disabledColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: _onlyBeginnerFriendly
-                                  ? Colors.green
-                                  : Colors.transparent,
+                              color: _onlyBeginnerFriendly ? Colors.green : Colors.transparent,
                               width: 1,
                             ),
                           ),
@@ -228,11 +219,9 @@ class _MountainListScreenState extends State<MountainListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.landscape_outlined,
-                            size: 64, color: theme.disabledColor),
+                        Icon(Icons.landscape_outlined, size: 64, color: theme.disabledColor),
                         const SizedBox(height: 16),
-                        Text('沒有符合條件的山岳',
-                            style: TextStyle(color: theme.disabledColor)),
+                        Text('沒有符合條件的山岳', style: TextStyle(color: theme.disabledColor)),
                       ],
                     ),
                   ),
@@ -240,27 +229,21 @@ class _MountainListScreenState extends State<MountainListScreen> {
               : SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final mountain = _filteredMountains[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: MountainCard(
-                            mountain: mountain,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      MountainDetailScreen(mountain: mountain),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      childCount: _filteredMountains.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final mountain = _filteredMountains[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: MountainCard(
+                          mountain: mountain,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => MountainDetailScreen(mountain: mountain)),
+                            );
+                          },
+                        ),
+                      );
+                    }, childCount: _filteredMountains.length),
                   ),
                 ),
           // Bottom padding
@@ -275,7 +258,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isSelected = _selectedCategory == category;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _selectedCategory = category),
       child: AnimatedContainer(
@@ -285,15 +268,14 @@ class _MountainListScreenState extends State<MountainListScreen> {
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? colorScheme.primary : theme.dividerColor,
-          ),
+          border: Border.all(color: isSelected ? colorScheme.primary : theme.dividerColor),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2))
+                    color: colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
                 ]
               : null,
         ),
@@ -315,8 +297,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
       onTap: () {
         showModalBottomSheet(
           context: context,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
           builder: (context) => Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -327,9 +308,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('選擇區域',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text('選擇區域', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 Wrap(
                   spacing: 8,

@@ -11,10 +11,7 @@ class AdventureEncyclopediaCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const MountainListScreen()),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const MountainListScreen()));
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -23,10 +20,7 @@ class AdventureEncyclopediaCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle),
                 child: Icon(Icons.menu_book, color: Colors.green.shade700),
               ),
               const SizedBox(width: 16),
@@ -36,15 +30,10 @@ class AdventureEncyclopediaCard extends StatelessWidget {
                   children: [
                     Text(
                       '台灣山岳百科',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '查詢百岳、小百岳及其他熱門山岳的詳細資訊',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                    Text('查詢百岳、小百岳及其他熱門山岳的詳細資訊', style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
               ),
