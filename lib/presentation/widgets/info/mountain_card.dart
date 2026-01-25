@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:summitmate/data/models/mountain_location.dart';
+import 'package:summitmate/presentation/widgets/common/summit_image.dart';
 
 class MountainCard extends StatelessWidget {
   final MountainLocation mountain;
@@ -37,24 +38,14 @@ class MountainCard extends StatelessWidget {
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: Container(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: SizedBox(
                       height: 160,
-                      color: isDark ? colorScheme.surfaceContainer : Colors.grey.shade200,
-                      child: mountain.photoUrls.isNotEmpty
-                          ? Image.network(
-                              mountain.photoUrls.first,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                    child: Icon(Icons.image_not_supported,
-                                        color: theme.disabledColor));
-                              },
-                            )
-                          : Center(
-                              child: Icon(Icons.terrain,
-                                  size: 48, color: theme.disabledColor)),
+                      width: double.infinity,
+                      child: SummitImage(
+                        imageUrl: mountain.photoUrls.isNotEmpty ? mountain.photoUrls.first : '',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   // Category Badge (Top Left)
@@ -62,19 +53,14 @@ class MountainCard extends StatelessWidget {
                     top: 12,
                     left: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         mountain.category.label,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -83,8 +69,7 @@ class MountainCard extends StatelessWidget {
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
@@ -92,8 +77,7 @@ class MountainCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.location_on,
-                              size: 12, color: theme.iconTheme.color),
+                          Icon(Icons.location_on, size: 12, color: theme.iconTheme.color),
                           const SizedBox(width: 4),
                           Text(
                             mountain.region.label,
@@ -123,10 +107,7 @@ class MountainCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             mountain.name,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                            ),
+                            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, height: 1.2),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -134,8 +115,11 @@ class MountainCard extends StatelessWidget {
                         if (mountain.isBeginnerFriendly)
                           Tooltip(
                             message: '新手推薦',
-                            child: Icon(Icons.eco,
-                                size: 20, color: isDark ? Colors.greenAccent : Colors.green.shade600),
+                            child: Icon(
+                              Icons.eco,
+                              size: 20,
+                              color: isDark ? Colors.greenAccent : Colors.green.shade600,
+                            ),
                           ),
                       ],
                     ),
@@ -144,23 +128,15 @@ class MountainCard extends StatelessWidget {
                       children: [
                         Text(
                           '${mountain.altitude}m',
-                          style: TextStyle(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
+                          style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 15),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          '•',
-                          style: TextStyle(color: theme.disabledColor),
-                        ),
+                        Text('•', style: TextStyle(color: theme.disabledColor)),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             mountain.jurisdiction,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.disabledColor, fontSize: 13),
+                            style: theme.textTheme.bodyMedium?.copyWith(color: theme.disabledColor, fontSize: 13),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

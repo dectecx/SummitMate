@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:summitmate/data/models/mountain_location.dart';
+import 'package:summitmate/presentation/widgets/common/summit_image.dart';
 import 'package:summitmate/presentation/widgets/info/external_links_card.dart';
 
 class MountainDetailScreen extends StatelessWidget {
@@ -44,9 +45,7 @@ class MountainDetailScreen extends StatelessWidget {
                     icon: const Icon(Icons.favorite_border, color: Colors.red),
                     onPressed: () {
                       // TODO: Implement favorite
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('已加入收藏 (Demo)')),
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已加入收藏 (Demo)')));
                     },
                     tooltip: '收藏',
                   ),
@@ -58,11 +57,7 @@ class MountainDetailScreen extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   mountain.photoUrls.isNotEmpty
-                      ? Image.network(
-                          mountain.photoUrls.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholder(theme),
-                        )
+                      ? SummitImage(imageUrl: mountain.photoUrls.first, fit: BoxFit.cover)
                       : _buildPlaceholder(theme),
                   // Scrim gradient for text visibility
                   Container(
@@ -87,18 +82,11 @@ class MountainDetailScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(4)),
                           child: Text(
                             mountain.category.label,
-                            style: TextStyle(
-                                color: colorScheme.onPrimary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold),
+                            style: TextStyle(color: colorScheme.onPrimary, fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -108,27 +96,17 @@ class MountainDetailScreen extends StatelessWidget {
                             color: Colors.white,
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(0, 1),
-                                blurRadius: 4,
-                                color: Colors.black54,
-                              ),
-                            ],
+                            shadows: [Shadow(offset: Offset(0, 1), blurRadius: 4, color: Colors.black54)],
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.location_on,
-                                color: Colors.white70, size: 16),
+                            const Icon(Icons.location_on, color: Colors.white70, size: 16),
                             const SizedBox(width: 4),
                             Text(
                               '${mountain.region.label} • ${mountain.jurisdiction}',
-                              style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500),
+                              style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -156,22 +134,17 @@ class MountainDetailScreen extends StatelessWidget {
                     // Quick Stats Row
                     Row(
                       children: [
-                        Expanded(
-                            child: _buildInfoCard(
-                                context,
-                                '海拔', '${mountain.altitude}m', Icons.terrain)),
+                        Expanded(child: _buildInfoCard(context, '海拔', '${mountain.altitude}m', Icons.terrain)),
                         const SizedBox(width: 12),
                         Expanded(
-                            child: _buildInfoCard(
-                                context,
-                                '難度',
-                                mountain.isBeginnerFriendly ? '新手' : '一般',
-                                mountain.isBeginnerFriendly
-                                    ? Icons.eco
-                                    : Icons.directions_walk,
-                                color: mountain.isBeginnerFriendly
-                                    ? Colors.green
-                                    : Colors.orange)),
+                          child: _buildInfoCard(
+                            context,
+                            '難度',
+                            mountain.isBeginnerFriendly ? '新手' : '一般',
+                            mountain.isBeginnerFriendly ? Icons.eco : Icons.directions_walk,
+                            color: mountain.isBeginnerFriendly ? Colors.green : Colors.orange,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 32),
@@ -181,10 +154,7 @@ class MountainDetailScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       mountain.introduction,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        height: 1.6,
-                        color: theme.textTheme.bodyMedium?.color,
-                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(height: 1.6, color: theme.textTheme.bodyMedium?.color),
                     ),
                     const SizedBox(height: 32),
 
@@ -193,18 +163,14 @@ class MountainDetailScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       mountain.features,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        height: 1.6,
-                        color: theme.textTheme.bodyMedium?.color,
-                      ),
+                      style: theme.textTheme.bodyLarge?.copyWith(height: 1.6, color: theme.textTheme.bodyMedium?.color),
                     ),
                     const SizedBox(height: 32),
 
                     // Trails Info
                     _buildSectionTitle(context, '基本資訊'),
                     const SizedBox(height: 16),
-                    _buildDetailRow(context, Icons.directions, '主要登山口',
-                        mountain.trailheads.join(', ')),
+                    _buildDetailRow(context, Icons.directions, '主要登山口', mountain.trailheads.join(', ')),
                     const SizedBox(height: 16),
                     _buildDetailRow(context, Icons.map, '地圖參考', mountain.mapRef),
                     const SizedBox(height: 32),
@@ -227,14 +193,11 @@ class MountainDetailScreen extends StatelessWidget {
   Widget _buildPlaceholder(ThemeData theme) {
     return Container(
       color: theme.colorScheme.surfaceContainer,
-      child: Center(
-          child:
-              Icon(Icons.landscape, size: 64, color: theme.disabledColor)),
+      child: Center(child: Icon(Icons.landscape, size: 64, color: theme.disabledColor)),
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, String label, String value, IconData icon,
-      {Color? color}) {
+  Widget _buildInfoCard(BuildContext context, String label, String value, IconData icon, {Color? color}) {
     final theme = Theme.of(context);
     final baseColor = color ?? theme.colorScheme.primary;
     return Container(
@@ -248,17 +211,15 @@ class MountainDetailScreen extends StatelessWidget {
         children: [
           Icon(icon, color: baseColor, size: 28),
           const SizedBox(height: 8),
-          Text(label,
-              style: TextStyle(
-                  color: theme.textTheme.bodySmall?.color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(color: theme.textTheme.bodySmall?.color, fontSize: 12, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 4),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: theme.textTheme.bodyLarge?.color)),
+          Text(
+            value,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
+          ),
         ],
       ),
     );
@@ -271,18 +232,10 @@ class MountainDetailScreen extends StatelessWidget {
         Container(
           width: 4,
           height: 24,
-          decoration: BoxDecoration(
-            color: theme.primaryColor,
-            borderRadius: BorderRadius.circular(2),
-          ),
+          decoration: BoxDecoration(color: theme.primaryColor, borderRadius: BorderRadius.circular(2)),
         ),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -305,17 +258,9 @@ class MountainDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500),
-              ),
+              Text(label, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
               const SizedBox(height: 4),
-              Text(
-                value,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500),
-              ),
+              Text(value, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
             ],
           ),
         ),
