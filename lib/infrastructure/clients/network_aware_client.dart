@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import '../../core/di.dart';
 import '../../core/exceptions/offline_exception.dart';
+import '../../domain/interfaces/i_api_client.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
-import 'gas_api_client.dart';
 import '../tools/log_service.dart';
 
 /// 具網路感知能力的 API Client
@@ -13,15 +13,15 @@ import '../tools/log_service.dart';
 /// 3. 提供統一的離線錯誤處理機制
 ///
 /// 使用方式:
-/// 所有需要打 API 的 Service 應使用此 Client，而非直接使用 GasApiClient
-class NetworkAwareClient {
+/// 所有需要打 API 的 Service 應使用此 Client，而非直接使用 basic API Client
+class NetworkAwareClient implements IApiClient {
   static const String _source = 'NetworkAwareClient';
 
-  final GasApiClient _apiClient;
+  final IApiClient _apiClient;
   final IConnectivityService _connectivity;
 
-  NetworkAwareClient({GasApiClient? apiClient, IConnectivityService? connectivity})
-    : _apiClient = apiClient ?? getIt<GasApiClient>(),
+  NetworkAwareClient({IApiClient? apiClient, IConnectivityService? connectivity})
+    : _apiClient = apiClient ?? getIt<IApiClient>(),
       _connectivity = connectivity ?? getIt<IConnectivityService>();
 
   /// 檢查是否離線，若是則拋出 [OfflineException]
@@ -33,12 +33,14 @@ class NetworkAwareClient {
   }
 
   /// GET 請求 (離線時拋出 OfflineException)
+  @override
   Future<Response> get({Map<String, String>? queryParams}) async {
     _checkConnectivity('GET');
     return await _apiClient.get(queryParams: queryParams);
   }
 
   /// POST 請求 (離線時拋出 OfflineException)
+  @override
   Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     final action = body['action']?.toString() ?? 'unknown';
     _checkConnectivity('POST:$action');
@@ -52,6 +54,7 @@ class NetworkAwareClient {
   bool get isOnline => !_connectivity.isOffline;
 
   /// 釋放資源
+  @override
   void dispose() {
     _apiClient.dispose();
   }
