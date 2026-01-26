@@ -40,7 +40,13 @@ void main() {
 
     test('syncLibrary success should return count', () async {
       // Arrange
-      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+      when(
+        () => mockApiClient.post(
+          any(),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
@@ -62,7 +68,13 @@ void main() {
 
     test('syncLibrary failure should return error message', () async {
       // Arrange
-      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+      when(
+        () => mockApiClient.post(
+          any(),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
@@ -80,7 +92,13 @@ void main() {
 
     test('getLibrary success should return items', () async {
       // Arrange
-      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+      when(
+        () => mockApiClient.post(
+          any(),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,
@@ -105,7 +123,13 @@ void main() {
 
     test('getLibrary failure should return error', () async {
       // Arrange
-      when(() => mockApiClient.post(any(), requiresAuth: true)).thenAnswer(
+      when(
+        () => mockApiClient.post(
+          any(),
+          data: any(named: 'data'),
+          options: any(named: 'options'),
+        ),
+      ).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 500,

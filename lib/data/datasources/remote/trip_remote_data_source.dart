@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../../core/constants.dart';
 import '../../../core/di.dart';
 import '../../models/trip.dart';
@@ -20,7 +21,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   Future<List<Trip>> getTrips() async {
     try {
       LogService.info('取得雲端行程列表...', source: _source);
-      final response = await _apiClient.post({'action': ApiConfig.actionTripList});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionTripList});
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');
@@ -50,16 +51,20 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<String> uploadTrip(Trip trip) async {
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionTripCreate,
-        'id': trip.id,
-        'name': trip.name,
-        'start_date': trip.startDate.toIso8601String(),
-        'end_date': trip.endDate?.toIso8601String() ?? '',
-        'description': trip.description ?? '',
-        'cover_image': trip.coverImage ?? '',
-        'is_active': trip.isActive,
-      }, requiresAuth: true);
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionTripCreate,
+          'id': trip.id,
+          'name': trip.name,
+          'start_date': trip.startDate.toIso8601String(),
+          'end_date': trip.endDate?.toIso8601String() ?? '',
+          'description': trip.description ?? '',
+          'cover_image': trip.coverImage ?? '',
+          'is_active': trip.isActive,
+        },
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -79,16 +84,20 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> updateTrip(Trip trip) async {
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionTripUpdate,
-        'id': trip.id,
-        'name': trip.name,
-        'start_date': trip.startDate.toIso8601String(),
-        'end_date': trip.endDate?.toIso8601String() ?? '',
-        'description': trip.description ?? '',
-        'cover_image': trip.coverImage ?? '',
-        'is_active': trip.isActive,
-      }, requiresAuth: true);
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionTripUpdate,
+          'id': trip.id,
+          'name': trip.name,
+          'start_date': trip.startDate.toIso8601String(),
+          'end_date': trip.endDate?.toIso8601String() ?? '',
+          'description': trip.description ?? '',
+          'cover_image': trip.coverImage ?? '',
+          'is_active': trip.isActive,
+        },
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -106,10 +115,11 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> deleteTrip(String tripId) async {
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionTripDelete,
-        'trip_id': tripId,
-      }, requiresAuth: true); // Note: API expects trip_id
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionTripDelete, 'trip_id': tripId},
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -136,12 +146,10 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
       final gearJson = gearItems.map((e) => e.toJson()).toList();
       final tripJson = trip.toJson();
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionTripSync,
-        'trip': tripJson,
-        'itinerary': itineraryJson,
-        'gear': gearJson,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionTripSync, 'trip': tripJson, 'itinerary': itineraryJson, 'gear': gearJson},
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -161,7 +169,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> getTripMembers(String tripId) async {
     try {
-      final response = await _apiClient.post({'action': 'trip_get_members', 'trip_id': tripId});
+      final response = await _apiClient.post('', data: {'action': 'trip_get_members', 'trip_id': tripId});
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -183,12 +191,10 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> updateMemberRole(String tripId, String userId, String role) async {
     try {
-      final response = await _apiClient.post({
-        'action': 'trip_update_member_role',
-        'trip_id': tripId,
-        'user_id': userId,
-        'role': role,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_update_member_role', 'trip_id': tripId, 'user_id': userId, 'role': role},
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -207,7 +213,10 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> removeMember(String tripId, String userId) async {
     try {
-      final response = await _apiClient.post({'action': 'trip_remove_member', 'trip_id': tripId, 'user_id': userId});
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_remove_member', 'trip_id': tripId, 'user_id': userId},
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -227,12 +236,10 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
     try {
-      final response = await _apiClient.post({
-        'action': 'trip_add_member_by_email',
-        'trip_id': tripId,
-        'email': email,
-        'role': role,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_add_member_by_email', 'trip_id': tripId, 'email': email, 'role': role},
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -252,12 +259,10 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) async {
     try {
-      final response = await _apiClient.post({
-        'action': 'trip_add_member_by_id',
-        'trip_id': tripId,
-        'user_id': userId,
-        'role': role,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_add_member_by_id', 'trip_id': tripId, 'user_id': userId, 'role': role},
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -276,10 +281,11 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   Future<UserProfile> searchUserByEmail(String email) async {
     try {
       LogService.info('Searching user by email: $email', source: _source);
-      final response = await _apiClient.post({
-        'action': 'trip_search_user_by_email',
-        'email': email,
-      }, requiresAuth: true);
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_search_user_by_email', 'email': email},
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 
@@ -300,10 +306,11 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   Future<UserProfile> searchUserById(String userId) async {
     try {
       LogService.info('Searching user by ID: $userId', source: _source);
-      final response = await _apiClient.post({
-        'action': 'trip_search_user_by_id',
-        'user_id': userId,
-      }, requiresAuth: true);
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_search_user_by_id', 'user_id': userId},
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 

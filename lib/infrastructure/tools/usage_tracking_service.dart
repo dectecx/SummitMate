@@ -57,15 +57,18 @@ class UsageTrackingService {
 
     try {
       LogService.info('發送心跳...', source: _source);
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionSystemHeartbeat,
-        'user_name': _username,
-        if (_userId != null) 'user_id': _userId,
-        // 若 api_heartbeat.gs 沒收到 user_id 會自動補 Guest- 前綴
-        'user_type': _userType,
-        'timestamp': DateTime.now().toIso8601String(),
-        'platform': 'web',
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionSystemHeartbeat,
+          'user_name': _username,
+          if (_userId != null) 'user_id': _userId,
+          // 若 api_heartbeat.gs 沒收到 user_id 會自動補 Guest- 前綴
+          'user_type': _userType,
+          'timestamp': DateTime.now().toIso8601String(),
+          'platform': 'web',
+        },
+      );
 
       if (response.statusCode == 200) {
         final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);

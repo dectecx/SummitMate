@@ -24,7 +24,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
 
       final queryParams = <String, String>{'action': ApiConfig.actionTripGetFull, 'trip_id': tripId};
 
-      final response = await _apiClient.get(queryParams: queryParams);
+      final response = await _apiClient.get('', queryParameters: queryParams);
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');
@@ -55,7 +55,10 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   @override
   Future<void> addMessage(Message message) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionMessageCreate, 'data': message.toJson()});
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionMessageCreate, 'data': message.toJson()},
+      );
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');
@@ -77,7 +80,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   @override
   Future<void> deleteMessage(String id) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'id': id});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionMessageDelete, 'id': id});
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');

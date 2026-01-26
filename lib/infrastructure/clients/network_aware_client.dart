@@ -34,24 +34,39 @@ class NetworkAwareClient implements IApiClient {
 
   /// GET 請求 (離線時拋出 OfflineException)
   @override
-  Future<Response> get({Map<String, String>? queryParams}) async {
-    _checkConnectivity('GET');
-    return await _apiClient.get(queryParams: queryParams);
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {
+    _checkConnectivity('GET:$path');
+    return await _apiClient.get(path, queryParameters: queryParameters, options: options);
   }
 
   /// POST 請求 (離線時拋出 OfflineException)
   @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
-    final action = body['action']?.toString() ?? 'unknown';
+  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    final action = (data is Map) ? data['action'] : 'unknown';
     _checkConnectivity('POST:$action');
-    return await _apiClient.post(body, requiresAuth: requiresAuth);
+    return await _apiClient.post(path, data: data, queryParameters: queryParameters, options: options);
   }
 
-  /// 判斷目前是否離線 (供 Service 快速查詢用)
-  bool get isOffline => _connectivity.isOffline;
+  /// PUT 請求
+  @override
+  Future<Response> put(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    _checkConnectivity('PUT:$path');
+    return await _apiClient.put(path, data: data, queryParameters: queryParameters, options: options);
+  }
 
-  /// 判斷目前是否線上 (供 Service 快速查詢用)
-  bool get isOnline => !_connectivity.isOffline;
+  /// PATCH 請求
+  @override
+  Future<Response> patch(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    _checkConnectivity('PATCH:$path');
+    return await _apiClient.patch(path, data: data, queryParameters: queryParameters, options: options);
+  }
+
+  /// DELETE 請求
+  @override
+  Future<Response> delete(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    _checkConnectivity('DELETE:$path');
+    return await _apiClient.delete(path, data: data, queryParameters: queryParameters, options: options);
+  }
 
   /// 釋放資源
   @override

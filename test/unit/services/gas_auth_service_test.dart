@@ -25,10 +25,18 @@ class MockGasApiClient extends GasApiClient {
   bool shouldThrowError = false;
 
   @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
     if (shouldThrowError) {
       throw DioException(
-        requestOptions: RequestOptions(path: ''),
+        requestOptions: RequestOptions(path: path),
         message: 'Network error',
       );
     }
@@ -36,7 +44,7 @@ class MockGasApiClient extends GasApiClient {
     final responseBody = {'code': mockResponseCode, 'message': mockResponseMessage, 'data': mockResponseData ?? {}};
 
     return Response(
-      requestOptions: RequestOptions(path: ''),
+      requestOptions: RequestOptions(path: path),
       data: responseBody,
       statusCode: 200,
     );

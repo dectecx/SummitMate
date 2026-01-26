@@ -7,6 +7,10 @@ import '../../domain/interfaces/i_api_client.dart';
 
 /// Google Apps Script API 用戶端
 /// 處理重新導向 (302)、Web 相容性等通用邏輯
+///
+/// 注意：GAS 因為發布為 Web App 時只有單一網址 (Base URL)，
+/// 所以通常會忽略請求中的 `path` 參數，而是透過 Query Parameter 或 Body 中的 `action` 欄位來區分操作。
+/// 但為了符合 `IApiClient` 的通用介面，我們仍然保留 `path` 參數。
 class GasApiClient implements IApiClient {
   static const String _source = 'GasApiClient';
 
@@ -17,12 +21,12 @@ class GasApiClient implements IApiClient {
 
   /// GET 請求
   @override
-  Future<Response> get({Map<String, String>? queryParams}) async {
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {
     final stopwatch = Stopwatch()..start();
     try {
       LogService.debug('[GET] 請求開始: $_baseUrl', source: _source);
 
-      final response = await _dio.get(_baseUrl, queryParameters: queryParams);
+      final response = await _dio.get(_baseUrl, queryParameters: queryParameters, options: options);
 
       stopwatch.stop();
       LogService.info('[GET] 完成 (${stopwatch.elapsedMilliseconds}ms) HTTP ${response.statusCode}', source: _source);
@@ -37,22 +41,28 @@ class GasApiClient implements IApiClient {
 
   /// POST 請求 (自動處理重新導向)
   @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
     final stopwatch = Stopwatch()..start();
-    final action = body['action'] ?? 'unknown';
+    final action = (data is Map) ? data['action'] : 'unknown';
 
     try {
       // [Web 相容性]
       // Web: 使用 text/plain 避免 CORS Preflight (OPTIONS)，因 GAS 不支援。
-      final options = Options(
-        contentType: kIsWeb ? 'text/plain' : 'application/json',
-        extra: {'requiresAuth': requiresAuth},
-        // 我們需要手動處理 302 重導向，因為 GAS 常回傳 HTML body 重導向
-        followRedirects: !kIsWeb,
-        validateStatus: (status) => status != null && status < 500,
-      );
+      final requestOptions =
+          options ??
+          Options(
+            contentType: kIsWeb ? 'text/plain' : 'application/json',
+            // 我們需要手動處理 302 重導向，因為 GAS 常回傳 HTML body 重導向
+            followRedirects: !kIsWeb,
+            validateStatus: (status) => status != null && status < 500,
+          );
 
-      final jsonBody = jsonEncode(body);
+      // 若 options 被傳入，確保 contentType 正確 (除非被覆寫)
+      if (kIsWeb && requestOptions.contentType == null) {
+        requestOptions.contentType = 'text/plain';
+      }
+
+      final jsonBody = jsonEncode(data);
       LogService.debug('[POST] 請求開始: action=$action', source: _source);
       LogService.debug('[POST] Request Body: $jsonBody', source: _source);
 
@@ -60,9 +70,14 @@ class GasApiClient implements IApiClient {
       // 若為 'text/plain'，必須傳送字串。若為 'application/json'，可傳送 Map。
       // 但為了避免 Dio 的自動 JSON 邏輯影響 GAS，這裡統一處裡。
       // 實際上 GAS 的 doPost(e) 可以正確處裡 JSON 文字 payload。
-      final data = kIsWeb ? jsonBody : body;
+      final requestData = kIsWeb ? jsonBody : data;
 
-      final response = await _dio.post(_baseUrl, data: data, options: options);
+      final response = await _dio.post(
+        _baseUrl,
+        data: requestData,
+        options: requestOptions,
+        queryParameters: queryParameters,
+      );
 
       // [Mobile 相容性]
       // 1. 標準 302 重導向 (若 followRedirects 為 true，Dio 會自動處理，
@@ -125,6 +140,21 @@ class GasApiClient implements IApiClient {
       );
       rethrow;
     }
+  }
+
+  @override
+  Future<Response> put(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    throw UnimplementedError('GAS does not support PUT');
+  }
+
+  @override
+  Future<Response> patch(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    throw UnimplementedError('GAS does not support PATCH');
+  }
+
+  @override
+  Future<Response> delete(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) {
+    throw UnimplementedError('GAS does not support DELETE');
   }
 
   @override

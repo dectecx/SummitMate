@@ -21,10 +21,16 @@ class MockGasApiClient extends GasApiClient {
   Map<String, dynamic>? capturedBody;
 
   @override
-  Future<Response> get({Map<String, String>? queryParams}) async {
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
     if (shouldFail) {
       return Response(
-        requestOptions: RequestOptions(path: ''),
+        requestOptions: RequestOptions(path: path),
         statusCode: 500,
         statusMessage: 'Internal Server Error',
       );
@@ -36,18 +42,26 @@ class MockGasApiClient extends GasApiClient {
       'data': expectedResponseData ?? {},
     };
     return Response(
-      requestOptions: RequestOptions(path: ''),
+      requestOptions: RequestOptions(path: path),
       data: responseBody,
       statusCode: statusCode,
     );
   }
 
   @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
-    capturedBody = body;
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    capturedBody = data as Map<String, dynamic>?;
     if (shouldFail) {
       return Response(
-        requestOptions: RequestOptions(path: ''),
+        requestOptions: RequestOptions(path: path),
         statusCode: 500,
         statusMessage: 'Internal Server Error',
       );
@@ -58,7 +72,7 @@ class MockGasApiClient extends GasApiClient {
       'data': expectedResponseData ?? {},
     };
     return Response(
-      requestOptions: RequestOptions(path: ''),
+      requestOptions: RequestOptions(path: path),
       data: responseBody,
       statusCode: statusCode,
     );

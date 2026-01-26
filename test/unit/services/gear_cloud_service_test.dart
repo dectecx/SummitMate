@@ -18,10 +18,18 @@ class MockGasApiClient extends GasApiClient {
   int statusCode = 200;
 
   @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
     if (shouldFail) {
       return Response(
-        requestOptions: RequestOptions(path: ''),
+        requestOptions: RequestOptions(path: path),
         statusCode: 500,
         statusMessage: 'Error',
       );
@@ -34,7 +42,7 @@ class MockGasApiClient extends GasApiClient {
     };
 
     return Response(
-      requestOptions: RequestOptions(path: ''),
+      requestOptions: RequestOptions(path: path),
       data: responseBody,
       statusCode: statusCode,
     );

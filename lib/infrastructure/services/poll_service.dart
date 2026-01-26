@@ -28,7 +28,10 @@ class PollService implements IPollService {
   Future<Result<List<Poll>, Exception>> getPolls({required String userId}) async {
     try {
       LogService.info('Fetching polls for user: $userId', source: _source);
-      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionPollList, 'user_id': userId});
+      final response = await _apiClient.get(
+        '',
+        queryParameters: {'action': ApiConfig.actionPollList, 'user_id': userId},
+      );
 
       LogService.debug('Fetch response status: ${response.statusCode}', source: _source);
 
@@ -84,7 +87,7 @@ class PollService implements IPollService {
 
     try {
       LogService.info('Creating poll: $title', source: _source);
-      final response = await _apiClient.post(payload);
+      final response = await _apiClient.post('', data: payload);
       LogService.debug('Create response: ${response.data}', source: _source);
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -116,7 +119,7 @@ class PollService implements IPollService {
 
     try {
       LogService.info('Voting on poll: $pollId, options: $optionIds', source: _source);
-      final response = await _apiClient.post(payload);
+      final response = await _apiClient.post('', data: payload);
       LogService.debug('Vote response: ${response.data}', source: _source);
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -141,7 +144,7 @@ class PollService implements IPollService {
 
     try {
       LogService.info('Adding option "$text" to poll $pollId by creator $creatorId', source: _source);
-      final response = await _apiClient.post(payload);
+      final response = await _apiClient.post('', data: payload);
       LogService.debug('Add option response: ${response.data}', source: _source);
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -163,7 +166,7 @@ class PollService implements IPollService {
 
     try {
       LogService.info('Closing poll: $pollId by user: $userId', source: _source);
-      final response = await _apiClient.post(payload);
+      final response = await _apiClient.post('', data: payload);
       LogService.debug('Close response: ${response.data}', source: _source);
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -185,7 +188,7 @@ class PollService implements IPollService {
 
     try {
       LogService.info('Deleting poll: $pollId by user: $userId', source: _source);
-      final response = await _apiClient.post(payload);
+      final response = await _apiClient.post('', data: payload);
       LogService.debug('Delete response: ${response.data}', source: _source);
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -207,7 +210,7 @@ class PollService implements IPollService {
 
     try {
       LogService.info('Deleting option: $optionId by user: $userId', source: _source);
-      final response = await _apiClient.post(payload);
+      final response = await _apiClient.post('', data: payload);
       LogService.debug('Delete option response: ${response.data}', source: _source);
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);

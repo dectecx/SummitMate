@@ -30,7 +30,7 @@ class GoogleSheetsService implements IDataService {
         queryParams['trip_id'] = tripId;
       }
 
-      final response = await _apiClient.get(queryParams: queryParams);
+      final response = await _apiClient.get('', queryParameters: queryParams);
       LogService.debug('API 回應: ${response.statusCode}', source: 'API');
 
       if (response.statusCode == 200) {
@@ -77,7 +77,7 @@ class GoogleSheetsService implements IDataService {
         queryParams['trip_id'] = tripId;
       }
 
-      final response = await _apiClient.get(queryParams: queryParams);
+      final response = await _apiClient.get('', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -113,7 +113,7 @@ class GoogleSheetsService implements IDataService {
         queryParams['trip_id'] = tripId;
       }
 
-      final response = await _apiClient.get(queryParams: queryParams);
+      final response = await _apiClient.get('', queryParameters: queryParams);
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -142,7 +142,10 @@ class GoogleSheetsService implements IDataService {
   @override
   Future<Result<void, Exception>> addMessage(Message message) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionMessageCreate, 'data': message.toJson()});
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionMessageCreate, 'data': message.toJson()},
+      );
       return _handleResponse(response);
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -155,7 +158,7 @@ class GoogleSheetsService implements IDataService {
   @override
   Future<Result<void, Exception>> deleteMessage(String id) async {
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionMessageDelete, 'id': id});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionMessageDelete, 'id': id});
       return _handleResponse(response);
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -168,10 +171,10 @@ class GoogleSheetsService implements IDataService {
   @override
   Future<Result<void, Exception>> batchAddMessages(List<Message> messages) async {
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionMessageCreateBatch,
-        'data': messages.map((m) => m.toJson()).toList(),
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionMessageCreateBatch, 'data': messages.map((m) => m.toJson()).toList()},
+      );
       return _handleResponse(response);
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -184,17 +187,20 @@ class GoogleSheetsService implements IDataService {
   @override
   Future<Result<void, Exception>> updateItinerary(List<ItineraryItem> items) async {
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionItineraryUpdate,
-        'data': items.map((e) {
-          final json = e.toJson();
-          // Force est_time to be string in Google Sheets by prepending '
-          if (e.estTime.isNotEmpty) {
-            json['est_time'] = "'${e.estTime}";
-          }
-          return json;
-        }).toList(),
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionItineraryUpdate,
+          'data': items.map((e) {
+            final json = e.toJson();
+            // Force est_time to be string in Google Sheets by prepending '
+            if (e.estTime.isNotEmpty) {
+              json['est_time'] = "'${e.estTime}";
+            }
+            return json;
+          }).toList(),
+        },
+      );
       return _handleResponse(response);
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -206,7 +212,7 @@ class GoogleSheetsService implements IDataService {
   Future<Result<List<Trip>, Exception>> getTrips() async {
     try {
       LogService.info('API 請求: FetchTrips', source: 'API');
-      final response = await _apiClient.get(queryParams: {'action': ApiConfig.actionTripList});
+      final response = await _apiClient.get('', queryParameters: {'action': ApiConfig.actionTripList});
 
       if (response.statusCode == 200) {
         final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -236,14 +242,17 @@ class GoogleSheetsService implements IDataService {
   @override
   Future<Result<String, Exception>> uploadLogs(List<LogEntry> logs, {String? deviceName}) async {
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionLogUpload,
-        'logs': logs.map((e) => e.toJson()).toList(),
-        'device_info': {
-          'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'device_name': deviceName ?? 'SummitMate App',
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionLogUpload,
+          'logs': logs.map((e) => e.toJson()).toList(),
+          'device_info': {
+            'device_id': DateTime.now().millisecondsSinceEpoch.toString(),
+            'device_name': deviceName ?? 'SummitMate App',
+          },
         },
-      });
+      );
 
       // 解析 GAS 回傳的計數
       if (response.statusCode == 200) {
