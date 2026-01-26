@@ -26,7 +26,7 @@ class ItineraryRemoteDataSource implements IItineraryRemoteDataSource {
       final queryParams = <String, String>{'action': ApiConfig.actionTripGetFull, 'trip_id': tripId};
 
       // 發送 GET 請求
-      final response = await _apiClient.get(queryParams: queryParams);
+      final response = await _apiClient.get('', queryParameters: queryParams);
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');

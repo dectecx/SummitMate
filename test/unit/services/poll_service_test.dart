@@ -26,12 +26,18 @@ class MockGasApiClient extends GasApiClient {
   Map<String, dynamic>? lastPostBody;
 
   @override
-  Future<Response> get({Map<String, String>? queryParams}) async {
-    lastGetParams = queryParams;
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    lastGetParams = queryParameters;
 
     if (shouldThrowError) {
       throw DioException(
-        requestOptions: RequestOptions(path: ''),
+        requestOptions: RequestOptions(path: path),
         message: 'Network error',
       );
     }
@@ -39,19 +45,27 @@ class MockGasApiClient extends GasApiClient {
     final responseBody = {'code': mockResponseCode, 'message': mockResponseMessage, 'data': mockResponseData ?? {}};
 
     return Response(
-      requestOptions: RequestOptions(path: ''),
+      requestOptions: RequestOptions(path: path),
       data: responseBody,
       statusCode: 200,
     );
   }
 
   @override
-  Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
-    lastPostBody = body;
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    lastPostBody = data as Map<String, dynamic>?;
 
     if (shouldThrowError) {
       throw DioException(
-        requestOptions: RequestOptions(path: ''),
+        requestOptions: RequestOptions(path: path),
         message: 'Network error',
       );
     }
@@ -59,7 +73,7 @@ class MockGasApiClient extends GasApiClient {
     final responseBody = {'code': mockResponseCode, 'message': mockResponseMessage, 'data': mockResponseData ?? {}};
 
     return Response(
-      requestOptions: RequestOptions(path: ''),
+      requestOptions: RequestOptions(path: path),
       data: responseBody,
       statusCode: 200,
     );

@@ -62,13 +62,16 @@ class GasAuthService implements IAuthService {
     try {
       LogService.info('嘗試註冊: $email', source: _source);
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionAuthRegister,
-        'email': email,
-        'password': password,
-        'displayName': displayName,
-        'avatar': avatar,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionAuthRegister,
+          'email': email,
+          'password': password,
+          'displayName': displayName,
+          'avatar': avatar,
+        },
+      );
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -103,11 +106,10 @@ class GasAuthService implements IAuthService {
       LogService.info('嘗試登入: $email', source: _source);
       _isOfflineMode = false;
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionAuthLogin,
-        'email': email,
-        'password': password,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionAuthLogin, 'email': email, 'password': password},
+      );
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -199,7 +201,10 @@ class GasAuthService implements IAuthService {
     try {
       LogService.info('嘗試驗證 Email: $email', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionAuthVerifyEmail, 'email': email, 'code': code});
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionAuthVerifyEmail, 'email': email, 'code': code},
+      );
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -225,7 +230,7 @@ class GasAuthService implements IAuthService {
     try {
       LogService.info('嘗試重發驗證碼: $email', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionAuthResendCode, 'email': email});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionAuthResendCode, 'email': email});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -265,7 +270,7 @@ class GasAuthService implements IAuthService {
 
     try {
       // 使用 Access Token 發送請求
-      final response = await _apiClient.post({'action': ApiConfig.actionAuthValidate, 'accessToken': token});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionAuthValidate, 'accessToken': token});
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -341,10 +346,10 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionAuthRefreshToken,
-        'refreshToken': refreshToken,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionAuthRefreshToken, 'refreshToken': refreshToken},
+      );
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
       if (apiResponse.isSuccess) {
@@ -384,7 +389,10 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({'action': ApiConfig.actionAuthDeleteUser, 'accessToken': token});
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionAuthDeleteUser, 'accessToken': token},
+      );
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 
@@ -410,12 +418,15 @@ class GasAuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionAuthUpdateProfile,
-        'accessToken': token,
-        if (displayName != null) 'displayName': displayName,
-        if (avatar != null) 'avatar': avatar,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionAuthUpdateProfile,
+          'accessToken': token,
+          if (displayName != null) 'displayName': displayName,
+          if (avatar != null) 'avatar': avatar,
+        },
+      );
 
       final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
 

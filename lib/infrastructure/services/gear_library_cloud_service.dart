@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../core/constants.dart';
 import '../../core/di.dart';
 import 'package:summitmate/data/models/gear_library_item.dart';
@@ -23,10 +24,11 @@ class GearLibraryCloudService implements IGearLibraryCloudService {
       LogService.info('同步裝備庫: ${items.length} items (User Auth)', source: _source);
 
       // GAS expects generic item structure, ensure GearLibraryItem.toJson matches
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionGearLibraryUpload,
-        'items': items.map((i) => i.toJson()).toList(),
-      }, requiresAuth: true);
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionGearLibraryUpload, 'items': items.map((i) => i.toJson()).toList()},
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');
@@ -52,7 +54,11 @@ class GearLibraryCloudService implements IGearLibraryCloudService {
     try {
       LogService.info('取得雲端個人裝備庫 (User Auth)...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionGearLibraryDownload}, requiresAuth: true);
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionGearLibraryDownload},
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) {
         return GearLibraryCloudResult.failure('HTTP ${response.statusCode}');

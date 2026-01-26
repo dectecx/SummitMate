@@ -22,7 +22,7 @@ class GearCloudService implements IGearCloudService {
     try {
       LogService.info('取得雲端裝備組合列表...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionGearSetList});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionGearSetList});
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -53,7 +53,7 @@ class GearCloudService implements IGearCloudService {
     try {
       LogService.info('用 Key 取得裝備組合...', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionGearSetGet, 'key': key});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionGearSetGet, 'key': key});
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -79,11 +79,10 @@ class GearCloudService implements IGearCloudService {
     try {
       LogService.info('下載裝備組合: $id', source: _source);
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionGearSetDownload,
-        'id': id,
-        if (key != null) 'key': key,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {'action': ApiConfig.actionGearSetDownload, 'id': id, if (key != null) 'key': key},
+      );
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -124,18 +123,21 @@ class GearCloudService implements IGearCloudService {
 
       final totalWeight = items.fold<double>(0, (sum, item) => sum + item.weight);
 
-      final response = await _apiClient.post({
-        'action': ApiConfig.actionGearSetUpload,
-        'trip_id': tripId,
-        'title': title,
-        'author': author,
-        'visibility': visibility.name,
-        'total_weight': totalWeight,
-        'item_count': items.length,
-        'items': items.map((item) => item.toJson()).toList(),
-        if (meals != null) 'meals': meals.map((m) => m.toJson()).toList(),
-        if (key != null) 'key': key,
-      });
+      final response = await _apiClient.post(
+        '',
+        data: {
+          'action': ApiConfig.actionGearSetUpload,
+          'trip_id': tripId,
+          'title': title,
+          'author': author,
+          'visibility': visibility.name,
+          'total_weight': totalWeight,
+          'item_count': items.length,
+          'items': items.map((item) => item.toJson()).toList(),
+          if (meals != null) 'meals': meals.map((m) => m.toJson()).toList(),
+          if (key != null) 'key': key,
+        },
+      );
 
       if (response.statusCode != 200) {
         return GearCloudResult.failure('HTTP ${response.statusCode}');
@@ -166,7 +168,7 @@ class GearCloudService implements IGearCloudService {
     try {
       LogService.info('刪除裝備組合: $id', source: _source);
 
-      final response = await _apiClient.post({'action': ApiConfig.actionGearSetDelete, 'id': id, 'key': key});
+      final response = await _apiClient.post('', data: {'action': ApiConfig.actionGearSetDelete, 'id': id, 'key': key});
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
