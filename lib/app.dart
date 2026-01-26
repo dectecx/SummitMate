@@ -21,6 +21,7 @@ import 'presentation/cubits/settings/settings_cubit.dart';
 import 'presentation/cubits/settings/settings_state.dart';
 import 'presentation/cubits/group_event/group_event_cubit.dart';
 import 'presentation/cubits/favorites/mountain/mountain_favorites_cubit.dart';
+import 'presentation/cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
 import 'presentation/widgets/global_tutorial_wrapper.dart';
@@ -51,6 +52,7 @@ class SummitMateApp extends StatelessWidget {
                 ..loadSettings(),
         ),
         BlocProvider(create: (context) => MountainFavoritesCubit(hiveService: getIt<HiveService>())..loadFavorites()),
+        BlocProvider(create: (context) => GroupEventFavoritesCubit(hiveService: getIt<HiveService>())..loadFavorites()),
       ],
       child: _buildMaterialApp(),
     );

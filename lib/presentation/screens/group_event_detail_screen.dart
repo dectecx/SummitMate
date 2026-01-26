@@ -12,6 +12,8 @@ import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/group_event/group_event_comment_sheet.dart';
+import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
+import '../cubits/favorites/group_event/group_event_favorites_state.dart';
 import 'group_event_review_screen.dart';
 
 class GroupEventDetailScreen extends StatefulWidget {
@@ -70,11 +72,24 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 16),
-                child: _buildGlassIconButton(
-                  icon: _event.isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: _event.isLiked ? const Color(0xFFFF6B6B) : Colors.white,
-                  onTap: () {
-                    context.read<GroupEventCubit>().likeEvent(eventId: _event.id);
+                child: BlocBuilder<GroupEventFavoritesCubit, GroupEventFavoritesState>(
+                  builder: (context, state) {
+                    final isFavorite = context.read<GroupEventFavoritesCubit>().isFavorite(_event.id);
+                    return _buildGlassIconButton(
+                      icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                      onTap: () {
+                        context.read<GroupEventFavoritesCubit>().toggleFavorite(_event.id);
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(isFavorite ? '已從感興趣移除' : '已加入感興趣'),
+                            duration: const Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    );
                   },
                 ),
               ),

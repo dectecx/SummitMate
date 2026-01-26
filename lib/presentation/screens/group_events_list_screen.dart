@@ -7,6 +7,8 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
+import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
+import '../cubits/favorites/group_event/group_event_favorites_state.dart';
 import '../../data/models/enums/group_event_status.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
@@ -15,7 +17,7 @@ import '../widgets/common/summit_app_bar.dart';
 
 /// 揪團列表畫面
 ///
-/// 顯示所有揪團活動，支援篩選 (全部、熱門、即將出發)。
+/// 顯示所有揪團活動，支援篩選 (全部、即將出發)。
 /// 訪客模式下僅顯示列表，無法進入詳情。
 class GroupEventsListScreen extends StatefulWidget {
   const GroupEventsListScreen({super.key});
@@ -25,8 +27,9 @@ class GroupEventsListScreen extends StatefulWidget {
 }
 
 class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
-  // 0: 全部, 1: 熱門, 2: 即將出發
+  // 0: 全部, 1: 即將出發
   int _selectedFilter = 0;
+  bool _onlyFavorites = false;
 
   @override
   void initState() {
@@ -34,7 +37,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
     context.read<GroupEventCubit>().fetchEvents(isAuto: true);
   }
 
-  Widget _buildEventCard(BuildContext context, GroupEvent event, String currentUserId, bool isGuest) {
+  Widget _buildEventCard(BuildContext context, GroupEvent event, String currentUserId, bool isGuest, bool isFavorite) {
     final isCreator = event.creatorId == currentUserId;
     final statusColor = _getStatusColor(event.status);
     final statusText = _getStatusText(event.status);
@@ -126,19 +129,20 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
 
                   const Spacer(),
 
-                  // 喜歡數
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        event.isLiked ? Icons.favorite : Icons.favorite_border,
-                        size: 14,
-                        color: event.isLiked ? Colors.red : Colors.grey,
-                      ),
-                      const SizedBox(width: 2),
-                      Text('${event.likeCount}', style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
+                  // 收藏 (Heart)
+                  if (isFavorite) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          size: 14,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.redAccent : Colors.red,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   const SizedBox(width: 8),
 
                   // 留言數
@@ -211,226 +215,294 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GroupEventCubit, GroupEventState>(
-      listener: (context, state) {
-        // Handle errors if needed
-      },
-      builder: (context, state) {
-        if (state is GroupEventLoading) {
-          return Scaffold(
-            appBar: SummitAppBar(title: const Text('揪團活動')),
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
+    // 使用 BlocBuilder 監聽收藏狀態，確保詳細頁回來時狀態更新
+    return BlocBuilder<GroupEventFavoritesCubit, GroupEventFavoritesState>(
+      builder: (context, favoritesState) {
+        return BlocConsumer<GroupEventCubit, GroupEventState>(
+          listener: (context, state) {
+            // Handle errors if needed
+          },
+          builder: (context, state) {
+            if (state is GroupEventLoading) {
+              return Scaffold(
+                appBar: SummitAppBar(title: const Text('揪團活動')),
+                body: const Center(child: CircularProgressIndicator()),
+              );
+            }
 
-        List<GroupEvent> events = [];
-        String currentUserId = '';
-        DateTime? lastSyncTime;
-        bool isSyncing = false;
-        bool isGuest = false;
-        String? errorMessage;
+            List<GroupEvent> events = [];
+            String currentUserId = '';
+            DateTime? lastSyncTime;
+            bool isSyncing = false;
+            bool isGuest = false;
+            String? errorMessage;
 
-        if (state is GroupEventLoaded) {
-          events = state.events;
-          currentUserId = state.currentUserId;
-          lastSyncTime = state.lastSyncTime;
-          isSyncing = state.isSyncing;
-          isGuest = state.isGuest;
-        } else if (state is GroupEventError) {
-          errorMessage = state.message;
-        }
+            if (state is GroupEventLoaded) {
+              events = state.events;
+              currentUserId = state.currentUserId;
+              lastSyncTime = state.lastSyncTime;
+              isSyncing = state.isSyncing;
+              isGuest = state.isGuest;
+            } else if (state is GroupEventError) {
+              errorMessage = state.message;
+            }
 
-        if (errorMessage != null && events.isEmpty) {
-          return Scaffold(
-            appBar: SummitAppBar(title: const Text('揪團活動')),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  Text('載入失敗: $errorMessage'),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: () => context.read<GroupEventCubit>().fetchEvents(),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('重試'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        // Filter logic
-        List<GroupEvent> filteredEvents;
-        switch (_selectedFilter) {
-          case 0: // 全部
-            filteredEvents = events.where((e) => e.status == GroupEventStatus.open).toList();
-            break;
-          case 1: // 熱門 (by likeCount)
-            filteredEvents = events.where((e) => e.status == GroupEventStatus.open).toList()
-              ..sort((a, b) => b.likeCount.compareTo(a.likeCount));
-            break;
-          case 2: // 即將出發 (by startDate)
-            final now = DateTime.now();
-            filteredEvents = events.where((e) => e.status == GroupEventStatus.open && e.startDate.isAfter(now)).toList()
-              ..sort((a, b) => a.startDate.compareTo(b.startDate));
-            break;
-          default:
-            filteredEvents = events.where((e) => e.status == GroupEventStatus.open).toList();
-        }
-
-        return Scaffold(
-          appBar: SummitAppBar(title: const Text('揪團活動'), centerTitle: true),
-          body: Column(
-            children: [
-              // Filter Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SegmentedButton<int>(
-                        showSelectedIcon: false,
-                        segments: const [
-                          ButtonSegment(value: 0, label: Text('全部')),
-                          ButtonSegment(value: 1, label: Text('🔥 熱門')),
-                          ButtonSegment(value: 2, label: Text('📅 即將出發')),
-                        ],
-                        selected: {_selectedFilter},
-                        onSelectionChanged: (Set<int> newSelection) {
-                          setState(() => _selectedFilter = newSelection.first);
-                        },
-                        style: ButtonStyle(
-                          visualDensity: VisualDensity.compact,
-                          textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
-                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Sync indicator
-                    BlocBuilder<SettingsCubit, SettingsState>(
-                      builder: (context, settingsState) {
-                        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-                        return Material(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          child: InkWell(
-                            onTap: () {
-                              if (isOffline) {
-                                ToastService.warning('離線模式無法同步');
-                                return;
-                              }
-                              context.read<GroupEventCubit>().fetchEvents();
-                            },
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    isOffline
-                                        ? '離線'
-                                        : (lastSyncTime != null
-                                              ? DateFormat('HH:mm').format(lastSyncTime.toLocal())
-                                              : '同步'),
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  if (isSyncing)
-                                    const SizedBox(
-                                      width: 14,
-                                      height: 14,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  else
-                                    const Icon(Icons.sync, size: 14, color: Colors.grey),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              // 訪客模式提示
-              if (isGuest)
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber),
-                  ),
-                  child: const Row(
+            if (errorMessage != null && events.isEmpty) {
+              return Scaffold(
+                appBar: SummitAppBar(title: const Text('揪團活動')),
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.amber),
-                      SizedBox(width: 8),
-                      Text('請登入以查看揪團詳情', style: TextStyle(fontSize: 12, color: Colors.amber)),
+                      const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      Text('載入失敗: $errorMessage'),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () => context.read<GroupEventCubit>().fetchEvents(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('重試'),
+                      ),
                     ],
                   ),
                 ),
+              );
+            }
 
-              // Event List
-              Expanded(
-                child: filteredEvents.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.hiking, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
-                            const SizedBox(height: 16),
-                            Text(
-                              '目前沒有揪團活動',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+            // Filter logic
+            final favoritesCubit = context.read<GroupEventFavoritesCubit>();
+
+            List<GroupEvent> filteredEvents = events.where((e) {
+              // 1. 收藏篩選: 若開啟收藏篩選，只顯示已收藏的項目
+              if (_onlyFavorites && !favoritesCubit.isFavorite(e.id)) {
+                return false;
+              }
+              return true;
+            }).toList();
+
+            // 2. Tab 篩選 (全部/即將出發)
+            // 若沒有開啟"感興趣"篩選，則過濾 Status=Open
+            if (!_onlyFavorites) {
+              filteredEvents = filteredEvents.where((e) => e.status == GroupEventStatus.open).toList();
+            }
+
+            switch (_selectedFilter) {
+              case 0: // 全部
+                break;
+              case 1: // 即將出發 (by startDate)
+                final now = DateTime.now();
+                if (!_onlyFavorites) {
+                  filteredEvents = filteredEvents.where((e) => e.startDate.isAfter(now)).toList();
+                }
+                filteredEvents.sort((a, b) => a.startDate.compareTo(b.startDate));
+                break;
+            }
+
+            return Scaffold(
+              appBar: SummitAppBar(title: const Text('揪團活動'), centerTitle: true),
+              body: Column(
+                children: [
+                  // Filter Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                SegmentedButton<int>(
+                                  showSelectedIcon: false,
+                                  segments: const [
+                                    ButtonSegment(value: 0, label: Text('全部')),
+                                    ButtonSegment(value: 1, label: Text(' 即將出發')),
+                                  ],
+                                  selected: {_selectedFilter},
+                                  onSelectionChanged: (Set<int> newSelection) {
+                                    setState(() => _selectedFilter = newSelection.first);
+                                  },
+                                  style: ButtonStyle(
+                                    visualDensity: VisualDensity.compact,
+                                    textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
+                                    padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () => setState(() => _onlyFavorites = !_onlyFavorites),
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: _onlyFavorites
+                                          ? Colors.red.withValues(alpha: 0.1)
+                                          : Theme.of(context).disabledColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: _onlyFavorites ? Colors.red : Colors.transparent,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _onlyFavorites ? Icons.favorite : Icons.favorite_border,
+                                          size: 16,
+                                          color: _onlyFavorites
+                                              ? (Theme.of(context).brightness == Brightness.dark
+                                                    ? Colors.redAccent
+                                                    : Colors.red.shade600)
+                                              : Theme.of(context).disabledColor,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '感興趣',
+                                          style: TextStyle(
+                                            color: _onlyFavorites
+                                                ? (Theme.of(context).brightness == Brightness.dark
+                                                      ? Colors.redAccent
+                                                      : Colors.red.shade600)
+                                                : Theme.of(context).disabledColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () => context.read<GroupEventCubit>().fetchEvents(),
-                        child: ListView.builder(
-                          itemCount: filteredEvents.length,
-                          padding: const EdgeInsets.only(bottom: 80),
-                          itemBuilder: (context, index) {
-                            return _buildEventCard(context, filteredEvents[index], currentUserId, isGuest);
+                        const SizedBox(width: 8),
+                        // Sync indicator
+                        BlocBuilder<SettingsCubit, SettingsState>(
+                          builder: (context, settingsState) {
+                            final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+                            return Material(
+                              color: Colors.grey.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              child: InkWell(
+                                onTap: () {
+                                  if (isOffline) {
+                                    ToastService.warning('離線模式無法同步');
+                                    return;
+                                  }
+                                  context.read<GroupEventCubit>().fetchEvents();
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        isOffline
+                                            ? '離線'
+                                            : (lastSyncTime != null
+                                                  ? DateFormat('HH:mm').format(lastSyncTime.toLocal())
+                                                  : '同步'),
+                                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      if (isSyncing)
+                                        const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      else
+                                        const Icon(Icons.sync, size: 14, color: Colors.grey),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
+                      ],
+                    ),
+                  ),
+
+                  // 訪客模式提示
+                  if (isGuest)
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber),
                       ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.info_outline, size: 16, color: Colors.amber),
+                          SizedBox(width: 8),
+                          Text('請登入以查看揪團詳情', style: TextStyle(fontSize: 12, color: Colors.amber)),
+                        ],
+                      ),
+                    ),
+
+                  // Event List
+                  Expanded(
+                    child: filteredEvents.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.hiking, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '目前沒有揪團活動',
+                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () => context.read<GroupEventCubit>().fetchEvents(),
+                            child: ListView.builder(
+                              itemCount: filteredEvents.length,
+                              padding: const EdgeInsets.only(bottom: 80),
+                              itemBuilder: (context, index) {
+                                final event = filteredEvents[index];
+                                final isFavorite = favoritesCubit.isFavorite(event.id);
+                                return _buildEventCard(context, event, currentUserId, isGuest, isFavorite);
+                              },
+                            ),
+                          ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, settingsState) {
-              final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+              floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
+                builder: (context, settingsState) {
+                  final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
 
-              // 訪客模式下隱藏 FAB
-              if (isGuest) {
-                return const SizedBox.shrink();
-              }
-
-              return FloatingActionButton.extended(
-                onPressed: () {
-                  if (isOffline) {
-                    ToastService.warning('離線模式無法建立揪團');
-                    return;
+                  // 訪客模式下隱藏 FAB
+                  if (isGuest) {
+                    return const SizedBox.shrink();
                   }
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()));
+
+                  return FloatingActionButton.extended(
+                    onPressed: () {
+                      if (isOffline) {
+                        ToastService.warning('離線模式無法建立揪團');
+                        return;
+                      }
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()));
+                    },
+                    backgroundColor: isOffline ? Colors.grey : null,
+                    icon: const Icon(Icons.add),
+                    label: const Text('建立揪團'),
+                  );
                 },
-                backgroundColor: isOffline ? Colors.grey : null,
-                icon: const Icon(Icons.add),
-                label: const Text('建立揪團'),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );

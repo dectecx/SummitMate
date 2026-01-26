@@ -241,4 +241,5 @@ class HiveBoxNames {
   static const String logs = 'app_logs';
   static const String settings = 'settings';
   static const String mountainFavorites = 'mountain_favorites';
+  static const String groupEventFavorites = 'group_event_favorites';
 }
