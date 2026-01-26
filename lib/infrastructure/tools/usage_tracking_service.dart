@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../core/constants.dart';
 import '../clients/gas_api_client.dart';
+import '../../domain/interfaces/i_api_client.dart';
 import '../../core/di.dart';
 import 'log_service.dart';
 
@@ -16,11 +17,11 @@ class UsageTrackingService {
   String? _userId;
   String? _userType;
 
-  final GasApiClient _apiClient;
+  final IApiClient _apiClient;
   final bool _forceWeb;
 
-  UsageTrackingService({GasApiClient? apiClient, bool forceWeb = false})
-    : _apiClient = apiClient ?? getIt<GasApiClient>(),
+  UsageTrackingService({IApiClient? apiClient, bool forceWeb = false})
+    : _apiClient = apiClient ?? getIt<IApiClient>(),
       _forceWeb = forceWeb;
 
   /// 啟動追蹤 (僅 Web 平台)

@@ -9,6 +9,7 @@ import '../infrastructure/infrastructure.dart';
 import '../core/services/permission_service.dart';
 
 // Domain - Interfaces
+import '../domain/interfaces/i_api_client.dart';
 import '../domain/interfaces/i_connectivity_service.dart';
 import '../domain/interfaces/i_weather_service.dart';
 import '../domain/interfaces/i_poll_service.dart';
@@ -138,11 +139,21 @@ Future<void> setupDependencies() async {
   });
 
   // API Clients
-  getIt.registerLazySingleton<GasApiClient>(() => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()));
-  getIt.registerLazySingleton<NetworkAwareClient>(
-    () => NetworkAwareClient(apiClient: getIt<GasApiClient>(), connectivity: getIt<IConnectivityService>()),
+  getIt.registerLazySingleton<IApiClient>(
+    () => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()),
+    instanceName: 'gas',
   );
-  getIt.registerLazySingleton<UsageTrackingService>(() => UsageTrackingService(apiClient: getIt<GasApiClient>()));
+
+  getIt.registerLazySingleton<NetworkAwareClient>(
+    () => NetworkAwareClient(
+      apiClient: getIt<IApiClient>(instanceName: 'gas'),
+      connectivity: getIt<IConnectivityService>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<IApiClient>(() => getIt<NetworkAwareClient>());
+
+  getIt.registerLazySingleton<UsageTrackingService>(() => UsageTrackingService(apiClient: getIt<IApiClient>()));
 
   // ===========================================================================
   // 5. Data Sources (資料來源)

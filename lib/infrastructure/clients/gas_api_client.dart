@@ -3,9 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../tools/log_service.dart';
 
+import '../../domain/interfaces/i_api_client.dart';
+
 /// Google Apps Script API 用戶端
 /// 處理重新導向 (302)、Web 相容性等通用邏輯
-class GasApiClient {
+class GasApiClient implements IApiClient {
   static const String _source = 'GasApiClient';
 
   final Dio _dio;
@@ -14,6 +16,7 @@ class GasApiClient {
   GasApiClient({Dio? dio, required String baseUrl}) : _dio = dio ?? Dio(), _baseUrl = baseUrl;
 
   /// GET 請求
+  @override
   Future<Response> get({Map<String, String>? queryParams}) async {
     final stopwatch = Stopwatch()..start();
     try {
@@ -33,6 +36,7 @@ class GasApiClient {
   }
 
   /// POST 請求 (自動處理重新導向)
+  @override
   Future<Response> post(Map<String, dynamic> body, {bool requiresAuth = false}) async {
     final stopwatch = Stopwatch()..start();
     final action = body['action'] ?? 'unknown';
@@ -123,6 +127,7 @@ class GasApiClient {
     }
   }
 
+  @override
   void dispose() {
     _dio.close();
   }
