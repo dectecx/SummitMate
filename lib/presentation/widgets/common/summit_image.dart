@@ -1,13 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-/// App-wide usage for network images with caching support.
+/// App 全域使用的網路圖片元件，支援快取功能
 ///
-/// Wraps [CachedNetworkImage] to provide consistent:
-/// - Offline support (cache first/fallback)
-/// - Placeholders/Shimmers
-/// - Error handling
-/// - Theming
+/// 封裝 [CachedNetworkImage] 以提供一致的：
+/// - 離線支援 (優先讀取快取/失敗備案)
+/// - 載入中佔位圖/Shimmer 效果
+/// - 錯誤處理
+/// - 主題適配
 class SummitImage extends StatelessWidget {
   final String imageUrl;
   final double? width;

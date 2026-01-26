@@ -3,7 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:summitmate/data/models/mountain_location.dart';
 import 'package:summitmate/presentation/widgets/common/summit_image.dart';
 import 'package:summitmate/presentation/widgets/info/external_links_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/favorites/mountain/mountain_favorites_cubit.dart';
+import 'package:summitmate/presentation/cubits/favorites/mountain/mountain_favorites_state.dart';
 
+/// 山岳詳細資料頁面
+///
+/// 顯示特定山岳的完整資訊，包含：
+/// - 頂部 Hero 圖片與基本資訊 (海拔/難度/地點)
+/// - 詳細介紹與特色
+/// - 交通與地圖資訊
+/// - 天氣預報連結與收藏功能
 class MountainDetailScreen extends StatelessWidget {
   final MountainLocation mountain;
 
@@ -41,13 +51,25 @@ class MountainDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: CircleAvatar(
                   backgroundColor: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.9),
-                  child: IconButton(
-                    icon: const Icon(Icons.favorite_border, color: Colors.red),
-                    onPressed: () {
-                      // TODO: Implement favorite
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已加入收藏 (Demo)')));
+                  child: BlocBuilder<MountainFavoritesCubit, MountainFavoritesState>(
+                    builder: (context, state) {
+                      final isFav = context.read<MountainFavoritesCubit>().isFavorite(mountain.id);
+                      return IconButton(
+                        icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: Colors.red),
+                        onPressed: () {
+                          context.read<MountainFavoritesCubit>().toggleFavorite(mountain.id);
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isFav ? '已從收藏移除' : '已加入收藏'),
+                              duration: const Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        tooltip: isFav ? '取消收藏' : '加入收藏',
+                      );
                     },
-                    tooltip: '收藏',
                   ),
                 ),
               ),

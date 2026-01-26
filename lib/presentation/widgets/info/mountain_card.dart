@@ -5,8 +5,9 @@ import 'package:summitmate/presentation/widgets/common/summit_image.dart';
 class MountainCard extends StatelessWidget {
   final MountainLocation mountain;
   final VoidCallback? onTap;
+  final bool isFavorite;
 
-  const MountainCard({super.key, required this.mountain, this.onTap});
+  const MountainCard({super.key, required this.mountain, this.onTap, this.isFavorite = false});
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +113,19 @@ class MountainCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (mountain.isBeginnerFriendly)
+                        if (isFavorite) ...[
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: '已收藏',
+                            child: Icon(
+                              Icons.favorite,
+                              size: 20,
+                              color: isDark ? Colors.redAccent : Colors.red.shade600,
+                            ),
+                          ),
+                        ],
+                        if (mountain.isBeginnerFriendly) ...[
+                          const SizedBox(width: 8),
                           Tooltip(
                             message: '新手推薦',
                             child: Icon(
@@ -121,6 +134,7 @@ class MountainCard extends StatelessWidget {
                               color: isDark ? Colors.greenAccent : Colors.green.shade600,
                             ),
                           ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 8),
