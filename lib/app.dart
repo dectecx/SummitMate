@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme.dart';
 import 'core/di.dart';
 import 'infrastructure/tools/toast_service.dart';
+import 'infrastructure/tools/hive_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/repositories/interfaces/i_settings_repository.dart';
 import 'presentation/cubits/auth/auth_cubit.dart';
@@ -19,6 +20,7 @@ import 'presentation/cubits/map/offline_map_cubit.dart';
 import 'presentation/cubits/settings/settings_cubit.dart';
 import 'presentation/cubits/settings/settings_state.dart';
 import 'presentation/cubits/group_event/group_event_cubit.dart';
+import 'presentation/cubits/favorites/mountain/mountain_favorites_cubit.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
 import 'presentation/widgets/global_tutorial_wrapper.dart';
@@ -48,6 +50,7 @@ class SummitMateApp extends StatelessWidget {
               SettingsCubit(repository: getIt<ISettingsRepository>(), prefs: getIt<SharedPreferences>())
                 ..loadSettings(),
         ),
+        BlocProvider(create: (context) => MountainFavoritesCubit(hiveService: getIt<HiveService>())..loadFavorites()),
       ],
       child: _buildMaterialApp(),
     );

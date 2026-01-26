@@ -240,4 +240,5 @@ class HiveBoxNames {
   // 監控與設定
   static const String logs = 'app_logs';
   static const String settings = 'settings';
+  static const String mountainFavorites = 'mountain_favorites';
 }
