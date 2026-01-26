@@ -161,6 +161,8 @@ lib/
 │   ├── sync_service.dart              # 雙向同步 (ISyncService)
 │   ├── connectivity_service.dart      # 網路狀態 (IConnectivityService)
 │   ├── network_aware_client.dart      # 離線攔截裝飾器
+│   ├── interceptors/                  # Dio 攔截器
+│   │   └── auth_interceptor.dart      # 認證攔截器
 │   ├── log_service.dart               # 日誌與上傳
 │   ├── toast_service.dart             # UI 通知
 │   ├── tutorial_service.dart          # 教學導覽
@@ -233,8 +235,9 @@ lib/
 | `TripCloudService`        | 雲端服務 | 行程雲端管理              | `ITripCloudService`        |
 | `GoogleSheetsService`     | 雲端服務 | API Gateway (GAS)         | `IDataService`             |
 | `ConnectivityService`     | 基礎設施 | 網路/離線狀態判斷         | `IConnectivityService`     |
-| `GasApiClient`            | 基礎設施 | GAS HTTP 客戶端           | -                          |
-| `NetworkAwareClient`      | 基礎設施 | 離線攔截裝飾器            | -                          |
+| `GasApiClient`            | 基礎設施 | GAS HTTP 客戶端 (Impl `IApiClient`) | `IApiClient`               |
+| `NetworkAwareClient`      | 基礎設施 | 離線攔截裝飾器            | `IApiClient`               |
+| `AuthInterceptor`         | 基礎設施 | 認證攔截器 (Dio)          | -                          |
 | `JwtTokenValidator`       | 基礎設施 | Token 驗證                | `ITokenValidator`          |
 | `GeolocatorService`       | 基礎設施 | GPS 定位                  | `IGeolocatorService`       |
 | `HiveService`             | 工具服務 | Hive 初始化               | -                          |
@@ -562,7 +565,7 @@ Base URL: `macros/s/{DEPLOYMENT_ID}/exec`
 所有 API 相關服務皆支援建構子注入：
 
 ```dart
-// GasApiClient - 可替換 Dio
+// GasApiClient - 可替換 Dio (AuthInterceptor 已注入 Dio)
 GasApiClient({Dio? dio, required String baseUrl})
 
 // GoogleSheetsService - 可替換 GasApiClient
@@ -612,7 +615,7 @@ flowchart TB
     end
 
     subgraph Clients["Low-level Clients"]
-        GC["GasApiClient"]
+        GC["GasApiClient<br>(IApiClient)"]
     end
 
     UI --> SM
@@ -620,6 +623,11 @@ flowchart TB
     SM --> ISync
     GasAuth --> GC
     GasSync --> GC
+
+    subgraph "Interceptors"
+        AuthInt["AuthInterceptor"]
+    end
+    GC -.-> AuthInt
 ```
 
 ### 分層職責
