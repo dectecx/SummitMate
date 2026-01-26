@@ -86,6 +86,7 @@ graph TD
     subgraph "Data Layer"
         IAuthSessionRepo["IAuthSessionRepository"]
         ITokenValidator["ITokenValidator"]
+        AuthInterceptor["AuthInterceptor"]
         SecureStorage["flutter_secure_storage"]
     end
 
@@ -103,6 +104,8 @@ graph TD
     GasAuthService --> IAuthSessionRepo
     GasAuthService --> ITokenValidator
     GasAuthService --> GAS
+    AuthInterceptor -.-> IAuthSessionRepo
+    GasAuthService -.-> AuthInterceptor
 
     FirebaseAuthService -.-> Firebase
     OAuthService -.-> OAuth
