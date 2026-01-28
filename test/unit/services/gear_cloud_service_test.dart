@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/models/gear_set.dart';
 import 'package:summitmate/data/models/gear_item.dart';
 import 'package:summitmate/infrastructure/clients/gas_api_client.dart';
@@ -87,9 +88,10 @@ void main() {
 
       final result = await service.getGearSets();
       // 驗證
-      expect(result.isSuccess, isTrue);
-      expect(result.data, hasLength(1));
-      expect(result.data!.first.title, 'Set 1');
+      expect(result, isA<Success<List<GearSet>, Exception>>());
+      final success = result as Success<List<GearSet>, Exception>;
+      expect(success.value, hasLength(1));
+      expect(success.value.first.title, 'Set 1');
     });
 
     test('uploadGearSet returns uploaded GearSet', () async {
@@ -119,8 +121,8 @@ void main() {
         items: items,
       );
 
-      expect(result.isSuccess, true);
-      expect(result.data!.id, 'new_uuid');
+      expect(result, isA<Success<GearSet, Exception>>());
+      expect((result as Success<GearSet, Exception>).value.id, 'new_uuid');
     });
 
     test('uploadGearSet requires 4-digit key for protected sets', () async {
@@ -135,8 +137,8 @@ void main() {
         key: '123', // Invalid key length
       );
 
-      expect(result.isSuccess, false);
-      expect(result.errorMessage, contains('4 位數 Key'));
+      expect(result, isA<Failure<GearSet, Exception>>());
+      expect((result as Failure<GearSet, Exception>).exception.toString(), contains('4 位數 Key'));
     });
 
     test('downloadGearSet returns GearSet with items', () async {
@@ -159,8 +161,8 @@ void main() {
 
       final result = await service.downloadGearSet('uuid1');
 
-      expect(result.isSuccess, true);
-      expect(result.data, isNotNull);
+      expect(result, isA<Success<GearSet, Exception>>());
+      expect((result as Success<GearSet, Exception>).value, isNotNull);
     });
   });
 }

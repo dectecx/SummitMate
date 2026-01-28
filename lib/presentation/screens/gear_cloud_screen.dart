@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/di.dart';
+import '../../core/error/result.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
 import '../../data/models/meal_item.dart';
@@ -81,15 +82,15 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     if (!mounted) return;
 
-    if (result.isSuccess && result.data != null) {
+    if (result is Success<List<GearSet>, Exception>) {
       setState(() {
-        _gearSets = result.data!;
+        _gearSets = result.value;
         _isLoading = false;
       });
-    } else {
+    } else if (result is Failure<List<GearSet>, Exception>) {
       setState(() {
         _isLoading = false;
-        _errorMessage = result.errorMessage;
+        _errorMessage = result.exception.toString();
       });
     }
   }
@@ -169,16 +170,17 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             key: key,
           );
 
-          if (uploadResult.isSuccess) {
+          if (uploadResult is Success<GearSet, Exception>) {
             uploadedKey = key;
             uploadedTitle = title;
             uploadedVisibility = visibility;
             ToastService.success('上傳成功！');
             return true;
-          } else {
-            ToastService.error(uploadResult.errorMessage ?? '上傳失敗');
+          } else if (uploadResult is Failure<GearSet, Exception>) {
+            ToastService.error(uploadResult.exception.toString());
             return false;
           }
+          return false;
         },
       ),
     );
@@ -213,12 +215,18 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     if (!mounted) return;
     setState(() => _busyGearSetId = null);
 
-    if (!result.isSuccess || result.data?.items == null) {
-      ToastService.error(result.errorMessage ?? '查詢失敗');
+    if (result is Failure<GearSet, Exception>) {
+      ToastService.error(result.exception.toString());
       return;
     }
 
-    _showDownloadConfirmDialog(result.data!);
+    if (result is Success<GearSet, Exception>) {
+      if (result.value.items == null) {
+        ToastService.error('組合內容空白');
+        return;
+      }
+      _showDownloadConfirmDialog(result.value);
+    }
   }
 
   Future<void> _showDownloadConfirmDialog(GearSet gearSet) async {
@@ -561,21 +569,32 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   Future<void> _deleteGearSet(GearKeyRecord record) async {
     // 嘗試從雲端刪除 (需要透過 key 查詢 uuid)
     final fetchResult = await _repository.getGearSetByKey(record.key);
-    if (!fetchResult.isSuccess || fetchResult.data == null) {
+
+    // Check if fetch failed or data is null
+    if (fetchResult is Failure<GearSet, Exception>) {
       ToastService.error('找不到此組合或已被刪除');
       return;
     }
 
-    final gearSet = fetchResult.data!;
+    // Now we know it is Success due to flow, but safe cast
+    if (fetchResult is Success<GearSet, Exception>) {
+      // Safe to access value
+    } else {
+      // Fallback for analysis
+      return;
+    }
+
+    // At this point we can access fetchResult.value
+    final gearSet = fetchResult.value;
     final deleteResult = await _repository.deleteGearSet(gearSet.id, record.key);
 
-    if (deleteResult.isSuccess) {
+    if (deleteResult is Success<bool, Exception>) {
       // 從本地儲存中也刪除記錄
       await _repository.removeUploadedKey(record.key);
       ToastService.success('已刪除裝備組合');
       _fetchGearSets(); // 刷新列表
-    } else {
-      ToastService.error(deleteResult.errorMessage ?? '刪除失敗');
+    } else if (deleteResult is Failure<bool, Exception>) {
+      ToastService.error(deleteResult.exception.toString());
     }
   }
 
@@ -611,11 +630,11 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     if (confirmed == true) {
       // public 組合不需要 key
       final deleteResult = await _repository.deleteGearSet(gearSet.id, '');
-      if (deleteResult.isSuccess) {
+      if (deleteResult is Success<bool, Exception>) {
         ToastService.success('已刪除裝備組合');
         _fetchGearSets(); // 刷新列表
-      } else {
-        ToastService.error(deleteResult.errorMessage ?? '刪除失敗');
+      } else if (deleteResult is Failure<bool, Exception>) {
+        ToastService.error(deleteResult.exception.toString());
       }
     }
   }

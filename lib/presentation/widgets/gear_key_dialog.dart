@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/error/result.dart';
+import '../../data/models/gear_set.dart';
+
 import '../../data/repositories/interfaces/i_gear_set_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
@@ -45,10 +48,10 @@ class _GearKeyInputDialogState extends State<GearKeyInputDialog> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (result.isSuccess && result.data != null) {
-      Navigator.pop(context, result.data);
-    } else {
-      ToastService.error(result.errorMessage ?? '找不到組合');
+    if (result is Success<GearSet, Exception>) {
+      Navigator.pop(context, result.value);
+    } else if (result is Failure<GearSet, Exception>) {
+      ToastService.error(result.exception.toString());
     }
   }
 
