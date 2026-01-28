@@ -37,7 +37,7 @@ function doGet(e) {
         return _createJsonResponse(getTripFull(tripId));
       case API_ACTIONS.ITINERARY_LIST:
         return _createJsonResponse(
-          _success({ itinerary: getItinerary(tripId) })
+          _success({ itinerary: getItinerary(tripId) }),
         );
       case API_ACTIONS.MESSAGE_LIST:
         return _createJsonResponse(_success({ messages: getMessages(tripId) }));
@@ -51,17 +51,23 @@ function doGet(e) {
       case API_ACTIONS.WEATHER_GET:
         return _createJsonResponse(getWeatherData());
 
+      // === 最愛 (Favorites) ===
+      case API_ACTIONS.FAVORITES_GET:
+        return _createJsonResponse(
+          getFavorites({ user_id: e.parameter.user_id }),
+        );
+
       // === 健康檢查 ===
       case API_ACTIONS.SYSTEM_HEALTH:
         return _createJsonResponse(
           _success(
             { status: "ok", timestamp: new Date().toISOString() },
-            "服務正常"
-          )
+            "服務正常",
+          ),
         );
       default:
         return _createJsonResponse(
-          _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)")
+          _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)"),
         );
     }
   } catch (error) {
@@ -137,7 +143,7 @@ function doPost(e) {
       // === 個人裝備庫 (GearLibrary) ===
       case API_ACTIONS.GEAR_LIBRARY_UPLOAD:
         return _createJsonResponse(
-          uploadGearLibrary(data.accessToken, data.items)
+          uploadGearLibrary(data.accessToken, data.items),
         );
       case API_ACTIONS.GEAR_LIBRARY_DOWNLOAD:
         return _createJsonResponse(downloadGearLibrary(data.accessToken));
@@ -220,9 +226,15 @@ function doPost(e) {
       case API_ACTIONS.AUTH_ASSIGN_ROLE:
         return _createJsonResponse(assignUserRole(data));
 
+      // === 最愛 (Favorites) ===
+      case API_ACTIONS.FAVORITES_GET:
+        return _createJsonResponse(getFavorites(data));
+      case API_ACTIONS.FAVORITES_UPDATE:
+        return _createJsonResponse(updateFavorite(data));
+
       default:
         return _createJsonResponse(
-          _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)")
+          _error(API_CODES.UNKNOWN_ACTION, "未知動作 (Unknown action)"),
         );
     }
   } catch (error) {
@@ -243,7 +255,7 @@ function doPost(e) {
  */
 function _createJsonResponse(data, statusCode = 200) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
-    ContentService.MimeType.JSON
+    ContentService.MimeType.JSON,
   );
 }
 

@@ -25,6 +25,7 @@ function setupAll() {
   setupSystemSheets();
   setupWeatherSheets();
   setupGroupEventSheets();
+  setupFavoritesSheets();
 
   //最後统一套用格式
   applyTextFormatToAll();
@@ -157,7 +158,7 @@ function setupSystemSheets() {
   _applyTextFormat(ss.getSheetByName(SHEET_PERMISSIONS), SHEET_PERMISSIONS);
   _applyTextFormat(
     ss.getSheetByName(SHEET_ROLE_PERMISSIONS),
-    SHEET_ROLE_PERMISSIONS
+    SHEET_ROLE_PERMISSIONS,
   );
 }
 
@@ -195,7 +196,7 @@ function setupGroupEventSheets() {
     _setupSheet(
       ss,
       SHEET_GROUP_EVENT_APPLICATIONS,
-      HEADERS_GROUP_EVENT_APPLICATIONS
+      HEADERS_GROUP_EVENT_APPLICATIONS,
     );
     Logger.log(`✓ ${SHEET_GROUP_EVENT_APPLICATIONS} 工作表已建立`);
   }
@@ -213,16 +214,29 @@ function setupGroupEventSheets() {
   _applyTextFormat(ss.getSheetByName(SHEET_GROUP_EVENTS), SHEET_GROUP_EVENTS);
   _applyTextFormat(
     ss.getSheetByName(SHEET_GROUP_EVENT_APPLICATIONS),
-    SHEET_GROUP_EVENT_APPLICATIONS
+    SHEET_GROUP_EVENT_APPLICATIONS,
   );
   _applyTextFormat(
     ss.getSheetByName(SHEET_GROUP_EVENT_COMMENTS),
-    SHEET_GROUP_EVENT_COMMENTS
+    SHEET_GROUP_EVENT_COMMENTS,
   );
   _applyTextFormat(
     ss.getSheetByName(SHEET_GROUP_EVENT_LIKES),
-    SHEET_GROUP_EVENT_LIKES
+    SHEET_GROUP_EVENT_LIKES,
   );
+}
+
+/**
+ * 7. 初始化最愛工作表
+ * @description 建立 Favorites
+ */
+function setupFavoritesSheets() {
+  const ss = getSpreadsheet();
+
+  _setupSheet(ss, SHEET_FAVORITES, HEADERS_FAVORITES);
+  Logger.log(`✓ ${SHEET_FAVORITES} 工作表已建立`);
+
+  _applyTextFormat(ss.getSheetByName(SHEET_FAVORITES), SHEET_FAVORITES);
 }
 
 /**

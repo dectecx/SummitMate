@@ -152,6 +152,19 @@ erDiagram
 | updated_at    | Date |             | 更新時間                    |
 | updated_by    | Text |             | 更新者 ID                   |
 
+#### Table: `Favorites` (使用者最愛)
+
+| Column        | Type | Constraints | Description              |
+| :------------ | :--- | :---------- | :----------------------- |
+| **id**        | UUID | **PK**      |                          |
+| **user_id**   | UUID | **FK**      | Ref: Users.id            |
+| **target_id** | Text |             | 關聯目標 ID (e.g. Mountain ID) |
+| type          | Text |             | e.g. `mountain`, `route` |
+| created_at    | Date |             | 建立時間                 |
+| created_by    | Text |             | 建立者 ID                |
+| updated_at    | Date |             | 更新時間                 |
+| updated_by    | Text |             | 更新者 ID                |
+
 ### 3.2 裝備模組 (Gear)
 
 #### Table: `GearSets` (裝備組合)
