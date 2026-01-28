@@ -1,5 +1,6 @@
 import '../../core/constants.dart';
 import '../../core/di.dart';
+import '../../core/error/result.dart';
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
 import '../../data/models/meal_item.dart';
@@ -18,19 +19,19 @@ class GearCloudService implements IGearCloudService {
 
   /// 取得公開/保護的裝備組合列表
   @override
-  Future<GearCloudResult<List<GearSet>>> getGearSets() async {
+  Future<Result<List<GearSet>, Exception>> getGearSets() async {
     try {
       LogService.info('取得雲端裝備組合列表...', source: _source);
 
       final response = await _apiClient.post('', data: {'action': ApiConfig.actionGearSetList});
 
       if (response.statusCode != 200) {
-        return GearCloudResult.failure('HTTP ${response.statusCode}');
+        return Failure(GeneralException('HTTP ${response.statusCode}'));
       }
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
-        return GearCloudResult.failure(gasResponse.message);
+        return Failure(GeneralException(gasResponse.message));
       }
 
       final gearSets =
@@ -40,42 +41,42 @@ class GearCloudService implements IGearCloudService {
           [];
 
       LogService.info('取得 ${gearSets.length} 個裝備組合', source: _source);
-      return GearCloudResult.success(gearSets);
+      return Success(gearSets);
     } catch (e) {
       LogService.error('取得裝備組合失敗: $e', source: _source);
-      return GearCloudResult.failure('$e');
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   /// 用 Key 取得特定裝備組合 (含 items)
   @override
-  Future<GearCloudResult<GearSet>> getGearSetByKey(String key) async {
+  Future<Result<GearSet, Exception>> getGearSetByKey(String key) async {
     try {
       LogService.info('用 Key 取得裝備組合...', source: _source);
 
       final response = await _apiClient.post('', data: {'action': ApiConfig.actionGearSetGet, 'key': key});
 
       if (response.statusCode != 200) {
-        return GearCloudResult.failure('HTTP ${response.statusCode}');
+        return Failure(GeneralException('HTTP ${response.statusCode}'));
       }
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
-        return GearCloudResult.failure(gasResponse.message);
+        return Failure(GeneralException(gasResponse.message));
       }
 
       final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
       LogService.info('成功取得: ${gearSet.title}', source: _source);
-      return GearCloudResult.success(gearSet);
+      return Success(gearSet);
     } catch (e) {
       LogService.error('用 Key 取得失敗: $e', source: _source);
-      return GearCloudResult.failure('$e');
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   /// 下載指定裝備組合
   @override
-  Future<GearCloudResult<GearSet>> downloadGearSet(String id, {String? key}) async {
+  Future<Result<GearSet, Exception>> downloadGearSet(String id, {String? key}) async {
     try {
       LogService.info('下載裝備組合: $id', source: _source);
 
@@ -85,26 +86,26 @@ class GearCloudService implements IGearCloudService {
       );
 
       if (response.statusCode != 200) {
-        return GearCloudResult.failure('HTTP ${response.statusCode}');
+        return Failure(GeneralException('HTTP ${response.statusCode}'));
       }
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
-        return GearCloudResult.failure(gasResponse.message);
+        return Failure(GeneralException(gasResponse.message));
       }
 
       final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
       LogService.info('下載成功: ${gearSet.title} (${gearSet.itemCount} items)', source: _source);
-      return GearCloudResult.success(gearSet);
+      return Success(gearSet);
     } catch (e) {
       LogService.error('下載失敗: $e', source: _source);
-      return GearCloudResult.failure('$e');
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   /// 上傳裝備組合
   @override
-  Future<GearCloudResult<GearSet>> uploadGearSet({
+  Future<Result<GearSet, Exception>> uploadGearSet({
     required String tripId,
     required String title,
     required String author,
@@ -116,7 +117,7 @@ class GearCloudService implements IGearCloudService {
     try {
       // Protected/Private 模式必須有 Key
       if (visibility != GearSetVisibility.public && (key == null || key.length != 4)) {
-        return GearCloudResult.failure('Protected/Private 模式需要 4 位數 Key');
+        return const Failure(GeneralException('Protected/Private 模式需要 4 位數 Key'));
       }
 
       LogService.info('上傳裝備組合: $title ($visibility)', source: _source);
@@ -140,7 +141,7 @@ class GearCloudService implements IGearCloudService {
       );
 
       if (response.statusCode != 200) {
-        return GearCloudResult.failure('HTTP ${response.statusCode}');
+        return Failure(GeneralException('HTTP ${response.statusCode}'));
       }
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
@@ -148,23 +149,23 @@ class GearCloudService implements IGearCloudService {
         final errorMsg = gasResponse.message;
         // 檢查是否為 Key 重複錯誤
         if (errorMsg.contains('duplicate') || errorMsg.contains('重複')) {
-          return GearCloudResult.failure('Key 已存在，請換一個 4 位數');
+          return const Failure(GeneralException('Key 已存在，請換一個 4 位數'));
         }
-        return GearCloudResult.failure(errorMsg);
+        return Failure(GeneralException(errorMsg));
       }
 
       final gearSet = GearSet.fromJson(gasResponse.data['gear_set'] as Map<String, dynamic>);
       LogService.info('上傳成功: ${gearSet.id}', source: _source);
-      return GearCloudResult.success(gearSet);
+      return Success(gearSet);
     } catch (e) {
       LogService.error('上傳失敗: $e', source: _source);
-      return GearCloudResult.failure('$e');
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   /// 刪除裝備組合 (需要 Key 驗證)
   @override
-  Future<GearCloudResult<bool>> deleteGearSet(String id, String key) async {
+  Future<Result<bool, Exception>> deleteGearSet(String id, String key) async {
     try {
       LogService.info('刪除裝備組合: $id', source: _source);
 
@@ -172,14 +173,14 @@ class GearCloudService implements IGearCloudService {
 
       final gasResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
       if (!gasResponse.isSuccess) {
-        return GearCloudResult.failure(gasResponse.message);
+        return Failure(GeneralException(gasResponse.message));
       }
 
       LogService.info('刪除成功', source: _source);
-      return GearCloudResult.success(true);
+      return const Success(true);
     } catch (e) {
       LogService.error('刪除失敗: $e', source: _source);
-      return GearCloudResult.failure('$e');
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 }

@@ -1,8 +1,8 @@
+import '../../../core/error/result.dart';
 import '../../models/gear_set.dart';
 import '../../models/gear_key_record.dart';
 import '../../models/gear_item.dart';
 import '../../models/meal_item.dart';
-import '../../../domain/interfaces/i_gear_cloud_service.dart'; // For GearCloudResult
 
 /// 裝備組合 (GearSet) Repository 介面
 ///
@@ -11,18 +11,18 @@ abstract class IGearSetRepository {
   // === 遠端操作 (Remote Actions) ===
 
   /// 取得所有公開的裝備組合清單
-  Future<GearCloudResult<List<GearSet>>> getGearSets();
+  Future<Result<List<GearSet>, Exception>> getGearSets();
 
   /// 透過 Key 取得特定裝備組合
   ///
   /// [key] 裝備組合的唯一識別碼
-  Future<GearCloudResult<GearSet>> getGearSetByKey(String key);
+  Future<Result<GearSet, Exception>> getGearSetByKey(String key);
 
   /// 下載特定裝備組合
   ///
   /// [uuid] 本地識別碼 (可選)
   /// [key] 雲端識別碼
-  Future<GearCloudResult<GearSet>> downloadGearSet(String uuid, {String? key});
+  Future<Result<GearSet, Exception>> downloadGearSet(String uuid, {String? key});
 
   /// 上傳裝備組合 (建立分享連結)
   ///
@@ -33,7 +33,7 @@ abstract class IGearSetRepository {
   /// [items] 裝備項目列表
   /// [meals] 餐食計畫 (可選)
   /// [key] 若為更新舊有清單，則提供此 Key
-  Future<GearCloudResult<GearSet>> uploadGearSet({
+  Future<Result<GearSet, Exception>> uploadGearSet({
     required String tripId,
     required String title,
     required String author,
@@ -47,7 +47,7 @@ abstract class IGearSetRepository {
   ///
   /// [uuid] 本地識別碼 (若有)
   /// [key] 雲端識別碼
-  Future<GearCloudResult<bool>> deleteGearSet(String uuid, String key);
+  Future<Result<bool, Exception>> deleteGearSet(String uuid, String key);
 
   // === 本地金鑰儲存 (Local Key Storage) ===
 
