@@ -220,6 +220,10 @@ class ApiConfig {
   static const String actionGroupEventGetComments = 'group_event_get_comments';
   static const String actionGroupEventDeleteComment = 'group_event_delete_comment';
   static const String actionGroupEventGetApplications = 'group_event_get_applications';
+
+  // Favorites API Actions
+  static const String actionFavoritesGet = 'favorites_get';
+  static const String actionFavoritesUpdate = 'favorites_update';
 }
 
 /// Hive Box 名稱

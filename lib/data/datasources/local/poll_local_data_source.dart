@@ -38,9 +38,8 @@ class PollLocalDataSource implements IPollLocalDataSource {
   @override
   Future<void> savePolls(List<Poll> polls) async {
     await _polls.clear();
-    for (var poll in polls) {
-      await _polls.put(poll.id, poll);
-    }
+    final Map<String, Poll> entries = {for (var poll in polls) poll.id: poll};
+    await _polls.putAll(entries);
   }
 
   @override

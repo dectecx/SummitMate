@@ -22,6 +22,7 @@ const SHEET_POLLS = "Polls";
 const SHEET_POLL_OPTIONS = "PollOptions";
 const SHEET_POLL_VOTES = "PollVotes";
 const SHEET_TRIP_MEMBERS = "TripMembers";
+const SHEET_FAVORITES = "Favorites";
 
 // 揪團模組
 const SHEET_GROUP_EVENTS = "GroupEvents";
@@ -128,6 +129,17 @@ const HEADERS_TRIP_MEMBERS = [
   "trip_id", // FK
   "user_id", // FK
   "role_code", // e.g., 'leader', 'guide', 'member'
+  "created_at",
+  "created_by",
+  "updated_at",
+  "updated_by",
+];
+
+const HEADERS_FAVORITES = [
+  "id", // PK
+  "user_id",
+  "target_id",
+  "type",
   "created_at",
   "created_by",
   "updated_at",
@@ -409,9 +421,11 @@ const API_ACTIONS = {
   GROUP_EVENT_DELETE_COMMENT: "group_event_delete_comment",
   GROUP_EVENT_LIKE: "group_event_like",
   GROUP_EVENT_UNLIKE: "group_event_unlike",
-  GROUP_EVENT_LIKE: "group_event_like",
-  GROUP_EVENT_UNLIKE: "group_event_unlike",
   GROUP_EVENT_GET_APPLICATIONS: "group_event_get_applications",
+
+  // === 最愛 (Favorites) ===
+  FAVORITES_GET: "favorites_get",
+  FAVORITES_UPDATE: "favorites_update",
 };
 
 const SHEET_SCHEMA = {
@@ -519,6 +533,17 @@ const SHEET_SCHEMA = {
     trip_id: { type: "text" },
     user_id: { type: "text" },
     role_code: { type: "text" },
+    created_at: { type: "date" },
+    created_by: { type: "text" },
+    updated_at: { type: "date" },
+    updated_by: { type: "text" },
+  },
+
+  Favorites: {
+    id: { type: "text" },
+    user_id: { type: "text" },
+    target_id: { type: "text" },
+    type: { type: "text" },
     created_at: { type: "date" },
     created_by: { type: "text" },
     updated_at: { type: "date" },

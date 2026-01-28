@@ -23,6 +23,12 @@ import '../domain/interfaces/i_ad_service.dart';
 
 // Data
 import '../data/data.dart';
+import '../data/datasources/interfaces/i_favorites_remote_data_source.dart';
+import '../data/datasources/remote/favorites_remote_data_source.dart';
+import '../data/repositories/favorites_repository.dart';
+import '../data/repositories/interfaces/i_favorites_repository.dart';
+import '../data/datasources/interfaces/i_favorites_local_data_source.dart';
+import '../data/datasources/local/favorites_local_data_source.dart';
 // Data Sources Interfaces & Implementations
 import '../data/datasources/interfaces/i_group_event_local_data_source.dart';
 import '../data/datasources/interfaces/i_group_event_remote_data_source.dart';
@@ -197,7 +203,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<IGearCloudService>(() => GearCloudService());
   getIt.registerLazySingleton<IPollRemoteDataSource>(() => PollRemoteDataSource());
   getIt.registerLazySingleton<IGroupEventRemoteDataSource>(() => GroupEventRemoteDataSource());
-
+  getIt.registerLazySingleton<IFavoritesRemoteDataSource>(() => FavoritesRemoteDataSource());
   // ===========================================================================
   // 6. Repositories (倉儲層)
   // ===========================================================================
@@ -242,6 +248,17 @@ Future<void> setupDependencies() async {
     authService: getIt<IAuthService>(),
   );
   getIt.registerSingleton<IGroupEventRepository>(groupEventRepo);
+
+  final favoritesLocalDS = FavoritesLocalDataSource(hiveService: hiveService);
+  await favoritesLocalDS.init();
+  getIt.registerSingleton<IFavoritesLocalDataSource>(favoritesLocalDS);
+
+  final favoritesRepo = FavoritesRepository(
+    localDataSource: getIt<IFavoritesLocalDataSource>(),
+    remoteDataSource: getIt<IFavoritesRemoteDataSource>(),
+    authService: getIt<IAuthService>(),
+  );
+  getIt.registerSingleton<IFavoritesRepository>(favoritesRepo);
 
   // ===========================================================================
   // 7. Domain & Application Services (應用服務)

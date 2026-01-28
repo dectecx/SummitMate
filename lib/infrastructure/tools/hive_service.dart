@@ -18,6 +18,8 @@ import '../../data/models/group_event.dart';
 import '../../data/models/enums/group_event_status.dart';
 import '../../data/models/enums/group_event_application_status.dart';
 import '../../data/models/enums/sync_status.dart';
+import '../../data/models/enums/favorite_type.dart';
+import '../../data/models/favorite.dart';
 
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期，以及加密邏輯
@@ -96,6 +98,12 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(30)) {
       Hive.registerAdapter(AppThemeTypeAdapter());
+    }
+    if (!Hive.isAdapterRegistered(21)) {
+      Hive.registerAdapter(FavoriteAdapter());
+    }
+    if (!Hive.isAdapterRegistered(22)) {
+      Hive.registerAdapter(FavoriteTypeAdapter());
     }
 
     _isInitialized = true;
