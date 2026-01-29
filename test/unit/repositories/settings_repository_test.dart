@@ -9,8 +9,6 @@ import 'package:summitmate/data/datasources/interfaces/i_settings_local_data_sou
 // Mocks
 class MockSettingsLocalDataSource extends Mock implements ISettingsLocalDataSource {}
 
-class MockSettings extends Mock implements Settings {}
-
 void main() {
   late SettingsRepository repository;
   late MockSettingsLocalDataSource mockDataSource;
@@ -71,62 +69,69 @@ void main() {
     test('updateUsername() updates settings and saves', () async {
       // Arrange
       await repository.init();
-      final mockSettings = MockSettings();
-      when(() => mockDataSource.getSettings()).thenReturn(mockSettings);
-      when(() => mockDataSource.saveSettings(mockSettings)).thenAnswer((_) async {});
+      final settings = Settings();
+      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
       await repository.updateUsername('New Name');
 
       // Assert
-      verify(() => mockSettings.username = 'New Name').called(1);
-      verify(() => mockDataSource.saveSettings(mockSettings)).called(1);
+      verify(
+        () => mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.username, 'username', 'New Name'))),
+      ).called(1);
     });
 
     test('updateOfflineMode() updates value and saves', () async {
       // Arrange
       await repository.init();
-      final mockSettings = MockSettings();
-      when(() => mockDataSource.getSettings()).thenReturn(mockSettings);
-      when(() => mockDataSource.saveSettings(mockSettings)).thenAnswer((_) async {});
+      final settings = Settings();
+      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
       await repository.updateOfflineMode(true);
 
       // Assert
-      verify(() => mockSettings.isOfflineMode = true).called(1);
-      verify(() => mockDataSource.saveSettings(mockSettings)).called(1);
+      verify(
+        () => mockDataSource.saveSettings(
+          any(that: isA<Settings>().having((s) => s.isOfflineMode, 'isOfflineMode', true)),
+        ),
+      ).called(1);
     });
 
     test('updateAvatar() updates avatar and saves', () async {
       // Arrange
       await repository.init();
-      final mockSettings = MockSettings();
-      when(() => mockDataSource.getSettings()).thenReturn(mockSettings);
-      when(() => mockDataSource.saveSettings(mockSettings)).thenAnswer((_) async {});
+      final settings = Settings();
+      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
       await repository.updateAvatar('🦊');
 
       // Assert
-      verify(() => mockSettings.avatar = '🦊').called(1);
-      verify(() => mockDataSource.saveSettings(mockSettings)).called(1);
+      verify(
+        () => mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.avatar, 'avatar', '🦊'))),
+      ).called(1);
     });
 
     test('updateLastSyncTime() updates time and saves', () async {
       // Arrange
       await repository.init();
-      final mockSettings = MockSettings();
-      when(() => mockDataSource.getSettings()).thenReturn(mockSettings);
-      when(() => mockDataSource.saveSettings(mockSettings)).thenAnswer((_) async {});
+      final settings = Settings();
+      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
       final time = DateTime(2023, 1, 1);
 
       // Act
       await repository.updateLastSyncTime(time);
 
       // Assert
-      verify(() => mockSettings.lastSyncTime = time).called(1);
-      verify(() => mockDataSource.saveSettings(mockSettings)).called(1);
+      verify(
+        () =>
+            mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.lastSyncTime, 'lastSyncTime', time))),
+      ).called(1);
     });
 
     test('resetSettings() clears via DataSource', () async {

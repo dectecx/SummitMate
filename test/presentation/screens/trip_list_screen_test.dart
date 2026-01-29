@@ -12,17 +12,24 @@ import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 import 'package:summitmate/presentation/screens/trip_list_screen.dart';
+import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
+import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
+import 'package:summitmate/core/theme.dart';
 
 // Mocks
 class MockTripCubit extends MockCubit<TripState> implements TripCubit {}
 
 class MockAuthCubit extends MockCubit<AuthState> implements AuthCubit {}
 
+class MockSettingsCubit extends MockCubit<SettingsState> implements SettingsCubit {}
+
 class MockPermissionService extends Mock implements PermissionService {}
 
 void main() {
   late MockTripCubit mockTripCubit;
   late MockAuthCubit mockAuthCubit;
+  late MockSettingsCubit mockSettingsCubit;
   late MockPermissionService mockPermissionService;
 
   setUpAll(() {
@@ -39,15 +46,22 @@ void main() {
       ),
     );
     registerFallbackValue(UserProfile(id: 'fallback', email: 'a@a.com', displayName: 'Fallback'));
+    registerFallbackValue(SettingsInitial());
   });
 
   setUp(() {
     mockTripCubit = MockTripCubit();
     mockAuthCubit = MockAuthCubit();
+    mockSettingsCubit = MockSettingsCubit();
     mockPermissionService = MockPermissionService();
 
     // Setup GetIt
     GetIt.I.registerSingleton<PermissionService>(mockPermissionService);
+
+    // Default stubs
+    when(
+      () => mockSettingsCubit.state,
+    ).thenReturn(SettingsLoaded(settings: Settings(theme: AppThemeType.nature), hasSeenOnboarding: true));
   });
 
   tearDown(() {
@@ -59,6 +73,7 @@ void main() {
       providers: [
         BlocProvider<TripCubit>.value(value: mockTripCubit),
         BlocProvider<AuthCubit>.value(value: mockAuthCubit),
+        BlocProvider<SettingsCubit>.value(value: mockSettingsCubit),
       ],
       child: const MaterialApp(home: TripListScreen()),
     );

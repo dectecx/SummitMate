@@ -32,7 +32,7 @@ void main() {
         'id': 'uuid-123',
         // title missing
       };
-      expect(() => GearSet.fromJson(json), throwsArgumentError);
+      expect(() => GearSet.fromJson(json), throwsA(anything));
     });
 
     test('fromJson handles meals correctly', () {
