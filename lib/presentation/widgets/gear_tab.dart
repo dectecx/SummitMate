@@ -13,8 +13,14 @@ import 'gear/gear_summary_cards.dart';
 import 'gear/gear_category_section.dart';
 import 'gear/dialogs/add_gear_dialog.dart';
 
+/// 裝備管理頁籤
+///
+/// 顯示裝備清單、搜尋、分類檢視，並支援新增/編輯/刪除裝備。
+/// 使用 [GearCubit] 管理狀態，並監聽 [TripCubit] 取得當前行程。
 class GearTab extends StatefulWidget {
+  /// 指定行程 ID (若為 null 則使用當前活動行程)
   final String? tripId;
+
   const GearTab({super.key, this.tripId});
 
   @override

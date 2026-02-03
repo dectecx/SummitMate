@@ -17,7 +17,12 @@ import '../widgets/tutorial_topic_selection_dialog.dart';
 
 import '../utils/tutorial_keys.dart';
 
+/// 設定對話框
+///
+/// 提供使用者設定個人資料、主題配色、離線模式等功能。
+/// 使用 [AuthCubit] 取得/更新使用者資訊，[SettingsCubit] 管理本地設定。
 class SettingsDialog extends StatefulWidget {
+  /// 教學重啟回調 (若為 null 則顯示提示訊息)
   final void Function(TutorialTopic topic)? onRestartTutorial;
 
   const SettingsDialog({super.key, this.onRestartTutorial});

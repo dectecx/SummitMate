@@ -17,8 +17,14 @@ import 'info/trail_overview_card.dart';
 import 'info/adventure_encyclopedia_card.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
+///
+/// 整合天氣預報、步道圖、外部連結等資訊。
+/// 使用 [IWeatherService] 取得天氣資料。
 class InfoTab extends StatefulWidget {
+  /// 高程圖展開按鈕的 GlobalKey (用於教學導覽)
   final GlobalKey? expandedElevationKey;
+
+  /// 時程圖展開按鈕的 GlobalKey (用於教學導覽)
   final GlobalKey? expandedTimeMapKey;
 
   const InfoTab({super.key, this.expandedElevationKey, this.expandedTimeMapKey});

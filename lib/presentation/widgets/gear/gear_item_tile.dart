@@ -4,13 +4,28 @@ import '../../../data/models/gear_item.dart';
 import 'gear_mode_selector.dart';
 
 /// 單項裝備列表 Tile
+///
+/// 顯示單個裝備項目，支援檢視/編輯/排序模式。
 class GearItemTile extends StatelessWidget {
+  /// 裝備項目資料
   final GearItem item;
+
+  /// 當前檢視模式
   final GearListMode mode;
+
+  /// 勾選狀態切換回調
   final VoidCallback onToggle;
+
+  /// 點擊項目回調 (檢視詳情)
   final VoidCallback onTap;
+
+  /// 刪除項目回調
   final VoidCallback onDelete;
+
+  /// 增加數量回調
   final VoidCallback onIncrease;
+
+  /// 減少數量回調
   final VoidCallback onDecrease;
 
   const GearItemTile({
