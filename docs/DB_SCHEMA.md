@@ -104,16 +104,20 @@ erDiagram
 
 #### Table: `TripMembers` (行程成員)
 
-| Column      | Type | Constraints | Description            |
-| :---------- | :--- | :---------- | :--------------------- |
-| **id**      | UUID | **PK**      |                        |
-| **trip_id** | UUID | **FK**      | Ref: Trips.id          |
-| **user_id** | UUID | **FK**      | Ref: Users.id          |
-| role_code   | Text |             | e.g. `leader`, `guide` |
-| created_at  | Date |             | 建立時間               |
-| created_by  | Text |             | 建立者 ID              |
-| updated_at  | Date |             | 更新時間               |
-| updated_by  | Text |             | 更新者 ID              |
+| Column      | Type | Constraints | Description                                    |
+| :---------- | :--- | :---------- | :--------------------------------------------- |
+| **id**      | UUID | **PK**      |                                                |
+| **trip_id** | UUID | **FK**      | Ref: Trips.id                                  |
+| **user_id** | UUID | **FK**      | Ref: Users.id                                  |
+| role_code   | Text |             | `leader` (團長), `guide` (嚮導), `member` (隊員) |
+| created_at  | Date |             | 建立時間                                       |
+| created_by  | Text |             | 建立者 ID                                      |
+| updated_at  | Date |             | 更新時間                                       |
+| updated_by  | Text |             | 更新者 ID                                      |
+
+> [!NOTE]
+> `Trips.user_id` 欄位代表行程的 **團長 (Leader/Owner)**，此人絕對擁有該行程的完整控制權。
+> 行程建立時，`TripMembers` 會自動新增一筆 `role_code = 'leader'` 的記錄。
 
 #### Table: `Itinerary` (行程節點)
 

@@ -53,8 +53,9 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 * **Framework**: Flutter 3.x (Dart 3.x)
 * **Platforms**: iOS, Android, Web (HTML/CanvasKit)
 * **Local Database**: Hive (NoSQL, Web-Compatible)
-* **State Management**: Provider
+* **State Management**: flutter_bloc (Cubit) + Provider
 * **Backend**: Google Sheets + Google Apps Script (REST API)
+* **Architecture**: Clean Architecture (Domain, Data, Infrastructure, Presentation)
 
 ## 專案文件 (Documentation)
 
