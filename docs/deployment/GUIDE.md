@@ -9,18 +9,15 @@
 ### 部署步驟
 
 1.  **建立專案**
-
     - 建立 Google Sheet，命名為 `SummitMate Database`。
     - 開啟 **擴充功能** > **Apps Script**。
     - 複製 `gas/Code.gs` 內容至 `Code.gs`。
     - 建立新腳本 `weather_etl.gs`，並複製 `gas/weather_etl.gs` 內容。
 
 2.  **初始化資料**
-
     - 執行 `setupSheets` 函式以建立 `Itinerary`, `Messages`, `Logs` 工作表。
 
 3.  **發布 API**
-
     - 點擊 **部署** > **新增部署作業**。
     - 類型選擇 **網頁應用程式**。
     - 存取權限設定為 **任何人**。

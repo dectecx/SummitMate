@@ -104,16 +104,16 @@ erDiagram
 
 #### Table: `TripMembers` (行程成員)
 
-| Column      | Type | Constraints | Description                                    |
-| :---------- | :--- | :---------- | :--------------------------------------------- |
-| **id**      | UUID | **PK**      |                                                |
-| **trip_id** | UUID | **FK**      | Ref: Trips.id                                  |
-| **user_id** | UUID | **FK**      | Ref: Users.id                                  |
+| Column      | Type | Constraints | Description                                      |
+| :---------- | :--- | :---------- | :----------------------------------------------- |
+| **id**      | UUID | **PK**      |                                                  |
+| **trip_id** | UUID | **FK**      | Ref: Trips.id                                    |
+| **user_id** | UUID | **FK**      | Ref: Users.id                                    |
 | role_code   | Text |             | `leader` (團長), `guide` (嚮導), `member` (隊員) |
-| created_at  | Date |             | 建立時間                                       |
-| created_by  | Text |             | 建立者 ID                                      |
-| updated_at  | Date |             | 更新時間                                       |
-| updated_by  | Text |             | 更新者 ID                                      |
+| created_at  | Date |             | 建立時間                                         |
+| created_by  | Text |             | 建立者 ID                                        |
+| updated_at  | Date |             | 更新時間                                         |
+| updated_by  | Text |             | 更新者 ID                                        |
 
 > [!NOTE]
 > `Trips.user_id` 欄位代表行程的 **團長 (Leader/Owner)**，此人絕對擁有該行程的完整控制權。
@@ -158,16 +158,16 @@ erDiagram
 
 #### Table: `Favorites` (使用者最愛)
 
-| Column        | Type | Constraints | Description              |
-| :------------ | :--- | :---------- | :----------------------- |
-| **id**        | UUID | **PK**      |                          |
-| **user_id**   | UUID | **FK**      | Ref: Users.id            |
+| Column        | Type | Constraints | Description                    |
+| :------------ | :--- | :---------- | :----------------------------- |
+| **id**        | UUID | **PK**      |                                |
+| **user_id**   | UUID | **FK**      | Ref: Users.id                  |
 | **target_id** | Text |             | 關聯目標 ID (e.g. Mountain ID) |
-| type          | Text |             | e.g. `mountain`, `route` |
-| created_at    | Date |             | 建立時間                 |
-| created_by    | Text |             | 建立者 ID                |
-| updated_at    | Date |             | 更新時間                 |
-| updated_by    | Text |             | 更新者 ID                |
+| type          | Text |             | e.g. `mountain`, `route`       |
+| created_at    | Date |             | 建立時間                       |
+| created_by    | Text |             | 建立者 ID                      |
+| updated_at    | Date |             | 更新時間                       |
+| updated_by    | Text |             | 更新者 ID                      |
 
 ### 3.2 裝備模組 (Gear)
 
