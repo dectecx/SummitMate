@@ -105,6 +105,7 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
   }
 
   Future<void> _showAddDialog(BuildContext context) async {
+    final cubit = context.read<ItineraryCubit>();
     final controller = TextEditingController();
     final result = await showDialog<String>(
       context: context,
@@ -132,11 +133,12 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
         _localDays.add(result);
       });
 
-      await context.read<ItineraryCubit>().addDay(result);
+      await cubit.addDay(result);
     }
   }
 
   Future<void> _showRenameDialog(BuildContext context, int index) async {
+    final cubit = context.read<ItineraryCubit>();
     final oldName = _localDays[index];
     final controller = TextEditingController(text: oldName);
     final result = await showDialog<String>(
@@ -165,11 +167,12 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
         _localDays[index] = result;
       });
 
-      await context.read<ItineraryCubit>().renameDay(oldName, result);
+      await cubit.renameDay(oldName, result);
     }
   }
 
   Future<void> _confirmDelete(BuildContext context, int index) async {
+    final cubit = context.read<ItineraryCubit>();
     final name = _localDays[index];
     final confirm = await showDialog<bool>(
       context: context,
@@ -197,7 +200,7 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
       });
 
       try {
-        await context.read<ItineraryCubit>().removeDay(name);
+        await cubit.removeDay(name);
       } catch (e) {
         // 發生錯誤時還原資料
         _initData();

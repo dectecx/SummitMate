@@ -109,8 +109,8 @@ class DailyMealPlan extends Equatable {
   /// 天數 (Days), e.g. "D0", "D1"
   final String day;
 
-  /// 餐食 map: MealType -> List<MealItem>
-  /// Note: 使用自定義轉換，因為 Map<Enum, List> 需要特殊處理
+  /// 餐食 map: `MealType` -> `List<MealItem>`
+  /// Note: 使用自定義轉換，因為 `Map<Enum, List>` 需要特殊處理
   @JsonKey(fromJson: _mealsFromJson, toJson: _mealsToJson)
   final Map<MealType, List<MealItem>> meals;
 

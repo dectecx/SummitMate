@@ -139,8 +139,9 @@ class _AddGearDialogState extends State<AddGearDialog> {
           canPop: false,
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
+            final navigator = Navigator.of(context);
             final shouldPop = await _checkDismiss();
-            if (shouldPop && mounted) Navigator.pop(context);
+            if (shouldPop && mounted) navigator.pop();
           },
           child: AlertDialog(
             title: const Text('新增裝備'),
@@ -182,8 +183,9 @@ class _AddGearDialogState extends State<AddGearDialog> {
             actions: [
               TextButton(
                 onPressed: () async {
+                  final navigator = Navigator.of(context);
                   final shouldPop = await _checkDismiss();
-                  if (shouldPop && mounted) Navigator.pop(context);
+                  if (shouldPop && mounted) navigator.pop();
                 },
                 child: const Text('取消'),
               ),

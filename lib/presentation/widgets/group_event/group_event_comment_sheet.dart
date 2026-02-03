@@ -134,7 +134,7 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.05), offset: const Offset(0, -2), blurRadius: 10),
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.05), offset: const Offset(0, -2), blurRadius: 10),
                     ],
                   ),
                   child: Row(

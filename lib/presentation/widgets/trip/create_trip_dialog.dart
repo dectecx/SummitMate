@@ -55,7 +55,7 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      backgroundColor: theme.dialogBackgroundColor,
+      backgroundColor: colorScheme.surface,
       title: Text(isEditing ? '編輯行程' : '新增行程', style: const TextStyle(fontWeight: FontWeight.bold)),
       content: SingleChildScrollView(
         child: Form(

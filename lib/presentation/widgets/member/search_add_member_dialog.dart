@@ -243,7 +243,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
               CircleAvatar(
                 radius: 24,
                 backgroundImage: NetworkImage(_searchResult!['avatar'] ?? ''),
-                onBackgroundImageError: (_, __) {},
+                onBackgroundImageError: (_, _) {},
                 child: Text(_searchResult!['display_name']?[0] ?? '?'),
               ),
               const SizedBox(width: 16),
@@ -292,7 +292,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
           const Text('初始權限', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _selectedRole,
+            initialValue: _selectedRole,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),

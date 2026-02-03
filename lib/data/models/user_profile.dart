@@ -60,24 +60,7 @@ class UserProfile {
   // Helper to check permission directly on model
   bool can(String permission) => permissions.contains(permission);
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    // 處理 permissions (json 中可能是 List<dynamic> 需轉型)
-    List<String> perms = [];
-    if (json['permissions'] != null) {
-      perms = List<String>.from(json['permissions']);
-    }
-
-    return UserProfile(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      displayName: json['display_name'] as String,
-      avatar: json['avatar'] as String? ?? '🐻',
-      roleId: json['role_id'] as String? ?? '',
-      roleCode: json['role_code'] as String? ?? RoleConstants.member,
-      permissions: perms,
-      isVerified: json['is_verified'] as bool? ?? false,
-    );
-  }
+  factory UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserProfileToJson(this);
 
