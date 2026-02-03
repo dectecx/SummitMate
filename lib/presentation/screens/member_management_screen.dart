@@ -5,10 +5,11 @@ import 'package:summitmate/core/core.dart';
 
 import '../../data/models/trip.dart';
 import '../../data/models/enums/sync_status.dart';
-import '../../data/models/user_profile.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/common/summit_app_bar.dart';
+import '../widgets/member/search_add_member_dialog.dart';
+import '../widgets/member/member_list_tile.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 
@@ -27,11 +28,8 @@ class MemberManagementScreen extends StatefulWidget {
   State<MemberManagementScreen> createState() => _MemberManagementScreenState();
 }
 
-enum SearchType { email, id }
-
 class _MemberManagementScreenState extends State<MemberManagementScreen> {
   final _tripRepository = getIt<ITripRepository>();
-  // final _permissionService = getIt<PermissionService>(); // Removed as we use local list logic
 
   bool _isLoading = true;
   List<Map<String, dynamic>> _members = [];
@@ -102,16 +100,13 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [newRole] 新角色代碼 (e.g., guide, member)
   /// [userName] 成員顯示名稱 (用於顯示 Toast)
   Future<void> _updateRole(String userId, String newRole, String userName) async {
-    try {
-      final result = await _tripRepository.updateMemberRole(widget.trip.id, userId, newRole);
-      if (result is Failure) throw result.exception;
-
-      final roleName = _getRoleName(newRole);
-      ToastService.success('已將 $userName 更新為 $roleName');
-      _loadMembers();
-    } catch (e) {
-      ToastService.error('更新失敗: $e');
+    final result = await _tripRepository.updateMemberRole(widget.trip.id, userId, newRole);
+    if (result is Failure) {
+      ToastService.error('權限更新失敗: ${result.exception}');
+      return;
     }
+    ToastService.success('已更新 $userName 的權限');
+    _loadMembers();
   }
 
   /// 移除成員
@@ -119,15 +114,13 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [userId] 目標成員 ID
   /// [userName] 成員顯示名稱 (用於顯示 Toast)
   Future<void> _removeMember(String userId, String userName) async {
-    try {
-      final result = await _tripRepository.removeMember(widget.trip.id, userId);
-      if (result is Failure) throw result.exception;
-
-      ToastService.success('已移除 $userName');
-      _loadMembers();
-    } catch (e) {
-      ToastService.error('移除失敗: $e');
+    final result = await _tripRepository.removeMember(widget.trip.id, userId);
+    if (result is Failure) {
+      ToastService.error('移除失敗: ${result.exception}');
+      return;
     }
+    ToastService.success('已移除 $userName');
+    _loadMembers();
   }
 
   /// 顯示權限設定對話框
@@ -135,9 +128,6 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [member] 成員資料 Map (包含 id, display_name, role_code 等)
   void _showRoleDialog(Map<String, dynamic> member) {
     String currentRole = member['role_code'] ?? RoleConstants.member;
-    // UI Selection State: default to member if current is not guide/member (e.g. is leader?)
-    // If setting a Leader, we shouldn't happen here normally unless editing a Leader?
-    // But we are editing *another* member.
     String selectedRole = (currentRole == RoleConstants.guide) ? RoleConstants.guide : RoleConstants.member;
 
     final isTargetLeader = currentRole == RoleConstants.leader || currentRole == RoleConstants.admin;
@@ -287,321 +277,18 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     );
   }
 
-  /// 顯示新增成員對話框 (搜尋 -> 確認)
+  /// 顯示新增成員對話框
   void _showSearchAddMemberDialog() {
-    final queryController = TextEditingController();
-
-    // Dialog 內部狀態
-    bool localLoading = false;
-    String? errorMsg;
-    Map<String, dynamic>? searchResult;
-    SearchType searchType = SearchType.email;
-
-    // Confirmation State
-    String selectedRole = RoleConstants.member;
-
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            // Validation Checks
-            final isSelf = searchResult != null && searchResult!['id'] == _currentUserId;
-            // Check if already a member
-            final isAlreadyMember = searchResult != null && _members.any((m) => m['id'] == searchResult!['id']);
-            final canAdd = searchResult != null && !isSelf && !isAlreadyMember;
-
-            return AlertDialog(
-              title: const Text('新增成員'),
-              content: SizedBox(
-                width: 400, // Slightly wider
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (searchResult == null) ...[
-                      // --- Stage 1: Search ---
-                      const Text('搜尋方式', style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      SegmentedButton<SearchType>(
-                        segments: const [
-                          ButtonSegment<SearchType>(
-                            value: SearchType.email,
-                            label: Text('Email'),
-                            icon: Icon(Icons.email_outlined),
-                          ),
-                          ButtonSegment<SearchType>(
-                            value: SearchType.id,
-                            label: Text('User ID'),
-                            icon: Icon(Icons.badge_outlined),
-                          ),
-                        ],
-                        selected: {searchType},
-                        onSelectionChanged: (Set<SearchType> newSelection) {
-                          setState(() {
-                            searchType = newSelection.first;
-                            errorMsg = null;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: queryController,
-                        decoration: InputDecoration(
-                          labelText: searchType == SearchType.email ? '輸入使用者 Email' : '輸入 User ID',
-                          hintText: searchType == SearchType.email ? 'example@gmail.com' : '使用者 UUID',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.search),
-                          errorText: errorMsg,
-                          isDense: true,
-                        ),
-                        key: TutorialKeys.memberSearchInput,
-                        onSubmitted: (_) {
-                          // Trigger search
-                        },
-                      ),
-                    ] else ...[
-                      // --- Stage 2: Confirmation ---
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundImage: NetworkImage(searchResult!['avatar'] ?? ''),
-                              onBackgroundImageError: (_, __) {},
-                              child: Text(searchResult!['display_name']?[0] ?? '?'),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    searchResult!['display_name'] ?? '未知用戶',
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    searchResult!['email'] ?? '',
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'ID: ${searchResult!['id']}',
-                                    style: const TextStyle(fontSize: 10, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      if (isSelf)
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: Colors.amber[50], borderRadius: BorderRadius.circular(8)),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.warning_amber, color: Colors.amber, size: 20),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text('這是你自己，已在行程中。', style: TextStyle(color: Colors.brown)),
-                              ),
-                            ],
-                          ),
-                        )
-                      else if (isAlreadyMember)
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(8)),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text('此使用者已經是成員。', style: TextStyle(color: Colors.blueAccent)),
-                              ),
-                            ],
-                          ),
-                        )
-                      else ...[
-                        const Text('初始權限', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          initialValue: selectedRole,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            isDense: true,
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: RoleConstants.member,
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.person_outline, size: 18),
-                                  const SizedBox(width: 8),
-                                  Text(_getRoleName(RoleConstants.member)),
-                                ],
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: RoleConstants.guide,
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.hiking, size: 18, color: Colors.green),
-                                  const SizedBox(width: 8),
-                                  Text(_getRoleName(RoleConstants.guide)),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) setState(() => selectedRole = val);
-                          },
-                        ),
-                      ],
-
-                      if (localLoading)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 20),
-                          child: Center(child: LinearProgressIndicator()),
-                        ),
-
-                      if (errorMsg != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Text(errorMsg!, style: const TextStyle(color: Colors.red, fontSize: 12)),
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-              actions: [
-                if (searchResult == null) ...[
-                  TextButton(onPressed: localLoading ? null : () => Navigator.pop(ctx), child: const Text('取消')),
-                  FilledButton(
-                    onPressed: localLoading
-                        ? null
-                        : () async {
-                            final query = queryController.text.trim();
-                            if (query.isEmpty) return;
-
-                            setState(() {
-                              localLoading = true;
-                              errorMsg = null;
-                            });
-
-                            try {
-                              // Split Search Logic
-                              final UserProfile user;
-                              final Result<UserProfile, Exception> result;
-                              if (searchType == SearchType.email) {
-                                result = await _tripRepository.searchUserByEmail(query);
-                              } else {
-                                result = await _tripRepository.searchUserById(query);
-                              }
-
-                              user = switch (result) {
-                                Success(value: final u) => u,
-                                Failure(exception: final e) => throw e,
-                              };
-
-                              if (mounted) {
-                                setState(() {
-                                  // Convert AppUser to Map for consistency with existing UI usage
-                                  // Ideally UI should use AppUser model but keeping map for now
-                                  searchResult = {
-                                    'id': user.id,
-                                    'display_name': user.displayName,
-                                    'email': user.email,
-                                    'avatar': user.avatar,
-                                  };
-                                  localLoading = false;
-                                });
-                              }
-                            } catch (e) {
-                              if (mounted) {
-                                setState(() {
-                                  localLoading = false;
-                                  errorMsg = e.toString().replaceAll('Exception: ', '');
-                                });
-                              }
-                            }
-                          },
-                    key: TutorialKeys.memberSearchBtn,
-                    child: const Text('搜尋'),
-                  ),
-                ] else ...[
-                  TextButton(
-                    onPressed: localLoading
-                        ? null
-                        : () {
-                            setState(() {
-                              searchResult = null;
-                              errorMsg = null;
-                              queryController.clear();
-                            });
-                          },
-                    child: const Text('重搜'),
-                  ),
-                  if (canAdd)
-                    FilledButton(
-                      onPressed: localLoading
-                          ? null
-                          : () async {
-                              setState(() => localLoading = true);
-                              try {
-                                final userId = searchResult!['id'];
-                                final Result<void, Exception> result;
-                                if (searchType == SearchType.email) {
-                                  // Use ID to add for safer reference
-                                  result = await _tripRepository.addMemberById(
-                                    widget.trip.id,
-                                    userId,
-                                    role: selectedRole,
-                                  );
-                                } else {
-                                  result = await _tripRepository.addMemberById(
-                                    widget.trip.id,
-                                    userId,
-                                    role: selectedRole,
-                                  );
-                                }
-                                if (result is Failure) throw result.exception;
-
-                                if (mounted) {
-                                  Navigator.pop(ctx);
-                                  ToastService.success('已新增成員: ${searchResult!['display_name']}');
-                                  _loadMembers();
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  setState(() {
-                                    localLoading = false;
-                                    errorMsg = '新增失敗: ${e.toString().replaceAll('Exception: ', '')}';
-                                  });
-                                }
-                              }
-                            },
-                      key: TutorialKeys.memberConfirmBtn,
-                      child: const Text('確認加入'),
-                    ),
-                ],
-              ],
-            );
-          },
-        );
-      },
+      builder: (ctx) => SearchAddMemberDialog(
+        tripId: widget.trip.id,
+        tripRepository: _tripRepository,
+        currentUserId: _currentUserId!,
+        existingMemberIds: _members.map((m) => m['id'] as String).toList(),
+        onMemberAdded: _loadMembers,
+      ),
     );
   }
 
@@ -614,7 +301,6 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   Widget build(BuildContext context) {
     // Current user profile for checking ID
     final authState = context.watch<AuthCubit>().state;
-    // We only rely on _currentUserId which we set in initState, but let's keep it reactive if user swaps
     if (authState is AuthAuthenticated) {
       if (_currentUserId != authState.userId) _currentUserId = authState.userId;
     }
@@ -623,7 +309,6 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     final isOwner = widget.trip.userId == _currentUserId;
 
     // Find my role in the loaded list
-    // If list is empty (loading or error), we assume NO permission unless owner
     String myRole = RoleConstants.member;
     if (_members.isNotEmpty && _currentUserId != null) {
       try {
@@ -669,63 +354,18 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               itemCount: _members.length,
               itemBuilder: (context, index) {
                 final member = _members[index];
-                final roleCode = member['role_code'] ?? 'member';
                 final isSelf = member['id'] == _currentUserId;
-                final isRowOwner = member['id'] == widget.trip.userId; // Check who is the trip owner row
-
-                // Determine role style
-                String roleText = _getRoleName(roleCode);
-                IconData roleIcon = Icons.person_outline;
-                Color? roleColor;
-
-                if (roleCode == RoleConstants.admin || roleCode == RoleConstants.leader || isRowOwner) {
-                  roleText = _getRoleName(RoleConstants.leader); // Strictly Chinese as requested
-                  if (isRowOwner) roleText += ' (擁)';
-
-                  roleIcon = Icons.stars;
-                  roleColor = Colors.amber;
-                } else if (roleCode == RoleConstants.guide) {
-                  roleText = _getRoleName(RoleConstants.guide);
-                  roleIcon = Icons.hiking;
-                  roleColor = Colors.green;
-                } else {
-                  roleText = _getRoleName(RoleConstants.member);
-                }
+                final isRowOwner = member['id'] == widget.trip.userId;
 
                 // Can edit this row?
-                // Only if current user canManage, target is NOT self, and target is NOT owner
-                // We cannot edit the Owner (even if we are Leader)
-                // We cannot edit ourselves here (use different flow if needed, but usually 'Leave Trip')
                 final canEditRow = canManage && !isSelf && !isRowOwner;
 
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(member['avatar'] ?? ''),
-                    onBackgroundImageError: (_, __) {},
-                    child: (member['avatar'] == null || member['avatar'].isEmpty)
-                        ? Text(member['display_name']?[0] ?? '?')
-                        : null,
-                  ),
-                  title: Text(member['display_name'] ?? 'Unknown'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(roleIcon, size: 16, color: roleColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            roleText,
-                            style: TextStyle(color: roleColor, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      Text('ID: ${member['id'] ?? ''}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                    ],
-                  ),
-                  trailing: canEditRow
-                      ? OutlinedButton(onPressed: () => _showRoleDialog(member), child: const Text('設定'))
-                      : null,
+                return MemberListTile(
+                  member: member,
+                  isSelf: isSelf,
+                  isOwner: isRowOwner,
+                  canEdit: canEditRow,
+                  onSettingsTap: () => _showRoleDialog(member),
                 );
               },
             ),
