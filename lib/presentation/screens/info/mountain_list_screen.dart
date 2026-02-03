@@ -147,8 +147,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
                                     padding: const EdgeInsets.only(right: 8),
                                     child: _buildCategoryPill(context, c, c.label),
                                   ),
-                                )
-                                .toList(),
+                                ),
                           ],
                         ),
                       ),

@@ -302,6 +302,8 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
     final cubit = context.read<GearLibraryCubit>();
     final linkedTrips = await cubit.getLinkedTrips(item.id);
 
+    if (!context.mounted) return;
+
     if (linkedTrips.isEmpty) {
       _confirmDelete(context, item);
       return;
