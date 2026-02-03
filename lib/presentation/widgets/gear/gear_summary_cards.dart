@@ -88,7 +88,10 @@ class GearQuickLinks extends StatelessWidget {
 }
 
 /// 總重量卡片
+///
+/// 顯示裝備加糧食的總重量。
 class GearTotalWeightCard extends StatelessWidget {
+  /// 總重量 (公斤)
   final double totalWeight;
 
   const GearTotalWeightCard({super.key, required this.totalWeight});
@@ -115,7 +118,10 @@ class GearTotalWeightCard extends StatelessWidget {
 }
 
 /// 糧食計畫入口卡片
+///
+/// 顯示糧食重量並提供導航至糧食計畫頁面。
 class GearMealCard extends StatelessWidget {
+  /// 糧食總重量 (公斤)
   final double mealWeight;
 
   const GearMealCard({super.key, required this.mealWeight});

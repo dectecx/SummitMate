@@ -253,8 +253,14 @@ class _ItineraryTabState extends State<ItineraryTab> {
   }
 }
 
+/// 資訊標籤元件
+///
+/// 顯示圖示和文字的小型標籤，用於展示行程節點詳細資訊。
 class _InfoChip extends StatelessWidget {
+  /// 標籤圖示
   final IconData icon;
+
+  /// 標籤文字
   final String label;
 
   const _InfoChip({required this.icon, required this.label});

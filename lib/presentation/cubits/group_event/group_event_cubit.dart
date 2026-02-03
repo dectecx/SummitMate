@@ -144,6 +144,15 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   }
 
   /// 建立新揪團
+  ///
+  /// [title] 活動標題
+  /// [description] 活動描述
+  /// [location] 活動地點
+  /// [startDate] 開始日期
+  /// [endDate] 結束日期 (可選)
+  /// [maxMembers] 招募人數上限
+  /// [approvalRequired] 是否需審核報名
+  /// [privateMessage] 審核通過後顯示的私訊
   Future<bool> createEvent({
     required String title,
     String description = '',
@@ -154,11 +163,18 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     bool approvalRequired = false,
     String privateMessage = '',
   }) async {
+    // TODO(future): 加入活動分類 UI，目前預設為 'general'
+    // 需同步新增:
+    // 1. GroupEvent model 新增 category 欄位
+    // 2. CreateGroupEventScreen 新增分類選擇器
+    // 3. 後端支援分類篩選
+    const defaultCategory = 'general';
+
     return await _executeRemoteAction(
       () => _groupEventRepository.create(
         title: title,
         description: description,
-        category: '', // TODO: Add category parameter
+        category: defaultCategory,
         eventDate: startDate,
         eventLocation: location,
         maxParticipants: maxMembers,

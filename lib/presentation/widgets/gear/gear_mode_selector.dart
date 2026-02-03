@@ -7,7 +7,10 @@ enum GearListMode { view, edit, sort }
 ///
 /// 允許使用者在檢視、編輯、排序模式間切換
 class GearModeSelector extends StatelessWidget {
+  /// 當前選中的模式
   final GearListMode selectedMode;
+
+  /// 模式變更回調函數
   final ValueChanged<GearListMode> onModeChanged;
 
   const GearModeSelector({super.key, required this.selectedMode, required this.onModeChanged});
