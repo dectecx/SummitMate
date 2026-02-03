@@ -289,6 +289,9 @@ function syncTripFull(data) {
     }
 
     // 構建 Trip Row - [id, name, start, end, desc, cover, active, day_names, created_at, created_by, updated_at, updated_by]
+    var now = new Date();
+    var createdAt = _toIsoString(trip.created_at || trip.createdAt || now);
+
     var tripRowData = [
       tripId,
       String(trip.name || ""),
@@ -319,7 +322,7 @@ function syncTripFull(data) {
     if (!itinSheet)
       return _error(
         API_CODES.ITINERARY_SHEET_MISSING,
-        "Itinerary sheet not found"
+        "Itinerary sheet not found",
       );
 
     // Filter out old items for this trip (Simple logical delete & rewrite)
@@ -375,7 +378,7 @@ function syncTripFull(data) {
       if (itinSheet.getMaxColumns() < targetColCount) {
         itinSheet.insertColumnsAfter(
           itinSheet.getMaxColumns(),
-          targetColCount - itinSheet.getMaxColumns()
+          targetColCount - itinSheet.getMaxColumns(),
         );
       }
       itinSheet
@@ -415,12 +418,24 @@ function syncTripFull(data) {
       if (gearSheet.getMaxColumns() < gearTargetColCount) {
         gearSheet.insertColumnsAfter(
           gearSheet.getMaxColumns(),
-          gearTargetColCount - gearSheet.getMaxColumns()
+          gearTargetColCount - gearSheet.getMaxColumns(),
         );
       }
       gearSheet
         .getRange(1, 1, newGearRows.length, newGearRows[0].length)
         .setValues(newGearRows);
+    }
+
+    // 4. Ensure Owner is in TripMembers
+    // Trip creation implies ownership. We must ensure the creator is added as 'leader'.
+    var ownerId = trip.user_id || trip.userId || trip.created_by; // Fallback to created_by if user_id missing
+    if (ownerId) {
+      updateMemberRole({
+        trip_id: tripId,
+        user_id: ownerId,
+        role: "leader",
+        operator_id: ownerId // Auto-add by self
+      });
     }
 
     return _success({ id: tripId }, "同步成功");
@@ -433,10 +448,13 @@ function syncTripFull(data) {
 
 /**
  * 取得行程成員列表
- * @param {string} tripId
+ * @param {Object} payload - { trip_id }
  * @returns {Object} { code, data, message }
  */
-function getTripMembers(tripId) {
+function getTripMembers(payload) {
+  const tripId =
+    typeof payload === "object" && payload !== null ? payload.trip_id : payload;
+
   if (!tripId) {
     return _error(API_CODES.INVALID_PARAMS, "Trip ID is required");
   }
@@ -455,14 +473,22 @@ function getTripMembers(tripId) {
   // Headers: id, trip_id, user_id, role_code, created_at, updated_at
   // Index:   0,  1,       2,       3,         4,          5
 
+  const tmHeaders = tmData[0];
+  const idx = {
+    id: tmHeaders.indexOf("id"),
+    trip_id: tmHeaders.indexOf("trip_id"),
+    user_id: tmHeaders.indexOf("user_id"),
+    role_code: tmHeaders.indexOf("role_code"),
+  };
+
   const tripMembers = [];
   // Skip header
   for (let i = 1; i < tmData.length; i++) {
-    if (tmData[i][1] === tripId) {
+    if (tmData[i][idx.trip_id] === tripId) {
       tripMembers.push({
-        relationship_id: tmData[i][0],
-        user_id: tmData[i][2],
-        role_code: tmData[i][3],
+        relationship_id: tmData[i][idx.id],
+        user_id: tmData[i][idx.user_id],
+        role_code: tmData[i][idx.role_code],
       });
     }
   }
@@ -476,7 +502,7 @@ function getTripMembers(tripId) {
   if (uSheet) {
     const uData = uSheet.getDataRange().getValues();
     const h = uData[0];
-    const idx = {
+    const uIdx = {
       id: h.indexOf("id"),
       name: h.indexOf("display_name"),
       avatar: h.indexOf("avatar"),
@@ -484,11 +510,11 @@ function getTripMembers(tripId) {
     };
 
     for (let i = 1; i < uData.length; i++) {
-      const uid = uData[i][idx.id];
+      const uid = uData[i][uIdx.id];
       userMap[uid] = {
-        display_name: uData[i][idx.name],
-        avatar: uData[i][idx.avatar],
-        email: uData[i][idx.email],
+        display_name: uData[i][uIdx.name],
+        avatar: uData[i][uIdx.avatar],
+        email: uData[i][uIdx.email],
       };
     }
   }
@@ -734,49 +760,6 @@ function addMemberById(payload) {
     user_id: user_id,
     role: targetRole,
   });
-}
-
-/**
- * 取得行程成員列表
- * @param {Object} payload - { trip_id }
- * @returns {Object} { members: [{ relationship_id, user_id, role_code }] }
- */
-function getTripMembers(payload) {
-  const { trip_id: tripId } = payload;
-  if (!tripId) {
-    return _error(API_CODES.INVALID_PARAMS, "缺少 trip_id 參數");
-  }
-
-  const ss = getSpreadsheet();
-  const tmSheet = ss.getSheetByName(SHEET_TRIP_MEMBERS);
-  if (!tmSheet) {
-    return _error(API_CODES.TRIP_NOT_FOUND, "成員表不存在");
-  }
-
-  // 1. 取得該行程的所有成員關聯
-  const tmData = tmSheet.getDataRange().getValues();
-  // Dynamic Headers
-  const tmHeaders = tmData[0];
-  const idx = {
-    id: tmHeaders.indexOf("id"),
-    trip_id: tmHeaders.indexOf("trip_id"),
-    user_id: tmHeaders.indexOf("user_id"),
-    role_code: tmHeaders.indexOf("role_code"),
-  };
-
-  const tripMembers = [];
-  // Skip header
-  for (let i = 1; i < tmData.length; i++) {
-    if (tmData[i][idx.trip_id] === tripId) {
-      tripMembers.push({
-        relationship_id: tmData[i][idx.id],
-        user_id: tmData[i][idx.user_id],
-        role_code: tmData[i][idx.role_code],
-      });
-    }
-  }
-
-  return _success({ members: tripMembers });
 }
 
 /**

@@ -39,6 +39,9 @@ class PermissionService {
     if (user == null) return false;
     if (user.roleCode == RoleConstants.admin) return true;
 
+    // 0. 團長 (Leader/Owner) 絕對擁有編輯權限
+    if (trip.userId == user.id) return true;
+
     // 1. 必須是行程成員 (基本門檻)
     if (!trip.members.contains(user.id)) return false;
 
@@ -58,6 +61,9 @@ class PermissionService {
   bool canDeleteTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
     if (user.roleCode == RoleConstants.admin) return true;
+
+    // 0. 團長 (Leader/Owner) 絕對擁有刪除權限
+    if (trip.userId == user.id) return true;
 
     // 1. 必須是行程成員 (通常只有團長/嚮導能刪除)
     if (!trip.members.contains(user.id)) return false;

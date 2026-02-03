@@ -169,7 +169,11 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> getTripMembers(String tripId) async {
     try {
-      final response = await _apiClient.post('', data: {'action': 'trip_get_members', 'trip_id': tripId});
+      final response = await _apiClient.post(
+        '',
+        data: {'action': 'trip_get_members', 'trip_id': tripId},
+        options: Options(extra: {'requiresAuth': true}),
+      );
 
       if (response.statusCode != 200) throw Exception('HTTP ${response.statusCode}');
 

@@ -4,6 +4,7 @@ import '../../core/di.dart';
 import 'package:summitmate/core/core.dart';
 
 import '../../data/models/trip.dart';
+import '../../data/models/enums/sync_status.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -48,6 +49,31 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// 從遠端資料來源取得最新的成員名單與權限狀態。
   Future<void> _loadMembers() async {
     setState(() => _isLoading = true);
+
+    // [Local First] If trip is not synced (pendingCreate), use local data (Creator only)
+    if (widget.trip.syncStatus == SyncStatus.pendingCreate) {
+      final authState = context.read<AuthCubit>().state;
+      if (authState is AuthAuthenticated) {
+        final user = authState.user;
+        // Verify if current user is indeed the creator/owner (should be for pendingCreate)
+        if (widget.trip.userId == user.id || widget.trip.members.contains(user.id)) {
+          final localMember = {
+            'id': user.id,
+            'display_name': user.displayName,
+            'email': user.email,
+            'avatar': user.avatar,
+            'role_code': RoleConstants.leader, // Creator is Leader
+          };
+
+          setState(() {
+            _members = [localMember];
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    }
+
     try {
       final result = await _tripRepository.getTripMembers(widget.trip.id);
       final members = switch (result) {

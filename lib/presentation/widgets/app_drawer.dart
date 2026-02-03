@@ -51,13 +51,13 @@ class AppDrawer extends StatelessWidget {
                 final today = DateTime(now.year, now.month, now.day);
 
                 final ongoingTrips = allTrips.where((t) {
-                  if (t.endDate == null) return true;
-                  return !t.endDate!.isBefore(today);
+                  final end = t.endDate ?? t.startDate;
+                  return !end.isBefore(today);
                 }).toList();
 
                 final archivedTrips = allTrips.where((t) {
-                  if (t.endDate == null) return false;
-                  return t.endDate!.isBefore(today);
+                  final end = t.endDate ?? t.startDate;
+                  return end.isBefore(today);
                 }).toList();
 
                 return ListView(

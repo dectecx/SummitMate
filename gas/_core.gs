@@ -106,7 +106,7 @@ function doPost(e) {
 
       // === 行程成員 (Trip Members) ===
       case API_ACTIONS.TRIP_GET_MEMBERS:
-        return _createJsonResponse(getTripMembers(data.trip_id));
+        return _createJsonResponse(getTripMembers(data));
       case API_ACTIONS.TRIP_UPDATE_MEMBER_ROLE:
         return _createJsonResponse(updateMemberRole(data));
       case API_ACTIONS.TRIP_REMOVE_MEMBER:
