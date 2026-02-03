@@ -21,11 +21,11 @@ SummitMate 採用 **Role-Based Access Control (RBAC)** 搭配 **Trip Membership 
 
 除了系統角色外，每個行程 (Trip) 內的成員還有「行程層級角色」，儲存於 `TripMembers.role_code`：
 
-| 角色代碼    | 顯示名稱 | 說明                                        |
-| :---------- | :------- | :------------------------------------------ |
-| `leader`    | 團長     | 行程擁有者 (Owner)，擁有完整控制權          |
-| `guide`     | 嚮導     | 協助管理行程，可編輯與管理成員              |
-| `member`    | 隊員     | 一般成員，僅能檢視                          |
+| 角色代碼 | 顯示名稱 | 說明                               |
+| :------- | :------- | :--------------------------------- |
+| `leader` | 團長     | 行程擁有者 (Owner)，擁有完整控制權 |
+| `guide`  | 嚮導     | 協助管理行程，可編輯與管理成員     |
+| `member` | 隊員     | 一般成員，僅能檢視                 |
 
 > [!IMPORTANT]
 > `Trip.userId` 欄位代表該行程的 **團長 (Leader/Owner)**，此人絕對擁有編輯/刪除/移交權限，無需額外檢查成員資格。
@@ -37,15 +37,16 @@ SummitMate 採用 **Role-Based Access Control (RBAC)** 搭配 **Trip Membership 
 ### 成員資料結構
 
 **Trip Model (本地端)**
+
 ```dart
 List<String> members; // 儲存 User ID 列表
 ```
 
 **TripMembers Table (雲端)**
-| Column    | Type | Description            |
+| Column | Type | Description |
 | :-------- | :--- | :--------------------- |
-| trip_id   | UUID | 行程 ID                |
-| user_id   | UUID | 使用者 ID              |
+| trip_id | UUID | 行程 ID |
+| user_id | UUID | 使用者 ID |
 | role_code | Text | `leader`, `guide`, `member` |
 
 - **建立者 (Creator)**：建立行程時自動加入 `members` 並設為 `leader`。
@@ -57,19 +58,19 @@ List<String> members; // 儲存 User ID 列表
 
 操作權限判斷邏輯：`Can(Action, User, Trip)`
 
-| 操作 (Action)      | 系統角色 (Role) | 條件                           | 結果 (Result) | 備註                                              |
-| :----------------- | :-------------- | :----------------------------- | :------------ | :------------------------------------------------ |
-| **View Trip**      | Admin           | N/A                            | ✅ Allow      | Admin 可見所有                                    |
-| **View Trip**      | Any             | `trip.members.contains(user)`  | ✅ Allow      | 成員可見                                          |
-| **View Trip**      | Any             | 非成員                         | ❌ Deny       | 非成員不可見                                      |
-| **Edit Trip**      | Admin           | N/A                            | ✅ Allow      |                                                   |
-| **Edit Trip**      | Any             | `trip.userId == user.id`       | ✅ Allow      | **團長 (Leader/Owner) 絕對擁有編輯權限**          |
-| **Edit Trip**      | Guide           | 是成員 + 有 `trip.edit`        | ✅ Allow      | 嚮導且在隊內                                      |
-| **Edit Trip**      | Member          | 是成員                         | ❌ Deny       | 一般隊員僅有檢視權限                              |
-| **Delete Trip**    | Admin           | N/A                            | ✅ Allow      |                                                   |
-| **Delete Trip**    | Any             | `trip.userId == user.id`       | ✅ Allow      | **團長 (Leader/Owner) 絕對擁有刪除權限**          |
-| **Delete Trip**    | Guide           | 是成員 + 有 `trip.delete`      | ✅ Allow      |                                                   |
-| **Manage Members** | Guide           | 是成員 + 有 `member.manage`    | ✅ Allow      | 邀請/移除成員                                     |
+| 操作 (Action)      | 系統角色 (Role) | 條件                          | 結果 (Result) | 備註                                     |
+| :----------------- | :-------------- | :---------------------------- | :------------ | :--------------------------------------- |
+| **View Trip**      | Admin           | N/A                           | ✅ Allow      | Admin 可見所有                           |
+| **View Trip**      | Any             | `trip.members.contains(user)` | ✅ Allow      | 成員可見                                 |
+| **View Trip**      | Any             | 非成員                        | ❌ Deny       | 非成員不可見                             |
+| **Edit Trip**      | Admin           | N/A                           | ✅ Allow      |                                          |
+| **Edit Trip**      | Any             | `trip.userId == user.id`      | ✅ Allow      | **團長 (Leader/Owner) 絕對擁有編輯權限** |
+| **Edit Trip**      | Guide           | 是成員 + 有 `trip.edit`       | ✅ Allow      | 嚮導且在隊內                             |
+| **Edit Trip**      | Member          | 是成員                        | ❌ Deny       | 一般隊員僅有檢視權限                     |
+| **Delete Trip**    | Admin           | N/A                           | ✅ Allow      |                                          |
+| **Delete Trip**    | Any             | `trip.userId == user.id`      | ✅ Allow      | **團長 (Leader/Owner) 絕對擁有刪除權限** |
+| **Delete Trip**    | Guide           | 是成員 + 有 `trip.delete`     | ✅ Allow      |                                          |
+| **Manage Members** | Guide           | 是成員 + 有 `member.manage`   | ✅ Allow      | 邀請/移除成員                            |
 
 ---
 
