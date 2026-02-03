@@ -48,14 +48,13 @@ class GasApiClient implements IApiClient {
     try {
       // [Web 相容性]
       // Web: 使用 text/plain 避免 CORS Preflight (OPTIONS)，因 GAS 不支援。
-      final requestOptions =
-          options ??
-          Options(
-            contentType: kIsWeb ? 'text/plain' : 'application/json',
-            // 我們需要手動處理 302 重導向，因為 GAS 常回傳 HTML body 重導向
-            followRedirects: !kIsWeb,
-            validateStatus: (status) => status != null && status < 500,
-          );
+      var requestOptions = options ?? Options();
+      requestOptions = requestOptions.copyWith(
+        contentType: requestOptions.contentType ?? (kIsWeb ? 'text/plain' : 'application/json'),
+        // 手動處理 302 或讓 Dio 處理，但必須寬鬆檢查 Status Code 以避免 302 拋出錯誤
+        followRedirects: requestOptions.followRedirects ?? !kIsWeb,
+        validateStatus: requestOptions.validateStatus ?? (status) => status != null && status < 500,
+      );
 
       // 若 options 被傳入，確保 contentType 正確 (除非被覆寫)
       if (kIsWeb && requestOptions.contentType == null) {

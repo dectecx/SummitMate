@@ -93,6 +93,7 @@ class TripCubit extends Cubit<TripState> {
         description: description,
         coverImage: coverImage,
         isActive: false, // 將透過 setActiveTrip 設定
+        members: [currentUserId], // Explicitly add creator as member (Leader)
         syncStatus: SyncStatus.pendingCreate,
         createdAt: DateTime.now(),
         createdBy: currentUserId,
