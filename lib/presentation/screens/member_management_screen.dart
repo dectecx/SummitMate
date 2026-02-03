@@ -143,22 +143,29 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (!isTargetLeader) ...[
-                    RadioListTile<String>(
-                      title: Text(_getRoleName(RoleConstants.guide)),
-                      subtitle: const Text('可編輯行程、管理公裝'),
-                      value: RoleConstants.guide,
+                  if (!isTargetLeader)
+                    RadioGroup<String>(
                       groupValue: selectedRole,
-                      onChanged: (val) => setDialogState(() => selectedRole = val!),
-                    ),
-                    RadioListTile<String>(
-                      title: Text(_getRoleName(RoleConstants.member)),
-                      subtitle: const Text('僅檢視行程、編輯個人裝備'),
-                      value: RoleConstants.member,
-                      groupValue: selectedRole,
-                      onChanged: (val) => setDialogState(() => selectedRole = val!),
-                    ),
-                  ] else ...[
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => selectedRole = val);
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RadioListTile<String>(
+                            title: Text(_getRoleName(RoleConstants.guide)),
+                            subtitle: const Text('可編輯行程、管理公裝'),
+                            value: RoleConstants.guide,
+                          ),
+                          RadioListTile<String>(
+                            title: Text(_getRoleName(RoleConstants.member)),
+                            subtitle: const Text('僅檢視行程、編輯個人裝備'),
+                            value: RoleConstants.member,
+                          ),
+                        ],
+                      ),
+                    )
+                  else ...[
                     const Padding(
                       padding: EdgeInsets.all(8.0),
                       child: Text('此成員為團長，請使用移轉功能或移除。', style: TextStyle(color: Colors.grey)),
