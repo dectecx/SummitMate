@@ -1,0 +1,42 @@
+openapi: "3.0.3"
+info:
+  title: SummitMate API
+  description: 嘉明湖登山行程助手 - 後端 API
+  version: 0.1.0
+  contact:
+    name: SummitMate
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: 檢查 API 服務是否正常運作
+      operationId: getHealth
+      tags:
+        - system
+      responses:
+        "200":
+          description: 服務正常
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          example: ok
+        version:
+          type: string
+          example: 0.1.0
