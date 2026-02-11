@@ -4,11 +4,17 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/deploy_to_netlify.yml'
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
 
     steps:
       - name: 📚 Checkout
@@ -32,13 +38,12 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: 🏗️ Build Web App
-        # Netlify runs at the root domain usually, so base-href is /
         run: flutter build web --release --base-href "/" --dart-define-from-file=.env.prod
 
-      - name:  Copy Netlify Config
+      - name: 📋 Copy Netlify Config
         run: cp netlify.toml build/web/netlify.toml
 
-      - name: � Install Netlify CLI
+      - name: 📦 Install Netlify CLI
         run: npm install -g netlify-cli
 
       - name: 🚀 Deploy to Netlify (CLI)
