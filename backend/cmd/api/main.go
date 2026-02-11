@@ -1,23 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 
-	_ "summitmate/docs" // Swagger generated docs
+	"summitmate/api"
 )
 
-// @title       SummitMate API
-// @version     0.1.0
-// @description 嘉明湖登山行程助手 - 後端 API
+// server implements api.ServerInterface
+type server struct{}
 
-// @host     localhost:8080
-// @BasePath /api/v1
+// GetHealth implements api.ServerInterface
+func (s server) GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(api.HealthResponse{
+		Status:  "ok",
+		Version: "0.1.0",
+	})
+}
+
 func main() {
 	r := chi.NewRouter()
 
@@ -26,35 +32,49 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 
-	// Swagger UI: http://localhost:8080/swagger/index.html
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("/swagger/doc.json"),
-	))
+	// Serve OpenAPI spec (for Scalar UI)
+	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) {
+		swagger, err := api.GetSwagger()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(swagger)
+	})
 
-	// API Routes
+	// Scalar API Reference UI
+	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write([]byte(`<!doctype html>
+<html>
+<head>
+  <title>SummitMate API Reference</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <div id="app"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  <script>
+    Scalar.createApiReference('#app', {
+      url: '/openapi.json',
+      theme: 'kepler',
+    })
+  </script>
+</body>
+</html>`))
+	})
+
+	// API Routes (mounted at /api/v1)
 	r.Route("/api/v1", func(r chi.Router) {
-		// Health Check
-		r.Get("/health", healthCheck)
+		api.HandlerFromMux(server{}, r)
 	})
 
 	port := ":8080"
 	log.Printf("🚀 SummitMate API starting on %s", port)
-	log.Printf("📖 Swagger UI: http://localhost%s/swagger/index.html", port)
+	log.Printf("📖 API Docs: http://localhost%s/docs", port)
 	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
-}
-
-// healthCheck godoc
-//
-//	@Summary	Health Check
-//	@Description	檢查 API 服務是否正常運作
-//	@Tags		system
-//	@Produce	json
-//	@Success	200	{object}	map[string]string	"status: ok"
-//	@Router		/health [get]
-func healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"status":"ok","version":"0.1.0"}`)
 }
