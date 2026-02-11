@@ -1,0 +1,24 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact: {}
+  description: 嘉明湖登山行程助手 - 後端 API
+  title: SummitMate API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      description: 檢查 API 服務是否正常運作
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: ok'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health Check
+      tags:
+      - system
+swagger: "2.0"
