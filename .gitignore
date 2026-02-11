@@ -1,78 +1,80 @@
-# Flutter / Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
+# ============================================
+# Root .gitignore (Mono-repo)
+# ============================================
 
-# Generated files
-*.g.dart
-
-# Local Documentation (Not tracked)
-_local_docs/
-
-# IDE - VSCode
+# === IDE ===
 .vscode/
 !.vscode/settings.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# IDE - Android Studio / IntelliJ
 .idea/
 *.iml
 *.ipr
 *.iws
 
-# Agent
+# === Agent ===
 .agent/
 
-# macOS
+# === OS ===
 .DS_Store
 *.swp
-*.lock
-!pubspec.lock
+*.tmp
+*.temp
+*~
 
-# DevTools
-devtools_options.yaml
+# === Secrets & Environment ===
+.env
+.env.*
+*.local
+**/secrets/
+
+# === Local docs ===
+_local_docs/
+
+# ============================================
+# Flutter / Dart (app/)
+# ============================================
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+app/.pub-cache/
+app/.pub/
+app/devtools_options.yaml
 *.log
 
+# Generated Dart files (build_runner)
+**/*.g.dart
+
 # Android
-/android/.gradle/
-/android/app/debug/
-/android/app/profile/
-/android/app/release/
-/android/local.properties
+app/android/.gradle/
+app/android/build/
+app/android/app/debug/
+app/android/app/profile/
+app/android/app/release/
+app/android/local.properties
+**/problems-report.html
 *.jks
 *.keystore
 
 # iOS
-/ios/.symlinks/
-/ios/Pods/
-/ios/Podfile.lock
-/ios/.cocoapods/
-/ios/Runner.xcworkspace/
-/ios/Flutter/Flutter.framework/
-/ios/Flutter/Flutter.podspec
+app/ios/.symlinks/
+app/ios/Pods/
+app/ios/Podfile.lock
+app/ios/.cocoapods/
+app/ios/Runner.xcworkspace/
+app/ios/Flutter/Flutter.framework/
+app/ios/Flutter/Flutter.podspec
 
 # Web
-/web/.dart_tool/
+app/web/.dart_tool/
 
 # Test
-coverage/
-.test_coverage.dart
-
-# Environment
-.env
-.env.*
-*.local
-
-# Secrets
-google_sheets_config.dart
-**/secrets/
+app/coverage/
+app/.test_coverage.dart
 
 # Build outputs
+**/build/
 *.apk
 *.aab
 *.ipa
@@ -80,16 +82,49 @@ google_sheets_config.dart
 *.dSYM.zip
 *.dSYM
 
-# Isar database files (local development)
+# Lock files (keep pubspec.lock)
+*.lock
+!app/pubspec.lock
+
+# Isar
 default.isar
 default.isar.lock
-
-# Temporary files
-*.tmp
-*.temp
-*~
-
-# Isar test files
 isar.dll
 *.isar-lck
 test_*.isar*
+
+# ============================================
+# Go Backend (backend/)
+# ============================================
+
+# Binaries
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/bin/
+backend/cmd/api/api
+backend/cmd/api/api.exe
+
+# Build & temp
+backend/tmp/
+backend/vendor/
+
+# Test & Coverage
+backend/*.test
+backend/*.out
+backend/coverage.*
+
+# Debug
+backend/__debug_bin*
+
+# Swagger generated docs (可選擇是否追蹤)
+# backend/docs/swagger.json
+# backend/docs/swagger.yaml
+# backend/docs/docs.go
+
+# ============================================
+# Docker
+# ============================================
+docker-compose.override.yml
