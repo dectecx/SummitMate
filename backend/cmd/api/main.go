@@ -10,12 +10,18 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"summitmate/api"
+	"summitmate/internal/auth"
 	"summitmate/internal/config"
 	"summitmate/internal/database"
+	"summitmate/internal/handler"
+	"summitmate/internal/repository"
+	"summitmate/internal/service"
 )
 
 // server implements api.ServerInterface
-type server struct{}
+type server struct {
+	authHandler *handler.AuthHandler
+}
 
 // GetHealth implements api.ServerInterface
 func (s server) GetHealth(w http.ResponseWriter, r *http.Request) {
@@ -25,6 +31,21 @@ func (s server) GetHealth(w http.ResponseWriter, r *http.Request) {
 		Status:  "ok",
 		Version: "0.1.0",
 	})
+}
+
+// RegisterUser implements api.ServerInterface
+func (s server) RegisterUser(w http.ResponseWriter, r *http.Request) {
+	s.authHandler.RegisterUser(w, r)
+}
+
+// LoginUser implements api.ServerInterface
+func (s server) LoginUser(w http.ResponseWriter, r *http.Request) {
+	s.authHandler.LoginUser(w, r)
+}
+
+// GetCurrentUser implements api.ServerInterface
+func (s server) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
+	s.authHandler.GetCurrentUser(w, r)
 }
 
 func main() {
@@ -39,8 +60,16 @@ func main() {
 	}
 	defer pool.Close()
 
-	// TODO: inject pool into handlers via DI
-	_ = pool
+	// Dependencies
+	userRepo := repository.NewUserRepository(pool)
+	tokenMgr := auth.NewTokenManager(cfg.JWTSecret)
+
+	authService := service.NewAuthService(userRepo, tokenMgr)
+	authHandler := handler.NewAuthHandler(authService)
+
+	srv := server{
+		authHandler: authHandler,
+	}
 
 	r := chi.NewRouter()
 
@@ -85,7 +114,7 @@ func main() {
 
 	// API Routes (mounted at /api/v1)
 	r.Route("/api/v1", func(r chi.Router) {
-		api.HandlerFromMux(server{}, r)
+		api.HandlerFromMux(srv, r)
 	})
 
 	log.Printf("🚀 SummitMate API starting on %s", cfg.Addr())
