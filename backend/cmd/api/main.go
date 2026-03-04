@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"summitmate/api"
+	"summitmate/internal/config"
+	"summitmate/internal/database"
 )
 
 // server implements api.ServerInterface
@@ -25,6 +28,20 @@ func (s server) GetHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Load config
+	cfg := config.Load()
+
+	// Connect to database
+	ctx := context.Background()
+	pool, err := database.Connect(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("❌ Database connection failed: %v", err)
+	}
+	defer pool.Close()
+
+	// TODO: inject pool into handlers via DI
+	_ = pool
+
 	r := chi.NewRouter()
 
 	// Middleware
@@ -71,10 +88,9 @@ func main() {
 		api.HandlerFromMux(server{}, r)
 	})
 
-	port := ":8080"
-	log.Printf("🚀 SummitMate API starting on %s", port)
-	log.Printf("📖 API Docs: http://localhost%s/docs", port)
-	if err := http.ListenAndServe(port, r); err != nil {
+	log.Printf("🚀 SummitMate API starting on %s", cfg.Addr())
+	log.Printf("📖 API Docs: http://localhost%s/docs", cfg.Addr())
+	if err := http.ListenAndServe(cfg.Addr(), r); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
