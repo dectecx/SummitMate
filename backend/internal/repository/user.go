@@ -10,24 +10,28 @@ import (
 	"summitmate/internal/model"
 )
 
+// ErrNotFound 代表查詢結果為空 (無符合條件的資料列)。
 var ErrNotFound = errors.New("resource not found")
 
+// UserRepository 封裝 users 表的資料庫存取操作。
 type UserRepository struct {
-	db *pgxpool.Pool
+	pool *pgxpool.Pool // PostgreSQL 連線池
 }
 
-func NewUserRepository(db *pgxpool.Pool) *UserRepository {
-	return &UserRepository{db: db}
+// NewUserRepository 建立 UserRepository 實例。
+func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
+	return &UserRepository{pool: pool}
 }
 
-// Create inserts a new user and returns the generated User struct.
-func (r *UserRepository) Create(ctx context.Context, u *model.User) (*model.User, error) {
+// Create 新增一筆使用者資料，回傳含有 DB 產生值 (id, avatar, created_at 等) 的完整 User。
+func (repo *UserRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	query := `
 		INSERT INTO users (email, password_hash, display_name)
 		VALUES ($1, $2, $3)
-		RETURNING id, email, password_hash, display_name, avatar, role_id, is_active, is_verified, created_at, updated_at
+		RETURNING id, email, password_hash, display_name, avatar, role_id,
+		          is_active, is_verified, created_at, updated_at
 	`
-	row := r.db.QueryRow(ctx, query, u.Email, u.PasswordHash, u.DisplayName)
+	row := repo.pool.QueryRow(ctx, query, user.Email, user.PasswordHash, user.DisplayName)
 
 	var created model.User
 	err := row.Scan(
@@ -49,59 +53,45 @@ func (r *UserRepository) Create(ctx context.Context, u *model.User) (*model.User
 	return &created, nil
 }
 
-// GetByEmail retrieves a user by their email.
-func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
-	query := `
-		SELECT id, email, password_hash, display_name, avatar, role_id, is_active, is_verified, created_at, updated_at
-		FROM users
-		WHERE email = $1
-	`
-	row := r.db.QueryRow(ctx, query, email)
-
-	var u model.User
-	err := row.Scan(
-		&u.ID,
-		&u.Email,
-		&u.PasswordHash,
-		&u.DisplayName,
-		&u.Avatar,
-		&u.RoleID,
-		&u.IsActive,
-		&u.IsVerified,
-		&u.CreatedAt,
-		&u.UpdatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNotFound
-		}
-		return nil, err
-	}
-
-	return &u, nil
+// GetByEmail 以 Email 查詢使用者。若不存在回傳 ErrNotFound。
+func (repo *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+	return repo.getOneUser(ctx, "email", email)
 }
 
-// GetByID retrieves a user by their ID.
-func (r *UserRepository) GetByID(ctx context.Context, id string) (*model.User, error) {
-	query := `
-		SELECT id, email, password_hash, display_name, avatar, role_id, is_active, is_verified, created_at, updated_at
-		FROM users
-		WHERE id = $1
-	`
-	row := r.db.QueryRow(ctx, query, id)
+// GetByID 以 UUID 查詢使用者。若不存在回傳 ErrNotFound。
+func (repo *UserRepository) GetByID(ctx context.Context, id string) (*model.User, error) {
+	return repo.getOneUser(ctx, "id", id)
+}
 
-	var u model.User
+// DeleteByID 刪除指定 ID 的使用者。用於測試資料清理等場景。
+func (repo *UserRepository) DeleteByID(ctx context.Context, id string) error {
+	_, err := repo.pool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+	return err
+}
+
+// getOneUser 是內部共用方法，依指定欄位查詢單一使用者。
+func (repo *UserRepository) getOneUser(ctx context.Context, column string, value string) (*model.User, error) {
+	// 此處 column 為程式內部控制 ("id" 或 "email")，非外部輸入，可安全拼接
+	query := `
+		SELECT id, email, password_hash, display_name, avatar, role_id,
+		       is_active, is_verified, created_at, updated_at
+		FROM users
+		WHERE ` + column + ` = $1
+	`
+	row := repo.pool.QueryRow(ctx, query, value)
+
+	var user model.User
 	err := row.Scan(
-		&u.ID,
-		&u.Email,
-		&u.PasswordHash,
-		&u.DisplayName,
-		&u.Avatar,
-		&u.RoleID,
-		&u.IsActive,
-		&u.IsVerified,
-		&u.CreatedAt,
-		&u.UpdatedAt,
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.DisplayName,
+		&user.Avatar,
+		&user.RoleID,
+		&user.IsActive,
+		&user.IsVerified,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -110,5 +100,5 @@ func (r *UserRepository) GetByID(ctx context.Context, id string) (*model.User, e
 		return nil, err
 	}
 
-	return &u, nil
+	return &user, nil
 }

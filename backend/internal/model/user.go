@@ -2,19 +2,19 @@ package model
 
 import "time"
 
-// User represents a user entity in the database.
+// User 對應資料庫 users 表的實體。
 type User struct {
-	ID                 string
-	Email              string
-	PasswordHash       string
-	DisplayName        string
-	Avatar             string
-	RoleID             *string
-	IsActive           bool
-	IsVerified         bool
-	VerificationCode   *string
-	VerificationExpiry *time.Time
-	LastLoginAt        *time.Time
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	ID                 string     // UUID 主鍵
+	Email              string     // 登入用 Email (唯一)
+	PasswordHash       string     // bcrypt 雜湊後的密碼
+	DisplayName        string     // 顯示名稱
+	Avatar             string     // Emoji 頭像 (預設 🐻)
+	RoleID             *string    // 角色 ID (FK → roles.id)
+	IsActive           bool       // 帳號是否啟用
+	IsVerified         bool       // Email 是否已驗證
+	VerificationCode   *string    // 驗證碼 (Nullable)
+	VerificationExpiry *time.Time // 驗證碼過期時間 (Nullable)
+	LastLoginAt        *time.Time // 最後登入時間 (Nullable)
+	CreatedAt          time.Time  // 建立時間
+	UpdatedAt          time.Time  // 更新時間
 }
