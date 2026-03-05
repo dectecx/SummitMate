@@ -10,6 +10,7 @@ import (
 	"github.com/oapi-codegen/runtime/types"
 
 	"summitmate/api"
+	mw "summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
 )
@@ -74,7 +75,7 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 // GetCurrentUser handles GET /auth/me
 func (h *AuthHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(string)
+	userID, ok := r.Context().Value(mw.UserIDKey).(string)
 	if !ok || userID == "" {
 		writeError(w, http.StatusUnauthorized, "未授權")
 		return

@@ -14,6 +14,7 @@ import (
 	"summitmate/internal/config"
 	"summitmate/internal/database"
 	"summitmate/internal/handler"
+	mw "summitmate/internal/middleware"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
 )
@@ -21,6 +22,7 @@ import (
 // server implements api.ServerInterface
 type server struct {
 	authHandler *handler.AuthHandler
+	tokenMgr    *auth.TokenManager
 }
 
 // GetHealth implements api.ServerInterface
@@ -43,9 +45,11 @@ func (s server) LoginUser(w http.ResponseWriter, r *http.Request) {
 	s.authHandler.LoginUser(w, r)
 }
 
-// GetCurrentUser implements api.ServerInterface
+// GetCurrentUser implements api.ServerInterface (JWT protected)
 func (s server) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	s.authHandler.GetCurrentUser(w, r)
+	// Apply JWT middleware inline for this protected endpoint
+	jwtMiddleware := mw.JWTAuth(s.tokenMgr)
+	jwtMiddleware(http.HandlerFunc(s.authHandler.GetCurrentUser)).ServeHTTP(w, r)
 }
 
 func main() {
@@ -69,6 +73,7 @@ func main() {
 
 	srv := server{
 		authHandler: authHandler,
+		tokenMgr:    tokenMgr,
 	}
 
 	r := chi.NewRouter()
