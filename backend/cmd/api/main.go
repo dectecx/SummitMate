@@ -14,90 +14,88 @@ import (
 	"summitmate/internal/config"
 	"summitmate/internal/database"
 	"summitmate/internal/handler"
-	mw "summitmate/internal/middleware"
+	appMiddleware "summitmate/internal/middleware"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
 )
 
-// server implements api.ServerInterface
+// server 實作 api.ServerInterface，串接各模組的 Handler。
 type server struct {
-	authHandler *handler.AuthHandler
-	tokenMgr    *auth.TokenManager
+	authHandler  *handler.AuthHandler // 認證相關 Handler
+	tokenManager *auth.TokenManager   // JWT Token 管理器 (供 middleware 使用)
 }
 
-// GetHealth implements api.ServerInterface
-func (s server) GetHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(api.HealthResponse{
+// GetHealth 處理 GET /health — 健康檢查端點。
+func (srv server) GetHealth(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(api.HealthResponse{
 		Status:  "ok",
 		Version: "0.1.0",
 	})
 }
 
-// RegisterUser implements api.ServerInterface
-func (s server) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	s.authHandler.RegisterUser(w, r)
+// RegisterUser 處理 POST /auth/register — 使用者註冊。
+func (srv server) RegisterUser(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.RegisterUser(writer, request)
 }
 
-// LoginUser implements api.ServerInterface
-func (s server) LoginUser(w http.ResponseWriter, r *http.Request) {
-	s.authHandler.LoginUser(w, r)
+// LoginUser 處理 POST /auth/login — 使用者登入。
+func (srv server) LoginUser(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.LoginUser(writer, request)
 }
 
-// GetCurrentUser implements api.ServerInterface (JWT protected)
-func (s server) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	// Apply JWT middleware inline for this protected endpoint
-	jwtMiddleware := mw.JWTAuth(s.tokenMgr)
-	jwtMiddleware(http.HandlerFunc(s.authHandler.GetCurrentUser)).ServeHTTP(w, r)
+// GetCurrentUser 處理 GET /auth/me — 取得當前登入使用者 (需 JWT)。
+// 使用 inline middleware 進行 JWT 驗證，以避免影響公開端點。
+func (srv server) GetCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.authHandler.GetCurrentUser)).ServeHTTP(writer, request)
 }
 
 func main() {
-	// Load config
+	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
 
-	// Connect to database
+	// 連線資料庫
 	ctx := context.Background()
 	pool, err := database.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("❌ Database connection failed: %v", err)
+		log.Fatalf("❌ 資料庫連線失敗: %v", err)
 	}
 	defer pool.Close()
 
-	// Dependencies
+	// 初始化各層依賴
 	userRepo := repository.NewUserRepository(pool)
-	tokenMgr := auth.NewTokenManager(cfg.JWTSecret)
-
-	authService := service.NewAuthService(userRepo, tokenMgr)
+	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
+	authService := service.NewAuthService(userRepo, tokenManager)
 	authHandler := handler.NewAuthHandler(authService)
 
 	srv := server{
-		authHandler: authHandler,
-		tokenMgr:    tokenMgr,
+		authHandler:  authHandler,
+		tokenManager: tokenManager,
 	}
 
-	r := chi.NewRouter()
+	// 設定 Router
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.RequestID)
 
-	// Middleware
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
-
-	// Serve OpenAPI spec (for Scalar UI)
-	r.Get("/openapi.json", func(w http.ResponseWriter, r *http.Request) {
+	// OpenAPI 規格端點 (供 Scalar UI 使用)
+	router.Get("/openapi.json", func(writer http.ResponseWriter, request *http.Request) {
 		swagger, err := api.GetSwagger()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(swagger)
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(swagger)
 	})
 
 	// Scalar API Reference UI
-	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write([]byte(`<!doctype html>
+	router.Get("/docs", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+		writer.Write([]byte(`<!doctype html>
 <html>
 <head>
   <title>SummitMate API Reference</title>
@@ -117,14 +115,14 @@ func main() {
 </html>`))
 	})
 
-	// API Routes (mounted at /api/v1)
-	r.Route("/api/v1", func(r chi.Router) {
-		api.HandlerFromMux(srv, r)
+	// 掛載 API 路由 (前綴 /api/v1)
+	router.Route("/api/v1", func(router chi.Router) {
+		api.HandlerFromMux(srv, router)
 	})
 
-	log.Printf("🚀 SummitMate API starting on %s", cfg.Addr())
-	log.Printf("📖 API Docs: http://localhost%s/docs", cfg.Addr())
-	if err := http.ListenAndServe(cfg.Addr(), r); err != nil {
-		log.Fatalf("Server failed: %v", err)
+	log.Printf("🚀 SummitMate API 已啟動: %s", cfg.Addr())
+	log.Printf("📖 API 文件: http://localhost%s/docs", cfg.Addr())
+	if err := http.ListenAndServe(cfg.Addr(), router); err != nil {
+		log.Fatalf("伺服器啟動失敗: %v", err)
 	}
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-
 	"github.com/oapi-codegen/runtime/types"
 
 	"summitmate/api"
@@ -15,120 +14,124 @@ import (
 	"summitmate/internal/service"
 )
 
+// AuthHandler 處理認證相關的 HTTP 請求。
 type AuthHandler struct {
 	authService *service.AuthService
 }
 
+// NewAuthHandler 建立 AuthHandler 實例。
 func NewAuthHandler(authService *service.AuthService) *AuthHandler {
-	return &AuthHandler{
-		authService: authService,
-	}
+	return &AuthHandler{authService: authService}
 }
 
-// RegisterUser handles POST /auth/register
-func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
+// RegisterUser 處理 POST /auth/register 請求。
+// 驗證輸入 → 呼叫 AuthService.Register → 回傳 JWT Token + 使用者資料。
+func (handler *AuthHandler) RegisterUser(writer http.ResponseWriter, request *http.Request) {
 	var req api.RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid request body")
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		writeError(writer, http.StatusBadRequest, "無效的請求內容")
 		return
 	}
 
-	// Basic Validation
+	// 基本驗證：密碼長度至少 8 碼
 	if len(req.Password) < 8 {
-		writeError(w, http.StatusBadRequest, "Password must be at least 8 characters")
+		writeError(writer, http.StatusBadRequest, "密碼長度至少需要 8 個字元")
 		return
 	}
 
-	user, token, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName)
+	user, token, err := handler.authService.Register(request.Context(), string(req.Email), req.Password, req.DisplayName)
 	if err != nil {
 		if errors.Is(err, service.ErrEmailAlreadyExists) {
-			writeError(w, http.StatusBadRequest, "此 Email 已經被註冊")
+			writeError(writer, http.StatusBadRequest, "此 Email 已經被註冊")
 			return
 		}
-		writeError(w, http.StatusInternalServerError, "Registration failed")
+		writeError(writer, http.StatusInternalServerError, "註冊失敗")
 		return
 	}
 
-	writeAuthResponse(w, http.StatusCreated, user, token)
+	writeAuthResponse(writer, http.StatusCreated, user, token)
 }
 
-// LoginUser handles POST /auth/login
-func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+// LoginUser 處理 POST /auth/login 請求。
+// 驗證帳密 → 呼叫 AuthService.Login → 回傳 JWT Token + 使用者資料。
+func (handler *AuthHandler) LoginUser(writer http.ResponseWriter, request *http.Request) {
 	var req api.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "Invalid request body")
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		writeError(writer, http.StatusBadRequest, "無效的請求內容")
 		return
 	}
 
-	user, token, err := h.authService.Login(r.Context(), string(req.Email), req.Password)
+	user, token, err := handler.authService.Login(request.Context(), string(req.Email), req.Password)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidCredentials) {
-			writeError(w, http.StatusUnauthorized, "帳號或密碼錯誤")
+			writeError(writer, http.StatusUnauthorized, "帳號或密碼錯誤")
 			return
 		}
-		writeError(w, http.StatusInternalServerError, "Login failed")
+		writeError(writer, http.StatusInternalServerError, "登入失敗")
 		return
 	}
 
-	writeAuthResponse(w, http.StatusOK, user, token)
+	writeAuthResponse(writer, http.StatusOK, user, token)
 }
 
-// GetCurrentUser handles GET /auth/me
-func (h *AuthHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value(mw.UserIDKey).(string)
+// GetCurrentUser 處理 GET /auth/me 請求。
+// 從 context 取得 user_id (由 JWT middleware 注入) → 查詢使用者資料。
+func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	// 從 context 取得 JWT middleware 注入的 user_id
+	userID, ok := request.Context().Value(mw.UserIDKey).(string)
 	if !ok || userID == "" {
-		writeError(w, http.StatusUnauthorized, "未授權")
+		writeError(writer, http.StatusUnauthorized, "未授權")
 		return
 	}
 
-	user, err := h.authService.GetUserByID(r.Context(), userID)
+	user, err := handler.authService.GetUserByID(request.Context(), userID)
 	if err != nil {
-		writeError(w, http.StatusUnauthorized, "使用者不存在")
+		writeError(writer, http.StatusUnauthorized, "使用者不存在")
 		return
 	}
 
 	// Convert model.User to api.User
 	apiUser := convertToAPIUser(user)
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(apiUser)
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(apiUser)
 }
 
-// Helper: Response Formatter
-func writeAuthResponse(w http.ResponseWriter, status int, user *model.User, token string) {
-	resp := api.AuthResponse{
+// --- 回應輔助函式 ---
+
+// writeAuthResponse 寫出認證成功的 JSON 回應 (含 Token 和使用者資料)。
+func writeAuthResponse(writer http.ResponseWriter, statusCode int, user *model.User, token string) {
+	response := api.AuthResponse{
 		Token: token,
 		User:  convertToAPIUser(user),
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(resp)
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(statusCode)
+	json.NewEncoder(writer).Encode(response)
 }
 
-func writeError(w http.ResponseWriter, status int, message string) {
-	resp := api.ErrorResponse{Message: message}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(resp)
+// writeError 寫出錯誤 JSON 回應。
+func writeError(writer http.ResponseWriter, statusCode int, message string) {
+	response := api.ErrorResponse{Message: message}
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(statusCode)
+	json.NewEncoder(writer).Encode(response)
 }
 
-func convertToAPIUser(u *model.User) api.User {
-	var uId, _ = uuid.Parse(u.ID)
+// convertToAPIUser 將資料庫 model.User 轉換為 API 回應用的 api.User。
+func convertToAPIUser(user *model.User) api.User {
+	parsedID, _ := uuid.Parse(user.ID)
 
+	// TODO: 未來應透過查詢或快取將 role_id 轉為實際角色代碼
 	role := "MEMBER"
-	// if u.RoleID != nil {
-	// 	// typically we would resolve role ID to code via query or cache
-	// }
 
 	return api.User{
-		Id:          uId,
-		Email:       types.Email(u.Email),
-		DisplayName: u.DisplayName,
-		Avatar:      u.Avatar,
-		IsActive:    u.IsActive,
-		IsVerified:  u.IsVerified,
+		Id:          parsedID,
+		Email:       types.Email(user.Email),
+		DisplayName: user.DisplayName,
+		Avatar:      user.Avatar,
+		IsActive:    user.IsActive,
+		IsVerified:  user.IsVerified,
 		Role:        role,
-		CreatedAt:   u.CreatedAt,
+		CreatedAt:   user.CreatedAt,
 	}
 }
