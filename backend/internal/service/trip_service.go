@@ -71,12 +71,15 @@ func (s *TripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 	return createdTrip, nil
 }
 
-// GetTrip 取得特定行程詳細資料，目前限制只有成員或建立者能看 (保護公開行程另計)。
 func (s *TripService) GetTrip(ctx context.Context, tripID, userID string) (*model.Trip, error) {
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, ErrUnauthorizedTripAccess
 	}
-	return s.tripRepo.GetByID(ctx, tripID)
+	return trip, nil
 }
 
 // ListTrips 取得使用者建立或已加入的行程。
@@ -84,16 +87,13 @@ func (s *TripService) ListTrips(ctx context.Context, userID string) ([]*model.Tr
 	return s.tripRepo.ListByUserID(ctx, userID)
 }
 
-// UpdateTrip 更新行程資料。
 func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*model.Trip, error) {
-	// 假設只有建立者或成員可以編輯
-	if !s.isTripCreator(ctx, tripID, userID) && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
-	}
-
 	existingTrip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
+	}
+	if existingTrip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
+		return nil, ErrUnauthorizedTripAccess
 	}
 
 	// 更新允許被修改的欄位
@@ -123,9 +123,12 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	return s.tripRepo.Update(ctx, existingTrip)
 }
 
-// DeleteTrip 刪除行程，只允許建立者刪除。
 func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
-	if !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return err
+	}
+	if trip.UserID != userID {
 		return ErrUnauthorizedTripAccess
 	}
 	return s.tripRepo.DeleteByID(ctx, tripID)
@@ -133,18 +136,24 @@ func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) err
 
 // --- Trip Members ---
 
-// ListMembers 取得行程的成員列表。
 func (s *TripService) ListMembers(ctx context.Context, tripID, userID string) ([]*model.TripMember, error) {
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, ErrUnauthorizedTripAccess
 	}
 	return s.memberRepo.ListByTripID(ctx, tripID)
 }
 
-// AddMember 透過 Email 邀請使用者加入行程。
 func (s *TripService) AddMember(ctx context.Context, tripID, userID, targetEmail string) (*model.TripMember, error) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
 	// 驗證是否有權限新增 (只有成員或建立者可以邀人)
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, ErrUnauthorizedTripAccess
 	}
 
@@ -173,16 +182,20 @@ func (s *TripService) AddMember(ctx context.Context, tripID, userID, targetEmail
 	return nil, errors.New("failed to find member after adding")
 }
 
-// RemoveMember 將成員移出行程。
 func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return err
+	}
+	
 	// 如果自己退出就可以，如果是要踢人則必須是 Creator
 	isSelfExit := actionUserID == targetUserID
-	if !isSelfExit && !s.isTripCreator(ctx, tripID, actionUserID) {
+	if !isSelfExit && trip.UserID != actionUserID {
 		return ErrUnauthorizedTripAccess
 	}
 
 	// 不得移除 Creator
-	if s.isTripCreator(ctx, tripID, targetUserID) {
+	if trip.UserID == targetUserID {
 		return ErrCannotRemoveCreator
 	}
 
@@ -191,17 +204,23 @@ func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 
 // --- Itinerary ---
 
-// ListItinerary 取得行程表。
 func (s *TripService) ListItinerary(ctx context.Context, tripID, userID string) ([]*model.ItineraryItem, error) {
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, ErrUnauthorizedTripAccess
 	}
 	return s.itineraryRepo.ListByTripID(ctx, tripID)
 }
 
-// AddItineraryItem 新增行程表節點。
 func (s *TripService) AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error) {
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, ErrUnauthorizedTripAccess
 	}
 
@@ -221,9 +240,12 @@ func (s *TripService) AddItineraryItem(ctx context.Context, tripID, userID strin
 	return s.itineraryRepo.Create(ctx, item)
 }
 
-// UpdateItineraryItem 更新行程表節點。
 func (s *TripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error) {
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, ErrUnauthorizedTripAccess
 	}
 
@@ -248,9 +270,12 @@ func (s *TripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, u
 	return s.itineraryRepo.Update(ctx, existingItem)
 }
 
-// DeleteItineraryItem 刪除行程表節點。
 func (s *TripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, userID string) error {
-	if !s.isTripMember(ctx, tripID, userID) && !s.isTripCreator(ctx, tripID, userID) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return err
+	}
+	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return ErrUnauthorizedTripAccess
 	}
 
@@ -267,14 +292,7 @@ func (s *TripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 
 // --- 輔助函式 ---
 
-// isTripCreator 判斷給定的 userID 是否為該行程的擁有者 (created_by 或是 user_id)。
-func (s *TripService) isTripCreator(ctx context.Context, tripID, userID string) bool {
-	trip, err := s.tripRepo.GetByID(ctx, tripID)
-	if err != nil {
-		return false
-	}
-	return trip.UserID == userID
-}
+
 
 // isTripMember 判斷給定的 userID 是否已經被加入該行程。
 func (s *TripService) isTripMember(ctx context.Context, tripID, userID string) bool {
