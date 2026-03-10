@@ -10,8 +10,8 @@ type Trip struct {
 	UserID      string    `json:"user_id" db:"user_id"`
 	Name        string    `json:"name" db:"name"`
 	Description *string   `json:"description" db:"description"`
-	StartDate   string    `json:"start_date" db:"start_date"` // YYYY-MM-DD
-	EndDate     *string   `json:"end_date" db:"end_date"`     // YYYY-MM-DD
+	StartDate   time.Time `json:"start_date" db:"start_date"` // YYYY-MM-DD
+	EndDate     *time.Time `json:"end_date" db:"end_date"`     // YYYY-MM-DD
 	CoverImage  *string   `json:"cover_image" db:"cover_image"`
 	IsActive    bool      `json:"is_active" db:"is_active"`
 	DayNames    []string  `json:"day_names" db:"day_names"`

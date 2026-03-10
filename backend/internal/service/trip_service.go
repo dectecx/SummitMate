@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
@@ -294,8 +295,8 @@ func (s *TripService) isTripMember(ctx context.Context, tripID, userID string) b
 type TripCreateRequest struct {
 	Name        string
 	Description *string
-	StartDate   string
-	EndDate     *string
+	StartDate   time.Time
+	EndDate     *time.Time
 	CoverImage  *string
 	DayNames    []string
 }
@@ -303,8 +304,8 @@ type TripCreateRequest struct {
 type TripUpdateRequest struct {
 	Name        *string
 	Description *string
-	StartDate   *string
-	EndDate     *string
+	StartDate   *time.Time
+	EndDate     *time.Time
 	CoverImage  *string
 	IsActive    *bool
 	DayNames    *[]string
