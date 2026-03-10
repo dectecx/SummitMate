@@ -112,7 +112,7 @@ func (s *APITestSuite) TestTrip_CreateAndGet() {
 	s.Equal("玉山三天兩夜", *trip.Description)
 	s.Equal("http://example.com/yushan.jpg", *trip.CoverImage)
 	s.Equal(client.UserID, trip.UserId.String())
-	s.True(trip.IsActive)
+	s.False(trip.IsActive)
 
 	// 2. 獲取單一 Trip
 	getResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
