@@ -90,8 +90,8 @@ func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 	svcReq := &service.TripCreateRequest{
 		Name:        req.Name,
 		Description: req.Description,
-		StartDate:   req.StartDate.Time.Format("2006-01-02"),
-		EndDate:     toServiceDateStringPtr(req.EndDate),
+		StartDate:   req.StartDate.Time,
+		EndDate:     toServiceTimePtr(req.EndDate),
 		CoverImage:  req.CoverImage,
 		DayNames:    dayNames,
 	}
@@ -170,16 +170,16 @@ func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId 
 		return
 	}
 
-	var startDate *string
+	var startDate *time.Time
 	if req.StartDate != nil {
-		sd := req.StartDate.Time.Format("2006-01-02")
-		startDate = &sd
+		t := req.StartDate.Time
+		startDate = &t
 	}
 	svcReq := &service.TripUpdateRequest{
 		Name:        req.Name,
 		Description: req.Description,
 		StartDate:   startDate,
-		EndDate:     toServiceDateStringPtr(req.EndDate),
+		EndDate:     toServiceTimePtr(req.EndDate),
 		CoverImage:  req.CoverImage,
 		IsActive:    req.IsActive,
 		DayNames:    req.DayNames,
@@ -522,25 +522,24 @@ func toOpenAPIUUID(s string) openapi_types.UUID {
 	return u
 }
 
-func toOpenAPIDate(s string) openapi_types.Date {
-	t, _ := time.Parse("2006-01-02", s)
+func toOpenAPIDate(t time.Time) openapi_types.Date {
 	return openapi_types.Date{Time: t}
 }
 
-func toOpenAPIDatePtr(s *string) *openapi_types.Date {
-	if s == nil {
+func toOpenAPIDatePtr(t *time.Time) *openapi_types.Date {
+	if t == nil {
 		return nil
 	}
-	d := toOpenAPIDate(*s)
+	d := openapi_types.Date{Time: *t}
 	return &d
 }
 
-func toServiceDateStringPtr(d *openapi_types.Date) *string {
+func toServiceTimePtr(d *openapi_types.Date) *time.Time {
 	if d == nil {
 		return nil
 	}
-	s := d.Time.Format("2006-01-02")
-	return &s
+	t := d.Time
+	return &t
 }
 
 func toOpenAPITime(t time.Time) time.Time {
