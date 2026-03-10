@@ -50,3 +50,9 @@ func JWTAuth(tokenManager *auth.TokenManager) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+// GetUserIDFromContext 從 context 取得 JWT middleware 注入的 user_id。
+func GetUserIDFromContext(ctx context.Context) (string, bool) {
+	userID, ok := ctx.Value(UserIDKey).(string)
+	return userID, ok
+}
