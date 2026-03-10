@@ -15,6 +15,8 @@ tags:
     description: System operations
   - name: auth
     description: Authentication & Authorization
+  - name: trips
+    description: Trip Management
 
 paths:
   /health:
@@ -108,6 +110,366 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /trips:
+    get:
+      summary: List Trips
+      description: 取得我建立或加入的行程列表
+      operationId: listTrips
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 回傳行程列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trip"
+        "401":
+          description: 未登入
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: Create Trip
+      description: 建立新行程
+      operationId: createTrip
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripCreateRequest"
+      responses:
+        "201":
+          description: 成功建立行程
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "400":
+          description: 參數錯誤
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未登入
+
+  /trips/{tripId}:
+    get:
+      summary: Get Trip
+      description: 取得特定行程詳細資料
+      operationId: getTrip
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 行程不存在
+    put:
+      summary: Update Trip
+      description: 更新行程資料
+      operationId: updateTrip
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripUpdateRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限更新
+        "404":
+          description: 行程不存在
+    delete:
+      summary: Delete Trip
+      description: 刪除行程
+      operationId: deleteTrip
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功刪除
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限刪除 (只有創建者可刪除)
+        "404":
+          description: 行程不存在
+
+  /trips/{tripId}/members:
+    get:
+      summary: List Trip Members
+      description: 取得行程成員列表
+      operationId: listTripMembers
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 回傳成員列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripMember"
+        "403":
+          description: 無權限存取
+    post:
+      summary: Add Trip Member
+      description: 新增成員到行程 (以 email 作為邀請依據)
+      operationId: addTripMember
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddMemberRequest"
+      responses:
+        "201":
+          description: 成功加入成員
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripMember"
+        "400":
+          description: 使用者無法加入 (例如已經是成員，或 email 不存在)
+        "403":
+          description: 無權限新增成員
+
+  /trips/{tripId}/members/{userId}:
+    delete:
+      summary: Remove Trip Member
+      description: 將成員移出行程
+      operationId: removeTripMember
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功移除
+        "403":
+          description: 無權限移除成員
+        "404":
+          description: 找不到該成員或行程
+
+  /trips/{tripId}/itinerary:
+    get:
+      summary: List Itinerary
+      description: 取得行程表
+      operationId: listItinerary
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 回傳行程表節點列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ItineraryItem"
+        "403":
+          description: 無權限存取
+    post:
+      summary: Add Itinerary Item
+      description: 新增行程表節點
+      operationId: addItineraryItem
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItineraryItemRequest"
+      responses:
+        "201":
+          description: 成功新增
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItineraryItem"
+        "400":
+          description: 參數錯誤
+        "403":
+          description: 無權限編輯
+
+  /trips/{tripId}/itinerary/{itemId}:
+    put:
+      summary: Update Itinerary Item
+      description: 更新行程表節點
+      operationId: updateItineraryItem
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItineraryItemRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItineraryItem"
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該節點
+    delete:
+      summary: Delete Itinerary Item
+      description: 刪除行程表節點
+      operationId: deleteItineraryItem
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功刪除
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該節點
 
 components:
   securitySchemes:
@@ -214,3 +576,208 @@ components:
           description: JWT Access Token
         user:
           $ref: "#/components/schemas/User"
+
+    Trip:
+      type: object
+      required:
+        - id
+        - user_id
+        - name
+        - start_date
+        - is_active
+        - day_names
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+          description: 建立此行程的使用者 ID
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        cover_image:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        day_names:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TripCreateRequest:
+      type: object
+      required:
+        - name
+        - start_date
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        cover_image:
+          type: string
+        day_names:
+          type: array
+          items:
+            type: string
+
+    TripUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        cover_image:
+          type: string
+        is_active:
+          type: boolean
+        day_names:
+          type: array
+          items:
+            type: string
+
+    TripMember:
+      type: object
+      required:
+        - trip_id
+        - user_id
+        - joined_at
+        - user_metadata
+      properties:
+        trip_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        joined_at:
+          type: string
+          format: date-time
+        user_metadata:
+          $ref: "#/components/schemas/User"
+
+    AddMemberRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+
+    ItineraryItem:
+      type: object
+      required:
+        - id
+        - trip_id
+        - day
+        - name
+        - est_time
+        - altitude
+        - distance
+        - note
+        - is_checked_in
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        day:
+          type: string
+        name:
+          type: string
+        est_time:
+          type: string
+          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+          description: "預計時間 HH:MM"
+        actual_time:
+          type: string
+          format: date-time
+          nullable: true
+        altitude:
+          type: integer
+        distance:
+          type: number
+          format: double
+        note:
+          type: string
+        image_asset:
+          type: string
+          nullable: true
+        is_checked_in:
+          type: boolean
+        checked_in_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ItineraryItemRequest:
+      type: object
+      required:
+        - day
+        - name
+        - est_time
+      properties:
+        day:
+          type: string
+        name:
+          type: string
+        est_time:
+          type: string
+          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+        altitude:
+          type: integer
+        distance:
+          type: number
+          format: double
+        note:
+          type: string
+        image_asset:
+          type: string

@@ -17,11 +17,14 @@ import (
 	appMiddleware "summitmate/internal/middleware"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // server 實作 api.ServerInterface，串接各模組的 Handler。
 type server struct {
 	authHandler  *handler.AuthHandler // 認證相關 Handler
+	tripHandler  *handler.TripHandler // 行程相關 Handler
 	tokenManager *auth.TokenManager   // JWT Token 管理器 (供 middleware 使用)
 }
 
@@ -52,6 +55,92 @@ func (srv server) GetCurrentUser(writer http.ResponseWriter, request *http.Reque
 	jwtAuth(http.HandlerFunc(srv.authHandler.GetCurrentUser)).ServeHTTP(writer, request)
 }
 
+// --- Trips ---
+
+func (srv server) ListTrips(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.tripHandler.ListTrips)).ServeHTTP(w, r)
+}
+
+func (srv server) CreateTrip(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.tripHandler.CreateTrip)).ServeHTTP(w, r)
+}
+
+func (srv server) GetTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.GetTrip(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.UpdateTrip(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.DeleteTrip(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Trip Members ---
+
+func (srv server) ListTripMembers(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.ListTripMembers(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) AddTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.AddTripMember(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) RemoveTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, userId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.RemoveTripMember(w, r, tripId, userId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Itinerary ---
+
+func (srv server) ListItinerary(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.ListItinerary(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) AddItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.AddItineraryItem(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.UpdateItineraryItem(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripHandler.DeleteItineraryItem(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -66,12 +155,21 @@ func main() {
 
 	// 初始化各層依賴
 	userRepo := repository.NewUserRepository(pool)
+	tripRepo := repository.NewTripRepository(pool)
+	memberRepo := repository.NewTripMemberRepository(pool)
+	itineraryRepo := repository.NewItineraryRepository(pool)
+
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
+
 	authService := service.NewAuthService(userRepo, tokenManager)
+	tripService := service.NewTripService(tripRepo, memberRepo, itineraryRepo, userRepo)
+
 	authHandler := handler.NewAuthHandler(authService)
+	tripHandler := handler.NewTripHandler(tripService)
 
 	srv := server{
 		authHandler:  authHandler,
+		tripHandler:  tripHandler,
 		tokenManager: tokenManager,
 	}
 
