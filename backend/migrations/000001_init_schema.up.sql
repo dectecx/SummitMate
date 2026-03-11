@@ -237,10 +237,11 @@ CREATE TABLE poll_options (
 );
 
 CREATE TABLE poll_votes (
-    poll_option_id UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
+    poll_id        UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    option_id      UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
     user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (poll_option_id, user_id)
+    PRIMARY KEY (poll_id, option_id, user_id)
 );
 
 -- 3.5 Group Events
