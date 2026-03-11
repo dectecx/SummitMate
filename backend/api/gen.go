@@ -42,6 +42,20 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
+// Favorite defines model for Favorite.
+type Favorite struct {
+	CreatedAt time.Time          `json:"created_at"`
+	Id        openapi_types.UUID `json:"id"`
+	TargetId  openapi_types.UUID `json:"target_id"`
+	Type      string             `json:"type"`
+}
+
+// FavoriteRequest defines model for FavoriteRequest.
+type FavoriteRequest struct {
+	TargetId openapi_types.UUID `json:"target_id"`
+	Type     string             `json:"type"`
+}
+
 // GearLibraryItem defines model for GearLibraryItem.
 type GearLibraryItem struct {
 	Category   string             `json:"category"`
@@ -127,6 +141,73 @@ type MealLibraryItemRequest struct {
 	Name       string  `json:"name"`
 	Notes      *string `json:"notes,omitempty"`
 	Weight     float64 `json:"weight"`
+}
+
+// Message defines model for Message.
+type Message struct {
+	Avatar      *string             `json:"avatar,omitempty"`
+	Category    string              `json:"category"`
+	Content     string              `json:"content"`
+	CreatedAt   time.Time           `json:"created_at"`
+	DisplayName string              `json:"display_name"`
+	Id          openapi_types.UUID  `json:"id"`
+	ParentId    *openapi_types.UUID `json:"parent_id,omitempty"`
+	Replies     *[]Message          `json:"replies,omitempty"`
+	Timestamp   time.Time           `json:"timestamp"`
+	TripId      openapi_types.UUID  `json:"trip_id"`
+	UpdatedAt   *time.Time          `json:"updated_at,omitempty"`
+	UserId      openapi_types.UUID  `json:"user_id"`
+}
+
+// MessageRequest defines model for MessageRequest.
+type MessageRequest struct {
+	Category *string             `json:"category,omitempty"`
+	Content  string              `json:"content"`
+	ParentId *openapi_types.UUID `json:"parent_id,omitempty"`
+}
+
+// Poll defines model for Poll.
+type Poll struct {
+	AllowMultipleVotes bool               `json:"allow_multiple_votes"`
+	CreatedAt          time.Time          `json:"created_at"`
+	CreatorId          openapi_types.UUID `json:"creator_id"`
+	Deadline           *time.Time         `json:"deadline,omitempty"`
+	Description        *string            `json:"description,omitempty"`
+	Id                 openapi_types.UUID `json:"id"`
+	IsAllowAddOption   bool               `json:"is_allow_add_option"`
+	MaxOptionLimit     int                `json:"max_option_limit"`
+	Options            []PollOption       `json:"options"`
+	ResultDisplayType  string             `json:"result_display_type"`
+	Status             string             `json:"status"`
+	Title              string             `json:"title"`
+	TripId             openapi_types.UUID `json:"trip_id"`
+	UpdatedAt          *time.Time         `json:"updated_at,omitempty"`
+}
+
+// PollOption defines model for PollOption.
+type PollOption struct {
+	CreatorId openapi_types.UUID    `json:"creator_id"`
+	Id        openapi_types.UUID    `json:"id"`
+	PollId    openapi_types.UUID    `json:"poll_id"`
+	Text      string                `json:"text"`
+	VoteCount int                   `json:"vote_count"`
+	Voters    *[]openapi_types.UUID `json:"voters,omitempty"`
+}
+
+// PollOptionRequest defines model for PollOptionRequest.
+type PollOptionRequest struct {
+	Text string `json:"text"`
+}
+
+// PollRequest defines model for PollRequest.
+type PollRequest struct {
+	AllowMultipleVotes *bool      `json:"allow_multiple_votes,omitempty"`
+	Deadline           *time.Time `json:"deadline,omitempty"`
+	Description        *string    `json:"description,omitempty"`
+	IsAllowAddOption   *bool      `json:"is_allow_add_option,omitempty"`
+	MaxOptionLimit     *int       `json:"max_option_limit,omitempty"`
+	ResultDisplayType  *string    `json:"result_display_type,omitempty"`
+	Title              string     `json:"title"`
 }
 
 // RegisterRequest defines model for RegisterRequest.
@@ -266,6 +347,9 @@ type LoginUserJSONRequestBody = LoginRequest
 // RegisterUserJSONRequestBody defines body for RegisterUser for application/json ContentType.
 type RegisterUserJSONRequestBody = RegisterRequest
 
+// AddFavoriteJSONRequestBody defines body for AddFavorite for application/json ContentType.
+type AddFavoriteJSONRequestBody = FavoriteRequest
+
 // CreateGearLibraryItemJSONRequestBody defines body for CreateGearLibraryItem for application/json ContentType.
 type CreateGearLibraryItemJSONRequestBody = GearLibraryItemRequest
 
@@ -305,6 +389,18 @@ type UpdateTripMealItemJSONRequestBody = TripMealItemRequest
 // AddTripMemberJSONRequestBody defines body for AddTripMember for application/json ContentType.
 type AddTripMemberJSONRequestBody = AddMemberRequest
 
+// AddTripMessageJSONRequestBody defines body for AddTripMessage for application/json ContentType.
+type AddTripMessageJSONRequestBody = MessageRequest
+
+// UpdateTripMessageJSONRequestBody defines body for UpdateTripMessage for application/json ContentType.
+type UpdateTripMessageJSONRequestBody = MessageRequest
+
+// CreateTripPollJSONRequestBody defines body for CreateTripPoll for application/json ContentType.
+type CreateTripPollJSONRequestBody = PollRequest
+
+// AddPollOptionJSONRequestBody defines body for AddPollOption for application/json ContentType.
+type AddPollOptionJSONRequestBody = PollOptionRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// User Login
@@ -316,6 +412,15 @@ type ServerInterface interface {
 	// User Registration
 	// (POST /auth/register)
 	RegisterUser(w http.ResponseWriter, r *http.Request)
+	// List Favorites
+	// (GET /favorites)
+	ListFavorites(w http.ResponseWriter, r *http.Request)
+	// Add to Favorites
+	// (POST /favorites)
+	AddFavorite(w http.ResponseWriter, r *http.Request)
+	// Remove from Favorites
+	// (DELETE /favorites/{targetId})
+	RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID)
 	// List Gear Library Items
 	// (GET /gear-library)
 	ListGearLibrary(w http.ResponseWriter, r *http.Request, params ListGearLibraryParams)
@@ -409,6 +514,36 @@ type ServerInterface interface {
 	// Remove Trip Member
 	// (DELETE /trips/{tripId}/members/{userId})
 	RemoveTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, userId openapi_types.UUID)
+	// Get Trip Messages
+	// (GET /trips/{tripId}/messages)
+	ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Add Trip Message
+	// (POST /trips/{tripId}/messages)
+	AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Delete Trip Message
+	// (DELETE /trips/{tripId}/messages/{messageId})
+	DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID)
+	// Update Trip Message
+	// (PUT /trips/{tripId}/messages/{messageId})
+	UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID)
+	// List Trip Polls
+	// (GET /trips/{tripId}/polls)
+	ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Create Trip Poll
+	// (POST /trips/{tripId}/polls)
+	CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Delete Trip Poll
+	// (DELETE /trips/{tripId}/polls/{pollId})
+	DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID)
+	// Get Trip Poll
+	// (GET /trips/{tripId}/polls/{pollId})
+	GetTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID)
+	// Add Poll Option
+	// (POST /trips/{tripId}/polls/{pollId}/options)
+	AddPollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID)
+	// Vote for Poll Option
+	// (POST /trips/{tripId}/polls/{pollId}/options/{optionId}/vote)
+	VotePollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID, optionId openapi_types.UUID)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -430,6 +565,24 @@ func (_ Unimplemented) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 // User Registration
 // (POST /auth/register)
 func (_ Unimplemented) RegisterUser(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Favorites
+// (GET /favorites)
+func (_ Unimplemented) ListFavorites(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Add to Favorites
+// (POST /favorites)
+func (_ Unimplemented) AddFavorite(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Remove from Favorites
+// (DELETE /favorites/{targetId})
+func (_ Unimplemented) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -619,6 +772,66 @@ func (_ Unimplemented) RemoveTripMember(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// Get Trip Messages
+// (GET /trips/{tripId}/messages)
+func (_ Unimplemented) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Add Trip Message
+// (POST /trips/{tripId}/messages)
+func (_ Unimplemented) AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete Trip Message
+// (DELETE /trips/{tripId}/messages/{messageId})
+func (_ Unimplemented) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update Trip Message
+// (PUT /trips/{tripId}/messages/{messageId})
+func (_ Unimplemented) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Trip Polls
+// (GET /trips/{tripId}/polls)
+func (_ Unimplemented) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create Trip Poll
+// (POST /trips/{tripId}/polls)
+func (_ Unimplemented) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete Trip Poll
+// (DELETE /trips/{tripId}/polls/{pollId})
+func (_ Unimplemented) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get Trip Poll
+// (GET /trips/{tripId}/polls/{pollId})
+func (_ Unimplemented) GetTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Add Poll Option
+// (POST /trips/{tripId}/polls/{pollId}/options)
+func (_ Unimplemented) AddPollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Vote for Poll Option
+// (POST /trips/{tripId}/polls/{pollId}/options/{optionId}/vote)
+func (_ Unimplemented) VotePollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID, optionId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // ServerInterfaceWrapper converts contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler            ServerInterface
@@ -667,6 +880,77 @@ func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.RegisterUser(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListFavorites operation middleware
+func (siw *ServerInterfaceWrapper) ListFavorites(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListFavorites(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddFavorite operation middleware
+func (siw *ServerInterfaceWrapper) AddFavorite(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddFavorite(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RemoveFavorite operation middleware
+func (siw *ServerInterfaceWrapper) RemoveFavorite(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "targetId" -------------
+	var targetId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "targetId", chi.URLParam(r, "targetId"), &targetId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "targetId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RemoveFavorite(w, r, targetId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1643,6 +1927,379 @@ func (siw *ServerInterfaceWrapper) RemoveTripMember(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// ListTripMessages operation middleware
+func (siw *ServerInterfaceWrapper) ListTripMessages(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTripMessages(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddTripMessage operation middleware
+func (siw *ServerInterfaceWrapper) AddTripMessage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddTripMessage(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteTripMessage operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTripMessage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "messageId" -------------
+	var messageId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "messageId", chi.URLParam(r, "messageId"), &messageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "messageId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteTripMessage(w, r, tripId, messageId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateTripMessage operation middleware
+func (siw *ServerInterfaceWrapper) UpdateTripMessage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "messageId" -------------
+	var messageId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "messageId", chi.URLParam(r, "messageId"), &messageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "messageId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateTripMessage(w, r, tripId, messageId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListTripPolls operation middleware
+func (siw *ServerInterfaceWrapper) ListTripPolls(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTripPolls(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateTripPoll operation middleware
+func (siw *ServerInterfaceWrapper) CreateTripPoll(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateTripPoll(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteTripPoll operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTripPoll(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "pollId" -------------
+	var pollId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "pollId", chi.URLParam(r, "pollId"), &pollId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pollId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteTripPoll(w, r, tripId, pollId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetTripPoll operation middleware
+func (siw *ServerInterfaceWrapper) GetTripPoll(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "pollId" -------------
+	var pollId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "pollId", chi.URLParam(r, "pollId"), &pollId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pollId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetTripPoll(w, r, tripId, pollId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddPollOption operation middleware
+func (siw *ServerInterfaceWrapper) AddPollOption(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "pollId" -------------
+	var pollId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "pollId", chi.URLParam(r, "pollId"), &pollId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pollId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddPollOption(w, r, tripId, pollId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// VotePollOption operation middleware
+func (siw *ServerInterfaceWrapper) VotePollOption(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "pollId" -------------
+	var pollId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "pollId", chi.URLParam(r, "pollId"), &pollId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pollId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "optionId" -------------
+	var optionId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "optionId", chi.URLParam(r, "optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "optionId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.VotePollOption(w, r, tripId, pollId, optionId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -1766,6 +2423,15 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/auth/register", wrapper.RegisterUser)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/favorites", wrapper.ListFavorites)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/favorites", wrapper.AddFavorite)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/favorites/{targetId}", wrapper.RemoveFavorite)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/gear-library", wrapper.ListGearLibrary)
 	})
 	r.Group(func(r chi.Router) {
@@ -1858,6 +2524,36 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/trips/{tripId}/members/{userId}", wrapper.RemoveTripMember)
 	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/trips/{tripId}/messages", wrapper.ListTripMessages)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{tripId}/messages", wrapper.AddTripMessage)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/trips/{tripId}/messages/{messageId}", wrapper.DeleteTripMessage)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/trips/{tripId}/messages/{messageId}", wrapper.UpdateTripMessage)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/trips/{tripId}/polls", wrapper.ListTripPolls)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{tripId}/polls", wrapper.CreateTripPoll)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/trips/{tripId}/polls/{pollId}", wrapper.DeleteTripPoll)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/trips/{tripId}/polls/{pollId}", wrapper.GetTripPoll)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{tripId}/polls/{pollId}/options", wrapper.AddPollOption)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{tripId}/polls/{pollId}/options/{optionId}/vote", wrapper.VotePollOption)
+	})
 
 	return r
 }
@@ -1865,66 +2561,84 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"//+jf14I9G4AAA==",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

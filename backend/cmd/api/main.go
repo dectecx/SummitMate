@@ -23,13 +23,16 @@ import (
 
 // server 實作 api.ServerInterface，串接各模組的 Handler。
 type server struct {
-	authHandler    *handler.AuthHandler
-	tripHandler    *handler.TripHandler
-	gearHandler    *handler.GearLibraryHandler
-	mealHandler    *handler.MealLibraryHandler
+	authHandler     *handler.AuthHandler
+	tripHandler     *handler.TripHandler
+	gearHandler     *handler.GearLibraryHandler
+	mealHandler     *handler.MealLibraryHandler
 	tripGearHandler *handler.TripGearHandler
 	tripMealHandler *handler.TripMealHandler
-	tokenManager   *auth.TokenManager
+	messageHandler  *handler.MessageHandler
+	pollHandler     *handler.PollHandler
+	favoriteHandler *handler.FavoriteHandler
+	tokenManager    *auth.TokenManager
 }
 
 // GetHealth 處理 GET /health — 健康檢查端點。
@@ -275,6 +278,95 @@ func (srv server) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tri
 	})).ServeHTTP(w, r)
 }
 
+// --- Interaction API Stubs ---
+
+func (srv server) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.ListTripMessages(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.AddTripMessage(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.UpdateTripMessage(w, r, tripId, messageId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.DeleteTripMessage(w, r, tripId, messageId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.ListTripPolls(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.CreateTripPoll(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) GetTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.GetTripPoll(w, r, tripId, pollId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.DeleteTripPoll(w, r, tripId, pollId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) AddPollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.AddPollOption(w, r, tripId, pollId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) VotePollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID, optionId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.VotePollOption(w, r, tripId, pollId, optionId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) ListFavorites(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.favoriteHandler.ListFavorites)).ServeHTTP(w, r)
+}
+
+func (srv server) AddFavorite(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.favoriteHandler.AddFavorite)).ServeHTTP(w, r)
+}
+
+func (srv server) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.favoriteHandler.RemoveFavorite(w, r, targetId)
+	})).ServeHTTP(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -297,6 +389,9 @@ func main() {
 
 	tripGearRepo := repository.NewTripGearRepository(pool)
 	tripMealRepo := repository.NewTripMealRepository(pool)
+	messageRepo := repository.NewMessageRepository(pool)
+	pollRepo := repository.NewPollRepository(pool)
+	favoriteRepo := repository.NewFavoriteRepository(pool)
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
@@ -306,6 +401,9 @@ func main() {
 	mealLibService := service.NewMealLibraryService(mealLibRepo)
 	tripGearService := service.NewTripGearService(tripGearRepo, tripRepo, memberRepo)
 	tripMealService := service.NewTripMealService(tripMealRepo, tripRepo, memberRepo)
+	messageService := service.NewMessageService(messageRepo, tripRepo, memberRepo)
+	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
+	favoriteService := service.NewFavoriteService(favoriteRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -313,6 +411,9 @@ func main() {
 	mealHandler := handler.NewMealLibraryHandler(mealLibService)
 	tripGearHandler := handler.NewTripGearHandler(tripGearService)
 	tripMealHandler := handler.NewTripMealHandler(tripMealService)
+	messageHandler := handler.NewMessageHandler(messageService)
+	pollHandler := handler.NewPollHandler(pollService)
+	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 
 	srv := server{
 		authHandler:     authHandler,
@@ -321,6 +422,9 @@ func main() {
 		mealHandler:     mealHandler,
 		tripGearHandler: tripGearHandler,
 		tripMealHandler: tripMealHandler,
+		messageHandler:  messageHandler,
+		pollHandler:     pollHandler,
+		favoriteHandler: favoriteHandler,
 		tokenManager:    tokenManager,
 	}
 
