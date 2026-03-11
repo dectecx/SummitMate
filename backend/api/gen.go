@@ -42,6 +42,28 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
+// GearLibraryItem defines model for GearLibraryItem.
+type GearLibraryItem struct {
+	Category   string             `json:"category"`
+	CreatedAt  time.Time          `json:"created_at"`
+	Id         openapi_types.UUID `json:"id"`
+	IsArchived bool               `json:"is_archived"`
+	Name       string             `json:"name"`
+	Notes      *string            `json:"notes,omitempty"`
+	UpdatedAt  time.Time          `json:"updated_at"`
+	UserId     openapi_types.UUID `json:"user_id"`
+	Weight     float64            `json:"weight"`
+}
+
+// GearLibraryItemRequest defines model for GearLibraryItemRequest.
+type GearLibraryItemRequest struct {
+	Category   string  `json:"category"`
+	IsArchived *bool   `json:"is_archived,omitempty"`
+	Name       string  `json:"name"`
+	Notes      *string `json:"notes,omitempty"`
+	Weight     float64 `json:"weight"`
+}
+
 // HealthResponse defines model for HealthResponse.
 type HealthResponse struct {
 	Status  string `json:"status"`
@@ -83,6 +105,28 @@ type ItineraryItemRequest struct {
 type LoginRequest struct {
 	Email    openapi_types.Email `json:"email"`
 	Password string              `json:"password"`
+}
+
+// MealLibraryItem defines model for MealLibraryItem.
+type MealLibraryItem struct {
+	Calories   float64            `json:"calories"`
+	CreatedAt  time.Time          `json:"created_at"`
+	Id         openapi_types.UUID `json:"id"`
+	IsArchived bool               `json:"is_archived"`
+	Name       string             `json:"name"`
+	Notes      *string            `json:"notes,omitempty"`
+	UpdatedAt  time.Time          `json:"updated_at"`
+	UserId     openapi_types.UUID `json:"user_id"`
+	Weight     float64            `json:"weight"`
+}
+
+// MealLibraryItemRequest defines model for MealLibraryItemRequest.
+type MealLibraryItemRequest struct {
+	Calories   float64 `json:"calories"`
+	IsArchived *bool   `json:"is_archived,omitempty"`
+	Name       string  `json:"name"`
+	Notes      *string `json:"notes,omitempty"`
+	Weight     float64 `json:"weight"`
 }
 
 // RegisterRequest defines model for RegisterRequest.
@@ -152,11 +196,33 @@ type User struct {
 	Role string `json:"role"`
 }
 
+// ListGearLibraryParams defines parameters for ListGearLibrary.
+type ListGearLibraryParams struct {
+	IncludeArchived *bool `form:"include_archived,omitempty" json:"include_archived,omitempty"`
+}
+
+// ListMealLibraryParams defines parameters for ListMealLibrary.
+type ListMealLibraryParams struct {
+	IncludeArchived *bool `form:"include_archived,omitempty" json:"include_archived,omitempty"`
+}
+
 // LoginUserJSONRequestBody defines body for LoginUser for application/json ContentType.
 type LoginUserJSONRequestBody = LoginRequest
 
 // RegisterUserJSONRequestBody defines body for RegisterUser for application/json ContentType.
 type RegisterUserJSONRequestBody = RegisterRequest
+
+// CreateGearLibraryItemJSONRequestBody defines body for CreateGearLibraryItem for application/json ContentType.
+type CreateGearLibraryItemJSONRequestBody = GearLibraryItemRequest
+
+// UpdateGearLibraryItemJSONRequestBody defines body for UpdateGearLibraryItem for application/json ContentType.
+type UpdateGearLibraryItemJSONRequestBody = GearLibraryItemRequest
+
+// CreateMealLibraryItemJSONRequestBody defines body for CreateMealLibraryItem for application/json ContentType.
+type CreateMealLibraryItemJSONRequestBody = MealLibraryItemRequest
+
+// UpdateMealLibraryItemJSONRequestBody defines body for UpdateMealLibraryItem for application/json ContentType.
+type UpdateMealLibraryItemJSONRequestBody = MealLibraryItemRequest
 
 // CreateTripJSONRequestBody defines body for CreateTrip for application/json ContentType.
 type CreateTripJSONRequestBody = TripCreateRequest
@@ -184,9 +250,39 @@ type ServerInterface interface {
 	// User Registration
 	// (POST /auth/register)
 	RegisterUser(w http.ResponseWriter, r *http.Request)
+	// List Gear Library Items
+	// (GET /gear-library)
+	ListGearLibrary(w http.ResponseWriter, r *http.Request, params ListGearLibraryParams)
+	// Create Gear Library Item
+	// (POST /gear-library)
+	CreateGearLibraryItem(w http.ResponseWriter, r *http.Request)
+	// Delete Gear Library Item
+	// (DELETE /gear-library/{itemId})
+	DeleteGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
+	// Get Gear Library Item
+	// (GET /gear-library/{itemId})
+	GetGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
+	// Update Gear Library Item
+	// (PUT /gear-library/{itemId})
+	UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
 	// Health Check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
+	// List Meal Library Items
+	// (GET /meal-library)
+	ListMealLibrary(w http.ResponseWriter, r *http.Request, params ListMealLibraryParams)
+	// Create Meal Library Item
+	// (POST /meal-library)
+	CreateMealLibraryItem(w http.ResponseWriter, r *http.Request)
+	// Delete Meal Library Item
+	// (DELETE /meal-library/{itemId})
+	DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
+	// Get Meal Library Item
+	// (GET /meal-library/{itemId})
+	GetMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
+	// Update Meal Library Item
+	// (PUT /meal-library/{itemId})
+	UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
 	// List Trips
 	// (GET /trips)
 	ListTrips(w http.ResponseWriter, r *http.Request)
@@ -247,9 +343,69 @@ func (_ Unimplemented) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// List Gear Library Items
+// (GET /gear-library)
+func (_ Unimplemented) ListGearLibrary(w http.ResponseWriter, r *http.Request, params ListGearLibraryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create Gear Library Item
+// (POST /gear-library)
+func (_ Unimplemented) CreateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete Gear Library Item
+// (DELETE /gear-library/{itemId})
+func (_ Unimplemented) DeleteGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get Gear Library Item
+// (GET /gear-library/{itemId})
+func (_ Unimplemented) GetGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update Gear Library Item
+// (PUT /gear-library/{itemId})
+func (_ Unimplemented) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // Health Check
 // (GET /health)
 func (_ Unimplemented) GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Meal Library Items
+// (GET /meal-library)
+func (_ Unimplemented) ListMealLibrary(w http.ResponseWriter, r *http.Request, params ListMealLibraryParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create Meal Library Item
+// (POST /meal-library)
+func (_ Unimplemented) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete Meal Library Item
+// (DELETE /meal-library/{itemId})
+func (_ Unimplemented) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get Meal Library Item
+// (GET /meal-library/{itemId})
+func (_ Unimplemented) GetMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update Meal Library Item
+// (PUT /meal-library/{itemId})
+func (_ Unimplemented) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -382,11 +538,303 @@ func (siw *ServerInterfaceWrapper) RegisterUser(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// ListGearLibrary operation middleware
+func (siw *ServerInterfaceWrapper) ListGearLibrary(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListGearLibraryParams
+
+	// ------------- Optional query parameter "include_archived" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "include_archived", r.URL.Query(), &params.IncludeArchived, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "include_archived", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListGearLibrary(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateGearLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) CreateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateGearLibraryItem(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteGearLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) DeleteGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteGearLibraryItem(w, r, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetGearLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) GetGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGearLibraryItem(w, r, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateGearLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateGearLibraryItem(w, r, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetHealth operation middleware
 func (siw *ServerInterfaceWrapper) GetHealth(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetHealth(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListMealLibrary operation middleware
+func (siw *ServerInterfaceWrapper) ListMealLibrary(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListMealLibraryParams
+
+	// ------------- Optional query parameter "include_archived" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "include_archived", r.URL.Query(), &params.IncludeArchived, runtime.BindQueryParameterOptions{Type: "boolean", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "include_archived", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListMealLibrary(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateMealLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateMealLibraryItem(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteMealLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteMealLibraryItem(w, r, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetMealLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) GetMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMealLibraryItem(w, r, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateMealLibraryItem operation middleware
+func (siw *ServerInterfaceWrapper) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateMealLibraryItem(w, r, itemId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -896,7 +1344,37 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/auth/register", wrapper.RegisterUser)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/gear-library", wrapper.ListGearLibrary)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/gear-library", wrapper.CreateGearLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/gear-library/{itemId}", wrapper.DeleteGearLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/gear-library/{itemId}", wrapper.GetGearLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/gear-library/{itemId}", wrapper.UpdateGearLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/health", wrapper.GetHealth)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/meal-library", wrapper.ListMealLibrary)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/meal-library", wrapper.CreateMealLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/meal-library/{itemId}", wrapper.DeleteMealLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/meal-library/{itemId}", wrapper.GetMealLibraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/meal-library/{itemId}", wrapper.UpdateMealLibraryItem)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/trips", wrapper.ListTrips)
@@ -941,47 +1419,58 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"J0RRAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -403,37 +403,109 @@ CREATE TABLE gear_items (
 );
 ```
 
-#### Table: `gear_sets`
+### 3.4 食物模組 (Meals)
 
-| Column       | Type             | Constraints | Description                    |
-| :----------- | :--------------- | :---------- | :----------------------------- |
-| **id**       | UUID             | **PK**      |                                |
-| title        | VARCHAR(200)     | NN          |                                |
-| author       | VARCHAR(100)     | NN          | 上傳者暱稱                     |
-| total_weight | DOUBLE PRECISION | NN, Default | 總重 (g)                       |
-| item_count   | INT              | NN, Default |                                |
-| visibility   | VARCHAR(20)      | NN, Default | `public`/`protected`/`private` |
-| access_key   | VARCHAR(100)     |             | protected/private 用           |
-| uploaded_at  | TIMESTAMPTZ      | NN, Default |                                |
-| created_at   | TIMESTAMPTZ      | NN, Default |                                |
-| created_by   | UUID             | **FK**, NN  |                                |
-| updated_at   | TIMESTAMPTZ      | NN, Default |                                |
-| updated_by   | UUID             | **FK**, NN  |                                |
+#### Table: `meal_library_items`
 
-> [!IMPORTANT]
-> GAS 版本使用 `items_json` / `meals_json` 儲存裝備和糧食 JSON。
-> PostgreSQL 正規化為 `gear_set_items` 和 `meal_items` 子表。
+| Column      | Type             | Constraints | Description |
+| :---------- | :--------------- | :---------- | :---------- |
+| **id**      | UUID             | **PK**      |             |
+| **user_id** | UUID             | **FK**, NN  | 擁有者      |
+| name        | VARCHAR(200)     | NN          |             |
+| weight      | DOUBLE PRECISION | NN, Default | 重量 (公克) |
+| calories    | DOUBLE PRECISION | NN, Default | 熱量 (Kcal) |
+| notes       | TEXT             |             |             |
+| is_archived | BOOLEAN          | NN, Default | Soft Delete |
+| created_at  | TIMESTAMPTZ      | NN, Default |             |
+| created_by  | UUID             | **FK**, NN  |             |
+| updated_at  | TIMESTAMPTZ      | NN, Default |             |
+| updated_by  | UUID             | **FK**, NN  |             |
 
 ```sql
-CREATE TABLE gear_sets (
+CREATE TABLE meal_library_items (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name        VARCHAR(200)     NOT NULL,
+    weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
+    calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
+    notes       TEXT,
+    is_archived BOOLEAN          NOT NULL DEFAULT FALSE,
+    created_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    created_by  UUID             NOT NULL REFERENCES users(id),
+    updated_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    updated_by  UUID             NOT NULL REFERENCES users(id)
+);
+```
+
+#### Table: `meal_items`
+
+| Column              | Type             | Constraints | Description                           |
+| :------------------ | :--------------- | :---------- | :------------------------------------ |
+| **id**              | UUID             | **PK**      |                                       |
+| **trip_id**         | UUID             | **FK**, NN  | 屬於特定行程                          |
+| **library_item_id** | UUID             | **FK**      | 連結食物庫 (SET NULL on delete)       |
+| day                 | VARCHAR(10)      | NN          | `D0`, `D1`                            |
+| meal_type           | VARCHAR(20)      | NN          | `breakfast`/`lunch`/`dinner`/`action` |
+| name                | VARCHAR(200)     | NN          |                                       |
+| weight              | DOUBLE PRECISION | NN, Default | 重量 (公克)                           |
+| calories            | DOUBLE PRECISION | NN, Default | 熱量 (Kcal)                           |
+| quantity            | INT              | NN, Default |                                       |
+| note                | TEXT             |             |                                       |
+| created_at          | TIMESTAMPTZ      | NN, Default |                                       |
+| created_by          | UUID             | **FK**, NN  |                                       |
+| updated_at          | TIMESTAMPTZ      | NN, Default |                                       |
+| updated_by          | UUID             | **FK**, NN  |                                       |
+
+```sql
+CREATE TABLE meal_items (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id         UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    library_item_id UUID             REFERENCES meal_library_items(id) ON DELETE SET NULL,
+    day             VARCHAR(10)      NOT NULL,
+    meal_type       VARCHAR(20)      NOT NULL,
+    name            VARCHAR(200)     NOT NULL,
+    weight          DOUBLE PRECISION NOT NULL DEFAULT 0,
+    calories        DOUBLE PRECISION NOT NULL DEFAULT 0,
+    quantity        INT              NOT NULL DEFAULT 1,
+    note            TEXT,
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    created_by      UUID             NOT NULL REFERENCES users(id),
+    updated_at      TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    updated_by      UUID             NOT NULL REFERENCES users(id)
+);
+```
+
+---
+
+### 3.5 範本模組 (Templates)
+
+#### Table: `templates`
+
+| Column       | Type             | Constraints | Description                                   |
+| :----------- | :--------------- | :---------- | :-------------------------------------------- |
+| **id**       | UUID             | **PK**      |                                               |
+| type         | VARCHAR(20)      | NN          | `GEAR_SET`, `MEAL_PLAN`, `PACK`               |
+| title        | VARCHAR(200)     | NN          |                                               |
+| author       | VARCHAR(100)     | NN          | 顯示名稱                                      |
+| total_weight | DOUBLE PRECISION | NN, Default | 總重 (公克)                                   |
+| item_count   | INT              | NN, Default |                                               |
+| visibility   | VARCHAR(20)      | NN, Default | `public`, `protected`, `private`              |
+| access_key   | VARCHAR(100)     |             | 用於 protected/private 保護密碼               |
+| created_at   | TIMESTAMPTZ      | NN, Default |                                               |
+| created_by   | UUID             | **FK**, NN  |                                               |
+| updated_at   | TIMESTAMPTZ      | NN, Default |                                               |
+| updated_by   | UUID             | **FK**, NN  |                                               |
+
+```sql
+CREATE TABLE templates (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    type         VARCHAR(20)      NOT NULL,
     title        VARCHAR(200)     NOT NULL,
     author       VARCHAR(100)     NOT NULL,
     total_weight DOUBLE PRECISION NOT NULL DEFAULT 0,
     item_count   INT              NOT NULL DEFAULT 0,
     visibility   VARCHAR(20)      NOT NULL DEFAULT 'public',
     access_key   VARCHAR(100),
-    uploaded_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     created_at   TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     created_by   UUID             NOT NULL REFERENCES users(id),
     updated_at   TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
@@ -441,22 +513,22 @@ CREATE TABLE gear_sets (
 );
 ```
 
-#### Table: `gear_set_items`
+#### Table: `template_gear_items`
 
 | Column          | Type             | Constraints | Description |
 | :-------------- | :--------------- | :---------- | :---------- |
 | **id**          | UUID             | **PK**      |             |
-| **gear_set_id** | UUID             | **FK**, NN  |             |
+| **template_id** | UUID             | **FK**, NN  |             |
 | name            | VARCHAR(200)     | NN          |             |
-| weight          | DOUBLE PRECISION | NN, Default |             |
+| weight          | DOUBLE PRECISION | NN, Default | 重量 (公克) |
 | category        | VARCHAR(50)      | NN, Default |             |
 | quantity        | INT              | NN, Default |             |
 | order_index     | INT              |             |             |
 
 ```sql
-CREATE TABLE gear_set_items (
+CREATE TABLE template_gear_items (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    gear_set_id UUID             NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
+    template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
     category    VARCHAR(50)      NOT NULL DEFAULT 'Other',
@@ -465,13 +537,12 @@ CREATE TABLE gear_set_items (
 );
 ```
 
-#### Table: `meal_items`
+#### Table: `template_meal_items`
 
 | Column          | Type             | Constraints | Description                           |
 | :-------------- | :--------------- | :---------- | :------------------------------------ |
 | **id**          | UUID             | **PK**      |                                       |
-| **gear_set_id** | UUID             | **FK**      | 屬於裝備組合                          |
-| **trip_id**     | UUID             | **FK**      | 或屬於行程                            |
+| **template_id** | UUID             | **FK**, NN  |                                       |
 | day             | VARCHAR(10)      | NN          | `D0`, `D1`                            |
 | meal_type       | VARCHAR(20)      | NN          | `breakfast`/`lunch`/`dinner`/`action` |
 | name            | VARCHAR(200)     | NN          |                                       |
@@ -481,24 +552,22 @@ CREATE TABLE gear_set_items (
 | note            | TEXT             |             |                                       |
 
 ```sql
-CREATE TABLE meal_items (
+CREATE TABLE template_meal_items (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    gear_set_id UUID             REFERENCES gear_sets(id) ON DELETE CASCADE,
-    trip_id     UUID             REFERENCES trips(id) ON DELETE CASCADE,
+    template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     day         VARCHAR(10)      NOT NULL,
     meal_type   VARCHAR(20)      NOT NULL,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
     calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
     quantity    INT              NOT NULL DEFAULT 1,
-    note        TEXT,
-    CHECK (gear_set_id IS NOT NULL OR trip_id IS NOT NULL)
+    note        TEXT
 );
 ```
 
 ---
 
-### 3.4 互動模組 (Polls)
+### 3.6 互動模組 (Polls)
 
 #### Table: `polls`
 
@@ -572,7 +641,7 @@ CREATE TABLE poll_votes (
 
 ---
 
-### 3.5 揪團模組 (Group Events)
+### 3.7 揪團模組 (Group Events)
 
 #### Table: `group_events`
 
@@ -666,7 +735,7 @@ CREATE TABLE group_event_likes (
 
 ---
 
-### 3.6 收藏模組 (Favorites)
+### 3.8 收藏模組 (Favorites)
 
 ```sql
 CREATE TABLE favorites (
@@ -684,7 +753,7 @@ CREATE TABLE favorites (
 
 ---
 
-### 3.7 系統監控 (System)
+### 3.9 系統監控 (System)
 
 #### Table: `logs`
 
@@ -723,7 +792,7 @@ CREATE TABLE heartbeats (
 | TripMembers            | `trip_members`             | 改為複合主鍵 (trip_id, user_id)              |
 | Itinerary              | `itinerary_items`          | 無重大變更                                   |
 | Messages               | `messages`                 | 移除 `user`/`avatar` 快照, 新增 `user_id` FK |
-| GearSets               | `gear_sets`                | `items_json`/`meals_json` → 正規化子表       |
+| Templates              | `templates`                | 整合裝備與食物組合範本                       |
 | TripGear               | `gear_items`               | 新增 `library_item_id` FK                    |
 | GearLibrary            | `gear_library_items`       | 新增 `is_archived`                           |
 | Polls                  | `polls`                    | 新增 `trip_id` FK                            |
@@ -755,6 +824,9 @@ Hive Box 結構與 Backend Schema 對應，可包含本地專用欄位 (e.g. `sy
 | `user_profile` | users                 | 本地快取        |
 | `gear_items`   | gear_items            | 含 `syncStatus` |
 | `gear_library` | gear_library_items    | 含 `syncStatus` |
+| `meal_items`   | meal_items            | 含 `syncStatus` |
+| `meal_library` | meal_library_items    | 含 `syncStatus` |
+| `templates`    | templates             | 支援下載組合包  |
 | `polls`        | polls + poll_options  | 合併快取        |
 | `group_events` | group_events          |                 |
 | `favorites`    | favorites             |                 |
