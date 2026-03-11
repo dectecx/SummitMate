@@ -136,24 +136,55 @@ CREATE TABLE gear_items (
     updated_by      UUID             REFERENCES users(id)
 );
 
-CREATE TABLE gear_sets (
+CREATE TABLE meal_library_items (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name        VARCHAR(200)     NOT NULL,
+    weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
+    calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
+    notes       TEXT,
+    is_archived BOOLEAN          NOT NULL DEFAULT FALSE,
+    created_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    created_by  UUID             NOT NULL REFERENCES users(id),
+    updated_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    updated_by  UUID             NOT NULL REFERENCES users(id)
+);
+
+CREATE TABLE meal_items (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    trip_id         UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    library_item_id UUID             REFERENCES meal_library_items(id) ON DELETE SET NULL,
+    day             VARCHAR(10)      NOT NULL,
+    meal_type       VARCHAR(20)      NOT NULL,
+    name            VARCHAR(200)     NOT NULL,
+    weight          DOUBLE PRECISION NOT NULL DEFAULT 0,
+    calories        DOUBLE PRECISION NOT NULL DEFAULT 0,
+    quantity        INT              NOT NULL DEFAULT 1,
+    note            TEXT,
+    created_at      TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    created_by      UUID             NOT NULL REFERENCES users(id),
+    updated_at      TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
+    updated_by      UUID             NOT NULL REFERENCES users(id)
+);
+
+CREATE TABLE templates (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    type         VARCHAR(20)      NOT NULL,
     title        VARCHAR(200)     NOT NULL,
     author       VARCHAR(100)     NOT NULL,
     total_weight DOUBLE PRECISION NOT NULL DEFAULT 0,
     item_count   INT              NOT NULL DEFAULT 0,
     visibility   VARCHAR(20)      NOT NULL DEFAULT 'public',
     access_key   VARCHAR(100),
-    uploaded_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     created_at   TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     created_by   UUID             NOT NULL REFERENCES users(id),
     updated_at   TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     updated_by   UUID             NOT NULL REFERENCES users(id)
 );
 
-CREATE TABLE gear_set_items (
+CREATE TABLE template_gear_items (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    gear_set_id UUID             NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
+    template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
     category    VARCHAR(50)      NOT NULL DEFAULT 'Other',
@@ -161,18 +192,16 @@ CREATE TABLE gear_set_items (
     order_index INT
 );
 
-CREATE TABLE meal_items (
+CREATE TABLE template_meal_items (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    gear_set_id UUID             REFERENCES gear_sets(id) ON DELETE CASCADE,
-    trip_id     UUID             REFERENCES trips(id) ON DELETE CASCADE,
+    template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     day         VARCHAR(10)      NOT NULL,
     meal_type   VARCHAR(20)      NOT NULL,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
     calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
     quantity    INT              NOT NULL DEFAULT 1,
-    note        TEXT,
-    CHECK (gear_set_id IS NOT NULL OR trip_id IS NOT NULL)
+    note        TEXT
 );
 
 -- 3.4 Polls

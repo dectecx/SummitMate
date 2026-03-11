@@ -23,9 +23,11 @@ import (
 
 // server 實作 api.ServerInterface，串接各模組的 Handler。
 type server struct {
-	authHandler  *handler.AuthHandler // 認證相關 Handler
-	tripHandler  *handler.TripHandler // 行程相關 Handler
-	tokenManager *auth.TokenManager   // JWT Token 管理器 (供 middleware 使用)
+	authHandler  *handler.AuthHandler
+	tripHandler  *handler.TripHandler
+	gearHandler  *handler.GearLibraryHandler
+	mealHandler  *handler.MealLibraryHandler
+	tokenManager *auth.TokenManager
 }
 
 // GetHealth 處理 GET /health — 健康檢查端點。
@@ -141,6 +143,76 @@ func (srv server) DeleteItineraryItem(w http.ResponseWriter, r *http.Request, tr
 	})).ServeHTTP(w, r)
 }
 
+// --- Gear Library ---
+
+func (srv server) ListGearLibrary(w http.ResponseWriter, r *http.Request, params api.ListGearLibraryParams) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.ListGearLibrary(w, r, params)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) CreateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.gearHandler.CreateGearLibraryItem)).ServeHTTP(w, r)
+}
+
+func (srv server) GetGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.GetGearLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.UpdateGearLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.DeleteGearLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Meal Library ---
+
+func (srv server) ListMealLibrary(w http.ResponseWriter, r *http.Request, params api.ListMealLibraryParams) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.ListMealLibrary(w, r, params)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.mealHandler.CreateMealLibraryItem)).ServeHTTP(w, r)
+}
+
+func (srv server) GetMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.GetMealLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.UpdateMealLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.DeleteMealLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -158,18 +230,26 @@ func main() {
 	tripRepo := repository.NewTripRepository(pool)
 	memberRepo := repository.NewTripMemberRepository(pool)
 	itineraryRepo := repository.NewItineraryRepository(pool)
+	gearLibRepo := repository.NewGearLibraryRepository(pool)
+	mealLibRepo := repository.NewMealLibraryRepository(pool)
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
 	tripService := service.NewTripService(tripRepo, memberRepo, itineraryRepo, userRepo)
+	gearLibService := service.NewGearLibraryService(gearLibRepo)
+	mealLibService := service.NewMealLibraryService(mealLibRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
+	gearHandler := handler.NewGearLibraryHandler(gearLibService)
+	mealHandler := handler.NewMealLibraryHandler(mealLibService)
 
 	srv := server{
 		authHandler:  authHandler,
 		tripHandler:  tripHandler,
+		gearHandler:  gearHandler,
+		mealHandler:  mealHandler,
 		tokenManager: tokenManager,
 	}
 
