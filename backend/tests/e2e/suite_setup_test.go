@@ -34,9 +34,13 @@ import (
 // testServer 實作 api.ServerInterface，供測試使用
 // 由於不能循環 import main，我們在 e2e 複製一份 server 注入邏輯
 type testServer struct {
-	authHandler  *handler.AuthHandler
-	tripHandler  *handler.TripHandler
-	tokenManager *auth.TokenManager
+	authHandler     *handler.AuthHandler
+	tripHandler     *handler.TripHandler
+	gearHandler     *handler.GearLibraryHandler
+	mealHandler     *handler.MealLibraryHandler
+	tripGearHandler *handler.TripGearHandler
+	tripMealHandler *handler.TripMealHandler
+	tokenManager    *auth.TokenManager
 }
 
 func (srv testServer) GetHealth(writer http.ResponseWriter, request *http.Request) {
@@ -138,6 +142,136 @@ func (srv testServer) DeleteItineraryItem(w http.ResponseWriter, r *http.Request
 	})).ServeHTTP(w, r)
 }
 
+// --- Gear Library ---
+
+func (srv testServer) ListGearLibrary(w http.ResponseWriter, r *http.Request, params api.ListGearLibraryParams) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.ListGearLibrary(w, r, params)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) CreateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.gearHandler.CreateGearLibraryItem)).ServeHTTP(w, r)
+}
+
+func (srv testServer) GetGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.GetGearLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.UpdateGearLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.gearHandler.DeleteGearLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Meal Library ---
+
+func (srv testServer) ListMealLibrary(w http.ResponseWriter, r *http.Request, params api.ListMealLibraryParams) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.ListMealLibrary(w, r, params)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.mealHandler.CreateMealLibraryItem)).ServeHTTP(w, r)
+}
+
+func (srv testServer) GetMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.GetMealLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.UpdateMealLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.mealHandler.DeleteMealLibraryItem(w, r, itemId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Trip Gear ---
+
+func (srv testServer) ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.ListTripGear(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) AddTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.AddTripGear(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) UpdateTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.UpdateTripGear(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.RemoveTripGear(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Trip Meals ---
+
+func (srv testServer) ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.ListTripMeals(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) AddTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.AddTripMeal(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) UpdateTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.UpdateTripMeal(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.RemoveTripMeal(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
 // APITestSuite 定義了 E2E 測試的 Suite
 type APITestSuite struct {
 	suite.Suite
@@ -195,18 +329,34 @@ func (s *APITestSuite) SetupSuite() {
 	tripRepo := repository.NewTripRepository(pool)
 	memberRepo := repository.NewTripMemberRepository(pool)
 	itineraryRepo := repository.NewItineraryRepository(pool)
+	gearLibRepo := repository.NewGearLibraryRepository(pool)
+	mealLibRepo := repository.NewMealLibraryRepository(pool)
+	tripGearRepo := repository.NewTripGearRepository(pool)
+	tripMealRepo := repository.NewTripMealRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
 	tripService := service.NewTripService(tripRepo, memberRepo, itineraryRepo, userRepo)
+	gearLibService := service.NewGearLibraryService(gearLibRepo)
+	mealLibService := service.NewMealLibraryService(mealLibRepo)
+	tripGearService := service.NewTripGearService(tripGearRepo, tripRepo, memberRepo)
+	tripMealService := service.NewTripMealService(tripMealRepo, tripRepo, memberRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
+	gearHandler := handler.NewGearLibraryHandler(gearLibService)
+	mealHandler := handler.NewMealLibraryHandler(mealLibService)
+	tripGearHandler := handler.NewTripGearHandler(tripGearService)
+	tripMealHandler := handler.NewTripMealHandler(tripMealService)
 
 	srv := testServer{
-		authHandler:  authHandler,
-		tripHandler:  tripHandler,
-		tokenManager: tokenManager,
+		authHandler:     authHandler,
+		tripHandler:     tripHandler,
+		gearHandler:     gearHandler,
+		mealHandler:     mealHandler,
+		tripGearHandler: tripGearHandler,
+		tripMealHandler: tripMealHandler,
+		tokenManager:    tokenManager,
 	}
 
 	router := chi.NewRouter()

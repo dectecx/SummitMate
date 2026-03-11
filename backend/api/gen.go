@@ -163,6 +163,60 @@ type TripCreateRequest struct {
 	StartDate   openapi_types.Date  `json:"start_date"`
 }
 
+// TripGearItem defines model for TripGearItem.
+type TripGearItem struct {
+	Category      string              `json:"category"`
+	CreatedAt     time.Time           `json:"created_at"`
+	Id            openapi_types.UUID  `json:"id"`
+	IsChecked     bool                `json:"is_checked"`
+	LibraryItemId *openapi_types.UUID `json:"library_item_id,omitempty"`
+	Name          string              `json:"name"`
+	OrderIndex    *int                `json:"order_index,omitempty"`
+	Quantity      int                 `json:"quantity"`
+	TripId        openapi_types.UUID  `json:"trip_id"`
+	UpdatedAt     time.Time           `json:"updated_at"`
+	Weight        float64             `json:"weight"`
+}
+
+// TripGearItemRequest defines model for TripGearItemRequest.
+type TripGearItemRequest struct {
+	Category      string              `json:"category"`
+	IsChecked     *bool               `json:"is_checked,omitempty"`
+	LibraryItemId *openapi_types.UUID `json:"library_item_id,omitempty"`
+	Name          string              `json:"name"`
+	OrderIndex    *int                `json:"order_index,omitempty"`
+	Quantity      *int                `json:"quantity,omitempty"`
+	Weight        float64             `json:"weight"`
+}
+
+// TripMealItem defines model for TripMealItem.
+type TripMealItem struct {
+	Calories      float64             `json:"calories"`
+	CreatedAt     time.Time           `json:"created_at"`
+	Day           string              `json:"day"`
+	Id            openapi_types.UUID  `json:"id"`
+	LibraryItemId *openapi_types.UUID `json:"library_item_id,omitempty"`
+	MealType      string              `json:"meal_type"`
+	Name          string              `json:"name"`
+	Note          *string             `json:"note,omitempty"`
+	Quantity      int                 `json:"quantity"`
+	TripId        openapi_types.UUID  `json:"trip_id"`
+	UpdatedAt     time.Time           `json:"updated_at"`
+	Weight        float64             `json:"weight"`
+}
+
+// TripMealItemRequest defines model for TripMealItemRequest.
+type TripMealItemRequest struct {
+	Calories      float64             `json:"calories"`
+	Day           string              `json:"day"`
+	LibraryItemId *openapi_types.UUID `json:"library_item_id,omitempty"`
+	MealType      string              `json:"meal_type"`
+	Name          string              `json:"name"`
+	Note          *string             `json:"note,omitempty"`
+	Quantity      *int                `json:"quantity,omitempty"`
+	Weight        float64             `json:"weight"`
+}
+
 // TripMember defines model for TripMember.
 type TripMember struct {
 	JoinedAt     time.Time          `json:"joined_at"`
@@ -230,11 +284,23 @@ type CreateTripJSONRequestBody = TripCreateRequest
 // UpdateTripJSONRequestBody defines body for UpdateTrip for application/json ContentType.
 type UpdateTripJSONRequestBody = TripUpdateRequest
 
+// AddTripGearItemJSONRequestBody defines body for AddTripGearItem for application/json ContentType.
+type AddTripGearItemJSONRequestBody = TripGearItemRequest
+
+// UpdateTripGearItemJSONRequestBody defines body for UpdateTripGearItem for application/json ContentType.
+type UpdateTripGearItemJSONRequestBody = TripGearItemRequest
+
 // AddItineraryItemJSONRequestBody defines body for AddItineraryItem for application/json ContentType.
 type AddItineraryItemJSONRequestBody = ItineraryItemRequest
 
 // UpdateItineraryItemJSONRequestBody defines body for UpdateItineraryItem for application/json ContentType.
 type UpdateItineraryItemJSONRequestBody = ItineraryItemRequest
+
+// AddTripMealItemJSONRequestBody defines body for AddTripMealItem for application/json ContentType.
+type AddTripMealItemJSONRequestBody = TripMealItemRequest
+
+// UpdateTripMealItemJSONRequestBody defines body for UpdateTripMealItem for application/json ContentType.
+type UpdateTripMealItemJSONRequestBody = TripMealItemRequest
 
 // AddTripMemberJSONRequestBody defines body for AddTripMember for application/json ContentType.
 type AddTripMemberJSONRequestBody = AddMemberRequest
@@ -298,6 +364,18 @@ type ServerInterface interface {
 	// Update Trip
 	// (PUT /trips/{tripId})
 	UpdateTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Get Trip Gear Items
+	// (GET /trips/{tripId}/gear)
+	ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Add Trip Gear Item
+	// (POST /trips/{tripId}/gear)
+	AddTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Delete Trip Gear Item
+	// (DELETE /trips/{tripId}/gear/{itemId})
+	DeleteTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID)
+	// Update Trip Gear Item
+	// (PUT /trips/{tripId}/gear/{itemId})
+	UpdateTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID)
 	// List Itinerary
 	// (GET /trips/{tripId}/itinerary)
 	ListItinerary(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
@@ -310,6 +388,18 @@ type ServerInterface interface {
 	// Update Itinerary Item
 	// (PUT /trips/{tripId}/itinerary/{itemId})
 	UpdateItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID)
+	// Get Trip Meal Items
+	// (GET /trips/{tripId}/meals)
+	ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Add Trip Meal Item
+	// (POST /trips/{tripId}/meals)
+	AddTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
+	// Delete Trip Meal Item
+	// (DELETE /trips/{tripId}/meals/{itemId})
+	DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID)
+	// Update Trip Meal Item
+	// (PUT /trips/{tripId}/meals/{itemId})
+	UpdateTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID)
 	// List Trip Members
 	// (GET /trips/{tripId}/members)
 	ListTripMembers(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID)
@@ -439,6 +529,30 @@ func (_ Unimplemented) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// Get Trip Gear Items
+// (GET /trips/{tripId}/gear)
+func (_ Unimplemented) ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Add Trip Gear Item
+// (POST /trips/{tripId}/gear)
+func (_ Unimplemented) AddTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete Trip Gear Item
+// (DELETE /trips/{tripId}/gear/{itemId})
+func (_ Unimplemented) DeleteTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update Trip Gear Item
+// (PUT /trips/{tripId}/gear/{itemId})
+func (_ Unimplemented) UpdateTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // List Itinerary
 // (GET /trips/{tripId}/itinerary)
 func (_ Unimplemented) ListItinerary(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
@@ -460,6 +574,30 @@ func (_ Unimplemented) DeleteItineraryItem(w http.ResponseWriter, r *http.Reques
 // Update Itinerary Item
 // (PUT /trips/{tripId}/itinerary/{itemId})
 func (_ Unimplemented) UpdateItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get Trip Meal Items
+// (GET /trips/{tripId}/meals)
+func (_ Unimplemented) ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Add Trip Meal Item
+// (POST /trips/{tripId}/meals)
+func (_ Unimplemented) AddTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete Trip Meal Item
+// (DELETE /trips/{tripId}/meals/{itemId})
+func (_ Unimplemented) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update Trip Meal Item
+// (PUT /trips/{tripId}/meals/{itemId})
+func (_ Unimplemented) UpdateTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -977,6 +1115,148 @@ func (siw *ServerInterfaceWrapper) UpdateTrip(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// ListTripGearItems operation middleware
+func (siw *ServerInterfaceWrapper) ListTripGearItems(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTripGearItems(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddTripGearItem operation middleware
+func (siw *ServerInterfaceWrapper) AddTripGearItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddTripGearItem(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteTripGearItem operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTripGearItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteTripGearItem(w, r, tripId, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateTripGearItem operation middleware
+func (siw *ServerInterfaceWrapper) UpdateTripGearItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateTripGearItem(w, r, tripId, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListItinerary operation middleware
 func (siw *ServerInterfaceWrapper) ListItinerary(w http.ResponseWriter, r *http.Request) {
 
@@ -1110,6 +1390,148 @@ func (siw *ServerInterfaceWrapper) UpdateItineraryItem(w http.ResponseWriter, r 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UpdateItineraryItem(w, r, tripId, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListTripMealItems operation middleware
+func (siw *ServerInterfaceWrapper) ListTripMealItems(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListTripMealItems(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// AddTripMealItem operation middleware
+func (siw *ServerInterfaceWrapper) AddTripMealItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddTripMealItem(w, r, tripId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteTripMealItem operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTripMealItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteTripMealItem(w, r, tripId, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateTripMealItem operation middleware
+func (siw *ServerInterfaceWrapper) UpdateTripMealItem(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "tripId" -------------
+	var tripId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "tripId", chi.URLParam(r, "tripId"), &tripId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tripId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", chi.URLParam(r, "itemId"), &itemId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateTripMealItem(w, r, tripId, itemId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1392,6 +1814,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Put(options.BaseURL+"/trips/{tripId}", wrapper.UpdateTrip)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/trips/{tripId}/gear", wrapper.ListTripGearItems)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{tripId}/gear", wrapper.AddTripGearItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/trips/{tripId}/gear/{itemId}", wrapper.DeleteTripGearItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/trips/{tripId}/gear/{itemId}", wrapper.UpdateTripGearItem)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/trips/{tripId}/itinerary", wrapper.ListItinerary)
 	})
 	r.Group(func(r chi.Router) {
@@ -1402,6 +1836,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/trips/{tripId}/itinerary/{itemId}", wrapper.UpdateItineraryItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/trips/{tripId}/meals", wrapper.ListTripMealItems)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/trips/{tripId}/meals", wrapper.AddTripMealItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/trips/{tripId}/meals/{itemId}", wrapper.DeleteTripMealItem)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/trips/{tripId}/meals/{itemId}", wrapper.UpdateTripMealItem)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/trips/{tripId}/members", wrapper.ListTripMembers)
@@ -1419,58 +1865,66 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"J0RRAAA=",
+	"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",
+	"//+jf14I9G4AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -23,11 +23,13 @@ import (
 
 // server 實作 api.ServerInterface，串接各模組的 Handler。
 type server struct {
-	authHandler  *handler.AuthHandler
-	tripHandler  *handler.TripHandler
-	gearHandler  *handler.GearLibraryHandler
-	mealHandler  *handler.MealLibraryHandler
-	tokenManager *auth.TokenManager
+	authHandler    *handler.AuthHandler
+	tripHandler    *handler.TripHandler
+	gearHandler    *handler.GearLibraryHandler
+	mealHandler    *handler.MealLibraryHandler
+	tripGearHandler *handler.TripGearHandler
+	tripMealHandler *handler.TripMealHandler
+	tokenManager   *auth.TokenManager
 }
 
 // GetHealth 處理 GET /health — 健康檢查端點。
@@ -213,6 +215,66 @@ func (srv server) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, 
 	})).ServeHTTP(w, r)
 }
 
+// --- Trip Gear ---
+
+func (srv server) ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.ListTripGear(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) AddTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.AddTripGear(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.UpdateTripGear(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.RemoveTripGear(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Trip Meals ---
+
+func (srv server) ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.ListTripMeals(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) AddTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.AddTripMeal(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) UpdateTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.UpdateTripMeal(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.RemoveTripMeal(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -233,24 +295,33 @@ func main() {
 	gearLibRepo := repository.NewGearLibraryRepository(pool)
 	mealLibRepo := repository.NewMealLibraryRepository(pool)
 
+	tripGearRepo := repository.NewTripGearRepository(pool)
+	tripMealRepo := repository.NewTripMealRepository(pool)
+
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
 	tripService := service.NewTripService(tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(gearLibRepo)
 	mealLibService := service.NewMealLibraryService(mealLibRepo)
+	tripGearService := service.NewTripGearService(tripGearRepo, tripRepo, memberRepo)
+	tripMealService := service.NewTripMealService(tripMealRepo, tripRepo, memberRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
 	gearHandler := handler.NewGearLibraryHandler(gearLibService)
 	mealHandler := handler.NewMealLibraryHandler(mealLibService)
+	tripGearHandler := handler.NewTripGearHandler(tripGearService)
+	tripMealHandler := handler.NewTripMealHandler(tripMealService)
 
 	srv := server{
-		authHandler:  authHandler,
-		tripHandler:  tripHandler,
-		gearHandler:  gearHandler,
-		mealHandler:  mealHandler,
-		tokenManager: tokenManager,
+		authHandler:     authHandler,
+		tripHandler:     tripHandler,
+		gearHandler:     gearHandler,
+		mealHandler:     mealHandler,
+		tripGearHandler: tripGearHandler,
+		tripMealHandler: tripMealHandler,
+		tokenManager:    tokenManager,
 	}
 
 	// 設定 Router
