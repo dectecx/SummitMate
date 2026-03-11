@@ -757,6 +757,290 @@ paths:
         "404":
           description: 找不到該食物
 
+  /trips/{tripId}/gear:
+    get:
+      summary: Get Trip Gear Items
+      description: 取得行程的所有裝備清單
+      operationId: listTripGearItems
+      tags:
+        - trip-gear
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得裝備清單
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripGearItem"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該行程
+    post:
+      summary: Add Trip Gear Item
+      description: 新增裝備到行程
+      operationId: addTripGearItem
+      tags:
+        - trip-gear
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripGearItemRequest"
+      responses:
+        "201":
+          description: 成功新增裝備
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripGearItem"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程
+
+  /trips/{tripId}/gear/{itemId}:
+    put:
+      summary: Update Trip Gear Item
+      description: 更新行程中的裝備
+      operationId: updateTripGearItem
+      tags:
+        - trip-gear
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripGearItemRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripGearItem"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程或裝備
+    delete:
+      summary: Delete Trip Gear Item
+      description: 從行程中移除裝備
+      operationId: deleteTripGearItem
+      tags:
+        - trip-gear
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功移除裝備
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程或裝備
+
+  /trips/{tripId}/meals:
+    get:
+      summary: Get Trip Meal Items
+      description: 取得行程的所有食物清單
+      operationId: listTripMealItems
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得食物清單
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripMealItem"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該行程
+    post:
+      summary: Add Trip Meal Item
+      description: 新增食物到行程
+      operationId: addTripMealItem
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripMealItemRequest"
+      responses:
+        "201":
+          description: 成功新增食物
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripMealItem"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程
+
+  /trips/{tripId}/meals/{itemId}:
+    put:
+      summary: Update Trip Meal Item
+      description: 更新行程中的食物
+      operationId: updateTripMealItem
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripMealItemRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripMealItem"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程或食物
+    delete:
+      summary: Delete Trip Meal Item
+      description: 從行程中移除食物
+      operationId: deleteTripMealItem
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功移除食物
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程或食物
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1193,3 +1477,167 @@ components:
         is_archived:
           type: boolean
           default: false
+
+    TripGearItem:
+      type: object
+      required:
+        - id
+        - trip_id
+        - name
+        - weight
+        - category
+        - quantity
+        - is_checked
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        library_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        weight:
+          type: number
+          format: double
+        category:
+          type: string
+        quantity:
+          type: integer
+        is_checked:
+          type: boolean
+        order_index:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TripGearItemRequest:
+      type: object
+      required:
+        - name
+        - weight
+        - category
+      properties:
+        library_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        weight:
+          type: number
+          format: double
+          minimum: 0
+        category:
+          type: string
+          maxLength: 50
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        is_checked:
+          type: boolean
+          default: false
+        order_index:
+          type: integer
+          nullable: true
+
+    TripMealItem:
+      type: object
+      required:
+        - id
+        - trip_id
+        - day
+        - meal_type
+        - name
+        - weight
+        - calories
+        - quantity
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        library_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        day:
+          type: string
+        meal_type:
+          type: string
+        name:
+          type: string
+        weight:
+          type: number
+          format: double
+        calories:
+          type: number
+          format: double
+        quantity:
+          type: integer
+        note:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TripMealItemRequest:
+      type: object
+      required:
+        - day
+        - meal_type
+        - name
+        - weight
+        - calories
+      properties:
+        library_item_id:
+          type: string
+          format: uuid
+          nullable: true
+        day:
+          type: string
+          maxLength: 10
+        meal_type:
+          type: string
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        weight:
+          type: number
+          format: double
+          minimum: 0
+        calories:
+          type: number
+          format: double
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        note:
+          type: string
+          nullable: true
