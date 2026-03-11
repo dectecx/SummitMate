@@ -1,7 +1,9 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -505,8 +507,68 @@ func (s *APITestSuite) TearDownSuite() {
 func (s *APITestSuite) SetupTest() {
 	ctx := context.Background()
 	// 清理資料表以確保測試隔離，改用 DELETE 避免 TRUNCATE 的 Access Exclusive Lock 卡住
-	_, err := s.dbPool.Exec(ctx, "DELETE FROM itinerary_items; DELETE FROM trip_members; DELETE FROM trips; DELETE FROM users;")
+	_, err := s.dbPool.Exec(ctx, "DELETE FROM poll_votes; DELETE FROM poll_options; DELETE FROM polls; DELETE FROM messages; DELETE FROM favorites; DELETE FROM itinerary_items; DELETE FROM trip_members; DELETE FROM trips; DELETE FROM users;")
 	s.Require().NoError(err, "清理測試資料庫失敗")
+}
+
+// --- Shared Helpers ---
+
+// registerAndLogin 註冊並登入，回傳 token 及 userID
+func (s *APITestSuite) registerAndLogin(displayName string) (token string, userID string) {
+	email := randomEmail()
+	password := "TestPassword123!"
+
+	regPayload, _ := json.Marshal(registerRequest{
+		Email: email, Password: password, DisplayName: displayName,
+	})
+	regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
+	s.Require().NoError(err)
+	var authResp authResponse
+	json.NewDecoder(regResp.Body).Decode(&authResp)
+	regResp.Body.Close()
+
+	return authResp.Token, authResp.User.ID
+}
+
+// createTripForTest 建立行程，回傳 tripID
+func (s *APITestSuite) createTripForTest(token string) string {
+	payload, _ := json.Marshal(map[string]interface{}{
+		"name":       "互動測試行程",
+		"start_date": "2026-06-01",
+	})
+	req, _ := http.NewRequest("POST", s.baseURL+"/trips", bytes.NewReader(payload))
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	s.Require().NoError(err)
+	defer resp.Body.Close()
+	s.Require().Equal(http.StatusCreated, resp.StatusCode, "建立行程應回傳 201")
+
+	var trip map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&trip)
+	id, ok := trip["id"].(string)
+	s.Require().True(ok, "行程回應應包含 id 欄位")
+	return id
+}
+
+// doRequest 發送 HTTP 請求的共用封裝
+func (s *APITestSuite) doRequest(method, url string, body interface{}, token string) *http.Response {
+	var reqBody *bytes.Reader
+	if body != nil {
+		b, _ := json.Marshal(body)
+		reqBody = bytes.NewReader(b)
+	} else {
+		reqBody = bytes.NewReader([]byte{})
+	}
+
+	req, _ := http.NewRequest(method, url, reqBody)
+	req.Header.Set("Authorization", "Bearer "+token)
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	resp, err := http.DefaultClient.Do(req)
+	s.Require().NoError(err)
+	return resp
 }
 
 // 供 auth_test.go 執行 Suite 的入口

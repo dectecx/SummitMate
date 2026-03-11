@@ -7,6 +7,8 @@ type PollOption struct {
 	PollID    string   `json:"poll_id" db:"poll_id"`
 	Text      string   `json:"text" db:"text"`
 	CreatorID string   `json:"creator_id" db:"creator_id"`
+	CreatedBy string   `json:"created_by" db:"created_by"`
+	UpdatedBy string   `json:"updated_by" db:"updated_by"`
 	VoteCount int      `json:"vote_count" db:"-"`
 	Voters    []string `json:"voters" db:"-"`
 }

@@ -44,8 +44,13 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *model.Poll) error
 	var id string
 	var createdAt, updatedAt time.Time
 
+	desc := ""
+	if poll.Description != nil {
+		desc = *poll.Description
+	}
+
 	err := r.db.QueryRow(ctx, query,
-		poll.TripID, poll.Title, poll.Description, poll.CreatorID, poll.Deadline,
+		poll.TripID, poll.Title, desc, poll.CreatorID, poll.Deadline,
 		poll.IsAllowAddOption, poll.MaxOptionLimit, poll.AllowMultipleVotes,
 		poll.ResultDisplayType, poll.Status, poll.CreatedBy, poll.UpdatedBy,
 	).Scan(&id, &createdAt, &updatedAt)
@@ -191,11 +196,11 @@ func (r *pollRepository) DeletePoll(ctx context.Context, pollID string) error {
 
 func (r *pollRepository) AddPollOption(ctx context.Context, option *model.PollOption) error {
 	query := `
-		INSERT INTO poll_options (poll_id, text, creator_id)
-		VALUES ($1, $2, $3)
+		INSERT INTO poll_options (poll_id, text, creator_id, created_by, updated_by)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id
 	`
-	err := r.db.QueryRow(ctx, query, option.PollID, option.Text, option.CreatorID).Scan(&option.ID)
+	err := r.db.QueryRow(ctx, query, option.PollID, option.Text, option.CreatorID, option.CreatorID, option.CreatorID).Scan(&option.ID)
 	if err != nil {
 		return fmt.Errorf("failed to add poll option: %w", err)
 	}
