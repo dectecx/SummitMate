@@ -40,6 +40,9 @@ type testServer struct {
 	mealHandler     *handler.MealLibraryHandler
 	tripGearHandler *handler.TripGearHandler
 	tripMealHandler *handler.TripMealHandler
+	messageHandler  *handler.MessageHandler
+	pollHandler     *handler.PollHandler
+	favoriteHandler *handler.FavoriteHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -272,6 +275,99 @@ func (srv testServer) DeleteTripMealItem(w http.ResponseWriter, r *http.Request,
 	})).ServeHTTP(w, r)
 }
 
+// --- Trip Messages ---
+
+func (srv testServer) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.ListTripMessages(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.AddTripMessage(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.UpdateTripMessage(w, r, tripId, messageId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.messageHandler.DeleteTripMessage(w, r, tripId, messageId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Trip Polls ---
+
+func (srv testServer) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.ListTripPolls(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.CreateTripPoll(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) GetTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.GetTripPoll(w, r, tripId, pollId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.DeleteTripPoll(w, r, tripId, pollId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) AddPollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.AddPollOption(w, r, tripId, pollId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) VotePollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID, optionId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.pollHandler.VotePollOption(w, r, tripId, pollId, optionId)
+	})).ServeHTTP(w, r)
+}
+
+// --- Favorites ---
+
+func (srv testServer) ListFavorites(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.favoriteHandler.ListFavorites)).ServeHTTP(w, r)
+}
+
+func (srv testServer) AddFavorite(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.favoriteHandler.AddFavorite)).ServeHTTP(w, r)
+}
+
+func (srv testServer) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.favoriteHandler.RemoveFavorite(w, r, targetId)
+	})).ServeHTTP(w, r)
+}
+
 // APITestSuite 定義了 E2E 測試的 Suite
 type APITestSuite struct {
 	suite.Suite
@@ -333,6 +429,9 @@ func (s *APITestSuite) SetupSuite() {
 	mealLibRepo := repository.NewMealLibraryRepository(pool)
 	tripGearRepo := repository.NewTripGearRepository(pool)
 	tripMealRepo := repository.NewTripMealRepository(pool)
+	messageRepo := repository.NewMessageRepository(pool)
+	pollRepo := repository.NewPollRepository(pool)
+	favoriteRepo := repository.NewFavoriteRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
@@ -341,6 +440,9 @@ func (s *APITestSuite) SetupSuite() {
 	mealLibService := service.NewMealLibraryService(mealLibRepo)
 	tripGearService := service.NewTripGearService(tripGearRepo, tripRepo, memberRepo)
 	tripMealService := service.NewTripMealService(tripMealRepo, tripRepo, memberRepo)
+	messageService := service.NewMessageService(messageRepo, tripRepo, memberRepo)
+	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
+	favoriteService := service.NewFavoriteService(favoriteRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -348,6 +450,9 @@ func (s *APITestSuite) SetupSuite() {
 	mealHandler := handler.NewMealLibraryHandler(mealLibService)
 	tripGearHandler := handler.NewTripGearHandler(tripGearService)
 	tripMealHandler := handler.NewTripMealHandler(tripMealService)
+	messageHandler := handler.NewMessageHandler(messageService)
+	pollHandler := handler.NewPollHandler(pollService)
+	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 
 	srv := testServer{
 		authHandler:     authHandler,
@@ -356,6 +461,9 @@ func (s *APITestSuite) SetupSuite() {
 		mealHandler:     mealHandler,
 		tripGearHandler: tripGearHandler,
 		tripMealHandler: tripMealHandler,
+		messageHandler:  messageHandler,
+		pollHandler:     pollHandler,
+		favoriteHandler: favoriteHandler,
 		tokenManager:    tokenManager,
 	}
 

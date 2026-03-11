@@ -1041,6 +1041,430 @@ paths:
         "404":
           description: 找不到該行程或食物
 
+  /trips/{tripId}/messages:
+    get:
+      summary: Get Trip Messages
+      description: 取得行程留言板內容
+      operationId: listTripMessages
+      tags:
+        - trip-messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得留言
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該行程
+    post:
+      summary: Add Trip Message
+      description: 新增行程留言
+      operationId: addTripMessage
+      tags:
+        - trip-messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageRequest"
+      responses:
+        "201":
+          description: 成功新增留言
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該行程
+
+  /trips/{tripId}/messages/{messageId}:
+    put:
+      summary: Update Trip Message
+      description: 更新行程留言
+      operationId: updateTripMessage
+      tags:
+        - trip-messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯此留言
+    delete:
+      summary: Delete Trip Message
+      description: 刪除行程留言
+      operationId: deleteTripMessage
+      tags:
+        - trip-messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 刪除成功
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限刪除此留言
+
+  /trips/{tripId}/polls:
+    get:
+      summary: List Trip Polls
+      description: 取得行程的所有投票
+      operationId: listTripPolls
+      tags:
+        - trip-polls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得投票清單
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Poll"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該行程
+    post:
+      summary: Create Trip Poll
+      description: 建立行程新投票
+      operationId: createTripPoll
+      tags:
+        - trip-polls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PollRequest"
+      responses:
+        "201":
+          description: 成功建立投票
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Poll"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+
+  /trips/{tripId}/polls/{pollId}:
+    get:
+      summary: Get Trip Poll
+      description: 取得單一投票詳情與選項
+      operationId: getTripPoll
+      tags:
+        - trip-polls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得投票詳情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Poll"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該投票
+    delete:
+      summary: Delete Trip Poll
+      description: 刪除投票
+      operationId: deleteTripPoll
+      tags:
+        - trip-polls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 刪除成功
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限刪除
+
+  /trips/{tripId}/polls/{pollId}/options:
+    post:
+      summary: Add Poll Option
+      description: 新增投票選項
+      operationId: addPollOption
+      tags:
+        - trip-polls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PollOptionRequest"
+      responses:
+        "201":
+          description: 成功新增選項
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PollOption"
+        "400":
+          description: 參數/權限錯誤 (例如不允許新增選項)
+        "401":
+          description: 未登入
+        "404":
+          description: 找不到該投票
+
+  /trips/{tripId}/polls/{pollId}/options/{optionId}/vote:
+    post:
+      summary: Vote for Poll Option
+      description: 投給特定選項 (若已投票可能會取消或修改，根據業務邏輯決定)
+      operationId: votePollOption
+      tags:
+        - trip-polls
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: optionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 投票成功 (回傳更新後的投票狀態)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Poll"
+        "400":
+          description: 狀態錯誤 (已結束投票、不允許多選等)
+        "401":
+          description: 未登入
+        "404":
+          description: 找不到該投票或選項
+
+  /favorites:
+    get:
+      summary: List Favorites
+      description: 取得使用者的所有收藏清單
+      operationId: listFavorites
+      tags:
+        - favorites
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 成功取得收藏清單
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Favorite"
+        "401":
+          description: 未登入
+    post:
+      summary: Add to Favorites
+      description: 將項目加入收藏
+      operationId: addFavorite
+      tags:
+        - favorites
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FavoriteRequest"
+      responses:
+        "201":
+          description: 成功加入收藏
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Favorite"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "409":
+          description: 此項目已經在收藏中
+
+  /favorites/{targetId}:
+    delete:
+      summary: Remove from Favorites
+      description: 將項目從收藏中移除
+      operationId: removeFavorite
+      tags:
+        - favorites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: targetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功移除
+        "401":
+          description: 未登入
+        "404":
+          description: 找不到該收藏紀錄
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1641,3 +2065,218 @@ components:
         note:
           type: string
           nullable: true
+
+    Message:
+      type: object
+      required:
+        - id
+        - trip_id
+        - user_id
+        - display_name
+        - category
+        - content
+        - timestamp
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        user_id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        avatar:
+          type: string
+        category:
+          type: string
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    MessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          type: string
+          maxLength: 50
+        content:
+          type: string
+          minLength: 1
+
+    PollOption:
+      type: object
+      required:
+        - id
+        - poll_id
+        - text
+        - creator_id
+        - vote_count
+      properties:
+        id:
+          type: string
+          format: uuid
+        poll_id:
+          type: string
+          format: uuid
+        text:
+          type: string
+        creator_id:
+          type: string
+          format: uuid
+        vote_count:
+          type: integer
+        voters:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    PollOptionRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 500
+
+    Poll:
+      type: object
+      required:
+        - id
+        - trip_id
+        - title
+        - creator_id
+        - is_allow_add_option
+        - max_option_limit
+        - allow_multiple_votes
+        - result_display_type
+        - status
+        - created_at
+        - options
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        creator_id:
+          type: string
+          format: uuid
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+        is_allow_add_option:
+          type: boolean
+        max_option_limit:
+          type: integer
+        allow_multiple_votes:
+          type: boolean
+        result_display_type:
+          type: string
+        status:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/PollOption"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PollRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+        is_allow_add_option:
+          type: boolean
+          default: false
+        max_option_limit:
+          type: integer
+          default: 20
+        allow_multiple_votes:
+          type: boolean
+          default: false
+        result_display_type:
+          type: string
+          default: "realtime"
+
+    Favorite:
+      type: object
+      required:
+        - id
+        - target_id
+        - type
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        target_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    FavoriteRequest:
+      type: object
+      required:
+        - target_id
+        - type
+      properties:
+        target_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          maxLength: 30
