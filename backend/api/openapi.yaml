@@ -2208,6 +2208,7 @@ components:
         - created_by
         - updated_at
         - updated_by
+        - description
         - options
       properties:
         id:
@@ -2255,6 +2256,7 @@ components:
       type: object
       required:
         - title
+        - description
       properties:
         title:
           type: string
