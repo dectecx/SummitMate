@@ -40,7 +40,9 @@ CREATE TABLE users (
     verification_expiry TIMESTAMPTZ,
     last_login_at       TIMESTAMPTZ,
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    created_by          UUID,
+    updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_by          UUID
 );
 
 -- 3.2 Core
@@ -212,7 +214,6 @@ CREATE TABLE polls (
     trip_id              UUID         REFERENCES trips(id) ON DELETE CASCADE,
     title                VARCHAR(200) NOT NULL,
     description          TEXT         NOT NULL DEFAULT '',
-    creator_id           UUID         NOT NULL REFERENCES users(id),
     deadline             TIMESTAMPTZ,
     is_allow_add_option  BOOLEAN      NOT NULL DEFAULT FALSE,
     max_option_limit     INT          NOT NULL DEFAULT 20,
@@ -229,7 +230,6 @@ CREATE TABLE poll_options (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     poll_id    UUID         NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
     text       VARCHAR(500) NOT NULL,
-    creator_id UUID         NOT NULL REFERENCES users(id),
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     created_by UUID         NOT NULL REFERENCES users(id),
     updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -306,8 +306,8 @@ CREATE TABLE favorites (
     type       VARCHAR(30) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID        NOT NULL REFERENCES users(id),
-    updated_at TIMESTAMPTZ,
-    updated_by UUID        REFERENCES users(id),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID        NOT NULL REFERENCES users(id),
     UNIQUE (user_id, target_id, type)
 );
 

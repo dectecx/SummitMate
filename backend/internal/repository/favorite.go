@@ -25,7 +25,7 @@ func NewFavoriteRepository(db *pgxpool.Pool) FavoriteRepository {
 }
 
 func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([]*model.Favorite, error) {
-	query := `SELECT id, user_id, target_id, type, created_at FROM favorites WHERE user_id = $1 ORDER BY created_at DESC`
+	query := `SELECT id, user_id, target_id, type, created_at, created_by, updated_at, updated_by FROM favorites WHERE user_id = $1 ORDER BY created_at DESC`
 	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list favorites: %w", err)
@@ -35,7 +35,7 @@ func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([
 	var favs []*model.Favorite
 	for rows.Next() {
 		var f model.Favorite
-		if err := rows.Scan(&f.ID, &f.UserID, &f.TargetID, &f.Type, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.ID, &f.UserID, &f.TargetID, &f.Type, &f.CreatedAt, &f.CreatedBy, &f.UpdatedAt, &f.UpdatedBy); err != nil {
 			return nil, err
 		}
 		favs = append(favs, &f)
@@ -45,11 +45,11 @@ func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([
 
 func (r *favoriteRepository) Create(ctx context.Context, fav *model.Favorite) error {
 	query := `
-		INSERT INTO favorites (user_id, target_id, type)
-		VALUES ($1, $2, $3)
-		RETURNING id, created_at
+		INSERT INTO favorites (user_id, target_id, type, created_by, updated_by)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query, fav.UserID, fav.TargetID, fav.Type).Scan(&fav.ID, &fav.CreatedAt)
+	err := r.db.QueryRow(ctx, query, fav.UserID, fav.TargetID, fav.Type, fav.CreatedBy, fav.UpdatedBy).Scan(&fav.ID, &fav.CreatedAt, &fav.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create favorite: %w", err)
 	}

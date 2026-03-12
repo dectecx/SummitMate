@@ -34,11 +34,11 @@ func NewPollRepository(db *pgxpool.Pool) PollRepository {
 func (r *pollRepository) CreatePoll(ctx context.Context, poll *model.Poll) error {
 	query := `
 		INSERT INTO polls (
-			trip_id, title, description, creator_id, deadline,
+			trip_id, title, description, deadline,
 			is_allow_add_option, max_option_limit, allow_multiple_votes,
 			result_display_type, status, created_by, updated_by
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 		) RETURNING id, created_at, updated_at
 	`
 	var id string
@@ -50,7 +50,7 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *model.Poll) error
 	}
 
 	err := r.db.QueryRow(ctx, query,
-		poll.TripID, poll.Title, desc, poll.CreatorID, poll.Deadline,
+		poll.TripID, poll.Title, desc, poll.Deadline,
 		poll.IsAllowAddOption, poll.MaxOptionLimit, poll.AllowMultipleVotes,
 		poll.ResultDisplayType, poll.Status, poll.CreatedBy, poll.UpdatedBy,
 	).Scan(&id, &createdAt, &updatedAt)
@@ -67,7 +67,7 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *model.Poll) error
 
 func (r *pollRepository) loadPollOptions(ctx context.Context, pollID string) ([]*model.PollOption, error) {
 	// First fetch all options
-	optQuery := `SELECT id, poll_id, text, creator_id FROM poll_options WHERE poll_id = $1 ORDER BY created_at ASC`
+	optQuery := `SELECT id, poll_id, text, created_at, created_by, updated_at, updated_by FROM poll_options WHERE poll_id = $1 ORDER BY created_at ASC`
 	rows, err := r.db.Query(ctx, optQuery, pollID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch options: %w", err)
@@ -78,7 +78,7 @@ func (r *pollRepository) loadPollOptions(ctx context.Context, pollID string) ([]
 	optMap := make(map[string]*model.PollOption)
 	for rows.Next() {
 		var opt model.PollOption
-		if err := rows.Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatorID); err != nil {
+		if err := rows.Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatedAt, &opt.CreatedBy, &opt.UpdatedAt, &opt.UpdatedBy); err != nil {
 			return nil, err
 		}
 		opt.Voters = []string{}
@@ -112,14 +112,14 @@ func (r *pollRepository) loadPollOptions(ctx context.Context, pollID string) ([]
 
 func (r *pollRepository) GetPollByID(ctx context.Context, pollID string) (*model.Poll, error) {
 	query := `
-		SELECT id, trip_id, title, description, creator_id, deadline,
+		SELECT id, trip_id, title, description, deadline,
 		is_allow_add_option, max_option_limit, allow_multiple_votes,
 		result_display_type, status, created_at, created_by, updated_at, updated_by
 		FROM polls WHERE id = $1
 	`
 	var p model.Poll
 	err := r.db.QueryRow(ctx, query, pollID).Scan(
-		&p.ID, &p.TripID, &p.Title, &p.Description, &p.CreatorID, &p.Deadline,
+		&p.ID, &p.TripID, &p.Title, &p.Description, &p.Deadline,
 		&p.IsAllowAddOption, &p.MaxOptionLimit, &p.AllowMultipleVotes,
 		&p.ResultDisplayType, &p.Status, &p.CreatedAt, &p.CreatedBy, &p.UpdatedAt, &p.UpdatedBy,
 	)
@@ -141,7 +141,7 @@ func (r *pollRepository) GetPollByID(ctx context.Context, pollID string) (*model
 
 func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*model.Poll, error) {
 	query := `
-		SELECT id, trip_id, title, description, creator_id, deadline,
+		SELECT id, trip_id, title, description, deadline,
 		is_allow_add_option, max_option_limit, allow_multiple_votes,
 		result_display_type, status, created_at, created_by, updated_at, updated_by
 		FROM polls WHERE trip_id = $1
@@ -157,7 +157,7 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*m
 	for rows.Next() {
 		var p model.Poll
 		if err := rows.Scan(
-			&p.ID, &p.TripID, &p.Title, &p.Description, &p.CreatorID, &p.Deadline,
+			&p.ID, &p.TripID, &p.Title, &p.Description, &p.Deadline,
 			&p.IsAllowAddOption, &p.MaxOptionLimit, &p.AllowMultipleVotes,
 			&p.ResultDisplayType, &p.Status, &p.CreatedAt, &p.CreatedBy, &p.UpdatedAt, &p.UpdatedBy,
 		); err != nil {
@@ -196,11 +196,11 @@ func (r *pollRepository) DeletePoll(ctx context.Context, pollID string) error {
 
 func (r *pollRepository) AddPollOption(ctx context.Context, option *model.PollOption) error {
 	query := `
-		INSERT INTO poll_options (poll_id, text, creator_id, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id
+		INSERT INTO poll_options (poll_id, text, created_by, updated_by)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query, option.PollID, option.Text, option.CreatorID, option.CreatorID, option.CreatorID).Scan(&option.ID)
+	err := r.db.QueryRow(ctx, query, option.PollID, option.Text, option.CreatedBy, option.UpdatedBy).Scan(&option.ID, &option.CreatedAt, &option.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to add poll option: %w", err)
 	}
@@ -210,9 +210,9 @@ func (r *pollRepository) AddPollOption(ctx context.Context, option *model.PollOp
 }
 
 func (r *pollRepository) GetPollOption(ctx context.Context, optionID string) (*model.PollOption, error) {
-	query := `SELECT id, poll_id, text, creator_id FROM poll_options WHERE id = $1`
+	query := `SELECT id, poll_id, text, created_at, created_by, updated_at, updated_by FROM poll_options WHERE id = $1`
 	var opt model.PollOption
-	err := r.db.QueryRow(ctx, query, optionID).Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatorID)
+	err := r.db.QueryRow(ctx, query, optionID).Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatedAt, &opt.CreatedBy, &opt.UpdatedAt, &opt.UpdatedBy)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil

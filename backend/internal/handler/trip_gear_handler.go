@@ -213,11 +213,3 @@ func (h *TripGearHandler) RemoveTripGear(w http.ResponseWriter, r *http.Request,
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
-func toOpenAPIUUIDPtr(s *string) *openapi_types.UUID {
-	if s == nil {
-		return nil
-	}
-	u := toOpenAPIUUID(*s)
-	return &u
-}

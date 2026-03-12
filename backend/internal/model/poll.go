@@ -6,11 +6,12 @@ type PollOption struct {
 	ID        string   `json:"id" db:"id"`
 	PollID    string   `json:"poll_id" db:"poll_id"`
 	Text      string   `json:"text" db:"text"`
-	CreatorID string   `json:"creator_id" db:"creator_id"`
-	CreatedBy string   `json:"created_by" db:"created_by"`
-	UpdatedBy string   `json:"updated_by" db:"updated_by"`
 	VoteCount int      `json:"vote_count" db:"-"`
 	Voters    []string `json:"voters" db:"-"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	CreatedBy string    `json:"created_by" db:"created_by"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	UpdatedBy string    `json:"updated_by" db:"updated_by"`
 }
 
 type Poll struct {
@@ -18,7 +19,6 @@ type Poll struct {
 	TripID             string        `json:"trip_id" db:"trip_id"`
 	Title              string        `json:"title" db:"title"`
 	Description        *string       `json:"description" db:"description"`
-	CreatorID          string        `json:"creator_id" db:"creator_id"`
 	Deadline           *time.Time    `json:"deadline" db:"deadline"`
 	IsAllowAddOption   bool          `json:"is_allow_add_option" db:"is_allow_add_option"`
 	MaxOptionLimit     int           `json:"max_option_limit" db:"max_option_limit"`

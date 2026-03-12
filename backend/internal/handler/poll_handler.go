@@ -195,20 +195,21 @@ func mapToAPIPoll(p *model.Poll) api.Poll {
 			Id:        toOpenAPIUUID(opt.ID),
 			PollId:    toOpenAPIUUID(opt.PollID),
 			Text:      opt.Text,
-			CreatorId: toOpenAPIUUID(opt.CreatorID),
 			VoteCount: opt.VoteCount,
 			Voters:    &votersList,
+			CreatedAt: toOpenAPITime(opt.CreatedAt),
+			CreatedBy: toOpenAPIUUID(opt.CreatedBy),
+			UpdatedAt: toOpenAPITime(opt.UpdatedAt),
+			UpdatedBy: toOpenAPIUUID(opt.UpdatedBy),
 		}
 	}
 
-	updatedAt := toOpenAPITime(p.UpdatedAt)
 
 	return api.Poll{
 		Id:                 toOpenAPIUUID(p.ID),
 		TripId:             toOpenAPIUUID(p.TripID),
 		Title:              p.Title,
 		Description:        p.Description,
-		CreatorId:          toOpenAPIUUID(p.CreatorID),
 		Deadline:           p.Deadline,
 		IsAllowAddOption:   p.IsAllowAddOption,
 		MaxOptionLimit:     p.MaxOptionLimit,
@@ -217,6 +218,8 @@ func mapToAPIPoll(p *model.Poll) api.Poll {
 		Status:             p.Status,
 		Options:            options,
 		CreatedAt:          toOpenAPITime(p.CreatedAt),
-		UpdatedAt:          &updatedAt,
+		CreatedBy:          toOpenAPIUUID(p.CreatedBy),
+		UpdatedAt:          toOpenAPITime(p.UpdatedAt),
+		UpdatedBy:          toOpenAPIUUID(p.UpdatedBy),
 	}
 }

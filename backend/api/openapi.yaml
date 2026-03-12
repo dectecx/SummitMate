@@ -1506,6 +1506,9 @@ components:
         - is_verified
         - role
         - created_at
+        - created_by
+        - updated_at
+        - updated_by
       properties:
         id:
           type: string
@@ -1527,6 +1530,17 @@ components:
         created_at:
           type: string
           format: date-time
+        created_by:
+          type: string
+          format: uuid
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
+          nullable: true
 
     RegisterRequest:
       type: object
@@ -2135,8 +2149,11 @@ components:
         - id
         - poll_id
         - text
-        - creator_id
         - vote_count
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
       properties:
         id:
           type: string
@@ -2146,11 +2163,20 @@ components:
           format: uuid
         text:
           type: string
-        creator_id:
-          type: string
-          format: uuid
         vote_count:
           type: integer
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
         voters:
           type: array
           items:
@@ -2173,13 +2199,15 @@ components:
         - id
         - trip_id
         - title
-        - creator_id
         - is_allow_add_option
         - max_option_limit
         - allow_multiple_votes
         - result_display_type
         - status
         - created_at
+        - created_by
+        - updated_at
+        - updated_by
         - options
       properties:
         id:
@@ -2192,9 +2220,6 @@ components:
           type: string
         description:
           type: string
-        creator_id:
-          type: string
-          format: uuid
         deadline:
           type: string
           format: date-time
@@ -2216,9 +2241,15 @@ components:
         created_at:
           type: string
           format: date-time
+        created_by:
+          type: string
+          format: uuid
         updated_at:
           type: string
           format: date-time
+        updated_by:
+          type: string
+          format: uuid
 
     PollRequest:
       type: object
@@ -2255,6 +2286,9 @@ components:
         - target_id
         - type
         - created_at
+        - created_by
+        - updated_at
+        - updated_by
       properties:
         id:
           type: string
@@ -2267,6 +2301,15 @@ components:
         created_at:
           type: string
           format: date-time
+        created_by:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
 
     FavoriteRequest:
       type: object
