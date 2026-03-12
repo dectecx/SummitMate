@@ -43,6 +43,10 @@ type GroupEventComment struct {
 	CreatedBy string    `json:"created_by" db:"created_by"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 	UpdatedBy string    `json:"updated_by" db:"updated_by"`
+
+	// Response-only: populated via JOIN on users table, not stored in group_event_comments
+	DisplayName string `json:"display_name,omitempty" db:"-"`
+	Avatar      string `json:"avatar,omitempty" db:"-"`
 }
 
 type GroupEventLike struct {

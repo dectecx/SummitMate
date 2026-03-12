@@ -242,11 +242,13 @@ func (r *groupEventRepository) AddComment(ctx context.Context, comment *model.Gr
 
 func (r *groupEventRepository) ListComments(ctx context.Context, eventID string) ([]*model.GroupEventComment, error) {
 	query := `
-		SELECT id, event_id, user_id, content,
-		       created_at, created_by, updated_at, updated_by
-		FROM group_event_comments
-		WHERE event_id = $1
-		ORDER BY created_at ASC
+		SELECT c.id, c.event_id, c.user_id, c.content,
+		       c.created_at, c.created_by, c.updated_at, c.updated_by,
+		       u.display_name, u.avatar
+		FROM group_event_comments c
+		JOIN users u ON c.user_id = u.id
+		WHERE c.event_id = $1
+		ORDER BY c.created_at ASC
 	`
 	rows, err := r.db.Query(ctx, query, eventID)
 	if err != nil {
@@ -260,6 +262,7 @@ func (r *groupEventRepository) ListComments(ctx context.Context, eventID string)
 		err := rows.Scan(
 			&c.ID, &c.EventID, &c.UserID, &c.Content,
 			&c.CreatedAt, &c.CreatedBy, &c.UpdatedAt, &c.UpdatedBy,
+			&c.DisplayName, &c.Avatar,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan comment: %w", err)

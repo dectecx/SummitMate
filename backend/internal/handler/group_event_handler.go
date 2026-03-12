@@ -381,13 +381,15 @@ func mapToAPIApplication(a *model.GroupEventApplication) interface{} {
 
 func mapToAPIComment(c *model.GroupEventComment) interface{} {
 	return map[string]interface{}{
-		"id":         c.ID,
-		"event_id":   toOpenAPIUUID(c.EventID),
-		"user_id":    toOpenAPIUUID(c.UserID),
-		"content":    c.Content,
-		"created_at": toOpenAPITime(c.CreatedAt),
-		"created_by": toOpenAPIUUID(c.CreatedBy),
-		"updated_at": toOpenAPITime(c.UpdatedAt),
-		"updated_by": toOpenAPIUUID(c.UpdatedBy),
+		"id":           c.ID,
+		"event_id":     toOpenAPIUUID(c.EventID),
+		"user_id":      toOpenAPIUUID(c.UserID),
+		"content":      c.Content,
+		"display_name": c.DisplayName,
+		"avatar":       c.Avatar,
+		"created_at":   toOpenAPITime(c.CreatedAt),
+		"created_by":   toOpenAPIUUID(c.CreatedBy),
+		"updated_at":   toOpenAPITime(c.UpdatedAt),
+		"updated_by":   toOpenAPIUUID(c.UpdatedBy),
 	}
 }
