@@ -249,7 +249,6 @@ CREATE TABLE poll_votes (
 
 CREATE TABLE group_events (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    creator_id        UUID         NOT NULL REFERENCES users(id),
     title             VARCHAR(200) NOT NULL,
     description       TEXT         NOT NULL DEFAULT '',
     location          VARCHAR(200) NOT NULL DEFAULT '',
@@ -275,6 +274,7 @@ CREATE TABLE group_event_applications (
     status     VARCHAR(20) NOT NULL DEFAULT 'pending',
     message    TEXT        NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID        NOT NULL REFERENCES users(id),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID        NOT NULL REFERENCES users(id),
     UNIQUE (event_id, user_id)
@@ -286,13 +286,16 @@ CREATE TABLE group_event_comments (
     user_id    UUID        NOT NULL REFERENCES users(id),
     content    TEXT        NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_by UUID        NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID        NOT NULL REFERENCES users(id)
 );
 
 CREATE TABLE group_event_likes (
     event_id   UUID NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID NOT NULL REFERENCES users(id),
     PRIMARY KEY (event_id, user_id)
 );
 
