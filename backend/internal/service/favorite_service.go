@@ -21,9 +21,11 @@ func (s *FavoriteService) ListFavorites(ctx context.Context, userID string) ([]*
 
 func (s *FavoriteService) AddFavorite(ctx context.Context, userID, targetID, favType string) (*model.Favorite, error) {
 	fav := &model.Favorite{
-		UserID:   userID,
-		TargetID: targetID,
-		Type:     favType,
+		UserID:    userID,
+		TargetID:  targetID,
+		Type:      favType,
+		CreatedBy: userID,
+		UpdatedBy: userID,
 	}
 	if err := s.repo.Create(ctx, fav); err != nil {
 		return nil, err

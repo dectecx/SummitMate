@@ -26,12 +26,12 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 // Create 新增一筆使用者資料，回傳含有 DB 產生值 (id, avatar, created_at 等) 的完整 User。
 func (repo *UserRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	query := `
-		INSERT INTO users (email, password_hash, display_name)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (email, password_hash, display_name, created_by, updated_by)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, email, password_hash, display_name, avatar, role_id,
-		          is_active, is_verified, created_at, updated_at
+		          is_active, is_verified, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query, user.Email, user.PasswordHash, user.DisplayName)
+	row := repo.pool.QueryRow(ctx, query, user.Email, user.PasswordHash, user.DisplayName, user.CreatedBy, user.UpdatedBy)
 
 	var created model.User
 	err := row.Scan(
@@ -44,7 +44,9 @@ func (repo *UserRepository) Create(ctx context.Context, user *model.User) (*mode
 		&created.IsActive,
 		&created.IsVerified,
 		&created.CreatedAt,
+		&created.CreatedBy,
 		&created.UpdatedAt,
+		&created.UpdatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -74,7 +76,7 @@ func (repo *UserRepository) getOneUser(ctx context.Context, column string, value
 	// 此處 column 為程式內部控制 ("id" 或 "email")，非外部輸入，可安全拼接
 	query := `
 		SELECT id, email, password_hash, display_name, avatar, role_id,
-		       is_active, is_verified, created_at, updated_at
+		       is_active, is_verified, created_at, created_by, updated_at, updated_by
 		FROM users
 		WHERE ` + column + ` = $1
 	`
@@ -91,7 +93,9 @@ func (repo *UserRepository) getOneUser(ctx context.Context, column string, value
 		&user.IsActive,
 		&user.IsVerified,
 		&user.CreatedAt,
+		&user.CreatedBy,
 		&user.UpdatedAt,
+		&user.UpdatedBy,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

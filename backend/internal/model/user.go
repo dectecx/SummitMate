@@ -16,5 +16,7 @@ type User struct {
 	VerificationExpiry *time.Time // 驗證碼過期時間 (Nullable)
 	LastLoginAt        *time.Time // 最後登入時間 (Nullable)
 	CreatedAt          time.Time  // 建立時間
+	CreatedBy          *string    // 建立者 ID
 	UpdatedAt          time.Time  // 更新時間
+	UpdatedBy          *string    // 更新者 ID
 }

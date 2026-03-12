@@ -39,6 +39,9 @@ func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) 
 			TargetId:  toOpenAPIUUID(f.TargetID),
 			Type:      f.Type,
 			CreatedAt: toOpenAPITime(f.CreatedAt),
+			CreatedBy: toOpenAPIUUID(f.CreatedBy),
+			UpdatedAt: toOpenAPITime(f.UpdatedAt),
+			UpdatedBy: toOpenAPIUUID(f.UpdatedBy),
 		}
 	}
 	sendJSON(w, http.StatusOK, resp)
@@ -68,6 +71,9 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 		TargetId:  toOpenAPIUUID(fav.TargetID),
 		Type:      fav.Type,
 		CreatedAt: toOpenAPITime(fav.CreatedAt),
+		CreatedBy: toOpenAPIUUID(fav.CreatedBy),
+		UpdatedAt: toOpenAPITime(fav.UpdatedAt),
+		UpdatedBy: toOpenAPIUUID(fav.UpdatedBy),
 	})
 }
 

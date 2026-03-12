@@ -26,10 +26,9 @@ func (s *PollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 	}
 
 	poll.TripID = tripID
-	poll.CreatorID = userID
+	poll.Status = "open"
 	poll.CreatedBy = userID
 	poll.UpdatedBy = userID
-	poll.Status = "open"
 
 	if err := s.repo.CreatePoll(ctx, poll); err != nil {
 		return nil, err
@@ -70,7 +69,7 @@ func (s *PollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 	}
 
 	// Only creator of poll or creator of trip can delete poll
-	if poll.CreatorID != userID {
+	if poll.CreatedBy != userID {
 		trip, err := s.tripRepo.GetByID(ctx, tripID)
 		if err != nil || trip == nil || trip.UserID != userID {
 			return ErrUnauthorizedTripAccess
@@ -93,14 +92,15 @@ func (s *PollService) AddPollOption(ctx context.Context, tripID, pollID, userID 
 		return nil, ErrNotFound
 	}
 
-	if !poll.IsAllowAddOption && poll.CreatorID != userID {
+	if !poll.IsAllowAddOption && poll.CreatedBy != userID {
 		return nil, ErrUnauthorizedTripAccess
 	}
 
 	opt := &model.PollOption{
 		PollID:    pollID,
 		Text:      text,
-		CreatorID: userID,
+		CreatedBy: userID,
+		UpdatedBy: userID,
 	}
 
 	if err := s.repo.AddPollOption(ctx, opt); err != nil {

@@ -133,5 +133,8 @@ func convertToAPIUser(user *model.User) api.User {
 		IsVerified:  user.IsVerified,
 		Role:        role,
 		CreatedAt:   user.CreatedAt,
+		CreatedBy:   toOpenAPIUUIDPtr(user.CreatedBy),
+		UpdatedAt:   user.UpdatedAt,
+		UpdatedBy:   toOpenAPIUUIDPtr(user.UpdatedBy),
 	}
 }
