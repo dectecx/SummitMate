@@ -1464,6 +1464,272 @@ paths:
           description: 未登入
         "404":
           description: 找不到該收藏紀錄
+  /group-events:
+    get:
+      tags: [Community]
+      summary: 列出社群活動
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, full, completed, cancelled]
+        - name: creator_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得活動列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupEvent"
+
+    post:
+      tags: [Community]
+      summary: 建立新社群活動
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupEventRequest"
+      responses:
+        "201":
+          description: 成功建立活動
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEvent"
+
+  /group-events/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Community]
+      summary: 取得單一活動詳情
+      responses:
+        "200":
+          description: 成功取得活動
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEvent"
+        "404":
+          description: 找不到該活動
+
+    patch:
+      tags: [Community]
+      summary: 更新活動資訊
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupEventRequest"
+      responses:
+        "200":
+          description: 成功更新活動
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEvent"
+        "403":
+          description: 權限不足
+        "404":
+          description: 找不到該活動
+
+    delete:
+      tags: [Community]
+      summary: 刪除活動
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: 成功刪除
+        "403":
+          description: 權限不足
+
+  /group-events/{id}/apply:
+    post:
+      tags: [Community]
+      summary: 申請加入社群活動
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupEventApplicationRequest"
+      responses:
+        "201":
+          description: 成功送出申請
+        "400":
+          description: 已申請過或活動已關閉
+
+  /group-events/{id}/applications:
+    get:
+      tags: [Community]
+      summary: 列出活動的報名申請 (活動建立者用)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功回傳列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupEventApplication"
+
+  /group-events/applications/{app_id}:
+    patch:
+      tags: [Community]
+      summary: 審核報名申請
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+      responses:
+        "200":
+          description: 成功更新狀態
+        "403":
+          description: 權限不足
+
+  /group-events/{id}/comments:
+    get:
+      tags: [Community]
+      summary: 列出活動的所有留言
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功回傳列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupEventComment"
+
+    post:
+      tags: [Community]
+      summary: 在活動下留言
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupEventCommentRequest"
+      responses:
+        "201":
+          description: 成功留言
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEventComment"
+
+  /group-events/comments/{comment_id}:
+    delete:
+      tags: [Community]
+      summary: 刪除留言
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "240":
+          description: 成功刪除
+        "403":
+          description: 權限不足
+
+  /group-events/{id}/like:
+    post:
+      tags: [Community]
+      summary: 對活動按讚或取消按讚
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 狀態已變更
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_liked:
+                    type: boolean
 
 components:
   securitySchemes:
@@ -2325,3 +2591,204 @@ components:
         type:
           type: string
           maxLength: 30
+
+    GroupEvent:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - location
+        - start_date
+        - status
+        - max_members
+        - approval_required
+        - like_count
+        - comment_count
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        location:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          type: string
+          enum: [open, full, completed, cancelled]
+        max_members:
+          type: integer
+        approval_required:
+          type: boolean
+        private_message:
+          type: string
+        linked_trip_id:
+          type: string
+          format: uuid
+          nullable: true
+        like_count:
+          type: integer
+        comment_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
+
+    GroupEventRequest:
+      type: object
+      required:
+        - title
+        - description
+        - location
+        - start_date
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+        location:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        max_members:
+          type: integer
+          default: 10
+        approval_required:
+          type: boolean
+          default: false
+        private_message:
+          type: string
+        linked_trip_id:
+          type: string
+          format: uuid
+          nullable: true
+
+    GroupEventApplication:
+      type: object
+      required:
+        - id
+        - event_id
+        - user_id
+        - status
+        - message
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
+
+    GroupEventApplicationRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          maxLength: 500
+
+    GroupEventComment:
+      type: object
+      required:
+        - id
+        - event_id
+        - user_id
+        - content
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        display_name:
+          type: string
+        avatar:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
+
+    GroupEventCommentRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1000

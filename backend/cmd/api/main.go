@@ -32,6 +32,7 @@ type server struct {
 	messageHandler  *handler.MessageHandler
 	pollHandler     *handler.PollHandler
 	favoriteHandler *handler.FavoriteHandler
+	groupHandler    *handler.GroupEventHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -367,6 +368,81 @@ func (srv server) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetI
 	})).ServeHTTP(w, r)
 }
 
+// --- Group Events ---
+
+func (srv server) GetGroupEvents(w http.ResponseWriter, r *http.Request, params api.GetGroupEventsParams) {
+	srv.groupHandler.GetGroupEvents(w, r, params)
+}
+
+func (srv server) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.groupHandler.PostGroupEvents)).ServeHTTP(w, r)
+}
+
+func (srv server) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	srv.groupHandler.GetGroupEventsId(w, r, id)
+}
+
+func (srv server) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PatchGroupEventsId(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.DeleteGroupEventsId(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PostGroupEventsIdApply(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.GetGroupEventsIdApplications(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PatchGroupEventsApplicationsAppId(w, r, appId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	srv.groupHandler.GetGroupEventsIdComments(w, r, id)
+}
+
+func (srv server) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PostGroupEventsIdComments(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.DeleteGroupEventsCommentsCommentId(w, r, commentId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv server) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PostGroupEventsIdLike(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -392,6 +468,7 @@ func main() {
 	messageRepo := repository.NewMessageRepository(pool)
 	pollRepo := repository.NewPollRepository(pool)
 	favoriteRepo := repository.NewFavoriteRepository(pool)
+	groupRepo := repository.NewGroupEventRepository(pool)
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
@@ -404,6 +481,7 @@ func main() {
 	messageService := service.NewMessageService(messageRepo, tripRepo, memberRepo)
 	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(favoriteRepo)
+	groupService := service.NewGroupEventService(groupRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -414,6 +492,7 @@ func main() {
 	messageHandler := handler.NewMessageHandler(messageService)
 	pollHandler := handler.NewPollHandler(pollService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
+	groupHandler := handler.NewGroupEventHandler(groupService)
 
 	srv := server{
 		authHandler:     authHandler,
@@ -425,6 +504,7 @@ func main() {
 		messageHandler:  messageHandler,
 		pollHandler:     pollHandler,
 		favoriteHandler: favoriteHandler,
+		groupHandler:    groupHandler,
 		tokenManager:    tokenManager,
 	}
 

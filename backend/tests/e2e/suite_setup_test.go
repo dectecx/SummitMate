@@ -45,6 +45,7 @@ type testServer struct {
 	messageHandler  *handler.MessageHandler
 	pollHandler     *handler.PollHandler
 	favoriteHandler *handler.FavoriteHandler
+	groupHandler    *handler.GroupEventHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -370,6 +371,81 @@ func (srv testServer) RemoveFavorite(w http.ResponseWriter, r *http.Request, tar
 	})).ServeHTTP(w, r)
 }
 
+// --- Group Events ---
+
+func (srv testServer) GetGroupEvents(w http.ResponseWriter, r *http.Request, params api.GetGroupEventsParams) {
+	srv.groupHandler.GetGroupEvents(w, r, params)
+}
+
+func (srv testServer) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.groupHandler.PostGroupEvents)).ServeHTTP(w, r)
+}
+
+func (srv testServer) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	srv.groupHandler.GetGroupEventsId(w, r, id)
+}
+
+func (srv testServer) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PatchGroupEventsId(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.DeleteGroupEventsId(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PostGroupEventsIdApply(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.GetGroupEventsIdApplications(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PatchGroupEventsApplicationsAppId(w, r, appId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	srv.groupHandler.GetGroupEventsIdComments(w, r, id)
+}
+
+func (srv testServer) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PostGroupEventsIdComments(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.DeleteGroupEventsCommentsCommentId(w, r, commentId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.groupHandler.PostGroupEventsIdLike(w, r, id)
+	})).ServeHTTP(w, r)
+}
+
 // APITestSuite 定義了 E2E 測試的 Suite
 type APITestSuite struct {
 	suite.Suite
@@ -434,6 +510,7 @@ func (s *APITestSuite) SetupSuite() {
 	messageRepo := repository.NewMessageRepository(pool)
 	pollRepo := repository.NewPollRepository(pool)
 	favoriteRepo := repository.NewFavoriteRepository(pool)
+	groupRepo := repository.NewGroupEventRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
@@ -445,6 +522,7 @@ func (s *APITestSuite) SetupSuite() {
 	messageService := service.NewMessageService(messageRepo, tripRepo, memberRepo)
 	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(favoriteRepo)
+	groupService := service.NewGroupEventService(groupRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -455,6 +533,7 @@ func (s *APITestSuite) SetupSuite() {
 	messageHandler := handler.NewMessageHandler(messageService)
 	pollHandler := handler.NewPollHandler(pollService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
+	groupHandler := handler.NewGroupEventHandler(groupService)
 
 	srv := testServer{
 		authHandler:     authHandler,
@@ -466,6 +545,7 @@ func (s *APITestSuite) SetupSuite() {
 		messageHandler:  messageHandler,
 		pollHandler:     pollHandler,
 		favoriteHandler: favoriteHandler,
+		groupHandler:    groupHandler,
 		tokenManager:    tokenManager,
 	}
 
@@ -507,7 +587,22 @@ func (s *APITestSuite) TearDownSuite() {
 func (s *APITestSuite) SetupTest() {
 	ctx := context.Background()
 	// 清理資料表以確保測試隔離，改用 DELETE 避免 TRUNCATE 的 Access Exclusive Lock 卡住
-	_, err := s.dbPool.Exec(ctx, "DELETE FROM poll_votes; DELETE FROM poll_options; DELETE FROM polls; DELETE FROM messages; DELETE FROM favorites; DELETE FROM itinerary_items; DELETE FROM trip_members; DELETE FROM trips; DELETE FROM users;")
+	cleanupSQL := `
+		DELETE FROM group_event_likes;
+		DELETE FROM group_event_comments;
+		DELETE FROM group_event_applications;
+		DELETE FROM group_events;
+		DELETE FROM poll_votes;
+		DELETE FROM poll_options;
+		DELETE FROM polls;
+		DELETE FROM messages;
+		DELETE FROM favorites;
+		DELETE FROM itinerary_items;
+		DELETE FROM trip_members;
+		DELETE FROM trips;
+		DELETE FROM users;
+	`
+	_, err := s.dbPool.Exec(ctx, cleanupSQL)
 	s.Require().NoError(err, "清理測試資料庫失敗")
 }
 

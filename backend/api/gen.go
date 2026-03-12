@@ -25,6 +25,96 @@ const (
 	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
+// Defines values for GroupEventStatus.
+const (
+	GroupEventStatusCancelled GroupEventStatus = "cancelled"
+	GroupEventStatusCompleted GroupEventStatus = "completed"
+	GroupEventStatusFull      GroupEventStatus = "full"
+	GroupEventStatusOpen      GroupEventStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the GroupEventStatus enum.
+func (e GroupEventStatus) Valid() bool {
+	switch e {
+	case GroupEventStatusCancelled:
+		return true
+	case GroupEventStatusCompleted:
+		return true
+	case GroupEventStatusFull:
+		return true
+	case GroupEventStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GroupEventApplicationStatus.
+const (
+	GroupEventApplicationStatusApproved  GroupEventApplicationStatus = "approved"
+	GroupEventApplicationStatusCancelled GroupEventApplicationStatus = "cancelled"
+	GroupEventApplicationStatusPending   GroupEventApplicationStatus = "pending"
+	GroupEventApplicationStatusRejected  GroupEventApplicationStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the GroupEventApplicationStatus enum.
+func (e GroupEventApplicationStatus) Valid() bool {
+	switch e {
+	case GroupEventApplicationStatusApproved:
+		return true
+	case GroupEventApplicationStatusCancelled:
+		return true
+	case GroupEventApplicationStatusPending:
+		return true
+	case GroupEventApplicationStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetGroupEventsParamsStatus.
+const (
+	Cancelled GetGroupEventsParamsStatus = "cancelled"
+	Completed GetGroupEventsParamsStatus = "completed"
+	Full      GetGroupEventsParamsStatus = "full"
+	Open      GetGroupEventsParamsStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the GetGroupEventsParamsStatus enum.
+func (e GetGroupEventsParamsStatus) Valid() bool {
+	switch e {
+	case Cancelled:
+		return true
+	case Completed:
+		return true
+	case Full:
+		return true
+	case Open:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PatchGroupEventsApplicationsAppIdJSONBodyStatus.
+const (
+	Approved PatchGroupEventsApplicationsAppIdJSONBodyStatus = "approved"
+	Rejected PatchGroupEventsApplicationsAppIdJSONBodyStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the PatchGroupEventsApplicationsAppIdJSONBodyStatus enum.
+func (e PatchGroupEventsApplicationsAppIdJSONBodyStatus) Valid() bool {
+	switch e {
+	case Approved:
+		return true
+	case Rejected:
+		return true
+	default:
+		return false
+	}
+}
+
 // AddMemberRequest defines model for AddMemberRequest.
 type AddMemberRequest struct {
 	Email openapi_types.Email `json:"email"`
@@ -79,6 +169,83 @@ type GearLibraryItemRequest struct {
 	Name       string  `json:"name"`
 	Notes      *string `json:"notes,omitempty"`
 	Weight     float64 `json:"weight"`
+}
+
+// GroupEvent defines model for GroupEvent.
+type GroupEvent struct {
+	ApprovalRequired bool                `json:"approval_required"`
+	CommentCount     int                 `json:"comment_count"`
+	CreatedAt        time.Time           `json:"created_at"`
+	CreatedBy        openapi_types.UUID  `json:"created_by"`
+	Description      string              `json:"description"`
+	EndDate          *openapi_types.Date `json:"end_date,omitempty"`
+	Id               openapi_types.UUID  `json:"id"`
+	LikeCount        int                 `json:"like_count"`
+	LinkedTripId     *openapi_types.UUID `json:"linked_trip_id,omitempty"`
+	Location         string              `json:"location"`
+	MaxMembers       int                 `json:"max_members"`
+	PrivateMessage   *string             `json:"private_message,omitempty"`
+	StartDate        openapi_types.Date  `json:"start_date"`
+	Status           GroupEventStatus    `json:"status"`
+	Title            string              `json:"title"`
+	UpdatedAt        time.Time           `json:"updated_at"`
+	UpdatedBy        openapi_types.UUID  `json:"updated_by"`
+}
+
+// GroupEventStatus defines model for GroupEvent.Status.
+type GroupEventStatus string
+
+// GroupEventApplication defines model for GroupEventApplication.
+type GroupEventApplication struct {
+	CreatedAt time.Time                   `json:"created_at"`
+	CreatedBy openapi_types.UUID          `json:"created_by"`
+	EventId   openapi_types.UUID          `json:"event_id"`
+	Id        openapi_types.UUID          `json:"id"`
+	Message   string                      `json:"message"`
+	Status    GroupEventApplicationStatus `json:"status"`
+	UpdatedAt time.Time                   `json:"updated_at"`
+	UpdatedBy openapi_types.UUID          `json:"updated_by"`
+	UserId    openapi_types.UUID          `json:"user_id"`
+}
+
+// GroupEventApplicationStatus defines model for GroupEventApplication.Status.
+type GroupEventApplicationStatus string
+
+// GroupEventApplicationRequest defines model for GroupEventApplicationRequest.
+type GroupEventApplicationRequest struct {
+	Message string `json:"message"`
+}
+
+// GroupEventComment defines model for GroupEventComment.
+type GroupEventComment struct {
+	Avatar      *string            `json:"avatar,omitempty"`
+	Content     string             `json:"content"`
+	CreatedAt   time.Time          `json:"created_at"`
+	CreatedBy   openapi_types.UUID `json:"created_by"`
+	DisplayName *string            `json:"display_name,omitempty"`
+	EventId     openapi_types.UUID `json:"event_id"`
+	Id          openapi_types.UUID `json:"id"`
+	UpdatedAt   time.Time          `json:"updated_at"`
+	UpdatedBy   openapi_types.UUID `json:"updated_by"`
+	UserId      openapi_types.UUID `json:"user_id"`
+}
+
+// GroupEventCommentRequest defines model for GroupEventCommentRequest.
+type GroupEventCommentRequest struct {
+	Content string `json:"content"`
+}
+
+// GroupEventRequest defines model for GroupEventRequest.
+type GroupEventRequest struct {
+	ApprovalRequired *bool               `json:"approval_required,omitempty"`
+	Description      string              `json:"description"`
+	EndDate          *openapi_types.Date `json:"end_date,omitempty"`
+	LinkedTripId     *openapi_types.UUID `json:"linked_trip_id,omitempty"`
+	Location         string              `json:"location"`
+	MaxMembers       *int                `json:"max_members,omitempty"`
+	PrivateMessage   *string             `json:"private_message,omitempty"`
+	StartDate        openapi_types.Date  `json:"start_date"`
+	Title            string              `json:"title"`
 }
 
 // HealthResponse defines model for HealthResponse.
@@ -346,6 +513,23 @@ type ListGearLibraryParams struct {
 	IncludeArchived *bool `form:"include_archived,omitempty" json:"include_archived,omitempty"`
 }
 
+// GetGroupEventsParams defines parameters for GetGroupEvents.
+type GetGroupEventsParams struct {
+	Status    *GetGroupEventsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+	CreatorId *openapi_types.UUID         `form:"creator_id,omitempty" json:"creator_id,omitempty"`
+}
+
+// GetGroupEventsParamsStatus defines parameters for GetGroupEvents.
+type GetGroupEventsParamsStatus string
+
+// PatchGroupEventsApplicationsAppIdJSONBody defines parameters for PatchGroupEventsApplicationsAppId.
+type PatchGroupEventsApplicationsAppIdJSONBody struct {
+	Status PatchGroupEventsApplicationsAppIdJSONBodyStatus `json:"status"`
+}
+
+// PatchGroupEventsApplicationsAppIdJSONBodyStatus defines parameters for PatchGroupEventsApplicationsAppId.
+type PatchGroupEventsApplicationsAppIdJSONBodyStatus string
+
 // ListMealLibraryParams defines parameters for ListMealLibrary.
 type ListMealLibraryParams struct {
 	IncludeArchived *bool `form:"include_archived,omitempty" json:"include_archived,omitempty"`
@@ -365,6 +549,21 @@ type CreateGearLibraryItemJSONRequestBody = GearLibraryItemRequest
 
 // UpdateGearLibraryItemJSONRequestBody defines body for UpdateGearLibraryItem for application/json ContentType.
 type UpdateGearLibraryItemJSONRequestBody = GearLibraryItemRequest
+
+// PostGroupEventsJSONRequestBody defines body for PostGroupEvents for application/json ContentType.
+type PostGroupEventsJSONRequestBody = GroupEventRequest
+
+// PatchGroupEventsApplicationsAppIdJSONRequestBody defines body for PatchGroupEventsApplicationsAppId for application/json ContentType.
+type PatchGroupEventsApplicationsAppIdJSONRequestBody PatchGroupEventsApplicationsAppIdJSONBody
+
+// PatchGroupEventsIdJSONRequestBody defines body for PatchGroupEventsId for application/json ContentType.
+type PatchGroupEventsIdJSONRequestBody = GroupEventRequest
+
+// PostGroupEventsIdApplyJSONRequestBody defines body for PostGroupEventsIdApply for application/json ContentType.
+type PostGroupEventsIdApplyJSONRequestBody = GroupEventApplicationRequest
+
+// PostGroupEventsIdCommentsJSONRequestBody defines body for PostGroupEventsIdComments for application/json ContentType.
+type PostGroupEventsIdCommentsJSONRequestBody = GroupEventCommentRequest
 
 // CreateMealLibraryItemJSONRequestBody defines body for CreateMealLibraryItem for application/json ContentType.
 type CreateMealLibraryItemJSONRequestBody = MealLibraryItemRequest
@@ -446,6 +645,42 @@ type ServerInterface interface {
 	// Update Gear Library Item
 	// (PUT /gear-library/{itemId})
 	UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID)
+	// 列出社群活動
+	// (GET /group-events)
+	GetGroupEvents(w http.ResponseWriter, r *http.Request, params GetGroupEventsParams)
+	// 建立新社群活動
+	// (POST /group-events)
+	PostGroupEvents(w http.ResponseWriter, r *http.Request)
+	// 審核報名申請
+	// (PATCH /group-events/applications/{app_id})
+	PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID)
+	// 刪除留言
+	// (DELETE /group-events/comments/{comment_id})
+	DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID)
+	// 刪除活動
+	// (DELETE /group-events/{id})
+	DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 取得單一活動詳情
+	// (GET /group-events/{id})
+	GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 更新活動資訊
+	// (PATCH /group-events/{id})
+	PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 列出活動的報名申請 (活動建立者用)
+	// (GET /group-events/{id}/applications)
+	GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 申請加入社群活動
+	// (POST /group-events/{id}/apply)
+	PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 列出活動的所有留言
+	// (GET /group-events/{id}/comments)
+	GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 在活動下留言
+	// (POST /group-events/{id}/comments)
+	PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+	// 對活動按讚或取消按讚
+	// (POST /group-events/{id}/like)
+	PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 	// Health Check
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
@@ -623,6 +858,78 @@ func (_ Unimplemented) GetGearLibraryItem(w http.ResponseWriter, r *http.Request
 // Update Gear Library Item
 // (PUT /gear-library/{itemId})
 func (_ Unimplemented) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 列出社群活動
+// (GET /group-events)
+func (_ Unimplemented) GetGroupEvents(w http.ResponseWriter, r *http.Request, params GetGroupEventsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 建立新社群活動
+// (POST /group-events)
+func (_ Unimplemented) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 審核報名申請
+// (PATCH /group-events/applications/{app_id})
+func (_ Unimplemented) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 刪除留言
+// (DELETE /group-events/comments/{comment_id})
+func (_ Unimplemented) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 刪除活動
+// (DELETE /group-events/{id})
+func (_ Unimplemented) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 取得單一活動詳情
+// (GET /group-events/{id})
+func (_ Unimplemented) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 更新活動資訊
+// (PATCH /group-events/{id})
+func (_ Unimplemented) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 列出活動的報名申請 (活動建立者用)
+// (GET /group-events/{id}/applications)
+func (_ Unimplemented) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 申請加入社群活動
+// (POST /group-events/{id}/apply)
+func (_ Unimplemented) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 列出活動的所有留言
+// (GET /group-events/{id}/comments)
+func (_ Unimplemented) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 在活動下留言
+// (POST /group-events/{id}/comments)
+func (_ Unimplemented) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// 對活動按讚或取消按讚
+// (POST /group-events/{id}/like)
+func (_ Unimplemented) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -1107,6 +1414,359 @@ func (siw *ServerInterfaceWrapper) UpdateGearLibraryItem(w http.ResponseWriter, 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UpdateGearLibraryItem(w, r, itemId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetGroupEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetGroupEvents(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetGroupEventsParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", r.URL.Query(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "creator_id" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "creator_id", r.URL.Query(), &params.CreatorId, runtime.BindQueryParameterOptions{Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "creator_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGroupEvents(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostGroupEvents operation middleware
+func (siw *ServerInterfaceWrapper) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostGroupEvents(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PatchGroupEventsApplicationsAppId operation middleware
+func (siw *ServerInterfaceWrapper) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "app_id" -------------
+	var appId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "app_id", chi.URLParam(r, "app_id"), &appId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "app_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchGroupEventsApplicationsAppId(w, r, appId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteGroupEventsCommentsCommentId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "comment_id" -------------
+	var commentId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "comment_id", chi.URLParam(r, "comment_id"), &commentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "comment_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteGroupEventsCommentsCommentId(w, r, commentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteGroupEventsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteGroupEventsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetGroupEventsId operation middleware
+func (siw *ServerInterfaceWrapper) GetGroupEventsId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGroupEventsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PatchGroupEventsId operation middleware
+func (siw *ServerInterfaceWrapper) PatchGroupEventsId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchGroupEventsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetGroupEventsIdApplications operation middleware
+func (siw *ServerInterfaceWrapper) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGroupEventsIdApplications(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostGroupEventsIdApply operation middleware
+func (siw *ServerInterfaceWrapper) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostGroupEventsIdApply(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetGroupEventsIdComments operation middleware
+func (siw *ServerInterfaceWrapper) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetGroupEventsIdComments(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostGroupEventsIdComments operation middleware
+func (siw *ServerInterfaceWrapper) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostGroupEventsIdComments(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostGroupEventsIdLike operation middleware
+func (siw *ServerInterfaceWrapper) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostGroupEventsIdLike(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2457,6 +3117,42 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Put(options.BaseURL+"/gear-library/{itemId}", wrapper.UpdateGearLibraryItem)
 	})
 	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events", wrapper.GetGroupEvents)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events", wrapper.PostGroupEvents)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/group-events/applications/{app_id}", wrapper.PatchGroupEventsApplicationsAppId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/comments/{comment_id}", wrapper.DeleteGroupEventsCommentsCommentId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/group-events/{id}", wrapper.DeleteGroupEventsId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events/{id}", wrapper.GetGroupEventsId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/group-events/{id}", wrapper.PatchGroupEventsId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events/{id}/applications", wrapper.GetGroupEventsIdApplications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events/{id}/apply", wrapper.PostGroupEventsIdApply)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/group-events/{id}/comments", wrapper.GetGroupEventsIdComments)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events/{id}/comments", wrapper.PostGroupEventsIdComments)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/group-events/{id}/like", wrapper.PostGroupEventsIdLike)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/health", wrapper.GetHealth)
 	})
 	r.Group(func(r chi.Router) {
@@ -2571,85 +3267,100 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"5tKIhk8zozP/GwAA///WKRpU+7wAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

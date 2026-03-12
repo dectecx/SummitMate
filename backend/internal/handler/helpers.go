@@ -61,3 +61,18 @@ func toOpenAPIDatePtr(t *time.Time) *openapi_types.Date {
 	d := openapi_types.Date{Time: *t}
 	return &d
 }
+
+func toServiceDate(s string) (time.Time, error) {
+	return time.Parse("2006-01-02", s)
+}
+
+func toServiceDatePtr(s *string) *time.Time {
+	if s == nil || *s == "" {
+		return nil
+	}
+	t, err := time.Parse("2006-01-02", *s)
+	if err != nil {
+		return nil
+	}
+	return &t
+}
