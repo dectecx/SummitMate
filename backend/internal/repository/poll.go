@@ -44,13 +44,8 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *model.Poll) error
 	var id string
 	var createdAt, updatedAt time.Time
 
-	desc := ""
-	if poll.Description != nil {
-		desc = *poll.Description
-	}
-
 	err := r.db.QueryRow(ctx, query,
-		poll.TripID, poll.Title, desc, poll.Deadline,
+		poll.TripID, poll.Title, poll.Description, poll.Deadline,
 		poll.IsAllowAddOption, poll.MaxOptionLimit, poll.AllowMultipleVotes,
 		poll.ResultDisplayType, poll.Status, poll.CreatedBy, poll.UpdatedBy,
 	).Scan(&id, &createdAt, &updatedAt)

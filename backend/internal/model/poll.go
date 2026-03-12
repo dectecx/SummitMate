@@ -18,7 +18,7 @@ type Poll struct {
 	ID                 string        `json:"id" db:"id"`
 	TripID             string        `json:"trip_id" db:"trip_id"`
 	Title              string        `json:"title" db:"title"`
-	Description        *string       `json:"description" db:"description"`
+	Description        string        `json:"description" db:"description"`
 	Deadline           *time.Time    `json:"deadline" db:"deadline"`
 	IsAllowAddOption   bool          `json:"is_allow_add_option" db:"is_allow_add_option"`
 	MaxOptionLimit     int           `json:"max_option_limit" db:"max_option_limit"`

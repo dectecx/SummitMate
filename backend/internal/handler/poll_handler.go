@@ -204,7 +204,6 @@ func mapToAPIPoll(p *model.Poll) api.Poll {
 		}
 	}
 
-
 	return api.Poll{
 		Id:                 toOpenAPIUUID(p.ID),
 		TripId:             toOpenAPIUUID(p.TripID),
