@@ -19,16 +19,13 @@ void main() {
     );
 
     testWidgets('Should display basic trip info correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: TripCard(
-            trip: testTrip,
-            isActive: false,
-            roleLabel: '嚮導',
-            onTap: () {},
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TripCard(trip: testTrip, isActive: false, roleLabel: '嚮導', onTap: () {}),
           ),
         ),
-      ));
+      );
 
       expect(find.text('嘉明湖三天兩夜'), findsOneWidget);
       expect(find.text('天使的眼淚'), findsOneWidget);
@@ -37,16 +34,18 @@ void main() {
     });
 
     testWidgets('Should show "進行中" badge when isActive is true', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: TripCard(
-            trip: testTrip,
-            isActive: true, // Active
-            roleLabel: '成員',
-            onTap: () {},
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TripCard(
+              trip: testTrip,
+              isActive: true, // Active
+              roleLabel: '成員',
+              onTap: () {},
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.text('進行中'), findsOneWidget);
     });
@@ -57,20 +56,22 @@ void main() {
       bool uploadCalled = false;
       bool manageMembersCalled = false;
 
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: TripCard(
-            trip: testTrip,
-            isActive: false,
-            roleLabel: 'Member',
-            onTap: () {},
-            onEdit: () => editCalled = true,
-            onDelete: () => deleteCalled = true,
-            onUpload: () => uploadCalled = true,
-            onManageMembers: () => manageMembersCalled = true,
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TripCard(
+              trip: testTrip,
+              isActive: false,
+              roleLabel: 'Member',
+              onTap: () {},
+              onEdit: () => editCalled = true,
+              onDelete: () => deleteCalled = true,
+              onUpload: () => uploadCalled = true,
+              onManageMembers: () => manageMembersCalled = true,
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.text('編輯'), findsOneWidget);
       expect(find.text('刪除'), findsOneWidget);
@@ -82,7 +83,7 @@ void main() {
 
       await tester.tap(find.text('刪除'));
       expect(deleteCalled, true);
-      
+
       await tester.tap(find.text('同步'));
       expect(uploadCalled, true);
 
@@ -91,18 +92,20 @@ void main() {
     });
 
     testWidgets('Should hide action buttons if callbacks are null', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
-          body: TripCard(
-            trip: testTrip,
-            isActive: false,
-            roleLabel: 'Member',
-            onTap: () {},
-            onManageMembers: () {},
-            // No other callbacks
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: TripCard(
+              trip: testTrip,
+              isActive: false,
+              roleLabel: 'Member',
+              onTap: () {},
+              onManageMembers: () {},
+              // No other callbacks
+            ),
           ),
         ),
-      ));
+      );
 
       expect(find.text('編輯'), findsNothing);
       expect(find.text('刪除'), findsNothing);
