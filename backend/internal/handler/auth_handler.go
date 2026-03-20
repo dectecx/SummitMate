@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	mw "summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -83,16 +83,13 @@ func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *
 		return
 	}
 
-	sendJSON(writer, http.StatusOK, toUserResponse(user))
+	sendJSON(writer, http.StatusOK, mapping.ToUserResponse(user))
 }
 
 // --- 回應輔助函式 ---
 
 func writeAuthResponse(writer http.ResponseWriter, statusCode int, user *model.User, token string) {
-	response := dto.AuthResponse{
-		Token: token,
-		User:  toUserResponse(user),
-	}
+	response := mapping.ToAuthResponse(user, token)
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(statusCode)
 	json.NewEncoder(writer).Encode(response)
@@ -106,24 +103,4 @@ func writeError(writer http.ResponseWriter, statusCode int, message string) {
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(statusCode)
 	json.NewEncoder(writer).Encode(response)
-}
-
-// toUserResponse 將 model.User 轉換為 dto.UserResponse。
-func toUserResponse(user *model.User) dto.UserResponse {
-	// TODO: 未來應透過查詢或快取將 role_id 轉為實際角色代碼
-	role := "MEMBER"
-
-	return dto.UserResponse{
-		ID:          user.ID,
-		Email:       user.Email,
-		DisplayName: user.DisplayName,
-		Avatar:      user.Avatar,
-		IsActive:    user.IsActive,
-		IsVerified:  user.IsVerified,
-		Role:        role,
-		CreatedAt:   user.CreatedAt,
-		CreatedBy:   user.CreatedBy,
-		UpdatedAt:   user.UpdatedAt,
-		UpdatedBy:   user.UpdatedBy,
-	}
 }
