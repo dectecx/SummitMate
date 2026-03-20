@@ -23,6 +23,7 @@ import (
 
 	"summitmate/api"
 	"summitmate/internal/auth"
+
 	"summitmate/internal/config"
 	"summitmate/internal/database"
 	"summitmate/internal/handler"
@@ -612,17 +613,22 @@ func (s *APITestSuite) SetupTest() {
 func (s *APITestSuite) registerAndLogin(displayName string) (token string, userID string) {
 	email := randomEmail()
 	password := "TestPassword123!"
-
-	regPayload, _ := json.Marshal(registerRequest{
-		Email: email, Password: password, DisplayName: displayName,
+	// 註冊取得 token
+	regPayload, _ := json.Marshal(api.RegisterRequest{
+		Email:       openapi_types.Email(email),
+		Password:    password,
+		DisplayName: displayName,
 	})
-	regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
-	s.Require().NoError(err)
-	var authResp authResponse
-	json.NewDecoder(regResp.Body).Decode(&authResp)
-	regResp.Body.Close()
+	regResp, _ := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
+	defer regResp.Body.Close()
 
-	return authResp.Token, authResp.User.ID
+	if regResp.StatusCode != http.StatusCreated {
+		s.T().Fatalf("測試用註冊失敗: %d", regResp.StatusCode)
+	}
+	var authResp api.AuthResponse
+	json.NewDecoder(regResp.Body).Decode(&authResp)
+
+	return authResp.Token, authResp.User.Id.String()
 }
 
 // createTripForTest 建立行程，回傳 tripID

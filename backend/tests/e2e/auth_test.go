@@ -7,37 +7,11 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
+	"summitmate/api"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
-
-// --- 請求/回應結構 ---
-
-type registerRequest struct {
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	DisplayName string `json:"display_name"`
-}
-
-type loginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type authResponse struct {
-	Token string `json:"token"`
-	User  struct {
-		ID          string `json:"id"`
-		Email       string `json:"email"`
-		DisplayName string `json:"display_name"`
-		Avatar      string `json:"avatar"`
-		IsActive    bool   `json:"is_active"`
-		IsVerified  bool   `json:"is_verified"`
-		Role        string `json:"role"`
-	} `json:"user"`
-}
-
-type errorResponse struct {
-	Message string `json:"message"`
-}
 
 // randomEmail 產生不重複的測試用 Email。
 func randomEmail() string {
@@ -68,8 +42,8 @@ func (s *APITestSuite) TestHealthCheck_Success() {
 func (s *APITestSuite) TestRegister_Success() {
 	email := randomEmail()
 
-	payload := registerRequest{
-		Email:       email,
+	payload := api.RegisterRequest{
+		Email:       openapi_types.Email(email),
 		Password:    "Password123!",
 		DisplayName: "測試使用者",
 	}
@@ -81,22 +55,22 @@ func (s *APITestSuite) TestRegister_Success() {
 
 	s.Require().Equal(http.StatusCreated, resp.StatusCode, "應回傳 201 Created")
 
-	var authResp authResponse
+	var authResp api.AuthResponse
 	json.NewDecoder(resp.Body).Decode(&authResp)
 
 	s.NotEmpty(authResp.Token, "Token 不應為空")
-	s.Equal(email, authResp.User.Email, "Email 應相符")
+	s.Equal(email, string(authResp.User.Email), "Email 應相符")
 	s.Equal("測試使用者", authResp.User.DisplayName, "顯示名稱應相符")
-	s.NotEmpty(authResp.User.ID, "User ID 不應為空")
+	s.NotEmpty(authResp.User.Id.String(), "User ID 不應為空")
 
-	s.T().Logf("✅ 註冊成功: id=%s, email=%s", authResp.User.ID, authResp.User.Email)
+	s.T().Logf("✅ 註冊成功: id=%s, email=%s", authResp.User.Id.String(), authResp.User.Email)
 }
 
 func (s *APITestSuite) TestRegister_DuplicateEmail() {
 	email := randomEmail()
 
-	payload := registerRequest{
-		Email:       email,
+	payload := api.RegisterRequest{
+		Email:       openapi_types.Email(email),
 		Password:    "Password123!",
 		DisplayName: "使用者一",
 	}
@@ -105,7 +79,7 @@ func (s *APITestSuite) TestRegister_DuplicateEmail() {
 	// 第一次註冊
 	resp1, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(body))
 	s.Require().NoError(err)
-	var firstResp authResponse
+	var firstResp api.AuthResponse
 	json.NewDecoder(resp1.Body).Decode(&firstResp)
 	resp1.Body.Close()
 
@@ -117,14 +91,14 @@ func (s *APITestSuite) TestRegister_DuplicateEmail() {
 
 	s.Equal(http.StatusBadRequest, resp2.StatusCode, "重複 Email 應回傳 400")
 
-	var errResp errorResponse
+	var errResp api.ErrorResponse
 	json.NewDecoder(resp2.Body).Decode(&errResp)
 	s.T().Logf("✅ 重複 Email 已被擋: %s", errResp.Message)
 }
 
 func (s *APITestSuite) TestRegister_PasswordTooShort() {
-	payload := registerRequest{
-		Email:       randomEmail(),
+	payload := api.RegisterRequest{
+		Email:       openapi_types.Email(randomEmail()),
 		Password:    "short",
 		DisplayName: "密碼太短",
 	}
@@ -147,26 +121,26 @@ func (s *APITestSuite) TestLogin_Success() {
 	password := "MySecurePass99!"
 
 	// 先註冊
-	regPayload, _ := json.Marshal(registerRequest{
-		Email: email, Password: password, DisplayName: "登入測試者",
+	regPayload, _ := json.Marshal(api.RegisterRequest{
+		Email: openapi_types.Email(email), Password: password, DisplayName: "登入測試者",
 	})
 	regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
 	s.Require().NoError(err)
 	regResp.Body.Close()
 
 	// 登入
-	loginPayload, _ := json.Marshal(loginRequest{Email: email, Password: password})
+	loginPayload, _ := json.Marshal(api.LoginRequest{Email: openapi_types.Email(email), Password: password})
 	resp, err := http.Post(s.baseURL+"/auth/login", "application/json", bytes.NewReader(loginPayload))
 	s.Require().NoError(err)
 	defer resp.Body.Close()
 
 	s.Require().Equal(http.StatusOK, resp.StatusCode, "登入應回傳 200")
 
-	var authResp authResponse
+	var authResp api.AuthResponse
 	json.NewDecoder(resp.Body).Decode(&authResp)
 
 	s.NotEmpty(authResp.Token, "Token 不應為空")
-	s.Equal(email, authResp.User.Email, "Email 應相符")
+	s.Equal(email, string(authResp.User.Email), "Email 應相符")
 	s.T().Logf("✅ 登入成功: email=%s", authResp.User.Email)
 }
 
@@ -174,14 +148,14 @@ func (s *APITestSuite) TestLogin_InvalidPassword() {
 	email := randomEmail()
 
 	// 先註冊
-	regPayload, _ := json.Marshal(registerRequest{
-		Email: email, Password: "CorrectPassword1!", DisplayName: "密碼錯誤測試",
+	regPayload, _ := json.Marshal(api.RegisterRequest{
+		Email: openapi_types.Email(email), Password: "CorrectPassword1!", DisplayName: "密碼錯誤測試",
 	})
 	regResp, _ := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
 	regResp.Body.Close()
 
 	// 用錯誤密碼登入
-	loginPayload, _ := json.Marshal(loginRequest{Email: email, Password: "WrongPassword1!"})
+	loginPayload, _ := json.Marshal(api.LoginRequest{Email: openapi_types.Email(email), Password: "WrongPassword1!"})
 	resp, err := http.Post(s.baseURL+"/auth/login", "application/json", bytes.NewReader(loginPayload))
 	s.Require().NoError(err)
 	defer resp.Body.Close()
@@ -191,7 +165,7 @@ func (s *APITestSuite) TestLogin_InvalidPassword() {
 }
 
 func (s *APITestSuite) TestLogin_AccountNotFound() {
-	loginPayload, _ := json.Marshal(loginRequest{
+	loginPayload, _ := json.Marshal(api.LoginRequest{
 		Email: "nonexistent@example.com", Password: "SomePassword1!",
 	})
 	resp, err := http.Post(s.baseURL+"/auth/login", "application/json", bytes.NewReader(loginPayload))
@@ -211,12 +185,12 @@ func (s *APITestSuite) TestGetMe_Success() {
 	password := "TokenTestPass1!"
 
 	// 先註冊取得 Token
-	regPayload, _ := json.Marshal(registerRequest{
-		Email: email, Password: password, DisplayName: "Me 測試者",
+	regPayload, _ := json.Marshal(api.RegisterRequest{
+		Email: openapi_types.Email(email), Password: password, DisplayName: "Me 測試者",
 	})
 	regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
 	s.Require().NoError(err)
-	var authResp authResponse
+	var authResp api.AuthResponse
 	json.NewDecoder(regResp.Body).Decode(&authResp)
 	regResp.Body.Close()
 
@@ -230,16 +204,12 @@ func (s *APITestSuite) TestGetMe_Success() {
 
 	s.Require().Equal(http.StatusOK, resp.StatusCode, "/auth/me 應回傳 200")
 
-	var user struct {
-		ID          string `json:"id"`
-		Email       string `json:"email"`
-		DisplayName string `json:"display_name"`
-	}
+	var user api.User
 	json.NewDecoder(resp.Body).Decode(&user)
 
-	s.Equal(email, user.Email, "Email 應相符")
+	s.Equal(email, string(user.Email), "Email 應相符")
 	s.Equal("Me 測試者", user.DisplayName, "顯示名稱應相符")
-	s.T().Logf("✅ GetMe 成功: id=%s, email=%s, name=%s", user.ID, user.Email, user.DisplayName)
+	s.T().Logf("✅ GetMe 成功: id=%s, email=%s, name=%s", user.Id.String(), user.Email, user.DisplayName)
 }
 
 func (s *APITestSuite) TestGetMe_NoToken() {
