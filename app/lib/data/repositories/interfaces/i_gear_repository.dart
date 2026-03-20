@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/gear_item.dart';
 
 /// Gear Repository 抽象介面

@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/message.dart';
 
 /// 留言訊息 (Message) 的本地資料來源介面

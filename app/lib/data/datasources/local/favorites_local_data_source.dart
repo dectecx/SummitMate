@@ -1,4 +1,4 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../models/favorite.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../../core/constants.dart';

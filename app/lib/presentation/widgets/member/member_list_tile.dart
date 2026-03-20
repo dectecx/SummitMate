@@ -63,9 +63,7 @@ class MemberListTile extends StatelessWidget {
       leading: CircleAvatar(
         backgroundImage: NetworkImage(member['avatar'] ?? ''),
         onBackgroundImageError: (_, _) {},
-        child: (member['avatar'] == null || member['avatar'].isEmpty)
-            ? Text(member['display_name']?[0] ?? '?')
-            : null,
+        child: (member['avatar'] == null || member['avatar'].isEmpty) ? Text(member['display_name']?[0] ?? '?') : null,
       ),
       title: Text(member['display_name'] ?? 'Unknown'),
       subtitle: Column(
@@ -84,9 +82,7 @@ class MemberListTile extends StatelessWidget {
           Text('ID: ${member['id'] ?? ''}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
         ],
       ),
-      trailing: canEdit
-          ? OutlinedButton(onPressed: onSettingsTap, child: const Text('設定'))
-          : null,
+      trailing: canEdit ? OutlinedButton(onPressed: onSettingsTap, child: const Text('設定')) : null,
     );
   }
 }

@@ -61,11 +61,7 @@ class AuthService implements IAuthService {
 
       final response = await _apiClient.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'name': displayName,
-        },
+        data: {'email': email, 'password': password, 'name': displayName},
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {

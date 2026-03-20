@@ -2,7 +2,7 @@ import '../../core/di.dart';
 import '../models/gear_item.dart';
 import 'interfaces/i_gear_repository.dart';
 import '../datasources/interfaces/i_gear_local_data_source.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 /// Gear Repository
 /// 管理個人裝備的 CRUD 操作 (僅本地)

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../data/models/weather_data.dart';
 import '../tools/log_service.dart';
 import '../tools/hive_service.dart';

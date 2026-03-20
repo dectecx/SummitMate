@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/itinerary_item.dart';
 import '../../../core/error/result.dart';
 

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
 import '../../models/settings.dart';
 import '../interfaces/i_settings_repository.dart';

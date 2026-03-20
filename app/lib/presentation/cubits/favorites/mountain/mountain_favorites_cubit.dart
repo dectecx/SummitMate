@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../../../core/constants.dart';
 import '../../../../infrastructure/tools/hive_service.dart';
 import 'mountain_favorites_state.dart';
