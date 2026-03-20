@@ -10,11 +10,11 @@
 /// flutter run --release --dart-define-from-file=.env.prod
 /// ```
 class EnvConfig {
-  // Google Apps Script URL
+  // 後端 API 網址
   // 從 --dart-define 或環境變數讀取
-  static const String gasBaseUrl = String.fromEnvironment(
-    'GAS_BASE_URL',
-    defaultValue: '', // 空字串表示未設定
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8080/api/v1', // 預設指向 Android Emulator
   );
 
   // 是否為開發模式
@@ -39,13 +39,13 @@ class EnvConfig {
   static const String admobInterstitialIdiOS = String.fromEnvironment('ADMOB_INTERSTITIAL_ID_IOS', defaultValue: '');
 
   /// 檢查必要的環境變數是否已設定
-  static bool get isConfigured => gasBaseUrl.isNotEmpty && cwaApiKey.isNotEmpty;
+  static bool get isConfigured => apiBaseUrl.isNotEmpty && cwaApiKey.isNotEmpty;
 
   /// 取得有效的 API URL
   /// 如果環境變數未設定，會使用 fallback
   static String getApiUrl({String? fallback}) {
-    if (gasBaseUrl.isNotEmpty) return gasBaseUrl;
+    if (apiBaseUrl.isNotEmpty) return apiBaseUrl;
     if (fallback != null) return fallback;
-    throw StateError('GAS_BASE_URL not configured. Run with --dart-define-from-file=.env.dev');
+    throw StateError('API_BASE_URL not configured. Run with --dart-define-from-file=.env.dev');
   }
 }

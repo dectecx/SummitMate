@@ -4,8 +4,8 @@ import 'package:uuid/uuid.dart';
 import '../../../core/di.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
+import '../../../data/datasources/remote/trip_gear_remote_data_source.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -228,28 +228,34 @@ class TripCubit extends Cubit<TripState> {
       // 1. 蒐集資料
       // 透過 DI 存取其他 Repo，因 Cubit 無法直接存取其他 Provider
       // 理想上應透過 Service 處理，但為了維持架構一致性暫時使用 DI
-      final itineraryRepo = getIt<IItineraryRepository>();
       final gearRepo = getIt<IGearRepository>();
 
-      // 注意：目前 Repository API 缺乏依 TripID 過濾的功能，因此先全抓再過濾
-      final allItineraries = itineraryRepo.getAllItems();
       final allGear = gearRepo.getAllItems();
 
-      final tripItineraries = allItineraries.where((i) => i.tripId == trip.id).toList();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
-      // 2. 呼叫 Repository 執行上傳
-      final result = await _tripRepository.uploadFullTrip(
-        trip: trip,
-        itineraryItems: tripItineraries,
-        gearItems: tripGear,
-      );
+      // 2. 依次上傳 Trip Meta, Itinerary (仍在 TripRepo 或是獨立 API? 目前 TripRemoteDataSource 只剩 uploadTrip), Gear
+      // 先上傳 Trip 本身
+      final uploadTripResult = await _tripRepository.uploadTripToRemote(trip);
+      if (uploadTripResult is Failure) {
+        LogService.error('Trip metadata upload failed: ${(uploadTripResult as Failure).exception}', source: _source);
+        return false;
+      }
 
-      if (result is Failure) {
-        LogService.error(
-          'Full trip upload failed: ${(result as Failure).exception}',
-          source: _source,
-        ); // No cast needed in Dart 3 if flow analysis works, but explicit switch/case is better
+      // TODO: 行程表 (Itinerary) 目前手動觸發 SyncService 上傳，這僅是過渡期設計。
+      // 未來應統一透過 IItineraryRemoteDataSource 進行保存，不應依賴 SyncService 的通用上傳邏輯。
+      final syncResult = await _syncService.uploadItinerary();
+      if (!syncResult.isSuccess) {
+        LogService.warning('Trip Itinerary upload had issues: ${syncResult.errors}', source: _source);
+        // 不中斷，繼續上傳 Gear
+      }
+
+      // 上傳裝備 (Trip Gear) 取代以往的整批同步
+      try {
+        final gearRemote = getIt<ITripGearRemoteDataSource>();
+        await gearRemote.replaceAllTripGear(trip.id, tripGear);
+      } catch (e) {
+        LogService.error('Trip Gear upload failed: $e', source: _source);
         return false;
       }
 

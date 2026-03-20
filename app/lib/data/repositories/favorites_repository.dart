@@ -8,7 +8,7 @@ import '../../data/datasources/interfaces/i_favorites_local_data_source.dart';
 import '../../infrastructure/tools/log_service.dart';
 
 /// 最愛 (Favorites) 的 Repository 實作
-/// 負責在本地 (Hive) 與遠端 (GAS) 之間進行同步
+/// 負責在本地 (Hive) 與遠端之間進行同步
 class FavoritesRepository implements IFavoritesRepository {
   final IFavoritesLocalDataSource _localDataSource;
   final IFavoritesRemoteDataSource _remoteDataSource;

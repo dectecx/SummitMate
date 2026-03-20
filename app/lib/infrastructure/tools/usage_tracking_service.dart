@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../core/constants.dart';
-import '../clients/gas_api_client.dart';
 import '../../domain/interfaces/i_api_client.dart';
 import '../../core/di.dart';
 import 'log_service.dart';
 
 /// 使用狀態追蹤服務 (僅 Web)
-/// 每 2 小時發送一次心跳到 Google Sheets
+/// 每 2 小時發送一次心跳到伺服器
 class UsageTrackingService {
   static const String _source = 'UsageTracking';
   static const Duration _heartbeatInterval = Duration(hours: 2);
@@ -25,6 +23,7 @@ class UsageTrackingService {
       _forceWeb = forceWeb;
 
   /// 啟動追蹤 (僅 Web 平台)
+  ///
   /// [username] 顯示名稱
   /// [userId] 使用者 ID (若為 null 則視為訪客)
   void start(String username, {String? userId}) {
@@ -58,25 +57,18 @@ class UsageTrackingService {
     try {
       LogService.info('發送心跳...', source: _source);
       final response = await _apiClient.post(
-        '',
+        '/system/heartbeat',
         data: {
-          'action': ApiConfig.actionSystemHeartbeat,
           'user_name': _username,
           if (_userId != null) 'user_id': _userId,
-          // 若 api_heartbeat.gs 沒收到 user_id 會自動補 Guest- 前綴
           'user_type': _userType,
           'timestamp': DateTime.now().toIso8601String(),
           'platform': 'web',
         },
       );
 
-      if (response.statusCode == 200) {
-        final apiResponse = GasApiResponse.fromJson(response.data as Map<String, dynamic>);
-        if (apiResponse.isSuccess) {
-          LogService.info('心跳發送成功', source: _source);
-        } else {
-          LogService.warning('心跳發送失敗: ${apiResponse.message}', source: _source);
-        }
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        LogService.info('心跳發送成功', source: _source);
       } else {
         LogService.warning('心跳發送失敗: HTTP ${response.statusCode}', source: _source);
       }
@@ -92,7 +84,7 @@ class UsageTrackingService {
     LogService.info('心跳追蹤已停止', source: _source);
   }
 
-  /// 釋放資源
+  /// 釋放服務資源
   void dispose() {
     stop();
   }

@@ -12,13 +12,10 @@ import '../core/services/permission_service.dart';
 import '../domain/interfaces/i_api_client.dart';
 import '../domain/interfaces/i_connectivity_service.dart';
 import '../domain/interfaces/i_weather_service.dart';
-import '../domain/interfaces/i_poll_service.dart';
 import '../domain/interfaces/i_geolocator_service.dart';
-import '../domain/interfaces/i_gear_cloud_service.dart';
 import '../domain/interfaces/i_auth_service.dart';
 import '../domain/interfaces/i_token_validator.dart';
 import '../domain/interfaces/i_sync_service.dart';
-import '../domain/interfaces/i_data_service.dart';
 import '../domain/interfaces/i_ad_service.dart';
 
 // Data
@@ -37,13 +34,14 @@ import '../data/datasources/remote/group_event_remote_data_source.dart';
 import '../data/datasources/interfaces/i_poll_local_data_source.dart';
 import '../data/datasources/interfaces/i_poll_remote_data_source.dart';
 import '../data/datasources/local/poll_local_data_source.dart';
-import '../data/datasources/remote/poll_remote_data_source.dart';
 
 // Data - DataSources
 import '../data/datasources/local/trip_local_data_source.dart';
 import '../data/datasources/remote/trip_remote_data_source.dart';
 import '../data/datasources/interfaces/i_trip_local_data_source.dart';
 import '../data/datasources/interfaces/i_trip_remote_data_source.dart';
+import '../data/datasources/remote/trip_gear_remote_data_source.dart';
+import '../data/datasources/remote/trip_meal_remote_data_source.dart';
 import '../data/datasources/local/gear_local_data_source.dart';
 import '../data/datasources/interfaces/i_gear_local_data_source.dart';
 import '../data/datasources/local/message_local_data_source.dart';
@@ -125,7 +123,7 @@ Future<void> setupDependencies() async {
   // Token Validator & Main Auth Service
   getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
   getIt.registerLazySingleton<IAuthService>(
-    () => GasAuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
+    () => AuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
   );
 
   // Permission Service (Context-aware wrapper over Auth/Settings often)
@@ -146,13 +144,13 @@ Future<void> setupDependencies() async {
 
   // API Clients
   getIt.registerLazySingleton<IApiClient>(
-    () => GasApiClient(baseUrl: EnvConfig.gasBaseUrl, dio: getIt<Dio>()),
-    instanceName: 'gas',
+    () => ApiClient(baseUrl: EnvConfig.apiBaseUrl, dio: getIt<Dio>()),
+    instanceName: 'rest',
   );
 
   getIt.registerLazySingleton<NetworkAwareClient>(
     () => NetworkAwareClient(
-      apiClient: getIt<IApiClient>(instanceName: 'gas'),
+      apiClient: getIt<IApiClient>(instanceName: 'rest'),
       connectivity: getIt<IConnectivityService>(),
     ),
   );
@@ -200,10 +198,10 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
   getIt.registerLazySingleton<IItineraryRemoteDataSource>(() => ItineraryRemoteDataSource());
   getIt.registerLazySingleton<IMessageRemoteDataSource>(() => MessageRemoteDataSource());
-  getIt.registerLazySingleton<IGearCloudService>(() => GearCloudService());
-  getIt.registerLazySingleton<IPollRemoteDataSource>(() => PollRemoteDataSource());
   getIt.registerLazySingleton<IGroupEventRemoteDataSource>(() => GroupEventRemoteDataSource());
   getIt.registerLazySingleton<IFavoritesRemoteDataSource>(() => FavoritesRemoteDataSource());
+  getIt.registerLazySingleton<ITripGearRemoteDataSource>(() => TripGearRemoteDataSource());
+  getIt.registerLazySingleton<ITripMealRemoteDataSource>(() => TripMealRemoteDataSource());
   // ===========================================================================
   // 6. Repositories (倉儲層)
   // ===========================================================================
@@ -272,14 +270,9 @@ Future<void> setupDependencies() async {
   await weatherService.init();
   getIt.registerSingleton<IWeatherService>(weatherService);
 
-  getIt.registerSingleton<IPollService>(PollService());
-
   // Data & Sync
-  getIt.registerLazySingleton<IDataService>(() => GoogleSheetsService());
-
   getIt.registerLazySingleton<ISyncService>(
     () => SyncService(
-      sheetsService: getIt<IDataService>(),
       tripRepo: getIt<ITripRepository>(),
       itineraryRepo: getIt<IItineraryRepository>(),
       messageRepo: getIt<IMessageRepository>(),
