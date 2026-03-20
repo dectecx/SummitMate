@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"summitmate/api"
 )
 
 func (s *APITestSuite) TestPoll_CRUD() {
@@ -12,42 +14,42 @@ func (s *APITestSuite) TestPoll_CRUD() {
 	tripID := s.createTripForTest(token)
 
 	// 1. 建立投票
-	resp := s.doRequest("POST", fmt.Sprintf("%s/trips/%s/polls", s.baseURL, tripID),
-		map[string]interface{}{
-			"title":                "午餐吃什麼？",
-			"allow_multiple_votes": true,
-			"is_allow_add_option":  true,
-		}, token)
+	allowMul := true
+	allowAdd := true
+	reqBody := api.PollRequest{
+		Title:              "午餐吃什麼？",
+		AllowMultipleVotes: &allowMul,
+		IsAllowAddOption:   &allowAdd,
+	}
+	resp := s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/polls", tripID), token, reqBody)
 	defer resp.Body.Close()
 
-	var poll map[string]interface{}
+	var poll api.Poll
 	json.NewDecoder(resp.Body).Decode(&poll)
-	s.Require().Equal(http.StatusCreated, resp.StatusCode, fmt.Sprintf("期望 201 但得到 %d, body: %+v", resp.StatusCode, poll))
-	pollID := poll["id"].(string)
+	s.Require().Equal(http.StatusCreated, resp.StatusCode, fmt.Sprintf("期望 201 但得到 %d", resp.StatusCode))
+	pollID := poll.Id.String()
 
 	// 2. 新增選項
-	resp = s.doRequest("POST", fmt.Sprintf("%s/trips/%s/polls/%s/options", s.baseURL, tripID, pollID),
-		map[string]string{"text": "便當"}, token)
+	optReq := api.PollOptionRequest{Text: "便當"}
+	resp = s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/polls/%s/options", tripID, pollID), token, optReq)
 	defer resp.Body.Close()
 	s.Equal(http.StatusCreated, resp.StatusCode)
 
 	// 3. 投票
-	var pollWithOpt map[string]interface{}
+	var pollWithOpt api.Poll
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	fmt.Printf("🔎 Poll With Options Response: %s\n", string(bodyBytes))
 	json.Unmarshal(bodyBytes, &pollWithOpt)
 
-	options, ok := pollWithOpt["options"].([]interface{})
-	s.Require().True(ok, "回傳應包含 options 陣列")
-	s.Require().NotEmpty(options, "options 陣列不應為空")
-	optionID := options[0].(map[string]interface{})["id"].(string)
+	s.Require().NotEmpty(pollWithOpt.Options, "options 陣列不應為空")
+	optionID := pollWithOpt.Options[0].Id.String()
 
-	resp = s.doRequest("POST", fmt.Sprintf("%s/trips/%s/polls/%s/options/%s/vote", s.baseURL, tripID, pollID, optionID), nil, token)
+	resp = s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/polls/%s/options/%s/vote", tripID, pollID, optionID), token, nil)
 	defer resp.Body.Close()
 	s.Equal(http.StatusOK, resp.StatusCode)
 
 	// 4. 刪除
-	resp = s.doRequest("DELETE", fmt.Sprintf("%s/trips/%s/polls/%s", s.baseURL, tripID, pollID), nil, token)
+	resp = s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s/polls/%s", tripID, pollID), token, nil)
 	defer resp.Body.Close()
 	s.Equal(http.StatusNoContent, resp.StatusCode)
 }

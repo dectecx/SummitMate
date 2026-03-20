@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"summitmate/api"
+
+	"github.com/google/uuid"
 )
 
 func (s *APITestSuite) TestFavorite_CRUD() {
@@ -11,20 +15,27 @@ func (s *APITestSuite) TestFavorite_CRUD() {
 	tripID := s.createTripForTest(token)
 
 	// 1. 新增收藏
-	resp := s.doRequest("POST", s.baseURL+"/favorites",
-		map[string]interface{}{"target_id": tripID, "type": "trip"}, token)
+	reqBody := api.FavoriteRequest{
+		TargetId: uuid.MustParse(tripID),
+		Type:     "trip",
+	}
+	resp := s.sendAuthRequest("POST", "/favorites", token, reqBody)
 	defer resp.Body.Close()
 	s.Equal(http.StatusCreated, resp.StatusCode)
 
+	var createdFav api.Favorite
+	json.NewDecoder(resp.Body).Decode(&createdFav)
+	s.Equal("trip", createdFav.Type)
+
 	// 2. 列出收藏
-	resp = s.doRequest("GET", s.baseURL+"/favorites", nil, token)
+	resp = s.sendAuthRequest("GET", "/favorites", token, nil)
 	defer resp.Body.Close()
-	var favs []map[string]interface{}
+	var favs []api.Favorite
 	json.NewDecoder(resp.Body).Decode(&favs)
 	s.Len(favs, 1)
 
 	// 3. 移除收藏
-	resp = s.doRequest("DELETE", fmt.Sprintf("%s/favorites/%s", s.baseURL, tripID), nil, token)
+	resp = s.sendAuthRequest("DELETE", fmt.Sprintf("/favorites/%s", tripID), token, nil)
 	defer resp.Body.Close()
 	s.Equal(http.StatusNoContent, resp.StatusCode)
 }
