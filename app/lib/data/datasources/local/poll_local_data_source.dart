@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/poll.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/hive_service.dart';

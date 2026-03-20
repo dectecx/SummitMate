@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'enums/group_event_status.dart';
 import 'enums/group_event_application_status.dart';

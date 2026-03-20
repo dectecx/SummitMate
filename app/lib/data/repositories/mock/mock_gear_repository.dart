@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/gear_item.dart';
 import '../interfaces/i_gear_repository.dart';
 import 'mock_itinerary_repository.dart';

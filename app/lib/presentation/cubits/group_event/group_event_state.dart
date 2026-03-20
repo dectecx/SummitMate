@@ -34,7 +34,8 @@ class GroupEventLoaded extends GroupEventState {
 
   /// Open events (recruiting)
   List<GroupEvent> get openEvents =>
-      events.where((e) => e.status == GroupEventStatus.open).toList()..sort((a, b) => a.startDate.compareTo(b.startDate));
+      events.where((e) => e.status == GroupEventStatus.open).toList()
+        ..sort((a, b) => a.startDate.compareTo(b.startDate));
 
   /// My created events
   List<GroupEvent> get myCreatedEvents =>

@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../../core/constants.dart';
 import '../../models/gear_item.dart';
 import '../interfaces/i_gear_local_data_source.dart';

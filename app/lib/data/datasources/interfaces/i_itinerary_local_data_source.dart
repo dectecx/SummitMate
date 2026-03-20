@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/itinerary_item.dart';
 
 /// 行程項目 (ItineraryItem) 的本地資料來源介面

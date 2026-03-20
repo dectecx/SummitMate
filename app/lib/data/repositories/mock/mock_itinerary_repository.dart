@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/itinerary_item.dart';
 import '../interfaces/i_itinerary_repository.dart';
-import '../../../core/error/result.dart'; // Added import
+import '../../../core/error/result.dart';
 
 /// 模擬行程資料庫
 /// 用於教學模式，返回靜態假資料，所有寫入操作皆為空實作。

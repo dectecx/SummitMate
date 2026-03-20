@@ -87,12 +87,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
       if (mounted) {
         setState(() {
-          _searchResult = {
-            'id': user.id,
-            'display_name': user.displayName,
-            'email': user.email,
-            'avatar': user.avatar,
-          };
+          _searchResult = {'id': user.id, 'display_name': user.displayName, 'email': user.email, 'avatar': user.avatar};
           _isLoading = false;
         });
       }
@@ -114,11 +109,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
     try {
       final userId = _searchResult!['id'];
-      final result = await widget.tripRepository.addMemberById(
-        widget.tripId,
-        userId,
-        role: _selectedRole,
-      );
+      final result = await widget.tripRepository.addMemberById(widget.tripId, userId, role: _selectedRole);
       if (result is Failure) throw result.exception;
 
       if (mounted) {
@@ -153,8 +144,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
   @override
   Widget build(BuildContext context) {
     final isSelf = _searchResult != null && _searchResult!['id'] == widget.currentUserId;
-    final isAlreadyMember = _searchResult != null &&
-        widget.existingMemberIds.contains(_searchResult!['id']);
+    final isAlreadyMember = _searchResult != null && widget.existingMemberIds.contains(_searchResult!['id']);
     final canAdd = _searchResult != null && !isSelf && !isAlreadyMember;
 
     return AlertDialog(
@@ -188,16 +178,8 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         const SizedBox(height: 8),
         SegmentedButton<SearchType>(
           segments: const [
-            ButtonSegment<SearchType>(
-              value: SearchType.email,
-              label: Text('Email'),
-              icon: Icon(Icons.email_outlined),
-            ),
-            ButtonSegment<SearchType>(
-              value: SearchType.id,
-              label: Text('User ID'),
-              icon: Icon(Icons.badge_outlined),
-            ),
+            ButtonSegment<SearchType>(value: SearchType.email, label: Text('Email'), icon: Icon(Icons.email_outlined)),
+            ButtonSegment<SearchType>(value: SearchType.id, label: Text('User ID'), icon: Icon(Icons.badge_outlined)),
           ],
           selected: {_searchType},
           onSelectionChanged: (Set<SearchType> newSelection) {
@@ -256,15 +238,9 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      _searchResult!['email'] ?? '',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
+                    Text(_searchResult!['email'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 2),
-                    Text(
-                      'ID: ${_searchResult!['id']}',
-                      style: const TextStyle(fontSize: 10, color: Colors.grey),
-                    ),
+                    Text('ID: ${_searchResult!['id']}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
                 ),
               ),
@@ -357,7 +333,9 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 8),
-          Expanded(child: Text(text, style: TextStyle(color: Colors.brown))),
+          Expanded(
+            child: Text(text, style: TextStyle(color: Colors.brown)),
+          ),
         ],
       ),
     );
@@ -367,10 +345,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
   List<Widget> _buildActions(bool canAdd) {
     if (_searchResult == null) {
       return [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
+        TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('取消')),
         FilledButton(
           onPressed: _isLoading ? null : _performSearch,
           key: TutorialKeys.memberSearchBtn,
@@ -379,10 +354,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
       ];
     } else {
       return [
-        TextButton(
-          onPressed: _isLoading ? null : _resetSearch,
-          child: const Text('重搜'),
-        ),
+        TextButton(onPressed: _isLoading ? null : _resetSearch, child: const Text('重搜')),
         if (canAdd)
           FilledButton(
             onPressed: _isLoading ? null : _addMember,

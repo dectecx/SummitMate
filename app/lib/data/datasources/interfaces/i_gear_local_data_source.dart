@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/gear_item.dart';
 
 /// 裝備項目 (GearItem) 的本地資料來源介面

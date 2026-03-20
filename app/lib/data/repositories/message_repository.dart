@@ -6,7 +6,7 @@ import '../models/message.dart';
 import 'interfaces/i_message_repository.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';
 import '../datasources/interfaces/i_message_remote_data_source.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 /// 留言 Repository
 ///

@@ -1,5 +1,5 @@
 import 'package:summitmate/core/theme.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import '../../models/settings.dart';
 import '../../../core/error/result.dart';
 

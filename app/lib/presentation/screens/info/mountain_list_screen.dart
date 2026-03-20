@@ -141,13 +141,12 @@ class _MountainListScreenState extends State<MountainListScreen> {
                           children: [
                             _buildCategoryPill(context, null, '全部'),
                             const SizedBox(width: 8),
-                            ...MountainCategory.values
-                                .map(
-                                  (c) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _buildCategoryPill(context, c, c.label),
-                                  ),
-                                ),
+                            ...MountainCategory.values.map(
+                              (c) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: _buildCategoryPill(context, c, c.label),
+                              ),
+                            ),
                           ],
                         ),
                       ),
