@@ -5,12 +5,9 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
-	"summitmate/internal/model"
 	"summitmate/internal/service"
-
-	"time"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
@@ -44,9 +41,9 @@ func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := make([]dto.TripResponse, 0, len(trips))
+	res := make([]api.TripListItemResponse, 0, len(trips))
 	for _, t := range trips {
-		res = append(res, toTripResponse(t))
+		res = append(res, mapping.ToTripListItem(*t))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -67,19 +64,7 @@ func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var dayNames []string
-	if req.DayNames != nil {
-		dayNames = *req.DayNames
-	}
-
-	svcReq := &service.TripCreateRequest{
-		Name:        req.Name,
-		Description: req.Description,
-		StartDate:   req.StartDate.Time,
-		EndDate:     toServiceTimePtr(req.EndDate),
-		CoverImage:  req.CoverImage,
-		DayNames:    dayNames,
-	}
+	svcReq := mapping.ToServiceTripCreateReq(req)
 
 	createdTrip, err := h.svc.CreateTrip(r.Context(), userID, svcReq)
 	if err != nil {
@@ -87,7 +72,7 @@ func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toTripResponse(createdTrip))
+	sendJSON(w, http.StatusCreated, mapping.ToTripCreateResponse(*createdTrip))
 }
 
 // GetTrip 取得特定行程詳細資料
@@ -109,7 +94,7 @@ func (h *TripHandler) GetTrip(w http.ResponseWriter, r *http.Request, tripId ope
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toTripResponse(trip))
+	sendJSON(w, http.StatusOK, mapping.ToTripGetResponse(*trip))
 }
 
 // UpdateTrip 更新行程資料
@@ -127,20 +112,7 @@ func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId 
 		return
 	}
 
-	var startDate *time.Time
-	if req.StartDate != nil {
-		t := req.StartDate.Time
-		startDate = &t
-	}
-	svcReq := &service.TripUpdateRequest{
-		Name:        req.Name,
-		Description: req.Description,
-		StartDate:   startDate,
-		EndDate:     toServiceTimePtr(req.EndDate),
-		CoverImage:  req.CoverImage,
-		IsActive:    req.IsActive,
-		DayNames:    req.DayNames,
-	}
+	svcReq := mapping.ToServiceTripUpdateReq(req)
 
 	updatedTrip, err := h.svc.UpdateTrip(r.Context(), tripId.String(), userID, svcReq)
 	if err != nil {
@@ -152,7 +124,7 @@ func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId 
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toTripResponse(updatedTrip))
+	sendJSON(w, http.StatusOK, mapping.ToTripUpdateResponse(*updatedTrip))
 }
 
 // DeleteTrip 刪除行程
@@ -200,9 +172,9 @@ func (h *TripHandler) ListTripMembers(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	res := make([]dto.TripMemberResponse, 0, len(members))
+	res := make([]api.TripMemberListItemResponse, 0, len(members))
 	for _, m := range members {
-		res = append(res, toTripMemberResponse(m))
+		res = append(res, mapping.ToTripMemberListItemResponse(m))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -229,7 +201,7 @@ func (h *TripHandler) AddTripMember(w http.ResponseWriter, r *http.Request, trip
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toTripMemberResponse(member))
+	sendJSON(w, http.StatusCreated, mapping.ToTripMemberGetResponse(member))
 }
 
 // RemoveTripMember 將成員移出行程
@@ -277,9 +249,9 @@ func (h *TripHandler) ListItinerary(w http.ResponseWriter, r *http.Request, trip
 		return
 	}
 
-	res := make([]dto.ItineraryItemResponse, 0, len(items))
+	res := make([]api.ItineraryItemListItemResponse, 0, len(items))
 	for _, item := range items {
-		res = append(res, toItineraryItemResponse(item))
+		res = append(res, mapping.ToItineraryItemListItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -300,23 +272,15 @@ func (h *TripHandler) AddItineraryItem(w http.ResponseWriter, r *http.Request, t
 		return
 	}
 
-	svcReq := &service.ItineraryItemRequest{
-		Day:        req.Day,
-		Name:       req.Name,
-		EstTime:    req.EstTime,
-		Altitude:   intPtrToInt32(req.Altitude),
-		Distance:   float64PtrToFloat64(req.Distance),
-		Note:       strPtrToStr(req.Note),
-		ImageAsset: req.ImageAsset,
-	}
+	svcReq := mapping.ToServiceItineraryItemReq(req)
 
-	item, err := h.svc.AddItineraryItem(r.Context(), tripId.String(), userID, svcReq)
+	item, err := h.svc.AddItineraryItem(r.Context(), tripId.String(), userID, &svcReq)
 	if err != nil {
 		sendErrorResponse(w, http.StatusForbidden, "無法新增: "+err.Error())
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toItineraryItemResponse(item))
+	sendJSON(w, http.StatusCreated, mapping.ToItineraryItemCreateResponse(item))
 }
 
 // UpdateItineraryItem 更新行程表節點
@@ -334,23 +298,15 @@ func (h *TripHandler) UpdateItineraryItem(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	svcReq := &service.ItineraryItemRequest{
-		Day:        req.Day,
-		Name:       req.Name,
-		EstTime:    req.EstTime,
-		Altitude:   intPtrToInt32(req.Altitude),
-		Distance:   float64PtrToFloat64(req.Distance),
-		Note:       strPtrToStr(req.Note),
-		ImageAsset: req.ImageAsset,
-	}
+	svcReq := mapping.ToServiceItineraryItemReq(req)
 
-	item, err := h.svc.UpdateItineraryItem(r.Context(), tripId.String(), itemId.String(), userID, svcReq)
+	item, err := h.svc.UpdateItineraryItem(r.Context(), tripId.String(), itemId.String(), userID, &svcReq)
 	if err != nil {
 		sendErrorResponse(w, http.StatusForbidden, "無法更新: "+err.Error())
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toItineraryItemResponse(item))
+	sendJSON(w, http.StatusOK, mapping.ToItineraryItemUpdateResponse(item))
 }
 
 // DeleteItineraryItem 刪除行程表節點
@@ -374,60 +330,6 @@ func (h *TripHandler) DeleteItineraryItem(w http.ResponseWriter, r *http.Request
 // ------------------------------------------------------------------
 // Converters
 // ------------------------------------------------------------------
-
-func toTripResponse(t *model.Trip) dto.TripResponse {
-	resp := dto.TripResponse{
-		ID:          t.ID,
-		UserID:      t.UserID,
-		Name:        t.Name,
-		Description: t.Description,
-		StartDate:   t.StartDate.Format("2006-01-02"),
-		CoverImage:  t.CoverImage,
-		IsActive:    t.IsActive,
-		DayNames:    t.DayNames,
-		CreatedAt:   t.CreatedAt,
-		CreatedBy:   t.CreatedBy,
-		UpdatedAt:   t.UpdatedAt,
-		UpdatedBy:   t.UpdatedBy,
-	}
-	if t.EndDate != nil {
-		s := t.EndDate.Format("2006-01-02")
-		resp.EndDate = &s
-	}
-	return resp
-}
-
-func toTripMemberResponse(m *model.TripMember) dto.TripMemberResponse {
-	return dto.TripMemberResponse{
-		TripID:          m.TripID,
-		UserID:          m.UserID,
-		JoinedAt:        m.JoinedAt,
-		UserEmail:       m.UserEmail,
-		UserDisplayName: m.UserDisplayName,
-		UserAvatar:      m.UserAvatar,
-	}
-}
-
-func toItineraryItemResponse(item *model.ItineraryItem) dto.ItineraryItemResponse {
-	return dto.ItineraryItemResponse{
-		ID:          item.ID,
-		TripID:      item.TripID,
-		Day:         item.Day,
-		Name:        item.Name,
-		EstTime:     item.EstTime,
-		ActualTime:  item.ActualTime,
-		Altitude:    item.Altitude,
-		Distance:    item.Distance,
-		Note:        item.Note,
-		ImageAsset:  item.ImageAsset,
-		IsCheckedIn: item.IsCheckedIn,
-		CheckedInAt: item.CheckedInAt,
-		CreatedAt:   item.CreatedAt,
-		CreatedBy:   item.CreatedBy,
-		UpdatedAt:   item.UpdatedAt,
-		UpdatedBy:   item.UpdatedBy,
-	}
-}
 
 // ------------------------------------------------------------------
 // Helpers

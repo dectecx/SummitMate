@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -39,9 +39,9 @@ func (h *MessageHandler) ListTripMessages(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	resp := make([]dto.MessageResponse, len(messages))
+	resp := make([]api.Message, len(messages))
 	for i, m := range messages {
-		resp[i] = toMessageResponse(m)
+		resp[i] = mapping.ToMessageResponse(m)
 	}
 	sendJSON(w, http.StatusOK, resp)
 }
@@ -87,7 +87,7 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toMessageResponse(created))
+	sendJSON(w, http.StatusCreated, mapping.ToMessageResponse(created))
 }
 
 func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
@@ -127,7 +127,7 @@ func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toMessageResponse(updated))
+	sendJSON(w, http.StatusOK, mapping.ToMessageResponse(updated))
 }
 
 func (h *MessageHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
@@ -152,33 +152,4 @@ func (h *MessageHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func toMessageResponse(m *model.TripMessage) dto.MessageResponse {
-	var replies []dto.MessageResponse
-	if len(m.Replies) > 0 {
-		replies = make([]dto.MessageResponse, len(m.Replies))
-		for i, rp := range m.Replies {
-			replies[i] = toMessageResponse(rp) // Recursive mapping
-		}
-	} else {
-		replies = []dto.MessageResponse{}
-	}
-
-	return dto.MessageResponse{
-		ID:          m.ID,
-		TripID:      m.TripID,
-		ParentID:    m.ParentID,
-		UserID:      m.UserID,
-		DisplayName: m.DisplayName,
-		Avatar:      m.Avatar,
-		Category:    m.Category,
-		Content:     m.Content,
-		Timestamp:   m.Timestamp,
-		Replies:     replies,
-		CreatedAt:   m.CreatedAt,
-		CreatedBy:   m.CreatedBy,
-		UpdatedAt:   m.UpdatedAt,
-		UpdatedBy:   m.UpdatedBy,
-	}
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -38,9 +38,9 @@ func (h *PollHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, trip
 		return
 	}
 
-	resp := make([]dto.PollResponse, len(polls))
+	resp := make([]api.Poll, len(polls))
 	for i, p := range polls {
-		resp[i] = toPollResponse(p)
+		resp[i] = mapping.ToPollResponse(p)
 	}
 	sendJSON(w, http.StatusOK, resp)
 }
@@ -87,7 +87,7 @@ func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tri
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toPollResponse(created))
+	sendJSON(w, http.StatusCreated, mapping.ToPollResponse(created))
 }
 
 func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
@@ -110,7 +110,7 @@ func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID
 		sendErrorResponse(w, http.StatusInternalServerError, "查詢失敗")
 		return
 	}
-	sendJSON(w, http.StatusOK, toPollResponse(poll))
+	sendJSON(w, http.StatusOK, mapping.ToPollResponse(poll))
 }
 
 func (h *PollHandler) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
@@ -158,7 +158,7 @@ func (h *PollHandler) AddPollOption(w http.ResponseWriter, r *http.Request, trip
 		sendErrorResponse(w, http.StatusInternalServerError, "新增選項失敗")
 		return
 	}
-	sendJSON(w, http.StatusCreated, toPollResponse(poll))
+	sendJSON(w, http.StatusCreated, mapping.ToPollResponse(poll))
 }
 
 func (h *PollHandler) VotePollOption(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID, optionID openapi_types.UUID) {
@@ -181,40 +181,5 @@ func (h *PollHandler) VotePollOption(w http.ResponseWriter, r *http.Request, tri
 		sendErrorResponse(w, http.StatusInternalServerError, "投票失敗")
 		return
 	}
-	sendJSON(w, http.StatusOK, toPollResponse(poll))
-}
-
-func toPollResponse(p *model.Poll) dto.PollResponse {
-	options := make([]dto.PollOptionResponse, len(p.Options))
-	for i, opt := range p.Options {
-		options[i] = dto.PollOptionResponse{
-			ID:        opt.ID,
-			PollID:    opt.PollID,
-			Text:      opt.Text,
-			VoteCount: opt.VoteCount,
-			Voters:    opt.Voters,
-			CreatedAt: opt.CreatedAt,
-			CreatedBy: opt.CreatedBy,
-			UpdatedAt: opt.UpdatedAt,
-			UpdatedBy: opt.UpdatedBy,
-		}
-	}
-
-	return dto.PollResponse{
-		ID:                 p.ID,
-		TripID:             p.TripID,
-		Title:              p.Title,
-		Description:        p.Description,
-		Deadline:           p.Deadline,
-		IsAllowAddOption:   p.IsAllowAddOption,
-		MaxOptionLimit:     p.MaxOptionLimit,
-		AllowMultipleVotes: p.AllowMultipleVotes,
-		ResultDisplayType:  p.ResultDisplayType,
-		Status:             p.Status,
-		Options:            options,
-		CreatedAt:          p.CreatedAt,
-		CreatedBy:          p.CreatedBy,
-		UpdatedAt:          p.UpdatedAt,
-		UpdatedBy:          p.UpdatedBy,
-	}
+	sendJSON(w, http.StatusOK, mapping.ToPollResponse(poll))
 }

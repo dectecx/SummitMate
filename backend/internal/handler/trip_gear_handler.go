@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
-	"summitmate/internal/model"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -40,9 +39,9 @@ func (h *TripGearHandler) ListTripGear(w http.ResponseWriter, r *http.Request, t
 		return
 	}
 
-	res := make([]dto.TripGearItemResponse, 0, len(items))
+	res := make([]api.TripGearItem, 0, len(items))
 	for _, item := range items {
-		res = append(res, toTripGearItemResponse(item))
+		res = append(res, mapping.ToTripGearItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -63,23 +62,9 @@ func (h *TripGearHandler) AddTripGear(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	var libIDStr *string
-	if req.LibraryItemId != nil {
-		s := req.LibraryItemId.String()
-		libIDStr = &s
-	}
+	modelReq := mapping.ToModelTripGearItem(req)
 
-	modelReq := &model.TripGearItem{
-		LibraryItemID: libIDStr,
-		Name:          req.Name,
-		Weight:        req.Weight,
-		Category:      req.Category,
-		Quantity:      *req.Quantity,
-		IsChecked:     *req.IsChecked,
-		OrderIndex:    req.OrderIndex,
-	}
-
-	createdItem, err := h.svc.CreateItem(r.Context(), tripId.String(), userID, modelReq)
+	createdItem, err := h.svc.CreateItem(r.Context(), tripId.String(), userID, &modelReq)
 	if err != nil {
 		if err == service.ErrUnauthorizedTripAccess {
 			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
@@ -89,7 +74,7 @@ func (h *TripGearHandler) AddTripGear(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toTripGearItemResponse(createdItem))
+	sendJSON(w, http.StatusCreated, mapping.ToTripGearItemResponse(createdItem))
 }
 
 // UpdateTripGear 更新行程中的裝備
@@ -107,23 +92,9 @@ func (h *TripGearHandler) UpdateTripGear(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	var libIDStr *string
-	if req.LibraryItemId != nil {
-		s := req.LibraryItemId.String()
-		libIDStr = &s
-	}
+	modelReq := mapping.ToModelTripGearItem(req)
 
-	modelReq := &model.TripGearItem{
-		LibraryItemID: libIDStr,
-		Name:          req.Name,
-		Weight:        req.Weight,
-		Category:      req.Category,
-		Quantity:      *req.Quantity,
-		IsChecked:     *req.IsChecked,
-		OrderIndex:    req.OrderIndex,
-	}
-
-	updatedItem, err := h.svc.UpdateItem(r.Context(), tripId.String(), itemId.String(), userID, modelReq)
+	updatedItem, err := h.svc.UpdateItem(r.Context(), tripId.String(), itemId.String(), userID, &modelReq)
 	if err != nil {
 		if err == service.ErrUnauthorizedTripAccess {
 			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
@@ -133,7 +104,7 @@ func (h *TripGearHandler) UpdateTripGear(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toTripGearItemResponse(updatedItem))
+	sendJSON(w, http.StatusOK, mapping.ToTripGearItemResponse(updatedItem))
 }
 
 // RemoveTripGear 將裝備從行程中移除
@@ -155,22 +126,4 @@ func (h *TripGearHandler) RemoveTripGear(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func toTripGearItemResponse(item *model.TripGearItem) dto.TripGearItemResponse {
-	return dto.TripGearItemResponse{
-		ID:            item.ID,
-		TripID:        item.TripID,
-		LibraryItemID: item.LibraryItemID,
-		Name:          item.Name,
-		Weight:        item.Weight,
-		Category:      item.Category,
-		Quantity:      item.Quantity,
-		IsChecked:     item.IsChecked,
-		OrderIndex:    item.OrderIndex,
-		CreatedAt:     item.CreatedAt,
-		CreatedBy:     item.CreatedBy,
-		UpdatedAt:     item.UpdatedAt,
-		UpdatedBy:     item.UpdatedBy,
-	}
 }

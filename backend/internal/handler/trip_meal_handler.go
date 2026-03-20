@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
-	"summitmate/internal/model"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -40,9 +39,9 @@ func (h *TripMealHandler) ListTripMeals(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	res := make([]dto.TripMealItemResponse, 0, len(items))
+	res := make([]api.TripMealItem, 0, len(items))
 	for _, item := range items {
-		res = append(res, toTripMealItemResponse(item))
+		res = append(res, mapping.ToTripMealItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -63,24 +62,9 @@ func (h *TripMealHandler) AddTripMeal(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	var libIDStr *string
-	if req.LibraryItemId != nil {
-		s := req.LibraryItemId.String()
-		libIDStr = &s
-	}
+	modelReq := mapping.ToModelTripMealItem(req)
 
-	modelReq := &model.TripMealItem{
-		LibraryItemID: libIDStr,
-		Day:           req.Day,
-		MealType:      req.MealType,
-		Name:          req.Name,
-		Weight:        req.Weight,
-		Calories:      req.Calories,
-		Quantity:      *req.Quantity,
-		Note:          req.Note,
-	}
-
-	createdItem, err := h.svc.CreateItem(r.Context(), tripId.String(), userID, modelReq)
+	createdItem, err := h.svc.CreateItem(r.Context(), tripId.String(), userID, &modelReq)
 	if err != nil {
 		if err == service.ErrUnauthorizedTripAccess {
 			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
@@ -90,7 +74,7 @@ func (h *TripMealHandler) AddTripMeal(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toTripMealItemResponse(createdItem))
+	sendJSON(w, http.StatusCreated, mapping.ToTripMealItemResponse(createdItem))
 }
 
 // UpdateTripMeal 更新行程中的食物
@@ -108,24 +92,9 @@ func (h *TripMealHandler) UpdateTripMeal(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	var libIDStr *string
-	if req.LibraryItemId != nil {
-		s := req.LibraryItemId.String()
-		libIDStr = &s
-	}
+	modelReq := mapping.ToModelTripMealItem(req)
 
-	modelReq := &model.TripMealItem{
-		LibraryItemID: libIDStr,
-		Day:           req.Day,
-		MealType:      req.MealType,
-		Name:          req.Name,
-		Weight:        req.Weight,
-		Calories:      req.Calories,
-		Quantity:      *req.Quantity,
-		Note:          req.Note,
-	}
-
-	updatedItem, err := h.svc.UpdateItem(r.Context(), tripId.String(), itemId.String(), userID, modelReq)
+	updatedItem, err := h.svc.UpdateItem(r.Context(), tripId.String(), itemId.String(), userID, &modelReq)
 	if err != nil {
 		if err == service.ErrUnauthorizedTripAccess {
 			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
@@ -135,7 +104,7 @@ func (h *TripMealHandler) UpdateTripMeal(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toTripMealItemResponse(updatedItem))
+	sendJSON(w, http.StatusOK, mapping.ToTripMealItemResponse(updatedItem))
 }
 
 // RemoveTripMeal 將食物從行程中移除
@@ -157,23 +126,4 @@ func (h *TripMealHandler) RemoveTripMeal(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func toTripMealItemResponse(item *model.TripMealItem) dto.TripMealItemResponse {
-	return dto.TripMealItemResponse{
-		ID:            item.ID,
-		TripID:        item.TripID,
-		LibraryItemID: item.LibraryItemID,
-		Day:           item.Day,
-		MealType:      item.MealType,
-		Name:          item.Name,
-		Weight:        item.Weight,
-		Calories:      item.Calories,
-		Quantity:      item.Quantity,
-		Note:          item.Note,
-		CreatedAt:     item.CreatedAt,
-		CreatedBy:     item.CreatedBy,
-		UpdatedAt:     item.UpdatedAt,
-		UpdatedBy:     item.UpdatedBy,
-	}
 }

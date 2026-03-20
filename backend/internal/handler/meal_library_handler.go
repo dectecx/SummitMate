@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
-	"summitmate/internal/model"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -41,9 +40,9 @@ func (h *MealLibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	res := make([]dto.MealLibraryItemResponse, 0, len(items))
+	res := make([]api.MealLibraryItem, 0, len(items))
 	for _, item := range items {
-		res = append(res, toMealLibraryItemResponse(item))
+		res = append(res, mapping.ToMealLibraryItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -64,24 +63,15 @@ func (h *MealLibraryHandler) CreateMealLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	modelReq := &model.MealLibraryItem{
-		Name:       req.Name,
-		Weight:     req.Weight,
-		Calories:   req.Calories,
-		Notes:      req.Notes,
-		IsArchived: false,
-	}
-	if req.IsArchived != nil {
-		modelReq.IsArchived = *req.IsArchived
-	}
+	modelReq := mapping.ToModelMealLibraryItem(req)
 
-	createdItem, err := h.svc.CreateItem(r.Context(), userID, modelReq)
+	createdItem, err := h.svc.CreateItem(r.Context(), userID, &modelReq)
 	if err != nil {
 		sendErrorResponse(w, http.StatusInternalServerError, "建立失敗: "+err.Error())
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toMealLibraryItemResponse(createdItem))
+	sendJSON(w, http.StatusCreated, mapping.ToMealLibraryItemResponse(createdItem))
 }
 
 // GetMealLibraryItem 取得單一食物詳情
@@ -99,7 +89,7 @@ func (h *MealLibraryHandler) GetMealLibraryItem(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toMealLibraryItemResponse(item))
+	sendJSON(w, http.StatusOK, mapping.ToMealLibraryItemResponse(item))
 }
 
 // UpdateMealLibraryItem 更新個人食物資料
@@ -117,24 +107,15 @@ func (h *MealLibraryHandler) UpdateMealLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	modelReq := &model.MealLibraryItem{
-		Name:       req.Name,
-		Weight:     req.Weight,
-		Calories:   req.Calories,
-		Notes:      req.Notes,
-		IsArchived: false,
-	}
-	if req.IsArchived != nil {
-		modelReq.IsArchived = *req.IsArchived
-	}
+	modelReq := mapping.ToModelMealLibraryItem(req)
 
-	updatedItem, err := h.svc.UpdateItem(r.Context(), itemId.String(), userID, modelReq)
+	updatedItem, err := h.svc.UpdateItem(r.Context(), itemId.String(), userID, &modelReq)
 	if err != nil {
 		sendErrorResponse(w, http.StatusInternalServerError, "更新失敗: "+err.Error())
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toMealLibraryItemResponse(updatedItem))
+	sendJSON(w, http.StatusOK, mapping.ToMealLibraryItemResponse(updatedItem))
 }
 
 // DeleteMealLibraryItem 刪除個人食物
@@ -152,20 +133,4 @@ func (h *MealLibraryHandler) DeleteMealLibraryItem(w http.ResponseWriter, r *htt
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func toMealLibraryItemResponse(item *model.MealLibraryItem) dto.MealLibraryItemResponse {
-	return dto.MealLibraryItemResponse{
-		ID:         item.ID,
-		UserID:     item.UserID,
-		Name:       item.Name,
-		Weight:     item.Weight,
-		Calories:   item.Calories,
-		Notes:      item.Notes,
-		IsArchived: item.IsArchived,
-		CreatedAt:  item.CreatedAt,
-		CreatedBy:  item.CreatedBy,
-		UpdatedAt:  item.UpdatedAt,
-		UpdatedBy:  item.UpdatedBy,
-	}
 }
