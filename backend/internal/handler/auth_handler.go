@@ -5,10 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/google/uuid"
-	"github.com/oapi-codegen/runtime/types"
-
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	mw "summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -25,7 +23,6 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 }
 
 // RegisterUser 處理 POST /auth/register 請求。
-// 驗證輸入 → 呼叫 AuthService.Register → 回傳 JWT Token + 使用者資料。
 func (handler *AuthHandler) RegisterUser(writer http.ResponseWriter, request *http.Request) {
 	var req api.RegisterRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
@@ -33,7 +30,6 @@ func (handler *AuthHandler) RegisterUser(writer http.ResponseWriter, request *ht
 		return
 	}
 
-	// 基本驗證：密碼長度至少 8 碼
 	if len(req.Password) < 8 {
 		writeError(writer, http.StatusBadRequest, "密碼長度至少需要 8 個字元")
 		return
@@ -53,7 +49,6 @@ func (handler *AuthHandler) RegisterUser(writer http.ResponseWriter, request *ht
 }
 
 // LoginUser 處理 POST /auth/login 請求。
-// 驗證帳密 → 呼叫 AuthService.Login → 回傳 JWT Token + 使用者資料。
 func (handler *AuthHandler) LoginUser(writer http.ResponseWriter, request *http.Request) {
 	var req api.LoginRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
@@ -75,9 +70,7 @@ func (handler *AuthHandler) LoginUser(writer http.ResponseWriter, request *http.
 }
 
 // GetCurrentUser 處理 GET /auth/me 請求。
-// 從 context 取得 user_id (由 JWT middleware 注入) → 查詢使用者資料。
 func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *http.Request) {
-	// 從 context 取得 JWT middleware 注入的 user_id
 	userID, ok := request.Context().Value(mw.UserIDKey).(string)
 	if !ok || userID == "" {
 		writeError(writer, http.StatusUnauthorized, "未授權")
@@ -90,19 +83,15 @@ func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *
 		return
 	}
 
-	// Convert model.User to api.User
-	apiUser := convertToAPIUser(user)
-	writer.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(writer).Encode(apiUser)
+	sendJSON(writer, http.StatusOK, toUserResponse(user))
 }
 
 // --- 回應輔助函式 ---
 
-// writeAuthResponse 寫出認證成功的 JSON 回應 (含 Token 和使用者資料)。
 func writeAuthResponse(writer http.ResponseWriter, statusCode int, user *model.User, token string) {
-	response := api.AuthResponse{
+	response := dto.AuthResponse{
 		Token: token,
-		User:  convertToAPIUser(user),
+		User:  toUserResponse(user),
 	}
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(statusCode)
@@ -111,30 +100,30 @@ func writeAuthResponse(writer http.ResponseWriter, statusCode int, user *model.U
 
 // writeError 寫出錯誤 JSON 回應。
 func writeError(writer http.ResponseWriter, statusCode int, message string) {
-	response := api.ErrorResponse{Message: message}
+	response := struct {
+		Message string `json:"message"`
+	}{Message: message}
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(statusCode)
 	json.NewEncoder(writer).Encode(response)
 }
 
-// convertToAPIUser 將資料庫 model.User 轉換為 API 回應用的 api.User。
-func convertToAPIUser(user *model.User) api.User {
-	parsedID, _ := uuid.Parse(user.ID)
-
+// toUserResponse 將 model.User 轉換為 dto.UserResponse。
+func toUserResponse(user *model.User) dto.UserResponse {
 	// TODO: 未來應透過查詢或快取將 role_id 轉為實際角色代碼
 	role := "MEMBER"
 
-	return api.User{
-		Id:          parsedID,
-		Email:       types.Email(user.Email),
+	return dto.UserResponse{
+		ID:          user.ID,
+		Email:       user.Email,
 		DisplayName: user.DisplayName,
 		Avatar:      user.Avatar,
 		IsActive:    user.IsActive,
 		IsVerified:  user.IsVerified,
 		Role:        role,
 		CreatedAt:   user.CreatedAt,
-		CreatedBy:   toOpenAPIUUIDPtr(user.CreatedBy),
+		CreatedBy:   user.CreatedBy,
 		UpdatedAt:   user.UpdatedAt,
-		UpdatedBy:   toOpenAPIUUIDPtr(user.UpdatedBy),
+		UpdatedBy:   user.UpdatedBy,
 	}
 }

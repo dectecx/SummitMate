@@ -293,8 +293,8 @@ func (s *APITestSuite) TestTrip_Itinerary() {
 
 	// 4. Update Itinerary Item
 	updatePayload := map[string]interface{}{
-		"name": "改成登上前峰",
-		"day":  "2",
+		"name":     "改成登上前峰",
+		"day":      "2",
 		"est_time": "07:00",
 	}
 	updateResp := s.sendAuthRequest("PUT", fmt.Sprintf("/trips/%s/itinerary/%s", tripID, itemID), client.Token, updatePayload)

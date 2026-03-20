@@ -187,7 +187,7 @@ func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 	if err != nil {
 		return err
 	}
-	
+
 	// 如果自己退出就可以，如果是要踢人則必須是 Creator
 	isSelfExit := actionUserID == targetUserID
 	if !isSelfExit && trip.UserID != actionUserID {
@@ -291,8 +291,6 @@ func (s *TripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 }
 
 // --- 輔助函式 ---
-
-
 
 // isTripMember 判斷給定的 userID 是否已經被加入該行程。
 func (s *TripService) isTripMember(ctx context.Context, tripID, userID string) bool {

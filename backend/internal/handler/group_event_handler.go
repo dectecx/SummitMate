@@ -3,11 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
+
+	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	appMiddleware "summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
-
-	"summitmate/api"
 
 	"github.com/google/uuid"
 )
@@ -37,12 +39,12 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	apiEvents := make([]interface{}, len(events))
+	resp := make([]dto.GroupEventResponse, len(events))
 	for i, e := range events {
-		apiEvents[i] = mapToAPIGroupEvent(e)
+		resp[i] = toGroupEventResponse(e)
 	}
 
-	sendJSON(w, http.StatusOK, apiEvents)
+	sendJSON(w, http.StatusOK, resp)
 }
 
 func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
@@ -52,36 +54,50 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var req struct {
-		Title            string  `json:"title"`
-		Description      string  `json:"description"`
-		Location         string  `json:"location"`
-		StartDate        string  `json:"start_date"`
-		EndDate          *string `json:"end_date"`
-		MaxMembers       int     `json:"max_members"`
-		ApprovalRequired bool    `json:"approval_required"`
-		PrivateMessage   string  `json:"private_message"`
-		LinkedTripID     *string `json:"linked_trip_id"`
-	}
+	var req api.GroupEventRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		sendErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	startDate, _ := toServiceDate(req.StartDate)
-	endDate := toServiceDatePtr(req.EndDate)
+	var endDate *time.Time
+	if req.EndDate != nil {
+		t := req.EndDate.Time
+		endDate = &t
+	}
+
+	maxMembers := 0
+	if req.MaxMembers != nil {
+		maxMembers = *req.MaxMembers
+	}
+
+	approvalRequired := false
+	if req.ApprovalRequired != nil {
+		approvalRequired = *req.ApprovalRequired
+	}
+
+	privateMessage := ""
+	if req.PrivateMessage != nil {
+		privateMessage = *req.PrivateMessage
+	}
+
+	var linkedTripID *string
+	if req.LinkedTripId != nil {
+		s := req.LinkedTripId.String()
+		linkedTripID = &s
+	}
 
 	event := &model.GroupEvent{
 		Title:            req.Title,
 		Description:      req.Description,
 		Location:         req.Location,
-		StartDate:        startDate,
+		StartDate:        req.StartDate.Time,
 		EndDate:          endDate,
-		MaxMembers:       req.MaxMembers,
-		ApprovalRequired: req.ApprovalRequired,
-		PrivateMessage:   req.PrivateMessage,
-		LinkedTripID:     req.LinkedTripID,
+		MaxMembers:       maxMembers,
+		ApprovalRequired: approvalRequired,
+		PrivateMessage:   privateMessage,
+		LinkedTripID:     linkedTripID,
 		CreatedBy:        userID,
 		UpdatedBy:        userID,
 	}
@@ -91,7 +107,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, mapToAPIGroupEvent(event))
+	sendJSON(w, http.StatusCreated, toGroupEventResponse(event))
 }
 
 func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
@@ -105,7 +121,7 @@ func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	sendJSON(w, http.StatusOK, mapToAPIGroupEvent(event))
+	sendJSON(w, http.StatusOK, toGroupEventResponse(event))
 }
 
 func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
@@ -115,37 +131,51 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var req struct {
-		Title            string  `json:"title"`
-		Description      string  `json:"description"`
-		Location         string  `json:"location"`
-		StartDate        string  `json:"start_date"`
-		EndDate          *string `json:"end_date"`
-		MaxMembers       int     `json:"max_members"`
-		ApprovalRequired bool    `json:"approval_required"`
-		PrivateMessage   string  `json:"private_message"`
-		LinkedTripID     *string `json:"linked_trip_id"`
-	}
+	var req api.GroupEventRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		sendErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	startDate, _ := toServiceDate(req.StartDate)
-	endDate := toServiceDatePtr(req.EndDate)
+	var endDate *time.Time
+	if req.EndDate != nil {
+		t := req.EndDate.Time
+		endDate = &t
+	}
+
+	maxMembers := 0
+	if req.MaxMembers != nil {
+		maxMembers = *req.MaxMembers
+	}
+
+	approvalRequired := false
+	if req.ApprovalRequired != nil {
+		approvalRequired = *req.ApprovalRequired
+	}
+
+	privateMessage := ""
+	if req.PrivateMessage != nil {
+		privateMessage = *req.PrivateMessage
+	}
+
+	var linkedTripID *string
+	if req.LinkedTripId != nil {
+		s := req.LinkedTripId.String()
+		linkedTripID = &s
+	}
 
 	event := &model.GroupEvent{
 		ID:               id.String(),
 		Title:            req.Title,
 		Description:      req.Description,
 		Location:         req.Location,
-		StartDate:        startDate,
+		StartDate:        req.StartDate.Time,
 		EndDate:          endDate,
-		MaxMembers:       req.MaxMembers,
-		ApprovalRequired: req.ApprovalRequired,
-		PrivateMessage:   req.PrivateMessage,
-		LinkedTripID:     req.LinkedTripID,
+		MaxMembers:       maxMembers,
+		ApprovalRequired: approvalRequired,
+		PrivateMessage:   privateMessage,
+		LinkedTripID:     linkedTripID,
 		UpdatedBy:        userID,
 	}
 
@@ -162,7 +192,7 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	sendJSON(w, http.StatusOK, mapToAPIGroupEvent(event))
+	sendJSON(w, http.StatusOK, toGroupEventResponse(event))
 }
 
 func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
@@ -195,9 +225,7 @@ func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *htt
 		return
 	}
 
-	var req struct {
-		Message string `json:"message"`
-	}
+	var req api.GroupEventApplicationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		sendErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -234,12 +262,12 @@ func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, 
 		return
 	}
 
-	apiApps := make([]interface{}, len(apps))
+	resp := make([]dto.GroupEventApplicationResponse, len(apps))
 	for i, a := range apps {
-		apiApps[i] = mapToAPIApplication(a)
+		resp[i] = toGroupEventApplicationResponse(a)
 	}
 
-	sendJSON(w, http.StatusOK, apiApps)
+	sendJSON(w, http.StatusOK, resp)
 }
 
 func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId uuid.UUID) {
@@ -274,12 +302,12 @@ func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *h
 		return
 	}
 
-	apiComments := make([]interface{}, len(comments))
+	resp := make([]dto.GroupEventCommentResponse, len(comments))
 	for i, c := range comments {
-		apiComments[i] = mapToAPIComment(c)
+		resp[i] = toGroupEventCommentResponse(c)
 	}
 
-	sendJSON(w, http.StatusOK, apiComments)
+	sendJSON(w, http.StatusOK, resp)
 }
 
 func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
@@ -289,9 +317,7 @@ func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *
 		return
 	}
 
-	var req struct {
-		Content string `json:"content"`
-	}
+	var req api.GroupEventCommentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		sendErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -308,7 +334,7 @@ func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, mapToAPIComment(comment))
+	sendJSON(w, http.StatusCreated, toGroupEventCommentResponse(comment))
 }
 
 func (h *GroupEventHandler) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId uuid.UUID) {
@@ -342,54 +368,59 @@ func (h *GroupEventHandler) PostGroupEventsIdLike(w http.ResponseWriter, r *http
 	sendJSON(w, http.StatusOK, map[string]bool{"is_liked": isLiked})
 }
 
-// Helpers
-func mapToAPIGroupEvent(e *model.GroupEvent) interface{} {
-	return map[string]interface{}{
-		"id":                e.ID,
-		"title":             e.Title,
-		"description":       e.Description,
-		"location":          e.Location,
-		"start_date":        toOpenAPIDate(e.StartDate),
-		"end_date":          toOpenAPIDatePtr(e.EndDate),
-		"status":            e.Status,
-		"max_members":       e.MaxMembers,
-		"approval_required": e.ApprovalRequired,
-		"private_message":   e.PrivateMessage,
-		"linked_trip_id":    toOpenAPIUUIDPtr(e.LinkedTripID),
-		"like_count":        e.LikeCount,
-		"comment_count":     e.CommentCount,
-		"created_at":        toOpenAPITime(e.CreatedAt),
-		"created_by":        toOpenAPIUUID(e.CreatedBy),
-		"updated_at":        toOpenAPITime(e.UpdatedAt),
-		"updated_by":        toOpenAPIUUID(e.UpdatedBy),
+// Converters
+
+func toGroupEventResponse(e *model.GroupEvent) dto.GroupEventResponse {
+	resp := dto.GroupEventResponse{
+		ID:               e.ID,
+		Title:            e.Title,
+		Description:      e.Description,
+		Location:         e.Location,
+		StartDate:        e.StartDate.Format("2006-01-02"),
+		Status:           e.Status,
+		MaxMembers:       e.MaxMembers,
+		ApprovalRequired: e.ApprovalRequired,
+		PrivateMessage:   e.PrivateMessage,
+		LinkedTripID:     e.LinkedTripID,
+		LikeCount:        e.LikeCount,
+		CommentCount:     e.CommentCount,
+		CreatedAt:        e.CreatedAt,
+		CreatedBy:        e.CreatedBy,
+		UpdatedAt:        e.UpdatedAt,
+		UpdatedBy:        e.UpdatedBy,
+	}
+	if e.EndDate != nil {
+		s := e.EndDate.Format("2006-01-02")
+		resp.EndDate = &s
+	}
+	return resp
+}
+
+func toGroupEventApplicationResponse(a *model.GroupEventApplication) dto.GroupEventApplicationResponse {
+	return dto.GroupEventApplicationResponse{
+		ID:        a.ID,
+		EventID:   a.EventID,
+		UserID:    a.UserID,
+		Status:    a.Status,
+		Message:   a.Message,
+		CreatedAt: a.CreatedAt,
+		CreatedBy: a.CreatedBy,
+		UpdatedAt: a.UpdatedAt,
+		UpdatedBy: a.UpdatedBy,
 	}
 }
 
-func mapToAPIApplication(a *model.GroupEventApplication) interface{} {
-	return map[string]interface{}{
-		"id":         a.ID,
-		"event_id":   toOpenAPIUUID(a.EventID),
-		"user_id":    toOpenAPIUUID(a.UserID),
-		"status":     a.Status,
-		"message":    a.Message,
-		"created_at": toOpenAPITime(a.CreatedAt),
-		"created_by": toOpenAPIUUID(a.CreatedBy),
-		"updated_at": toOpenAPITime(a.UpdatedAt),
-		"updated_by": toOpenAPIUUID(a.UpdatedBy),
-	}
-}
-
-func mapToAPIComment(c *model.GroupEventComment) interface{} {
-	return map[string]interface{}{
-		"id":           c.ID,
-		"event_id":     toOpenAPIUUID(c.EventID),
-		"user_id":      toOpenAPIUUID(c.UserID),
-		"content":      c.Content,
-		"display_name": c.DisplayName,
-		"avatar":       c.Avatar,
-		"created_at":   toOpenAPITime(c.CreatedAt),
-		"created_by":   toOpenAPIUUID(c.CreatedBy),
-		"updated_at":   toOpenAPITime(c.UpdatedAt),
-		"updated_by":   toOpenAPIUUID(c.UpdatedBy),
+func toGroupEventCommentResponse(c *model.GroupEventComment) dto.GroupEventCommentResponse {
+	return dto.GroupEventCommentResponse{
+		ID:          c.ID,
+		EventID:     c.EventID,
+		UserID:      c.UserID,
+		Content:     c.Content,
+		DisplayName: c.DisplayName,
+		Avatar:      c.Avatar,
+		CreatedAt:   c.CreatedAt,
+		CreatedBy:   c.CreatedBy,
+		UpdatedAt:   c.UpdatedAt,
+		UpdatedBy:   c.UpdatedBy,
 	}
 }

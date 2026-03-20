@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -40,22 +41,9 @@ func (h *MealLibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var res []api.MealLibraryItem
+	res := make([]dto.MealLibraryItemResponse, 0, len(items))
 	for _, item := range items {
-		res = append(res, api.MealLibraryItem{
-			Id:         toOpenAPIUUID(item.ID),
-			UserId:     toOpenAPIUUID(item.UserID),
-			Name:       item.Name,
-			Weight:     item.Weight,
-			Calories:   item.Calories,
-			Notes:      item.Notes,
-			IsArchived: item.IsArchived,
-			CreatedAt:  toOpenAPITime(item.CreatedAt),
-			UpdatedAt:  toOpenAPITime(item.UpdatedAt),
-		})
-	}
-	if res == nil {
-		res = []api.MealLibraryItem{}
+		res = append(res, toMealLibraryItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -93,18 +81,7 @@ func (h *MealLibraryHandler) CreateMealLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	res := api.MealLibraryItem{
-		Id:         toOpenAPIUUID(createdItem.ID),
-		UserId:     toOpenAPIUUID(createdItem.UserID),
-		Name:       createdItem.Name,
-		Weight:     createdItem.Weight,
-		Calories:   createdItem.Calories,
-		Notes:      createdItem.Notes,
-		IsArchived: createdItem.IsArchived,
-		CreatedAt:  toOpenAPITime(createdItem.CreatedAt),
-		UpdatedAt:  toOpenAPITime(createdItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusCreated, res)
+	sendJSON(w, http.StatusCreated, toMealLibraryItemResponse(createdItem))
 }
 
 // GetMealLibraryItem 取得單一食物詳情
@@ -122,18 +99,7 @@ func (h *MealLibraryHandler) GetMealLibraryItem(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	res := api.MealLibraryItem{
-		Id:         toOpenAPIUUID(item.ID),
-		UserId:     toOpenAPIUUID(item.UserID),
-		Name:       item.Name,
-		Weight:     item.Weight,
-		Calories:   item.Calories,
-		Notes:      item.Notes,
-		IsArchived: item.IsArchived,
-		CreatedAt:  toOpenAPITime(item.CreatedAt),
-		UpdatedAt:  toOpenAPITime(item.UpdatedAt),
-	}
-	sendJSON(w, http.StatusOK, res)
+	sendJSON(w, http.StatusOK, toMealLibraryItemResponse(item))
 }
 
 // UpdateMealLibraryItem 更新個人食物資料
@@ -168,18 +134,7 @@ func (h *MealLibraryHandler) UpdateMealLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	res := api.MealLibraryItem{
-		Id:         toOpenAPIUUID(updatedItem.ID),
-		UserId:     toOpenAPIUUID(updatedItem.UserID),
-		Name:       updatedItem.Name,
-		Weight:     updatedItem.Weight,
-		Calories:   updatedItem.Calories,
-		Notes:      updatedItem.Notes,
-		IsArchived: updatedItem.IsArchived,
-		CreatedAt:  toOpenAPITime(updatedItem.CreatedAt),
-		UpdatedAt:  toOpenAPITime(updatedItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusOK, res)
+	sendJSON(w, http.StatusOK, toMealLibraryItemResponse(updatedItem))
 }
 
 // DeleteMealLibraryItem 刪除個人食物
@@ -197,4 +152,20 @@ func (h *MealLibraryHandler) DeleteMealLibraryItem(w http.ResponseWriter, r *htt
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toMealLibraryItemResponse(item *model.MealLibraryItem) dto.MealLibraryItemResponse {
+	return dto.MealLibraryItemResponse{
+		ID:         item.ID,
+		UserID:     item.UserID,
+		Name:       item.Name,
+		Weight:     item.Weight,
+		Calories:   item.Calories,
+		Notes:      item.Notes,
+		IsArchived: item.IsArchived,
+		CreatedAt:  item.CreatedAt,
+		CreatedBy:  item.CreatedBy,
+		UpdatedAt:  item.UpdatedAt,
+		UpdatedBy:  item.UpdatedBy,
+	}
 }

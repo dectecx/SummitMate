@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
+	"summitmate/internal/model"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -32,17 +34,9 @@ func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	resp := make([]api.Favorite, len(favs))
+	resp := make([]dto.FavoriteResponse, len(favs))
 	for i, f := range favs {
-		resp[i] = api.Favorite{
-			Id:        toOpenAPIUUID(f.ID),
-			TargetId:  toOpenAPIUUID(f.TargetID),
-			Type:      f.Type,
-			CreatedAt: toOpenAPITime(f.CreatedAt),
-			CreatedBy: toOpenAPIUUID(f.CreatedBy),
-			UpdatedAt: toOpenAPITime(f.UpdatedAt),
-			UpdatedBy: toOpenAPIUUID(f.UpdatedBy),
-		}
+		resp[i] = toFavoriteResponse(f)
 	}
 	sendJSON(w, http.StatusOK, resp)
 }
@@ -66,15 +60,7 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, api.Favorite{
-		Id:        toOpenAPIUUID(fav.ID),
-		TargetId:  toOpenAPIUUID(fav.TargetID),
-		Type:      fav.Type,
-		CreatedAt: toOpenAPITime(fav.CreatedAt),
-		CreatedBy: toOpenAPIUUID(fav.CreatedBy),
-		UpdatedAt: toOpenAPITime(fav.UpdatedAt),
-		UpdatedBy: toOpenAPIUUID(fav.UpdatedBy),
-	})
+	sendJSON(w, http.StatusCreated, toFavoriteResponse(fav))
 }
 
 func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetID openapi_types.UUID) {
@@ -91,4 +77,17 @@ func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toFavoriteResponse(f *model.Favorite) dto.FavoriteResponse {
+	return dto.FavoriteResponse{
+		ID:        f.ID,
+		UserID:    f.UserID,
+		TargetID:  f.TargetID,
+		Type:      f.Type,
+		CreatedAt: f.CreatedAt,
+		CreatedBy: f.CreatedBy,
+		UpdatedAt: f.UpdatedAt,
+		UpdatedBy: f.UpdatedBy,
+	}
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -39,30 +40,9 @@ func (h *TripMealHandler) ListTripMeals(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	var res []api.TripMealItem
+	res := make([]dto.TripMealItemResponse, 0, len(items))
 	for _, item := range items {
-		var libIDStr *string
-		if item.LibraryItemID != nil {
-			s := *item.LibraryItemID
-			libIDStr = &s
-		}
-		res = append(res, api.TripMealItem{
-			Id:            toOpenAPIUUID(item.ID),
-			TripId:        toOpenAPIUUID(item.TripID),
-			LibraryItemId: toOpenAPIUUIDPtr(libIDStr),
-			Day:           item.Day,
-			MealType:      item.MealType,
-			Name:          item.Name,
-			Weight:        item.Weight,
-			Calories:      item.Calories,
-			Quantity:      item.Quantity,
-			Note:          item.Note,
-			CreatedAt:     toOpenAPITime(item.CreatedAt),
-			UpdatedAt:     toOpenAPITime(item.UpdatedAt),
-		})
-	}
-	if res == nil {
-		res = []api.TripMealItem{}
+		res = append(res, toTripMealItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -110,27 +90,7 @@ func (h *TripMealHandler) AddTripMeal(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	var resLibIDStr *string
-	if createdItem.LibraryItemID != nil {
-		s := *createdItem.LibraryItemID
-		resLibIDStr = &s
-	}
-
-	res := api.TripMealItem{
-		Id:            toOpenAPIUUID(createdItem.ID),
-		TripId:        toOpenAPIUUID(createdItem.TripID),
-		LibraryItemId: toOpenAPIUUIDPtr(resLibIDStr),
-		Day:           createdItem.Day,
-		MealType:      createdItem.MealType,
-		Name:          createdItem.Name,
-		Weight:        createdItem.Weight,
-		Calories:      createdItem.Calories,
-		Quantity:      createdItem.Quantity,
-		Note:          createdItem.Note,
-		CreatedAt:     toOpenAPITime(createdItem.CreatedAt),
-		UpdatedAt:     toOpenAPITime(createdItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusCreated, res)
+	sendJSON(w, http.StatusCreated, toTripMealItemResponse(createdItem))
 }
 
 // UpdateTripMeal 更新行程中的食物
@@ -175,27 +135,7 @@ func (h *TripMealHandler) UpdateTripMeal(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	var resLibIDStr *string
-	if updatedItem.LibraryItemID != nil {
-		s := *updatedItem.LibraryItemID
-		resLibIDStr = &s
-	}
-
-	res := api.TripMealItem{
-		Id:            toOpenAPIUUID(updatedItem.ID),
-		TripId:        toOpenAPIUUID(updatedItem.TripID),
-		LibraryItemId: toOpenAPIUUIDPtr(resLibIDStr),
-		Day:           updatedItem.Day,
-		MealType:      updatedItem.MealType,
-		Name:          updatedItem.Name,
-		Weight:        updatedItem.Weight,
-		Calories:      updatedItem.Calories,
-		Quantity:      updatedItem.Quantity,
-		Note:          updatedItem.Note,
-		CreatedAt:     toOpenAPITime(updatedItem.CreatedAt),
-		UpdatedAt:     toOpenAPITime(updatedItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusOK, res)
+	sendJSON(w, http.StatusOK, toTripMealItemResponse(updatedItem))
 }
 
 // RemoveTripMeal 將食物從行程中移除
@@ -217,4 +157,23 @@ func (h *TripMealHandler) RemoveTripMeal(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toTripMealItemResponse(item *model.TripMealItem) dto.TripMealItemResponse {
+	return dto.TripMealItemResponse{
+		ID:            item.ID,
+		TripID:        item.TripID,
+		LibraryItemID: item.LibraryItemID,
+		Day:           item.Day,
+		MealType:      item.MealType,
+		Name:          item.Name,
+		Weight:        item.Weight,
+		Calories:      item.Calories,
+		Quantity:      item.Quantity,
+		Note:          item.Note,
+		CreatedAt:     item.CreatedAt,
+		CreatedBy:     item.CreatedBy,
+		UpdatedAt:     item.UpdatedAt,
+		UpdatedBy:     item.UpdatedBy,
+	}
 }

@@ -6,19 +6,19 @@ import (
 
 // Trip 對應資料庫 trips 表的實體
 type Trip struct {
-	ID          string    `json:"id" db:"id"`
-	UserID      string    `json:"user_id" db:"user_id"`
-	Name        string    `json:"name" db:"name"`
-	Description *string   `json:"description" db:"description"`
-	StartDate   time.Time `json:"start_date" db:"start_date"` // YYYY-MM-DD
+	ID          string     `json:"id" db:"id"`
+	UserID      string     `json:"user_id" db:"user_id"`
+	Name        string     `json:"name" db:"name"`
+	Description *string    `json:"description" db:"description"`
+	StartDate   time.Time  `json:"start_date" db:"start_date"` // YYYY-MM-DD
 	EndDate     *time.Time `json:"end_date" db:"end_date"`     // YYYY-MM-DD
-	CoverImage  *string   `json:"cover_image" db:"cover_image"`
-	IsActive    bool      `json:"is_active" db:"is_active"`
-	DayNames    []string  `json:"day_names" db:"day_names"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	CreatedBy   string    `json:"created_by" db:"created_by"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
-	UpdatedBy   string    `json:"updated_by" db:"updated_by"`
+	CoverImage  *string    `json:"cover_image" db:"cover_image"`
+	IsActive    bool       `json:"is_active" db:"is_active"`
+	DayNames    []string   `json:"day_names" db:"day_names"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	CreatedBy   string     `json:"created_by" db:"created_by"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+	UpdatedBy   string     `json:"updated_by" db:"updated_by"`
 }
 
 // TripMember 對應資料庫 trip_members 表的實體 (結合了 User 部分資訊)
