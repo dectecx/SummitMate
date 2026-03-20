@@ -531,7 +531,6 @@ class _CloudSyncDialog extends StatefulWidget {
 }
 
 class _CloudSyncDialogState extends State<_CloudSyncDialog> {
-  final _service = GearLibraryCloudService();
   bool _isLoading = false;
   String? _resultMessage;
   bool? _isSuccess;
@@ -634,12 +633,17 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
         return;
       }
 
-      final result = await _service.syncLibrary(items);
+      final result = await cubit.uploadLibrary();
 
       setState(() {
         _isLoading = false;
-        _isSuccess = result.isSuccess;
-        _resultMessage = result.isSuccess ? '成功上傳 ${result.data} 個裝備' : '上傳失敗: ${result.errorMessage}';
+        if (result is Success<int, Exception>) {
+          _isSuccess = true;
+          _resultMessage = '成功上傳 ${result.value} 個裝備';
+        } else {
+          _isSuccess = false;
+          _resultMessage = '上傳失敗: ${(result as Failure).exception}';
+        }
       });
     } catch (e) {
       setState(() {
@@ -682,24 +686,19 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     });
 
     try {
-      final result = await _service.getLibrary();
-
-      if (!result.isSuccess) {
-        setState(() {
-          _isLoading = false;
-          _isSuccess = false;
-          _resultMessage = '下載失敗: ${result.errorMessage}';
-        });
-        return;
-      }
+      final result = await context.read<GearLibraryCubit>().downloadLibrary();
 
       if (!mounted) return;
-      await context.read<GearLibraryCubit>().importItems(result.data!);
 
       setState(() {
         _isLoading = false;
-        _isSuccess = true;
-        _resultMessage = '成功下載 ${result.data!.length} 個裝備';
+        if (result is Success<int, Exception>) {
+          _isSuccess = true;
+          _resultMessage = '成功下載 ${result.value} 個裝備';
+        } else {
+          _isSuccess = false;
+          _resultMessage = '下載失敗: ${(result as Failure).exception}';
+        }
       });
     } catch (e) {
       setState(() {

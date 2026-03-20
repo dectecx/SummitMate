@@ -11,6 +11,7 @@ import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.d
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/data/datasources/remote/gear_library_remote_data_source.dart';
 
 class MockGearLibraryRepository extends Mock implements IGearLibraryRepository {}
 
@@ -19,6 +20,8 @@ class MockGearRepository extends Mock implements IGearRepository {}
 class MockTripRepository extends Mock implements ITripRepository {}
 
 class MockAuthService extends Mock implements IAuthService {}
+
+class MockGearLibraryRemoteDataSource extends Mock implements IGearLibraryRemoteDataSource {}
 
 class FakeGearLibraryItem extends Fake implements GearLibraryItem {}
 
@@ -32,6 +35,7 @@ void main() {
     late IGearRepository mockGearRepo;
     late ITripRepository mockTripRepo;
     late IAuthService mockAuthService;
+    late IGearLibraryRemoteDataSource mockRemoteDataSource;
     late GearLibraryCubit cubit;
 
     final libItem1 = GearLibraryItem(
@@ -68,6 +72,7 @@ void main() {
       mockGearRepo = MockGearRepository();
       mockAuthService = MockAuthService();
       mockTripRepo = MockTripRepository();
+      mockRemoteDataSource = MockGearLibraryRemoteDataSource();
 
       when(() => mockAuthService.currentUserId).thenReturn('u1');
       when(() => mockAuthService.currentUserEmail).thenReturn('u1@test.com');
@@ -77,6 +82,7 @@ void main() {
         gearRepository: mockGearRepo,
         tripRepository: mockTripRepo,
         authService: mockAuthService,
+        remoteDataSource: mockRemoteDataSource,
       );
     });
 
@@ -85,7 +91,7 @@ void main() {
     });
 
     test('initial state is GearLibraryInitial', () {
-      expect(cubit.state, const GearLibraryInitial());
+      expect(cubit.state, isA<GearLibraryInitial>());
     });
 
     blocTest<GearLibraryCubit, GearLibraryState>(
