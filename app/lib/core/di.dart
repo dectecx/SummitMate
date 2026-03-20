@@ -42,6 +42,7 @@ import '../data/datasources/interfaces/i_trip_local_data_source.dart';
 import '../data/datasources/interfaces/i_trip_remote_data_source.dart';
 import '../data/datasources/remote/trip_gear_remote_data_source.dart';
 import '../data/datasources/remote/trip_meal_remote_data_source.dart';
+import '../data/datasources/remote/gear_library_remote_data_source.dart';
 import '../data/datasources/local/gear_local_data_source.dart';
 import '../data/datasources/interfaces/i_gear_local_data_source.dart';
 import '../data/datasources/local/message_local_data_source.dart';
@@ -202,6 +203,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<IFavoritesRemoteDataSource>(() => FavoritesRemoteDataSource());
   getIt.registerLazySingleton<ITripGearRemoteDataSource>(() => TripGearRemoteDataSource());
   getIt.registerLazySingleton<ITripMealRemoteDataSource>(() => TripMealRemoteDataSource());
+  getIt.registerLazySingleton<IGearLibraryRemoteDataSource>(() => GearLibraryRemoteDataSource());
   // ===========================================================================
   // 6. Repositories (倉儲層)
   // ===========================================================================

@@ -9,31 +9,27 @@ import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../../../data/datasources/remote/gear_library_remote_data_source.dart';
 import 'gear_library_state.dart';
 
-/// 個人裝備庫 Cubit
-///
-/// 管理使用者個人的裝備庫存 (Personal Gear Library)。
-/// 獨立於特定行程，作為裝備的來源資料中心。
-/// 支援：
-/// - 載入/搜尋個人裝備
-/// - 新增/編輯/刪除個人裝備項目
-/// - 同步至雲端 (Sync)
 class GearLibraryCubit extends Cubit<GearLibraryState> {
   final IGearLibraryRepository _repository;
   final IGearRepository _gearRepository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
+  final IGearLibraryRemoteDataSource _remoteDataSource;
 
   GearLibraryCubit({
     IGearLibraryRepository? repository,
     IGearRepository? gearRepository,
     ITripRepository? tripRepository,
     IAuthService? authService,
+    IGearLibraryRemoteDataSource? remoteDataSource,
   }) : _repository = repository ?? getIt<IGearLibraryRepository>(),
        _gearRepository = gearRepository ?? getIt<IGearRepository>(),
        _tripRepository = tripRepository ?? getIt<ITripRepository>(),
        _authService = authService ?? getIt<IAuthService>(),
+       _remoteDataSource = remoteDataSource ?? getIt<IGearLibraryRemoteDataSource>(),
        super(const GearLibraryInitial());
 
   Future<void> loadItems() async {
@@ -184,6 +180,41 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     } catch (e) {
       LogService.error('Failed to import items: $e', source: 'GearLibraryCubit');
       emit(GearLibraryError(e.toString()));
+    }
+  }
+
+  /// 上傳本地庫存至雲端 (Sync to Cloud)
+  Future<Result<int, Exception>> uploadLibrary() async {
+    try {
+      final userId = _authService.currentUserId;
+      if (userId == null) return Failure(Exception('未登入'));
+
+      final items = _repository.getAll(userId);
+      await _remoteDataSource.replaceAllLibraryItems(items);
+
+      LogService.info('Gear Library 上傳成功, 項目數: ${items.length}', source: 'GearLibraryCubit');
+      return Success(items.length);
+    } catch (e) {
+      LogService.error('Gear Library 上傳失敗: $e', source: 'GearLibraryCubit');
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  /// 從雲端下載庫存 (Sync from Cloud)
+  Future<Result<int, Exception>> downloadLibrary() async {
+    try {
+      final userId = _authService.currentUserId;
+      if (userId == null) return Failure(Exception('未登入'));
+
+      final cloudItems = await _remoteDataSource.getLibrary();
+      await _repository.importAll(cloudItems);
+
+      reload();
+      LogService.info('Gear Library 下載成功, 項目數: ${cloudItems.length}', source: 'GearLibraryCubit');
+      return Success(cloudItems.length);
+    } catch (e) {
+      LogService.error('Gear Library 下載失敗: $e', source: 'GearLibraryCubit');
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
