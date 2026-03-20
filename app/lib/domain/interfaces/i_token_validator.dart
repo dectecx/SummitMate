@@ -80,7 +80,7 @@ class TokenValidationResult {
 /// Token 驗證器介面
 /// 提供 JWT Token 的驗證與解碼功能。
 /// 此抽象介面允許不同的實作：
-/// - JwtTokenValidator (目前，用於 GAS JWT)
+/// - JwtTokenValidator (目前實作)
 /// - FirebaseTokenValidator (未來)
 abstract class ITokenValidator {
   /// 驗證 Token 並傳回結果

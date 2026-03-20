@@ -149,7 +149,9 @@ class MessageRepository implements IMessageRepository {
     try {
       // 1. Delete Local
       final item = _localDataSource.getById(id);
+      String? tripId;
       if (item != null) {
+        tripId = item.tripId;
         if (item.isInBox) {
           await item.delete();
         } else {
@@ -158,11 +160,13 @@ class MessageRepository implements IMessageRepository {
       }
 
       // 2. Best Effort Sync
-      try {
-        await _remoteDataSource.deleteMessage(id);
-        LogService.info('Auto-sync delete message success: $id', source: _source);
-      } catch (syncError) {
-        LogService.warning('Auto-sync delete message failed: $syncError', source: _source);
+      if (tripId != null) {
+        try {
+          await _remoteDataSource.deleteMessage(tripId, id);
+          LogService.info('Auto-sync delete message success: $id', source: _source);
+        } catch (syncError) {
+          LogService.warning('Auto-sync delete message failed: $syncError', source: _source);
+        }
       }
 
       return const Success(null);

@@ -68,7 +68,7 @@ enum OAuthProvider { google, facebook, apple, line }
 /// 抽象認證服務介面
 /// 所有認證後端皆實作此介面。
 /// 這使得認證實作可抽換：
-/// - GasAuthService (目前)
+/// - AuthService (目前實作)
 /// - FirebaseAuthService (未來)
 /// - AzureAuthService (未來)
 /// - OAuthSSOService (未來)

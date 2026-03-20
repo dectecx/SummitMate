@@ -75,7 +75,7 @@ class MockPollRepository implements IPollRepository {
   // ========== Sync Operations ==========
 
   @override
-  Future<Result<void, Exception>> sync({required String userId}) async => const Success(null);
+  Future<Result<void, Exception>> sync({required String tripId}) async => const Success(null);
 
   @override
   DateTime? getLastSyncTime() => DateTime.now();
@@ -84,9 +84,9 @@ class MockPollRepository implements IPollRepository {
 
   @override
   Future<Result<String, Exception>> create({
+    required String tripId,
     required String title,
     String description = '',
-    required String creatorId,
     DateTime? deadline,
     bool isAllowAddOption = false,
     int maxOptionLimit = 20,
@@ -96,26 +96,25 @@ class MockPollRepository implements IPollRepository {
 
   @override
   Future<Result<void, Exception>> vote({
+    required String tripId,
     required String pollId,
-    required List<String> optionIds,
-    required String userId,
-    String userName = 'Anonymous',
+    required String optionId,
   }) async => const Success(null);
 
   @override
   Future<Result<void, Exception>> addOption({
+    required String tripId,
     required String pollId,
     required String text,
-    required String creatorId,
   }) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> close({required String pollId, required String userId}) async => const Success(null);
+  Future<Result<void, Exception>> remove({required String tripId, required String pollId}) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> remove({required String pollId, required String userId}) async => const Success(null);
-
-  @override
-  Future<Result<void, Exception>> removeOption({required String optionId, required String userId}) async =>
-      const Success(null);
+  Future<Result<void, Exception>> removeOption({
+    required String tripId,
+    required String pollId,
+    required String optionId,
+  }) async => const Success(null);
 }

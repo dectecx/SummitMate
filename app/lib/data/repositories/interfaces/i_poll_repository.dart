@@ -29,7 +29,7 @@ abstract interface class IPollRepository {
   // ========== Sync Operations ==========
 
   /// 同步: 從雲端拉取最新資料並更新本地
-  Future<Result<void, Exception>> sync({required String userId});
+  Future<Result<void, Exception>> sync({required String tripId});
 
   /// 取得上次同步時間
   DateTime? getLastSyncTime();
@@ -38,9 +38,9 @@ abstract interface class IPollRepository {
 
   /// 建立新投票 (雲端)
   Future<Result<String, Exception>> create({
+    required String tripId,
     required String title,
     String description = '',
-    required String creatorId,
     DateTime? deadline,
     bool isAllowAddOption = false,
     int maxOptionLimit = 20,
@@ -49,22 +49,18 @@ abstract interface class IPollRepository {
   });
 
   /// 投票 (雲端)
-  Future<Result<void, Exception>> vote({
-    required String pollId,
-    required List<String> optionIds,
-    required String userId,
-    String userName = 'Anonymous',
-  });
+  Future<Result<void, Exception>> vote({required String tripId, required String pollId, required String optionId});
 
   /// 新增選項 (雲端)
-  Future<Result<void, Exception>> addOption({required String pollId, required String text, required String creatorId});
-
-  /// 關閉投票 (雲端)
-  Future<Result<void, Exception>> close({required String pollId, required String userId});
+  Future<Result<void, Exception>> addOption({required String tripId, required String pollId, required String text});
 
   /// 刪除投票 (雲端 + 本地)
-  Future<Result<void, Exception>> remove({required String pollId, required String userId});
+  Future<Result<void, Exception>> remove({required String tripId, required String pollId});
 
   /// 刪除選項 (雲端)
-  Future<Result<void, Exception>> removeOption({required String optionId, required String userId});
+  Future<Result<void, Exception>> removeOption({
+    required String tripId,
+    required String pollId,
+    required String optionId,
+  });
 }

@@ -16,7 +16,7 @@ import '../../data/cwa/cwa_weather_source.dart';
 
 /// 天氣服務
 ///
-/// 整合 CWA (氣象局) 與 GAS API 的天氣資料。
+/// 整合 CWA (氣象署) 與登山天氣 API 的資料。
 /// 支援：
 /// - 本地快取 (Hive)
 /// - 離線模式存取
@@ -41,7 +41,10 @@ class WeatherService implements IWeatherService {
     _box = await HiveService().openBox<WeatherData>(_boxName);
   }
 
-  // 取得快取天氣。僅在 forceRefresh 為真或無快取時取得新資料。
+  /// 取得特定地點的天氣資料
+  ///
+  /// [locationName] 地點名稱 (如 '玉山', '台北市')
+  /// [forceRefresh] 是否強制從網路更新，預設為 false
   @override
   Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
     final dynamicCacheKey = 'weather_$locationName';
@@ -83,8 +86,6 @@ class WeatherService implements IWeatherService {
     // 若非強制重新整理，嘗試回傳快取 (即使過期)
     if (cached != null) {
       if (cached.isStale) {
-        // 選項: 我們可以在背景自動更新，但若用戶僅要求手動更新。
-        // 所以這裡回傳過期快取。UI 可顯示「資料已過期」警告。
         LogService.info('回傳 $locationName 的過期快取', source: 'WeatherService');
       }
       return cached;
@@ -102,17 +103,14 @@ class WeatherService implements IWeatherService {
     }
   }
 
-  /// 內部取得方法
+  /// 內部取得邏輯：根據地點類型選擇資料源
   Future<WeatherData> _fetchWeatherInternal({required String locationName}) async {
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
     if (isOffline) {
       throw Exception('離線模式: 無法取得天氣');
     }
 
-    // 檢查快取 (雙重檢查，但若邏輯在上方則此處冗餘)
-    // 保持邏輯簡單: 這裡總是取得新資料。
-
-    // 決定使用 CWA 或 GAS
+    // 決定使用 CWA 或 登山天氣 API
     // 邏輯: 若地點名稱看似鄉鎮市區 (包含縣, 市, 區, 鄉, 鎮)，嘗試 CWA。
     if (locationName.contains('縣') ||
         locationName.contains('市') ||
@@ -125,70 +123,67 @@ class WeatherService implements IWeatherService {
     }
   }
 
+  /// 從登山天氣端點取得資料
   Future<WeatherData> _fetchHikingWeather(String locationName) async {
-    // 呼叫 GAS API
     final baseUrl = EnvConfig.getApiUrl();
     final url = Uri.parse('$baseUrl?action=${ApiConfig.actionWeatherGet}');
 
-    LogService.info('從 GAS 取得登山天氣: $locationName', source: 'WeatherService');
+    LogService.info('取得登山天氣: $locationName', source: 'WeatherService');
 
     try {
       final response = await http.get(url);
 
-      LogService.info('GAS API 狀態: ${response.statusCode}', source: 'WeatherService');
-
       if (response.statusCode == 200) {
-        // 解析新的 GAS 格式: { code, data: { weather: [...] }, message }
         final bodyMsgs = utf8.decode(response.bodyBytes);
-        LogService.debug('GAS API 回應 (長度: ${bodyMsgs.length})', source: 'WeatherService');
+        LogService.debug('天氣 API 回應 (長度: ${bodyMsgs.length})', source: 'WeatherService');
 
         final jsonMap = json.decode(bodyMsgs) as Map<String, dynamic>;
 
-        // 檢查格式
+        // 檢查回應代碼
         if (jsonMap['code'] != '0000') {
-          throw Exception('GAS API 錯誤: ${jsonMap['message']}');
+          throw Exception('API 錯誤: ${jsonMap['message']}');
         }
-        // 從 data.weather 提取天氣陣列
+
+        // 提取天氣資料
         final data = jsonMap['data'] as Map<String, dynamic>? ?? {};
         final List<dynamic> jsonList = data['weather'] as List<dynamic>? ?? [];
 
         if (jsonList.isEmpty) {
-          throw Exception('GAS 未回傳天氣資料');
+          throw Exception('API 未回傳天氣資料');
         }
 
         return _parseAndCacheWeatherData(jsonList, locationName);
       } else {
-        throw Exception('GAS API 錯誤: ${response.statusCode}');
+        throw Exception('API 錯誤: ${response.statusCode}');
       }
     } catch (e) {
-      LogService.error('GAS API 請求失敗: $e', source: 'WeatherService');
+      LogService.error('天氣 API 請求失敗: $e', source: 'WeatherService');
       rethrow;
     }
   }
 
-  /// 解析天氣資料並快取所有地點
+  /// 解析天氣資料並快取所有相關地點
   WeatherData _parseAndCacheWeatherData(List<dynamic> jsonList, String locationName) {
-    // --- 最佳化: 快取此回應中的所有地點 ---
-    // 1. 識別所有唯一地點
+    // 1. 識別回應中的所有唯一地點
     final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
-    LogService.info('GAS 回傳資料地點: ${uniqueLocations.join(', ')}', source: 'WeatherService');
+    LogService.info('API 回傳資料地點: ${uniqueLocations.join(', ')}', source: 'WeatherService');
 
-    // 2. 解析並快取每個地點
+    // 2. 解析並逐一快取
     for (var loc in uniqueLocations) {
       try {
-        final weather = _parseGasWeatherData(jsonList, loc);
+        final weather = _parseWeatherData(jsonList, loc);
         final key = 'weather_$loc';
         _box?.put(key, weather);
-        LogService.info('已快取整批資料: $loc', source: 'WeatherService');
       } catch (e) {
-        LogService.error('解析/快取整批資料失敗 $loc: $e', source: 'WeatherService');
+        LogService.error('解析快取資料失敗 $loc: $e', source: 'WeatherService');
       }
     }
 
-    // 3. 回傳請求地點的資料
-    return _parseGasWeatherData(jsonList, locationName);
+    // 3. 回傳當前請求地點的解析結果
+    return _parseWeatherData(jsonList, locationName);
   }
 
+  /// 從氣象署 (CWA) 取得城鎮天氣
   Future<WeatherData> _fetchCwaWeather(String locationName) async {
     LogService.info('從 CWA 取得城鎮天氣: $locationName', source: 'WeatherService');
     try {
@@ -199,18 +194,19 @@ class WeatherService implements IWeatherService {
     }
   }
 
-  WeatherData _parseGasWeatherData(List<dynamic> list, String locationName) {
+  /// 將原始 JSON 列表解析為 [WeatherData] 對象
+  WeatherData _parseWeatherData(List<dynamic> list, String locationName) {
     // 1. 依地點過濾
     final locationRows = list.where((item) => item['Location'] == locationName).toList();
 
     if (locationRows.isEmpty) {
-      throw Exception('GAS 資料中找不到地點 "$locationName"');
+      throw Exception('資料中找不到地點 "$locationName"');
     }
 
     // 2. 依 StartTime 排序
     locationRows.sort((a, b) => a['StartTime'].compareTo(b['StartTime']));
 
-    // 3. 目前天氣 (涵蓋目前時間的第一筆，或直接取第一筆)
+    // 3. 目前天氣資訊
     final current = locationRows.first;
 
     final temp = double.tryParse(current['T'].toString()) ?? 0.0;
@@ -219,12 +215,12 @@ class WeatherService implements IWeatherService {
     final windSpeed = double.tryParse(current['WS'].toString()) ?? 0.0;
     final wx = current['Wx'].toString();
 
-    // 體感溫度 (Apparent Temp) (若有 Max/Min 則取平均)
+    // 體感溫度 (Apparent Temp)
     final maxAT = double.tryParse(current['MaxAT'].toString()) ?? 0.0;
     final minAT = double.tryParse(current['MinAT'].toString()) ?? 0.0;
     final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
 
-    // 發布時間 (IssueTime) (若有)
+    // 發布時間
     DateTime? issueTime;
     if (current.containsKey('IssueTime') && current['IssueTime'].toString().isNotEmpty) {
       try {
@@ -264,7 +260,7 @@ class WeatherService implements IWeatherService {
         }
       }
 
-      // MaxT
+      // 溫度範圍
       final maxT = double.tryParse(row['MaxT'].toString());
       if (maxT != null && maxT != 0.0) {
         if (maxT > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = maxT;
@@ -273,7 +269,6 @@ class WeatherService implements IWeatherService {
         if (t > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = t;
       }
 
-      // MinT
       final minT = double.tryParse(row['MinT'].toString());
       if (minT != null && minT != 0.0) {
         if (minT < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = minT;
@@ -282,19 +277,18 @@ class WeatherService implements IWeatherService {
         if (t < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = t;
       }
 
-      // MaxAT
+      // 體感範圍
       final mxAT = double.tryParse(row['MaxAT'].toString());
       if (mxAT != null && mxAT != 0.0) {
         if (mxAT > dailyMap[dateKey]!['maxAT']) dailyMap[dateKey]!['maxAT'] = mxAT;
       }
 
-      // MinAT
       final mnAT = double.tryParse(row['MinAT'].toString());
       if (mnAT != null && mnAT != 0.0) {
         if (mnAT < dailyMap[dateKey]!['minAT']) dailyMap[dateKey]!['minAT'] = mnAT;
       }
 
-      // PoP
+      // 降雨機率
       final p = int.tryParse(row['PoP'].toString()) ?? 0;
       if (p > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = p;
     }
@@ -334,8 +328,7 @@ class WeatherService implements IWeatherService {
     );
   }
 
-  // 簡易本地日出日落計算
-  // 來源: 通用演算法近似值 (便於離線使用)
+  /// 簡易本地日出日落計算 (便於離線使用)
   Map<String, DateTime> _calculateSunTimes(DateTime date, double lat, double lng) {
     // Julian Date
     final startOfYear = DateTime(date.year, 1, 1, 0, 0, 0);
@@ -347,12 +340,8 @@ class WeatherService implements IWeatherService {
     // Declination of the Sun
     final declination = 0.4095 * sin(0.016906 * (dayOfYear - 80.089));
 
-    // Equation of time (Simplified)
-    // H = acos(-tan(lat) * tan(declination))
-
     double halfDayRad = 0;
     try {
-      // -tan(lat)*tan(dec) must be between -1 and 1
       final val = -tan(radLat) * tan(declination);
       halfDayRad = acos(val.clamp(-1.0, 1.0));
     } catch (_) {
@@ -377,11 +366,15 @@ class WeatherService implements IWeatherService {
     return {'sunrise': toTime(sunriseHour), 'sunset': toTime(sunsetHour)};
   }
 
+  /// 透過座標取得地點資料並回傳天氣
+  ///
+  /// [lat], [lon] 經緯度
+  /// [forceRefresh] 是否強制重新整理
   @override
   Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
     final isOffline = _settingsRepo.getSettings().isOfflineMode;
 
-    // 解析地點
+    // 透過 [ILocationResolver] 解析地點名稱
     final location = await _locationResolver.resolve(lat, lon);
     if (location == null) {
       LogService.warning('無法解析座標 $lat, $lon', source: 'WeatherService');
@@ -412,8 +405,7 @@ class WeatherService implements IWeatherService {
       return null;
     }
 
-    // 決定使用 CWA 或 GAS
-    // 邏輯: 若地點名稱看似鄉鎮市區 (包含縣, 市, 區, 鄉, 鎮)，嘗試 CWA。
+    // 決定使用 CWA 或 登山天氣 API
     if (locationName.contains('縣') ||
         locationName.contains('市') ||
         locationName.contains('區') ||
@@ -429,7 +421,6 @@ class WeatherService implements IWeatherService {
       }
     }
 
-    // 若解析器回傳其他格式的後備方案 ??
     return null;
   }
 }

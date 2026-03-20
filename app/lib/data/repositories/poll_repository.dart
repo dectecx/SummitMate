@@ -65,10 +65,10 @@ class PollRepository implements IPollRepository {
   // ========== Sync Operations ==========
 
   @override
-  Future<Result<void, Exception>> sync({required String userId}) async {
+  Future<Result<void, Exception>> sync({required String tripId}) async {
     try {
-      LogService.info('Syncing polls for user: $userId', source: _source);
-      final polls = await _remoteDataSource.getPolls(userId: userId);
+      LogService.info('Syncing polls for trip: $tripId', source: _source);
+      final polls = await _remoteDataSource.getPolls(tripId);
       await _localDataSource.savePolls(polls);
       await _saveLastSyncTime(DateTime.now());
       LogService.info('Synced ${polls.length} polls', source: _source);
@@ -96,9 +96,9 @@ class PollRepository implements IPollRepository {
 
   @override
   Future<Result<String, Exception>> create({
+    required String tripId,
     required String title,
     String description = '',
-    required String creatorId,
     DateTime? deadline,
     bool isAllowAddOption = false,
     int maxOptionLimit = 20,
@@ -107,9 +107,9 @@ class PollRepository implements IPollRepository {
   }) async {
     try {
       final id = await _remoteDataSource.createPoll(
+        tripId: tripId,
         title: title,
         description: description,
-        creatorId: creatorId,
         deadline: deadline,
         isAllowAddOption: isAllowAddOption,
         maxOptionLimit: maxOptionLimit,
@@ -126,13 +126,12 @@ class PollRepository implements IPollRepository {
 
   @override
   Future<Result<void, Exception>> vote({
+    required String tripId,
     required String pollId,
-    required List<String> optionIds,
-    required String userId,
-    String userName = 'Anonymous',
+    required String optionId,
   }) async {
     try {
-      await _remoteDataSource.votePoll(pollId: pollId, optionIds: optionIds, userId: userId, userName: userName);
+      await _remoteDataSource.voteOption(tripId: tripId, pollId: pollId, optionId: optionId);
       return const Success(null);
     } catch (e) {
       LogService.error('Vote failed: $e', source: _source);
@@ -142,12 +141,12 @@ class PollRepository implements IPollRepository {
 
   @override
   Future<Result<void, Exception>> addOption({
+    required String tripId,
     required String pollId,
     required String text,
-    required String creatorId,
   }) async {
     try {
-      await _remoteDataSource.addOption(pollId: pollId, text: text, creatorId: creatorId);
+      await _remoteDataSource.addOption(tripId: tripId, pollId: pollId, text: text);
       return const Success(null);
     } catch (e) {
       LogService.error('Add option failed: $e', source: _source);
@@ -156,20 +155,9 @@ class PollRepository implements IPollRepository {
   }
 
   @override
-  Future<Result<void, Exception>> close({required String pollId, required String userId}) async {
+  Future<Result<void, Exception>> remove({required String tripId, required String pollId}) async {
     try {
-      await _remoteDataSource.closePoll(pollId: pollId, userId: userId);
-      return const Success(null);
-    } catch (e) {
-      LogService.error('Close poll failed: $e', source: _source);
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<void, Exception>> remove({required String pollId, required String userId}) async {
-    try {
-      await _remoteDataSource.deletePoll(pollId: pollId, userId: userId);
+      await _remoteDataSource.deletePoll(tripId: tripId, pollId: pollId);
       await _localDataSource.deletePoll(pollId);
       LogService.info('Removed poll: $pollId', source: _source);
       return const Success(null);
@@ -180,9 +168,13 @@ class PollRepository implements IPollRepository {
   }
 
   @override
-  Future<Result<void, Exception>> removeOption({required String optionId, required String userId}) async {
+  Future<Result<void, Exception>> removeOption({
+    required String tripId,
+    required String pollId,
+    required String optionId,
+  }) async {
     try {
-      await _remoteDataSource.deleteOption(optionId: optionId, userId: userId);
+      await _remoteDataSource.deleteOption(tripId: tripId, pollId: pollId, optionId: optionId);
       return const Success(null);
     } catch (e) {
       LogService.error('Remove option failed: $e', source: _source);

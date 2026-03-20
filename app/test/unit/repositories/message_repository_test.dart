@@ -131,14 +131,14 @@ void main() {
         // Let's rely on `when(() => mockLocalDataSource.delete(any()))`.
 
         when(() => mockLocalDataSource.delete(any())).thenAnswer((_) async {});
-        when(() => mockRemoteDataSource.deleteMessage(any())).thenAnswer((_) async {});
+        when(() => mockRemoteDataSource.deleteMessage(any(), any())).thenAnswer((_) async {});
 
         // Act
         await repository.deleteById('msg_1');
 
         // Assert
         verify(() => mockLocalDataSource.delete(any())).called(1);
-        verify(() => mockRemoteDataSource.deleteMessage('msg_1')).called(1);
+        verify(() => mockRemoteDataSource.deleteMessage('trip_1', 'msg_1')).called(1);
       });
 
       test('returns failure when offline', () async {
@@ -151,7 +151,7 @@ void main() {
         // Assert
         expect(result, isA<Failure>());
         verifyNever(() => mockLocalDataSource.delete(any()));
-        verifyNever(() => mockRemoteDataSource.deleteMessage(any()));
+        verifyNever(() => mockRemoteDataSource.deleteMessage(any(), any()));
       });
     });
   });

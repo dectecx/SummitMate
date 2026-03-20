@@ -2,20 +2,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/infrastructure/services/sync_service.dart';
-import 'package:summitmate/domain/interfaces/i_data_service.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/data/models/message.dart';
-import 'package:summitmate/data/models/itinerary_item.dart';
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/core/error/result.dart';
-import 'package:summitmate/domain/dto/data_service_result.dart';
 
 // Mocks - use interfaces for better test isolation
-class MockDataService extends Mock implements IDataService {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
@@ -29,7 +25,6 @@ class MockAuthService extends Mock implements IAuthService {}
 
 void main() {
   late SyncService syncService;
-  late MockDataService mockDataService;
   late MockTripRepository mockTripRepo;
   late MockItineraryRepository mockItineraryRepo;
   late MockMessageRepository mockMessageRepo;
@@ -37,7 +32,6 @@ void main() {
   late MockAuthService mockAuthService;
 
   setUp(() {
-    mockDataService = MockDataService();
     mockTripRepo = MockTripRepository();
     mockItineraryRepo = MockItineraryRepository();
     mockMessageRepo = MockMessageRepository();
@@ -75,7 +69,6 @@ void main() {
     when(() => mockMessageRepo.saveLastSyncTime(any())).thenAnswer((_) async => const Success(null));
 
     syncService = SyncService(
-      sheetsService: mockDataService,
       tripRepo: mockTripRepo,
       itineraryRepo: mockItineraryRepo,
       messageRepo: mockMessageRepo,
@@ -111,96 +104,29 @@ void main() {
       // Assert
       expect(result.isSuccess, isFalse);
       expect(result.errors, contains('目前為離線模式，無法同步'));
-      verifyNever(() => mockDataService.getAll(tripId: any(named: 'tripId')));
     });
 
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
-      final cloudMessages = [
-        Message(
-          id: '1',
-          user: 'Cloud',
-          category: 'Misc',
-          content: 'A',
-          timestamp: DateTime.now(),
-          createdAt: DateTime.now(),
-          createdBy: 'Cloud',
-          updatedAt: DateTime.now(),
-          updatedBy: 'Cloud',
-        ),
-      ];
-      final cloudItinerary = [
-        ItineraryItem(
-          id: 'sync-item-1',
-          day: 'D1',
-          name: 'Start',
-          estTime: '08:00',
-          altitude: 2000,
-          distance: 0,
-          note: '',
-        ),
-      ];
-
-      when(
-        () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => Success(DataServiceResult(itinerary: cloudItinerary, messages: cloudMessages)));
-
-      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockMessageRepo.getPendingMessages(any())).thenAnswer((_) async => const Success([]));
-      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.sync(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.syncAll();
 
       // Assert
       expect(result.isSuccess, isTrue);
-      // verify(() => mockDataService.getAll(tripId: any(named: 'tripId'))).called(1); // Usually sufficient to verify it was called
-      verify(() => mockItineraryRepo.syncFromCloud(cloudItinerary)).called(1);
-      verify(() => mockMessageRepo.syncFromCloud(cloudMessages)).called(1);
-    });
-
-    test('syncAll should NOT upload pending messages (cloud-only sync)', () async {
-      // Arrange
-      when(
-        () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => const Success(DataServiceResult(itinerary: [], messages: [])));
-      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
-
-      // Act
-      await syncService.syncAll();
-
-      // Assert
-      verifyNever(() => mockDataService.batchAddMessages(any()));
-      verifyNever(() => mockMessageRepo.getPendingMessages(any()));
-    });
-
-    test('syncAll should handle fetch failure', () async {
-      // Arrange
-      when(
-        () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => const Success(DataServiceResult(itinerary: [], messages: [])));
-
-      when(() => mockItineraryRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockMessageRepo.syncFromCloud(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockMessageRepo.getPendingMessages(any())).thenAnswer((_) async => const Success([]));
-
-      // Act
-      final result = await syncService.syncAll(isAuto: false);
-
-      // Assert
-      expect(result.isSuccess, true);
-      verify(() => mockDataService.getAll(tripId: 'test-trip-1')).called(1);
+      // Wait for async operations
+      verify(() => mockItineraryRepo.sync('test-trip-1')).called(1);
+      verify(() => mockMessageRepo.sync('test-trip-1')).called(1);
     });
 
     test('syncAll failure handles error', () async {
       // Arrange
-      // Need to mock sync needed
       when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
       when(() => mockMessageRepo.getLastSyncTime()).thenAnswer((_) async => const Success(null));
       // Re-init to load new mock times
       syncService = SyncService(
-        sheetsService: mockDataService,
         tripRepo: mockTripRepo,
         itineraryRepo: mockItineraryRepo,
         messageRepo: mockMessageRepo,
@@ -208,9 +134,8 @@ void main() {
         authService: mockAuthService,
       );
 
-      when(
-        () => mockDataService.getAll(tripId: any(named: 'tripId')),
-      ).thenAnswer((_) async => Failure(GeneralException('Network Error')));
+      when(() => mockItineraryRepo.sync(any())).thenThrow(Exception('Network Error'));
+      when(() => mockMessageRepo.sync(any())).thenAnswer((_) async => const Success(null));
 
       // Act
       final result = await syncService.syncAll(isAuto: false);
@@ -267,8 +192,6 @@ void main() {
       // Assert
       expect(result is Success, true);
       verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
-      // DataService should NOT be called directly by SyncService anymore
-      verifyNever(() => mockDataService.addMessage(any()));
     });
 
     test('deleteMessageAndSync should call repository', () async {
@@ -283,8 +206,6 @@ void main() {
       // Assert
       expect(result is Success, true);
       verify(() => mockMessageRepo.deleteById(id)).called(1);
-      // DataService should NOT be called directly by SyncService anymore
-      verifyNever(() => mockDataService.deleteMessage(any()));
     });
   });
 }
