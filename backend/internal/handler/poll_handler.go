@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -37,9 +38,9 @@ func (h *PollHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, trip
 		return
 	}
 
-	resp := make([]api.Poll, len(polls))
+	resp := make([]dto.PollResponse, len(polls))
 	for i, p := range polls {
-		resp[i] = mapToAPIPoll(p)
+		resp[i] = toPollResponse(p)
 	}
 	sendJSON(w, http.StatusOK, resp)
 }
@@ -86,7 +87,7 @@ func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tri
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, mapToAPIPoll(created))
+	sendJSON(w, http.StatusCreated, toPollResponse(created))
 }
 
 func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
@@ -109,7 +110,7 @@ func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID
 		sendErrorResponse(w, http.StatusInternalServerError, "查詢失敗")
 		return
 	}
-	sendJSON(w, http.StatusOK, mapToAPIPoll(poll))
+	sendJSON(w, http.StatusOK, toPollResponse(poll))
 }
 
 func (h *PollHandler) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
@@ -157,7 +158,7 @@ func (h *PollHandler) AddPollOption(w http.ResponseWriter, r *http.Request, trip
 		sendErrorResponse(w, http.StatusInternalServerError, "新增選項失敗")
 		return
 	}
-	sendJSON(w, http.StatusCreated, mapToAPIPoll(poll))
+	sendJSON(w, http.StatusCreated, toPollResponse(poll))
 }
 
 func (h *PollHandler) VotePollOption(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID, optionID openapi_types.UUID) {
@@ -180,33 +181,28 @@ func (h *PollHandler) VotePollOption(w http.ResponseWriter, r *http.Request, tri
 		sendErrorResponse(w, http.StatusInternalServerError, "投票失敗")
 		return
 	}
-	sendJSON(w, http.StatusOK, mapToAPIPoll(poll))
+	sendJSON(w, http.StatusOK, toPollResponse(poll))
 }
 
-func mapToAPIPoll(p *model.Poll) api.Poll {
-	options := make([]api.PollOption, len(p.Options))
+func toPollResponse(p *model.Poll) dto.PollResponse {
+	options := make([]dto.PollOptionResponse, len(p.Options))
 	for i, opt := range p.Options {
-		votersList := make([]openapi_types.UUID, len(opt.Voters))
-		for j, v := range opt.Voters {
-			votersList[j] = toOpenAPIUUID(v)
-		}
-
-		options[i] = api.PollOption{
-			Id:        toOpenAPIUUID(opt.ID),
-			PollId:    toOpenAPIUUID(opt.PollID),
+		options[i] = dto.PollOptionResponse{
+			ID:        opt.ID,
+			PollID:    opt.PollID,
 			Text:      opt.Text,
 			VoteCount: opt.VoteCount,
-			Voters:    &votersList,
-			CreatedAt: toOpenAPITime(opt.CreatedAt),
-			CreatedBy: toOpenAPIUUID(opt.CreatedBy),
-			UpdatedAt: toOpenAPITime(opt.UpdatedAt),
-			UpdatedBy: toOpenAPIUUID(opt.UpdatedBy),
+			Voters:    opt.Voters,
+			CreatedAt: opt.CreatedAt,
+			CreatedBy: opt.CreatedBy,
+			UpdatedAt: opt.UpdatedAt,
+			UpdatedBy: opt.UpdatedBy,
 		}
 	}
 
-	return api.Poll{
-		Id:                 toOpenAPIUUID(p.ID),
-		TripId:             toOpenAPIUUID(p.TripID),
+	return dto.PollResponse{
+		ID:                 p.ID,
+		TripID:             p.TripID,
 		Title:              p.Title,
 		Description:        p.Description,
 		Deadline:           p.Deadline,
@@ -216,9 +212,9 @@ func mapToAPIPoll(p *model.Poll) api.Poll {
 		ResultDisplayType:  p.ResultDisplayType,
 		Status:             p.Status,
 		Options:            options,
-		CreatedAt:          toOpenAPITime(p.CreatedAt),
-		CreatedBy:          toOpenAPIUUID(p.CreatedBy),
-		UpdatedAt:          toOpenAPITime(p.UpdatedAt),
-		UpdatedBy:          toOpenAPIUUID(p.UpdatedBy),
+		CreatedAt:          p.CreatedAt,
+		CreatedBy:          p.CreatedBy,
+		UpdatedAt:          p.UpdatedAt,
+		UpdatedBy:          p.UpdatedBy,
 	}
 }

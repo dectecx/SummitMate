@@ -95,7 +95,7 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *model.GroupEv
 
 	// In a real app, check if user already applied or is already a member
 	// For now, let the repo (database unique constraint) handle duplicates
-	
+
 	app.CreatedBy = app.UserID
 	app.UpdatedBy = app.UserID
 

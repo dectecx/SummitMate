@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -40,22 +41,9 @@ func (h *GearLibraryHandler) ListGearLibrary(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var res []api.GearLibraryItem
+	res := make([]dto.GearLibraryItemResponse, 0, len(items))
 	for _, item := range items {
-		res = append(res, api.GearLibraryItem{
-			Id:         toOpenAPIUUID(item.ID),
-			UserId:     toOpenAPIUUID(item.UserID),
-			Name:       item.Name,
-			Weight:     item.Weight,
-			Category:   item.Category,
-			Notes:      item.Notes,
-			IsArchived: item.IsArchived,
-			CreatedAt:  toOpenAPITime(item.CreatedAt),
-			UpdatedAt:  toOpenAPITime(item.UpdatedAt),
-		})
-	}
-	if res == nil {
-		res = []api.GearLibraryItem{}
+		res = append(res, toGearLibraryItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -93,18 +81,7 @@ func (h *GearLibraryHandler) CreateGearLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	res := api.GearLibraryItem{
-		Id:         toOpenAPIUUID(createdItem.ID),
-		UserId:     toOpenAPIUUID(createdItem.UserID),
-		Name:       createdItem.Name,
-		Weight:     createdItem.Weight,
-		Category:   createdItem.Category,
-		Notes:      createdItem.Notes,
-		IsArchived: createdItem.IsArchived,
-		CreatedAt:  toOpenAPITime(createdItem.CreatedAt),
-		UpdatedAt:  toOpenAPITime(createdItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusCreated, res)
+	sendJSON(w, http.StatusCreated, toGearLibraryItemResponse(createdItem))
 }
 
 // GetGearLibraryItem 取得單一裝備詳情
@@ -122,18 +99,7 @@ func (h *GearLibraryHandler) GetGearLibraryItem(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	res := api.GearLibraryItem{
-		Id:         toOpenAPIUUID(item.ID),
-		UserId:     toOpenAPIUUID(item.UserID),
-		Name:       item.Name,
-		Weight:     item.Weight,
-		Category:   item.Category,
-		Notes:      item.Notes,
-		IsArchived: item.IsArchived,
-		CreatedAt:  toOpenAPITime(item.CreatedAt),
-		UpdatedAt:  toOpenAPITime(item.UpdatedAt),
-	}
-	sendJSON(w, http.StatusOK, res)
+	sendJSON(w, http.StatusOK, toGearLibraryItemResponse(item))
 }
 
 // UpdateGearLibraryItem 更新個人裝備資料
@@ -168,18 +134,7 @@ func (h *GearLibraryHandler) UpdateGearLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	res := api.GearLibraryItem{
-		Id:         toOpenAPIUUID(updatedItem.ID),
-		UserId:     toOpenAPIUUID(updatedItem.UserID),
-		Name:       updatedItem.Name,
-		Weight:     updatedItem.Weight,
-		Category:   updatedItem.Category,
-		Notes:      updatedItem.Notes,
-		IsArchived: updatedItem.IsArchived,
-		CreatedAt:  toOpenAPITime(updatedItem.CreatedAt),
-		UpdatedAt:  toOpenAPITime(updatedItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusOK, res)
+	sendJSON(w, http.StatusOK, toGearLibraryItemResponse(updatedItem))
 }
 
 // DeleteGearLibraryItem 刪除個人裝備 (支援實體刪除)
@@ -197,4 +152,20 @@ func (h *GearLibraryHandler) DeleteGearLibraryItem(w http.ResponseWriter, r *htt
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toGearLibraryItemResponse(item *model.GearLibraryItem) dto.GearLibraryItemResponse {
+	return dto.GearLibraryItemResponse{
+		ID:         item.ID,
+		UserID:     item.UserID,
+		Name:       item.Name,
+		Weight:     item.Weight,
+		Category:   item.Category,
+		Notes:      item.Notes,
+		IsArchived: item.IsArchived,
+		CreatedAt:  item.CreatedAt,
+		CreatedBy:  item.CreatedBy,
+		UpdatedAt:  item.UpdatedAt,
+		UpdatedBy:  item.UpdatedBy,
+	}
 }

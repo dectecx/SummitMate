@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type MessageHandler struct {
@@ -37,9 +39,9 @@ func (h *MessageHandler) ListTripMessages(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	resp := make([]api.Message, len(messages))
+	resp := make([]dto.MessageResponse, len(messages))
 	for i, m := range messages {
-		resp[i] = mapToAPIMessage(m)
+		resp[i] = toMessageResponse(m)
 	}
 	sendJSON(w, http.StatusOK, resp)
 }
@@ -62,14 +64,17 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 		category = *req.Category
 	}
 
+	var parentIDStr *string
+	if req.ParentId != nil {
+		s := req.ParentId.String()
+		parentIDStr = &s
+	}
+
 	msg := &model.TripMessage{
 		Category:  category,
 		Content:   req.Content,
 		Timestamp: time.Now(),
-	}
-	if req.ParentId != nil {
-		parentIDStr := req.ParentId.String()
-		msg.ParentID = &parentIDStr
+		ParentID:  parentIDStr,
 	}
 
 	created, err := h.service.AddTripMessage(r.Context(), tripID.String(), userID, msg)
@@ -82,7 +87,7 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, mapToAPIMessage(created))
+	sendJSON(w, http.StatusCreated, toMessageResponse(created))
 }
 
 func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
@@ -122,7 +127,7 @@ func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	sendJSON(w, http.StatusOK, mapToAPIMessage(updated))
+	sendJSON(w, http.StatusOK, toMessageResponse(updated))
 }
 
 func (h *MessageHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
@@ -149,42 +154,31 @@ func (h *MessageHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func mapToAPIMessage(m *model.TripMessage) api.Message {
-	id := toOpenAPIUUID(m.ID)
-	tripID := toOpenAPIUUID(m.TripID)
-	userID := toOpenAPIUUID(m.UserID)
-
-	var parentID *openapi_types.UUID
-	if m.ParentID != nil {
-		pid := toOpenAPIUUID(*m.ParentID)
-		parentID = &pid
-	}
-
-	var replies []api.Message
+func toMessageResponse(m *model.TripMessage) dto.MessageResponse {
+	var replies []dto.MessageResponse
 	if len(m.Replies) > 0 {
-		replies = make([]api.Message, len(m.Replies))
+		replies = make([]dto.MessageResponse, len(m.Replies))
 		for i, rp := range m.Replies {
-			replies[i] = mapToAPIMessage(rp) // Recursive mapping
+			replies[i] = toMessageResponse(rp) // Recursive mapping
 		}
 	} else {
-		replies = []api.Message{}
+		replies = []dto.MessageResponse{}
 	}
 
-	createdAt := toOpenAPITime(m.CreatedAt)
-	updatedAt := toOpenAPITime(m.UpdatedAt)
-
-	return api.Message{
-		Id:          id,
-		TripId:      tripID,
-		ParentId:    parentID,
-		UserId:      userID,
+	return dto.MessageResponse{
+		ID:          m.ID,
+		TripID:      m.TripID,
+		ParentID:    m.ParentID,
+		UserID:      m.UserID,
 		DisplayName: m.DisplayName,
-		Avatar:      &m.Avatar,
+		Avatar:      m.Avatar,
 		Category:    m.Category,
 		Content:     m.Content,
-		Timestamp:   toOpenAPITime(m.Timestamp),
-		Replies:     &replies, // Pointer to array needed for OpenAPI
-		CreatedAt:   createdAt,
-		UpdatedAt:   &updatedAt,
+		Timestamp:   m.Timestamp,
+		Replies:     replies,
+		CreatedAt:   m.CreatedAt,
+		CreatedBy:   m.CreatedBy,
+		UpdatedAt:   m.UpdatedAt,
+		UpdatedBy:   m.UpdatedBy,
 	}
 }

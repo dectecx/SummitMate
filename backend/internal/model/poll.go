@@ -3,11 +3,11 @@ package model
 import "time"
 
 type PollOption struct {
-	ID        string   `json:"id" db:"id"`
-	PollID    string   `json:"poll_id" db:"poll_id"`
-	Text      string   `json:"text" db:"text"`
-	VoteCount int      `json:"vote_count" db:"-"`
-	Voters    []string `json:"voters" db:"-"`
+	ID        string    `json:"id" db:"id"`
+	PollID    string    `json:"poll_id" db:"poll_id"`
+	Text      string    `json:"text" db:"text"`
+	VoteCount int       `json:"vote_count" db:"-"`
+	Voters    []string  `json:"voters" db:"-"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	CreatedBy string    `json:"created_by" db:"created_by"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/handler/dto"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
@@ -39,29 +40,9 @@ func (h *TripGearHandler) ListTripGear(w http.ResponseWriter, r *http.Request, t
 		return
 	}
 
-	var res []api.TripGearItem
+	res := make([]dto.TripGearItemResponse, 0, len(items))
 	for _, item := range items {
-		var libIDStr *string
-		if item.LibraryItemID != nil {
-			s := *item.LibraryItemID
-			libIDStr = &s
-		}
-		res = append(res, api.TripGearItem{
-			Id:            toOpenAPIUUID(item.ID),
-			TripId:        toOpenAPIUUID(item.TripID),
-			LibraryItemId: toOpenAPIUUIDPtr(libIDStr),
-			Name:          item.Name,
-			Weight:        item.Weight,
-			Category:      item.Category,
-			Quantity:      item.Quantity,
-			IsChecked:     item.IsChecked,
-			OrderIndex:    item.OrderIndex,
-			CreatedAt:     toOpenAPITime(item.CreatedAt),
-			UpdatedAt:     toOpenAPITime(item.UpdatedAt),
-		})
-	}
-	if res == nil {
-		res = []api.TripGearItem{}
+		res = append(res, toTripGearItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -108,26 +89,7 @@ func (h *TripGearHandler) AddTripGear(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	var resLibIDStr *string
-	if createdItem.LibraryItemID != nil {
-		s := *createdItem.LibraryItemID
-		resLibIDStr = &s
-	}
-
-	res := api.TripGearItem{
-		Id:            toOpenAPIUUID(createdItem.ID),
-		TripId:        toOpenAPIUUID(createdItem.TripID),
-		LibraryItemId: toOpenAPIUUIDPtr(resLibIDStr),
-		Name:          createdItem.Name,
-		Weight:        createdItem.Weight,
-		Category:      createdItem.Category,
-		Quantity:      createdItem.Quantity,
-		IsChecked:     createdItem.IsChecked,
-		OrderIndex:    createdItem.OrderIndex,
-		CreatedAt:     toOpenAPITime(createdItem.CreatedAt),
-		UpdatedAt:     toOpenAPITime(createdItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusCreated, res)
+	sendJSON(w, http.StatusCreated, toTripGearItemResponse(createdItem))
 }
 
 // UpdateTripGear 更新行程中的裝備
@@ -171,26 +133,7 @@ func (h *TripGearHandler) UpdateTripGear(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	var resLibIDStr *string
-	if updatedItem.LibraryItemID != nil {
-		s := *updatedItem.LibraryItemID
-		resLibIDStr = &s
-	}
-
-	res := api.TripGearItem{
-		Id:            toOpenAPIUUID(updatedItem.ID),
-		TripId:        toOpenAPIUUID(updatedItem.TripID),
-		LibraryItemId: toOpenAPIUUIDPtr(resLibIDStr),
-		Name:          updatedItem.Name,
-		Weight:        updatedItem.Weight,
-		Category:      updatedItem.Category,
-		Quantity:      updatedItem.Quantity,
-		IsChecked:     updatedItem.IsChecked,
-		OrderIndex:    updatedItem.OrderIndex,
-		CreatedAt:     toOpenAPITime(updatedItem.CreatedAt),
-		UpdatedAt:     toOpenAPITime(updatedItem.UpdatedAt),
-	}
-	sendJSON(w, http.StatusOK, res)
+	sendJSON(w, http.StatusOK, toTripGearItemResponse(updatedItem))
 }
 
 // RemoveTripGear 將裝備從行程中移除
@@ -212,4 +155,22 @@ func (h *TripGearHandler) RemoveTripGear(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func toTripGearItemResponse(item *model.TripGearItem) dto.TripGearItemResponse {
+	return dto.TripGearItemResponse{
+		ID:            item.ID,
+		TripID:        item.TripID,
+		LibraryItemID: item.LibraryItemID,
+		Name:          item.Name,
+		Weight:        item.Weight,
+		Category:      item.Category,
+		Quantity:      item.Quantity,
+		IsChecked:     item.IsChecked,
+		OrderIndex:    item.OrderIndex,
+		CreatedAt:     item.CreatedAt,
+		CreatedBy:     item.CreatedBy,
+		UpdatedAt:     item.UpdatedAt,
+		UpdatedBy:     item.UpdatedBy,
+	}
 }
