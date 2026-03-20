@@ -103,7 +103,7 @@ func (s *APITestSuite) TestTrip_CreateAndGet() {
 	defer resp.Body.Close()
 	s.Require().Equal(http.StatusCreated, resp.StatusCode)
 
-	var trip api.Trip
+	var trip api.TripCreateResponse
 	err := json.NewDecoder(resp.Body).Decode(&trip)
 	s.Require().NoError(err)
 
@@ -119,7 +119,7 @@ func (s *APITestSuite) TestTrip_CreateAndGet() {
 	defer getResp.Body.Close()
 	s.Require().Equal(http.StatusOK, getResp.StatusCode)
 
-	var getTrip api.Trip
+	var getTrip api.TripGetResponse
 	json.NewDecoder(getResp.Body).Decode(&getTrip)
 	s.Equal(trip.Id, getTrip.Id)
 	s.Equal(trip.Name, getTrip.Name)
@@ -142,7 +142,7 @@ func (s *APITestSuite) TestTrip_ListMyTrips() {
 	defer resp.Body.Close()
 	s.Require().Equal(http.StatusOK, resp.StatusCode)
 
-	var trips []api.Trip
+	var trips []api.TripListItemResponse
 	err := json.NewDecoder(resp.Body).Decode(&trips)
 	s.Require().NoError(err)
 	s.Len(trips, 2, "應該回傳兩筆資料")
@@ -155,7 +155,7 @@ func (s *APITestSuite) TestTrip_Update() {
 	createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
 		"name": "Old Trip Name", "start_date": "2026-05-01",
 	})
-	var trip api.Trip
+	var trip api.TripCreateResponse
 	json.NewDecoder(createResp.Body).Decode(&trip)
 	createResp.Body.Close()
 
@@ -168,7 +168,7 @@ func (s *APITestSuite) TestTrip_Update() {
 	defer updateResp.Body.Close()
 	s.Require().Equal(http.StatusOK, updateResp.StatusCode)
 
-	var updatedTrip api.Trip
+	var updatedTrip api.TripUpdateResponse
 	json.NewDecoder(updateResp.Body).Decode(&updatedTrip)
 	s.Equal("New Trip Name", updatedTrip.Name)
 	s.Equal("Updated Description", *updatedTrip.Description)
@@ -181,7 +181,7 @@ func (s *APITestSuite) TestTrip_Delete() {
 	createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
 		"name": "To be deleted", "start_date": "2026-05-01",
 	})
-	var trip api.Trip
+	var trip api.TripCreateResponse
 	json.NewDecoder(createResp.Body).Decode(&trip)
 	createResp.Body.Close()
 
@@ -208,7 +208,7 @@ func (s *APITestSuite) TestTrip_Members() {
 	createResp := s.sendAuthRequest("POST", "/trips", ownerClient.Token, map[string]interface{}{
 		"name": "Member Test Trip", "start_date": "2026-05-01",
 	})
-	var trip api.Trip
+	var trip api.TripCreateResponse
 	json.NewDecoder(createResp.Body).Decode(&trip)
 	createResp.Body.Close()
 
@@ -227,7 +227,7 @@ func (s *APITestSuite) TestTrip_Members() {
 	defer listResp.Body.Close()
 	s.Require().Equal(http.StatusOK, listResp.StatusCode)
 
-	var members []api.TripMember
+	var members []api.TripMemberListItemResponse
 	json.NewDecoder(listResp.Body).Decode(&members)
 
 	// Ensure targetClient is in the list
@@ -257,7 +257,7 @@ func (s *APITestSuite) TestTrip_Itinerary() {
 	createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
 		"name": "Itinerary Test Trip", "start_date": "2026-05-01",
 	})
-	var trip api.Trip
+	var trip api.TripCreateResponse
 	json.NewDecoder(createResp.Body).Decode(&trip)
 	createResp.Body.Close()
 	tripID := trip.Id.String()

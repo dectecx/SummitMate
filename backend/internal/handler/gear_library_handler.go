@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	"summitmate/api"
-	"summitmate/internal/handler/dto"
+	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
-	"summitmate/internal/model"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -41,9 +40,9 @@ func (h *GearLibraryHandler) ListGearLibrary(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	res := make([]dto.GearLibraryItemResponse, 0, len(items))
+	res := make([]api.GearLibraryItem, 0, len(items))
 	for _, item := range items {
-		res = append(res, toGearLibraryItemResponse(item))
+		res = append(res, mapping.ToGearLibraryItemResponse(item))
 	}
 
 	sendJSON(w, http.StatusOK, res)
@@ -64,24 +63,15 @@ func (h *GearLibraryHandler) CreateGearLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	modelReq := &model.GearLibraryItem{
-		Name:       req.Name,
-		Weight:     req.Weight,
-		Category:   req.Category,
-		Notes:      req.Notes,
-		IsArchived: false,
-	}
-	if req.IsArchived != nil {
-		modelReq.IsArchived = *req.IsArchived
-	}
+	modelReq := mapping.ToModelGearLibraryItem(req)
 
-	createdItem, err := h.svc.CreateItem(r.Context(), userID, modelReq)
+	createdItem, err := h.svc.CreateItem(r.Context(), userID, &modelReq)
 	if err != nil {
 		sendErrorResponse(w, http.StatusInternalServerError, "建立失敗: "+err.Error())
 		return
 	}
 
-	sendJSON(w, http.StatusCreated, toGearLibraryItemResponse(createdItem))
+	sendJSON(w, http.StatusCreated, mapping.ToGearLibraryItemResponse(createdItem))
 }
 
 // GetGearLibraryItem 取得單一裝備詳情
@@ -99,7 +89,7 @@ func (h *GearLibraryHandler) GetGearLibraryItem(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toGearLibraryItemResponse(item))
+	sendJSON(w, http.StatusOK, mapping.ToGearLibraryItemResponse(item))
 }
 
 // UpdateGearLibraryItem 更新個人裝備資料
@@ -117,24 +107,15 @@ func (h *GearLibraryHandler) UpdateGearLibraryItem(w http.ResponseWriter, r *htt
 		return
 	}
 
-	modelReq := &model.GearLibraryItem{
-		Name:       req.Name,
-		Weight:     req.Weight,
-		Category:   req.Category,
-		Notes:      req.Notes,
-		IsArchived: false,
-	}
-	if req.IsArchived != nil {
-		modelReq.IsArchived = *req.IsArchived
-	}
+	modelReq := mapping.ToModelGearLibraryItem(req)
 
-	updatedItem, err := h.svc.UpdateItem(r.Context(), itemId.String(), userID, modelReq)
+	updatedItem, err := h.svc.UpdateItem(r.Context(), itemId.String(), userID, &modelReq)
 	if err != nil {
 		sendErrorResponse(w, http.StatusInternalServerError, "更新失敗: "+err.Error())
 		return
 	}
 
-	sendJSON(w, http.StatusOK, toGearLibraryItemResponse(updatedItem))
+	sendJSON(w, http.StatusOK, mapping.ToGearLibraryItemResponse(updatedItem))
 }
 
 // DeleteGearLibraryItem 刪除個人裝備 (支援實體刪除)
@@ -152,20 +133,4 @@ func (h *GearLibraryHandler) DeleteGearLibraryItem(w http.ResponseWriter, r *htt
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func toGearLibraryItemResponse(item *model.GearLibraryItem) dto.GearLibraryItemResponse {
-	return dto.GearLibraryItemResponse{
-		ID:         item.ID,
-		UserID:     item.UserID,
-		Name:       item.Name,
-		Weight:     item.Weight,
-		Category:   item.Category,
-		Notes:      item.Notes,
-		IsArchived: item.IsArchived,
-		CreatedAt:  item.CreatedAt,
-		CreatedBy:  item.CreatedBy,
-		UpdatedAt:  item.UpdatedAt,
-		UpdatedBy:  item.UpdatedBy,
-	}
 }
