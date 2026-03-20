@@ -14,6 +14,7 @@ import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
+import 'package:summitmate/data/datasources/remote/trip_gear_remote_data_source.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
@@ -24,6 +25,8 @@ class MockAuthService extends Mock implements IAuthService {}
 class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
 class MockGearRepository extends Mock implements IGearRepository {}
+
+class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
 
 void main() {
   late MockTripRepository mockTripRepository;
@@ -38,6 +41,7 @@ void main() {
     mockAuthService = MockAuthService();
     mockItineraryRepository = MockItineraryRepository();
     mockGearRepository = MockGearRepository();
+    final mockTripGearRemoteDataSource = MockTripGearRemoteDataSource();
 
     // Reset GetIt to clear previous registrations
     GetIt.I.reset();
@@ -45,6 +49,7 @@ void main() {
     // Register mocks needed by TripCubit's internal DI calls (e.g., in uploadFullTrip)
     GetIt.I.registerSingleton<IItineraryRepository>(mockItineraryRepository);
     GetIt.I.registerSingleton<IGearRepository>(mockGearRepository);
+    GetIt.I.registerSingleton<ITripGearRemoteDataSource>(mockTripGearRemoteDataSource);
     // Explicitly register others just in case code falls back to DI (though constructor injection is used for main deps)
     GetIt.I.registerSingleton<ITripRepository>(mockTripRepository);
     GetIt.I.registerSingleton<ISyncService>(mockSyncService);
@@ -245,13 +250,10 @@ void main() {
       // Setup
       when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
       when(() => mockGearRepository.getAllItems()).thenReturn([]);
-      when(
-        () => mockTripRepository.uploadFullTrip(
-          trip: any(named: 'trip'),
-          itineraryItems: any(named: 'itineraryItems'),
-          gearItems: any(named: 'gearItems'),
-        ),
-      ).thenAnswer((_) async => const Success('mock-id'));
+      when(() => mockTripRepository.uploadTripToRemote(any())).thenAnswer((_) async => const Success('mock-id'));
+      when(() => mockSyncService.uploadItinerary()).thenAnswer((_) async => SyncResult.success());
+      final mockTripGearRemote = GetIt.I<ITripGearRemoteDataSource>();
+      when(() => mockTripGearRemote.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());
 
       final cubit = TripCubit(
         tripRepository: mockTripRepository,
@@ -262,7 +264,8 @@ void main() {
       final result = await cubit.uploadFullTrip(trip1);
 
       expect(result, true);
-      verify(() => mockTripRepository.uploadFullTrip(trip: trip1, itineraryItems: [], gearItems: [])).called(1);
+      verify(() => mockTripRepository.uploadTripToRemote(trip1)).called(1);
+      verify(() => mockSyncService.uploadItinerary()).called(1);
     });
 
     test('loadTrips emits TripError on failure', () async {

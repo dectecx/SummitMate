@@ -5,9 +5,6 @@ import 'package:intl/intl.dart';
 
 import '../../core/constants.dart';
 
-import '../../core/di.dart';
-import '../services/google_sheets_service.dart';
-import '../../core/error/result.dart';
 import 'hive_service.dart';
 
 /// 日誌等級
@@ -225,38 +222,8 @@ class LogService {
   }
 
   /// 上傳日誌到雲端
-  ///
-  /// 回傳 (success, message) tuple
   static Future<(bool, String)> uploadToCloud({String? deviceName}) async {
-    try {
-      final logs = getAllLogs();
-      if (logs.isEmpty) {
-        return (false, '沒有日誌可上傳');
-      }
-
-      // 使用 GoogleSheetsService (已處理 Web 相容性與 302 Redirect)
-      final sheetsService = getIt<GoogleSheetsService>();
-      final result = await sheetsService.uploadLogs(logs, deviceName: deviceName);
-
-      return switch (result) {
-        Success(value: final msg) => (
-          true,
-          (() {
-            info('日誌上傳成功', source: 'LogUpload');
-            return msg;
-          })(),
-        ),
-        Failure(exception: final e) => (
-          false,
-          (() {
-            error('日誌上傳失敗: $e', source: 'LogUpload');
-            return e.toString();
-          })(),
-        ),
-      };
-    } catch (e) {
-      error('日誌上傳異常: $e', source: 'LogUpload');
-      return (false, '上傳錯誤: $e');
-    }
+    // TODO: 待後端實作日誌上傳介面後在此串接
+    return (false, '功能開發中');
   }
 }

@@ -69,13 +69,13 @@ void main() {
       helper = WeatherServiceTestHelper();
     });
 
-    test('parseGasWeatherData throws on empty location', () {
+    test('parseCloudWeatherData throws on empty location', () {
       final emptyList = <Map<String, dynamic>>[];
 
-      expect(() => helper.parseGasWeatherData(emptyList, '向陽山'), throwsException);
+      expect(() => helper.parseCloudWeatherData(emptyList, '向陽山'), throwsException);
     });
 
-    test('parseGasWeatherData throws on wrong location', () {
+    test('parseCloudWeatherData throws on wrong location', () {
       final mockData = [
         {
           'Location': '玉山',
@@ -92,10 +92,10 @@ void main() {
         },
       ];
 
-      expect(() => helper.parseGasWeatherData(mockData, '雪山'), throwsException);
+      expect(() => helper.parseCloudWeatherData(mockData, '雪山'), throwsException);
     });
 
-    test('parseGasWeatherData correctly parses temperature', () {
+    test('parseCloudWeatherData correctly parses temperature', () {
       final mockData = [
         {
           'Location': '向陽山',
@@ -112,7 +112,7 @@ void main() {
         },
       ];
 
-      final result = helper.parseGasWeatherData(mockData, '向陽山');
+      final result = helper.parseCloudWeatherData(mockData, '向陽山');
 
       expect(result.temperature, 15.5);
       expect(result.humidity, 75.0);
@@ -122,7 +122,7 @@ void main() {
       expect(result.locationName, '向陽山');
     });
 
-    test('parseGasWeatherData handles invalid numeric values gracefully', () {
+    test('parseCloudWeatherData handles invalid numeric values gracefully', () {
       final mockData = [
         {
           'Location': '向陽山',
@@ -140,14 +140,14 @@ void main() {
       ];
 
       // 應該不拋出異常，使用預設值
-      final result = helper.parseGasWeatherData(mockData, '向陽山');
+      final result = helper.parseCloudWeatherData(mockData, '向陽山');
 
       expect(result.temperature, 0.0);
       expect(result.humidity, 0.0);
       expect(result.rainProbability, 0);
     });
 
-    test('parseGasWeatherData builds daily forecasts correctly', () {
+    test('parseCloudWeatherData builds daily forecasts correctly', () {
       final mockData = [
         {
           'Location': '向陽山',
@@ -190,7 +190,7 @@ void main() {
         },
       ];
 
-      final result = helper.parseGasWeatherData(mockData, '向陽山');
+      final result = helper.parseCloudWeatherData(mockData, '向陽山');
 
       // 應該有 2 天預報
       expect(result.dailyForecasts.length, 2);
@@ -245,12 +245,12 @@ class WeatherServiceTestHelper {
     return {'sunrise': toTime(sunriseHour), 'sunset': toTime(sunsetHour)};
   }
 
-  /// 解析 GAS 天氣資料 (複製自 WeatherService._parseGasWeatherData)
-  TestWeatherData parseGasWeatherData(List<Map<String, dynamic>> list, String locationName) {
+  /// 解析雲端天氣資料 (複製自 WeatherService._parseCloudWeatherData)
+  TestWeatherData parseCloudWeatherData(List<Map<String, dynamic>> list, String locationName) {
     final locationRows = list.where((item) => item['Location'] == locationName).toList();
 
     if (locationRows.isEmpty) {
-      throw Exception('Location "$locationName" not found in GAS data');
+      throw Exception('Location "$locationName" not found in cloud data');
     }
 
     locationRows.sort((a, b) => a['StartTime'].compareTo(b['StartTime']));
