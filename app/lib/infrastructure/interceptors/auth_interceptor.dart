@@ -32,4 +32,20 @@ class AuthInterceptor extends Interceptor {
 
     handler.next(options);
   }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    // 處理 401 Unauthorized 錯誤
+    if (err.response?.statusCode == 401) {
+      LogService.warning('[AuthInterceptor] 401 Unauthorized detected. Triggering logout.', source: _source);
+
+      // 此處目前的權宜之計是直接清除 Session。
+      // 未來若有 Refresh Token，應在此嘗試換發 Token。
+      await _sessionRepo.clearSession();
+
+      // 注意：此處僅清除資料，UI 層的跳轉通常由 AuthCubit 監聽狀態或全域攔截處理。
+    }
+
+    return handler.next(err);
+  }
 }
