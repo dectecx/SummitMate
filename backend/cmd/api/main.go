@@ -80,6 +80,16 @@ func (srv server) RefreshToken(writer http.ResponseWriter, request *http.Request
 	srv.authHandler.RefreshToken(writer, request)
 }
 
+// VerifyEmail 處理 POST /auth/verify-email — 驗證使用者信箱 (Stub)。
+func (srv server) VerifyEmail(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.VerifyEmail(writer, request)
+}
+
+// ResendVerificationCode 處理 POST /auth/resend-verification — 重發驗證碼 (Stub)。
+func (srv server) ResendVerificationCode(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.ResendVerificationCode(writer, request)
+}
+
 // --- Trips ---
 
 func (srv server) ListTrips(w http.ResponseWriter, r *http.Request) {

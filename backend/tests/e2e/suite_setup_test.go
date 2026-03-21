@@ -69,6 +69,28 @@ func (srv testServer) GetCurrentUser(writer http.ResponseWriter, request *http.R
 	jwtAuth(http.HandlerFunc(srv.authHandler.GetCurrentUser)).ServeHTTP(writer, request)
 }
 
+func (srv testServer) UpdateCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.authHandler.UpdateCurrentUser)).ServeHTTP(writer, request)
+}
+
+func (srv testServer) DeleteCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.authHandler.DeleteCurrentUser)).ServeHTTP(writer, request)
+}
+
+func (srv testServer) RefreshToken(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.RefreshToken(writer, request)
+}
+
+func (srv testServer) VerifyEmail(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.VerifyEmail(writer, request)
+}
+
+func (srv testServer) ResendVerificationCode(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.ResendVerificationCode(writer, request)
+}
+
 func (srv testServer) ListTrips(w http.ResponseWriter, r *http.Request) {
 	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
 	jwtAuth(http.HandlerFunc(srv.tripHandler.ListTrips)).ServeHTTP(w, r)

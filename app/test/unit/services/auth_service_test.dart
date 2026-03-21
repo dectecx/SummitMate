@@ -175,25 +175,11 @@ void main() {
   });
 
   group('AuthService.loginWithProvider', () {
-    test('returns success on valid provider login', () async {
-      when(() => mockApiClient.post('/auth/oauth', data: any(named: 'data'))).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: '/auth/oauth'),
-          data: {'user': createUserJson(), 'token': 'oauth-token'},
-          statusCode: 200,
-        ),
-      );
-      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
-
-      // Use a fake enum value or a string if possible, although we'll assume OAuthProvider is available here
-      // if it fails to compile we will adjust.
-      // We will just use 'google' string if it fails, but IAuthService defines it.
-      // Wait, let's import it if needed. For now assuming it is exported by either user_profile or i_auth_service.
+    test('returns failure with NOT_IMPLEMENTED since it is pending design', () async {
       final result = await authService.loginWithProvider(OAuthProvider.google);
 
-      expect(result.isSuccess, isTrue);
-      expect(result.accessToken, 'oauth-token');
-      verify(() => mockSessionRepo.saveSession('oauth-token', any())).called(1);
+      expect(result.isSuccess, isFalse);
+      expect(result.errorCode, 'NOT_IMPLEMENTED');
     });
   });
 

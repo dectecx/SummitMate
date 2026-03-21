@@ -92,6 +92,50 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /auth/verify-email:
+    post:
+      summary: Verify Email Address
+      description: 驗證使用者信箱
+      operationId: verifyEmail
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyEmailRequest"
+      responses:
+        "200":
+          description: 驗證成功
+        "400":
+          description: 驗證碼錯誤或無效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "501":
+          description: 功能尚未實作
+
+  /auth/resend-verification:
+    post:
+      summary: Resend Verification Code
+      description: 重發驗證碼到使用者信箱
+      operationId: resendVerificationCode
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResendVerificationRequest"
+      responses:
+        "200":
+          description: 重發成功
+        "501":
+          description: 功能尚未實作
+
   /auth/me:
     get:
       summary: Get Current User Profile
@@ -2896,6 +2940,28 @@ components:
         token:
           type: string
           description: 現有的 JWT Token
+
+    VerifyEmailRequest:
+      type: object
+      required:
+        - email
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          description: 收到的驗證碼
+
+    ResendVerificationRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
 
     # ---------------------------------------------------------------
     # Response Aliases (strict naming for mapping layer)
