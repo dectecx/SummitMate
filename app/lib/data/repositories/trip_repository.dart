@@ -172,27 +172,6 @@ class TripRepository implements ITripRepository {
     }
   }
 
-  /// 完整備份行程至雲端 (包含細節與裝備)
-  ///
-  /// [trip] 行程物件
-  /// [itineraryItems] 行程節點列表
-  /// [gearItems] 裝備列表
-  /// 回傳: 上傳結果訊息
-  @override
-  Future<Result<String, Exception>> uploadFullTrip({
-    required Trip trip,
-    required List<dynamic> itineraryItems,
-    required List<dynamic> gearItems,
-  }) async {
-    try {
-      return Success(
-        await _remoteDataSource.uploadFullTrip(trip: trip, itineraryItems: itineraryItems, gearItems: gearItems),
-      );
-    } catch (e) {
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
-    }
-  }
-
   /// 清除所有本地行程
   @override
   Future<Result<void, Exception>> clearAll() async {

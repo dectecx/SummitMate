@@ -90,15 +90,6 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<String, Exception>> uploadFullTrip({
-    required Trip trip,
-    required List<dynamic> itineraryItems,
-    required List<dynamic> gearItems,
-  }) async {
-    return Success(trip.id);
-  }
-
-  @override
   Future<Result<void, Exception>> clearAll() async {
     return const Success(null);
   }
