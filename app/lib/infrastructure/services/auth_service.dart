@@ -1,4 +1,5 @@
 import '../../core/di.dart';
+import '../../core/error/app_error_handler.dart';
 import '../../core/exceptions/offline_exception.dart';
 import '../../core/offline_config.dart';
 import '../../data/models/user_profile.dart';
@@ -97,8 +98,11 @@ class AuthService implements IAuthService {
         return AuthResult.failure(errorCode: 'REGISTRATION_FAILED', errorMessage: msg ?? '註冊失敗');
       }
     } on DioException catch (e) {
-      final msg = e.response?.data is Map ? e.response!.data['error'] : e.message;
-      return AuthResult.failure(errorCode: 'HTTP_ERROR', errorMessage: msg ?? '註冊錯誤');
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'HTTP_ERROR',
+        errorMessage: apiError?.message ?? e.message ?? '註冊錯誤',
+      );
     } catch (e, stackTrace) {
       LogService.error('註冊例外: $e', source: _source, stackTrace: stackTrace);
       return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
@@ -142,8 +146,9 @@ class AuthService implements IAuthService {
     } on OfflineException {
       return await _tryOfflineLogin(email);
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        return AuthResult.failure(errorCode: 'UNAUTHORIZED', errorMessage: '帳號或密碼錯誤');
+      final apiError = AppErrorHandler.parseApiException(e);
+      if (apiError != null && apiError.isAuthError) {
+        return AuthResult.failure(errorCode: apiError.code, errorMessage: apiError.message);
       }
       return await _tryOfflineLogin(email);
     } catch (e, stackTrace) {
