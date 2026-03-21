@@ -37,3 +37,18 @@ func ToModelMealLibraryItem(req api.MealLibraryItemRequest) model.MealLibraryIte
 	}
 }
 
+// ToModelMealLibraryItemFromAPI converts api.MealLibraryItem to model.MealLibraryItem for batch sync
+func ToModelMealLibraryItemFromAPI(item api.MealLibraryItem) *model.MealLibraryItem {
+	return &model.MealLibraryItem{
+		ID:         item.Id.String(),
+		UserID:     item.UserId.String(),
+		Name:       item.Name,
+		Weight:     item.Weight,
+		Calories:   item.Calories,
+		Notes:      item.Notes,
+		IsArchived: item.IsArchived,
+		CreatedAt:  item.CreatedAt,
+		UpdatedAt:  item.UpdatedAt,
+	}
+}
+

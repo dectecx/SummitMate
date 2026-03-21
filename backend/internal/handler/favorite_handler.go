@@ -8,6 +8,7 @@ import (
 	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
+	"summitmate/internal/repository"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -77,4 +78,34 @@ func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *FavoriteHandler) BatchUpdateFavorites(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		sendError(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var reqBody api.BatchUpdateFavoritesJSONBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		sendError(w, apperror.ErrBadRequest)
+		return
+	}
+
+	var items []repository.BatchFavoriteItem
+	for _, req := range reqBody {
+		items = append(items, repository.BatchFavoriteItem{
+			TargetID:   req.TargetId.String(),
+			Type:       req.Type,
+			IsFavorite: req.IsFavorite,
+		})
+	}
+
+	if err := h.service.BatchUpdateFavorites(r.Context(), userID, items); err != nil {
+		sendError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

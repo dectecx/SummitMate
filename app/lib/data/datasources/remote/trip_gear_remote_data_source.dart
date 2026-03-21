@@ -112,21 +112,13 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   /// [items] 新的裝備清單
   @override
   Future<void> replaceAllTripGear(String tripId, List<GearItem> items) async {
-    // TODO: 待處理
-    // 若後端不支援一次覆蓋，我們可以在這裡呼叫多個端點，或請後端開一個批量更新。
-    // 為了安全起見，這裡可以先全部刪除再上傳，或者呼叫獨立的批量 API。
-    // 但是這個在離線優先的架構下，如果我們要備份一整個行程，可能需要一個 sync-all endpoint。
     try {
       LogService.info('批量替換行程裝備: $tripId, 數量: ${items.length}', source: _source);
 
-      // 目前實作: 先全刪再新增 (暫取之策)
-      final existing = await getTripGear(tripId);
-      for (final i in existing) {
-        await deleteTripGear(tripId, i.uuid);
-      }
+      final response = await _apiClient.put('/trips/$tripId/gear', data: items.map((e) => e.toJson()).toList());
 
-      for (final i in items) {
-        await addTripGear(tripId, i);
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('HTTP ${response.statusCode}');
       }
     } catch (e) {
       LogService.error('replaceAllTripGear 失敗: $e', source: _source);

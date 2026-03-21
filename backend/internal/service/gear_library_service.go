@@ -37,6 +37,17 @@ func (s *GearLibraryService) UpdateItem(ctx context.Context, itemID, userID stri
 	return s.repo.Update(ctx, req)
 }
 
+func (s *GearLibraryService) ReplaceAllItems(ctx context.Context, userID string, items []*model.GearLibraryItem) error {
+	for _, item := range items {
+		item.UserID = userID
+		if item.CreatedBy == "" {
+			item.CreatedBy = userID
+		}
+		item.UpdatedBy = userID
+	}
+	return s.repo.ReplaceAll(ctx, userID, items)
+}
+
 func (s *GearLibraryService) DeleteItem(ctx context.Context, itemID, userID string) error {
 	return s.repo.Delete(ctx, itemID, userID)
 }

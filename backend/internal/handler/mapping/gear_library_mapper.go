@@ -37,3 +37,18 @@ func ToModelGearLibraryItem(req api.GearLibraryItemRequest) model.GearLibraryIte
 	}
 }
 
+// ToModelGearLibraryItemFromAPI converts api.GearLibraryItem to model.GearLibraryItem for batch sync
+func ToModelGearLibraryItemFromAPI(item api.GearLibraryItem) *model.GearLibraryItem {
+	return &model.GearLibraryItem{
+		ID:         item.Id.String(),
+		UserID:     item.UserId.String(),
+		Name:       item.Name,
+		Weight:     item.Weight,
+		Category:   item.Category,
+		Notes:      item.Notes,
+		IsArchived: item.IsArchived,
+		CreatedAt:  item.CreatedAt,
+		UpdatedAt:  item.UpdatedAt,
+	}
+}
+

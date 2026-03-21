@@ -112,16 +112,13 @@ class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   /// [items] 新清單
   @override
   Future<void> replaceAllTripMeals(String tripId, List<MealItem> items) async {
-    // TODO: 待處理
-    // 與裝備相同，目前採用全刪全加方式，待後端批量 API 完成。
     try {
       LogService.info('批量替換行程餐飲: $tripId', source: _source);
-      final existing = await getTripMeals(tripId);
-      for (final i in existing) {
-        await deleteTripMeal(tripId, i.id);
-      }
-      for (final i in items) {
-        await addTripMeal(tripId, i);
+
+      final response = await _apiClient.put('/trips/$tripId/meals', data: items.map((e) => e.toJson()).toList());
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('HTTP ${response.statusCode}');
       }
     } catch (e) {
       LogService.error('replaceAllTripMeals 失敗: $e', source: _source);

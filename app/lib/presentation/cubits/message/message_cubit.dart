@@ -18,14 +18,11 @@ class MessageCubit extends Cubit<MessageState> {
 
   static const String _source = 'MessageCubit';
 
-  MessageCubit({
-    IMessageRepository? repository,
-    ITripRepository? tripRepository,
-    IAuthService? authService,
-  }) : _repository = repository ?? getIt<IMessageRepository>(),
-       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       _authService = authService ?? getIt<IAuthService>(),
-       super(const MessageInitial());
+  MessageCubit({IMessageRepository? repository, ITripRepository? tripRepository, IAuthService? authService})
+    : _repository = repository ?? getIt<IMessageRepository>(),
+      _tripRepository = tripRepository ?? getIt<ITripRepository>(),
+      _authService = authService ?? getIt<IAuthService>(),
+      super(const MessageInitial());
 
   /// 取得當前活動行程 ID
   /// 取得當前活動行程 ID

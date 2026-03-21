@@ -55,3 +55,27 @@ func ToModelTripMealItem(req api.TripMealItemRequest) model.TripMealItem {
 		Note:          req.Note,
 	}
 }
+
+// ToModelTripMealItemFromAPI converts api.TripMealItem to model.TripMealItem for batch sync
+func ToModelTripMealItemFromAPI(item api.TripMealItem) *model.TripMealItem {
+	var libIDStr *string
+	if item.LibraryItemId != nil {
+		s := item.LibraryItemId.String()
+		libIDStr = &s
+	}
+
+	return &model.TripMealItem{
+		ID:            item.Id.String(),
+		TripID:        item.TripId.String(),
+		LibraryItemID: libIDStr,
+		Day:           item.Day,
+		MealType:      item.MealType,
+		Name:          item.Name,
+		Weight:        item.Weight,
+		Calories:      item.Calories,
+		Quantity:      item.Quantity,
+		Note:          item.Note,
+		CreatedAt:     item.CreatedAt,
+		UpdatedAt:     item.UpdatedAt,
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
+	"summitmate/internal/model"
 	"summitmate/internal/service"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -124,4 +125,30 @@ func (h *GearLibraryHandler) DeleteGearLibraryItem(w http.ResponseWriter, r *htt
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *GearLibraryHandler) ReplaceAllGearLibraryItems(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		sendError(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var reqBody api.ReplaceAllGearLibraryItemsJSONBody
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		sendError(w, apperror.ErrBadRequest)
+		return
+	}
+
+	var items []*model.GearLibraryItem
+	for _, req := range reqBody {
+		items = append(items, mapping.ToModelGearLibraryItemFromAPI(req))
+	}
+
+	if err := h.svc.ReplaceAllItems(r.Context(), userID, items); err != nil {
+		sendError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

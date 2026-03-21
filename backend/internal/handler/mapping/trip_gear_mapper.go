@@ -58,3 +58,26 @@ func ToModelTripGearItem(req api.TripGearItemRequest) model.TripGearItem {
 		OrderIndex:    req.OrderIndex,
 	}
 }
+
+// ToModelTripGearItemFromAPI converts api.TripGearItem to model.TripGearItem for batch sync
+func ToModelTripGearItemFromAPI(item api.TripGearItem) *model.TripGearItem {
+	var libIDStr *string
+	if item.LibraryItemId != nil {
+		s := item.LibraryItemId.String()
+		libIDStr = &s
+	}
+
+	return &model.TripGearItem{
+		ID:            item.Id.String(),
+		TripID:        item.TripId.String(),
+		LibraryItemID: libIDStr,
+		Name:          item.Name,
+		Weight:        item.Weight,
+		Category:      item.Category,
+		Quantity:      item.Quantity,
+		IsChecked:     item.IsChecked,
+		OrderIndex:    item.OrderIndex,
+		CreatedAt:     item.CreatedAt,
+		UpdatedAt:     item.UpdatedAt,
+	}
+}

@@ -10,10 +10,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+type BatchFavoriteItem struct {
+	TargetID   string
+	Type       string
+	IsFavorite bool
+}
+
 type FavoriteRepository interface {
 	ListByUserID(ctx context.Context, userID string) ([]*model.Favorite, error)
 	Create(ctx context.Context, fav *model.Favorite) error
 	DeleteByTargetAndUser(ctx context.Context, targetID, userID string) error
+	BatchUpdate(ctx context.Context, userID string, items []BatchFavoriteItem) error
 }
 
 type favoriteRepository struct {
@@ -66,4 +73,34 @@ func (r *favoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID
 		return pgx.ErrNoRows
 	}
 	return nil
+}
+
+func (r *favoriteRepository) BatchUpdate(ctx context.Context, userID string, items []BatchFavoriteItem) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	for _, item := range items {
+		if item.IsFavorite {
+			query := `
+				INSERT INTO favorites (user_id, target_id, type, created_by, updated_by)
+				VALUES ($1, $2, $3, $4, $5)
+				ON CONFLICT (user_id, target_id) DO NOTHING
+			`
+			_, err := tx.Exec(ctx, query, userID, item.TargetID, item.Type, userID, userID)
+			if err != nil {
+				return err
+			}
+		} else {
+			query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2`
+			_, err := tx.Exec(ctx, query, item.TargetID, userID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return tx.Commit(ctx)
 }
