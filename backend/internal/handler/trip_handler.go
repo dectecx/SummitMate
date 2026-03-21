@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/service"
@@ -31,13 +32,13 @@ func NewTripHandler(svc *service.TripService) *TripHandler {
 func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	trips, err := h.svc.ListTrips(r.Context(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "無法取得行程列表: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -54,13 +55,13 @@ func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.TripCreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -68,7 +69,7 @@ func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 
 	createdTrip, err := h.svc.CreateTrip(r.Context(), userID, svcReq)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "建立行程失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -80,17 +81,13 @@ func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 func (h *TripHandler) GetTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	trip, err := h.svc.GetTrip(r.Context(), tripId.String(), userID)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限存取此行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusNotFound, "找不到行程")
+		sendError(w, err)
 		return
 	}
 
@@ -102,13 +99,13 @@ func (h *TripHandler) GetTrip(w http.ResponseWriter, r *http.Request, tripId ope
 func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.TripUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -116,11 +113,7 @@ func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId 
 
 	updatedTrip, err := h.svc.UpdateTrip(r.Context(), tripId.String(), userID, svcReq)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限更新此行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "更新行程失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -132,21 +125,13 @@ func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId 
 func (h *TripHandler) DeleteTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.svc.DeleteTrip(r.Context(), tripId.String(), userID)
 	if err != nil {
-		if err == service.ErrCannotRemoveCreator {
-			sendErrorResponse(w, http.StatusBadRequest, "無法移除行程建立者")
-			return
-		}
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "只有建立者可以刪除行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "刪除失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -162,13 +147,13 @@ func (h *TripHandler) DeleteTrip(w http.ResponseWriter, r *http.Request, tripId 
 func (h *TripHandler) ListTripMembers(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	members, err := h.svc.ListMembers(r.Context(), tripId.String(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusForbidden, "無權限存取成員列表")
+		sendError(w, err)
 		return
 	}
 
@@ -185,19 +170,19 @@ func (h *TripHandler) ListTripMembers(w http.ResponseWriter, r *http.Request, tr
 func (h *TripHandler) AddTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.AddMemberRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
 	member, err := h.svc.AddMember(r.Context(), tripId.String(), userID, string(req.Email))
 	if err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "無法新增成員: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -209,21 +194,13 @@ func (h *TripHandler) AddTripMember(w http.ResponseWriter, r *http.Request, trip
 func (h *TripHandler) RemoveTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, targetUserId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.svc.RemoveMember(r.Context(), tripId.String(), userID, targetUserId.String())
 	if err != nil {
-		if err == service.ErrCannotRemoveCreator {
-			sendErrorResponse(w, http.StatusBadRequest, "無法移除行程建立者")
-			return
-		}
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "只有建立者可以移除其他成員")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "移除成員失敗")
+		sendError(w, err)
 		return
 	}
 
@@ -239,13 +216,13 @@ func (h *TripHandler) RemoveTripMember(w http.ResponseWriter, r *http.Request, t
 func (h *TripHandler) ListItinerary(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	items, err := h.svc.ListItinerary(r.Context(), tripId.String(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusForbidden, "無權限存取行程表")
+		sendError(w, err)
 		return
 	}
 
@@ -262,13 +239,13 @@ func (h *TripHandler) ListItinerary(w http.ResponseWriter, r *http.Request, trip
 func (h *TripHandler) AddItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.ItineraryItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -276,7 +253,7 @@ func (h *TripHandler) AddItineraryItem(w http.ResponseWriter, r *http.Request, t
 
 	item, err := h.svc.AddItineraryItem(r.Context(), tripId.String(), userID, &svcReq)
 	if err != nil {
-		sendErrorResponse(w, http.StatusForbidden, "無法新增: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -288,13 +265,13 @@ func (h *TripHandler) AddItineraryItem(w http.ResponseWriter, r *http.Request, t
 func (h *TripHandler) UpdateItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.ItineraryItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -302,7 +279,7 @@ func (h *TripHandler) UpdateItineraryItem(w http.ResponseWriter, r *http.Request
 
 	item, err := h.svc.UpdateItineraryItem(r.Context(), tripId.String(), itemId.String(), userID, &svcReq)
 	if err != nil {
-		sendErrorResponse(w, http.StatusForbidden, "無法更新: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -314,22 +291,18 @@ func (h *TripHandler) UpdateItineraryItem(w http.ResponseWriter, r *http.Request
 func (h *TripHandler) DeleteItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.svc.DeleteItineraryItem(r.Context(), tripId.String(), itemId.String(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusForbidden, "無法刪除: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
-// ------------------------------------------------------------------
-// Converters
-// ------------------------------------------------------------------
 
 // ------------------------------------------------------------------
 // Helpers

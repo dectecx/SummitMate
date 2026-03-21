@@ -5,13 +5,9 @@ import (
 	"errors"
 	"time"
 
+	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
-)
-
-var (
-	ErrUnauthorizedTripAccess = errors.New("unauthorized access to trip")
-	ErrCannotRemoveCreator    = errors.New("cannot remove the creator from the trip")
 )
 
 // TripService 封裝行程相關的業務邏輯。
@@ -74,10 +70,13 @@ func (s *TripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 func (s *TripService) GetTrip(ctx context.Context, tripID, userID string) (*model.Trip, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, apperror.ErrTripNotFound
+		}
 		return nil, err
 	}
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 	return trip, nil
 }
@@ -90,10 +89,13 @@ func (s *TripService) ListTrips(ctx context.Context, userID string) ([]*model.Tr
 func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*model.Trip, error) {
 	existingTrip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, apperror.ErrTripNotFound
+		}
 		return nil, err
 	}
 	if existingTrip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	// 更新允許被修改的欄位
@@ -126,10 +128,13 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return apperror.ErrTripNotFound
+		}
 		return err
 	}
 	if trip.UserID != userID {
-		return ErrUnauthorizedTripAccess
+		return apperror.ErrAccessDenied
 	}
 	return s.tripRepo.DeleteByID(ctx, tripID)
 }
@@ -142,7 +147,7 @@ func (s *TripService) ListMembers(ctx context.Context, tripID, userID string) ([
 		return nil, err
 	}
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 	return s.memberRepo.ListByTripID(ctx, tripID)
 }
@@ -154,12 +159,15 @@ func (s *TripService) AddMember(ctx context.Context, tripID, userID, targetEmail
 	}
 	// 驗證是否有權限新增 (只有成員或建立者可以邀人)
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	// 找尋目標使用者
 	targetUser, err := s.userRepo.GetByEmail(ctx, targetEmail)
 	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, apperror.ErrResourceNotFound.WithMessage("找不到該使用者")
+		}
 		return nil, err
 	}
 
@@ -179,7 +187,7 @@ func (s *TripService) AddMember(ctx context.Context, tripID, userID, targetEmail
 			return m, nil
 		}
 	}
-	return nil, errors.New("failed to find member after adding")
+	return nil, apperror.InternalError("新增成員後查詢失敗")
 }
 
 func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error {
@@ -191,12 +199,12 @@ func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 	// 如果自己退出就可以，如果是要踢人則必須是 Creator
 	isSelfExit := actionUserID == targetUserID
 	if !isSelfExit && trip.UserID != actionUserID {
-		return ErrUnauthorizedTripAccess
+		return apperror.ErrAccessDenied
 	}
 
 	// 不得移除 Creator
 	if trip.UserID == targetUserID {
-		return ErrCannotRemoveCreator
+		return apperror.ErrCannotRemoveOwner
 	}
 
 	return s.memberRepo.RemoveMember(ctx, tripID, targetUserID)
@@ -210,7 +218,7 @@ func (s *TripService) ListItinerary(ctx context.Context, tripID, userID string) 
 		return nil, err
 	}
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 	return s.itineraryRepo.ListByTripID(ctx, tripID)
 }
@@ -221,7 +229,7 @@ func (s *TripService) AddItineraryItem(ctx context.Context, tripID, userID strin
 		return nil, err
 	}
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	item := &model.ItineraryItem{
@@ -246,16 +254,16 @@ func (s *TripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, u
 		return nil, err
 	}
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	existingItem, err := s.itineraryRepo.GetByID(ctx, itemID)
 	if err != nil {
-		return nil, err
+		return nil, apperror.ErrResourceNotFound.WithMessage("找不到行程表項目")
 	}
 
 	if existingItem.TripID != tripID {
-		return nil, errors.New("itinerary item does not belong to this trip")
+		return nil, apperror.ErrBadRequest.WithMessage("行程表項目不屬於此行程")
 	}
 
 	existingItem.Day = req.Day
@@ -276,15 +284,15 @@ func (s *TripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 		return err
 	}
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return ErrUnauthorizedTripAccess
+		return apperror.ErrAccessDenied
 	}
 
 	existingItem, err := s.itineraryRepo.GetByID(ctx, itemID)
 	if err != nil {
-		return err
+		return apperror.ErrResourceNotFound.WithMessage("找不到行程表項目")
 	}
 	if existingItem.TripID != tripID {
-		return errors.New("itinerary item does not belong to this trip")
+		return apperror.ErrBadRequest.WithMessage("行程表項目不屬於此行程")
 	}
 
 	return s.itineraryRepo.DeleteByID(ctx, itemID)

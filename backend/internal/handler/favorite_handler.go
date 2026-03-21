@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/service"
@@ -23,13 +24,13 @@ func NewFavoriteHandler(service *service.FavoriteService) *FavoriteHandler {
 func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	favs, err := h.service.ListFavorites(r.Context(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "無法取得收藏列表")
+		sendError(w, err)
 		return
 	}
 
@@ -43,19 +44,19 @@ func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) 
 func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.FavoriteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
 	fav, err := h.service.AddFavorite(r.Context(), userID, req.TargetId.String(), req.Type)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "新增收藏失敗")
+		sendError(w, err)
 		return
 	}
 
@@ -65,13 +66,13 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.service.RemoveFavorite(r.Context(), targetID.String(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusNotFound, "找不到該收藏")
+		sendError(w, err)
 		return
 	}
 

@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
+
+	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
 )
@@ -36,7 +37,7 @@ func NewGroupEventService(repo repository.GroupEventRepository) GroupEventServic
 
 func (s *groupEventService) CreateEvent(ctx context.Context, event *model.GroupEvent) error {
 	if event.Title == "" {
-		return errors.New("title is required")
+		return apperror.ErrBadRequest.WithMessage("活動標題為必填")
 	}
 	event.Status = "open"
 	return s.repo.CreateEvent(ctx, event)
@@ -56,10 +57,10 @@ func (s *groupEventService) UpdateEvent(ctx context.Context, event *model.GroupE
 		return err
 	}
 	if existing == nil {
-		return errors.New("event not found")
+		return apperror.ErrEventNotFound
 	}
 	if existing.CreatedBy != userID {
-		return errors.New("permission denied")
+		return apperror.ErrEventAccessDenied
 	}
 
 	event.UpdatedBy = userID
@@ -72,10 +73,10 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 		return err
 	}
 	if existing == nil {
-		return errors.New("event not found")
+		return apperror.ErrEventNotFound
 	}
 	if existing.CreatedBy != userID {
-		return errors.New("permission denied")
+		return apperror.ErrEventAccessDenied
 	}
 
 	return s.repo.DeleteEvent(ctx, id)
@@ -87,10 +88,10 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *model.GroupEv
 		return err
 	}
 	if event == nil {
-		return errors.New("event not found")
+		return apperror.ErrEventNotFound
 	}
 	if event.Status != "open" {
-		return fmt.Errorf("event is currently %s", event.Status)
+		return apperror.New(400, apperror.TypeBusinessLogic, "event_not_open", fmt.Sprintf("活動目前狀態為 %s，無法報名", event.Status))
 	}
 
 	// In a real app, check if user already applied or is already a member
@@ -108,10 +109,10 @@ func (s *groupEventService) ListApplications(ctx context.Context, id string, use
 		return nil, err
 	}
 	if event == nil {
-		return nil, errors.New("event not found")
+		return nil, apperror.ErrEventNotFound
 	}
 	if event.CreatedBy != userID {
-		return nil, errors.New("permission denied")
+		return nil, apperror.ErrEventAccessDenied
 	}
 
 	return s.repo.ListApplications(ctx, id)
@@ -123,10 +124,10 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 		return err
 	}
 	if event == nil {
-		return errors.New("event not found")
+		return apperror.ErrEventNotFound
 	}
 	if event.CreatedBy != executorID {
-		return errors.New("permission denied")
+		return apperror.ErrEventAccessDenied
 	}
 
 	return s.repo.UpdateApplicationStatus(ctx, eventID, userID, status, executorID)
@@ -134,7 +135,7 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 
 func (s *groupEventService) AddComment(ctx context.Context, comment *model.GroupEventComment) error {
 	if comment.Content == "" {
-		return errors.New("comment content cannot be empty")
+		return apperror.ErrBadRequest.WithMessage("留言內容不可為空")
 	}
 	comment.CreatedBy = comment.UserID
 	comment.UpdatedBy = comment.UserID

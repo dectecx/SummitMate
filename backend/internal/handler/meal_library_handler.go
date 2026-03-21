@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/service"
@@ -20,12 +21,10 @@ func NewMealLibraryHandler(svc *service.MealLibraryService) *MealLibraryHandler 
 	return &MealLibraryHandler{svc: svc}
 }
 
-// ListMealLibrary 取得使用者的個人食物庫列表
-// (GET /meal-library)
 func (h *MealLibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Request, params api.ListMealLibraryParams) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
@@ -36,7 +35,7 @@ func (h *MealLibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Requ
 
 	items, err := h.svc.ListItems(r.Context(), userID, includeArchived)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "查詢失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -48,18 +47,16 @@ func (h *MealLibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Requ
 	sendJSON(w, http.StatusOK, res)
 }
 
-// CreateMealLibraryItem 新增個人食物至庫中
-// (POST /meal-library)
 func (h *MealLibraryHandler) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.MealLibraryItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -67,43 +64,39 @@ func (h *MealLibraryHandler) CreateMealLibraryItem(w http.ResponseWriter, r *htt
 
 	createdItem, err := h.svc.CreateItem(r.Context(), userID, &modelReq)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "建立失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
 	sendJSON(w, http.StatusCreated, mapping.ToMealLibraryItemResponse(createdItem))
 }
 
-// GetMealLibraryItem 取得單一食物詳情
-// (GET /meal-library/{itemId})
 func (h *MealLibraryHandler) GetMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	item, err := h.svc.GetItem(r.Context(), itemId.String(), userID)
 	if err != nil {
-		sendErrorResponse(w, http.StatusNotFound, "找不到該食物")
+		sendError(w, err)
 		return
 	}
 
 	sendJSON(w, http.StatusOK, mapping.ToMealLibraryItemResponse(item))
 }
 
-// UpdateMealLibraryItem 更新個人食物資料
-// (PUT /meal-library/{itemId})
 func (h *MealLibraryHandler) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.MealLibraryItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -111,24 +104,22 @@ func (h *MealLibraryHandler) UpdateMealLibraryItem(w http.ResponseWriter, r *htt
 
 	updatedItem, err := h.svc.UpdateItem(r.Context(), itemId.String(), userID, &modelReq)
 	if err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "更新失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
 	sendJSON(w, http.StatusOK, mapping.ToMealLibraryItemResponse(updatedItem))
 }
 
-// DeleteMealLibraryItem 刪除個人食物
-// (DELETE /meal-library/{itemId})
 func (h *MealLibraryHandler) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	if err := h.svc.DeleteItem(r.Context(), itemId.String(), userID); err != nil {
-		sendErrorResponse(w, http.StatusInternalServerError, "刪除失敗")
+		sendError(w, err)
 		return
 	}
 

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
 )
@@ -23,14 +24,14 @@ func NewTripGearService(repo *repository.TripGearRepository, tripRepo *repositor
 
 func (s *TripGearService) ListItems(ctx context.Context, tripID, userID string) ([]*model.TripGearItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 	return s.repo.ListByTripID(ctx, tripID)
 }
 
 func (s *TripGearService) CreateItem(ctx context.Context, tripID, userID string, req *model.TripGearItem) (*model.TripGearItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 	req.TripID = tripID
 	req.CreatedBy = userID
@@ -40,7 +41,7 @@ func (s *TripGearService) CreateItem(ctx context.Context, tripID, userID string,
 
 func (s *TripGearService) UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripGearItem) (*model.TripGearItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 	req.ID = itemID
 	req.TripID = tripID
@@ -50,7 +51,7 @@ func (s *TripGearService) UpdateItem(ctx context.Context, tripID, itemID, userID
 
 func (s *TripGearService) DeleteItem(ctx context.Context, tripID, itemID, userID string) error {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return ErrUnauthorizedTripAccess
+		return apperror.ErrAccessDenied
 	}
 	return s.repo.Delete(ctx, itemID, tripID)
 }

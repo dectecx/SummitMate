@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/service"
@@ -20,22 +21,16 @@ func NewTripGearHandler(svc *service.TripGearService) *TripGearHandler {
 	return &TripGearHandler{svc: svc}
 }
 
-// ListTripGear 取得該行程的所有裝備
-// (GET /trips/{tripId}/gear)
 func (h *TripGearHandler) ListTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	items, err := h.svc.ListItems(r.Context(), tripId.String(), userID)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "查詢失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
@@ -47,18 +42,16 @@ func (h *TripGearHandler) ListTripGear(w http.ResponseWriter, r *http.Request, t
 	sendJSON(w, http.StatusOK, res)
 }
 
-// AddTripGear 將裝備加入至該行程
-// (POST /trips/{tripId}/gear)
 func (h *TripGearHandler) AddTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.TripGearItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -66,29 +59,23 @@ func (h *TripGearHandler) AddTripGear(w http.ResponseWriter, r *http.Request, tr
 
 	createdItem, err := h.svc.CreateItem(r.Context(), tripId.String(), userID, &modelReq)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "建立失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
 	sendJSON(w, http.StatusCreated, mapping.ToTripGearItemResponse(createdItem))
 }
 
-// UpdateTripGear 更新行程中的裝備
-// (PUT /trips/{tripId}/gear/{itemId})
 func (h *TripGearHandler) UpdateTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.TripGearItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數格式錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -96,32 +83,22 @@ func (h *TripGearHandler) UpdateTripGear(w http.ResponseWriter, r *http.Request,
 
 	updatedItem, err := h.svc.UpdateItem(r.Context(), tripId.String(), itemId.String(), userID, &modelReq)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "更新失敗: "+err.Error())
+		sendError(w, err)
 		return
 	}
 
 	sendJSON(w, http.StatusOK, mapping.ToTripGearItemResponse(updatedItem))
 }
 
-// RemoveTripGear 將裝備從行程中移除
-// (DELETE /trips/{tripId}/gear/{itemId})
 func (h *TripGearHandler) RemoveTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未登入")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	if err := h.svc.DeleteItem(r.Context(), tripId.String(), itemId.String(), userID); err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "刪除失敗")
+		sendError(w, err)
 		return
 	}
 
