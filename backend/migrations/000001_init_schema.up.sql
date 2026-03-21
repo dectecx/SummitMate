@@ -328,6 +328,10 @@ CREATE TABLE logs (
     message     TEXT
 );
 
+CREATE INDEX idx_logs_timestamp ON logs (timestamp);
+CREATE INDEX idx_logs_level ON logs (level);
+
+
 CREATE TABLE heartbeats (
     user_id   UUID PRIMARY KEY REFERENCES users(id),
     user_type VARCHAR(20),
