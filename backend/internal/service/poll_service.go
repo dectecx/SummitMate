@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+
+	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
 )
@@ -22,7 +24,7 @@ func NewPollService(repo repository.PollRepository, tripRepo *repository.TripRep
 
 func (s *PollService) CreateTripPoll(ctx context.Context, tripID, userID string, poll *model.Poll) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	poll.TripID = tripID
@@ -38,7 +40,7 @@ func (s *PollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 
 func (s *PollService) ListTripPolls(ctx context.Context, tripID, userID string) ([]*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	return s.repo.ListTripPolls(ctx, tripID)
@@ -46,7 +48,7 @@ func (s *PollService) ListTripPolls(ctx context.Context, tripID, userID string) 
 
 func (s *PollService) GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	poll, err := s.repo.GetPollByID(ctx, pollID)
@@ -54,7 +56,7 @@ func (s *PollService) GetTripPoll(ctx context.Context, tripID, pollID, userID st
 		return nil, err
 	}
 	if poll == nil || poll.TripID != tripID {
-		return nil, ErrNotFound
+		return nil, apperror.ErrResourceNotFound.WithMessage("找不到投票活動")
 	}
 	return poll, nil
 }
@@ -65,14 +67,14 @@ func (s *PollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 		return err
 	}
 	if poll == nil || poll.TripID != tripID {
-		return ErrNotFound
+		return apperror.ErrResourceNotFound.WithMessage("找不到投票活動")
 	}
 
 	// Only creator of poll or creator of trip can delete poll
 	if poll.CreatedBy != userID {
 		trip, err := s.tripRepo.GetByID(ctx, tripID)
 		if err != nil || trip == nil || trip.UserID != userID {
-			return ErrUnauthorizedTripAccess
+			return apperror.ErrAccessDenied
 		}
 	}
 
@@ -81,7 +83,7 @@ func (s *PollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 
 func (s *PollService) AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	poll, err := s.repo.GetPollByID(ctx, pollID)
@@ -89,11 +91,11 @@ func (s *PollService) AddPollOption(ctx context.Context, tripID, pollID, userID 
 		return nil, err
 	}
 	if poll == nil || poll.TripID != tripID {
-		return nil, ErrNotFound
+		return nil, apperror.ErrResourceNotFound.WithMessage("找不到投票活動")
 	}
 
 	if !poll.IsAllowAddOption && poll.CreatedBy != userID {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	opt := &model.PollOption{
@@ -112,7 +114,7 @@ func (s *PollService) AddPollOption(ctx context.Context, tripID, pollID, userID 
 
 func (s *PollService) VoteOption(ctx context.Context, tripID, pollID, optionID, userID string) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	poll, err := s.repo.GetPollByID(ctx, pollID)
@@ -120,11 +122,11 @@ func (s *PollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 		return nil, err
 	}
 	if poll == nil || poll.TripID != tripID {
-		return nil, ErrNotFound
+		return nil, apperror.ErrResourceNotFound.WithMessage("找不到投票活動")
 	}
 
 	if poll.Status != "open" {
-		return nil, ErrNotFound // or ErrInvalidState
+		return nil, apperror.ErrResourceNotFound.WithMessage("投票活動已結束")
 	}
 
 	err = s.repo.VoteOption(ctx, pollID, optionID, userID, poll.AllowMultipleVotes)

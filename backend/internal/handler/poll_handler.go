@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"summitmate/api"
+	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
@@ -24,17 +25,13 @@ func NewPollHandler(service *service.PollService) *PollHandler {
 func (h *PollHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	polls, err := h.service.ListTripPolls(r.Context(), tripID.String(), userID)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "無法取得投票活動")
+		sendError(w, err)
 		return
 	}
 
@@ -48,13 +45,13 @@ func (h *PollHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, trip
 func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.PollRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -79,11 +76,7 @@ func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tri
 
 	created, err := h.service.CreateTripPoll(r.Context(), tripID.String(), userID, poll)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "建立投票活動失敗")
+		sendError(w, err)
 		return
 	}
 
@@ -93,21 +86,13 @@ func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tri
 func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	poll, err := h.service.GetTripPoll(r.Context(), tripID.String(), pollID.String(), userID)
 	if err != nil {
-		if err == service.ErrNotFound {
-			sendErrorResponse(w, http.StatusNotFound, "找不到投票活動")
-			return
-		}
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "查詢失敗")
+		sendError(w, err)
 		return
 	}
 	sendJSON(w, http.StatusOK, mapping.ToPollResponse(poll))
@@ -116,21 +101,13 @@ func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID
 func (h *PollHandler) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.service.DeleteTripPoll(r.Context(), tripID.String(), pollID.String(), userID)
 	if err != nil {
-		if err == service.ErrNotFound {
-			sendErrorResponse(w, http.StatusNotFound, "找不到投票活動")
-			return
-		}
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "刪除失敗")
+		sendError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -139,23 +116,19 @@ func (h *PollHandler) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tri
 func (h *PollHandler) AddPollOption(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.PollOptionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
 	poll, err := h.service.AddPollOption(r.Context(), tripID.String(), pollID.String(), userID, req.Text)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "新增選項失敗")
+		sendError(w, err)
 		return
 	}
 	sendJSON(w, http.StatusCreated, mapping.ToPollResponse(poll))
@@ -164,21 +137,13 @@ func (h *PollHandler) AddPollOption(w http.ResponseWriter, r *http.Request, trip
 func (h *PollHandler) VotePollOption(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID, optionID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	poll, err := h.service.VoteOption(r.Context(), tripID.String(), pollID.String(), optionID.String(), userID)
 	if err != nil {
-		if err == service.ErrNotFound {
-			sendErrorResponse(w, http.StatusNotFound, "找不到投票活動的選項或活動已結束")
-			return
-		}
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "投票失敗")
+		sendError(w, err)
 		return
 	}
 	sendJSON(w, http.StatusOK, mapping.ToPollResponse(poll))

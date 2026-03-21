@@ -2,23 +2,58 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
+
+	"summitmate/internal/apperror"
 
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// sendJSON 送出成功回應 (2xx)
 func sendJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
 }
 
-func sendErrorResponse(w http.ResponseWriter, status int, message string) {
-	sendJSON(w, status, struct {
-		Message string `json:"message"`
-	}{Message: message})
+// errorBody 是錯誤回應的 JSON 結構 (包裝在 "error" 根物件中)
+type errorBody struct {
+	Type    string `json:"type"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message"`
+	Param   string `json:"param,omitempty"`
+}
+
+type errorEnvelope struct {
+	Error errorBody `json:"error"`
+}
+
+// sendError 送出標準化的錯誤回應。
+// 自動辨識 *apperror.AppError，未知錯誤預設為 500。
+func sendError(w http.ResponseWriter, err error) {
+	var appErr *apperror.AppError
+	if errors.As(err, &appErr) {
+		sendJSON(w, appErr.HTTPStatus, errorEnvelope{
+			Error: errorBody{
+				Type:    appErr.Type,
+				Code:    appErr.Code,
+				Message: appErr.Message,
+				Param:   appErr.Param,
+			},
+		})
+		return
+	}
+
+	// 未預期錯誤 → 500 server_error
+	sendJSON(w, http.StatusInternalServerError, errorEnvelope{
+		Error: errorBody{
+			Type:    apperror.TypeServer,
+			Message: "伺服器內部錯誤",
+		},
+	})
 }
 
 func toOpenAPIUUID(s string) openapi_types.UUID {

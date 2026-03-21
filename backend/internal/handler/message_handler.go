@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"summitmate/api"
+	"summitmate/internal/apperror"
 	"summitmate/internal/handler/mapping"
 	"summitmate/internal/middleware"
 	"summitmate/internal/model"
@@ -25,17 +26,13 @@ func NewMessageHandler(service *service.MessageService) *MessageHandler {
 func (h *MessageHandler) ListTripMessages(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	messages, err := h.service.ListTripMessages(r.Context(), tripID.String(), userID)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限存取該行程留言")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "無法取得留言")
+		sendError(w, err)
 		return
 	}
 
@@ -49,13 +46,13 @@ func (h *MessageHandler) ListTripMessages(w http.ResponseWriter, r *http.Request
 func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.MessageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -79,11 +76,7 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 
 	created, err := h.service.AddTripMessage(r.Context(), tripID.String(), userID, msg)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限新增留言")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "新增留言失敗")
+		sendError(w, err)
 		return
 	}
 
@@ -93,13 +86,13 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.MessageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendErrorResponse(w, http.StatusBadRequest, "參數錯誤")
+		sendError(w, apperror.ErrBadRequest)
 		return
 	}
 
@@ -115,15 +108,7 @@ func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Reques
 
 	updated, err := h.service.UpdateTripMessage(r.Context(), tripID.String(), messageID.String(), userID, msg)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限編輯此留言")
-			return
-		}
-		if err == service.ErrNotFound {
-			sendErrorResponse(w, http.StatusNotFound, "找不到該留言")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "更新留言失敗")
+		sendError(w, err)
 		return
 	}
 
@@ -133,21 +118,13 @@ func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Reques
 func (h *MessageHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendErrorResponse(w, http.StatusUnauthorized, "未授權")
+		sendError(w, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.service.DeleteTripMessage(r.Context(), tripID.String(), messageID.String(), userID)
 	if err != nil {
-		if err == service.ErrUnauthorizedTripAccess {
-			sendErrorResponse(w, http.StatusForbidden, "無權限刪除此留言")
-			return
-		}
-		if err == service.ErrNotFound {
-			sendErrorResponse(w, http.StatusNotFound, "找不到該留言")
-			return
-		}
-		sendErrorResponse(w, http.StatusInternalServerError, "刪除留言失敗")
+		sendError(w, err)
 		return
 	}
 

@@ -2,12 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
+
+	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
 )
-
-var ErrNotFound = errors.New("message not found")
 
 type MessageService struct {
 	repo       repository.MessageRepository
@@ -26,7 +25,7 @@ func NewMessageService(repo repository.MessageRepository, tripRepo *repository.T
 // ListTripMessages fetches messages and builds the reply tree structure.
 func (s *MessageService) ListTripMessages(ctx context.Context, tripID, userID string) ([]*model.TripMessage, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	messages, err := s.repo.ListTripMessages(ctx, tripID)
@@ -39,7 +38,7 @@ func (s *MessageService) ListTripMessages(ctx context.Context, tripID, userID st
 
 func (s *MessageService) AddTripMessage(ctx context.Context, tripID, userID string, msg *model.TripMessage) (*model.TripMessage, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied
 	}
 
 	msg.TripID = tripID
@@ -59,11 +58,11 @@ func (s *MessageService) UpdateTripMessage(ctx context.Context, tripID, messageI
 		return nil, err
 	}
 	if existing == nil || existing.TripID != tripID {
-		return nil, ErrNotFound
+		return nil, apperror.ErrResourceNotFound.WithMessage("找不到該留言")
 	}
 	// Only the author can edit their message
 	if existing.UserID != userID {
-		return nil, ErrUnauthorizedTripAccess
+		return nil, apperror.ErrAccessDenied.WithMessage("無權限編輯此留言")
 	}
 
 	msg.ID = messageID
@@ -83,14 +82,14 @@ func (s *MessageService) DeleteTripMessage(ctx context.Context, tripID, messageI
 		return err
 	}
 	if existing == nil || existing.TripID != tripID {
-		return ErrNotFound
+		return apperror.ErrResourceNotFound.WithMessage("找不到該留言")
 	}
 
 	// Only author or trip creator can delete
 	if existing.UserID != userID {
 		trip, err := s.tripRepo.GetByID(ctx, tripID)
 		if err != nil || trip.UserID != userID {
-			return ErrUnauthorizedTripAccess
+			return apperror.ErrAccessDenied.WithMessage("無權限刪除此留言")
 		}
 	}
 

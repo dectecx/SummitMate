@@ -5,15 +5,10 @@ import (
 	"errors"
 	"time"
 
+	"summitmate/internal/apperror"
 	"summitmate/internal/auth"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
-)
-
-// 業務邏輯層的錯誤定義
-var (
-	ErrEmailAlreadyExists = errors.New("email already exists") // Email 已被註冊
-	ErrInvalidCredentials = errors.New("invalid credentials")  // 帳號或密碼錯誤
 )
 
 // AuthService 封裝認證相關的業務邏輯 (註冊、登入、取得使用者)。
@@ -41,7 +36,7 @@ func (svc *AuthService) Register(ctx context.Context, email, password, displayNa
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, email)
 	if err == nil {
-		return nil, "", ErrEmailAlreadyExists
+		return nil, "", apperror.ErrEmailExists
 	}
 	if !errors.Is(err, repository.ErrNotFound) {
 		return nil, "", err // 資料庫錯誤
@@ -84,14 +79,14 @@ func (svc *AuthService) Login(ctx context.Context, email, password string) (*mod
 	user, err := svc.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
-			return nil, "", ErrInvalidCredentials
+			return nil, "", apperror.ErrInvalidCredentials
 		}
 		return nil, "", err
 	}
 
 	// 驗證密碼
 	if !auth.CheckPasswordHash(password, user.PasswordHash) {
-		return nil, "", ErrInvalidCredentials
+		return nil, "", apperror.ErrInvalidCredentials
 	}
 
 	// 簽發 JWT Token (有效期 24 小時)
