@@ -114,6 +114,78 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    put:
+      summary: Update Current User Profile
+      description: 更新當前登入使用者的個人資料 (display_name, avatar)
+      operationId: updateCurrentUser
+      tags:
+        - auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 未登入或 Token 無效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      summary: Delete Current User Account
+      description: 軟刪除當前登入使用者的帳號 (設定 is_active = false)
+      operationId: deleteCurrentUser
+      tags:
+        - auth
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: 帳號已停用
+        "401":
+          description: 未登入或 Token 無效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/refresh:
+    post:
+      summary: Refresh JWT Token
+      description: 使用現有的 JWT Token 刷新取得新 Token
+      operationId: refreshToken
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Token 刷新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Token 無效或已過期
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 
   /trips:
     get:
@@ -2804,6 +2876,26 @@ components:
           type: string
           minLength: 1
           maxLength: 1000
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        avatar:
+          type: string
+          maxLength: 10
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: 現有的 JWT Token
 
     # ---------------------------------------------------------------
     # Response Aliases (strict naming for mapping layer)

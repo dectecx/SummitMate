@@ -78,6 +78,62 @@ func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *
 	sendJSON(writer, http.StatusOK, mapping.ToUserResponse(user))
 }
 
+// UpdateCurrentUser 處理 PUT /auth/me 請求。
+func (handler *AuthHandler) UpdateCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	userID, ok := request.Context().Value(mw.UserIDKey).(string)
+	if !ok || userID == "" {
+		sendError(writer, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req api.UpdateProfileRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		sendError(writer, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		return
+	}
+
+	user, err := handler.authService.UpdateProfile(request.Context(), userID, req.DisplayName, req.Avatar)
+	if err != nil {
+		sendError(writer, err)
+		return
+	}
+
+	sendJSON(writer, http.StatusOK, mapping.ToUserResponse(user))
+}
+
+// DeleteCurrentUser 處理 DELETE /auth/me 請求。
+func (handler *AuthHandler) DeleteCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	userID, ok := request.Context().Value(mw.UserIDKey).(string)
+	if !ok || userID == "" {
+		sendError(writer, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := handler.authService.DeleteAccount(request.Context(), userID); err != nil {
+		sendError(writer, err)
+		return
+	}
+
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+// RefreshToken 處理 POST /auth/refresh 請求。
+func (handler *AuthHandler) RefreshToken(writer http.ResponseWriter, request *http.Request) {
+	var req api.RefreshTokenRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		sendError(writer, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		return
+	}
+
+	user, token, err := handler.authService.RefreshToken(request.Context(), req.Token)
+	if err != nil {
+		sendError(writer, err)
+		return
+	}
+
+	writeAuthResponse(writer, http.StatusOK, user, token)
+}
+
 // --- 回應輔助函式 ---
 
 func writeAuthResponse(writer http.ResponseWriter, statusCode int, user *model.User, token string) {
