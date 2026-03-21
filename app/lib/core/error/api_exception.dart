@@ -1,3 +1,4 @@
+import 'package:summitmate/core/error/app_error.dart';
 import 'result.dart';
 
 /// 對應後端 error.type 分類
@@ -22,8 +23,6 @@ enum ApiErrorType {
 }
 
 /// 後端標準化錯誤回應的 Dart 對應
-///
-/// 解析 `{"error": {"type": "...", "code": "...", "message": "...", "param": "..."}}`
 class ApiException extends AppException {
   final ApiErrorType type;
   final String? param;
@@ -37,26 +36,27 @@ class ApiException extends AppException {
     required this.statusCode,
   }) : super(message, code: code);
 
-  /// 從 HTTP response body 解析
-  ///
-  /// [statusCode] HTTP 狀態碼
-  /// [body] response.data (Map)
-  factory ApiException.fromResponse(int statusCode, Map<String, dynamic> body) {
-    final error = body['error'] as Map<String, dynamic>? ?? {};
+  /// 建立從 AppError 轉換的實例
+  factory ApiException.fromAppError(int statusCode, AppError error) {
     return ApiException(
-      type: ApiErrorType.fromString(error['type'] as String? ?? ''),
-      code: error['code'] as String? ?? 'unknown',
-      message: error['message'] as String? ?? '發生未知錯誤',
-      param: error['param'] as String?,
+      type: ApiErrorType.fromString(error.type),
+      code: error.code,
+      message: error.message,
+      param: error.param,
       statusCode: statusCode,
     );
   }
 
-  /// 嘗試從 response body 解析，解析失敗回傳 null
+  /// 嘗試從 response body 解析，後端格式為 {"error": {"type": "...", ...}}
   static ApiException? tryParse(int? statusCode, dynamic data) {
     if (statusCode == null || data is! Map<String, dynamic>) return null;
-    if (data['error'] is! Map<String, dynamic>) return null;
-    return ApiException.fromResponse(statusCode, data);
+
+    if (data.containsKey('error') && data['error'] is Map<String, dynamic>) {
+      final appError = AppError.fromJson(data['error'] as Map<String, dynamic>);
+      return ApiException.fromAppError(statusCode, appError);
+    }
+
+    return null;
   }
 
   bool get isAuthError => type == ApiErrorType.authError;

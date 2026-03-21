@@ -32,7 +32,7 @@ void main() {
       );
 
       expect(find.text('新增成員'), findsOneWidget);
-      expect(find.text('請輸入 Email'), findsOneWidget);
+      expect(find.text('輸入使用者 Email'), findsOneWidget);
       expect(find.text('搜尋'), findsOneWidget);
     });
 
@@ -65,7 +65,7 @@ void main() {
       await tester.pump(); // For Future completion
 
       expect(find.text('Test User'), findsOneWidget);
-      expect(find.text('加入'), findsOneWidget);
+      expect(find.text('確認加入'), findsOneWidget);
     });
   });
 }

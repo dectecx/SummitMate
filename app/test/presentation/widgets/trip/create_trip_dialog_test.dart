@@ -80,7 +80,7 @@ void main() {
       await tester.enterText(find.widgetWithText(TextFormField, '行程名稱'), 'New Adventure');
       await tester.pump();
 
-      await tester.tap(find.widgetWithText(FilledButton, '新增'));
+      await tester.tap(find.widgetWithText(FilledButton, '建立行程'));
       await tester.pump();
 
       verify(
@@ -100,7 +100,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.widgetWithText(FilledButton, '新增'));
+      await tester.tap(find.widgetWithText(FilledButton, '建立行程'));
       await tester.pump();
 
       expect(find.text('請輸入行程名稱'), findsOneWidget);
