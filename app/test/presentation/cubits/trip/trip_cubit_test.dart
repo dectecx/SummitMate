@@ -265,7 +265,7 @@ void main() {
 
       expect(result, true);
       verify(() => mockTripRepository.uploadTripToRemote(trip1)).called(1);
-      verify(() => mockItineraryRepository.sync('mock-id')).called(1);
+      verify(() => mockItineraryRepository.sync('trip1')).called(1);
     });
 
     test('loadTrips emits TripError on failure', () async {
