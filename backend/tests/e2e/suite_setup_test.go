@@ -49,6 +49,7 @@ type testServer struct {
 	groupHandler    *handler.GroupEventHandler
 	weatherHandler  *handler.WeatherHandler
 	logHandler      *handler.LogHandler
+	heartbeatHandler *handler.HeartbeatHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -515,6 +516,11 @@ func (srv testServer) UploadLogs(w http.ResponseWriter, r *http.Request) {
 	jwtAuth(http.HandlerFunc(srv.logHandler.UploadLogs)).ServeHTTP(w, r)
 }
 
+func (srv testServer) Heartbeat(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.heartbeatHandler.Heartbeat)).ServeHTTP(w, r)
+}
+
 // APITestSuite 定義了 E2E 測試的 Suite
 type APITestSuite struct {
 	suite.Suite
@@ -581,6 +587,7 @@ func (s *APITestSuite) SetupSuite() {
 	favoriteRepo := repository.NewFavoriteRepository(pool)
 	groupRepo := repository.NewGroupEventRepository(pool)
 	weatherRepo := repository.NewWeatherRepository(pool)
+	heartbeatRepo := repository.NewHeartbeatRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
@@ -594,6 +601,7 @@ func (s *APITestSuite) SetupSuite() {
 	favoriteService := service.NewFavoriteService(favoriteRepo)
 	groupService := service.NewGroupEventService(groupRepo)
 	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
+	heartbeatService := service.NewHeartbeatService(heartbeatRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -609,6 +617,7 @@ func (s *APITestSuite) SetupSuite() {
 	logRepo := repository.NewLogRepository(pool)
 	logService := service.NewLogService(logRepo)
 	logHandler := handler.NewLogHandler(logService)
+	heartbeatHandler := handler.NewHeartbeatHandler(heartbeatService)
 
 	srv := testServer{
 		authHandler:     authHandler,
@@ -623,6 +632,7 @@ func (s *APITestSuite) SetupSuite() {
 		groupHandler:    groupHandler,
 		weatherHandler:  weatherHandler,
 		logHandler:      logHandler,
+		heartbeatHandler: heartbeatHandler,
 		tokenManager:    tokenManager,
 	}
 
@@ -678,6 +688,7 @@ func (s *APITestSuite) SetupTest() {
 		DELETE FROM trip_members;
 		DELETE FROM trips;
 		DELETE FROM users;
+		DELETE FROM heartbeats;
 	`
 	_, err := s.dbPool.Exec(ctx, cleanupSQL)
 	s.Require().NoError(err, "清理測試資料庫失敗")

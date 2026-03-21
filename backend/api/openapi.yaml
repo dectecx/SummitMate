@@ -2010,6 +2010,26 @@ paths:
         "400":
           description: 格式錯誤
 
+  /heartbeat:
+    post:
+      tags: [system]
+      summary: 發送心跳訊號
+      description: 客戶端定期發送心跳以更新活躍狀態
+      operationId: heartbeat
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HeartbeatRequest"
+      responses:
+        "200":
+          description: 成功更新
+        "401":
+          description: 未授權
+
   # --- Weather ---
 
   /weather/hiking:
@@ -3291,3 +3311,17 @@ components:
         source:
           type: string
           nullable: true
+
+    HeartbeatRequest:
+      type: object
+      required: [user_type, view, platform]
+      properties:
+        user_type:
+          type: string
+          description: 使用者類型 (e.g. member, guest)
+        view:
+          type: string
+          description: 目前停留的畫面名稱
+        platform:
+          type: string
+          description: 作業平台 (e.g. android, ios, web)
