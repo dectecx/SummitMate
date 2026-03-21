@@ -26,13 +26,13 @@ func NewMessageHandler(service *service.MessageService) *MessageHandler {
 func (h *MessageHandler) ListTripMessages(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	messages, err := h.service.ListTripMessages(r.Context(), tripID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -46,13 +46,13 @@ func (h *MessageHandler) ListTripMessages(w http.ResponseWriter, r *http.Request
 func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.MessageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 
 	created, err := h.service.AddTripMessage(r.Context(), tripID.String(), userID, msg)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -86,13 +86,13 @@ func (h *MessageHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, 
 func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.MessageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -108,7 +108,7 @@ func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Reques
 
 	updated, err := h.service.UpdateTripMessage(r.Context(), tripID.String(), messageID.String(), userID, msg)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -118,13 +118,13 @@ func (h *MessageHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Reques
 func (h *MessageHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, messageID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.service.DeleteTripMessage(r.Context(), tripID.String(), messageID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 

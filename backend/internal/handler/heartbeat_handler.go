@@ -23,13 +23,13 @@ func NewHeartbeatHandler(svc *service.HeartbeatService) *HeartbeatHandler {
 func (h *HeartbeatHandler) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.HeartbeatRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -40,7 +40,7 @@ func (h *HeartbeatHandler) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.svc.HandleHeartbeat(r.Context(), userID, svcReq); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 

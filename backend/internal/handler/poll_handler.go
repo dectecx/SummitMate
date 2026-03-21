@@ -25,13 +25,13 @@ func NewPollHandler(service *service.PollService) *PollHandler {
 func (h *PollHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	polls, err := h.service.ListTripPolls(r.Context(), tripID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -45,13 +45,13 @@ func (h *PollHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, trip
 func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.PollRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tri
 
 	created, err := h.service.CreateTripPoll(r.Context(), tripID.String(), userID, poll)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -86,13 +86,13 @@ func (h *PollHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tri
 func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	poll, err := h.service.GetTripPoll(r.Context(), tripID.String(), pollID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 	sendJSON(w, http.StatusOK, mapping.ToPollResponse(poll))
@@ -101,13 +101,13 @@ func (h *PollHandler) GetTripPoll(w http.ResponseWriter, r *http.Request, tripID
 func (h *PollHandler) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.service.DeleteTripPoll(r.Context(), tripID.String(), pollID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -116,19 +116,19 @@ func (h *PollHandler) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tri
 func (h *PollHandler) AddPollOption(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.PollOptionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
 	poll, err := h.service.AddPollOption(r.Context(), tripID.String(), pollID.String(), userID, req.Text)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 	sendJSON(w, http.StatusCreated, mapping.ToPollResponse(poll))
@@ -137,13 +137,13 @@ func (h *PollHandler) AddPollOption(w http.ResponseWriter, r *http.Request, trip
 func (h *PollHandler) VotePollOption(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, pollID openapi_types.UUID, optionID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	poll, err := h.service.VoteOption(r.Context(), tripID.String(), pollID.String(), optionID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 	sendJSON(w, http.StatusOK, mapping.ToPollResponse(poll))

@@ -25,13 +25,13 @@ func NewTripMealHandler(svc *service.TripMealService) *TripMealHandler {
 func (h *TripMealHandler) ListTripMeals(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	items, err := h.svc.ListItems(r.Context(), tripId.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -46,13 +46,13 @@ func (h *TripMealHandler) ListTripMeals(w http.ResponseWriter, r *http.Request, 
 func (h *TripMealHandler) AddTripMeal(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.TripMealItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -60,7 +60,7 @@ func (h *TripMealHandler) AddTripMeal(w http.ResponseWriter, r *http.Request, tr
 
 	createdItem, err := h.svc.CreateItem(r.Context(), tripId.String(), userID, &modelReq)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -70,13 +70,13 @@ func (h *TripMealHandler) AddTripMeal(w http.ResponseWriter, r *http.Request, tr
 func (h *TripMealHandler) UpdateTripMeal(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.TripMealItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *TripMealHandler) UpdateTripMeal(w http.ResponseWriter, r *http.Request,
 
 	updatedItem, err := h.svc.UpdateItem(r.Context(), tripId.String(), itemId.String(), userID, &modelReq)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -94,12 +94,12 @@ func (h *TripMealHandler) UpdateTripMeal(w http.ResponseWriter, r *http.Request,
 func (h *TripMealHandler) RemoveTripMeal(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	if err := h.svc.DeleteItem(r.Context(), tripId.String(), itemId.String(), userID); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -109,13 +109,13 @@ func (h *TripMealHandler) RemoveTripMeal(w http.ResponseWriter, r *http.Request,
 func (h *TripMealHandler) ReplaceAllTripMeals(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var reqBody api.ReplaceAllTripMealsJSONBody
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (h *TripMealHandler) ReplaceAllTripMeals(w http.ResponseWriter, r *http.Req
 	}
 
 	if err := h.svc.ReplaceAllItems(r.Context(), tripId.String(), userID, items); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
