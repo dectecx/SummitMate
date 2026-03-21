@@ -34,6 +34,7 @@ type server struct {
 	favoriteHandler *handler.FavoriteHandler
 	groupHandler    *handler.GroupEventHandler
 	weatherHandler  *handler.WeatherHandler
+	logHandler      *handler.LogHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -510,6 +511,10 @@ func (srv server) GetHikingWeatherByLocation(w http.ResponseWriter, r *http.Requ
 	srv.weatherHandler.GetHikingWeatherByLocation(w, r, location)
 }
 
+func (srv server) UploadLogs(w http.ResponseWriter, r *http.Request) {
+	srv.logHandler.UploadLogs(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -551,6 +556,8 @@ func main() {
 	favoriteService := service.NewFavoriteService(favoriteRepo)
 	groupService := service.NewGroupEventService(groupRepo)
 	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
+	logRepo := repository.NewLogRepository(pool)
+	logService := service.NewLogService(logRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -563,6 +570,7 @@ func main() {
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 	groupHandler := handler.NewGroupEventHandler(groupService)
 	weatherHandler := handler.NewWeatherHandler(weatherService)
+	logHandler := handler.NewLogHandler(logService)
 
 	srv := server{
 		authHandler:     authHandler,
@@ -576,6 +584,7 @@ func main() {
 		favoriteHandler: favoriteHandler,
 		groupHandler:    groupHandler,
 		weatherHandler:  weatherHandler,
+		logHandler:      logHandler,
 		tokenManager:    tokenManager,
 	}
 

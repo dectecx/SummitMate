@@ -48,6 +48,7 @@ type testServer struct {
 	favoriteHandler *handler.FavoriteHandler
 	groupHandler    *handler.GroupEventHandler
 	weatherHandler  *handler.WeatherHandler
+	logHandler      *handler.LogHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -509,6 +510,11 @@ func (srv testServer) GetHikingWeatherByLocation(w http.ResponseWriter, r *http.
 	srv.weatherHandler.GetHikingWeatherByLocation(w, r, location)
 }
 
+func (srv testServer) UploadLogs(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.logHandler.UploadLogs)).ServeHTTP(w, r)
+}
+
 // APITestSuite 定義了 E2E 測試的 Suite
 type APITestSuite struct {
 	suite.Suite
@@ -600,6 +606,9 @@ func (s *APITestSuite) SetupSuite() {
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 	groupHandler := handler.NewGroupEventHandler(groupService)
 	weatherHandler := handler.NewWeatherHandler(weatherService)
+	logRepo := repository.NewLogRepository(pool)
+	logService := service.NewLogService(logRepo)
+	logHandler := handler.NewLogHandler(logService)
 
 	srv := testServer{
 		authHandler:     authHandler,
@@ -613,6 +622,7 @@ func (s *APITestSuite) SetupSuite() {
 		favoriteHandler: favoriteHandler,
 		groupHandler:    groupHandler,
 		weatherHandler:  weatherHandler,
+		logHandler:      logHandler,
 		tokenManager:    tokenManager,
 	}
 

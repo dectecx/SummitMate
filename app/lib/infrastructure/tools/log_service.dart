@@ -7,6 +7,9 @@ import '../../core/constants.dart';
 
 import 'hive_service.dart';
 
+import '../../core/di.dart';
+import '../clients/network_aware_client.dart';
+
 /// 日誌等級
 enum LogLevel { debug, info, warning, error }
 
@@ -223,7 +226,51 @@ class LogService {
 
   /// 上傳日誌到雲端
   static Future<(bool, String)> uploadToCloud({String? deviceName}) async {
-    // TODO: 待後端實作日誌上傳介面後在此串接
-    return (false, '功能開發中');
+    if (_box == null || _box!.isEmpty) {
+      return (true, '沒有日誌需要上傳');
+    }
+
+    try {
+      final apiClient = getIt<NetworkAwareClient>();
+
+      // 1. 準備所有日誌
+      final List<Map<String, dynamic>> logEntries = [];
+      final List<dynamic> keysToDelete = [];
+
+      for (var i = 0; i < _box!.length; i++) {
+        final jsonStr = _box!.getAt(i);
+        final key = _box!.keyAt(i);
+        if (jsonStr != null) {
+          final json = _parseJson(jsonStr);
+          if (json != null) {
+            logEntries.add(json);
+            keysToDelete.add(key);
+          }
+        }
+      }
+
+      if (logEntries.isEmpty) {
+        return (true, '沒有有效的日誌需要上傳');
+      }
+
+      // 2. 準備 Request
+      // TODO: 之後應評估是否引入 device_info_plus 以取得真實的 device_id
+      final payload = {'device_name': deviceName ?? 'Unknown Device', 'device_id': 'app-client', 'logs': logEntries};
+
+      // 3. 發送請求
+      final response = await apiClient.post('/logs', data: payload);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // 4. 上傳成功，清除已上傳的日誌
+        await _box!.deleteAll(keysToDelete);
+        _memoryLogs.clear(); // 同步清除記憶體
+        return (true, '成功上傳 ${logEntries.length} 條日誌');
+      } else {
+        return (false, '上傳失敗: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('上傳日誌例外: $e');
+      return (false, '上傳失敗: $e');
+    }
   }
 }

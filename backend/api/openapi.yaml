@@ -1978,6 +1978,38 @@ paths:
                   is_liked:
                     type: boolean
 
+  # --- Logs ---
+
+  /logs:
+    post:
+      tags: [system]
+      summary: 上傳系統日誌
+      description: 將客戶端日誌批次上傳至伺服器
+      operationId: uploadLogs
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogUploadRequest"
+      responses:
+        "200":
+          description: 上傳成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: 成功處理的日誌數量
+        "401":
+          description: 未授權
+        "400":
+          description: 格式錯誤
+
   # --- Weather ---
 
   /weather/hiking:
@@ -3230,3 +3262,32 @@ components:
         fetched_at:
           type: string
           format: date-time
+
+    LogUploadRequest:
+      type: object
+      required: [logs]
+      properties:
+        device_id:
+          type: string
+        device_name:
+          type: string
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogEntry"
+
+    LogEntry:
+      type: object
+      required: [timestamp, level, message]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: [debug, info, warning, error]
+        message:
+          type: string
+        source:
+          type: string
+          nullable: true
