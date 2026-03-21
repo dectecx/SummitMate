@@ -35,6 +35,7 @@ type server struct {
 	groupHandler    *handler.GroupEventHandler
 	weatherHandler  *handler.WeatherHandler
 	logHandler      *handler.LogHandler
+	heartbeatHandler *handler.HeartbeatHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -515,6 +516,11 @@ func (srv server) UploadLogs(w http.ResponseWriter, r *http.Request) {
 	srv.logHandler.UploadLogs(w, r)
 }
 
+func (srv server) Heartbeat(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.heartbeatHandler.Heartbeat)).ServeHTTP(w, r)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -542,6 +548,7 @@ func main() {
 	favoriteRepo := repository.NewFavoriteRepository(pool)
 	groupRepo := repository.NewGroupEventRepository(pool)
 	weatherRepo := repository.NewWeatherRepository(pool)
+	heartbeatRepo := repository.NewHeartbeatRepository(pool)
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
@@ -558,6 +565,7 @@ func main() {
 	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
 	logRepo := repository.NewLogRepository(pool)
 	logService := service.NewLogService(logRepo)
+	heartbeatService := service.NewHeartbeatService(heartbeatRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -571,6 +579,7 @@ func main() {
 	groupHandler := handler.NewGroupEventHandler(groupService)
 	weatherHandler := handler.NewWeatherHandler(weatherService)
 	logHandler := handler.NewLogHandler(logService)
+	heartbeatHandler := handler.NewHeartbeatHandler(heartbeatService)
 
 	srv := server{
 		authHandler:     authHandler,
@@ -585,6 +594,7 @@ func main() {
 		groupHandler:    groupHandler,
 		weatherHandler:  weatherHandler,
 		logHandler:      logHandler,
+		heartbeatHandler: heartbeatHandler,
 		tokenManager:    tokenManager,
 	}
 
