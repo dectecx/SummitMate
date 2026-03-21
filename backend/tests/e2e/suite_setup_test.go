@@ -616,7 +616,7 @@ func (s *APITestSuite) SetupSuite() {
 	groupHandler := handler.NewGroupEventHandler(groupService)
 	weatherHandler := handler.NewWeatherHandler(weatherService)
 	logRepo := repository.NewLogRepository(pool)
-	logService := service.NewLogService(logRepo)
+	logService := service.NewLogService(slog.Default(), logRepo)
 	logHandler := handler.NewLogHandler(logService)
 	heartbeatHandler := handler.NewHeartbeatHandler(heartbeatService)
 
