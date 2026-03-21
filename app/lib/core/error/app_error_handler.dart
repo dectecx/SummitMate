@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
+import 'api_exception.dart';
 import 'result.dart';
 
-/// 全域錯誤處理協助類別
-/// 負責將各種異常轉換為使用者可讀的訊息
+/// 全域錯誤處理
 class AppErrorHandler {
-  /// 取得使用者友善的錯誤訊息
+  /// 取得使用者可讀的錯誤訊息
   static String getUserMessage(Object error) {
     if (error is AppException) {
-      return error.message; // 應用程式自定義錯誤直接回傳
+      return error.message;
     }
 
     if (error is DioException) {
@@ -15,11 +15,18 @@ class AppErrorHandler {
     }
 
     if (error is Exception) {
-      // 移除 Exception: 前綴
       return error.toString().replaceAll('Exception: ', '');
     }
 
     return '發生未預期的錯誤: $error';
+  }
+
+  /// 從 DioException 解析出 ApiException (若可解析)
+  static ApiException? parseApiException(DioException error) {
+    return ApiException.tryParse(
+      error.response?.statusCode,
+      error.response?.data,
+    );
   }
 
   static String _handleDioError(DioException error) {
@@ -29,6 +36,11 @@ class AppErrorHandler {
       case DioExceptionType.receiveTimeout:
         return '連線逾時，請檢查網路設定';
       case DioExceptionType.badResponse:
+        // 嘗試解析後端結構化錯誤
+        final apiError = parseApiException(error);
+        if (apiError != null) return apiError.message;
+
+        // fallback: 依 statusCode 回傳通用訊息
         final statusCode = error.response?.statusCode;
         if (statusCode == 401) return '授權失敗，請重新登入';
         if (statusCode == 403) return '無權限執行此操作';
