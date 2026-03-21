@@ -1761,6 +1761,7 @@ components:
           type: object
           required:
             - type
+            - code
             - message
           properties:
             type:
@@ -1775,7 +1776,6 @@ components:
               example: "business_logic_error"
             code:
               type: string
-              nullable: true
               description: 業務錯誤碼，供程式判斷或多國語系對應
               example: "email_already_exists"
             message:

@@ -22,7 +22,7 @@ func sendJSON(w http.ResponseWriter, status int, data interface{}) {
 // errorBody 是錯誤回應的 JSON 結構 (包裝在 "error" 根物件中)
 type errorBody struct {
 	Type    string `json:"type"`
-	Code    string `json:"code,omitempty"`
+	Code    string `json:"code"`
 	Message string `json:"message"`
 	Param   string `json:"param,omitempty"`
 }
@@ -51,6 +51,7 @@ func sendError(w http.ResponseWriter, err error) {
 	sendJSON(w, http.StatusInternalServerError, errorEnvelope{
 		Error: errorBody{
 			Type:    apperror.TypeServer,
+			Code:    "internal_error",
 			Message: "伺服器內部錯誤",
 		},
 	})

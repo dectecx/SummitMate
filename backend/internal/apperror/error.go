@@ -15,7 +15,7 @@ const (
 type AppError struct {
 	HTTPStatus int    `json:"-"`
 	Type       string `json:"type"`
-	Code       string `json:"code,omitempty"`
+	Code       string `json:"code"`
 	Message    string `json:"message"`
 	Param      string `json:"param,omitempty"`
 }
@@ -58,5 +58,5 @@ func (e *AppError) WithMessage(message string) *AppError {
 
 // InternalError 建立 500 錯誤
 func InternalError(message string) *AppError {
-	return New(http.StatusInternalServerError, TypeServer, "", message)
+	return New(http.StatusInternalServerError, TypeServer, "internal_error", message)
 }
