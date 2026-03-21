@@ -119,6 +119,7 @@ go run ./cmd/migrate drop
 
 | 變數           | 預設值                                                              | 說明                         |
 | :------------- | :------------------------------------------------------------------ | :--------------------------- |
+| `ENV`          | `development`                                                       | 執行環境 (`production`, `development`) |
 | `PORT`         | `8080`                                                              | HTTP 監聽埠                  |
 | `DATABASE_URL` | `postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable` | PostgreSQL 連線              |
 | `JWT_SECRET`   | `summitmate-dev-secret-change-in-production`                        | JWT 簽名密鑰                 |
@@ -159,6 +160,21 @@ go build -o bin/api ./cmd/api
 # Docker 建置
 docker build -t summitmate-api .
 ```
+
+## 日誌與監控 (Logging & Monitoring)
+
+系統採用 Go 標準庫 `log/slog` 進行結構化日誌記錄。日誌行為會根據 `ENV` 環境變數自動切換：
+
+-   **開發環境 (`ENV=development`)**：
+    -   格式：人類可讀的 Text 格式。
+    -   輸出：同時輸出至 `stdout` (控制台) 與 `backend/logs/app.log` 檔案。
+    -   用途：方便開發者在控制台即時除錯，並保留本地日誌檔案供後續查驗。
+-   **正式環境 (`ENV=production`)**：
+    -   格式：結構化 **JSON** 格式。
+    -   輸出：僅輸出至 `stdout`。
+    -   用途：符合雲端平台 (如 GCP, Azure, AWS) 的日誌收集慣例，方便集中化監控與檢索。
+
+所有 HTTP 請求皆會自動附帶 `request_id` 與執行時長，業務邏輯層則會記錄關鍵動作 (如註冊、行程建立等) 以供追蹤使用者操作流程。
 
 ## 部署 (Deployment)
 

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	"summitmate/internal/apperror"
@@ -12,6 +13,7 @@ import (
 
 // TripService 封裝行程相關的業務邏輯。
 type TripService struct {
+	logger        *slog.Logger
 	tripRepo      *repository.TripRepository
 	memberRepo    *repository.TripMemberRepository
 	itineraryRepo *repository.ItineraryRepository
@@ -20,12 +22,14 @@ type TripService struct {
 
 // NewTripService 初始化 TripService。
 func NewTripService(
+	logger *slog.Logger,
 	tripRepo *repository.TripRepository,
 	memberRepo *repository.TripMemberRepository,
 	itineraryRepo *repository.ItineraryRepository,
 	userRepo *repository.UserRepository,
 ) *TripService {
 	return &TripService{
+		logger:        logger.With("component", "trip"),
 		tripRepo:      tripRepo,
 		memberRepo:    memberRepo,
 		itineraryRepo: itineraryRepo,
@@ -55,15 +59,18 @@ func (s *TripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 
 	createdTrip, err := s.tripRepo.Create(ctx, trip)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "建立行程失敗", "user_id", userID, "error", err)
 		return nil, err
 	}
 
 	// 建立者自動加入為成員
 	err = s.memberRepo.AddMember(ctx, createdTrip.ID, userID)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "建立者加入行程成員失敗", "trip_id", createdTrip.ID, "user_id", userID, "error", err)
 		return nil, err
 	}
 
+	s.logger.InfoContext(ctx, "行程建立成功", "trip_id", createdTrip.ID, "user_id", userID, "name", createdTrip.Name)
 	return createdTrip, nil
 }
 
@@ -95,6 +102,7 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 		return nil, err
 	}
 	if existingTrip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
+		s.logger.WarnContext(ctx, "更新行程權限不足", "trip_id", tripID, "user_id", userID)
 		return nil, apperror.ErrAccessDenied
 	}
 
@@ -122,7 +130,14 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	}
 	existingTrip.UpdatedBy = userID
 
-	return s.tripRepo.Update(ctx, existingTrip)
+	updatedTrip, err := s.tripRepo.Update(ctx, existingTrip)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "更新行程失敗", "trip_id", tripID, "user_id", userID, "error", err)
+		return nil, err
+	}
+
+	s.logger.InfoContext(ctx, "行程更新成功", "trip_id", tripID, "user_id", userID)
+	return updatedTrip, nil
 }
 
 func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
@@ -134,9 +149,17 @@ func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) err
 		return err
 	}
 	if trip.UserID != userID {
+		s.logger.WarnContext(ctx, "刪除行程權限不足", "trip_id", tripID, "user_id", userID)
 		return apperror.ErrAccessDenied
 	}
-	return s.tripRepo.DeleteByID(ctx, tripID)
+
+	if err := s.tripRepo.DeleteByID(ctx, tripID); err != nil {
+		s.logger.ErrorContext(ctx, "刪除行程失敗", "trip_id", tripID, "user_id", userID, "error", err)
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "行程刪除成功", "trip_id", tripID, "user_id", userID)
+	return nil
 }
 
 // --- Trip Members ---

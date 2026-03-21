@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	"summitmate/internal/apperror"
@@ -13,13 +14,15 @@ import (
 
 // AuthService 封裝認證相關的業務邏輯 (註冊、登入、取得使用者)。
 type AuthService struct {
+	logger       *slog.Logger
 	userRepo     *repository.UserRepository // 使用者資料存取層
 	tokenManager *auth.TokenManager         // JWT Token 管理器
 }
 
 // NewAuthService 建立 AuthService 實例。
-func NewAuthService(userRepo *repository.UserRepository, tokenManager *auth.TokenManager) *AuthService {
+func NewAuthService(logger *slog.Logger, userRepo *repository.UserRepository, tokenManager *auth.TokenManager) *AuthService {
 	return &AuthService{
+		logger:       logger.With("component", "auth"),
 		userRepo:     userRepo,
 		tokenManager: tokenManager,
 	}
@@ -36,9 +39,11 @@ func (svc *AuthService) Register(ctx context.Context, email, password, displayNa
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, email)
 	if err == nil {
+		svc.logger.WarnContext(ctx, "註冊失敗: Email 已存在", "email", email)
 		return nil, "", apperror.ErrEmailExists
 	}
 	if !errors.Is(err, repository.ErrNotFound) {
+		svc.logger.ErrorContext(ctx, "註冊時資料庫查詢失敗", "email", email, "error", err)
 		return nil, "", err // 資料庫錯誤
 	}
 
@@ -56,8 +61,11 @@ func (svc *AuthService) Register(ctx context.Context, email, password, displayNa
 	}
 	createdUser, err := svc.userRepo.Create(ctx, newUser)
 	if err != nil {
+		svc.logger.ErrorContext(ctx, "註冊時寫入資料庫失敗", "email", email, "error", err)
 		return nil, "", err
 	}
+
+	svc.logger.InfoContext(ctx, "使用者註冊成功", "user_id", createdUser.ID, "email", email)
 
 	// 簽發 JWT Token (有效期 24 小時)
 	token, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, 24*time.Hour)
@@ -79,15 +87,20 @@ func (svc *AuthService) Login(ctx context.Context, email, password string) (*mod
 	user, err := svc.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
+			svc.logger.WarnContext(ctx, "登入失敗: 找不到使用者", "email", email)
 			return nil, "", apperror.ErrInvalidCredentials
 		}
+		svc.logger.ErrorContext(ctx, "登入時資料庫查詢失敗", "email", email, "error", err)
 		return nil, "", err
 	}
 
 	// 驗證密碼
 	if !auth.CheckPasswordHash(password, user.PasswordHash) {
+		svc.logger.WarnContext(ctx, "登入失敗: 密碼不正確", "user_id", user.ID, "email", email)
 		return nil, "", apperror.ErrInvalidCredentials
 	}
+
+	svc.logger.InfoContext(ctx, "使用者登入成功", "user_id", user.ID, "email", email)
 
 	// 簽發 JWT Token (有效期 24 小時)
 	token, err := svc.tokenManager.GenerateToken(user.ID, user.Email, 24*time.Hour)

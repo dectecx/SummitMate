@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/model"
@@ -9,13 +10,15 @@ import (
 )
 
 type PollService struct {
+	logger     *slog.Logger
 	repo       repository.PollRepository
 	tripRepo   *repository.TripRepository
 	memberRepo *repository.TripMemberRepository
 }
 
-func NewPollService(repo repository.PollRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *PollService {
+func NewPollService(logger *slog.Logger, repo repository.PollRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *PollService {
 	return &PollService{
+		logger:     logger.With("component", "poll"),
 		repo:       repo,
 		tripRepo:   tripRepo,
 		memberRepo: memberRepo,
@@ -33,8 +36,10 @@ func (s *PollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 	poll.UpdatedBy = userID
 
 	if err := s.repo.CreatePoll(ctx, poll); err != nil {
+		s.logger.ErrorContext(ctx, "建立行程投票失敗", "trip_id", tripID, "user_id", userID, "title", poll.Title, "error", err)
 		return nil, err
 	}
+	s.logger.InfoContext(ctx, "行程投票建立成功", "poll_id", poll.ID, "trip_id", tripID, "user_id", userID, "title", poll.Title)
 	return poll, nil
 }
 
@@ -131,9 +136,11 @@ func (s *PollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 
 	err = s.repo.VoteOption(ctx, pollID, optionID, userID, poll.AllowMultipleVotes)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "行程投票失敗", "poll_id", pollID, "option_id", optionID, "user_id", userID, "error", err)
 		return nil, err
 	}
 
+	s.logger.InfoContext(ctx, "行程投票成功", "poll_id", pollID, "option_id", optionID, "user_id", userID)
 	return s.repo.GetPollByID(ctx, pollID)
 }
 
