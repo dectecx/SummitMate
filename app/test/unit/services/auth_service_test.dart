@@ -6,6 +6,7 @@ import 'package:summitmate/data/models/user_profile.dart';
 import 'package:summitmate/data/repositories/interfaces/i_auth_session_repository.dart';
 import 'package:summitmate/infrastructure/services/auth_service.dart';
 import 'package:summitmate/domain/interfaces/i_token_validator.dart';
+import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
 // ============================================================
 // === MOCKS ===
@@ -170,6 +171,117 @@ void main() {
 
       verify(() => mockSessionRepo.clearSession()).called(1);
       expect(authService.currentUserId, isNull);
+    });
+  });
+
+  group('AuthService.loginWithProvider', () {
+    test('returns success on valid provider login', () async {
+      when(() => mockApiClient.post('/auth/oauth', data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/oauth'),
+          data: {'user': createUserJson(), 'token': 'oauth-token'},
+          statusCode: 200,
+        ),
+      );
+      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
+
+      // Use a fake enum value or a string if possible, although we'll assume OAuthProvider is available here
+      // if it fails to compile we will adjust.
+      // We will just use 'google' string if it fails, but IAuthService defines it.
+      // Wait, let's import it if needed. For now assuming it is exported by either user_profile or i_auth_service.
+      final result = await authService.loginWithProvider(OAuthProvider.google);
+
+      expect(result.isSuccess, isTrue);
+      expect(result.accessToken, 'oauth-token');
+      verify(() => mockSessionRepo.saveSession('oauth-token', any())).called(1);
+    });
+  });
+
+  group('AuthService.verifyEmail', () {
+    test('returns success on 200', () async {
+      when(() => mockApiClient.post('/auth/verify-email', data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(requestOptions: RequestOptions(path: '/auth/verify-email'), statusCode: 200),
+      );
+
+      final result = await authService.verifyEmail(email: 'test@example.com', code: '123456');
+      expect(result.isSuccess, isTrue);
+    });
+
+    test('returns failure on error', () async {
+      when(() => mockApiClient.post('/auth/verify-email', data: any(named: 'data'))).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/auth/verify-email'), 
+          response: Response(requestOptions: RequestOptions(path: ''), statusCode: 400)
+        ),
+      );
+
+      final result = await authService.verifyEmail(email: 'test@example.com', code: '123456');
+      expect(result.isSuccess, isFalse);
+    });
+  });
+
+  group('AuthService.resendVerificationCode', () {
+    test('returns success on 200', () async {
+      when(() => mockApiClient.post('/auth/resend-verification', data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(requestOptions: RequestOptions(path: '/auth/resend-verification'), statusCode: 200),
+      );
+
+      final result = await authService.resendVerificationCode(email: 'test@example.com');
+      expect(result.isSuccess, isTrue);
+    });
+  });
+
+  group('AuthService.refreshToken', () {
+    test('returns success and saves new token', () async {
+      when(() => mockSessionRepo.getRefreshToken()).thenAnswer((_) async => 'old-refresh');
+      when(() => mockSessionRepo.getUserProfile()).thenAnswer((_) async => createTestUser());
+      when(() => mockApiClient.post('/auth/refresh', data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/refresh'),
+          data: {'access_token': 'new-access', 'refresh_token': 'new-refresh'},
+          statusCode: 200,
+        ),
+      );
+      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
+
+      final result = await authService.refreshToken();
+
+      expect(result.isSuccess, isTrue);
+      expect(result.accessToken, 'new-access');
+    });
+  });
+
+  group('AuthService.deleteAccount', () {
+    test('returns success and logs out', () async {
+      when(() => mockApiClient.delete('/auth/me')).thenAnswer(
+        (_) async => Response(requestOptions: RequestOptions(path: '/auth/me'), statusCode: 200),
+      );
+      when(() => mockSessionRepo.clearSession()).thenAnswer((_) async {});
+
+      final result = await authService.deleteAccount();
+
+      expect(result.isSuccess, isTrue);
+      verify(() => mockSessionRepo.clearSession()).called(1);
+    });
+  });
+
+  group('AuthService.updateProfile', () {
+    test('returns success and updates session on 200', () async {
+      when(() => mockApiClient.put('/auth/me', data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(path: '/auth/me'),
+          data: {'name': 'New Name'},
+          statusCode: 200,
+        ),
+      );
+      when(() => mockSessionRepo.getUserProfile()).thenAnswer((_) async => createTestUser());
+      when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => 'token');
+      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
+
+      final result = await authService.updateProfile(displayName: 'New Name');
+
+      expect(result.isSuccess, isTrue);
+      expect(result.user?.displayName, 'New Name');
     });
   });
 }
