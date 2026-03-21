@@ -1,5 +1,4 @@
 import 'package:summitmate/domain/interfaces/i_sync_service.dart';
-import 'package:summitmate/data/models/message.dart';
 import '../../core/error/result.dart';
 import '../../data/models/trip.dart';
 
@@ -23,45 +22,8 @@ class MockSyncService implements ISyncService {
   }
 
   @override
-  Future<SyncResult> syncItinerary({bool isAuto = false}) async {
-    _lastItinerarySyncTime = DateTime.now();
-    return SyncResult.success(itinerarySynced: true, messagesSynced: false);
-  }
-
-  @override
-  Future<SyncResult> syncMessages({bool isAuto = false}) async {
-    _lastMessagesSyncTime = DateTime.now();
-    return SyncResult.success(itinerarySynced: false, messagesSynced: true);
-  }
-
-  @override
-  Future<SyncResult> uploadPendingMessages() async {
-    return SyncResult.success(itinerarySynced: false, messagesSynced: true);
-  }
-
-  @override
-  Future<SyncResult> uploadItinerary() async {
-    return SyncResult.success(itinerarySynced: true, messagesSynced: false);
-  }
-
-  @override
-  Future<bool> checkItineraryConflict() async {
-    return false;
-  }
-
-  @override
   Future<Result<List<Trip>, Exception>> getCloudTrips() async {
     return const Success([]);
-  }
-
-  @override
-  Future<Result<void, Exception>> addMessageAndSync(Message message) async {
-    return const Success(null);
-  }
-
-  @override
-  Future<Result<void, Exception>> deleteMessageAndSync(String uuid) async {
-    return const Success(null);
   }
 
   @override

@@ -1,5 +1,4 @@
 import '../../core/offline_config.dart';
-import '../../data/models/message.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../data/repositories/interfaces/i_message_repository.dart';
@@ -67,12 +66,13 @@ class SyncService implements ISyncService {
   /// 智慧選擇：若兩者皆需更新則使用 fetchAll，否則個別更新
   @override
   Future<SyncResult> syncAll({bool isAuto = false}) async {
-    if (_isOffline) return _offlineSyncResult();
+    if (_isOffline) {
+      return SyncResult.failure('目前為離線模式，無法同步');
+    }
 
     final now = DateTime.now();
 
     // 檢查冷卻時間
-    // 若非自動同步 (手動)，則忽略冷卻時間 (視為已冷卻/需更新)
     final itinNeeded =
         !isAuto ||
         (_lastItinerarySyncTime == null ||
@@ -81,19 +81,17 @@ class SyncService implements ISyncService {
         !isAuto ||
         (_lastMessagesSyncTime == null || now.difference(_lastMessagesSyncTime!) > OfflineConfig.syncThrottleDuration);
 
-    // 兩者皆不需要
     if (!itinNeeded && !msgNeeded) {
       LogService.info('Auto-sync throttled (All cool)', source: 'SyncService');
-      return SyncResult(isSuccess: true, itinerarySynced: false, messagesSynced: false, syncedAt: now);
+      return SyncResult.skipped(reason: '同步節流中');
     }
 
     final tripId = await _activeTripId;
     if (tripId == null) {
-      return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
+      return SyncResult.failure('找不到活動行程');
     }
 
-    // 兩者皆需要 (分別呼叫 Repository 的 sync)
-    LogService.info('SyncAll: Fetching Itinerary and Messages separately for trip: $tripId', source: 'SyncService');
+    LogService.info('SyncAll: Fetching Itinerary and Messages for trip: $tripId', source: 'SyncService');
 
     var itinSuccess = false;
     var msgSuccess = false;
@@ -102,22 +100,30 @@ class SyncService implements ISyncService {
     // 處理行程
     if (itinNeeded) {
       try {
-        await _itineraryRepo.sync(tripId);
-        _lastItinerarySyncTime = DateTime.now();
-        itinSuccess = true;
+        final result = await _itineraryRepo.sync(tripId);
+        if (result is Success) {
+          _lastItinerarySyncTime = DateTime.now();
+          itinSuccess = true;
+        } else {
+          errors.add('行程同步失敗');
+        }
       } catch (e) {
-        errors.add('行程同步失敗: $e');
+        errors.add('行程同步異常: $e');
       }
     }
 
     // 處理留言
     if (msgNeeded) {
       try {
-        await _messageRepo.sync(tripId);
-        _lastMessagesSyncTime = DateTime.now();
-        msgSuccess = true;
+        final result = await _messageRepo.sync(tripId);
+        if (result is Success) {
+          _lastMessagesSyncTime = DateTime.now();
+          msgSuccess = true;
+        } else {
+          errors.add('留言同步失敗');
+        }
       } catch (e) {
-        errors.add('留言同步失敗: $e');
+        errors.add('留言同步異常: $e');
       }
     }
 
@@ -130,97 +136,6 @@ class SyncService implements ISyncService {
     );
   }
 
-  /// 僅同步行程
-  @override
-  Future<SyncResult> syncItinerary({bool isAuto = false}) async {
-    if (_isOffline) return _offlineSyncResult();
-
-    final now = DateTime.now();
-    if (isAuto &&
-        _lastItinerarySyncTime != null &&
-        now.difference(_lastItinerarySyncTime!) < OfflineConfig.syncThrottleDuration) {
-      final remaining = (OfflineConfig.syncThrottleDuration - now.difference(_lastItinerarySyncTime!)).inSeconds;
-      LogService.info('行程同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
-      return SyncResult(isSuccess: true, itinerarySynced: false, syncedAt: _lastItinerarySyncTime!);
-    }
-
-    final tripId = await _activeTripId;
-    if (tripId == null) {
-      return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
-    }
-
-    try {
-      await _itineraryRepo.sync(tripId);
-      _lastItinerarySyncTime = DateTime.now();
-      return SyncResult(isSuccess: true, itinerarySynced: true, syncedAt: _lastItinerarySyncTime!);
-    } catch (e) {
-      return SyncResult(isSuccess: false, errors: ['行程同步失敗: $e'], syncedAt: DateTime.now());
-    }
-  }
-
-  /// 僅同步留言
-  @override
-  Future<SyncResult> syncMessages({bool isAuto = false}) async {
-    if (_isOffline) return _offlineSyncResult();
-
-    final now = DateTime.now();
-    if (isAuto &&
-        _lastMessagesSyncTime != null &&
-        now.difference(_lastMessagesSyncTime!) < OfflineConfig.syncThrottleDuration) {
-      final remaining = (OfflineConfig.syncThrottleDuration - now.difference(_lastMessagesSyncTime!)).inSeconds;
-      LogService.info('留言同步跳過 (節流中，剩餘 ${remaining}s)', source: 'SyncService');
-      return SyncResult(isSuccess: true, messagesSynced: false, syncedAt: _lastMessagesSyncTime!);
-    }
-
-    final tripId = await _activeTripId;
-    if (tripId == null) {
-      return SyncResult(isSuccess: false, errors: ['No active trip'], syncedAt: DateTime.now());
-    }
-
-    try {
-      await _messageRepo.sync(tripId);
-      _lastMessagesSyncTime = DateTime.now();
-      return SyncResult(isSuccess: true, messagesSynced: true, syncedAt: _lastMessagesSyncTime!);
-    } catch (e) {
-      return SyncResult(isSuccess: false, errors: ['留言同步失敗: $e'], syncedAt: DateTime.now());
-    }
-  }
-
-  /// 新增留言並同步到雲端
-  /// 注意：離線模式下 UI 層應禁用此功能
-  @override
-  Future<Result<void, Exception>> addMessageAndSync(Message message) async {
-    final result = await _messageRepo.addMessage(message);
-    LogService.info('Message processed (add): ${message.id}', source: 'SyncService');
-    return result;
-  }
-
-  /// 刪除留言並同步到雲端
-  /// 注意：離線模式下 UI 層應禁用此功能
-  @override
-  Future<Result<void, Exception>> deleteMessageAndSync(String id) async {
-    final result = await _messageRepo.deleteById(id);
-    LogService.info('Message processed (delete): $id', source: 'SyncService');
-    return result;
-  }
-
-  SyncResult _offlineSyncResult() {
-    return SyncResult(isSuccess: false, errors: ['目前為離線模式，無法同步'], syncedAt: DateTime.now());
-  }
-
-  /// 檢查行程衝突 (目前由後端自動處理，預設無衝突)
-  @override
-  Future<bool> checkItineraryConflict() async {
-    return false;
-  }
-
-  /// 強制上傳行程 (直接調用同步)
-  @override
-  Future<SyncResult> uploadItinerary() async {
-    return await syncItinerary();
-  }
-
-  /// 取得雲端行程列表
   @override
   Future<Result<List<Trip>, Exception>> getCloudTrips() async {
     if (_isOffline) {
@@ -231,12 +146,6 @@ class SyncService implements ISyncService {
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
-  }
-
-  @override
-  Future<SyncResult> uploadPendingMessages() async {
-    // 目前實作為同步留言
-    return await syncMessages();
   }
 
   @override

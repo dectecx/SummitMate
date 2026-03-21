@@ -1,6 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/di.dart';
+import '../../../core/error/result.dart';
+import '../../../data/models/trip.dart';
+import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/domain.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -12,11 +16,22 @@ class SyncCubit extends Cubit<SyncState> {
 
   final ISyncService _syncService;
   final IConnectivityService _connectivityService;
+  final IItineraryRepository _itineraryRepository;
+  final IAuthService _authService;
+  final ITripRepository _tripRepository;
 
-  SyncCubit({ISyncService? syncService, IConnectivityService? connectivityService})
-    : _syncService = syncService ?? getIt<ISyncService>(),
-      _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
-      super(const SyncInitial()) {
+  SyncCubit({
+    ISyncService? syncService,
+    IConnectivityService? connectivityService,
+    IItineraryRepository? itineraryRepository,
+    IAuthService? authService,
+    ITripRepository? tripRepository,
+  }) : _syncService = syncService ?? getIt<ISyncService>(),
+       _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
+       _itineraryRepository = itineraryRepository ?? getIt<IItineraryRepository>(),
+       _authService = authService ?? getIt<IAuthService>(),
+       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
+       super(const SyncInitial()) {
     _initLastSyncTime();
   }
 
@@ -60,35 +75,34 @@ class SyncCubit extends Cubit<SyncState> {
     }
   }
 
-  /// 同步行程資料
-  Future<void> syncItinerary() async {
-    await syncAll();
-  }
-
-  /// 檢查行程衝突
+  /// 檢查行程衝突 (目前固定回傳無衝突)
   Future<bool> checkItineraryConflict() async {
-    try {
-      return await _syncService.checkItineraryConflict();
-    } catch (e) {
-      LogService.error('Check conflict failed: $e', source: _source);
-      return false;
-    }
+    return false;
   }
 
-  /// 上傳行程 (覆寫雲端)
+  /// 上傳行程 (強製觸發同步)
   Future<void> uploadItinerary() async {
     if (_connectivityService.isOffline) {
       emit(SyncFailure(errorMessage: '目前處於離線模式，無法上傳', lastSuccessTime: _getLastSyncTime()));
       return;
     }
 
+    // 取得當前活動行程 ID
+    final activeTrip = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
+    final tripId = activeTrip is Success<Trip?, Exception> ? activeTrip.value?.id : null;
+
+    if (tripId == null) {
+      emit(SyncFailure(errorMessage: '找不到活動行程', lastSuccessTime: _getLastSyncTime()));
+      return;
+    }
+
     emit(const SyncInProgress(message: '正在上傳行程...'));
     try {
-      final result = await _syncService.uploadItinerary();
-      if (result.isSuccess) {
+      final result = await _itineraryRepository.sync(tripId);
+      if (result is Success) {
         emit(SyncSuccess(timestamp: DateTime.now(), message: '行程上傳成功'));
       } else {
-        emit(SyncFailure(errorMessage: result.errorMessage ?? '上傳失敗', lastSuccessTime: _getLastSyncTime()));
+        emit(SyncFailure(errorMessage: '上傳失敗', lastSuccessTime: _getLastSyncTime()));
       }
     } catch (e) {
       LogService.error('Upload failed: $e', source: _source);
