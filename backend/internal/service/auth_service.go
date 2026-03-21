@@ -104,3 +104,55 @@ func (svc *AuthService) Login(ctx context.Context, email, password string) (*mod
 func (svc *AuthService) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	return svc.userRepo.GetByID(ctx, id)
 }
+
+// UpdateProfile 更新使用者的個人資料 (display_name, avatar)。
+func (svc *AuthService) UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*model.User, error) {
+	user, err := svc.userRepo.Update(ctx, userID, displayName, avatar)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, apperror.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+// DeleteAccount 軟刪除使用者帳號 (設定 is_active = false)。
+func (svc *AuthService) DeleteAccount(ctx context.Context, userID string) error {
+	err := svc.userRepo.SoftDelete(ctx, userID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return apperror.ErrUserNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+// RefreshToken 解析現有 Token 並簽發新的 JWT Token。
+// 即使 Token 已過期，只要格式正確且簽名有效，仍會簽發新 Token。
+func (svc *AuthService) RefreshToken(ctx context.Context, tokenString string) (*model.User, string, error) {
+	claims, err := svc.tokenManager.ParseToken(tokenString)
+	if err != nil {
+		return nil, "", apperror.ErrTokenExpired
+	}
+
+	user, err := svc.userRepo.GetByID(ctx, claims.UserID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, "", apperror.ErrUserNotFound
+		}
+		return nil, "", err
+	}
+
+	if !user.IsActive {
+		return nil, "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
+	}
+
+	newToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, 24*time.Hour)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, newToken, nil
+}

@@ -71,6 +71,56 @@ func (repo *UserRepository) DeleteByID(ctx context.Context, id string) error {
 	return err
 }
 
+// Update 更新使用者的 display_name 與 avatar。
+func (repo *UserRepository) Update(ctx context.Context, id string, displayName, avatar *string) (*model.User, error) {
+	query := `
+		UPDATE users
+		SET display_name = COALESCE($1, display_name),
+		    avatar = COALESCE($2, avatar),
+		    updated_at = NOW(),
+		    updated_by = $3
+		WHERE id = $3
+		RETURNING id, email, password_hash, display_name, avatar, role_id,
+		          is_active, is_verified, created_at, created_by, updated_at, updated_by
+	`
+	row := repo.pool.QueryRow(ctx, query, displayName, avatar, id)
+
+	var user model.User
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.DisplayName,
+		&user.Avatar,
+		&user.RoleID,
+		&user.IsActive,
+		&user.IsVerified,
+		&user.CreatedAt,
+		&user.CreatedBy,
+		&user.UpdatedAt,
+		&user.UpdatedBy,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+// SoftDelete 將使用者設為停用 (is_active = false)。
+func (repo *UserRepository) SoftDelete(ctx context.Context, id string) error {
+	result, err := repo.pool.Exec(ctx, "UPDATE users SET is_active = false, updated_at = NOW(), updated_by = $1 WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 // getOneUser 是內部共用方法，依指定欄位查詢單一使用者。
 func (repo *UserRepository) getOneUser(ctx context.Context, column string, value string) (*model.User, error) {
 	// 此處 column 為程式內部控制 ("id" 或 "email")，非外部輸入，可安全拼接

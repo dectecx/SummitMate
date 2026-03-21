@@ -63,6 +63,23 @@ func (srv server) GetCurrentUser(writer http.ResponseWriter, request *http.Reque
 	jwtAuth(http.HandlerFunc(srv.authHandler.GetCurrentUser)).ServeHTTP(writer, request)
 }
 
+// UpdateCurrentUser 處理 PUT /auth/me — 更新當前使用者資料 (需 JWT)。
+func (srv server) UpdateCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.authHandler.UpdateCurrentUser)).ServeHTTP(writer, request)
+}
+
+// DeleteCurrentUser 處理 DELETE /auth/me — 停用當前使用者帳號 (需 JWT)。
+func (srv server) DeleteCurrentUser(writer http.ResponseWriter, request *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.authHandler.DeleteCurrentUser)).ServeHTTP(writer, request)
+}
+
+// RefreshToken 處理 POST /auth/refresh — 刷新 JWT Token (不需 JWT)。
+func (srv server) RefreshToken(writer http.ResponseWriter, request *http.Request) {
+	srv.authHandler.RefreshToken(writer, request)
+}
+
 // --- Trips ---
 
 func (srv server) ListTrips(w http.ResponseWriter, r *http.Request) {
