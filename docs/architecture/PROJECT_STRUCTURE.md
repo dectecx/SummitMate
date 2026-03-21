@@ -140,12 +140,72 @@ lib/
 
 ---
 
+## Backend 結構 (Go)
+
+```
+backend/
+├── cmd/                               # 執行入口
+│   ├── api/
+│   │   └── main.go                    # API Server 入口
+│   ├── migrate/
+│   │   └── main.go                    # DB Migration 工具
+│   └── weatherjob/
+│       └── main.go                    # 天氣 ETL CLI
+│
+├── api/                               # OpenAPI 生成碼
+│   ├── openapi.yaml                   # API 規格定義
+│   └── gen.go                         # oapi-codegen 產生
+│
+├── internal/                          # 內部套件 (不可外部引用)
+│   ├── apperror/                      # 錯誤碼定義
+│   ├── auth/                          # JWT + bcrypt
+│   │   ├── jwt.go                     # Token 簽發/驗證
+│   │   └── password.go                # 密碼雜湊
+│   ├── config/                        # 環境設定
+│   ├── database/                      # DB 連線池
+│   ├── handler/                       # HTTP Handler (13)
+│   │   ├── mapping/                   # DTO ↔ Domain 轉換
+│   │   ├── helpers.go                 # 共用 sendError/sendJSON
+│   │   ├── auth_handler.go
+│   │   ├── trip_handler.go
+│   │   └── ...
+│   ├── logger/                        # slog Logger 工廠
+│   ├── middleware/                     # Chi Middleware
+│   │   ├── context_logger.go          # Request ID + Logger
+│   │   ├── jwt_auth.go               # JWT 驗證
+│   │   └── request_logger.go         # HTTP 請求日誌
+│   ├── model/                         # Domain Model (13)
+│   ├── repository/                    # Data Access (15)
+│   └── service/                       # Business Logic (13)
+│
+├── migrations/                        # SQL Migration 檔案
+├── tests/                             # E2E 測試
+├── Dockerfile                         # Multi-stage 建置
+├── go.mod
+└── go.sum
+```
+
+---
+
 ## 分層架構
 
-| Layer              | 職責                 | 位置                  |
-| :----------------- | :------------------- | :-------------------- |
-| **Presentation**   | UI, 狀態管理         | `lib/presentation/`   |
-| **Domain**         | 業務邏輯介面         | `lib/domain/`         |
-| **Infrastructure** | 外部服務實作         | `lib/infrastructure/` |
-| **Data**           | 資料模型, Repository | `lib/data/`           |
-| **Core**           | 共用工具, DI         | `lib/core/`           |
+### Frontend (Flutter)
+
+| Layer              | 職責                 | 位置                      |
+| :----------------- | :------------------- | :------------------------ |
+| **Presentation**   | UI, 狀態管理         | `app/lib/presentation/`   |
+| **Domain**         | 業務邏輯介面         | `app/lib/domain/`         |
+| **Infrastructure** | 外部服務實作         | `app/lib/infrastructure/` |
+| **Data**           | 資料模型, Repository | `app/lib/data/`           |
+| **Core**           | 共用工具, DI         | `app/lib/core/`           |
+
+### Backend (Go)
+
+| Layer          | 職責                    | 位置                           |
+| :------------- | :---------------------- | :----------------------------- |
+| **Handler**    | HTTP 請求處理, DTO 轉換 | `backend/internal/handler/`    |
+| **Service**    | 商業邏輯                | `backend/internal/service/`    |
+| **Repository** | 資料存取 (PostgreSQL)   | `backend/internal/repository/` |
+| **Model**      | Domain 結構定義         | `backend/internal/model/`      |
+| **Auth**       | JWT, 密碼雜湊           | `backend/internal/auth/`       |
+| **Middleware** | 請求攔截 (JWT, Logger)  | `backend/internal/middleware/` |

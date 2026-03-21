@@ -220,25 +220,28 @@
 ### 專案結構
 
 ```
-lib/
-├── core/           # 共用工具、常數、主題、DI、環境配置
-├── data/           # 資料層 (Models, Repositories)
-├── services/       # 服務層 (API, Sync, Log, Toast, Weather, Poll, Gear)
-├── presentation/   # UI 層 (Providers, Screens, Widgets)
-└── main.dart
+SummitMate/
+├── app/             # Flutter 前端 (lib/ - Clean Architecture)
+├── backend/         # Go 後端 (Chi + PostgreSQL)
+│   ├── cmd/         # 執行入口 (api, migrate, weatherjob)
+│   ├── internal/    # 內部套件 (handler, service, repository, model)
+│   └── api/         # OpenAPI 生成碼
+├── gas/             # GAS 後端 (Legacy)
+└── docs/            # 專案文件
 ```
 
 ### 測試策略
 
-- **Unit Tests**: 保持高覆蓋率 (Models, Services, Providers) - 76 Tests
-- **Integration Tests**: 關鍵流程驗證
-- **Manual QA**: 實地登山測試 (Field Test)
+- **Unit Tests (Frontend)**: Models, Services, Cubits
+- **E2E Tests (Backend)**: Docker 容器化 PostgreSQL 測試
+- **Manual QA**: 實地登山測試
 
 ### 風險管理
 
-| 風險               | 狀態   | 緩解策略                        |
-| ------------------ | ------ | ------------------------------- |
-| Isar 相容性        | 已解決 | 遷移至 Hive                     |
-| Google Sheets 限流 | 監控中 | 實作批次上傳與錯誤重試          |
-| Web CORS 問題      | 已解決 | 調整 Content-Type 為 text/plain |
-| GAS 響應慢         | 已解決 | 防連點機制、Loading 狀態管理    |
+| 風險                  | 狀態   | 緩解策略                     |
+| :-------------------- | :----- | :--------------------------- |
+| Isar 相容性           | 已解決 | 遷移至 Hive                  |
+| Google Sheets 限流    | 已解決 | 遷移至 Go + PostgreSQL       |
+| Web CORS 問題         | 已解決 | 調整 Content-Type            |
+| GAS 響應慢            | 已解決 | 遷移至 Go Backend            |
+| Go Backend 遷移完整性 | 進行中 | 前端雙後端切換，逐步替代 GAS |
