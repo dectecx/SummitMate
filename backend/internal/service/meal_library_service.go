@@ -37,6 +37,17 @@ func (s *MealLibraryService) UpdateItem(ctx context.Context, itemID, userID stri
 	return s.repo.Update(ctx, req)
 }
 
+func (s *MealLibraryService) ReplaceAllItems(ctx context.Context, userID string, items []*model.MealLibraryItem) error {
+	for _, item := range items {
+		item.UserID = userID
+		if item.CreatedBy == "" {
+			item.CreatedBy = userID
+		}
+		item.UpdatedBy = userID
+	}
+	return s.repo.ReplaceAll(ctx, userID, items)
+}
+
 func (s *MealLibraryService) DeleteItem(ctx context.Context, itemID, userID string) error {
 	return s.repo.Delete(ctx, itemID, userID)
 }

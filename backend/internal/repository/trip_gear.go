@@ -95,6 +95,35 @@ func (repo *TripGearRepository) Delete(ctx context.Context, id string, tripID st
 	return nil
 }
 
+func (repo *TripGearRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripGearItem) error {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, "DELETE FROM gear_items WHERE trip_id = $1", tripID)
+	if err != nil {
+		return err
+	}
+
+	query := `
+		INSERT INTO gear_items (id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10, NOW()), $11, COALESCE($12, NOW()), $13)
+	`
+	for _, item := range items {
+		// Ensure tripID is strictly applied from the route argument, ignoring what client sends
+		_, err := tx.Exec(ctx, query,
+			item.ID, tripID, item.LibraryItemID, item.Name, item.Weight, item.Category, item.Quantity, item.IsChecked, item.OrderIndex, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 func (repo *TripGearRepository) scanItem(row pgx.Row) (*model.TripGearItem, error) {
 	var i model.TripGearItem
 	err := row.Scan(

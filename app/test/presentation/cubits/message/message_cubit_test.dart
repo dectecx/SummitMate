@@ -91,11 +91,7 @@ void main() {
       ),
     );
 
-    cubit = MessageCubit(
-      repository: mockRepo,
-      tripRepository: mockTripRepo,
-      authService: mockAuthService,
-    );
+    cubit = MessageCubit(repository: mockRepo, tripRepository: mockTripRepo, authService: mockAuthService);
   });
 
   tearDown(() {
@@ -166,9 +162,7 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'emits isSyncing true then false, reloads on success',
       setUp: () {
-        when(
-          () => mockRepo.sync(any()),
-        ).thenAnswer((_) async => const Success(null));
+        when(() => mockRepo.sync(any())).thenAnswer((_) async => const Success(null));
         when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
       },
       build: () => cubit,
@@ -188,9 +182,7 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'emits error on sync failure (manual)',
       setUp: () {
-        when(
-          () => mockRepo.sync(any()),
-        ).thenAnswer((_) async => Failure(GeneralException('Network error')));
+        when(() => mockRepo.sync(any())).thenAnswer((_) async => Failure(GeneralException('Network error')));
         when(() => mockRepo.getAllMessages()).thenAnswer((_) async => const Success([]));
       },
       build: () => cubit,

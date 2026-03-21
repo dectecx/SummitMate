@@ -43,7 +43,6 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
     try {
       LogService.info('更新最愛狀態: $id (${type.value}) -> $isFavorite', source: _source);
 
-      // TODO: 待優化 - 目前採單次切換狀態。若有大量同步需求，建議後端提供批次更新介面。
       final response = await _apiClient.post(
         '/favorites',
         data: {'target_id': id, 'type': type.value, 'is_favorite': isFavorite},
@@ -57,6 +56,28 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
       return const Success(null);
     } catch (e) {
       LogService.error('更新最愛狀態失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  /// 批量在雲端更新最愛狀態
+  ///
+  /// [items] 目標物件列表，應包含 target_id, type, is_favorite
+  @override
+  Future<Result<void, Exception>> batchUpdateFavorites(List<Map<String, dynamic>> items) async {
+    try {
+      LogService.info('批量更新最愛狀態: 數量 ${items.length}', source: _source);
+
+      final response = await _apiClient.post('/favorites/batch', data: items);
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw GeneralException('批次更新失敗: HTTP ${response.statusCode}');
+      }
+
+      LogService.info('遠端批次更新成功', source: _source);
+      return const Success(null);
+    } catch (e) {
+      LogService.error('批次更新最愛狀態失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }

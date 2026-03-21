@@ -206,6 +206,11 @@ func (srv testServer) DeleteGearLibraryItem(w http.ResponseWriter, r *http.Reque
 	})).ServeHTTP(w, r)
 }
 
+func (srv testServer) ReplaceAllGearLibraryItems(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.gearHandler.ReplaceAllGearLibraryItems)).ServeHTTP(w, r)
+}
+
 // --- Meal Library ---
 
 func (srv testServer) ListMealLibrary(w http.ResponseWriter, r *http.Request, params api.ListMealLibraryParams) {
@@ -241,6 +246,11 @@ func (srv testServer) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Reque
 	})).ServeHTTP(w, r)
 }
 
+func (srv testServer) ReplaceAllMealLibraryItems(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.mealHandler.ReplaceAllMealLibraryItems)).ServeHTTP(w, r)
+}
+
 // --- Trip Gear ---
 
 func (srv testServer) ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
@@ -271,6 +281,13 @@ func (srv testServer) DeleteTripGearItem(w http.ResponseWriter, r *http.Request,
 	})).ServeHTTP(w, r)
 }
 
+func (srv testServer) ReplaceAllTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripGearHandler.ReplaceAllTripGear(w, r, tripId)
+	})).ServeHTTP(w, r)
+}
+
 // --- Trip Meals ---
 
 func (srv testServer) ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
@@ -298,6 +315,13 @@ func (srv testServer) DeleteTripMealItem(w http.ResponseWriter, r *http.Request,
 	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
 	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		srv.tripMealHandler.RemoveTripMeal(w, r, tripId, itemId)
+	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) ReplaceAllTripMeals(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		srv.tripMealHandler.ReplaceAllTripMeals(w, r, tripId)
 	})).ServeHTTP(w, r)
 }
 
@@ -392,6 +416,11 @@ func (srv testServer) RemoveFavorite(w http.ResponseWriter, r *http.Request, tar
 	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		srv.favoriteHandler.RemoveFavorite(w, r, targetId)
 	})).ServeHTTP(w, r)
+}
+
+func (srv testServer) BatchUpdateFavorites(w http.ResponseWriter, r *http.Request) {
+	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
+	jwtAuth(http.HandlerFunc(srv.favoriteHandler.BatchUpdateFavorites)).ServeHTTP(w, r)
 }
 
 // --- Group Events ---

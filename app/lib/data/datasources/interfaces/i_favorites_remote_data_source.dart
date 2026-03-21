@@ -8,4 +8,7 @@ abstract interface class IFavoritesRemoteDataSource {
 
   /// 在後端切換最愛狀態
   Future<Result<void, Exception>> updateFavorite(String id, FavoriteType type, bool isFavorite);
+
+  /// 批量在後端更新最愛狀態
+  Future<Result<void, Exception>> batchUpdateFavorites(List<Map<String, dynamic>> items);
 }

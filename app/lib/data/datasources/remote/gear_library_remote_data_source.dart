@@ -98,14 +98,10 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
     try {
       LogService.info('批量替換雲端裝備庫: 數量 ${items.length}', source: _source);
 
-      // TODO: 目前實作: 先取得現有的全刪，再上傳目前的 (由於後端目前無 bulk sync endpoint，長遠來看應該增加 API 支援)
-      final existing = await getLibrary();
-      for (final item in existing) {
-        await deleteLibraryItem(item.id);
-      }
+      final response = await _apiClient.put('/gear-library', data: items.map((e) => e.toJson()).toList());
 
-      for (final item in items) {
-        await addLibraryItem(item);
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('HTTP ${response.statusCode}');
       }
     } catch (e) {
       LogService.error('replaceAllLibraryItems 失敗: $e', source: _source);

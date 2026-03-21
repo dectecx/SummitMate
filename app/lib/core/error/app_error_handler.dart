@@ -23,10 +23,7 @@ class AppErrorHandler {
 
   /// 從 DioException 解析出 ApiException (若可解析)
   static ApiException? parseApiException(DioException error) {
-    return ApiException.tryParse(
-      error.response?.statusCode,
-      error.response?.data,
-    );
+    return ApiException.tryParse(error.response?.statusCode, error.response?.data);
   }
 
   static String _handleDioError(DioException error) {

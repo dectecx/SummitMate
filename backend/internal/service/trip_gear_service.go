@@ -56,6 +56,22 @@ func (s *TripGearService) DeleteItem(ctx context.Context, tripID, itemID, userID
 	return s.repo.Delete(ctx, itemID, tripID)
 }
 
+func (s *TripGearService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripGearItem) error {
+	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
+		return apperror.ErrAccessDenied
+	}
+
+	for _, item := range items {
+		item.TripID = tripID
+		if item.CreatedBy == "" {
+			item.CreatedBy = userID
+		}
+		item.UpdatedBy = userID
+	}
+
+	return s.repo.ReplaceAll(ctx, tripID, items)
+}
+
 func (s *TripGearService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err == nil && trip.UserID == userID {

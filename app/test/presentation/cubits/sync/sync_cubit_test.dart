@@ -13,12 +13,17 @@ import 'package:summitmate/presentation/cubits/sync/sync_state.dart';
 
 // Mocks
 class MockSyncService extends Mock implements ISyncService {}
+
 class MockConnectivityService extends Mock implements IConnectivityService {}
+
 class MockItineraryRepository extends Mock implements IItineraryRepository {}
+
 class MockTripRepository extends Mock implements ITripRepository {}
+
 class MockAuthService extends Mock implements IAuthService {}
 
 class FakeSyncResult extends Fake implements SyncResult {}
+
 class FakeTrip extends Fake implements Trip {}
 
 void main() {
@@ -125,17 +130,19 @@ void main() {
         setUp: () {
           when(() => mockConnectivityService.isOffline).thenReturn(false);
           when(() => mockTripRepo.getActiveTrip(any())).thenAnswer(
-            (_) async => Success(Trip(
-              id: 't1',
-              userId: 'u1',
-              name: 'T',
-              startDate: DateTime.now(),
-              isActive: true,
-              createdAt: DateTime.now(),
-              createdBy: 'u1',
-              updatedAt: DateTime.now(),
-              updatedBy: 'u1',
-            )),
+            (_) async => Success(
+              Trip(
+                id: 't1',
+                userId: 'u1',
+                name: 'T',
+                startDate: DateTime.now(),
+                isActive: true,
+                createdAt: DateTime.now(),
+                createdBy: 'u1',
+                updatedAt: DateTime.now(),
+                updatedBy: 'u1',
+              ),
+            ),
           );
           when(() => mockItineraryRepo.sync('t1')).thenAnswer((_) async => const Success(null));
         },

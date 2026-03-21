@@ -36,3 +36,7 @@ func (s *FavoriteService) AddFavorite(ctx context.Context, userID, targetID, fav
 func (s *FavoriteService) RemoveFavorite(ctx context.Context, targetID, userID string) error {
 	return s.repo.DeleteByTargetAndUser(ctx, targetID, userID)
 }
+
+func (s *FavoriteService) BatchUpdateFavorites(ctx context.Context, userID string, items []repository.BatchFavoriteItem) error {
+	return s.repo.BatchUpdate(ctx, userID, items)
+}

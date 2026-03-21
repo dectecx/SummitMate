@@ -643,6 +643,27 @@ paths:
           description: 參數錯誤
         "401":
           description: 未登入
+    put:
+      summary: Replace All Gear Library Items
+      description: 批量替換使用者的全部裝備庫 (離線同步用)
+      operationId: replaceAllGearLibraryItems
+      tags:
+        - gear-library
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/GearLibraryItem"
+      responses:
+        "200":
+          description: 批量替換成功
+        "401":
+          description: 未登入
 
   /gear-library/{itemId}:
     get:
@@ -782,6 +803,27 @@ paths:
                 $ref: "#/components/schemas/MealLibraryItem"
         "400":
           description: 參數錯誤
+        "401":
+          description: 未登入
+    put:
+      summary: Replace All Meal Library Items
+      description: 批量替換使用者的全部食物庫 (離線同步用)
+      operationId: replaceAllMealLibraryItems
+      tags:
+        - meal-library
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/MealLibraryItem"
+      responses:
+        "200":
+          description: 批量替換成功
         "401":
           description: 未登入
 
@@ -940,6 +982,38 @@ paths:
           description: 無權限編輯
         "404":
           description: 找不到該行程
+    put:
+      summary: Replace All Trip Gear
+      description: 批量替換該行程的所有裝備 (離線同步用)
+      operationId: replaceAllTripGear
+      tags:
+        - trip-gear
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/TripGearItem"
+      responses:
+        "200":
+          description: 批量替換成功
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程
 
   /trips/{tripId}/gear/{itemId}:
     put:
@@ -1076,6 +1150,38 @@ paths:
                 $ref: "#/components/schemas/TripMealItem"
         "400":
           description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該行程
+    put:
+      summary: Replace All Trip Meals
+      description: 批量替換該行程的所有食物 (離線同步用)
+      operationId: replaceAllTripMeals
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/TripMealItem"
+      responses:
+        "200":
+          description: 批量替換成功
         "401":
           description: 未登入
         "403":
@@ -1556,6 +1662,31 @@ paths:
           description: 未登入
         "409":
           description: 此項目已經在收藏中
+
+  /favorites/batch:
+    post:
+      summary: Batch Update Favorites
+      description: 批量更新最愛狀態 (離線同步用)
+      operationId: batchUpdateFavorites
+      tags:
+        - favorites
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/BatchFavoriteRequest"
+      responses:
+        "200":
+          description: 批量更新成功
+        "400":
+          description: 無效的請求
+        "401":
+          description: 未登入
 
   /favorites/{targetId}:
     delete:
@@ -2719,6 +2850,22 @@ components:
         type:
           type: string
           maxLength: 30
+
+    BatchFavoriteRequest:
+      type: object
+      required:
+        - target_id
+        - type
+        - is_favorite
+      properties:
+        target_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          maxLength: 30
+        is_favorite:
+          type: boolean
 
     GroupEvent:
       type: object

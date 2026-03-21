@@ -95,6 +95,34 @@ func (repo *TripMealRepository) Delete(ctx context.Context, id string, tripID st
 	return nil
 }
 
+func (repo *TripMealRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripMealItem) error {
+	tx, err := repo.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, "DELETE FROM meal_items WHERE trip_id = $1", tripID)
+	if err != nil {
+		return err
+	}
+
+	query := `
+		INSERT INTO meal_items (id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, NOW()), $12, COALESCE($13, NOW()), $14)
+	`
+	for _, item := range items {
+		_, err := tx.Exec(ctx, query,
+			item.ID, tripID, item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 func (repo *TripMealRepository) scanItem(row pgx.Row) (*model.TripMealItem, error) {
 	var i model.TripMealItem
 	err := row.Scan(
