@@ -13,18 +13,26 @@ import (
 // ErrNotFound 代表查詢結果為空 (無符合條件的資料列)。
 var ErrNotFound = errors.New("resource not found")
 
-// UserRepository 封裝 users 表的資料庫存取操作。
-type UserRepository struct {
-	pool *pgxpool.Pool // PostgreSQL 連線池
+// UserRepository 定義使用者資料存取介面。
+type UserRepository interface {
+	Create(ctx context.Context, user *model.User) (*model.User, error)
+	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	GetByID(ctx context.Context, id string) (*model.User, error)
+	DeleteByID(ctx context.Context, id string) error
+	Update(ctx context.Context, id string, displayName, avatar *string) (*model.User, error)
+	SoftDelete(ctx context.Context, id string) error
 }
 
-// NewUserRepository 建立 UserRepository 實例。
-func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
-	return &UserRepository{pool: pool}
+type userRepository struct {
+	pool *pgxpool.Pool
+}
+
+func NewUserRepository(pool *pgxpool.Pool) UserRepository {
+	return &userRepository{pool: pool}
 }
 
 // Create 新增一筆使用者資料，回傳含有 DB 產生值 (id, avatar, created_at 等) 的完整 User。
-func (repo *UserRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
+func (repo *userRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	query := `
 		INSERT INTO users (email, password_hash, display_name, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5)
@@ -56,23 +64,23 @@ func (repo *UserRepository) Create(ctx context.Context, user *model.User) (*mode
 }
 
 // GetByEmail 以 Email 查詢使用者。若不存在回傳 ErrNotFound。
-func (repo *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (repo *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	return repo.getOneUser(ctx, "email", email)
 }
 
 // GetByID 以 UUID 查詢使用者。若不存在回傳 ErrNotFound。
-func (repo *UserRepository) GetByID(ctx context.Context, id string) (*model.User, error) {
+func (repo *userRepository) GetByID(ctx context.Context, id string) (*model.User, error) {
 	return repo.getOneUser(ctx, "id", id)
 }
 
 // DeleteByID 刪除指定 ID 的使用者。用於測試資料清理等場景。
-func (repo *UserRepository) DeleteByID(ctx context.Context, id string) error {
+func (repo *userRepository) DeleteByID(ctx context.Context, id string) error {
 	_, err := repo.pool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
 	return err
 }
 
 // Update 更新使用者的 display_name 與 avatar。
-func (repo *UserRepository) Update(ctx context.Context, id string, displayName, avatar *string) (*model.User, error) {
+func (repo *userRepository) Update(ctx context.Context, id string, displayName, avatar *string) (*model.User, error) {
 	query := `
 		UPDATE users
 		SET display_name = COALESCE($1, display_name),
@@ -110,7 +118,7 @@ func (repo *UserRepository) Update(ctx context.Context, id string, displayName, 
 }
 
 // SoftDelete 將使用者設為停用 (is_active = false)。
-func (repo *UserRepository) SoftDelete(ctx context.Context, id string) error {
+func (repo *userRepository) SoftDelete(ctx context.Context, id string) error {
 	result, err := repo.pool.Exec(ctx, "UPDATE users SET is_active = false, updated_at = NOW(), updated_by = $1 WHERE id = $1", id)
 	if err != nil {
 		return err
@@ -122,7 +130,7 @@ func (repo *UserRepository) SoftDelete(ctx context.Context, id string) error {
 }
 
 // getOneUser 是內部共用方法，依指定欄位查詢單一使用者。
-func (repo *UserRepository) getOneUser(ctx context.Context, column string, value string) (*model.User, error) {
+func (repo *userRepository) getOneUser(ctx context.Context, column string, value string) (*model.User, error) {
 	// 此處 column 為程式內部控制 ("id" 或 "email")，非外部輸入，可安全拼接
 	query := `
 		SELECT id, email, password_hash, display_name, avatar, role_id,

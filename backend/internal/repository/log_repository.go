@@ -10,16 +10,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type LogRepository struct {
+// LogRepository 定義日誌資料存取介面。
+type LogRepository interface {
+	BatchCreate(ctx context.Context, deviceID, deviceName string, entries []model.LogEntry) (int, error)
+}
+
+type logRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewLogRepository(pool *pgxpool.Pool) *LogRepository {
-	return &LogRepository{pool: pool}
+func NewLogRepository(pool *pgxpool.Pool) LogRepository {
+	return &logRepository{pool: pool}
 }
 
 // BatchCreate 批次建立日誌
-func (r *LogRepository) BatchCreate(ctx context.Context, deviceID, deviceName string, entries []model.LogEntry) (int, error) {
+func (r *logRepository) BatchCreate(ctx context.Context, deviceID, deviceName string, entries []model.LogEntry) (int, error) {
 	if len(entries) == 0 {
 		return 0, nil
 	}

@@ -559,7 +559,7 @@ func main() {
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
-	authService := service.NewAuthService(logger, userRepo, tokenManager)
+	authService := service.NewAuthService(logger, userRepo, tokenManager, cfg.JWTSecret)
 	tripService := service.NewTripService(logger, tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(logger, gearLibRepo)
 	mealLibService := service.NewMealLibraryService(logger, mealLibRepo)
@@ -569,7 +569,7 @@ func main() {
 	pollService := service.NewPollService(logger, pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(logger, favoriteRepo)
 	groupService := service.NewGroupEventService(logger, groupRepo)
-	weatherService := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey)
+	weatherService := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
 	logRepo := repository.NewLogRepository(pool)
 	logService := service.NewLogService(logger, logRepo)
 	heartbeatService := service.NewHeartbeatService(logger, heartbeatRepo)

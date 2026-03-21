@@ -9,15 +9,25 @@ import (
 	"summitmate/internal/model"
 )
 
-type MealLibraryRepository struct {
+// MealLibraryRepository 定義餐食庫資料存取介面。
+type MealLibraryRepository interface {
+	Create(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error)
+	GetByID(ctx context.Context, id string, userID string) (*model.MealLibraryItem, error)
+	ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*model.MealLibraryItem, error)
+	Update(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error)
+	Delete(ctx context.Context, id string, userID string) error
+	ReplaceAll(ctx context.Context, userID string, items []*model.MealLibraryItem) error
+}
+
+type mealLibraryRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewMealLibraryRepository(pool *pgxpool.Pool) *MealLibraryRepository {
-	return &MealLibraryRepository{pool: pool}
+func NewMealLibraryRepository(pool *pgxpool.Pool) MealLibraryRepository {
+	return &mealLibraryRepository{pool: pool}
 }
 
-func (repo *MealLibraryRepository) Create(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error) {
+func (repo *mealLibraryRepository) Create(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error) {
 	query := `
 		INSERT INTO meal_library_items (user_id, name, weight, calories, notes, is_archived, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -30,7 +40,7 @@ func (repo *MealLibraryRepository) Create(ctx context.Context, item *model.MealL
 	return repo.scanItem(row)
 }
 
-func (repo *MealLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*model.MealLibraryItem, error) {
+func (repo *mealLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*model.MealLibraryItem, error) {
 	query := `
 		SELECT id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
 		FROM meal_library_items
@@ -40,7 +50,7 @@ func (repo *MealLibraryRepository) GetByID(ctx context.Context, id string, userI
 	return repo.scanItem(row)
 }
 
-func (repo *MealLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*model.MealLibraryItem, error) {
+func (repo *mealLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*model.MealLibraryItem, error) {
 	query := `
 		SELECT id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
 		FROM meal_library_items
@@ -68,7 +78,7 @@ func (repo *MealLibraryRepository) ListByUserID(ctx context.Context, userID stri
 	return items, nil
 }
 
-func (repo *MealLibraryRepository) Update(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error) {
+func (repo *mealLibraryRepository) Update(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error) {
 	query := `
 		UPDATE meal_library_items
 		SET name = $1, weight = $2, calories = $3, notes = $4, is_archived = $5, updated_at = NOW(), updated_by = $6
@@ -82,7 +92,7 @@ func (repo *MealLibraryRepository) Update(ctx context.Context, item *model.MealL
 	return repo.scanItem(row)
 }
 
-func (repo *MealLibraryRepository) Delete(ctx context.Context, id string, userID string) error {
+func (repo *mealLibraryRepository) Delete(ctx context.Context, id string, userID string) error {
 	query := `
 		DELETE FROM meal_library_items
 		WHERE id = $1 AND user_id = $2
@@ -97,7 +107,7 @@ func (repo *MealLibraryRepository) Delete(ctx context.Context, id string, userID
 	return nil
 }
 
-func (repo *MealLibraryRepository) ReplaceAll(ctx context.Context, userID string, items []*model.MealLibraryItem) error {
+func (repo *mealLibraryRepository) ReplaceAll(ctx context.Context, userID string, items []*model.MealLibraryItem) error {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -125,7 +135,7 @@ func (repo *MealLibraryRepository) ReplaceAll(ctx context.Context, userID string
 	return tx.Commit(ctx)
 }
 
-func (repo *MealLibraryRepository) scanItem(row pgx.Row) (*model.MealLibraryItem, error) {
+func (repo *mealLibraryRepository) scanItem(row pgx.Row) (*model.MealLibraryItem, error) {
 	var i model.MealLibraryItem
 	err := row.Scan(
 		&i.ID, &i.UserID, &i.Name, &i.Weight, &i.Calories,

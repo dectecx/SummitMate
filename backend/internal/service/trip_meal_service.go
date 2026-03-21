@@ -11,12 +11,12 @@ import (
 
 type TripMealService struct {
 	logger     *slog.Logger
-	repo       *repository.TripMealRepository
-	tripRepo   *repository.TripRepository
-	memberRepo *repository.TripMemberRepository
+	repo       repository.TripMealRepository
+	tripRepo   repository.TripRepository
+	memberRepo repository.TripMemberRepository
 }
 
-func NewTripMealService(logger *slog.Logger, repo *repository.TripMealRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *TripMealService {
+func NewTripMealService(logger *slog.Logger, repo repository.TripMealRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *TripMealService {
 	return &TripMealService{
 		logger:     logger.With("component", "trip_meal"),
 		repo:       repo,

@@ -15,16 +15,17 @@ import (
 // AuthService 封裝認證相關的業務邏輯 (註冊、登入、取得使用者)。
 type AuthService struct {
 	logger       *slog.Logger
-	userRepo     *repository.UserRepository // 使用者資料存取層
-	tokenManager *auth.TokenManager         // JWT Token 管理器
+	userRepo     repository.UserRepository
+	tokenManager *auth.TokenManager
+	jwtSecret    []byte
 }
 
-// NewAuthService 建立 AuthService 實例。
-func NewAuthService(logger *slog.Logger, userRepo *repository.UserRepository, tokenManager *auth.TokenManager) *AuthService {
+func NewAuthService(logger *slog.Logger, userRepo repository.UserRepository, tokenManager *auth.TokenManager, jwtSecret string) *AuthService {
 	return &AuthService{
 		logger:       logger.With("component", "auth"),
 		userRepo:     userRepo,
 		tokenManager: tokenManager,
+		jwtSecret:    []byte(jwtSecret),
 	}
 }
 

@@ -7,16 +7,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type HeartbeatRepository struct {
+// HeartbeatRepository 定義心跳資料存取介面。
+type HeartbeatRepository interface {
+	Upsert(ctx context.Context, hb *model.Heartbeat) error
+}
+
+type heartbeatRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewHeartbeatRepository(pool *pgxpool.Pool) *HeartbeatRepository {
-	return &HeartbeatRepository{pool: pool}
+func NewHeartbeatRepository(pool *pgxpool.Pool) HeartbeatRepository {
+	return &heartbeatRepository{pool: pool}
 }
 
 // Upsert 更新或插入心跳資訊
-func (r *HeartbeatRepository) Upsert(ctx context.Context, hb *model.Heartbeat) error {
+func (r *heartbeatRepository) Upsert(ctx context.Context, hb *model.Heartbeat) error {
 	query := `
 		INSERT INTO heartbeats (user_id, user_type, last_seen, view, platform)
 		VALUES ($1, $2, NOW(), $3, $4)

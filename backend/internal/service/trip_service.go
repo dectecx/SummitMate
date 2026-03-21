@@ -14,19 +14,18 @@ import (
 // TripService 封裝行程相關的業務邏輯。
 type TripService struct {
 	logger        *slog.Logger
-	tripRepo      *repository.TripRepository
-	memberRepo    *repository.TripMemberRepository
-	itineraryRepo *repository.ItineraryRepository
-	userRepo      *repository.UserRepository
+	tripRepo      repository.TripRepository
+	memberRepo    repository.TripMemberRepository
+	itineraryRepo repository.ItineraryRepository
+	userRepo      repository.UserRepository
 }
 
-// NewTripService 初始化 TripService。
 func NewTripService(
 	logger *slog.Logger,
-	tripRepo *repository.TripRepository,
-	memberRepo *repository.TripMemberRepository,
-	itineraryRepo *repository.ItineraryRepository,
-	userRepo *repository.UserRepository,
+	tripRepo repository.TripRepository,
+	memberRepo repository.TripMemberRepository,
+	itineraryRepo repository.ItineraryRepository,
+	userRepo repository.UserRepository,
 ) *TripService {
 	return &TripService{
 		logger:        logger.With("component", "trip"),

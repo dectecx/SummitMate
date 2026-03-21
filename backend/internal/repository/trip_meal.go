@@ -9,15 +9,25 @@ import (
 	"summitmate/internal/model"
 )
 
-type TripMealRepository struct {
+// TripMealRepository 定義行程餐食資料存取介面。
+type TripMealRepository interface {
+	ListByTripID(ctx context.Context, tripID string) ([]*model.TripMealItem, error)
+	Create(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error)
+	GetByID(ctx context.Context, id string, tripID string) (*model.TripMealItem, error)
+	Update(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error)
+	Delete(ctx context.Context, id string, tripID string) error
+	ReplaceAll(ctx context.Context, tripID string, items []*model.TripMealItem) error
+}
+
+type tripMealRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewTripMealRepository(pool *pgxpool.Pool) *TripMealRepository {
-	return &TripMealRepository{pool: pool}
+func NewTripMealRepository(pool *pgxpool.Pool) TripMealRepository {
+	return &tripMealRepository{pool: pool}
 }
 
-func (repo *TripMealRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripMealItem, error) {
+func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripMealItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 		FROM meal_items
@@ -45,7 +55,7 @@ func (repo *TripMealRepository) ListByTripID(ctx context.Context, tripID string)
 	return items, nil
 }
 
-func (repo *TripMealRepository) Create(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) Create(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error) {
 	query := `
 		INSERT INTO meal_items (trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -57,7 +67,7 @@ func (repo *TripMealRepository) Create(ctx context.Context, item *model.TripMeal
 	return repo.scanItem(row)
 }
 
-func (repo *TripMealRepository) GetByID(ctx context.Context, id string, tripID string) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID string) (*model.TripMealItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 		FROM meal_items
@@ -67,7 +77,7 @@ func (repo *TripMealRepository) GetByID(ctx context.Context, id string, tripID s
 	return repo.scanItem(row)
 }
 
-func (repo *TripMealRepository) Update(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) Update(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error) {
 	query := `
 		UPDATE meal_items
 		SET library_item_id = $1, day = $2, meal_type = $3, name = $4, weight = $5, calories = $6, quantity = $7, note = $8, updated_at = NOW(), updated_by = $9
@@ -80,7 +90,7 @@ func (repo *TripMealRepository) Update(ctx context.Context, item *model.TripMeal
 	return repo.scanItem(row)
 }
 
-func (repo *TripMealRepository) Delete(ctx context.Context, id string, tripID string) error {
+func (repo *tripMealRepository) Delete(ctx context.Context, id string, tripID string) error {
 	query := `
 		DELETE FROM meal_items
 		WHERE id = $1 AND trip_id = $2
@@ -95,7 +105,7 @@ func (repo *TripMealRepository) Delete(ctx context.Context, id string, tripID st
 	return nil
 }
 
-func (repo *TripMealRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripMealItem) error {
+func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripMealItem) error {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -123,7 +133,7 @@ func (repo *TripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 	return tx.Commit(ctx)
 }
 
-func (repo *TripMealRepository) scanItem(row pgx.Row) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) scanItem(row pgx.Row) (*model.TripMealItem, error) {
 	var i model.TripMealItem
 	err := row.Scan(
 		&i.ID, &i.TripID, &i.LibraryItemID, &i.Day, &i.MealType, &i.Name,

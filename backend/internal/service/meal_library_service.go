@@ -10,10 +10,10 @@ import (
 
 type MealLibraryService struct {
 	logger *slog.Logger
-	repo   *repository.MealLibraryRepository
+	repo   repository.MealLibraryRepository
 }
 
-func NewMealLibraryService(logger *slog.Logger, repo *repository.MealLibraryRepository) *MealLibraryService {
+func NewMealLibraryService(logger *slog.Logger, repo repository.MealLibraryRepository) *MealLibraryService {
 	return &MealLibraryService{
 		logger: logger.With("component", "meal_library"),
 		repo:   repo,

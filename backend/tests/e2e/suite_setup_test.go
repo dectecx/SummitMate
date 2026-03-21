@@ -591,7 +591,7 @@ func (s *APITestSuite) SetupSuite() {
 	heartbeatRepo := repository.NewHeartbeatRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
-	authService := service.NewAuthService(slog.Default(), userRepo, tokenManager)
+	authService := service.NewAuthService(slog.Default(), userRepo, tokenManager, cfg.JWTSecret)
 	tripService := service.NewTripService(slog.Default(), tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(slog.Default(), gearLibRepo)
 	mealLibService := service.NewMealLibraryService(slog.Default(), mealLibRepo)
@@ -601,7 +601,7 @@ func (s *APITestSuite) SetupSuite() {
 	pollService := service.NewPollService(slog.Default(), pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(slog.Default(), favoriteRepo)
 	groupService := service.NewGroupEventService(slog.Default(), groupRepo)
-	weatherService := service.NewWeatherService(slog.Default(), weatherRepo, cfg.CWAApiKey)
+	weatherService := service.NewWeatherService(slog.Default(), weatherRepo, cfg.CWAApiKey, nil)
 	heartbeatService := service.NewHeartbeatService(slog.Default(), heartbeatRepo)
 
 	authHandler := handler.NewAuthHandler(authService)

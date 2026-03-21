@@ -12,11 +12,11 @@ import (
 type MessageService struct {
 	logger     *slog.Logger
 	repo       repository.MessageRepository
-	tripRepo   *repository.TripRepository
-	memberRepo *repository.TripMemberRepository
+	tripRepo   repository.TripRepository
+	memberRepo repository.TripMemberRepository
 }
 
-func NewMessageService(logger *slog.Logger, repo repository.MessageRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *MessageService {
+func NewMessageService(logger *slog.Logger, repo repository.MessageRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *MessageService {
 	return &MessageService{
 		logger:     logger.With("component", "message"),
 		repo:       repo,

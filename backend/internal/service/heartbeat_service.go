@@ -9,10 +9,10 @@ import (
 
 type HeartbeatService struct {
 	logger *slog.Logger
-	repo   *repository.HeartbeatRepository
+	repo   repository.HeartbeatRepository
 }
 
-func NewHeartbeatService(logger *slog.Logger, repo *repository.HeartbeatRepository) *HeartbeatService {
+func NewHeartbeatService(logger *slog.Logger, repo repository.HeartbeatRepository) *HeartbeatService {
 	return &HeartbeatService{
 		logger: logger.With("component", "heartbeat"),
 		repo:   repo,

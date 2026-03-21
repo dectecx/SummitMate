@@ -10,10 +10,10 @@ import (
 
 type LogService struct {
 	logger *slog.Logger
-	repo   *repository.LogRepository
+	repo   repository.LogRepository
 }
 
-func NewLogService(logger *slog.Logger, repo *repository.LogRepository) *LogService {
+func NewLogService(logger *slog.Logger, repo repository.LogRepository) *LogService {
 	return &LogService{
 		logger: logger.With("component", "log_upload"),
 		repo:   repo,
