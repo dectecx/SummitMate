@@ -11,12 +11,12 @@ import (
 
 type TripGearService struct {
 	logger     *slog.Logger
-	repo       *repository.TripGearRepository
-	tripRepo   *repository.TripRepository
-	memberRepo *repository.TripMemberRepository
+	repo       repository.TripGearRepository
+	tripRepo   repository.TripRepository
+	memberRepo repository.TripMemberRepository
 }
 
-func NewTripGearService(logger *slog.Logger, repo *repository.TripGearRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *TripGearService {
+func NewTripGearService(logger *slog.Logger, repo repository.TripGearRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *TripGearService {
 	return &TripGearService{
 		logger:     logger.With("component", "trip_gear"),
 		repo:       repo,

@@ -9,15 +9,25 @@ import (
 	"summitmate/internal/model"
 )
 
-type TripGearRepository struct {
+// TripGearRepository 定義行程裝備資料存取介面。
+type TripGearRepository interface {
+	ListByTripID(ctx context.Context, tripID string) ([]*model.TripGearItem, error)
+	Create(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error)
+	GetByID(ctx context.Context, id string, tripID string) (*model.TripGearItem, error)
+	Update(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error)
+	Delete(ctx context.Context, id string, tripID string) error
+	ReplaceAll(ctx context.Context, tripID string, items []*model.TripGearItem) error
+}
+
+type tripGearRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewTripGearRepository(pool *pgxpool.Pool) *TripGearRepository {
-	return &TripGearRepository{pool: pool}
+func NewTripGearRepository(pool *pgxpool.Pool) TripGearRepository {
+	return &tripGearRepository{pool: pool}
 }
 
-func (repo *TripGearRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripGearItem, error) {
+func (repo *tripGearRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripGearItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by
 		FROM gear_items
@@ -45,7 +55,7 @@ func (repo *TripGearRepository) ListByTripID(ctx context.Context, tripID string)
 	return items, nil
 }
 
-func (repo *TripGearRepository) Create(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) Create(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error) {
 	query := `
 		INSERT INTO gear_items (trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -57,7 +67,7 @@ func (repo *TripGearRepository) Create(ctx context.Context, item *model.TripGear
 	return repo.scanItem(row)
 }
 
-func (repo *TripGearRepository) GetByID(ctx context.Context, id string, tripID string) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) GetByID(ctx context.Context, id string, tripID string) (*model.TripGearItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by
 		FROM gear_items
@@ -67,7 +77,7 @@ func (repo *TripGearRepository) GetByID(ctx context.Context, id string, tripID s
 	return repo.scanItem(row)
 }
 
-func (repo *TripGearRepository) Update(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) Update(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error) {
 	query := `
 		UPDATE gear_items
 		SET library_item_id = $1, name = $2, weight = $3, category = $4, quantity = $5, is_checked = $6, order_index = $7, updated_at = NOW(), updated_by = $8
@@ -80,7 +90,7 @@ func (repo *TripGearRepository) Update(ctx context.Context, item *model.TripGear
 	return repo.scanItem(row)
 }
 
-func (repo *TripGearRepository) Delete(ctx context.Context, id string, tripID string) error {
+func (repo *tripGearRepository) Delete(ctx context.Context, id string, tripID string) error {
 	query := `
 		DELETE FROM gear_items
 		WHERE id = $1 AND trip_id = $2
@@ -95,7 +105,7 @@ func (repo *TripGearRepository) Delete(ctx context.Context, id string, tripID st
 	return nil
 }
 
-func (repo *TripGearRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripGearItem) error {
+func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripGearItem) error {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -124,7 +134,7 @@ func (repo *TripGearRepository) ReplaceAll(ctx context.Context, tripID string, i
 	return tx.Commit(ctx)
 }
 
-func (repo *TripGearRepository) scanItem(row pgx.Row) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) scanItem(row pgx.Row) (*model.TripGearItem, error) {
 	var i model.TripGearItem
 	err := row.Scan(
 		&i.ID, &i.TripID, &i.LibraryItemID, &i.Name, &i.Weight, &i.Category,

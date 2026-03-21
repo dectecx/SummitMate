@@ -35,7 +35,7 @@ func main() {
 
 	// 執行 ETL
 	weatherRepo := repository.NewWeatherRepository(pool)
-	weatherSvc := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey)
+	weatherSvc := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
 
 	slog.Info("開始執行天氣 ETL")
 	if err := weatherSvc.FetchAndStore(ctx); err != nil {

@@ -8,16 +8,23 @@ import (
 	"summitmate/internal/model"
 )
 
-type WeatherRepository struct {
+// WeatherRepository 定義天氣資料存取介面。
+type WeatherRepository interface {
+	ReplaceAll(ctx context.Context, records []model.WeatherRecord) error
+	ListAll(ctx context.Context) ([]model.WeatherRecord, error)
+	ListByLocation(ctx context.Context, location string) ([]model.WeatherRecord, error)
+}
+
+type weatherRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewWeatherRepository(pool *pgxpool.Pool) *WeatherRepository {
-	return &WeatherRepository{pool: pool}
+func NewWeatherRepository(pool *pgxpool.Pool) WeatherRepository {
+	return &weatherRepository{pool: pool}
 }
 
 // ReplaceAll 以 Transaction 方式先清除舊資料再寫入新資料
-func (r *WeatherRepository) ReplaceAll(ctx context.Context, records []model.WeatherRecord) error {
+func (r *weatherRepository) ReplaceAll(ctx context.Context, records []model.WeatherRecord) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -48,7 +55,7 @@ func (r *WeatherRepository) ReplaceAll(ctx context.Context, records []model.Weat
 }
 
 // ListAll 取得所有天氣資料
-func (r *WeatherRepository) ListAll(ctx context.Context) ([]model.WeatherRecord, error) {
+func (r *weatherRepository) ListAll(ctx context.Context) ([]model.WeatherRecord, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT id, location, start_time, end_time, wx, temp, pop, min_temp, max_temp, humidity, wind_speed, min_at, max_at, issue_time, fetched_at
 		 FROM weather_data ORDER BY location, start_time`)
@@ -75,7 +82,7 @@ func (r *WeatherRepository) ListAll(ctx context.Context) ([]model.WeatherRecord,
 }
 
 // ListByLocation 取得特定地點的天氣資料
-func (r *WeatherRepository) ListByLocation(ctx context.Context, location string) ([]model.WeatherRecord, error) {
+func (r *weatherRepository) ListByLocation(ctx context.Context, location string) ([]model.WeatherRecord, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT id, location, start_time, end_time, wx, temp, pop, min_temp, max_temp, humidity, wind_speed, min_at, max_at, issue_time, fetched_at
 		 FROM weather_data WHERE location = $1 ORDER BY start_time`, location)

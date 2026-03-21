@@ -8,18 +8,23 @@ import (
 	"summitmate/internal/model"
 )
 
-// TripMemberRepository 封裝 trip_members 表的資料庫存取操作。
-type TripMemberRepository struct {
+// TripMemberRepository 定義行程成員資料存取介面。
+type TripMemberRepository interface {
+	AddMember(ctx context.Context, tripID string, userID string) error
+	RemoveMember(ctx context.Context, tripID string, userID string) error
+	ListByTripID(ctx context.Context, tripID string) ([]*model.TripMember, error)
+}
+
+type tripMemberRepository struct {
 	pool *pgxpool.Pool
 }
 
-// NewTripMemberRepository 建立 TripMemberRepository 實例。
-func NewTripMemberRepository(pool *pgxpool.Pool) *TripMemberRepository {
-	return &TripMemberRepository{pool: pool}
+func NewTripMemberRepository(pool *pgxpool.Pool) TripMemberRepository {
+	return &tripMemberRepository{pool: pool}
 }
 
 // AddMember 新增一位成員到指定行程中。
-func (repo *TripMemberRepository) AddMember(ctx context.Context, tripID string, userID string) error {
+func (repo *tripMemberRepository) AddMember(ctx context.Context, tripID string, userID string) error {
 	query := `
 		INSERT INTO trip_members (trip_id, user_id)
 		VALUES ($1, $2)
@@ -30,7 +35,7 @@ func (repo *TripMemberRepository) AddMember(ctx context.Context, tripID string, 
 }
 
 // RemoveMember 從指定行程中移除一位成員。
-func (repo *TripMemberRepository) RemoveMember(ctx context.Context, tripID string, userID string) error {
+func (repo *tripMemberRepository) RemoveMember(ctx context.Context, tripID string, userID string) error {
 	query := `
 		DELETE FROM trip_members
 		WHERE trip_id = $1 AND user_id = $2
@@ -40,7 +45,7 @@ func (repo *TripMemberRepository) RemoveMember(ctx context.Context, tripID strin
 }
 
 // ListByTripID 取得行程的所有成員，同時結合 users 表的顯示名稱與 Email 等資訊。
-func (repo *TripMemberRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripMember, error) {
+func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripMember, error) {
 	query := `
 		SELECT tm.trip_id, tm.user_id, tm.joined_at, u.email, u.display_name, u.avatar
 		FROM trip_members tm

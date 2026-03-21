@@ -12,11 +12,11 @@ import (
 type PollService struct {
 	logger     *slog.Logger
 	repo       repository.PollRepository
-	tripRepo   *repository.TripRepository
-	memberRepo *repository.TripMemberRepository
+	tripRepo   repository.TripRepository
+	memberRepo repository.TripMemberRepository
 }
 
-func NewPollService(logger *slog.Logger, repo repository.PollRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *PollService {
+func NewPollService(logger *slog.Logger, repo repository.PollRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *PollService {
 	return &PollService{
 		logger:     logger.With("component", "poll"),
 		repo:       repo,

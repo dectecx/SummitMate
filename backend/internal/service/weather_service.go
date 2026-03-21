@@ -16,24 +16,30 @@ import (
 )
 
 const (
-	cwaDataID = "F-B0053-033"
+	cwaDataID  = "F-B0053-033"
 	cwaBaseURL = "https://opendata.cwa.gov.tw/fileapi/v1/opendataapi"
 )
 
 // WeatherService 處理天氣資料的 ETL 與查詢
 type WeatherService struct {
-	logger *slog.Logger
-	repo   *repository.WeatherRepository
-	apiKey string
+	logger    *slog.Logger
+	repo      repository.WeatherRepository
+	cwaAPIKey string
+	locations []string
 }
 
-func NewWeatherService(logger *slog.Logger, repo *repository.WeatherRepository, apiKey string) *WeatherService {
-	return &WeatherService{logger: logger.With("component", "weather"), repo: repo, apiKey: apiKey}
+func NewWeatherService(logger *slog.Logger, repo repository.WeatherRepository, cwaAPIKey string, locations []string) *WeatherService {
+	return &WeatherService{
+		logger:    logger.With("component", "weather"),
+		repo:      repo,
+		cwaAPIKey: cwaAPIKey,
+		locations: locations,
+	}
 }
 
 // FetchAndStore 執行完整的 ETL 流程：Fetch → Parse → Aggregate → Store
 func (s *WeatherService) FetchAndStore(ctx context.Context) error {
-	if s.apiKey == "" {
+	if s.cwaAPIKey == "" {
 		return fmt.Errorf("CWA_API_KEY 未設定")
 	}
 
@@ -79,7 +85,7 @@ type rawRow struct {
 }
 
 func (s *WeatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time, error) {
-	url := fmt.Sprintf("%s/%s?Authorization=%s&format=JSON&downloadType=WEB", cwaBaseURL, cwaDataID, s.apiKey)
+	url := fmt.Sprintf("%s/%s?Authorization=%s&format=JSON&downloadType=WEB", cwaBaseURL, cwaDataID, s.cwaAPIKey)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -223,15 +229,15 @@ func extractValue(elementName string, valObj interface{}) string {
 	}
 
 	keyMap := map[string]string{
-		"平均溫度":    "Temperature",
-		"平均相對濕度":  "RelativeHumidity",
+		"平均溫度":     "Temperature",
+		"平均相對濕度":   "RelativeHumidity",
 		"12小時降雨機率": "ProbabilityOfPrecipitation",
-		"風速":      "WindSpeed",
-		"天氣現象":    "Weather",
-		"最高溫度":    "MaxTemperature",
-		"最低溫度":    "MinTemperature",
-		"最高體感溫度":  "MaxApparentTemperature",
-		"最低體感溫度":  "MinApparentTemperature",
+		"風速":       "WindSpeed",
+		"天氣現象":     "Weather",
+		"最高溫度":     "MaxTemperature",
+		"最低溫度":     "MinTemperature",
+		"最高體感溫度":   "MaxApparentTemperature",
+		"最低體感溫度":   "MinApparentTemperature",
 	}
 
 	if key, found := keyMap[elementName]; found {
@@ -251,15 +257,15 @@ func extractValue(elementName string, valObj interface{}) string {
 func (s *WeatherService) aggregate(rows []rawRow, issueTime *time.Time) []model.WeatherRecord {
 	type shortKey = string
 	elementMap := map[string]shortKey{
-		"平均溫度":    "T",
-		"平均相對濕度":  "RH",
+		"平均溫度":     "T",
+		"平均相對濕度":   "RH",
 		"12小時降雨機率": "PoP",
-		"風速":      "WS",
-		"天氣現象":    "Wx",
-		"最高溫度":    "MaxT",
-		"最低溫度":    "MinT",
-		"最高體感溫度":  "MaxAT",
-		"最低體感溫度":  "MinAT",
+		"風速":       "WS",
+		"天氣現象":     "Wx",
+		"最高溫度":     "MaxT",
+		"最低溫度":     "MinT",
+		"最高體感溫度":   "MaxAT",
+		"最低體感溫度":   "MinAT",
 	}
 
 	type compositeKey struct {

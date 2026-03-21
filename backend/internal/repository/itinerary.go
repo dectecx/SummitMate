@@ -10,18 +10,25 @@ import (
 	"summitmate/internal/model"
 )
 
-// ItineraryRepository 封裝 itinerary_items 表的資料庫存取操作。
-type ItineraryRepository struct {
+// ItineraryRepository 定義行程節點資料存取介面。
+type ItineraryRepository interface {
+	Create(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error)
+	GetByID(ctx context.Context, id string) (*model.ItineraryItem, error)
+	ListByTripID(ctx context.Context, tripID string) ([]*model.ItineraryItem, error)
+	Update(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error)
+	DeleteByID(ctx context.Context, id string) error
+}
+
+type itineraryRepository struct {
 	pool *pgxpool.Pool
 }
 
-// NewItineraryRepository 建立 ItineraryRepository 實例。
-func NewItineraryRepository(pool *pgxpool.Pool) *ItineraryRepository {
-	return &ItineraryRepository{pool: pool}
+func NewItineraryRepository(pool *pgxpool.Pool) ItineraryRepository {
+	return &itineraryRepository{pool: pool}
 }
 
 // Create 新增一筆行程表節點，回傳建立好的節點內容。
-func (repo *ItineraryRepository) Create(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error) {
+func (repo *itineraryRepository) Create(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error) {
 	query := `
 		INSERT INTO itinerary_items (trip_id, day, name, est_time, altitude, distance, note, image_asset, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -36,7 +43,7 @@ func (repo *ItineraryRepository) Create(ctx context.Context, item *model.Itinera
 }
 
 // GetByID 取得單一行程表節點資訊。
-func (repo *ItineraryRepository) GetByID(ctx context.Context, id string) (*model.ItineraryItem, error) {
+func (repo *itineraryRepository) GetByID(ctx context.Context, id string) (*model.ItineraryItem, error) {
 	query := `
 		SELECT id, trip_id, day, name, est_time, actual_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at, created_at, created_by, updated_at, updated_by
 		FROM itinerary_items
@@ -47,7 +54,7 @@ func (repo *ItineraryRepository) GetByID(ctx context.Context, id string) (*model
 }
 
 // ListByTripID 取得特定行程的所有行程表節點，通常依時間序與天數排列。
-func (repo *ItineraryRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.ItineraryItem, error) {
+func (repo *itineraryRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.ItineraryItem, error) {
 	query := `
 		SELECT id, trip_id, day, name, est_time, actual_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at, created_at, created_by, updated_at, updated_by
 		FROM itinerary_items
@@ -81,7 +88,7 @@ func (repo *ItineraryRepository) ListByTripID(ctx context.Context, tripID string
 }
 
 // Update 更新行程表節點的資料。
-func (repo *ItineraryRepository) Update(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error) {
+func (repo *itineraryRepository) Update(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error) {
 	query := `
 		UPDATE itinerary_items
 		SET day = $1, name = $2, est_time = $3, actual_time = $4, altitude = $5, distance = $6, note = $7, image_asset = $8, is_checked_in = $9, checked_in_at = $10, updated_at = NOW(), updated_by = $11
@@ -97,13 +104,13 @@ func (repo *ItineraryRepository) Update(ctx context.Context, item *model.Itinera
 }
 
 // DeleteByID 刪除單一行程表節點。
-func (repo *ItineraryRepository) DeleteByID(ctx context.Context, id string) error {
+func (repo *itineraryRepository) DeleteByID(ctx context.Context, id string) error {
 	_, err := repo.pool.Exec(ctx, "DELETE FROM itinerary_items WHERE id = $1", id)
 	return err
 }
 
 // scanItem 是共用掃描行列輔助函式。
-func (repo *ItineraryRepository) scanItem(row pgx.Row) (*model.ItineraryItem, error) {
+func (repo *itineraryRepository) scanItem(row pgx.Row) (*model.ItineraryItem, error) {
 	var i model.ItineraryItem
 	err := row.Scan(
 		&i.ID, &i.TripID, &i.Day, &i.Name, &i.EstTime, &i.ActualTime,

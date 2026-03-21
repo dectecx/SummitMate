@@ -10,10 +10,10 @@ import (
 
 type GearLibraryService struct {
 	logger *slog.Logger
-	repo   *repository.GearLibraryRepository
+	repo   repository.GearLibraryRepository
 }
 
-func NewGearLibraryService(logger *slog.Logger, repo *repository.GearLibraryRepository) *GearLibraryService {
+func NewGearLibraryService(logger *slog.Logger, repo repository.GearLibraryRepository) *GearLibraryService {
 	return &GearLibraryService{
 		logger: logger.With("component", "gear_library"),
 		repo:   repo,
