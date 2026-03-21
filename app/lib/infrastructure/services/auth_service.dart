@@ -181,20 +181,94 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> loginWithProvider(OAuthProvider provider) async {
-    // TODO: 待後端實作第三方登入介面後在此串接
-    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '尚未支援 OAuth 登入');
+    try {
+      final response = await _apiClient.post('/auth/oauth', data: {
+        'provider': provider.name,
+        'token': 'placeholder_token',
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['user'] == null || data['token'] == null) {
+          return AuthResult.failure(errorCode: 'DATA_ERROR', errorMessage: '伺服器回傳資料異常');
+        }
+
+        final userData = data['user'] as Map<String, dynamic>;
+        final user = UserProfile(
+          id: userData['id'] ?? '',
+          email: userData['email'] ?? '',
+          displayName: userData['name'] ?? '',
+          avatar: userData['avatar'] ?? '',
+        );
+        final accessToken = data['token'] as String;
+
+        await _sessionRepo.saveSession(accessToken, user);
+        _currentUserId = user.id;
+        _currentUserEmail = user.email;
+        _isOfflineMode = false;
+
+        LogService.info('OAuth 登入成功: ${user.email}', source: _source);
+        return AuthResult.success(user: user, accessToken: accessToken);
+      } else {
+        return AuthResult.failure(errorCode: 'PROVIDER_LOGIN_FAILED', errorMessage: '第三方登入失敗');
+      }
+    } on DioException catch (e) {
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'NETWORK_ERROR',
+        errorMessage: apiError?.message ?? '網路錯誤',
+      );
+    } catch (e) {
+      LogService.error('OAuth 登入例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+    }
   }
 
   @override
   Future<AuthResult> verifyEmail({required String email, required String code}) async {
-    // TODO: 待後端實作信箱驗證流程後在此串接
-    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '無需Email驗證');
+    try {
+      final response = await _apiClient.post('/auth/verify-email', data: {
+        'email': email,
+        'code': code,
+      });
+
+      if (response.statusCode == 200) {
+        return AuthResult.success();
+      }
+      return AuthResult.failure(errorCode: 'VERIFICATION_FAILED', errorMessage: '信箱驗證失敗');
+    } on DioException catch (e) {
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'NETWORK_ERROR',
+        errorMessage: apiError?.message ?? '連線失敗',
+      );
+    } catch (e) {
+      LogService.error('信箱驗證例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+    }
   }
 
   @override
   Future<AuthResult> resendVerificationCode({required String email}) async {
-    // TODO: 待後端實作重新發送驗證碼介面後在此串接
-    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '功能尚未開放');
+    try {
+      final response = await _apiClient.post('/auth/resend-verification', data: {
+        'email': email,
+      });
+
+      if (response.statusCode == 200) {
+        return AuthResult.success();
+      }
+      return AuthResult.failure(errorCode: 'RESEND_FAILED', errorMessage: '重發驗證碼失敗');
+    } on DioException catch (e) {
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'NETWORK_ERROR',
+        errorMessage: apiError?.message ?? '連線失敗',
+      );
+    } catch (e) {
+      LogService.error('重發驗證碼例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+    }
   }
 
   @override
@@ -247,20 +321,109 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> refreshToken() async {
-    // TODO: 待後端實作 Refresh Token 機制後在此串接
-    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '尚不支援 Refresh Token API');
+    final oldRefreshToken = await getRefreshToken();
+    if (oldRefreshToken == null) {
+      return AuthResult.failure(errorCode: 'NO_REFRESH_TOKEN', errorMessage: '無 Refresh Token');
+    }
+
+    try {
+      final response = await _apiClient.post('/auth/refresh', data: {
+        'refresh_token': oldRefreshToken,
+      });
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        final newAccessToken = data['access_token'] as String?;
+        final user = await getCachedUserProfile();
+        
+        if (newAccessToken != null && user != null) {
+          await _sessionRepo.saveSession(newAccessToken, user);
+          return AuthResult.success(user: user, accessToken: newAccessToken);
+        }
+      }
+      
+      await logout();
+      return AuthResult.failure(errorCode: 'REFRESH_FAILED', errorMessage: 'Token 刷新失敗');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 400) {
+        await logout();
+        return AuthResult.failure(errorCode: 'REFRESH_EXPIRED', errorMessage: '授權已過期');
+      }
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'NETWORK_ERROR',
+        errorMessage: apiError?.message ?? '連線失敗',
+      );
+    } catch (e) {
+      LogService.error('Refresh Token 例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+    }
   }
 
   @override
   Future<AuthResult> deleteAccount() async {
-    // TODO: 目前後端尚未實作註銷帳號介面 (DELETE /auth/me)，待介面完成後在此進行串接
-    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '功能開發中');
+    try {
+      final response = await _apiClient.delete('/auth/me');
+      
+      if (response.statusCode == 200) {
+        await logout();
+        return AuthResult.success();
+      }
+      return AuthResult.failure(errorCode: 'DELETE_FAILED', errorMessage: '註銷帳號失敗');
+    } on DioException catch (e) {
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'NETWORK_ERROR',
+        errorMessage: apiError?.message ?? '連線失敗',
+      );
+    } catch (e) {
+      LogService.error('註銷帳號例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+    }
   }
 
   @override
   Future<AuthResult> updateProfile({String? displayName, String? avatar}) async {
-    // TODO: 待後端實作使用者資料更新介面 (PUT /auth/me) 後在此串接
-    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '功能開發中');
+    try {
+      final data = <String, dynamic>{};
+      if (displayName != null) data['display_name'] = displayName;
+      if (avatar != null) data['avatar'] = avatar;
+
+      if (data.isEmpty) return AuthResult.success();
+
+      final response = await _apiClient.put('/auth/me', data: data);
+
+      if (response.statusCode == 200) {
+        final userData = response.data as Map<String, dynamic>;
+        
+        // Update cached profile
+        final oldUser = await getCachedUserProfile();
+        if (oldUser != null) {
+          final newUser = UserProfile(
+            id: oldUser.id,
+            email: oldUser.email,
+            displayName: userData['name'] ?? oldUser.displayName,
+            avatar: userData['avatar'] ?? oldUser.avatar,
+          );
+          final token = await getAccessToken();
+          if (token != null) {
+            await _sessionRepo.saveSession(token, newUser);
+          }
+          return AuthResult.success(user: newUser, accessToken: token);
+        }
+        return AuthResult.success();
+      }
+      return AuthResult.failure(errorCode: 'UPDATE_FAILED', errorMessage: '更新資料失敗');
+    } on DioException catch (e) {
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'NETWORK_ERROR',
+        errorMessage: apiError?.message ?? '連線失敗',
+      );
+    } catch (e) {
+      LogService.error('更新資料例外: $e', source: _source);
+      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+    }
   }
 
   @override
