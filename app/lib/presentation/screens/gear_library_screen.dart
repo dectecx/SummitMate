@@ -679,6 +679,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
     );
 
     if (confirm != true) return;
+    if (!mounted) return;
 
     setState(() {
       _isLoading = true;

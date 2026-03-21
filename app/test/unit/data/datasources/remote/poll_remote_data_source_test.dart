@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/remote/poll_remote_data_source.dart';
-import 'package:summitmate/data/models/poll.dart';
 import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 
 class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}

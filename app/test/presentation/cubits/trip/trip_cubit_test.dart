@@ -251,7 +251,7 @@ void main() {
       when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
       when(() => mockGearRepository.getAllItems()).thenReturn([]);
       when(() => mockTripRepository.uploadTripToRemote(any())).thenAnswer((_) async => const Success('mock-id'));
-      when(() => mockSyncService.uploadItinerary()).thenAnswer((_) async => SyncResult.success());
+      when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => const Success(null));
       final mockTripGearRemote = GetIt.I<ITripGearRemoteDataSource>();
       when(() => mockTripGearRemote.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());
 
@@ -265,7 +265,7 @@ void main() {
 
       expect(result, true);
       verify(() => mockTripRepository.uploadTripToRemote(trip1)).called(1);
-      verify(() => mockSyncService.uploadItinerary()).called(1);
+      verify(() => mockItineraryRepository.sync('mock-id')).called(1);
     });
 
     test('loadTrips emits TripError on failure', () async {

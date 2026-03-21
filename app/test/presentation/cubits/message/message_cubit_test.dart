@@ -26,7 +26,6 @@ class FakeTrip extends Fake implements Trip {}
 void main() {
   late MockMessageRepository mockRepo;
   late MockTripRepository mockTripRepo;
-  late MockSyncService mockSyncService;
   late MockAuthService mockAuthService;
   late MessageCubit cubit;
 
@@ -71,7 +70,6 @@ void main() {
   setUp(() {
     mockRepo = MockMessageRepository();
     mockTripRepo = MockTripRepository();
-    mockSyncService = MockSyncService();
     mockAuthService = MockAuthService();
 
     when(() => mockAuthService.currentUserId).thenReturn('u1');
@@ -96,7 +94,6 @@ void main() {
     cubit = MessageCubit(
       repository: mockRepo,
       tripRepository: mockTripRepo,
-      syncService: mockSyncService,
       authService: mockAuthService,
     );
   });
@@ -150,16 +147,16 @@ void main() {
 
   group('addMessage', () {
     blocTest<MessageCubit, MessageState>(
-      'calls syncService.addMessageAndSync and reloads',
+      'calls repo.addMessage and reloads',
       setUp: () {
         when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
-        when(() => mockSyncService.addMessageAndSync(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockRepo.addMessage(any())).thenAnswer((_) async => const Success(null));
       },
       build: () => cubit,
       seed: () => MessageLoaded(allMessages: [testMessage1]),
       act: (cubit) => cubit.addMessage(user: 'User', avatar: 'A', content: 'New Msg'),
       verify: (_) {
-        verify(() => mockSyncService.addMessageAndSync(any())).called(1);
+        verify(() => mockRepo.addMessage(any())).called(1);
         verify(() => mockRepo.getAllMessages()).called(1); // Reload called
       },
     );
@@ -170,12 +167,12 @@ void main() {
       'emits isSyncing true then false, reloads on success',
       setUp: () {
         when(
-          () => mockSyncService.syncMessages(isAuto: false),
-        ).thenAnswer((_) async => SyncResult.success(messagesSynced: true));
+          () => mockRepo.sync(any()),
+        ).thenAnswer((_) async => const Success(null));
         when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
       },
       build: () => cubit,
-      seed: () => MessageLoaded(allMessages: []),
+      seed: () => const MessageLoaded(allMessages: []),
       act: (cubit) => cubit.syncMessages(isAuto: false),
       expect: () => [
         isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', true),
@@ -192,8 +189,8 @@ void main() {
       'emits error on sync failure (manual)',
       setUp: () {
         when(
-          () => mockSyncService.syncMessages(isAuto: false),
-        ).thenAnswer((_) async => SyncResult.failure('Network error'));
+          () => mockRepo.sync(any()),
+        ).thenAnswer((_) async => Failure(GeneralException('Network error')));
         when(() => mockRepo.getAllMessages()).thenAnswer((_) async => const Success([]));
       },
       build: () => cubit,
@@ -202,14 +199,7 @@ void main() {
       expect: () => [
         isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', true),
         isA<MessageError>().having((s) => s.message, 'error', contains('Network error')),
-        isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', false), // Restores state if we re-emit filtered?
-        // Wait, catch block emits error, then finally emits loaded(syncing:false) if state is loaded.
-        // If we emitted error, we are no longer MessageLoaded.
-        // My implementation:
-        // if (!result.isSuccess) emit(MessageError) -> State becomes MessageError
-        // finally block checks `if (state is MessageLoaded)`.
-        // So finally block won't emit syncing=false if we are in Error state.
-        // This effectively leaves it in Error state.
+        isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', false),
       ],
     );
   });

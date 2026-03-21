@@ -169,43 +169,5 @@ void main() {
       expect((result as Success).value, trips);
       verify(() => mockTripRepo.getRemoteTrips()).called(1);
     });
-
-    test('addMessageAndSync should call repository', () async {
-      // Arrange
-      final newMsg = Message(
-        id: 'new',
-        user: 'Me',
-        category: 'Plan',
-        content: 'Hi',
-        timestamp: DateTime.now(),
-        createdAt: DateTime.now(),
-        createdBy: 'Me',
-        updatedAt: DateTime.now(),
-        updatedBy: 'Me',
-      );
-
-      when(() => mockMessageRepo.addMessage(any())).thenAnswer((_) async => const Success(null));
-
-      // Act
-      final result = await syncService.addMessageAndSync(newMsg);
-
-      // Assert
-      expect(result is Success, true);
-      verify(() => mockMessageRepo.addMessage(newMsg)).called(1);
-    });
-
-    test('deleteMessageAndSync should call repository', () async {
-      // Arrange
-      const id = 'delete-me';
-
-      when(() => mockMessageRepo.deleteById(any())).thenAnswer((_) async => const Success(null));
-
-      // Act
-      final result = await syncService.deleteMessageAndSync(id);
-
-      // Assert
-      expect(result is Success, true);
-      verify(() => mockMessageRepo.deleteById(id)).called(1);
-    });
   });
 }

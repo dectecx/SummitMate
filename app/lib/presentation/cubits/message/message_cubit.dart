@@ -13,7 +13,6 @@ import 'message_state.dart';
 class MessageCubit extends Cubit<MessageState> {
   final IMessageRepository _repository;
   final ITripRepository _tripRepository;
-  final ISyncService _syncService;
   final IAuthService _authService;
   final Uuid _uuid = const Uuid();
 
@@ -22,11 +21,9 @@ class MessageCubit extends Cubit<MessageState> {
   MessageCubit({
     IMessageRepository? repository,
     ITripRepository? tripRepository,
-    ISyncService? syncService,
     IAuthService? authService,
   }) : _repository = repository ?? getIt<IMessageRepository>(),
        _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       _syncService = syncService ?? getIt<ISyncService>(),
        _authService = authService ?? getIt<IAuthService>(),
        super(const MessageInitial());
 
@@ -125,9 +122,7 @@ class MessageCubit extends Cubit<MessageState> {
         updatedBy: _authService.currentUserId ?? '',
       );
 
-      // 使用 SyncService 新增並同步
-      // 內部應已處理儲存至 Repository
-      final result = await _syncService.addMessageAndSync(message);
+      final result = await _repository.addMessage(message);
       if (result is Failure) {
         throw result.exception;
       }
@@ -147,7 +142,7 @@ class MessageCubit extends Cubit<MessageState> {
   /// [uuid] 留言 UUID
   Future<void> deleteMessage(String uuid) async {
     try {
-      final result = await _syncService.deleteMessageAndSync(uuid);
+      final result = await _repository.deleteById(uuid);
       if (result is Failure) {
         throw result.exception;
       }
@@ -159,22 +154,29 @@ class MessageCubit extends Cubit<MessageState> {
     }
   }
 
+  /// 同步留言
   Future<void> syncMessages({bool isAuto = false}) async {
     if (state is MessageLoaded) {
       emit((state as MessageLoaded).copyWith(isSyncing: true));
     }
 
     try {
-      final result = await _syncService.syncMessages(isAuto: isAuto);
+      final tripId = await _currentTripId;
+      if (tripId == null) {
+        if (!isAuto) emit(const MessageError('找不到活動行程，無法同步'));
+        return;
+      }
 
-      if (!result.isSuccess && !isAuto) {
-        emit(MessageError(result.errors.join(', ')));
+      final result = await _repository.sync(tripId);
+
+      if (result is Failure && !isAuto) {
+        emit(MessageError(AppErrorHandler.getUserMessage(result.exception)));
       }
 
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);
-      if (!isAuto) emit(MessageError(e.toString()));
+      if (!isAuto) emit(MessageError(AppErrorHandler.getUserMessage(e)));
     } finally {
       if (state is MessageLoaded) {
         emit((state as MessageLoaded).copyWith(isSyncing: false));

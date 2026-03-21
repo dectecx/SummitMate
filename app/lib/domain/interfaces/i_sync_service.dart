@@ -1,5 +1,4 @@
 import '../../core/error/result.dart';
-import '../../data/models/message.dart';
 import '../../data/models/trip.dart';
 
 /// 同步結果
@@ -78,41 +77,12 @@ abstract interface class ISyncService {
   /// [isAuto] 是否為自動同步 (受節流限制)
   Future<SyncResult> syncAll({bool isAuto = false});
 
-  /// 僅同步行程資料
-  ///
-  /// [isAuto] 是否為自動同步
-  Future<SyncResult> syncItinerary({bool isAuto = false});
-
-  /// 僅同步留言資料
-  ///
-  /// [isAuto] 是否為自動同步
-  Future<SyncResult> syncMessages({bool isAuto = false});
-
-  /// 上傳本地待同步的留言
-  Future<SyncResult> uploadPendingMessages();
-
-  /// 上傳行程資料
-  Future<SyncResult> uploadItinerary();
-
-  /// 檢查行程是否有衝突
-  Future<bool> checkItineraryConflict();
-
   /// 取得雲端行程列表
   Future<Result<List<Trip>, Exception>> getCloudTrips();
 
   /// 取得最後同步時間
   DateTime? get lastItinerarySync;
   DateTime? get lastMessagesSync;
-
-  /// 新增留言並同步到雲端
-  ///
-  /// [message] 欲新增的留言物件
-  Future<Result<void, Exception>> addMessageAndSync(Message message);
-
-  /// 刪除留言並同步到雲端
-  ///
-  /// [id] 留言 ID
-  Future<Result<void, Exception>> deleteMessageAndSync(String id);
 
   /// 重設同步時間 (用於測試)
   void resetLastSyncTimes();
