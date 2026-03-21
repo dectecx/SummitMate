@@ -367,3 +367,28 @@ WHERE r.code = 'ADMIN';
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p
 WHERE r.code = 'MEMBER' AND p.code IN ('trip.create', 'trip.view', 'gear.manage', 'poll.vote', 'event.create');
+
+-- 3.8 Weather
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS weather_data (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    location    TEXT NOT NULL,
+    start_time  TIMESTAMPTZ NOT NULL,
+    end_time    TIMESTAMPTZ NOT NULL,
+    wx          TEXT DEFAULT '',
+    temp        REAL DEFAULT 0,
+    pop         INT  DEFAULT 0,
+    min_temp    REAL DEFAULT 0,
+    max_temp    REAL DEFAULT 0,
+    humidity    REAL DEFAULT 0,
+    wind_speed  REAL DEFAULT 0,
+    min_at      REAL DEFAULT 0,
+    max_at      REAL DEFAULT 0,
+    issue_time  TIMESTAMPTZ,
+    fetched_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (location, start_time, end_time)
+);
+
+CREATE INDEX idx_weather_location ON weather_data (location);
+CREATE INDEX idx_weather_start_time ON weather_data (start_time);

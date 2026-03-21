@@ -33,6 +33,7 @@ type server struct {
 	pollHandler     *handler.PollHandler
 	favoriteHandler *handler.FavoriteHandler
 	groupHandler    *handler.GroupEventHandler
+	weatherHandler  *handler.WeatherHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -499,6 +500,16 @@ func (srv server) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, 
 	})).ServeHTTP(w, r)
 }
 
+// --- Weather (Public) ---
+
+func (srv server) GetHikingWeather(w http.ResponseWriter, r *http.Request) {
+	srv.weatherHandler.GetHikingWeather(w, r)
+}
+
+func (srv server) GetHikingWeatherByLocation(w http.ResponseWriter, r *http.Request, location string) {
+	srv.weatherHandler.GetHikingWeatherByLocation(w, r, location)
+}
+
 func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
@@ -525,6 +536,7 @@ func main() {
 	pollRepo := repository.NewPollRepository(pool)
 	favoriteRepo := repository.NewFavoriteRepository(pool)
 	groupRepo := repository.NewGroupEventRepository(pool)
+	weatherRepo := repository.NewWeatherRepository(pool)
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
@@ -538,6 +550,7 @@ func main() {
 	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(favoriteRepo)
 	groupService := service.NewGroupEventService(groupRepo)
+	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -549,6 +562,7 @@ func main() {
 	pollHandler := handler.NewPollHandler(pollService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 	groupHandler := handler.NewGroupEventHandler(groupService)
+	weatherHandler := handler.NewWeatherHandler(weatherService)
 
 	srv := server{
 		authHandler:     authHandler,
@@ -561,6 +575,7 @@ func main() {
 		pollHandler:     pollHandler,
 		favoriteHandler: favoriteHandler,
 		groupHandler:    groupHandler,
+		weatherHandler:  weatherHandler,
 		tokenManager:    tokenManager,
 	}
 
