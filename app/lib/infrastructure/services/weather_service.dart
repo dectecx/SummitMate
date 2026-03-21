@@ -126,7 +126,7 @@ class WeatherService implements IWeatherService {
   /// 從登山天氣端點取得資料
   Future<WeatherData> _fetchHikingWeather(String locationName) async {
     final baseUrl = EnvConfig.getApiUrl();
-    final url = Uri.parse('$baseUrl?action=${ApiConfig.actionWeatherGet}');
+    final url = Uri.parse('$baseUrl/weather/hiking');
 
     LogService.info('取得登山天氣: $locationName', source: 'WeatherService');
 
@@ -137,16 +137,7 @@ class WeatherService implements IWeatherService {
         final bodyMsgs = utf8.decode(response.bodyBytes);
         LogService.debug('天氣 API 回應 (長度: ${bodyMsgs.length})', source: 'WeatherService');
 
-        final jsonMap = json.decode(bodyMsgs) as Map<String, dynamic>;
-
-        // 檢查回應代碼
-        if (jsonMap['code'] != '0000') {
-          throw Exception('API 錯誤: ${jsonMap['message']}');
-        }
-
-        // 提取天氣資料
-        final data = jsonMap['data'] as Map<String, dynamic>? ?? {};
-        final List<dynamic> jsonList = data['weather'] as List<dynamic>? ?? [];
+        final List<dynamic> jsonList = json.decode(bodyMsgs) as List<dynamic>;
 
         if (jsonList.isEmpty) {
           throw Exception('API 未回傳天氣資料');
@@ -165,7 +156,7 @@ class WeatherService implements IWeatherService {
   /// 解析天氣資料並快取所有相關地點
   WeatherData _parseAndCacheWeatherData(List<dynamic> jsonList, String locationName) {
     // 1. 識別回應中的所有唯一地點
-    final uniqueLocations = jsonList.map((e) => e['Location'].toString()).toSet();
+    final uniqueLocations = jsonList.map((e) => e['location'].toString()).toSet();
     LogService.info('API 回傳資料地點: ${uniqueLocations.join(', ')}', source: 'WeatherService');
 
     // 2. 解析並逐一快取
@@ -197,34 +188,36 @@ class WeatherService implements IWeatherService {
   /// 將原始 JSON 列表解析為 [WeatherData] 對象
   WeatherData _parseWeatherData(List<dynamic> list, String locationName) {
     // 1. 依地點過濾
-    final locationRows = list.where((item) => item['Location'] == locationName).toList();
+    final locationRows = list.where((item) => item['location'] == locationName).toList();
 
     if (locationRows.isEmpty) {
       throw Exception('資料中找不到地點 "$locationName"');
     }
 
-    // 2. 依 StartTime 排序
-    locationRows.sort((a, b) => a['StartTime'].compareTo(b['StartTime']));
+    // 2. 依 start_time 排序
+    locationRows.sort((a, b) => a['start_time'].compareTo(b['start_time']));
 
     // 3. 目前天氣資訊
     final current = locationRows.first;
 
-    final temp = double.tryParse(current['T'].toString()) ?? 0.0;
-    final humidity = double.tryParse(current['RH'].toString()) ?? 0.0;
-    final pop = int.tryParse(current['PoP'].toString()) ?? 0;
-    final windSpeed = double.tryParse(current['WS'].toString()) ?? 0.0;
-    final wx = current['Wx'].toString();
+    final temp = double.tryParse(current['temp'].toString()) ?? 0.0;
+    final humidity = double.tryParse(current['humidity'].toString()) ?? 0.0;
+    final pop = int.tryParse(current['pop'].toString()) ?? 0;
+    final windSpeed = double.tryParse(current['wind_speed'].toString()) ?? 0.0;
+    final wx = current['wx'].toString();
 
     // 體感溫度 (Apparent Temp)
-    final maxAT = double.tryParse(current['MaxAT'].toString()) ?? 0.0;
-    final minAT = double.tryParse(current['MinAT'].toString()) ?? 0.0;
+    final maxAT = double.tryParse(current['max_at'].toString()) ?? 0.0;
+    final minAT = double.tryParse(current['min_at'].toString()) ?? 0.0;
     final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
 
     // 發布時間
     DateTime? issueTime;
-    if (current.containsKey('IssueTime') && current['IssueTime'].toString().isNotEmpty) {
+    if (current.containsKey('issue_time') &&
+        current['issue_time'] != null &&
+        current['issue_time'].toString().isNotEmpty) {
       try {
-        issueTime = DateTime.parse(current['IssueTime'].toString());
+        issueTime = DateTime.parse(current['issue_time'].toString());
       } catch (_) {}
     }
 
@@ -232,7 +225,7 @@ class WeatherService implements IWeatherService {
     final dailyMap = <String, Map<String, dynamic>>{};
 
     for (var row in locationRows) {
-      final start = DateTime.parse(row['StartTime']);
+      final start = DateTime.parse(row['start_time']);
       final dateKey = "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
 
       dailyMap.putIfAbsent(
@@ -249,7 +242,7 @@ class WeatherService implements IWeatherService {
       );
 
       // Wx 自訂邏輯 (白天 06-18, 晚上 18-06)
-      final val = row['Wx'].toString();
+      final val = row['wx'].toString();
       if (start.hour >= 6 && start.hour < 18) {
         if (dailyMap[dateKey]!['dayCondition'] == '') {
           dailyMap[dateKey]!['dayCondition'] = val;
@@ -261,35 +254,35 @@ class WeatherService implements IWeatherService {
       }
 
       // 溫度範圍
-      final maxT = double.tryParse(row['MaxT'].toString());
+      final maxT = double.tryParse(row['max_temp'].toString());
       if (maxT != null && maxT != 0.0) {
         if (maxT > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = maxT;
       } else {
-        final t = double.tryParse(row['T'].toString()) ?? 0.0;
+        final t = double.tryParse(row['temp'].toString()) ?? 0.0;
         if (t > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = t;
       }
 
-      final minT = double.tryParse(row['MinT'].toString());
+      final minT = double.tryParse(row['min_temp'].toString());
       if (minT != null && minT != 0.0) {
         if (minT < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = minT;
       } else {
-        final t = double.tryParse(row['T'].toString()) ?? 0.0;
+        final t = double.tryParse(row['temp'].toString()) ?? 0.0;
         if (t < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = t;
       }
 
       // 體感範圍
-      final mxAT = double.tryParse(row['MaxAT'].toString());
+      final mxAT = double.tryParse(row['max_at'].toString());
       if (mxAT != null && mxAT != 0.0) {
         if (mxAT > dailyMap[dateKey]!['maxAT']) dailyMap[dateKey]!['maxAT'] = mxAT;
       }
 
-      final mnAT = double.tryParse(row['MinAT'].toString());
+      final mnAT = double.tryParse(row['min_at'].toString());
       if (mnAT != null && mnAT != 0.0) {
         if (mnAT < dailyMap[dateKey]!['minAT']) dailyMap[dateKey]!['minAT'] = mnAT;
       }
 
       // 降雨機率
-      final p = int.tryParse(row['PoP'].toString()) ?? 0;
+      final p = int.tryParse(row['pop'].toString()) ?? 0;
       if (p > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = p;
     }
 

@@ -1978,6 +1978,51 @@ paths:
                   is_liked:
                     type: boolean
 
+  # --- Weather ---
+
+  /weather/hiking:
+    get:
+      summary: List All Hiking Weather
+      description: 取得所有登山天氣預報資料
+      operationId: getHikingWeather
+      tags:
+        - weather
+      responses:
+        "200":
+          description: 天氣資料列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeatherRecord"
+
+  /weather/hiking/{location}:
+    get:
+      summary: Get Hiking Weather by Location
+      description: 取得特定地點的登山天氣預報
+      operationId: getHikingWeatherByLocation
+      tags:
+        - weather
+      parameters:
+        - name: location
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 地點名稱 (如 玉山)
+      responses:
+        "200":
+          description: 天氣資料列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeatherRecord"
+        "404":
+          description: 找不到該地點資料
+
 components:
   securitySchemes:
     bearerAuth:
@@ -3145,3 +3190,43 @@ components:
 
     GroupEventCommentResponse:
       $ref: "#/components/schemas/GroupEventComment"
+
+    WeatherRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        location:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        wx:
+          type: string
+        temp:
+          type: number
+        pop:
+          type: integer
+        min_temp:
+          type: number
+        max_temp:
+          type: number
+        humidity:
+          type: number
+        wind_speed:
+          type: number
+        min_at:
+          type: number
+        max_at:
+          type: number
+        issue_time:
+          type: string
+          format: date-time
+          nullable: true
+        fetched_at:
+          type: string
+          format: date-time

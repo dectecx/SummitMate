@@ -47,6 +47,7 @@ type testServer struct {
 	pollHandler     *handler.PollHandler
 	favoriteHandler *handler.FavoriteHandler
 	groupHandler    *handler.GroupEventHandler
+	weatherHandler  *handler.WeatherHandler
 	tokenManager    *auth.TokenManager
 }
 
@@ -498,6 +499,16 @@ func (srv testServer) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Reque
 	})).ServeHTTP(w, r)
 }
 
+// --- Weather (Public) ---
+
+func (srv testServer) GetHikingWeather(w http.ResponseWriter, r *http.Request) {
+	srv.weatherHandler.GetHikingWeather(w, r)
+}
+
+func (srv testServer) GetHikingWeatherByLocation(w http.ResponseWriter, r *http.Request, location string) {
+	srv.weatherHandler.GetHikingWeatherByLocation(w, r, location)
+}
+
 // APITestSuite 定義了 E2E 測試的 Suite
 type APITestSuite struct {
 	suite.Suite
@@ -563,6 +574,7 @@ func (s *APITestSuite) SetupSuite() {
 	pollRepo := repository.NewPollRepository(pool)
 	favoriteRepo := repository.NewFavoriteRepository(pool)
 	groupRepo := repository.NewGroupEventRepository(pool)
+	weatherRepo := repository.NewWeatherRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
 	authService := service.NewAuthService(userRepo, tokenManager)
@@ -575,6 +587,7 @@ func (s *APITestSuite) SetupSuite() {
 	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(favoriteRepo)
 	groupService := service.NewGroupEventService(groupRepo)
+	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
@@ -586,6 +599,7 @@ func (s *APITestSuite) SetupSuite() {
 	pollHandler := handler.NewPollHandler(pollService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 	groupHandler := handler.NewGroupEventHandler(groupService)
+	weatherHandler := handler.NewWeatherHandler(weatherService)
 
 	srv := testServer{
 		authHandler:     authHandler,
@@ -598,6 +612,7 @@ func (s *APITestSuite) SetupSuite() {
 		pollHandler:     pollHandler,
 		favoriteHandler: favoriteHandler,
 		groupHandler:    groupHandler,
+		weatherHandler:  weatherHandler,
 		tokenManager:    tokenManager,
 	}
 

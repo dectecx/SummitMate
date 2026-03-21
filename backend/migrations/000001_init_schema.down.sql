@@ -1,6 +1,9 @@
 -- Reverse of 000001_init_schema.up.sql
 -- Drop in reverse dependency order
 
+DROP INDEX IF EXISTS idx_weather_start_time;
+DROP INDEX IF EXISTS idx_weather_location;
+DROP TABLE IF EXISTS weather_data;
 DROP TABLE IF EXISTS heartbeats;
 DROP TABLE IF EXISTS logs;
 DROP TABLE IF EXISTS favorites;
