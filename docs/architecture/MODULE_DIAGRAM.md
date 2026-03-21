@@ -5,7 +5,7 @@
 ```mermaid
 graph TB
     subgraph Presentation["表現層 (Presentation)"]
-        Screens["Screens (41)"]
+        Screens["Screens (28)"]
         Widgets["Widgets"]
         Cubits["Cubits (13)"]
         Providers["Providers"]
@@ -75,6 +75,45 @@ graph TB
     %% Core provides
     DI --> AuthSvc & SyncSvc & Repos
 ```
+
+---
+
+## Go Backend 分層架構
+
+```mermaid
+graph TB
+    subgraph Backend["Go Backend"]
+        Router["Chi Router"]
+        MW["Middleware (JWT, Logger, RequestID)"]
+        Handlers["Handlers (13)"]
+        Services["Services (13)"]
+        Repos["Repositories (14)"]
+        PG[(PostgreSQL)]
+    end
+
+    Router --> MW --> Handlers
+    Handlers --> Services
+    Services --> Repos
+    Repos --> PG
+```
+
+### Backend Service 清單
+
+| Service              | 職責                        | Handler              |
+| :------------------- | :-------------------------- | :------------------- |
+| `AuthService`        | 註冊/登入/JWT/帳號管理      | `AuthHandler`        |
+| `TripService`        | 行程 CRUD + 成員 + 行程節點 | `TripHandler`        |
+| `GearLibraryService` | 個人裝備庫                  | `GearLibraryHandler` |
+| `MealLibraryService` | 個人食物庫                  | `MealLibraryHandler` |
+| `TripGearService`    | 行程裝備                    | `TripGearHandler`    |
+| `TripMealService`    | 行程食物                    | `TripMealHandler`    |
+| `MessageService`     | 行程留言板                  | `MessageHandler`     |
+| `PollService`        | 投票機制                    | `PollHandler`        |
+| `FavoriteService`    | 收藏                        | `FavoriteHandler`    |
+| `GroupEventService`  | 揪團活動                    | `GroupEventHandler`  |
+| `WeatherService`     | 氣象 ETL + 查詢             | `WeatherHandler`     |
+| `LogService`         | App 日誌上傳                | `LogHandler`         |
+| `HeartbeatService`   | 心跳追蹤                    | `HeartbeatHandler`   |
 
 ---
 

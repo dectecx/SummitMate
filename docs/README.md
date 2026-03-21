@@ -2,13 +2,13 @@
 
 ## 架構
 
-| 文件                                            | 說明                |
-| :---------------------------------------------- | :------------------ |
-| [系統概覽](./architecture/OVERVIEW.md)          | 資料流、技術堆疊    |
-| [專案結構](./architecture/PROJECT_STRUCTURE.md) | `lib/` 目錄結構     |
-| [模組關聯圖](./architecture/MODULE_DIAGRAM.md)  | 分層架構圖          |
-| [離線架構](./architecture/OFFLINE.md)           | Offline-First 設計  |
-| [認證架構](./architecture/AUTH.md)              | JWT、RBAC、登入流程 |
+| 文件                                            | 說明                        |
+| :---------------------------------------------- | :-------------------------- |
+| [系統概覽](./architecture/OVERVIEW.md)          | 資料流、技術堆疊            |
+| [專案結構](./architecture/PROJECT_STRUCTURE.md) | Frontend + Backend 目錄結構 |
+| [模組關聯圖](./architecture/MODULE_DIAGRAM.md)  | 分層架構圖                  |
+| [離線架構](./architecture/OFFLINE.md)           | Offline-First 設計          |
+| [認證架構](./architecture/AUTH.md)              | JWT、RBAC、登入流程         |
 
 ---
 
@@ -50,10 +50,10 @@
 
 ## 部署
 
-| 文件                                       | 說明         |
-| :----------------------------------------- | :----------- |
-| [部署指南](./deployment/GUIDE.md)          | GAS 部署步驟 |
-| [廣告整合](./deployment/AD_INTEGRATION.md) | AdMob 設定   |
+| 文件                                       | 說明                      |
+| :----------------------------------------- | :------------------------ |
+| [部署指南](./deployment/GUIDE.md)          | Go Backend + Flutter 部署 |
+| [廣告整合](./deployment/AD_INTEGRATION.md) | AdMob 設定                |
 
 ---
 

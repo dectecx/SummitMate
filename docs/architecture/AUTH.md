@@ -1,21 +1,87 @@
 # 認證架構 (Authentication Architecture)
 
-SummitMate 採用可抽換的身份驗證架構，支援未來遷移至不同認證後端。
+SummitMate 採用可抽換的身份驗證架構，後端使用 Go 實作 JWT 認證。
 
 ---
 
-## 技術限制
+## 架構圖
 
-> [!IMPORTANT]
-> **限制**：Auth Token 必須注入到 **Request Body** 中，而非 Header。
+```mermaid
+graph TD
+    subgraph UI
+        AuthCubit
+    end
+    subgraph Service
+        IAuthService --> GasAuthService["GasAuthService (Go Backend)"]
+        IAuthService -.-> FutureImpl["Firebase / Other (可抽換)"]
+    end
+    subgraph Data
+        AuthSessionRepo --> SecureStorage
+        AuthInterceptor --> AuthSessionRepo
+    end
+    subgraph GoBackend["Go Backend"]
+        AuthHandler --> AuthService
+        AuthService --> UserRepo["UserRepository"]
+        AuthService --> TokenManager["TokenManager (JWT)"]
+        UserRepo --> PG[(PostgreSQL)]
+    end
 
-**原因**：GAS 會剝離自定義 Header，且無法正確處理 CORS 預檢請求。
+    AuthCubit --> IAuthService
+    GasAuthService --> AuthSessionRepo
+    GasAuthService --> AuthHandler
+```
 
-**解決方案 (`AuthInterceptor`)**：
+---
 
-```dart
-if (options.method == 'POST' && options.data is Map<String, dynamic>) {
-  (options.data as Map<String, dynamic>)['accessToken'] = token;
+## 認證流程
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant Auth as IAuthService
+    participant API as Go Backend
+    participant DB as PostgreSQL
+
+    App->>Auth: login(email, pw)
+    Auth->>API: POST /api/v1/auth/login
+    API->>DB: 查詢 users (email)
+    API->>API: bcrypt.Compare(password)
+    API->>API: 簽發 JWT (Access + Refresh)
+    API-->>Auth: {access_token, refresh_token, user}
+    Auth->>Auth: SecureStorage.save(tokens)
+    Auth-->>App: AuthResult.success
+```
+
+### Token 刷新
+
+```mermaid
+sequenceDiagram
+    App->>Auth: refreshToken()
+    Auth->>API: POST /api/v1/auth/refresh
+    API->>API: 驗證 Refresh Token
+    API->>API: 簽發新 Access Token
+    API-->>Auth: {access_token}
+    Auth->>Auth: SecureStorage.update(token)
+```
+
+---
+
+## Token 設計
+
+| Token         | 有效期 | 用途                     | 儲存位置      |
+| :------------ | :----: | :----------------------- | :------------ |
+| Access Token  | 1 小時 | API 授權 (Bearer Header) | SecureStorage |
+| Refresh Token | 30 天  | 換取新 Access Token      | SecureStorage |
+| 離線寬限      |  7 天  | 離線模式存取             | App 快取判斷  |
+
+### JWT 結構
+
+```go
+// backend/internal/auth/jwt.go
+type Claims struct {
+    UserID string `json:"user_id"`
+    Email  string `json:"email"`
+    jwt.RegisteredClaims
 }
 ```
 
@@ -39,61 +105,19 @@ erDiagram
     Permissions ||--|{ RolePermissions : "belongs"
 
     Users {
-        string id PK
-        string role_id FK
-        string email
+        UUID id PK
+        UUID role_id FK
+        string email UK
+        string password_hash
     }
     Roles {
-        string id PK
+        UUID id PK
         string code UK
     }
     Permissions {
-        string id PK
+        UUID id PK
         string code UK
     }
-```
-
-### 扁平化策略
-
-GAS 端 Join 查詢後，回傳 `permissions` 陣列給 App 快取，支援離線權限檢查。
-
----
-
-## 架構圖
-
-```mermaid
-graph TD
-    subgraph UI
-        AuthCubit
-    end
-    subgraph Service
-        IAuthService --> GasAuthService
-        IAuthService -.-> FirebaseAuth[Future]
-    end
-    subgraph Data
-        AuthSessionRepo --> SecureStorage
-        AuthInterceptor --> AuthSessionRepo
-    end
-    subgraph Backend
-        GAS
-    end
-
-    AuthCubit --> IAuthService
-    GasAuthService --> AuthSessionRepo
-    GasAuthService --> GAS
-```
-
----
-
-## 認證流程
-
-```mermaid
-sequenceDiagram
-    App->>Auth: login(email, pw)
-    Auth->>GAS: POST /auth/login
-    GAS-->>Auth: {token, user}
-    Auth->>Session: save(token, user)
-    Auth-->>App: success
 ```
 
 ---
@@ -117,25 +141,27 @@ flowchart TD
 
 ## Email 驗證流程
 
-1. 註冊 → GAS 生成 6 位數驗證碼 (30分鐘有效)
-2. `MailApp.sendEmail` 發送
+1. 註冊 → 後端生成 6 位數驗證碼 (30 分鐘有效)
+2. 發送驗證信至使用者信箱
 3. `VerificationScreen` 輸入驗證碼
-4. `auth_verify_email` API 驗證
+4. `POST /auth/verify-email` 驗證
 5. `is_verified = true`
 
 ---
 
-## Token 設計
+## 後端實作對照
 
-| Token    | 有效期 | 用途         |
-| :------- | :----: | :----------- |
-| Access   | 1 小時 | API 授權     |
-| Refresh  | 30 天  | 換取新 Token |
-| 離線寬限 |  7 天  | 離線存取     |
+| Go Backend 元件      | 檔案                               | 職責                         |
+| :------------------- | :--------------------------------- | :--------------------------- |
+| `TokenManager`       | `internal/auth/jwt.go`             | JWT 簽發與驗證               |
+| `Password`           | `internal/auth/password.go`        | bcrypt 雜湊與比對            |
+| `AuthService`        | `internal/service/auth_service.go` | 註冊/登入/刷新/驗證/帳號管理 |
+| `AuthHandler`        | `internal/handler/auth_handler.go` | HTTP 請求處理                |
+| `JWTAuth Middleware` | `internal/middleware/jwt_auth.go`  | 請求級 JWT 驗證              |
 
 ---
 
-## 核心介面
+## 核心介面 (Frontend)
 
 ```dart
 abstract class IAuthService {
@@ -147,13 +173,4 @@ abstract class IAuthService {
 }
 ```
 
----
-
-## 遷移至 Firebase
-
-```dart
-// lib/core/di.dart
-getIt.registerLazySingleton<IAuthService>(
-  () => FirebaseAuthService(), // 只需改這行
-);
-```
+抽換作法：修改 `lib/core/di.dart` 中的 `IAuthService` 註冊即可替換認證後端。

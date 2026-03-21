@@ -1,10 +1,69 @@
 # 部署指南
 
-本文件說明 SummitMate 後端 (Google Apps Script) 與前端 (Flutter Web) 的部署流程。
+本文件說明 SummitMate 各元件的部署流程。
 
 ---
 
-## 1. Google Apps Script (Backend)
+## 1. Go Backend
+
+### 環境變數
+
+| 變數           | 說明                                    | 預設值                                                              |
+| :------------- | :-------------------------------------- | :------------------------------------------------------------------ |
+| `PORT`         | 監聽埠                                  | `8080`                                                              |
+| `DATABASE_URL` | PostgreSQL 連線字串                     | `postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable` |
+| `JWT_SECRET`   | JWT 簽章密鑰                            | 開發用預設值 (正式環境必須更換)                                     |
+| `CWA_API_KEY`  | 中央氣象署 API 授權碼                   | 空 (Weather ETL 所需)                                               |
+| `ENV`          | 環境標識 (`development` / `production`) | `development`                                                       |
+
+### 本地開發
+
+```bash
+# 啟動 PostgreSQL
+docker compose up -d db
+
+# 執行 DB Migration
+go run cmd/migrate/main.go
+
+# 啟動 API Server
+go run cmd/api/main.go
+```
+
+API 文件：http://localhost:8080/docs
+
+### Docker 部署
+
+```bash
+# 建置映像
+docker build -t summitmate-api ./backend
+
+# 執行
+docker run -p 8080:8080 \
+  -e DATABASE_URL="postgres://..." \
+  -e JWT_SECRET="your-prod-secret" \
+  -e ENV="production" \
+  summitmate-api
+```
+
+### CLI 工具
+
+| 指令                            | 用途                               |
+| :------------------------------ | :--------------------------------- |
+| `go run cmd/api/main.go`        | 啟動 API Server                    |
+| `go run cmd/migrate/main.go`    | 執行 DB Migration                  |
+| `go run cmd/weatherjob/main.go` | 手動執行天氣 ETL (適合排程或 cron) |
+
+### 日誌
+
+- **Production** (`ENV=production`)：JSON 格式輸出至 stdout，適合 GCP/Azure/AWS Log Collector
+- **Development** (`ENV=development`)：Text 格式同時輸出至 stdout 與 `backend/logs/app.log`
+
+---
+
+## 2. Google Apps Script (Legacy)
+
+> [!WARNING]
+> GAS 後端為遷移過渡期保留，後端逐步遷移至 Go Backend 後將移除。
 
 ### 部署步驟
 
@@ -35,7 +94,7 @@
 
 ---
 
-## 2. Flutter Web Deployment
+## 3. Flutter Web Deployment
 
 本專案支援多種 Web 部署方式，以下列出 Netlify 與 GitHub Pages 的配置流程。
 
@@ -101,7 +160,7 @@ git push origin --set-upstream gh-pages
 
 ---
 
-## 3. Android Deployment
+## 4. Android Deployment
 
 建置 Release APK：
 

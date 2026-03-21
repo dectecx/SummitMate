@@ -31,7 +31,7 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 
 ### 登山氣象
 
-- **GAS ETL 架構**：Serverless 氣象資料處理，自動從 CWA 擷取並快取。
+- **Go Backend ETL**：天氣資料由 Go Backend 從中央氣象署 API 擷取並存入 PostgreSQL。
 - **7日預報**：針對高山 (如向陽山) 提供精準 7 日天氣預報。
 - **離線快取**：支援離線查看最後更新的氣象資訊。
 
@@ -54,22 +54,23 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 - **Platforms**: iOS, Android, Web (HTML/CanvasKit)
 - **Local Database**: Hive (NoSQL, Web-Compatible)
 - **State Management**: flutter_bloc (Cubit) + Provider
-- **Backend**: Google Sheets + Google Apps Script (REST API)
+- **Backend (Primary)**: Go 1.25 + Chi v5 + PostgreSQL
+- **Backend (Legacy)**: Google Sheets + Google Apps Script
 - **Architecture**: Clean Architecture (Domain, Data, Infrastructure, Presentation)
 
 ## 專案文件
 
 詳細設計文件請參閱根目錄 [`docs/`](../docs/README.md)：
 
-| 分類                                      | 說明               |
-| :---------------------------------------- | :----------------- |
-| [architecture/](../docs/architecture/)    | 系統架構、模組圖   |
-| [database/](../docs/database/)            | Schema、同步機制   |
-| [api/](../docs/api/)                      | API 合約           |
-| [security/](../docs/security/)            | 權限、隱私政策     |
-| [ui/](../docs/ui/)                        | 導航流程、設計準則 |
-| [deployment/](../docs/deployment/)        | 部署指南           |
-| [project/](../docs/project/)              | 開發路線圖         |
+| 分類                                   | 說明               |
+| :------------------------------------- | :----------------- |
+| [architecture/](../docs/architecture/) | 系統架構、模組圖   |
+| [database/](../docs/database/)         | Schema、同步機制   |
+| [api/](../docs/api/)                   | API 合約           |
+| [security/](../docs/security/)         | 權限、隱私政策     |
+| [ui/](../docs/ui/)                     | 導航流程、設計準則 |
+| [deployment/](../docs/deployment/)     | 部署指南           |
+| [project/](../docs/project/)           | 開發路線圖         |
 
 ## 環境建置
 
