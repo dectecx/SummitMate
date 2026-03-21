@@ -101,25 +101,6 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
     }
   }
 
-  /// 完整同步行程 (包含行程、細節、裝備等)
-  ///
-  /// TODO: 此為舊版一次性打包機制，目前架構下已廢棄。
-  /// 將只負責同步 Trip 本身，詳細資料由個別的 RemoteDataSource 負責。
-  @override
-  Future<String> uploadFullTrip({
-    required Trip trip,
-    required List<dynamic> itineraryItems,
-    required List<dynamic> gearItems,
-  }) async {
-    try {
-      LogService.warning('uploadFullTrip: 在 REST API 架構下已廢棄，目前僅上傳行程本身', source: _source);
-      return await uploadTrip(trip);
-    } catch (e) {
-      LogService.error('Remote UploadFullTrip failed: $e', source: _source);
-      rethrow;
-    }
-  }
-
   /// 取得行程成員列表
   ///
   /// [tripId] 行程 ID

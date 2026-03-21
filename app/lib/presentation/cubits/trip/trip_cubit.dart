@@ -5,6 +5,7 @@ import '../../../core/di.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
+import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/datasources/remote/trip_gear_remote_data_source.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -226,15 +227,12 @@ class TripCubit extends Cubit<TripState> {
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
       // 1. 蒐集資料
-      // 透過 DI 存取其他 Repo，因 Cubit 無法直接存取其他 Provider
-      // 理想上應透過 Service 處理，但為了維持架構一致性暫時使用 DI
       final gearRepo = getIt<IGearRepository>();
-
+      final itineraryRepo = getIt<IItineraryRepository>();
       final allGear = gearRepo.getAllItems();
-
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
-      // 2. 依次上傳 Trip Meta, Itinerary (仍在 TripRepo 或是獨立 API? 目前 TripRemoteDataSource 只剩 uploadTrip), Gear
+      // 2. 依次上傳 Trip Meta, Itinerary, Gear
       // 先上傳 Trip 本身
       final uploadTripResult = await _tripRepository.uploadTripToRemote(trip);
       if (uploadTripResult is Failure) {
@@ -242,15 +240,15 @@ class TripCubit extends Cubit<TripState> {
         return false;
       }
 
-      // TODO: 行程表 (Itinerary) 目前手動觸發 SyncService 上傳，這僅是過渡期設計。
-      // 未來應統一透過 IItineraryRemoteDataSource 進行保存，不應依賴 SyncService 的通用上傳邏輯。
-      final syncResult = await _syncService.uploadItinerary();
-      if (!syncResult.isSuccess) {
-        LogService.warning('Trip Itinerary upload had issues: ${syncResult.errors}', source: _source);
-        // 不中斷，繼續上傳 Gear
+      // 直接使用 ItineraryRepository 進行同步，不再透過 SyncService 包裝
+      try {
+        await itineraryRepo.sync(trip.id);
+      } catch (e) {
+        LogService.warning('Trip Itinerary sync had issues: $e', source: _source);
+        // 不中斷，繼續處理 Gear
       }
 
-      // 上傳裝備 (Trip Gear) 取代以往的整批同步
+      // 上傳裝備 (Trip Gear)
       try {
         final gearRemote = getIt<ITripGearRemoteDataSource>();
         await gearRemote.replaceAllTripGear(trip.id, tripGear);

@@ -24,17 +24,6 @@ abstract class ITripRemoteDataSource {
   /// [tripId] 行程 ID
   Future<void> deleteTrip(String tripId);
 
-  /// 完整上傳行程 (包含行程表與裝備)
-  ///
-  /// [trip] 行程本體
-  /// [itineraryItems] 行程節點列表
-  /// [gearItems] 裝備列表
-  Future<String> uploadFullTrip({
-    required Trip trip,
-    required List<dynamic> itineraryItems,
-    required List<dynamic> gearItems,
-  });
-
   /// 取得行程成員列表
   ///
   /// [tripId] 行程 ID

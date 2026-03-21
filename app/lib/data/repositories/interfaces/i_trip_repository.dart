@@ -53,13 +53,6 @@ abstract interface class ITripRepository {
   /// 刪除遠端行程
   Future<Result<void, Exception>> deleteRemoteTrip(String id);
 
-  /// 完整上傳行程 (包含行程表與裝備)
-  Future<Result<String, Exception>> uploadFullTrip({
-    required Trip trip,
-    required List<dynamic> itineraryItems,
-    required List<dynamic> gearItems,
-  });
-
   // ========== Member Management (Remote) ==========
 
   /// 取得行程成員列表
