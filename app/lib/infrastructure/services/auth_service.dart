@@ -62,7 +62,7 @@ class AuthService implements IAuthService {
 
       final response = await _apiClient.post(
         '/auth/register',
-        data: {'email': email, 'password': password, 'name': displayName},
+        data: {'email': email, 'password': password, 'display_name': displayName},
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -77,7 +77,7 @@ class AuthService implements IAuthService {
           final user = UserProfile(
             id: userData['id'] ?? '',
             email: userData['email'] ?? email,
-            displayName: userData['name'] ?? displayName,
+            displayName: userData['display_name'] ?? displayName,
             avatar: userData['avatar'] ?? avatar ?? '',
           );
           final accessToken = data['token'] as String?;
@@ -128,7 +128,7 @@ class AuthService implements IAuthService {
         final user = UserProfile(
           id: userData['id'] ?? '',
           email: userData['email'] ?? email,
-          displayName: userData['name'] ?? '',
+          displayName: userData['display_name'] ?? '',
           avatar: userData['avatar'] ?? '',
         );
         final accessToken = data['token'] as String;
@@ -197,7 +197,7 @@ class AuthService implements IAuthService {
         final user = UserProfile(
           id: userData['id'] ?? '',
           email: userData['email'] ?? '',
-          displayName: userData['name'] ?? '',
+          displayName: userData['display_name'] ?? '',
           avatar: userData['avatar'] ?? '',
         );
         final accessToken = data['token'] as String;
@@ -286,7 +286,7 @@ class AuthService implements IAuthService {
         final user = UserProfile(
           id: userData['id'] ?? '',
           email: userData['email'] ?? '',
-          displayName: userData['name'] ?? '',
+          displayName: userData['display_name'] ?? '',
           avatar: userData['avatar'] ?? '',
         );
 
@@ -321,27 +321,35 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> refreshToken() async {
-    final oldRefreshToken = await getRefreshToken();
-    if (oldRefreshToken == null) {
-      return AuthResult.failure(errorCode: 'NO_REFRESH_TOKEN', errorMessage: '無 Refresh Token');
+    final currentToken = await getAccessToken();
+    if (currentToken == null) {
+      return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '無 Token');
     }
 
     try {
       final response = await _apiClient.post('/auth/refresh', data: {
-        'refresh_token': oldRefreshToken,
+        'token': currentToken,
       });
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
-        final newAccessToken = data['access_token'] as String?;
-        final user = await getCachedUserProfile();
-        
-        if (newAccessToken != null && user != null) {
+        final newAccessToken = data['token'] as String?;
+        final userData = data['user'] as Map<String, dynamic>?;
+
+        if (newAccessToken != null && userData != null) {
+          final user = UserProfile(
+            id: userData['id'] ?? '',
+            email: userData['email'] ?? '',
+            displayName: userData['display_name'] ?? '',
+            avatar: userData['avatar'] ?? '',
+          );
           await _sessionRepo.saveSession(newAccessToken, user);
+          _currentUserId = user.id;
+          _currentUserEmail = user.email;
           return AuthResult.success(user: user, accessToken: newAccessToken);
         }
       }
-      
+
       await logout();
       return AuthResult.failure(errorCode: 'REFRESH_FAILED', errorMessage: 'Token 刷新失敗');
     } on DioException catch (e) {
@@ -365,7 +373,7 @@ class AuthService implements IAuthService {
     try {
       final response = await _apiClient.delete('/auth/me');
       
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         await logout();
         return AuthResult.success();
       }
@@ -402,7 +410,7 @@ class AuthService implements IAuthService {
           final newUser = UserProfile(
             id: oldUser.id,
             email: oldUser.email,
-            displayName: userData['name'] ?? oldUser.displayName,
+            displayName: userData['display_name'] ?? oldUser.displayName,
             avatar: userData['avatar'] ?? oldUser.avatar,
           );
           final token = await getAccessToken();
