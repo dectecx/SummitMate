@@ -93,7 +93,7 @@ func (s *APITestSuite) TestRegister_DuplicateEmail() {
 
 	var errResp api.ErrorResponse
 	json.NewDecoder(resp2.Body).Decode(&errResp)
-	s.T().Logf("✅ 重複 Email 已被擋: %s", errResp.Message)
+	s.T().Logf("✅ 重複 Email 已被擋: %s", errResp.Error.Message)
 }
 
 func (s *APITestSuite) TestRegister_PasswordTooShort() {

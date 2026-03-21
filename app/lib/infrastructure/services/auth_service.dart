@@ -181,62 +181,26 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> loginWithProvider(OAuthProvider provider) async {
-    try {
-      final response = await _apiClient.post('/auth/oauth', data: {
-        'provider': provider.name,
-        'token': 'placeholder_token',
-      });
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['user'] == null || data['token'] == null) {
-          return AuthResult.failure(errorCode: 'DATA_ERROR', errorMessage: '伺服器回傳資料異常');
-        }
-
-        final userData = data['user'] as Map<String, dynamic>;
-        final user = UserProfile(
-          id: userData['id'] ?? '',
-          email: userData['email'] ?? '',
-          displayName: userData['display_name'] ?? '',
-          avatar: userData['avatar'] ?? '',
-        );
-        final accessToken = data['token'] as String;
-
-        await _sessionRepo.saveSession(accessToken, user);
-        _currentUserId = user.id;
-        _currentUserEmail = user.email;
-        _isOfflineMode = false;
-
-        LogService.info('OAuth 登入成功: ${user.email}', source: _source);
-        return AuthResult.success(user: user, accessToken: accessToken);
-      } else {
-        return AuthResult.failure(errorCode: 'PROVIDER_LOGIN_FAILED', errorMessage: '第三方登入失敗');
-      }
-    } on DioException catch (e) {
-      final apiError = AppErrorHandler.parseApiException(e);
-      return AuthResult.failure(
-        errorCode: apiError?.code ?? 'NETWORK_ERROR',
-        errorMessage: apiError?.message ?? '網路錯誤',
-      );
-    } catch (e) {
-      LogService.error('OAuth 登入例外: $e', source: _source);
-      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
-    }
+    // TODO: 待與需求方確認 OAuth 串接項目 (例如: LINE? Google? Apple?) 及對應的後端介面設計
+    // 目前尚未規劃具體流程，因此先回傳未實作。請勿在尚未確認需求前擅自開發。
+    LogService.info('嘗試第三方登入: ${provider.name} (尚未實作)', source: _source);
+    return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: 'OAuth 登入尚未確認需求與實作');
   }
 
   @override
   Future<AuthResult> verifyEmail({required String email, required String code}) async {
+    // TODO: 待後端實作 SMTP 或其他發信驗證邏輯後，再正式串接。目前後端僅開啟了介面 (Stub)，尚未實作內容。
     try {
-      final response = await _apiClient.post('/auth/verify-email', data: {
-        'email': email,
-        'code': code,
-      });
+      final response = await _apiClient.post('/auth/verify-email', data: {'email': email, 'code': code});
 
       if (response.statusCode == 200) {
         return AuthResult.success();
       }
       return AuthResult.failure(errorCode: 'VERIFICATION_FAILED', errorMessage: '信箱驗證失敗');
     } on DioException catch (e) {
+      if (e.response?.statusCode == 501) {
+        return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '後端尚未實作此功能');
+      }
       final apiError = AppErrorHandler.parseApiException(e);
       return AuthResult.failure(
         errorCode: apiError?.code ?? 'NETWORK_ERROR',
@@ -250,16 +214,18 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> resendVerificationCode({required String email}) async {
+    // TODO: 待後端實作 SMTP 或其他發信驗證邏輯後，再正式串接。目前後端僅開啟了介面 (Stub)，尚未實作內容。
     try {
-      final response = await _apiClient.post('/auth/resend-verification', data: {
-        'email': email,
-      });
+      final response = await _apiClient.post('/auth/resend-verification', data: {'email': email});
 
       if (response.statusCode == 200) {
         return AuthResult.success();
       }
       return AuthResult.failure(errorCode: 'RESEND_FAILED', errorMessage: '重發驗證碼失敗');
     } on DioException catch (e) {
+      if (e.response?.statusCode == 501) {
+        return AuthResult.failure(errorCode: 'NOT_IMPLEMENTED', errorMessage: '後端尚未實作此功能');
+      }
       final apiError = AppErrorHandler.parseApiException(e);
       return AuthResult.failure(
         errorCode: apiError?.code ?? 'NETWORK_ERROR',
@@ -327,9 +293,7 @@ class AuthService implements IAuthService {
     }
 
     try {
-      final response = await _apiClient.post('/auth/refresh', data: {
-        'token': currentToken,
-      });
+      final response = await _apiClient.post('/auth/refresh', data: {'token': currentToken});
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -372,7 +336,7 @@ class AuthService implements IAuthService {
   Future<AuthResult> deleteAccount() async {
     try {
       final response = await _apiClient.delete('/auth/me');
-      
+
       if (response.statusCode == 200 || response.statusCode == 204) {
         await logout();
         return AuthResult.success();
@@ -403,7 +367,7 @@ class AuthService implements IAuthService {
 
       if (response.statusCode == 200) {
         final userData = response.data as Map<String, dynamic>;
-        
+
         // Update cached profile
         final oldUser = await getCachedUserProfile();
         if (oldUser != null) {

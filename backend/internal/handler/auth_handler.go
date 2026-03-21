@@ -134,6 +134,18 @@ func (handler *AuthHandler) RefreshToken(writer http.ResponseWriter, request *ht
 	writeAuthResponse(writer, http.StatusOK, user, token)
 }
 
+// VerifyEmail 處理 POST /auth/verify-email 請求 (Stub)。
+func (handler *AuthHandler) VerifyEmail(writer http.ResponseWriter, request *http.Request) {
+	// TODO: 待實作 SMTP 信箱驗證與資料庫狀態更新邏輯
+	writer.WriteHeader(http.StatusNotImplemented)
+}
+
+// ResendVerificationCode 處理 POST /auth/resend-verification 請求 (Stub)。
+func (handler *AuthHandler) ResendVerificationCode(writer http.ResponseWriter, request *http.Request) {
+	// TODO: 待實作 SMTP 重發驗證信邏輯
+	writer.WriteHeader(http.StatusNotImplemented)
+}
+
 // --- 回應輔助函式 ---
 
 func writeAuthResponse(writer http.ResponseWriter, statusCode int, user *model.User, token string) {
