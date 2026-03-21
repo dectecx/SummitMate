@@ -2,17 +2,22 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
 )
 
 type FavoriteService struct {
-	repo repository.FavoriteRepository
+	logger *slog.Logger
+	repo   repository.FavoriteRepository
 }
 
-func NewFavoriteService(repo repository.FavoriteRepository) *FavoriteService {
-	return &FavoriteService{repo: repo}
+func NewFavoriteService(logger *slog.Logger, repo repository.FavoriteRepository) *FavoriteService {
+	return &FavoriteService{
+		logger: logger.With("component", "favorite"),
+		repo:   repo,
+	}
 }
 
 func (s *FavoriteService) ListFavorites(ctx context.Context, userID string) ([]*model.Favorite, error) {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/model"
@@ -9,13 +10,15 @@ import (
 )
 
 type MessageService struct {
+	logger     *slog.Logger
 	repo       repository.MessageRepository
 	tripRepo   *repository.TripRepository
 	memberRepo *repository.TripMemberRepository
 }
 
-func NewMessageService(repo repository.MessageRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *MessageService {
+func NewMessageService(logger *slog.Logger, repo repository.MessageRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *MessageService {
 	return &MessageService{
+		logger:     logger.With("component", "message"),
 		repo:       repo,
 		tripRepo:   tripRepo,
 		memberRepo: memberRepo,
@@ -25,6 +28,7 @@ func NewMessageService(repo repository.MessageRepository, tripRepo *repository.T
 // ListTripMessages fetches messages and builds the reply tree structure.
 func (s *MessageService) ListTripMessages(ctx context.Context, tripID, userID string) ([]*model.TripMessage, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
+		s.logger.WarnContext(ctx, "嘗試讀取行程留言但權限不足", "trip_id", tripID, "user_id", userID)
 		return nil, apperror.ErrAccessDenied
 	}
 
@@ -47,8 +51,10 @@ func (s *MessageService) AddTripMessage(ctx context.Context, tripID, userID stri
 	msg.UpdatedBy = userID
 
 	if err := s.repo.CreateMessage(ctx, msg); err != nil {
+		s.logger.ErrorContext(ctx, "新增行程留言失敗", "trip_id", tripID, "user_id", userID, "parent_id", msg.ParentID, "error", err)
 		return nil, err
 	}
+	s.logger.InfoContext(ctx, "新增行程留言成功", "message_id", msg.ID, "trip_id", tripID, "user_id", userID)
 	return msg, nil
 }
 
@@ -93,7 +99,12 @@ func (s *MessageService) DeleteTripMessage(ctx context.Context, tripID, messageI
 		}
 	}
 
-	return s.repo.DeleteMessage(ctx, messageID)
+	if err := s.repo.DeleteMessage(ctx, messageID); err != nil {
+		s.logger.ErrorContext(ctx, "刪除行程留言失敗", "message_id", messageID, "trip_id", tripID, "user_id", userID, "error", err)
+		return err
+	}
+	s.logger.InfoContext(ctx, "行程留言刪除成功", "message_id", messageID, "trip_id", tripID, "user_id", userID)
+	return nil
 }
 
 func (s *MessageService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {

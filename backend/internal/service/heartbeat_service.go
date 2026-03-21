@@ -2,16 +2,21 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
 )
 
 type HeartbeatService struct {
-	repo *repository.HeartbeatRepository
+	logger *slog.Logger
+	repo   *repository.HeartbeatRepository
 }
 
-func NewHeartbeatService(repo *repository.HeartbeatRepository) *HeartbeatService {
-	return &HeartbeatService{repo: repo}
+func NewHeartbeatService(logger *slog.Logger, repo *repository.HeartbeatRepository) *HeartbeatService {
+	return &HeartbeatService{
+		logger: logger.With("component", "heartbeat"),
+		repo:   repo,
+	}
 }
 
 func (s *HeartbeatService) HandleHeartbeat(ctx context.Context, userID string, req *HeartbeatRequest) error {
@@ -21,7 +26,12 @@ func (s *HeartbeatService) HandleHeartbeat(ctx context.Context, userID string, r
 		View:     req.View,
 		Platform: req.Platform,
 	}
-	return s.repo.Upsert(ctx, hb)
+	if err := s.repo.Upsert(ctx, hb); err != nil {
+		s.logger.ErrorContext(ctx, "更新心跳失敗", "user_id", userID, "view", req.View, "platform", req.Platform, "error", err)
+		return err
+	}
+	s.logger.InfoContext(ctx, "心跳更新成功", "user_id", userID, "view", req.View, "platform", req.Platform)
+	return nil
 }
 
 type HeartbeatRequest struct {

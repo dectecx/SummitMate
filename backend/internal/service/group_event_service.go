@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/model"
@@ -28,11 +29,15 @@ type GroupEventService interface {
 }
 
 type groupEventService struct {
-	repo repository.GroupEventRepository
+	logger *slog.Logger
+	repo   repository.GroupEventRepository
 }
 
-func NewGroupEventService(repo repository.GroupEventRepository) GroupEventService {
-	return &groupEventService{repo: repo}
+func NewGroupEventService(logger *slog.Logger, repo repository.GroupEventRepository) GroupEventService {
+	return &groupEventService{
+		logger: logger.With("component", "group_event"),
+		repo:   repo,
+	}
 }
 
 func (s *groupEventService) CreateEvent(ctx context.Context, event *model.GroupEvent) error {
@@ -40,7 +45,12 @@ func (s *groupEventService) CreateEvent(ctx context.Context, event *model.GroupE
 		return apperror.ErrBadRequest.WithMessage("活動標題為必填")
 	}
 	event.Status = "open"
-	return s.repo.CreateEvent(ctx, event)
+	if err := s.repo.CreateEvent(ctx, event); err != nil {
+		s.logger.ErrorContext(ctx, "建立活動失敗", "creator_id", event.CreatedBy, "title", event.Title, "error", err)
+		return err
+	}
+	s.logger.InfoContext(ctx, "活動建立成功", "event_id", event.ID, "creator_id", event.CreatedBy, "title", event.Title)
+	return nil
 }
 
 func (s *groupEventService) GetEvent(ctx context.Context, id string) (*model.GroupEvent, error) {
@@ -60,11 +70,17 @@ func (s *groupEventService) UpdateEvent(ctx context.Context, event *model.GroupE
 		return apperror.ErrEventNotFound
 	}
 	if existing.CreatedBy != userID {
+		s.logger.WarnContext(ctx, "更新活動權限不足", "event_id", event.ID, "user_id", userID)
 		return apperror.ErrEventAccessDenied
 	}
 
 	event.UpdatedBy = userID
-	return s.repo.UpdateEvent(ctx, event)
+	if err := s.repo.UpdateEvent(ctx, event); err != nil {
+		s.logger.ErrorContext(ctx, "更新活動失敗", "event_id", event.ID, "user_id", userID, "error", err)
+		return err
+	}
+	s.logger.InfoContext(ctx, "活動更新成功", "event_id", event.ID, "user_id", userID)
+	return nil
 }
 
 func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID string) error {
@@ -76,10 +92,16 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 		return apperror.ErrEventNotFound
 	}
 	if existing.CreatedBy != userID {
+		s.logger.WarnContext(ctx, "刪除活動權限不足", "event_id", id, "user_id", userID)
 		return apperror.ErrEventAccessDenied
 	}
 
-	return s.repo.DeleteEvent(ctx, id)
+	if err := s.repo.DeleteEvent(ctx, id); err != nil {
+		s.logger.ErrorContext(ctx, "刪除活動失敗", "event_id", id, "user_id", userID, "error", err)
+		return err
+	}
+	s.logger.InfoContext(ctx, "活動刪除成功", "event_id", id, "user_id", userID)
+	return nil
 }
 
 func (s *groupEventService) ApplyToEvent(ctx context.Context, app *model.GroupEventApplication) error {
@@ -100,7 +122,13 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *model.GroupEv
 	app.CreatedBy = app.UserID
 	app.UpdatedBy = app.UserID
 
-	return s.repo.ApplyToEvent(ctx, app)
+	if err := s.repo.ApplyToEvent(ctx, app); err != nil {
+		s.logger.ErrorContext(ctx, "活動報名失敗", "event_id", app.EventID, "user_id", app.UserID, "error", err)
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "活動報名成功", "event_id", app.EventID, "user_id", app.UserID)
+	return nil
 }
 
 func (s *groupEventService) ListApplications(ctx context.Context, id string, userID string) ([]*model.GroupEventApplication, error) {
@@ -127,10 +155,17 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 		return apperror.ErrEventNotFound
 	}
 	if event.CreatedBy != executorID {
+		s.logger.WarnContext(ctx, "審核活動報名權限不足", "event_id", eventID, "executor_id", executorID)
 		return apperror.ErrEventAccessDenied
 	}
 
-	return s.repo.UpdateApplicationStatus(ctx, eventID, userID, status, executorID)
+	if err := s.repo.UpdateApplicationStatus(ctx, eventID, userID, status, executorID); err != nil {
+		s.logger.ErrorContext(ctx, "更新活動報名狀態失敗", "event_id", eventID, "target_user_id", userID, "status", status, "executor_id", executorID, "error", err)
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "活動報名狀態更新成功", "event_id", eventID, "target_user_id", userID, "status", status, "executor_id", executorID)
+	return nil
 }
 
 func (s *groupEventService) AddComment(ctx context.Context, comment *model.GroupEventComment) error {

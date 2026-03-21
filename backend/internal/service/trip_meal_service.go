@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/model"
@@ -9,13 +10,15 @@ import (
 )
 
 type TripMealService struct {
+	logger     *slog.Logger
 	repo       *repository.TripMealRepository
 	tripRepo   *repository.TripRepository
 	memberRepo *repository.TripMemberRepository
 }
 
-func NewTripMealService(repo *repository.TripMealRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *TripMealService {
+func NewTripMealService(logger *slog.Logger, repo *repository.TripMealRepository, tripRepo *repository.TripRepository, memberRepo *repository.TripMemberRepository) *TripMealService {
 	return &TripMealService{
+		logger:     logger.With("component", "trip_meal"),
 		repo:       repo,
 		tripRepo:   tripRepo,
 		memberRepo: memberRepo,
@@ -36,7 +39,13 @@ func (s *TripMealService) CreateItem(ctx context.Context, tripID, userID string,
 	req.TripID = tripID
 	req.CreatedBy = userID
 	req.UpdatedBy = userID
-	return s.repo.Create(ctx, req)
+	item, err := s.repo.Create(ctx, req)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "建立行程伙食失敗", "trip_id", tripID, "user_id", userID, "name", req.Name, "error", err)
+		return nil, err
+	}
+	s.logger.InfoContext(ctx, "行程伙食建立成功", "item_id", item.ID, "trip_id", tripID, "user_id", userID)
+	return item, nil
 }
 
 func (s *TripMealService) UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripMealItem) (*model.TripMealItem, error) {
@@ -46,14 +55,25 @@ func (s *TripMealService) UpdateItem(ctx context.Context, tripID, itemID, userID
 	req.ID = itemID
 	req.TripID = tripID
 	req.UpdatedBy = userID
-	return s.repo.Update(ctx, req)
+	item, err := s.repo.Update(ctx, req)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "更新行程伙食失敗", "item_id", itemID, "trip_id", tripID, "user_id", userID, "error", err)
+		return nil, err
+	}
+	s.logger.InfoContext(ctx, "行程伙食更新成功", "item_id", itemID, "trip_id", tripID, "user_id", userID)
+	return item, nil
 }
 
 func (s *TripMealService) DeleteItem(ctx context.Context, tripID, itemID, userID string) error {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return apperror.ErrAccessDenied
 	}
-	return s.repo.Delete(ctx, itemID, tripID)
+	if err := s.repo.Delete(ctx, itemID, tripID); err != nil {
+		s.logger.ErrorContext(ctx, "刪除行程伙食失敗", "item_id", itemID, "trip_id", tripID, "user_id", userID, "error", err)
+		return err
+	}
+	s.logger.InfoContext(ctx, "行程伙食刪除成功", "item_id", itemID, "trip_id", tripID, "user_id", userID)
+	return nil
 }
 
 func (s *TripMealService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripMealItem) error {
