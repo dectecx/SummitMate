@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -14,6 +15,7 @@ import (
 	"summitmate/internal/config"
 	"summitmate/internal/database"
 	"summitmate/internal/handler"
+	appLogger "summitmate/internal/logger"
 	appMiddleware "summitmate/internal/middleware"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
@@ -23,20 +25,20 @@ import (
 
 // server 實作 api.ServerInterface，串接各模組的 Handler。
 type server struct {
-	authHandler     *handler.AuthHandler
-	tripHandler     *handler.TripHandler
-	gearHandler     *handler.GearLibraryHandler
-	mealHandler     *handler.MealLibraryHandler
-	tripGearHandler *handler.TripGearHandler
-	tripMealHandler *handler.TripMealHandler
-	messageHandler  *handler.MessageHandler
-	pollHandler     *handler.PollHandler
-	favoriteHandler *handler.FavoriteHandler
-	groupHandler    *handler.GroupEventHandler
-	weatherHandler  *handler.WeatherHandler
-	logHandler      *handler.LogHandler
+	authHandler      *handler.AuthHandler
+	tripHandler      *handler.TripHandler
+	gearHandler      *handler.GearLibraryHandler
+	mealHandler      *handler.MealLibraryHandler
+	tripGearHandler  *handler.TripGearHandler
+	tripMealHandler  *handler.TripMealHandler
+	messageHandler   *handler.MessageHandler
+	pollHandler      *handler.PollHandler
+	favoriteHandler  *handler.FavoriteHandler
+	groupHandler     *handler.GroupEventHandler
+	weatherHandler   *handler.WeatherHandler
+	logHandler       *handler.LogHandler
 	heartbeatHandler *handler.HeartbeatHandler
-	tokenManager    *auth.TokenManager
+	tokenManager     *auth.TokenManager
 }
 
 // GetHealth 處理 GET /health — 健康檢查端點。
@@ -525,11 +527,16 @@ func main() {
 	// 載入設定 (環境變數 + 預設值)
 	cfg := config.Load()
 
+	// 初始化 slog Logger
+	logger := appLogger.NewLogger(cfg.Env)
+	slog.SetDefault(logger)
+
 	// 連線資料庫
 	ctx := context.Background()
 	pool, err := database.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("❌ 資料庫連線失敗: %v", err)
+		slog.Error("資料庫連線失敗", "error", err)
+		os.Exit(1)
 	}
 	defer pool.Close()
 
@@ -582,27 +589,28 @@ func main() {
 	heartbeatHandler := handler.NewHeartbeatHandler(heartbeatService)
 
 	srv := server{
-		authHandler:     authHandler,
-		tripHandler:     tripHandler,
-		gearHandler:     gearHandler,
-		mealHandler:     mealHandler,
-		tripGearHandler: tripGearHandler,
-		tripMealHandler: tripMealHandler,
-		messageHandler:  messageHandler,
-		pollHandler:     pollHandler,
-		favoriteHandler: favoriteHandler,
-		groupHandler:    groupHandler,
-		weatherHandler:  weatherHandler,
-		logHandler:      logHandler,
+		authHandler:      authHandler,
+		tripHandler:      tripHandler,
+		gearHandler:      gearHandler,
+		mealHandler:      mealHandler,
+		tripGearHandler:  tripGearHandler,
+		tripMealHandler:  tripMealHandler,
+		messageHandler:   messageHandler,
+		pollHandler:      pollHandler,
+		favoriteHandler:  favoriteHandler,
+		groupHandler:     groupHandler,
+		weatherHandler:   weatherHandler,
+		logHandler:       logHandler,
 		heartbeatHandler: heartbeatHandler,
-		tokenManager:    tokenManager,
+		tokenManager:     tokenManager,
 	}
 
 	// 設定 Router
 	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
 	router.Use(middleware.RequestID)
+	router.Use(appMiddleware.ContextLogger(logger))
+	router.Use(appMiddleware.RequestLogger(logger))
+	router.Use(middleware.Recoverer)
 
 	// OpenAPI 規格端點 (供 Scalar UI 使用)
 	router.Get("/openapi.json", func(writer http.ResponseWriter, request *http.Request) {
@@ -643,9 +651,10 @@ func main() {
 		api.HandlerFromMux(srv, router)
 	})
 
-	log.Printf("🚀 SummitMate API 已啟動: %s", cfg.Addr())
-	log.Printf("📖 API 文件: http://localhost%s/docs", cfg.Addr())
+	slog.Info("SummitMate API 已啟動", "addr", cfg.Addr(), "env", cfg.Env)
+	slog.Info("API 文件", "url", "http://localhost"+cfg.Addr()+"/docs")
 	if err := http.ListenAndServe(cfg.Addr(), router); err != nil {
-		log.Fatalf("伺服器啟動失敗: %v", err)
+		slog.Error("伺服器啟動失敗", "error", err)
+		os.Exit(1)
 	}
 }
