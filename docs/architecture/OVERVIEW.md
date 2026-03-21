@@ -1,4 +1,4 @@
-# 系統概覽 (System Overview)
+# 系統概覽
 
 SummitMate 是一款 **Offline-First** 登山行程管理應用，支援 iOS、Android 與 Web (PWA)。
 

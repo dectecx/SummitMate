@@ -1,4 +1,4 @@
-# 設計準則 (Design Guidelines)
+# 設計準則
 
 ## 色彩主題
 
