@@ -11,6 +11,7 @@ type Config struct {
 	DatabaseURL string
 	JWTSecret   string
 	CWAApiKey   string
+	Env         string
 }
 
 // Load reads configuration from environment variables with defaults.
@@ -20,6 +21,7 @@ func Load() *Config {
 		DatabaseURL: getEnv("DATABASE_URL", "postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable"),
 		JWTSecret:   getEnv("JWT_SECRET", "summitmate-dev-secret-change-in-production"),
 		CWAApiKey:   getEnv("CWA_API_KEY", ""),
+		Env:         getEnv("ENV", "development"),
 	}
 }
 
