@@ -569,7 +569,7 @@ func main() {
 	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(favoriteRepo)
 	groupService := service.NewGroupEventService(groupRepo)
-	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
+	weatherService := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey)
 	logRepo := repository.NewLogRepository(pool)
 	logService := service.NewLogService(logRepo)
 	heartbeatService := service.NewHeartbeatService(heartbeatRepo)

@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
+	"os"
 
 	"summitmate/internal/config"
 	"summitmate/internal/database"
+	appLogger "summitmate/internal/logger"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
 )
@@ -13,8 +15,12 @@ import (
 func main() {
 	cfg := config.Load()
 
+	logger := appLogger.NewLogger(cfg.Env)
+	slog.SetDefault(logger)
+
 	if cfg.CWAApiKey == "" {
-		log.Fatal("❌ 未設定 CWA_API_KEY 環境變數")
+		slog.Error("未設定 CWA_API_KEY 環境變數")
+		os.Exit(1)
 	}
 
 	ctx := context.Background()
@@ -22,18 +28,20 @@ func main() {
 	// 連線資料庫
 	pool, err := database.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("❌ 資料庫連線失敗: %v", err)
+		slog.Error("資料庫連線失敗", "error", err)
+		os.Exit(1)
 	}
 	defer pool.Close()
 
 	// 執行 ETL
 	weatherRepo := repository.NewWeatherRepository(pool)
-	weatherSvc := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
+	weatherSvc := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey)
 
-	log.Println("🌤️  開始執行天氣 ETL...")
+	slog.Info("開始執行天氣 ETL")
 	if err := weatherSvc.FetchAndStore(ctx); err != nil {
-		log.Fatalf("❌ ETL 執行失敗: %v", err)
+		slog.Error("ETL 執行失敗", "error", err)
+		os.Exit(1)
 	}
 
-	log.Println("🎉 天氣 ETL 完成")
+	slog.Info("天氣 ETL 完成")
 }

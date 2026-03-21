@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -45,7 +45,7 @@ func MigrateUp(databaseURL string) error {
 		return fmt.Errorf("up: %w", err)
 	}
 
-	log.Println("✅ Migrations applied successfully")
+	slog.Info("Migrations applied successfully")
 	return nil
 }
 
@@ -60,7 +60,7 @@ func MigrateDown(databaseURL string) error {
 		return fmt.Errorf("down: %w", err)
 	}
 
-	log.Println("✅ Rolled back 1 migration")
+	slog.Info("Rolled back 1 migration")
 	return nil
 }
 
@@ -84,6 +84,6 @@ func MigrateDrop(databaseURL string) error {
 		return fmt.Errorf("drop: %w", err)
 	}
 
-	log.Println("✅ All tables dropped")
+	slog.Info("All tables dropped")
 	return nil
 }
