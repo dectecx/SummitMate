@@ -1,4 +1,4 @@
-# SummitMate 開發路線圖 (Development Roadmap)
+# SummitMate 開發路線圖
 
 ## 開發原則
 

@@ -1,11 +1,11 @@
-# 權限與成員管理規格 (Permissions & Membership Spec)
+# 權限與成員管理規格
 
 ## 概述
 
 SummitMate 採用 **Role-Based Access Control (RBAC)** 搭配 **Trip Membership (行程成員)** 的混合權限模型。
 使用者必須同時滿足「系統角色權限」與「行程成員資格」才能執行特定操作。
 
-## 系統角色定義 (System Roles)
+## 系統角色定義
 
 系統目前定義以下幾種全域角色 (儲存於 `UserProfile.roleCode` 與 `permissions` 欄位)：
 
@@ -17,7 +17,7 @@ SummitMate 採用 **Role-Based Access Control (RBAC)** 搭配 **Trip Membership 
 
 ---
 
-## 行程層級角色 (Trip-Level Roles)
+## 行程層級角色
 
 除了系統角色外，每個行程 (Trip) 內的成員還有「行程層級角色」，儲存於 `TripMembers.role_code`：
 
@@ -32,7 +32,7 @@ SummitMate 採用 **Role-Based Access Control (RBAC)** 搭配 **Trip Membership 
 
 ---
 
-## 行程成員資格 (Trip Membership)
+## 行程成員資格
 
 ### 成員資料結構
 

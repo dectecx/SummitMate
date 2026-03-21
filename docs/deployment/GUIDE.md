@@ -1,4 +1,4 @@
-# 部署指南 (Deployment Guide)
+# 部署指南
 
 本文件說明 SummitMate 後端 (Google Apps Script) 與前端 (Flutter Web) 的部署流程。
 

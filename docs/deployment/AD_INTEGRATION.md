@@ -1,6 +1,6 @@
-# AdMob 整合指南 (AD_INTEGRATION.md)
+# AdMob 整合指南
 
-## 1. 概述 (Overview)
+## 1. 概述
 
 本文件說明 SummitMate 應用程式的 AdMob 整合策略，涵蓋用戶體驗、架構設計與安全規範。
 
@@ -12,7 +12,7 @@
 
 ---
 
-## 2. 架構設計 (Architecture)
+## 2. 架構設計
 
 ### 2.1 UI 元件層
 
@@ -26,7 +26,7 @@
 
 ---
 
-## 3. 設定與安全 (Configuration & Security)
+## 3. 設定與安全
 
 ### 3.1 App ID 管理策略
 
@@ -54,9 +54,9 @@ Banner 與 Interstitial 的 Unit IDs 設定於 `.env` 檔案 (`.env.dev`, `.env.
 
 ---
 
-## 4. 實作指南 (Implementation Guide)
+## 4. 實作指南
 
-### 4.1 本地開發 (Local Development)
+### 4.1 本地開發
 
 - **預設情況**: 無需任何設定，系統將自动使用 Google Test IDs。
 - **測試真實廣告**: 請在 `android/local.properties` 中加入一行 `ADMOB_APP_ID=您的真實ID`。
