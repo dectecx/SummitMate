@@ -25,13 +25,13 @@ func NewFavoriteHandler(service *service.FavoriteService) *FavoriteHandler {
 func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	favs, err := h.service.ListFavorites(r.Context(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -45,19 +45,19 @@ func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) 
 func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.FavoriteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
 	fav, err := h.service.AddFavorite(r.Context(), userID, req.TargetId.String(), req.Type)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -67,13 +67,13 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetID openapi_types.UUID) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	err := h.service.RemoveFavorite(r.Context(), targetID.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -83,13 +83,13 @@ func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request,
 func (h *FavoriteHandler) BatchUpdateFavorites(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var reqBody api.BatchUpdateFavoritesJSONBody
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -103,7 +103,7 @@ func (h *FavoriteHandler) BatchUpdateFavorites(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := h.service.BatchUpdateFavorites(r.Context(), userID, items); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 

@@ -18,7 +18,7 @@ func NewWeatherHandler(service *service.WeatherService) *WeatherHandler {
 func (h *WeatherHandler) GetHikingWeather(w http.ResponseWriter, r *http.Request) {
 	records, err := h.service.ListAll(r.Context())
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 	sendJSON(w, http.StatusOK, records)
@@ -28,7 +28,7 @@ func (h *WeatherHandler) GetHikingWeather(w http.ResponseWriter, r *http.Request
 func (h *WeatherHandler) GetHikingWeatherByLocation(w http.ResponseWriter, r *http.Request, location string) {
 	records, err := h.service.ListByLocation(r.Context(), location)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 

@@ -26,18 +26,18 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 func (handler *AuthHandler) RegisterUser(writer http.ResponseWriter, request *http.Request) {
 	var req api.RegisterRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
-		sendError(writer, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		sendError(writer, request, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
 		return
 	}
 
 	if len(req.Password) < 8 {
-		sendError(writer, apperror.ErrPasswordTooShort)
+		sendError(writer, request, apperror.ErrPasswordTooShort)
 		return
 	}
 
 	user, token, err := handler.authService.Register(request.Context(), string(req.Email), req.Password, req.DisplayName)
 	if err != nil {
-		sendError(writer, err)
+		sendError(writer, request, err)
 		return
 	}
 
@@ -48,13 +48,13 @@ func (handler *AuthHandler) RegisterUser(writer http.ResponseWriter, request *ht
 func (handler *AuthHandler) LoginUser(writer http.ResponseWriter, request *http.Request) {
 	var req api.LoginRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
-		sendError(writer, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		sendError(writer, request, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
 		return
 	}
 
 	user, token, err := handler.authService.Login(request.Context(), string(req.Email), req.Password)
 	if err != nil {
-		sendError(writer, err)
+		sendError(writer, request, err)
 		return
 	}
 
@@ -65,13 +65,13 @@ func (handler *AuthHandler) LoginUser(writer http.ResponseWriter, request *http.
 func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *http.Request) {
 	userID, ok := request.Context().Value(mw.UserIDKey).(string)
 	if !ok || userID == "" {
-		sendError(writer, apperror.ErrUnauthorized)
+		sendError(writer, request, apperror.ErrUnauthorized)
 		return
 	}
 
 	user, err := handler.authService.GetUserByID(request.Context(), userID)
 	if err != nil {
-		sendError(writer, apperror.ErrUnauthorized.WithMessage("使用者不存在"))
+		sendError(writer, request, apperror.ErrUnauthorized.WithMessage("使用者不存在"))
 		return
 	}
 
@@ -82,19 +82,19 @@ func (handler *AuthHandler) GetCurrentUser(writer http.ResponseWriter, request *
 func (handler *AuthHandler) UpdateCurrentUser(writer http.ResponseWriter, request *http.Request) {
 	userID, ok := request.Context().Value(mw.UserIDKey).(string)
 	if !ok || userID == "" {
-		sendError(writer, apperror.ErrUnauthorized)
+		sendError(writer, request, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.UpdateProfileRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
-		sendError(writer, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		sendError(writer, request, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
 		return
 	}
 
 	user, err := handler.authService.UpdateProfile(request.Context(), userID, req.DisplayName, req.Avatar)
 	if err != nil {
-		sendError(writer, err)
+		sendError(writer, request, err)
 		return
 	}
 
@@ -105,12 +105,12 @@ func (handler *AuthHandler) UpdateCurrentUser(writer http.ResponseWriter, reques
 func (handler *AuthHandler) DeleteCurrentUser(writer http.ResponseWriter, request *http.Request) {
 	userID, ok := request.Context().Value(mw.UserIDKey).(string)
 	if !ok || userID == "" {
-		sendError(writer, apperror.ErrUnauthorized)
+		sendError(writer, request, apperror.ErrUnauthorized)
 		return
 	}
 
 	if err := handler.authService.DeleteAccount(request.Context(), userID); err != nil {
-		sendError(writer, err)
+		sendError(writer, request, err)
 		return
 	}
 
@@ -121,13 +121,13 @@ func (handler *AuthHandler) DeleteCurrentUser(writer http.ResponseWriter, reques
 func (handler *AuthHandler) RefreshToken(writer http.ResponseWriter, request *http.Request) {
 	var req api.RefreshTokenRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
-		sendError(writer, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		sendError(writer, request, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
 		return
 	}
 
 	user, token, err := handler.authService.RefreshToken(request.Context(), req.Token)
 	if err != nil {
-		sendError(writer, err)
+		sendError(writer, request, err)
 		return
 	}
 

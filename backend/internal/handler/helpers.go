@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"summitmate/internal/apperror"
+	appMiddleware "summitmate/internal/middleware"
 
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -33,9 +34,19 @@ type errorEnvelope struct {
 
 // sendError 送出標準化的錯誤回應。
 // 自動辨識 *apperror.AppError，未知錯誤預設為 500。
-func sendError(w http.ResponseWriter, err error) {
+// 透過 request context 取得 logger，記錄 server-side 錯誤。
+func sendError(w http.ResponseWriter, r *http.Request, err error) {
+	logger := appMiddleware.LoggerFromContext(r.Context())
+
 	var appErr *apperror.AppError
 	if errors.As(err, &appErr) {
+		if appErr.HTTPStatus >= 500 {
+			logger.ErrorContext(r.Context(), "server error",
+				"code", appErr.Code,
+				"message", appErr.Message,
+				"error", err,
+			)
+		}
 		sendJSON(w, appErr.HTTPStatus, errorEnvelope{
 			Error: errorBody{
 				Type:    appErr.Type,
@@ -48,6 +59,7 @@ func sendError(w http.ResponseWriter, err error) {
 	}
 
 	// 未預期錯誤 → 500 server_error
+	logger.ErrorContext(r.Context(), "unexpected error", "error", err)
 	sendJSON(w, http.StatusInternalServerError, errorEnvelope{
 		Error: errorBody{
 			Type:    apperror.TypeServer,

@@ -36,7 +36,7 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 
 	events, err := h.service.ListEvents(r.Context(), statusPtr, creatorIDPtr)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -51,14 +51,14 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.GroupEventRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := h.service.CreateEvent(r.Context(), event); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -114,11 +114,11 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	event, err := h.service.GetEvent(r.Context(), id.String())
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 	if event == nil {
-		sendError(w, apperror.ErrEventNotFound)
+		sendError(w, r, apperror.ErrEventNotFound)
 		return
 	}
 
@@ -128,14 +128,14 @@ func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Requ
 func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.GroupEventRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -181,7 +181,7 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := h.service.UpdateEvent(r.Context(), event, userID); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -191,12 +191,12 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	if err := h.service.DeleteEvent(r.Context(), id.String(), userID); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -206,13 +206,13 @@ func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.R
 func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.GroupEventApplicationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -223,7 +223,7 @@ func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *htt
 	}
 
 	if err := h.service.ApplyToEvent(r.Context(), app); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -233,13 +233,13 @@ func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *htt
 func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	apps, err := h.service.ListApplications(r.Context(), id.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -254,7 +254,7 @@ func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, 
 func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId uuid.UUID) {
 	executorID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
@@ -264,12 +264,12 @@ func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWri
 		UserID  string `json:"user_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
 	if err := h.service.ProcessApplication(r.Context(), req.EventID, req.UserID, req.Status, executorID); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -279,7 +279,7 @@ func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWri
 func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	comments, err := h.service.ListComments(r.Context(), id.String())
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -294,13 +294,13 @@ func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *h
 func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	var req api.GroupEventCommentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, apperror.ErrBadRequest)
+		sendError(w, r, apperror.ErrBadRequest)
 		return
 	}
 
@@ -311,7 +311,7 @@ func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *
 	}
 
 	if err := h.service.AddComment(r.Context(), comment); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -321,12 +321,12 @@ func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *
 func (h *GroupEventHandler) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	if err := h.service.DeleteComment(r.Context(), commentId.String(), userID); err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
@@ -336,13 +336,13 @@ func (h *GroupEventHandler) DeleteGroupEventsCommentsCommentId(w http.ResponseWr
 func (h *GroupEventHandler) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
-		sendError(w, apperror.ErrUnauthorized)
+		sendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
 	isLiked, err := h.service.ToggleLike(r.Context(), id.String(), userID)
 	if err != nil {
-		sendError(w, err)
+		sendError(w, r, err)
 		return
 	}
 
