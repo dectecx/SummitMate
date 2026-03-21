@@ -35,7 +35,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(SettingsLoaded(settings: settings, hasSeenOnboarding: hasSeenOnboarding));
     } catch (e) {
       LogService.error('Failed to load settings: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -57,7 +57,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update username: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
       // 復原狀態? 這裡暫時停留在 Error
     }
   }
@@ -75,7 +75,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update avatar: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -97,7 +97,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update profile: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -121,7 +121,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       LogService.error('Failed to toggle offline mode: $e', source: _source);
       // 4. 發生錯誤時復原狀態
       emit(currentState);
-      emit(SettingsError('狀態更新失敗: ${e.toString()}'));
+      emit(SettingsError('狀態更新失敗: ${AppErrorHandler.getUserMessage(e)}'));
     }
   }
 
@@ -187,7 +187,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update theme: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -202,7 +202,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       loadSettings();
     } catch (e) {
       LogService.error('Failed to reset identity: $e', source: _source);
-      emit(SettingsError(e.toString()));
+      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 }

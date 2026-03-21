@@ -40,7 +40,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       emit(GearLibraryLoaded(items: items));
     } catch (e) {
       LogService.error('Failed to load gear library: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -54,7 +54,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
         emit(GearLibraryLoaded(items: items));
       }
     } catch (e) {
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -105,7 +105,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       reload();
     } catch (e) {
       LogService.error('Failed to add library item: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -123,7 +123,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       reload();
     } catch (e) {
       LogService.error('Failed to update library item: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -145,7 +145,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       reload();
     } catch (e) {
       LogService.error('Failed to delete library item: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -162,7 +162,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       }
     } catch (e) {
       LogService.error('Failed to toggle archive: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -179,7 +179,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       reload();
     } catch (e) {
       LogService.error('Failed to import items: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(e.toString()));
+      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 

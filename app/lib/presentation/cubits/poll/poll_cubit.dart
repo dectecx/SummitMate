@@ -100,13 +100,12 @@ class PollCubit extends Cubit<PollState> {
     } catch (e) {
       LogService.error('Fetch polls failed: $e', source: _source);
       if (!isAuto) {
-        emit(PollError(e.toString()));
-        // 若失敗，恢復為舊資料的 Loaded 狀態?
-        // 較好的策略：emit Loaded 但 isSyncing=false 並顯示 Toast
+        emit(PollError(AppErrorHandler.getUserMessage(e)));
+        // 若失敗，恢復為舊資料的 Loaded 狀態
         final polls = _pollRepository.getAll();
         final lastSync = _pollRepository.getLastSyncTime();
         emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: lastSync, isSyncing: false));
-        ToastService.error('同步失敗: $e');
+        ToastService.error(AppErrorHandler.getUserMessage(e));
       } else {
         // 自動同步失敗則靜默處理，僅重置 flag
         if (state is PollLoaded) {
@@ -133,7 +132,7 @@ class PollCubit extends Cubit<PollState> {
       return true;
     } catch (e) {
       LogService.error('Action failed: $e', source: _source);
-      ToastService.error('操作失敗: $e');
+      ToastService.error(AppErrorHandler.getUserMessage(e));
       if (state is PollLoaded) emit((state as PollLoaded).copyWith(isSyncing: false));
       return false;
     }

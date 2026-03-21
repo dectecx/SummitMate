@@ -98,7 +98,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
             isGuest: _isGuest,
           ),
         );
-        ToastService.error('同步失敗: $e');
+        ToastService.error(AppErrorHandler.getUserMessage(e));
       } else {
         if (state is GroupEventLoaded) {
           emit((state as GroupEventLoaded).copyWith(isSyncing: false));
@@ -135,7 +135,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       return true;
     } catch (e) {
       LogService.error('Action failed: $e', source: _source);
-      ToastService.error('操作失敗: $e');
+      ToastService.error(AppErrorHandler.getUserMessage(e));
       if (state is GroupEventLoaded) {
         emit((state as GroupEventLoaded).copyWith(isSyncing: false));
       }

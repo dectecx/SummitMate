@@ -62,7 +62,7 @@ class TripCubit extends Cubit<TripState> {
       emit(TripLoaded(trips: trips, activeTrip: activeTrip));
     } catch (e) {
       LogService.error('Error loading trips: $e', source: _source);
-      emit(TripError(e.toString()));
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -118,7 +118,7 @@ class TripCubit extends Cubit<TripState> {
       }
     } catch (e) {
       LogService.error('Error adding trip: $e', source: _source);
-      emit(TripError(e.toString()));
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
       // 重新載入以確保狀態一致
       await loadTrips();
     }
@@ -141,7 +141,7 @@ class TripCubit extends Cubit<TripState> {
       await loadTrips();
     } catch (e) {
       LogService.error('Error importing trip: $e', source: _source);
-      emit(TripError(e.toString()));
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -155,7 +155,7 @@ class TripCubit extends Cubit<TripState> {
       await loadTrips();
     } catch (e) {
       LogService.error('Error setting active trip: $e', source: _source);
-      emit(TripError(e.toString()));
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -196,7 +196,7 @@ class TripCubit extends Cubit<TripState> {
       await loadTrips();
     } catch (e) {
       LogService.error('Error deleting trip: $e', source: _source);
-      emit(TripError(e.toString()));
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -216,7 +216,7 @@ class TripCubit extends Cubit<TripState> {
       await loadTrips();
     } catch (e) {
       LogService.error('Error updating trip: $e', source: _source);
-      emit(TripError(e.toString()));
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 

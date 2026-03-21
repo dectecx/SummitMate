@@ -94,7 +94,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       LogService.debug('Loaded ${tripItems.length} items for ${dayNames.length} days', source: _source);
     } catch (e) {
       LogService.error('Failed to load itinerary: $e', source: _source);
-      emit(ItineraryError(e.toString()));
+      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -227,7 +227,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       loadItinerary();
     } catch (e) {
       LogService.error('Check-in failed: $e', source: _source);
-      emit(ItineraryError(e.toString()));
+      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
       // 錯誤後重新載入以確保狀態一致
       await loadItinerary();
     }
@@ -244,7 +244,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       loadItinerary();
     } catch (e) {
       LogService.error('Clear check-in failed: $e', source: _source);
-      emit(ItineraryError(e.toString()));
+      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
       await loadItinerary();
     }
   }
@@ -286,7 +286,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Add item failed: $e', source: _source);
-      emit(ItineraryError(e.toString()));
+      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -308,7 +308,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Update item failed: $e', source: _source);
-      emit(ItineraryError(e.toString()));
+      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -323,7 +323,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Delete item failed: $e', source: _source);
-      emit(ItineraryError(e.toString()));
+      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 

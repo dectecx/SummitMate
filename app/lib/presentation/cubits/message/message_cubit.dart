@@ -46,7 +46,7 @@ class MessageCubit extends Cubit<MessageState> {
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Failed to load messages: $e', source: _source);
-      emit(MessageError(e.toString()));
+      emit(MessageError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -136,7 +136,7 @@ class MessageCubit extends Cubit<MessageState> {
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Add message failed: $e', source: _source);
-      emit(MessageError(e.toString()));
+      emit(MessageError(AppErrorHandler.getUserMessage(e)));
       // 若需要，可恢復狀態
       await _refreshLocalMessages();
     }
@@ -154,7 +154,7 @@ class MessageCubit extends Cubit<MessageState> {
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Delete message failed: $e', source: _source);
-      emit(MessageError(e.toString()));
+      emit(MessageError(AppErrorHandler.getUserMessage(e)));
       await _refreshLocalMessages();
     }
   }
