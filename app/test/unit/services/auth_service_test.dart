@@ -199,9 +199,9 @@ void main() {
 
   group('AuthService.verifyEmail', () {
     test('returns success on 200', () async {
-      when(() => mockApiClient.post('/auth/verify-email', data: any(named: 'data'))).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: '/auth/verify-email'), statusCode: 200),
-      );
+      when(
+        () => mockApiClient.post('/auth/verify-email', data: any(named: 'data')),
+      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/auth/verify-email'), statusCode: 200));
 
       final result = await authService.verifyEmail(email: 'test@example.com', code: '123456');
       expect(result.isSuccess, isTrue);
@@ -210,8 +210,8 @@ void main() {
     test('returns failure on error', () async {
       when(() => mockApiClient.post('/auth/verify-email', data: any(named: 'data'))).thenThrow(
         DioException(
-          requestOptions: RequestOptions(path: '/auth/verify-email'), 
-          response: Response(requestOptions: RequestOptions(path: ''), statusCode: 400)
+          requestOptions: RequestOptions(path: '/auth/verify-email'),
+          response: Response(requestOptions: RequestOptions(path: ''), statusCode: 400),
         ),
       );
 
@@ -233,12 +233,11 @@ void main() {
 
   group('AuthService.refreshToken', () {
     test('returns success and saves new token', () async {
-      when(() => mockSessionRepo.getRefreshToken()).thenAnswer((_) async => 'old-refresh');
-      when(() => mockSessionRepo.getUserProfile()).thenAnswer((_) async => createTestUser());
+      when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => 'old-token');
       when(() => mockApiClient.post('/auth/refresh', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/refresh'),
-          data: {'access_token': 'new-access', 'refresh_token': 'new-refresh'},
+          data: {'token': 'new-token', 'user': createUserJson()},
           statusCode: 200,
         ),
       );
@@ -247,15 +246,16 @@ void main() {
       final result = await authService.refreshToken();
 
       expect(result.isSuccess, isTrue);
-      expect(result.accessToken, 'new-access');
+      expect(result.accessToken, 'new-token');
+      verify(() => mockSessionRepo.saveSession('new-token', any())).called(1);
     });
   });
 
   group('AuthService.deleteAccount', () {
     test('returns success and logs out', () async {
-      when(() => mockApiClient.delete('/auth/me')).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: '/auth/me'), statusCode: 200),
-      );
+      when(
+        () => mockApiClient.delete('/auth/me'),
+      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/auth/me'), statusCode: 204));
       when(() => mockSessionRepo.clearSession()).thenAnswer((_) async {});
 
       final result = await authService.deleteAccount();
@@ -270,7 +270,7 @@ void main() {
       when(() => mockApiClient.put('/auth/me', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/me'),
-          data: {'name': 'New Name'},
+          data: {'id': 'test-uuid', 'email': 'test@example.com', 'display_name': 'New Name', 'avatar': '🐻'},
           statusCode: 200,
         ),
       );
