@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/gear_item.dart';
+import '../../../core/error/app_error_handler.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../core/di.dart';
@@ -42,7 +43,7 @@ class GearCubit extends Cubit<GearState> {
       LogService.debug('Loaded ${tripItems.length} gear items for trip $tripId', source: 'GearCubit');
     } catch (e) {
       LogService.error('Failed to load gear: $e', source: 'GearCubit');
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -127,7 +128,7 @@ class GearCubit extends Cubit<GearState> {
       reload();
     } catch (e) {
       LogService.error('Failed to add item: $e', source: 'GearCubit');
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -140,7 +141,7 @@ class GearCubit extends Cubit<GearState> {
       reload();
     } catch (e) {
       LogService.error('Failed to update item: $e', source: 'GearCubit');
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -156,7 +157,7 @@ class GearCubit extends Cubit<GearState> {
       reload();
     } catch (e) {
       LogService.error('Failed to update quantity: $e', source: 'GearCubit');
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -169,7 +170,7 @@ class GearCubit extends Cubit<GearState> {
       reload();
     } catch (e) {
       LogService.error('Failed to delete item: $e', source: 'GearCubit');
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -185,7 +186,7 @@ class GearCubit extends Cubit<GearState> {
       // For toggle, maybe don't emit error to UI, just log?
       // Or show toast via listener. For now, emit error state might disrupt navigation.
       // But let's stick to standard error handling.
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -230,7 +231,7 @@ class GearCubit extends Cubit<GearState> {
       reload();
     } catch (e) {
       LogService.error('Failed to reorder: $e', source: 'GearCubit');
-      emit(GearError(e.toString()));
+      emit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -257,7 +258,7 @@ class GearCubit extends Cubit<GearState> {
       await loadGear(_currentTripId!);
     } catch (e) {
       LogService.error('Failed to replace items: $e', source: 'GearCubit');
-      emit(GearError('匯入失敗: $e'));
+      emit(GearError('匯入失敗: ${AppErrorHandler.getUserMessage(e)}'));
       await loadGear(_currentTripId!);
     }
   }

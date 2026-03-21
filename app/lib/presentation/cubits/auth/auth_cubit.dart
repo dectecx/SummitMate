@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/di.dart';
+import '../../../core/error/app_error_handler.dart';
 import 'package:summitmate/domain/domain.dart';
 
 import '../../../data/models/user_profile.dart';
@@ -80,7 +81,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
     } catch (e) {
       LogService.error('Register failed: $e', source: _source);
-      emit(AuthError(removeExceptionPrefix(e.toString())));
+      emit(AuthError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -110,7 +111,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
     } catch (e) {
       LogService.error('Login failed: $e', source: _source);
-      emit(AuthError(removeExceptionPrefix(e.toString())));
+      emit(AuthError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -142,7 +143,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
     } catch (e) {
       LogService.error('Verification failed: $e', source: _source);
-      emit(AuthError(removeExceptionPrefix(e.toString())));
+      emit(AuthError(AppErrorHandler.getUserMessage(e)));
       emit(AuthUnauthenticated());
     }
   }
@@ -166,7 +167,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
     } catch (e) {
       LogService.error('Resend code failed: $e', source: _source);
-      emit(AuthError(removeExceptionPrefix(e.toString())));
+      emit(AuthError(AppErrorHandler.getUserMessage(e)));
       emit(AuthUnauthenticated());
     }
   }
@@ -230,11 +231,4 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// 移除 Exception 前綴 (UI 顯示用)
-  String removeExceptionPrefix(String message) {
-    if (message.startsWith('Exception: ')) {
-      return message.substring(11);
-    }
-    return message;
-  }
 }
