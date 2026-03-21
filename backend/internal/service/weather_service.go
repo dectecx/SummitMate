@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,12 +22,13 @@ const (
 
 // WeatherService 處理天氣資料的 ETL 與查詢
 type WeatherService struct {
+	logger *slog.Logger
 	repo   *repository.WeatherRepository
 	apiKey string
 }
 
-func NewWeatherService(repo *repository.WeatherRepository, apiKey string) *WeatherService {
-	return &WeatherService{repo: repo, apiKey: apiKey}
+func NewWeatherService(logger *slog.Logger, repo *repository.WeatherRepository, apiKey string) *WeatherService {
+	return &WeatherService{logger: logger.With("component", "weather"), repo: repo, apiKey: apiKey}
 }
 
 // FetchAndStore 執行完整的 ETL 流程：Fetch → Parse → Aggregate → Store
@@ -41,17 +42,17 @@ func (s *WeatherService) FetchAndStore(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("CWA Fetch 失敗: %w", err)
 	}
-	log.Printf("✅ 取得 %d 筆原始資料, 發布時間: %v", len(rawData), issueTime)
+	s.logger.Info("CWA 原始資料取得完成", "count", len(rawData), "issue_time", issueTime)
 
 	// 2. Aggregate
 	records := s.aggregate(rawData, issueTime)
-	log.Printf("✅ 聚合為 %d 筆天氣記錄", len(records))
+	s.logger.Info("資料聚合完成", "count", len(records))
 
 	// 3. Store to DB
 	if err := s.repo.ReplaceAll(ctx, records); err != nil {
 		return fmt.Errorf("寫入 DB 失敗: %w", err)
 	}
-	log.Printf("✅ 已寫入 DB")
+	s.logger.Info("天氣資料已寫入 DB")
 
 	return nil
 }
@@ -137,7 +138,7 @@ func (s *WeatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time
 		return nil, nil, fmt.Errorf("JSON 結構不符: Location 不是陣列")
 	}
 
-	log.Printf("取得 %d 個地點", len(locList))
+	s.logger.Debug("解析地點數量", "count", len(locList))
 
 	var rows []rawRow
 

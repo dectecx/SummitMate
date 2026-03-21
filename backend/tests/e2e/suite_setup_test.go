@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -600,7 +601,7 @@ func (s *APITestSuite) SetupSuite() {
 	pollService := service.NewPollService(pollRepo, tripRepo, memberRepo)
 	favoriteService := service.NewFavoriteService(favoriteRepo)
 	groupService := service.NewGroupEventService(groupRepo)
-	weatherService := service.NewWeatherService(weatherRepo, cfg.CWAApiKey)
+	weatherService := service.NewWeatherService(slog.Default(), weatherRepo, cfg.CWAApiKey)
 	heartbeatService := service.NewHeartbeatService(heartbeatRepo)
 
 	authHandler := handler.NewAuthHandler(authService)
