@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,8 +33,11 @@ import '../data/datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../data/datasources/local/group_event_local_data_source.dart';
 import '../data/datasources/remote/group_event_remote_data_source.dart';
 import '../data/datasources/interfaces/i_poll_local_data_source.dart';
+import '../data/datasources/remote/fake_gear_cloud_service.dart';
+import '../domain/interfaces/i_gear_cloud_service.dart';
 import '../data/datasources/interfaces/i_poll_remote_data_source.dart';
 import '../data/datasources/local/poll_local_data_source.dart';
+import '../data/datasources/remote/poll_remote_data_source.dart';
 
 // Data - DataSources
 import '../data/datasources/local/trip_local_data_source.dart';
@@ -77,228 +81,251 @@ final GetIt getIt = GetIt.instance;
 /// 初始化依賴注入
 /// 在 App 啟動時呼叫，註冊所有服務與 Repository
 Future<void> setupDependencies() async {
-  // ===========================================================================
-  // 1. System & Common Infrastructure (基礎設施)
-  // ===========================================================================
-  // SharedPreferences
-  final prefs = await SharedPreferences.getInstance();
-  getIt.registerSingleton<SharedPreferences>(prefs);
+  try {
+    // ===========================================================================
+    // 1. System & Common Infrastructure (基礎設施)
+    // ===========================================================================
+    // SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    getIt.registerSingleton<SharedPreferences>(prefs);
 
-  // PackageInfo
-  final packageInfo = await PackageInfo.fromPlatform();
-  getIt.registerSingleton<PackageInfo>(packageInfo);
+    // PackageInfo
+    final packageInfo = await PackageInfo.fromPlatform();
+    getIt.registerSingleton<PackageInfo>(packageInfo);
 
-  // Hive (Local DB)
-  final hiveService = HiveService();
-  await hiveService.init();
-  getIt.registerSingleton<HiveService>(hiveService);
+    // Hive (Local DB)
+    final hiveService = HiveService();
+    await hiveService.init();
+    getIt.registerSingleton<HiveService>(hiveService);
 
-  // Logging
-  await LogService.init();
-  LogService.info('App 啟動', source: 'DI');
+    // Logging
+    await LogService.init();
+    LogService.info('App 啟動', source: 'DI');
+    LogService.info('🚀 [DI] Logger initialized', source: 'DI');
 
-  // ===========================================================================
-  // 2. Settings & Configuration (設定與配置)
-  // ===========================================================================
-  final settingsLocalDS = SettingsLocalDataSource(hiveService: hiveService);
-  await settingsLocalDS.init();
-  getIt.registerSingleton<ISettingsLocalDataSource>(settingsLocalDS);
+    // ===========================================================================
+    // 2. Settings & Configuration (設定與配置)
+    // ===========================================================================
+    final settingsLocalDS = SettingsLocalDataSource(hiveService: hiveService);
+    await settingsLocalDS.init();
+    getIt.registerSingleton<ISettingsLocalDataSource>(settingsLocalDS);
 
-  final settingsRepo = SettingsRepository(localDataSource: getIt<ISettingsLocalDataSource>());
-  await settingsRepo.init();
-  getIt.registerSingleton<ISettingsRepository>(settingsRepo);
+    final settingsRepo = SettingsRepository(localDataSource: getIt<ISettingsLocalDataSource>());
+    await settingsRepo.init();
+    getIt.registerSingleton<ISettingsRepository>(settingsRepo);
 
-  // Connectivity (Depends on Settings)
-  getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
+    // Connectivity (Depends on Settings)
+    getIt.registerLazySingleton<IConnectivityService>(() => ConnectivityService(settingsRepo: settingsRepo));
 
-  // ===========================================================================
-  // 3. Authentication (身份驗證)
-  // ===========================================================================
-  // Auth Session Data Source & Repository
-  final authSessionLocalDS = AuthSessionLocalDataSource();
-  getIt.registerSingleton<IAuthSessionLocalDataSource>(authSessionLocalDS);
+    // ===========================================================================
+    // 3. Authentication (身份驗證)
+    // ===========================================================================
+    // Auth Session Data Source & Repository
+    final authSessionLocalDS = AuthSessionLocalDataSource();
+    getIt.registerSingleton<IAuthSessionLocalDataSource>(authSessionLocalDS);
 
-  final authSessionRepo = AuthSessionRepository(localDataSource: getIt<IAuthSessionLocalDataSource>());
-  getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
+    final authSessionRepo = AuthSessionRepository(localDataSource: getIt<IAuthSessionLocalDataSource>());
+    getIt.registerSingleton<IAuthSessionRepository>(authSessionRepo);
 
-  // Token Validator & Main Auth Service
-  getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
-  getIt.registerLazySingleton<IAuthService>(
-    () => AuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
-  );
+    // Token Validator & Main Auth Service
+    getIt.registerLazySingleton<ITokenValidator>(() => JwtTokenValidator());
+    getIt.registerLazySingleton<IAuthService>(
+      () => AuthService(sessionRepository: getIt<IAuthSessionRepository>(), tokenValidator: getIt<ITokenValidator>()),
+    );
 
-  // Permission Service (Context-aware wrapper over Auth/Settings often)
-  getIt.registerLazySingleton<PermissionService>(() => PermissionService(getIt<IAuthService>()));
+    // Permission Service (Context-aware wrapper over Auth/Settings often)
+    getIt.registerLazySingleton<PermissionService>(() => PermissionService(getIt<IAuthService>()));
 
-  // ===========================================================================
-  // 4. Network Core (網路核心)
-  // ===========================================================================
-  // Auth Interceptor (Depends on AuthRepo)
-  getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));
+    // ===========================================================================
+    // 4. Network Core (網路核心)
+    // ===========================================================================
+    // Auth Interceptor (Depends on AuthRepo)
+    getIt.registerLazySingleton<AuthInterceptor>(() => AuthInterceptor(getIt<IAuthSessionRepository>()));
 
-  // Dio Client
-  getIt.registerLazySingleton<Dio>(() {
-    final dio = Dio();
-    dio.interceptors.add(getIt<AuthInterceptor>());
-    return dio;
-  });
+    // Dio Client
+    getIt.registerLazySingleton<Dio>(() {
+      final dio = Dio();
+      dio.interceptors.add(getIt<AuthInterceptor>());
+      return dio;
+    });
 
-  // API Clients
-  getIt.registerLazySingleton<IApiClient>(
-    () => ApiClient(baseUrl: EnvConfig.apiBaseUrl, dio: getIt<Dio>()),
-    instanceName: 'rest',
-  );
+    // API Clients
+    getIt.registerLazySingleton<IApiClient>(
+      () => ApiClient(baseUrl: EnvConfig.apiBaseUrl, dio: getIt<Dio>()),
+      instanceName: 'rest',
+    );
 
-  getIt.registerLazySingleton<NetworkAwareClient>(
-    () => NetworkAwareClient(
-      apiClient: getIt<IApiClient>(instanceName: 'rest'),
+    getIt.registerLazySingleton<NetworkAwareClient>(
+      () => NetworkAwareClient(
+        apiClient: getIt<IApiClient>(instanceName: 'rest'),
+        connectivity: getIt<IConnectivityService>(),
+      ),
+    );
+
+    getIt.registerLazySingleton<IApiClient>(() => getIt<NetworkAwareClient>());
+
+    getIt.registerLazySingleton<UsageTrackingService>(() => UsageTrackingService(apiClient: getIt<IApiClient>()));
+
+    // ===========================================================================
+    // 5. Data Sources (資料來源)
+    // ===========================================================================
+    // --- Local Data Sources ---
+    final tripLocalDS = TripLocalDataSource(hiveService: hiveService);
+    await tripLocalDS.init();
+    getIt.registerSingleton<ITripLocalDataSource>(tripLocalDS);
+
+    final itineraryLocalDS = ItineraryLocalDataSource(hiveService: hiveService);
+    await itineraryLocalDS.init();
+    getIt.registerSingleton<IItineraryLocalDataSource>(itineraryLocalDS);
+
+    final gearLocalDS = GearLocalDataSource(hiveService: hiveService);
+    await gearLocalDS.init();
+    getIt.registerSingleton<IGearLocalDataSource>(gearLocalDS);
+
+    final messageLocalDS = MessageLocalDataSource(hiveService: hiveService);
+    await messageLocalDS.init();
+    getIt.registerSingleton<IMessageLocalDataSource>(messageLocalDS);
+
+    final gearLibLocalDS = GearLibraryLocalDataSource(hiveService: hiveService);
+    await gearLibLocalDS.init();
+    getIt.registerSingleton<IGearLibraryLocalDataSource>(gearLibLocalDS);
+
+    final pollLocalDS = PollLocalDataSource(hiveService: hiveService);
+    await pollLocalDS.init();
+    getIt.registerSingleton<IPollLocalDataSource>(pollLocalDS);
+
+    final groupEventLocalDS = GroupEventLocalDataSource(hiveService: hiveService);
+    await groupEventLocalDS.init();
+    getIt.registerSingleton<IGroupEventLocalDataSource>(groupEventLocalDS);
+
+    final gearKeyLocalDS = GearKeyLocalDataSource();
+    getIt.registerSingleton<IGearKeyLocalDataSource>(gearKeyLocalDS);
+
+    // --- Remote Data Sources ---
+    getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
+    getIt.registerLazySingleton<IItineraryRemoteDataSource>(() => ItineraryRemoteDataSource());
+    getIt.registerLazySingleton<IMessageRemoteDataSource>(() => MessageRemoteDataSource());
+    getIt.registerLazySingleton<IGroupEventRemoteDataSource>(() => GroupEventRemoteDataSource());
+    getIt.registerLazySingleton<IFavoritesRemoteDataSource>(() => FavoritesRemoteDataSource());
+    getIt.registerLazySingleton<ITripGearRemoteDataSource>(() => TripGearRemoteDataSource());
+    getIt.registerLazySingleton<ITripMealRemoteDataSource>(() => TripMealRemoteDataSource());
+    getIt.registerLazySingleton<IGearLibraryRemoteDataSource>(() => GearLibraryRemoteDataSource());
+    getIt.registerLazySingleton<IPollRemoteDataSource>(() => PollRemoteDataSource());
+    getIt.registerLazySingleton<IGearCloudService>(() => FakeGearCloudService());
+
+    // ===========================================================================
+    // 6. Repositories (倉儲層)
+    // ===========================================================================
+
+    final tripRepo = TripRepository(
+      localDataSource: getIt<ITripLocalDataSource>(),
+      remoteDataSource: getIt<ITripRemoteDataSource>(),
+    );
+    await tripRepo.init();
+    getIt.registerSingleton<ITripRepository>(tripRepo);
+
+    final itineraryRepo = ItineraryRepository(
+      localDataSource: getIt<IItineraryLocalDataSource>(),
+      remoteDataSource: getIt<IItineraryRemoteDataSource>(),
       connectivity: getIt<IConnectivityService>(),
-    ),
-  );
+    );
+    await itineraryRepo.init();
+    getIt.registerSingleton<IItineraryRepository>(itineraryRepo);
 
-  getIt.registerLazySingleton<IApiClient>(() => getIt<NetworkAwareClient>());
+    final messageRepo = MessageRepository();
+    await messageRepo.init();
+    getIt.registerSingleton<IMessageRepository>(messageRepo);
 
-  getIt.registerLazySingleton<UsageTrackingService>(() => UsageTrackingService(apiClient: getIt<IApiClient>()));
+    final gearRepo = GearRepository();
+    await gearRepo.init();
+    getIt.registerSingleton<IGearRepository>(gearRepo);
 
-  // ===========================================================================
-  // 5. Data Sources (資料來源)
-  // ===========================================================================
-  // --- Local Data Sources ---
-  final tripLocalDS = TripLocalDataSource(hiveService: hiveService);
-  await tripLocalDS.init();
-  getIt.registerSingleton<ITripLocalDataSource>(tripLocalDS);
+    final gearLibraryRepo = GearLibraryRepository(localDataSource: getIt<IGearLibraryLocalDataSource>());
+    await gearLibraryRepo.init();
+    getIt.registerSingleton<IGearLibraryRepository>(gearLibraryRepo);
 
-  final itineraryLocalDS = ItineraryLocalDataSource(hiveService: hiveService);
-  await itineraryLocalDS.init();
-  getIt.registerSingleton<IItineraryLocalDataSource>(itineraryLocalDS);
+    final pollRepo = PollRepository(
+      localDataSource: getIt<IPollLocalDataSource>(),
+      remoteDataSource: getIt<IPollRemoteDataSource>(),
+    );
+    await pollRepo.init();
+    getIt.registerSingleton<IPollRepository>(pollRepo);
 
-  final gearLocalDS = GearLocalDataSource(hiveService: hiveService);
-  await gearLocalDS.init();
-  getIt.registerSingleton<IGearLocalDataSource>(gearLocalDS);
+    final gearSetRepo = GearSetRepository();
+    // GearSetRepo typically doesn't have an async init method, it's constructor-based
+    getIt.registerSingleton<IGearSetRepository>(gearSetRepo);
 
-  final messageLocalDS = MessageLocalDataSource(hiveService: hiveService);
-  await messageLocalDS.init();
-  getIt.registerSingleton<IMessageLocalDataSource>(messageLocalDS);
-
-  final gearLibLocalDS = GearLibraryLocalDataSource(hiveService: hiveService);
-  await gearLibLocalDS.init();
-  getIt.registerSingleton<IGearLibraryLocalDataSource>(gearLibLocalDS);
-
-  final pollLocalDS = PollLocalDataSource(hiveService: hiveService);
-  await pollLocalDS.init();
-  getIt.registerSingleton<IPollLocalDataSource>(pollLocalDS);
-
-  final groupEventLocalDS = GroupEventLocalDataSource(hiveService: hiveService);
-  await groupEventLocalDS.init();
-  getIt.registerSingleton<IGroupEventLocalDataSource>(groupEventLocalDS);
-
-  final gearKeyLocalDS = GearKeyLocalDataSource();
-  getIt.registerSingleton<IGearKeyLocalDataSource>(gearKeyLocalDS);
-
-  // --- Remote Data Sources ---
-  getIt.registerLazySingleton<ITripRemoteDataSource>(() => TripRemoteDataSource());
-  getIt.registerLazySingleton<IItineraryRemoteDataSource>(() => ItineraryRemoteDataSource());
-  getIt.registerLazySingleton<IMessageRemoteDataSource>(() => MessageRemoteDataSource());
-  getIt.registerLazySingleton<IGroupEventRemoteDataSource>(() => GroupEventRemoteDataSource());
-  getIt.registerLazySingleton<IFavoritesRemoteDataSource>(() => FavoritesRemoteDataSource());
-  getIt.registerLazySingleton<ITripGearRemoteDataSource>(() => TripGearRemoteDataSource());
-  getIt.registerLazySingleton<ITripMealRemoteDataSource>(() => TripMealRemoteDataSource());
-  getIt.registerLazySingleton<IGearLibraryRemoteDataSource>(() => GearLibraryRemoteDataSource());
-  // ===========================================================================
-  // 6. Repositories (倉儲層)
-  // ===========================================================================
-  final tripRepo = TripRepository(
-    localDataSource: getIt<ITripLocalDataSource>(),
-    remoteDataSource: getIt<ITripRemoteDataSource>(),
-  );
-  await tripRepo.init();
-  getIt.registerSingleton<ITripRepository>(tripRepo);
-
-  final itineraryRepo = ItineraryRepository(
-    localDataSource: getIt<IItineraryLocalDataSource>(),
-    remoteDataSource: getIt<IItineraryRemoteDataSource>(),
-    connectivity: getIt<IConnectivityService>(),
-  );
-  await itineraryRepo.init();
-  getIt.registerSingleton<IItineraryRepository>(itineraryRepo);
-
-  final messageRepo = MessageRepository();
-  await messageRepo.init();
-  getIt.registerSingleton<IMessageRepository>(messageRepo);
-
-  final gearRepo = GearRepository();
-  await gearRepo.init();
-  getIt.registerSingleton<IGearRepository>(gearRepo);
-
-  final gearLibraryRepo = GearLibraryRepository(localDataSource: getIt<IGearLibraryLocalDataSource>());
-  getIt.registerSingleton<IGearLibraryRepository>(gearLibraryRepo);
-
-  final pollRepo = PollRepository(
-    localDataSource: getIt<IPollLocalDataSource>(),
-    remoteDataSource: getIt<IPollRemoteDataSource>(),
-  );
-  getIt.registerSingleton<IPollRepository>(pollRepo);
-
-  final gearSetRepo = GearSetRepository();
-  getIt.registerSingleton<IGearSetRepository>(gearSetRepo);
-
-  final groupEventRepo = GroupEventRepository(
-    localDataSource: getIt<IGroupEventLocalDataSource>(),
-    remoteDataSource: getIt<IGroupEventRemoteDataSource>(),
-    authService: getIt<IAuthService>(),
-  );
-  getIt.registerSingleton<IGroupEventRepository>(groupEventRepo);
-
-  final favoritesLocalDS = FavoritesLocalDataSource(hiveService: hiveService);
-  await favoritesLocalDS.init();
-  getIt.registerSingleton<IFavoritesLocalDataSource>(favoritesLocalDS);
-
-  final favoritesRepo = FavoritesRepository(
-    localDataSource: getIt<IFavoritesLocalDataSource>(),
-    remoteDataSource: getIt<IFavoritesRemoteDataSource>(),
-    authService: getIt<IAuthService>(),
-  );
-  getIt.registerSingleton<IFavoritesRepository>(favoritesRepo);
-
-  // ===========================================================================
-  // 7. Domain & Application Services (應用服務)
-  // ===========================================================================
-  // Location
-  getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
-  getIt.registerLazySingleton<IGeolocatorService>(() => GeolocatorService());
-
-  // Feature Services
-  final weatherService = WeatherService();
-  await weatherService.init();
-  getIt.registerSingleton<IWeatherService>(weatherService);
-
-  // Data & Sync
-  getIt.registerLazySingleton<ISyncService>(
-    () => SyncService(
-      tripRepo: getIt<ITripRepository>(),
-      itineraryRepo: getIt<IItineraryRepository>(),
-      messageRepo: getIt<IMessageRepository>(),
-      connectivity: getIt<IConnectivityService>(),
+    final groupEventRepo = GroupEventRepository(
+      localDataSource: getIt<IGroupEventLocalDataSource>(),
+      remoteDataSource: getIt<IGroupEventRemoteDataSource>(),
       authService: getIt<IAuthService>(),
-    ),
-  );
+    );
+    getIt.registerSingleton<IGroupEventRepository>(groupEventRepo);
 
-  // Subscriptions & Ads
-  final adService = AdService();
-  await adService.initialize();
-  getIt.registerSingleton<IAdService>(adService);
+    final favoritesLocalDS = FavoritesLocalDataSource(hiveService: hiveService);
+    await favoritesLocalDS.init();
+    getIt.registerSingleton<IFavoritesLocalDataSource>(favoritesLocalDS);
 
-  // ===========================================================================
-  // 8. Presentation Factories (Bloc/Cubit 工廠)
-  // ===========================================================================
-  // GroupEventCommentCubit (Dynamic Factory)
-  getIt.registerFactoryParam<GroupEventCommentCubit, String, void>(
-    (eventId, _) => GroupEventCommentCubit(
-      repository: getIt<IGroupEventRepository>(),
+    final favoritesRepo = FavoritesRepository(
+      localDataSource: getIt<IFavoritesLocalDataSource>(),
+      remoteDataSource: getIt<IFavoritesRemoteDataSource>(),
       authService: getIt<IAuthService>(),
-      eventId: eventId,
-    ),
-  );
+    );
+    getIt.registerSingleton<IFavoritesRepository>(favoritesRepo);
+
+    // ===========================================================================
+    // 7. Domain & Application Services (應用服務)
+    // ===========================================================================
+
+    // Location
+    getIt.registerLazySingleton<ILocationResolver>(() => TownshipLocationResolver());
+    getIt.registerLazySingleton<IGeolocatorService>(() => GeolocatorService());
+
+    /*
+    // Feature Services
+    final weatherService = WeatherService();
+    await weatherService.init();
+    getIt.registerSingleton<IWeatherService>(weatherService);
+    */
+    getIt.registerSingleton<IWeatherService>(WeatherService()); // Registering empty instance if needed
+
+    // Data & Sync
+    getIt.registerLazySingleton<ISyncService>(
+      () => SyncService(
+        tripRepo: getIt<ITripRepository>(),
+        itineraryRepo: getIt<IItineraryRepository>(),
+        messageRepo: getIt<IMessageRepository>(),
+        connectivity: getIt<IConnectivityService>(),
+        authService: getIt<IAuthService>(),
+      ),
+    );
+
+    /*
+    // Subscriptions & Ads
+    final adService = AdService();
+    await adService.initialize();
+    getIt.registerSingleton<IAdService>(adService);
+    */
+    getIt.registerSingleton<IAdService>(AdService());
+
+    // ===========================================================================
+    // 8. Presentation Factories (Bloc/Cubit 工廠)
+    // ===========================================================================
+    // GroupEventCommentCubit (Dynamic Factory)
+    getIt.registerFactoryParam<GroupEventCommentCubit, String, void>(
+      (eventId, _) => GroupEventCommentCubit(
+        repository: getIt<IGroupEventRepository>(),
+        authService: getIt<IAuthService>(),
+        eventId: eventId,
+      ),
+    );
+  } catch (e, stack) {
+    if (kDebugMode) {
+      debugPrint('❌ [DI] CRITICAL ERROR during setupDependencies: $e');
+      debugPrint(stack.toString());
+    }
+    rethrow;
+  }
 }
 
 /// 重置依賴注入 (用於測試)
