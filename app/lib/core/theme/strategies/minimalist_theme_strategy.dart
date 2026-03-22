@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../i_theme_strategy.dart';
 
 /// 極簡黑 (Minimalist Theme)
@@ -80,12 +81,12 @@ class MinimalistThemeStrategy implements AppThemeStrategy {
       labelStyle: TextStyle(color: mediumGrey),
     ),
 
-    textTheme: const TextTheme(
+    textTheme: GoogleFonts.outfitTextTheme(const TextTheme(
       headlineLarge: TextStyle(color: pureBlack, fontWeight: FontWeight.bold),
       titleLarge: TextStyle(color: pureBlack, fontWeight: FontWeight.bold),
       bodyLarge: TextStyle(color: pureBlack),
       bodyMedium: TextStyle(color: darkGrey),
-    ),
+    )),
   );
 
   @override

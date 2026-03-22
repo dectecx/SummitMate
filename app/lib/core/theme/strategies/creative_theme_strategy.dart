@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../i_theme_strategy.dart';
 
 /// 2. 活力橙主題 (Creative Theme)
@@ -77,6 +78,7 @@ class CreativeThemeStrategy implements AppThemeStrategy {
       shadowColor: Colors.black.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), // 圓潤風格
     ),
+    textTheme: GoogleFonts.outfitTextTheme(),
   );
 
   @override
