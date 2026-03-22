@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../data/models/weather_data.dart';

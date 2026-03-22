@@ -1,4 +1,5 @@
-import '../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../core/di/injection.dart';
 import '../../core/error/result.dart';
 import '../models/gear_set.dart';
 import '../models/gear_key_record.dart';
@@ -11,6 +12,7 @@ import '../datasources/interfaces/i_gear_key_local_data_source.dart';
 /// 裝備組合 Repository
 ///
 /// 負責協調雲端裝備組合 (GearSet) 與本地 Key 儲存。
+@LazySingleton(as: IGearSetRepository)
 class GearSetRepository implements IGearSetRepository {
   final IGearCloudService _remoteDataSource;
   final IGearKeyLocalDataSource _localDataSource;

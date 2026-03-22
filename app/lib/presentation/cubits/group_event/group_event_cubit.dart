@@ -1,5 +1,6 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../core/core.dart';
 import '../../../domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -7,6 +8,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../data/repositories/interfaces/i_group_event_repository.dart';
 import 'group_event_state.dart';
 
+@injectable
 class GroupEventCubit extends Cubit<GroupEventState> {
   final IGroupEventRepository _groupEventRepository;
   final IConnectivityService _connectivity;
@@ -18,14 +20,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
 
   final Map<String, DateTime> _likeDebounceMap = {};
 
-  GroupEventCubit({
-    IGroupEventRepository? groupEventRepository,
-    IConnectivityService? connectivity,
-    IAuthService? authService,
-  }) : _groupEventRepository = groupEventRepository ?? getIt<IGroupEventRepository>(),
-       _connectivity = connectivity ?? getIt<IConnectivityService>(),
-       _authService = authService ?? getIt<IAuthService>(),
-       super(const GroupEventInitial());
+  GroupEventCubit(this._groupEventRepository, this._connectivity, this._authService) : super(const GroupEventInitial());
 
   String get _currentUserId => _authService.currentUserId ?? _guestUserId;
   bool get _isGuest => _currentUserId == _guestUserId || _currentUserId.isEmpty;

@@ -1,4 +1,5 @@
-import '../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../core/di/injection.dart';
 import '../../core/error/app_error_handler.dart';
 import '../../core/exceptions/offline_exception.dart';
 import '../../core/offline_config.dart';
@@ -14,6 +15,7 @@ import 'package:dio/dio.dart';
 /// 認證服務
 ///
 /// 實作基於 JWT Token 的身分驗證 [IAuthService]。
+@LazySingleton(as: IAuthService)
 class AuthService implements IAuthService {
   static const String _source = 'AuthService';
 

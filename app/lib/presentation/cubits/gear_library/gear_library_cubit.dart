@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../data/models/gear_library_item.dart';
 import '../../../data/models/enums/sync_status.dart';
 import '../../../data/repositories/interfaces/i_gear_library_repository.dart';
@@ -12,6 +13,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../data/datasources/remote/gear_library_remote_data_source.dart';
 import 'gear_library_state.dart';
 
+@injectable
 class GearLibraryCubit extends Cubit<GearLibraryState> {
   final IGearLibraryRepository _repository;
   final IGearRepository _gearRepository;
@@ -19,18 +21,13 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   final IAuthService _authService;
   final IGearLibraryRemoteDataSource _remoteDataSource;
 
-  GearLibraryCubit({
-    IGearLibraryRepository? repository,
-    IGearRepository? gearRepository,
-    ITripRepository? tripRepository,
-    IAuthService? authService,
-    IGearLibraryRemoteDataSource? remoteDataSource,
-  }) : _repository = repository ?? getIt<IGearLibraryRepository>(),
-       _gearRepository = gearRepository ?? getIt<IGearRepository>(),
-       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       _authService = authService ?? getIt<IAuthService>(),
-       _remoteDataSource = remoteDataSource ?? getIt<IGearLibraryRemoteDataSource>(),
-       super(const GearLibraryInitial());
+  GearLibraryCubit(
+    this._repository,
+    this._gearRepository,
+    this._tripRepository,
+    this._authService,
+    this._remoteDataSource,
+  ) : super(const GearLibraryInitial());
 
   Future<void> loadItems() async {
     emit(const GearLibraryLoading());

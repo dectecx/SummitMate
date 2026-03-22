@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -7,6 +8,7 @@ import '../models/weather_data.dart';
 import '../models/cwa/cwa_response_models.dart';
 import 'cwa_api_factory.dart';
 
+@lazySingleton
 class CwaWeatherSource {
   static const String _apiKey = EnvConfig.cwaApiKey;
 

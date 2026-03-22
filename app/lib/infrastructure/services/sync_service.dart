@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../core/offline_config.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
@@ -11,6 +12,7 @@ import '../../core/error/result.dart';
 
 /// 同步服務
 /// 管理本地資料與雲端資料的雙向同步
+@LazySingleton(as: ISyncService)
 class SyncService implements ISyncService {
   final ITripRepository _tripRepo;
   final IItineraryRepository _itineraryRepo;

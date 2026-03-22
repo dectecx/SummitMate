@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import '../../models/group_event.dart';
 import '../../../core/constants.dart';
@@ -5,6 +6,7 @@ import '../../../infrastructure/tools/hive_service.dart';
 import '../interfaces/i_group_event_local_data_source.dart';
 
 /// 揪團本地資料來源實作 (Hive)
+@LazySingleton(as: IGroupEventLocalDataSource)
 class GroupEventLocalDataSource implements IGroupEventLocalDataSource {
   final HiveService _hiveService;
   Box<GroupEvent>? _eventsBox;

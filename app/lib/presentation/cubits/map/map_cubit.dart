@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,7 @@ import '../../../core/gpx_utils.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'map_state.dart';
 
+@injectable
 class MapCubit extends Cubit<MapState> {
   StreamSubscription<Position>? _positionStreamSubscription;
   StreamSubscription<CompassEvent>? _compassStreamSubscription;

@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/core.dart';
@@ -6,14 +7,14 @@ import '../../../../data/repositories/interfaces/i_group_event_repository.dart';
 
 part 'group_event_review_state.dart';
 
+@injectable
 class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
   final IGroupEventRepository _repository;
   final String eventId;
   final String userId;
 
-  GroupEventReviewCubit({required IGroupEventRepository repository, required this.eventId, required this.userId})
-    : _repository = repository,
-      super(GroupEventReviewInitial());
+  GroupEventReviewCubit(this._repository, @factoryParam this.eventId, @factoryParam this.userId)
+    : super(GroupEventReviewInitial());
 
   /// 載入報名列表
   Future<void> loadApplications() async {

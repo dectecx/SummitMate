@@ -1,11 +1,13 @@
+import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/interfaces/i_api_client.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import 'log_service.dart';
 
 /// 使用狀態追蹤服務 (僅 Web)
 /// 每 2 小時發送一次心跳到伺服器
+@lazySingleton
 class UsageTrackingService {
   static const String _source = 'UsageTracking';
   static const Duration _heartbeatInterval = Duration(hours: 2);
@@ -18,9 +20,7 @@ class UsageTrackingService {
   final IApiClient _apiClient;
   final bool _forceWeb;
 
-  UsageTrackingService({IApiClient? apiClient, bool forceWeb = false})
-    : _apiClient = apiClient ?? getIt<IApiClient>(),
-      _forceWeb = forceWeb;
+  UsageTrackingService(this._apiClient, {bool forceWeb = false}) : _forceWeb = forceWeb;
 
   /// 啟動追蹤 (僅 Web 平台)
   ///

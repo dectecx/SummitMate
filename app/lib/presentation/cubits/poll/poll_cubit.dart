@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../data/repositories/interfaces/i_poll_repository.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -9,6 +10,7 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../../../infrastructure/tools/toast_service.dart';
 import 'poll_state.dart';
 
+@injectable
 class PollCubit extends Cubit<PollState> {
   final IPollService _pollService;
   final IPollRepository _pollRepository;
@@ -18,17 +20,8 @@ class PollCubit extends Cubit<PollState> {
   static const String _source = 'PollCubit';
   static const Duration _syncCooldown = Duration(minutes: 5);
 
-  PollCubit({
-    IPollService? pollService,
-    IPollRepository? pollRepository,
-    IConnectivityService? connectivity,
-    IAuthService? authService,
-    SharedPreferences? prefs,
-  }) : _pollService = pollService ?? getIt<IPollService>(),
-       _pollRepository = pollRepository ?? getIt<IPollRepository>(),
-       _connectivity = connectivity ?? getIt<IConnectivityService>(),
-       _authService = authService ?? getIt<IAuthService>(),
-       super(const PollInitial());
+  PollCubit(this._pollService, this._pollRepository, this._connectivity, this._authService)
+    : super(const PollInitial());
 
   String get _currentUserId {
     return _authService.currentUserId ?? 'guest';

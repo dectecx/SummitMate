@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../models/favorite.dart';
 import '../../models/enums/favorite_type.dart';
@@ -6,6 +7,7 @@ import '../../../infrastructure/tools/hive_service.dart';
 import '../../datasources/interfaces/i_favorites_local_data_source.dart';
 
 /// 最愛 (Favorites) 的本地資料來源實作 (使用 Hive)
+@LazySingleton(as: IFavoritesLocalDataSource)
 class FavoritesLocalDataSource implements IFavoritesLocalDataSource {
   final HiveService _hiveService;
   Box<Favorite>? _box;

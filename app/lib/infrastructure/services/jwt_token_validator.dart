@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'dart:convert';
 
 import '../../domain/interfaces/i_token_validator.dart';
@@ -5,6 +6,7 @@ import '../../domain/interfaces/i_token_validator.dart';
 /// JWT Token 驗證器實作
 /// 在用戶端解碼並驗證 JWT Token。
 /// 注意：簽章驗證由伺服器端進行。
+@LazySingleton(as: ITokenValidator)
 class JwtTokenValidator implements ITokenValidator {
   @override
   TokenValidationResult validate(String token) {

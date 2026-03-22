@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_gear_library_repository.dart';
@@ -8,6 +9,7 @@ import '../models/gear_library_item.dart';
 ///
 /// 協調 LocalDataSource (Hive) 的資料存取。
 /// 雲端備份透過 GearLibraryCloudService 進行。
+@LazySingleton(as: IGearLibraryRepository)
 class GearLibraryRepository implements IGearLibraryRepository {
   static const String _source = 'GearLibraryRepository';
 
