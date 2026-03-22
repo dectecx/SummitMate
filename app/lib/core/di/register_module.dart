@@ -6,13 +6,10 @@ import '../../infrastructure/infrastructure.dart';
 
 @module
 abstract class RegisterModule {
-  @preResolve
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 
-  @preResolve
   Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
 
-  @preResolve
   @singleton
   Future<HiveService> get hiveService async {
     final service = HiveService();

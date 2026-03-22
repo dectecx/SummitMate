@@ -2,7 +2,6 @@ import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/interfaces/i_api_client.dart';
-import '../../core/di/injection.dart';
 import 'log_service.dart';
 
 /// 使用狀態追蹤服務 (僅 Web)
