@@ -146,4 +146,7 @@ abstract class IAuthService {
 
   /// 取得當前登入使用者的 UUID (同步，用於資料所有權標記)
   String? get currentUserId;
+
+  /// 監聽認證狀態變更 (登入/登出/資料更新)
+  Stream<UserProfile?> get onAuthStateChanged;
 }

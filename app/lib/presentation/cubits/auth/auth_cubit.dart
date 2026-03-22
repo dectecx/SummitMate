@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,27 +21,47 @@ class AuthCubit extends Cubit<AuthState> {
 
   final IAuthService _authService;
   final UsageTrackingService _usageTrackingService;
+  StreamSubscription<UserProfile?>? _authSubscription;
 
-  AuthCubit(this._authService, this._usageTrackingService) : super(AuthInitial());
+  AuthCubit(this._authService, this._usageTrackingService) : super(AuthInitial()) {
+    _init();
+  }
+
+  void _init() {
+    _authSubscription = _authService.onAuthStateChanged.listen((user) {
+      if (user != null) {
+        _emitAuthenticated(user, false, isOffline: _authService.isOfflineMode);
+      } else {
+        // 只有在當前是已登入狀態，且 service 說 null 時才發送 (避免覆蓋其他狀態如 AuthLoading)
+        if (state is AuthAuthenticated) {
+          _usageTrackingService.stop();
+          emit(AuthUnauthenticated());
+        } else if (state is AuthInitial) {
+          emit(AuthUnauthenticated());
+        }
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _authSubscription?.cancel();
+    return super.close();
+  }
 
   /// 檢查當前認證狀態 (通常在 App 啟動時呼叫)
   Future<void> checkAuthStatus() async {
     LogService.info('Checking auth status...', source: _source);
+    // 透過 validateSession 觸發 Stream 更新
     try {
-      final isLoggedIn = await _authService.isLoggedIn();
-
-      if (isLoggedIn) {
-        final cachedUser = await _authService.getCachedUserProfile();
-        if (cachedUser != null) {
-          _emitAuthenticated(cachedUser, false, isOffline: _authService.isOfflineMode);
-          return;
-        }
-      }
-
-      emit(AuthUnauthenticated());
+      await _authService.validateSession();
     } catch (e) {
       LogService.error('Check auth status failed: $e', source: _source);
-      emit(const AuthError('無法確認登入狀態'));
+      // 如果 validateSession 失敗，且當前不是 AuthError 狀態，則發送 AuthError
+      // 避免覆蓋 AuthLoading 等狀態
+      if (state is! AuthError) {
+        emit(const AuthError('無法確認登入狀態'));
+      }
     }
   }
 
@@ -70,11 +91,8 @@ class AuthCubit extends Cubit<AuthState> {
       if (result.isSuccess) {
         if (result.requiresVerification) {
           emit(AuthRequiresVerification(email));
-        } else if (result.user != null) {
-          _emitAuthenticated(result.user!, false, isOffline: result.isOffline);
-        } else {
-          emit(const AuthError('註冊成功但不需驗證且無使用者回傳 (異常)'));
         }
+        // 成功路徑會經由 Stream 自動發送 AuthAuthenticated
       } else {
         emit(AuthError(result.errorMessage ?? '註冊失敗'));
       }
@@ -96,15 +114,10 @@ class AuthCubit extends Cubit<AuthState> {
       final result = await _authService.login(email: email, password: password);
 
       if (result.isSuccess) {
-        if (result.user != null) {
-          if (result.user!.isVerified) {
-            _emitAuthenticated(result.user!, false, isOffline: result.isOffline);
-          } else {
-            emit(AuthRequiresVerification(email));
-          }
-        } else {
-          emit(const AuthError('登入異常: 無法取得使用者資料'));
+        if (result.user != null && !result.user!.isVerified) {
+          emit(AuthRequiresVerification(email));
         }
+        // 成功路徑會經由 Stream 自動發送 AuthAuthenticated
       } else {
         emit(AuthError(result.errorMessage ?? '登入失敗'));
       }
@@ -177,17 +190,11 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
 
     try {
-      // 1. 清除 Auth Session
       await _authService.logout();
-
-      // 2. 停止追蹤
-      _usageTrackingService.stop();
-
-      LogService.info('Logout completed (fast transition)', source: _source);
-      emit(AuthUnauthenticated());
+      // 成功路徑會經由 Stream 自動發送 AuthUnauthenticated
     } catch (e, stack) {
       LogService.error('Logout failed: $e', source: _source, stackTrace: stack);
-      emit(AuthUnauthenticated()); // 即使出錯，UI 也應回到未登入狀態
+      emit(AuthUnauthenticated()); // 保底
     }
   }
 
@@ -199,9 +206,7 @@ class AuthCubit extends Cubit<AuthState> {
     LogService.info('Updating profile: $displayName', source: _source);
     try {
       final result = await _authService.updateProfile(displayName: displayName, avatar: avatar);
-      if (result.isSuccess && result.user != null) {
-        _emitAuthenticated(result.user!, false, isOffline: result.isOffline);
-      }
+      // 成功路徑會經由 Stream 自動發送 AuthAuthenticated
       return result;
     } catch (e) {
       LogService.error('Update profile failed: $e', source: _source);

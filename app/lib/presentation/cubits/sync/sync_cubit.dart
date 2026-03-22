@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -29,7 +30,33 @@ class SyncCubit extends Cubit<SyncState> {
     this._authService,
     this._tripRepository,
   ) : super(const SyncInitial()) {
+    _init();
+  }
+
+  StreamSubscription<bool>? _connectivitySubscription;
+
+  void _init() {
     _initLastSyncTime();
+
+    // 監聽連線狀態
+    _connectivitySubscription = _connectivityService.onConnectivityChanged.listen((isOnline) {
+      if (isOnline) {
+        // 當恢復連線且前一個狀態是失敗（且是因為離線）時，自動嘗試同步
+        if (state is SyncFailure) {
+          final failure = state as SyncFailure;
+          if (failure.errorMessage.contains('離線')) {
+            LogService.info('網路恢復，自動觸發同步...', source: _source);
+            syncAll(force: false);
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _connectivitySubscription?.cancel();
+    return super.close();
   }
 
   /// 初始化上次同步時間
