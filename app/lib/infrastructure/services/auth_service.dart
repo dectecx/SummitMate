@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:injectable/injectable.dart';
 import '../../core/di/injection.dart';
 import '../../core/error/app_error_handler.dart';
@@ -25,6 +26,7 @@ class AuthService implements IAuthService {
   bool _isOfflineMode = false;
   String? _currentUserId;
   String? _currentUserEmail;
+  final _authStateController = StreamController<UserProfile?>.broadcast();
 
   /// 建立認證服務實例
   ///
@@ -37,7 +39,30 @@ class AuthService implements IAuthService {
     ITokenValidator? tokenValidator,
   }) : _apiClient = apiClient ?? getIt<NetworkAwareClient>(),
        _sessionRepo = sessionRepository,
-       _tokenValidator = tokenValidator ?? JwtTokenValidator();
+       _tokenValidator = tokenValidator ?? JwtTokenValidator() {
+    // 初始載入快取狀態
+    _initAuthState();
+  }
+
+  Future<void> _initAuthState() async {
+    final user = await getCachedUserProfile();
+    if (user != null) {
+      _currentUserId = user.id;
+      _currentUserEmail = user.email;
+      _authStateController.add(user);
+    } else {
+      _authStateController.add(null);
+    }
+  }
+
+  void _notifyAuthState(UserProfile? user) {
+    _currentUserId = user?.id;
+    _currentUserEmail = user?.email;
+    _authStateController.add(user);
+  }
+
+  @override
+  Stream<UserProfile?> get onAuthStateChanged => _authStateController.stream;
 
   @override
   bool get isOfflineMode => _isOfflineMode;
@@ -86,8 +111,7 @@ class AuthService implements IAuthService {
 
           if (accessToken != null) {
             await _sessionRepo.saveSession(accessToken, user);
-            _currentUserId = user.id;
-            _currentUserEmail = user.email;
+            _notifyAuthState(user);
             return AuthResult.success(user: user, accessToken: accessToken);
           }
           return AuthResult.success(user: user);
@@ -136,8 +160,7 @@ class AuthService implements IAuthService {
         final accessToken = data['token'] as String;
 
         await _sessionRepo.saveSession(accessToken, user);
-        _currentUserId = user.id;
-        _currentUserEmail = user.email;
+        _notifyAuthState(user);
 
         LogService.info('登入成功: ${user.email}', source: _source);
         return AuthResult.success(user: user, accessToken: accessToken);
@@ -170,8 +193,7 @@ class AuthService implements IAuthService {
         if (tokenAge < OfflineConfig.offlineGracePeriod) {
           LogService.info('離線登入成功: $email', source: _source);
           _isOfflineMode = true;
-          _currentUserId = cachedUser.id;
-          _currentUserEmail = cachedUser.email;
+          _notifyAuthState(cachedUser);
           return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
         } else {
           return AuthResult.failure(errorCode: 'OFFLINE_TOKEN_EXPIRED', errorMessage: '離線驗證已過期，請連線後重新登入');
@@ -259,8 +281,7 @@ class AuthService implements IAuthService {
         );
 
         await _sessionRepo.saveSession(token, user);
-        _currentUserId = user.id;
-        _currentUserEmail = user.email;
+        _notifyAuthState(user);
         _isOfflineMode = false;
 
         return AuthResult.success(user: user, accessToken: token);
@@ -277,8 +298,7 @@ class AuthService implements IAuthService {
       final cachedUser = await getCachedUserProfile();
       if (cachedUser != null) {
         _isOfflineMode = true;
-        _currentUserId = cachedUser.id;
-        _currentUserEmail = cachedUser.email;
+        _notifyAuthState(cachedUser);
         return AuthResult.success(user: cachedUser, accessToken: token, isOffline: true);
       }
       return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '無法連線伺服器');
@@ -310,8 +330,7 @@ class AuthService implements IAuthService {
             avatar: userData['avatar'] ?? '',
           );
           await _sessionRepo.saveSession(newAccessToken, user);
-          _currentUserId = user.id;
-          _currentUserEmail = user.email;
+          _notifyAuthState(user);
           return AuthResult.success(user: user, accessToken: newAccessToken);
         }
       }
@@ -383,6 +402,7 @@ class AuthService implements IAuthService {
           if (token != null) {
             await _sessionRepo.saveSession(token, newUser);
           }
+          _notifyAuthState(newUser);
           return AuthResult.success(user: newUser, accessToken: token);
         }
         return AuthResult.success();
@@ -404,8 +424,7 @@ class AuthService implements IAuthService {
   Future<void> logout() async {
     await _sessionRepo.clearSession();
     _isOfflineMode = false;
-    _currentUserId = null;
-    _currentUserEmail = null;
+    _notifyAuthState(null);
     LogService.info('已登出', source: _source);
   }
 

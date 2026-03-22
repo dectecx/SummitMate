@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -30,9 +31,11 @@ class FakeGeolocatorService implements IGeolocatorService {
 // Manual Fake implementation to avoid Mockito overhead
 class FakeWeatherService implements IWeatherService {
   WeatherData? _mockResponse;
+  final _controller = StreamController<WeatherData?>.broadcast();
 
   void setMockResponse(WeatherData data) {
     _mockResponse = data;
+    _controller.add(data);
   }
 
   @override
@@ -47,6 +50,9 @@ class FakeWeatherService implements IWeatherService {
   Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
     return _mockResponse;
   }
+
+  @override
+  Stream<WeatherData?> get onWeatherChanged => _controller.stream;
 }
 
 void main() {
