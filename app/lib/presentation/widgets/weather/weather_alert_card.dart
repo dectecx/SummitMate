@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../../core/di/injection.dart';
 
@@ -172,7 +173,7 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), shape: BoxShape.circle),
                     child: Icon(statusIcon, color: statusColor, size: 28),
-                  ),
+                  ).animate(onPlay: (controller) => controller.repeat(reverse: true)).shimmer(duration: 1200.ms, color: Colors.white.withValues(alpha: 0.2)).scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 2000.ms),
                   const SizedBox(width: 16),
 
                   // Text Content
@@ -209,11 +210,11 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
                         badgeText,
                         style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
-                    ),
+                    ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
                 ],
               ),
             ),
-          ),
+          ).animate().fadeIn(duration: 600.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuad),
         ),
       ),
     );
