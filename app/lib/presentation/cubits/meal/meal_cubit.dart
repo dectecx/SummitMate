@@ -1,7 +1,9 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/meal/meal_state.dart';
 import '../../../data/models/meal_item.dart';
 
+@injectable
 class MealCubit extends Cubit<MealState> {
   MealCubit()
     : super(

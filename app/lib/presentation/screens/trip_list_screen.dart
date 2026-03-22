@@ -9,7 +9,7 @@ import '../cubits/auth/auth_state.dart';
 import '../../data/models/trip.dart';
 import '../../data/models/user_profile.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../core/services/permission_service.dart';
 import '../../presentation/cubits/settings/settings_cubit.dart';
 import '../../presentation/cubits/settings/settings_state.dart';

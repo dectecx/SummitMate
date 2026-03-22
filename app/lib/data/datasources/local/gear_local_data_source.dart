@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import '../../../core/constants.dart';
 import '../../models/gear_item.dart';
@@ -5,6 +6,7 @@ import '../interfaces/i_gear_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 
 /// 裝備項目 (GearItem) 的本地資料來源實作 (使用 Hive)
+@LazySingleton(as: IGearLocalDataSource)
 class GearLocalDataSource implements IGearLocalDataSource {
   static const String _boxName = HiveBoxNames.gear;
   final HiveService _hiveService;

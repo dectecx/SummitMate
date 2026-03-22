@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
 import '../../core/error/result.dart';
@@ -10,6 +11,7 @@ import '../../infrastructure/tools/log_service.dart';
 ///
 /// 管理全域設定的 CRUD 操作。
 /// 設定資料為應用程式層級，儲存於本地 Hive。
+@LazySingleton(as: ISettingsRepository)
 class SettingsRepository implements ISettingsRepository {
   static const String _source = 'SettingsRepository';
 

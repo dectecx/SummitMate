@@ -18,7 +18,7 @@ void main() {
 
     setUp(() {
       mockApiClient = MockNetworkAwareClient();
-      service = UsageTrackingService(apiClient: mockApiClient, forceWeb: true);
+      service = UsageTrackingService(mockApiClient, forceWeb: true);
     });
 
     tearDown(() {
@@ -96,7 +96,7 @@ void main() {
 
     test('建構子應接受自訂 ApiClient', () {
       // 執行
-      final customService = UsageTrackingService(apiClient: mockApiClient);
+      final customService = UsageTrackingService(mockApiClient);
 
       // 驗證
       expect(customService, isNotNull);

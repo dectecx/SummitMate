@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../core/exceptions/offline_exception.dart';
 import '../../domain/interfaces/i_api_client.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';

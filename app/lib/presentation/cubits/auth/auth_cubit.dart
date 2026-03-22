@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../core/error/app_error_handler.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -13,16 +14,14 @@ import 'auth_state.dart';
 ///
 /// 負責協調 [IAuthService] 進行登入/登出，並追蹤使用者狀態。
 /// 使用 [UsageTrackingService] 進行行為追蹤。
+@injectable
 class AuthCubit extends Cubit<AuthState> {
   static const String _source = 'AuthCubit';
 
   final IAuthService _authService;
   final UsageTrackingService _usageTrackingService;
 
-  AuthCubit({IAuthService? authService, UsageTrackingService? usageTrackingService})
-    : _authService = authService ?? getIt<IAuthService>(),
-      _usageTrackingService = usageTrackingService ?? getIt<UsageTrackingService>(),
-      super(AuthInitial());
+  AuthCubit(this._authService, this._usageTrackingService) : super(AuthInitial());
 
   /// 檢查當前認證狀態 (通常在 App 啟動時呼叫)
   Future<void> checkAuthStatus() async {

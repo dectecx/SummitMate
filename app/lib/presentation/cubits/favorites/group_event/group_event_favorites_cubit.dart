@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../../../core/constants.dart';
@@ -6,13 +7,12 @@ import 'group_event_favorites_state.dart';
 
 /// 管理揪團收藏功能的 Cubit
 /// 負責與 Hive 資料庫互動，並管理揪團收藏列表的狀態
+@injectable
 class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
   final HiveService _hiveService;
   Box<String>? _box;
 
-  GroupEventFavoritesCubit({required HiveService hiveService})
-    : _hiveService = hiveService,
-      super(GroupEventFavoritesInitial());
+  GroupEventFavoritesCubit(this._hiveService) : super(GroupEventFavoritesInitial());
 
   /// 載入收藏列表
   Future<void> loadFavorites() async {

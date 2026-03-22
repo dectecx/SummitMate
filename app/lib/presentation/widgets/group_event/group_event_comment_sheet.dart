@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/di.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../data/models/group_event_comment.dart';
 import '../../cubits/group_event/comment/group_event_comment_cubit.dart';
 import '../../cubits/group_event/comment/group_event_comment_state.dart';

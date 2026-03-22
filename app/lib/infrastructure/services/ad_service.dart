@@ -1,9 +1,11 @@
+import 'package:injectable/injectable.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../domain/interfaces/i_ad_service.dart';
 import '../../core/config/ad_helper.dart';
 import '../../infrastructure/tools/log_service.dart';
 
 /// 廣告服務實作
+@LazySingleton(as: IAdService)
 class AdService implements IAdService {
   static const String _tag = 'AdService';
   InterstitialAd? _interstitialAd;

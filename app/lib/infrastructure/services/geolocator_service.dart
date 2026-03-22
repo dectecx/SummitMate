@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../domain/interfaces/i_geolocator_service.dart';
 
@@ -5,6 +6,7 @@ import '../../domain/interfaces/i_geolocator_service.dart';
 ///
 /// 使用 `geolocator` 套件存取裝置 GPS 位置。
 /// 處理權限請求與服務狀態檢查。
+@LazySingleton(as: IGeolocatorService)
 class GeolocatorService implements IGeolocatorService {
   /// 取得當前位置
   ///

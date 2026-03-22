@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import '../../models/poll.dart';
 import '../../../core/constants.dart';
@@ -5,6 +6,7 @@ import '../../../infrastructure/tools/hive_service.dart';
 import '../interfaces/i_poll_local_data_source.dart';
 
 /// 投票本地資料來源實作 (Hive)
+@LazySingleton(as: IPollLocalDataSource)
 class PollLocalDataSource implements IPollLocalDataSource {
   final HiveService _hiveService;
   Box<Poll>? _box;

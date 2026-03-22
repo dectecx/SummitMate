@@ -1,9 +1,10 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/gear_item.dart';
 import '../../../core/error/app_error_handler.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../cubits/gear/gear_state.dart';
 
 /// 裝備清單 (行程) Cubit
@@ -14,13 +15,12 @@ import '../../cubits/gear/gear_state.dart';
 /// - 新增/更新/刪除裝備 (透過 [IGearRepository])
 /// - 勾選/取消勾選裝備 (透過 [IGearRepository])
 /// - 從個人庫匯入裝備
+@injectable
 class GearCubit extends Cubit<GearState> {
   final IGearRepository _repository;
   String? _currentTripId;
 
-  GearCubit({IGearRepository? repository})
-    : _repository = repository ?? getIt<IGearRepository>(),
-      super(const GearInitial());
+  GearCubit(this._repository) : super(const GearInitial());
 
   String? get currentTripId => _currentTripId;
 

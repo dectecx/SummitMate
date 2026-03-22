@@ -1,10 +1,12 @@
-import '../../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../../core/di/injection.dart';
 import '../../models/itinerary_item.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_itinerary_remote_data_source.dart';
 
 /// 行程項目 (ItineraryItem) 的遠端資料來源實作
+@LazySingleton(as: IItineraryRemoteDataSource)
 class ItineraryRemoteDataSource implements IItineraryRemoteDataSource {
   static const String _source = 'ItineraryRemoteDataSource';
 

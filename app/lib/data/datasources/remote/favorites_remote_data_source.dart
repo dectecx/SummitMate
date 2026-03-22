@@ -1,11 +1,13 @@
+import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../../infrastructure/tools/log_service.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../datasources/interfaces/i_favorites_remote_data_source.dart';
 
 /// 最愛 (Favorites) 的遠端資料來源實作
+@LazySingleton(as: IFavoritesRemoteDataSource)
 class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
   static const String _source = 'FavoritesRemoteDataSource';
   final NetworkAwareClient _apiClient;

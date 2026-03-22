@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
@@ -9,6 +10,7 @@ import '../models/trip.dart';
 /// 行程 Repository (支援離線優先)
 ///
 /// 預設使用本地資料來源 (LocalDataSource)，並可選擇性同步至遠端資料來源 (RemoteDataSource)。
+@LazySingleton(as: ITripRepository)
 class TripRepository implements ITripRepository {
   static const String _source = 'TripRepository';
 

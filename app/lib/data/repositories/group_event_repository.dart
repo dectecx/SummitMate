@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/core.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../domain/domain.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_group_event_repository.dart';
@@ -14,6 +15,7 @@ import '../models/group_event_comment.dart';
 ///
 /// 協調 LocalDataSource (Hive) 與 RemoteDataSource (API) 的資料存取。
 /// 採用 Hide mode，對外提供統一的資料存取介面。
+@LazySingleton(as: IGroupEventRepository)
 class GroupEventRepository implements IGroupEventRepository {
   static const String _source = 'GroupEventRepository';
   static const String _lastSyncKey = 'group_event_last_sync_time';

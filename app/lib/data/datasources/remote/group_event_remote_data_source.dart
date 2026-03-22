@@ -1,11 +1,13 @@
+import 'package:injectable/injectable.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
 import '../interfaces/i_group_event_remote_data_source.dart';
 
 /// 揪團 (Group Event) 的遠端資料來源實作
+@LazySingleton(as: IGroupEventRemoteDataSource)
 class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   static const String _source = 'GroupEventRemoteDataSource';
 

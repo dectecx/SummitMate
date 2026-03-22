@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/core/core.dart';
@@ -5,15 +6,13 @@ import '../../../data/repositories/interfaces/i_settings_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'settings_state.dart';
 
+@injectable
 class SettingsCubit extends Cubit<SettingsState> {
   final ISettingsRepository _repository;
   final SharedPreferences _prefs;
   final String _source = 'SettingsCubit';
 
-  SettingsCubit({required ISettingsRepository repository, required SharedPreferences prefs})
-    : _repository = repository,
-      _prefs = prefs,
-      super(SettingsInitial());
+  SettingsCubit(this._repository, this._prefs) : super(SettingsInitial());
 
   /// 載入設定
   Future<void> loadSettings() async {

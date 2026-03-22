@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../data/models/user_profile.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_auth_session_repository.dart';
@@ -7,6 +8,7 @@ import '../datasources/interfaces/i_auth_session_local_data_source.dart';
 ///
 /// 透過 IAuthSessionLocalDataSource 存取 SecureStorage，
 /// 管理使用者登入 Session (Token, UserProfile)。
+@LazySingleton(as: IAuthSessionRepository)
 class AuthSessionRepository implements IAuthSessionRepository {
   static const String _source = 'AuthSessionRepository';
 

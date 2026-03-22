@@ -1,8 +1,10 @@
+import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/gear_key_record.dart';
 import '../interfaces/i_gear_key_local_data_source.dart';
 
 /// 裝備清單 Key 的本地資料來源實作 (使用 Shared Preferences)
+@LazySingleton(as: IGearKeyLocalDataSource)
 class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
   static const String _keyPrefix = 'gear_uploaded_keys';
 

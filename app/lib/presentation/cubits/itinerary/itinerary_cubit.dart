@@ -1,5 +1,6 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../data/models/itinerary_item.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
@@ -9,17 +10,14 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'itinerary_state.dart';
 
+@injectable
 class ItineraryCubit extends Cubit<ItineraryState> {
   final IItineraryRepository _repository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
   static const String _source = 'ItineraryCubit';
 
-  ItineraryCubit({IItineraryRepository? repository, ITripRepository? tripRepository, IAuthService? authService})
-    : _repository = repository ?? getIt<IItineraryRepository>(),
-      _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-      _authService = authService ?? getIt<IAuthService>(),
-      super(const ItineraryInitial());
+  ItineraryCubit(this._repository, this._tripRepository, this._authService) : super(const ItineraryInitial());
 
   Future<String?> _getCurrentTripId() async {
     final result = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');

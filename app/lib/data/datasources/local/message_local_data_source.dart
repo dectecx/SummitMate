@@ -1,12 +1,14 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../models/message.dart';
 import '../interfaces/i_message_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 
 /// 留言訊息 (Message) 的本地資料來源實作 (使用 Hive)
+@LazySingleton(as: IMessageLocalDataSource)
 class MessageLocalDataSource implements IMessageLocalDataSource {
   static const String _boxName = HiveBoxNames.messages;
   static const String _prefKeyLastSync = 'msg_last_sync_time';

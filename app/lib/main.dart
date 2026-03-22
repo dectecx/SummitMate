@@ -1,13 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
-
 import 'package:intl/date_symbol_data_local.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app.dart';
-import 'core/di.dart';
-import 'infrastructure/tools/hive_service.dart';
+import 'core/di/injection.dart';
 import 'infrastructure/observers/global_bloc_observer.dart';
 import 'infrastructure/tools/log_service.dart';
 
@@ -17,21 +14,17 @@ void main() async {
   // Initialize Locale Data
   await initializeDateFormatting('zh_TW', null);
 
-  // Initialize Hive
-  await HiveService().init();
+  // Setup Dependencies (Injectable)
+  try {
+    await configureDependencies();
+  } catch (e, stackTrace) {
+    debugPrint('DI Setup Failed: $e');
+    debugPrintStack(stackTrace: stackTrace);
+  }
 
   // Initialize Map Tile Caching (Android/iOS only)
   if (!kIsWeb) {
     await FMTCObjectBoxBackend().initialise();
-  }
-
-  // Setup Dependencies
-  try {
-    await setupDependencies();
-  } catch (e, stackTrace) {
-    debugPrint('DI Setup Failed: $e');
-    debugPrintStack(stackTrace: stackTrace);
-    // Continue or exit? Continuing might cause crashes later.
   }
 
   // Setup Global Bloc Observer

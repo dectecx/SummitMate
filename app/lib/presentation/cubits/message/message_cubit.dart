@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../data/models/message.dart';
 import '../../../data/repositories/interfaces/i_message_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
@@ -10,6 +11,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'package:summitmate/core/core.dart';
 import 'message_state.dart';
 
+@injectable
 class MessageCubit extends Cubit<MessageState> {
   final IMessageRepository _repository;
   final ITripRepository _tripRepository;
@@ -18,11 +20,7 @@ class MessageCubit extends Cubit<MessageState> {
 
   static const String _source = 'MessageCubit';
 
-  MessageCubit({IMessageRepository? repository, ITripRepository? tripRepository, IAuthService? authService})
-    : _repository = repository ?? getIt<IMessageRepository>(),
-      _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-      _authService = authService ?? getIt<IAuthService>(),
-      super(const MessageInitial());
+  MessageCubit(this._repository, this._tripRepository, this._authService) : super(const MessageInitial());
 
   /// 取得當前活動行程 ID
   /// 取得當前活動行程 ID

@@ -1,10 +1,12 @@
-import '../../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../../core/di/injection.dart';
 import '../../models/message.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_message_remote_data_source.dart';
 
 /// 留言訊息 (Message) 的遠端資料來源實作
+@LazySingleton(as: IMessageRemoteDataSource)
 class MessageRemoteDataSource implements IMessageRemoteDataSource {
   static const String _source = 'MessageRemoteDataSource';
 

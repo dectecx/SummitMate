@@ -7,7 +7,7 @@ import '../../core/constants.dart';
 
 import 'hive_service.dart';
 
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../clients/network_aware_client.dart';
 
 /// 日誌等級

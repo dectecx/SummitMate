@@ -1,7 +1,9 @@
+import 'package:injectable/injectable.dart';
 import '../../domain/interfaces/i_poll_service.dart';
 import '../../data/models/poll.dart';
 import '../../core/error/result.dart';
 
+@LazySingleton(as: IPollService)
 class MockPollService implements IPollService {
   @override
   Future<Result<List<Poll>, Exception>> getPolls({required String userId}) async => const Success([]);

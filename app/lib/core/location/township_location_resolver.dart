@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:latlong2/latlong.dart';
@@ -6,6 +7,7 @@ import 'i_location_resolver.dart';
 
 /// 鄉鎮市區地點解析器
 /// 使用 assets/data/township_centers.json 進行最近鄰搜尋
+@LazySingleton(as: ILocationResolver)
 class TownshipLocationResolver implements ILocationResolver {
   static const String _dataPath = 'assets/data/township_centers.json';
   List<dynamic>? _dataCache;

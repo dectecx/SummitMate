@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../domain/interfaces/i_auth_service.dart';
 import '../../data/models/user_profile.dart';
 import '../../data/models/trip.dart';
@@ -7,6 +8,7 @@ import '../../core/constants/role_constants.dart';
 /// 權限管理服務
 ///
 /// 負責集中處理所有的權限判斷邏輯
+@lazySingleton
 class PermissionService {
   final IAuthService _authService;
 

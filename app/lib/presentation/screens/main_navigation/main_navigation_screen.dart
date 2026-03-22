@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../../../data/models/itinerary_item.dart';
@@ -84,7 +84,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       }
 
       // 啟動使用狀態追蹤 (Web only)
-      _usageTrackingService = UsageTrackingService();
+      _usageTrackingService = getIt<UsageTrackingService>();
       // Async fetch user profile
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
         if (context.mounted && profile != null) {

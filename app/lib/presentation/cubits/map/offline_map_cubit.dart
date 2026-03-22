@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
@@ -10,6 +11,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../data/models/download_task.dart';
 import 'offline_map_state.dart';
 
+@injectable
 class OfflineMapCubit extends Cubit<OfflineMapState> {
   final FMTCStore _store = FMTCStore('osm_store');
   bool _isQueueProcessing = false;

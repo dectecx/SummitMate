@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
 import '../../../../data/models/group_event_comment.dart';
@@ -5,18 +6,14 @@ import '../../../../data/repositories/interfaces/i_group_event_repository.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'group_event_comment_state.dart';
 
+@injectable
 class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
   final IGroupEventRepository _repository;
   final IAuthService _authService;
   final String eventId;
 
-  GroupEventCommentCubit({
-    required IGroupEventRepository repository,
-    required IAuthService authService,
-    required this.eventId,
-  }) : _repository = repository,
-       _authService = authService,
-       super(const GroupEventCommentInitial());
+  GroupEventCommentCubit(this._repository, this._authService, @factoryParam this.eventId)
+    : super(const GroupEventCommentInitial());
 
   String get currentUserId => _authService.currentUserId ?? 'guest';
 
