@@ -15,6 +15,9 @@ class MockWeatherService implements IWeatherService {
     return _getMockData();
   }
 
+  @override
+  Stream<WeatherData?> get onWeatherChanged => Stream.value(_getMockData());
+
   WeatherData _getMockData() {
     return WeatherData(
       temperature: 20.0,

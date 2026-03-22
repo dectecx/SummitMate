@@ -20,4 +20,7 @@ abstract interface class IWeatherService {
   /// [lon] 經度
   /// [forceRefresh] 是否強制忽略快取重新從 API 取得
   Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false});
+
+  /// 監聽天氣變更 (當前關注地點的天氣)
+  Stream<WeatherData?> get onWeatherChanged;
 }

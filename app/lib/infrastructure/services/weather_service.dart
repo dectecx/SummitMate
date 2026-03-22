@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -31,6 +32,7 @@ class WeatherService implements IWeatherService {
   Box<WeatherData>? _box;
   final ILocationResolver _locationResolver;
   final CwaWeatherSource _cwaSource;
+  final _weatherController = StreamController<WeatherData?>.broadcast();
 
   WeatherService({ISettingsRepository? settingsRepo, ILocationResolver? locationResolver, CwaWeatherSource? cwaSource})
     : _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>(),
@@ -77,6 +79,7 @@ class WeatherService implements IWeatherService {
       try {
         final weather = await _fetchWeatherInternal(locationName: locationName);
         _box?.put(dynamicCacheKey, weather);
+        _weatherController.add(weather);
         return weather;
       } catch (e) {
         LogService.error('強制重新整理天氣失敗: $e', source: 'WeatherService');
@@ -98,6 +101,7 @@ class WeatherService implements IWeatherService {
       LogService.info('$locationName 無快取，開始取得...', source: 'WeatherService');
       final weather = await _fetchWeatherInternal(locationName: locationName);
       _box?.put(dynamicCacheKey, weather);
+      _weatherController.add(weather);
       return weather;
     } catch (e) {
       LogService.error('自動取得天氣失敗: $e', source: 'WeatherService');
@@ -409,6 +413,7 @@ class WeatherService implements IWeatherService {
       try {
         final weather = await _fetchCwaWeather(locationName);
         _box?.put(dynamicCacheKey, weather);
+        _weatherController.add(weather);
         return weather;
       } catch (e) {
         LogService.error('CWA 天氣取得失敗 $locationName: $e', source: 'WeatherService');
@@ -418,4 +423,7 @@ class WeatherService implements IWeatherService {
 
     return null;
   }
+
+  @override
+  Stream<WeatherData?> get onWeatherChanged => _weatherController.stream;
 }
