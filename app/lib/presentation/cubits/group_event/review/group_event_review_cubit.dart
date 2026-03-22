@@ -10,17 +10,19 @@ part 'group_event_review_state.dart';
 @injectable
 class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
   final IGroupEventRepository _repository;
-  final String eventId;
-  final String userId;
+  final String? eventId;
+  final String? userId;
 
   GroupEventReviewCubit(this._repository, @factoryParam this.eventId, @factoryParam this.userId)
-    : super(GroupEventReviewInitial());
+    : assert(eventId != null, 'eventId must not be null'),
+      assert(userId != null, 'userId must not be null'),
+      super(GroupEventReviewInitial());
 
   /// 載入報名列表
   Future<void> loadApplications() async {
     emit(GroupEventReviewLoading());
     try {
-      final result = await _repository.getApplications(eventId: eventId);
+      final result = await _repository.getApplications(eventId: eventId!);
       if (result is Success<List<GroupEventApplication>, Exception>) {
         emit(GroupEventReviewLoaded(result.value));
       } else if (result is Failure<List<GroupEventApplication>, Exception>) {
@@ -48,7 +50,7 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
       final result = await _repository.reviewApplication(
         eventId: appId, // Here appId serves as the ID to operate on
         applicantUserId: "", // Not needed for remote
-        reviewerId: userId,
+        reviewerId: userId!,
         action: action,
       );
 

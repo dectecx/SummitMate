@@ -10,10 +10,11 @@ import 'group_event_comment_state.dart';
 class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
   final IGroupEventRepository _repository;
   final IAuthService _authService;
-  final String eventId;
+  final String? eventId;
 
   GroupEventCommentCubit(this._repository, this._authService, @factoryParam this.eventId)
-    : super(const GroupEventCommentInitial());
+    : assert(eventId != null, 'eventId must not be null'),
+      super(const GroupEventCommentInitial());
 
   String get currentUserId => _authService.currentUserId ?? 'guest';
 
@@ -21,7 +22,7 @@ class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
   Future<void> loadComments() async {
     emit(const GroupEventCommentLoading());
 
-    final result = await _repository.getComments(eventId: eventId);
+    final result = await _repository.getComments(eventId: eventId!);
 
     switch (result) {
       case Success(value: final comments):
@@ -40,7 +41,7 @@ class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
 
     emit(currentState.copyWith(isSending: true));
 
-    final result = await _repository.addComment(eventId: eventId, userId: currentUserId, content: content);
+    final result = await _repository.addComment(eventId: eventId!, userId: currentUserId, content: content);
 
     switch (result) {
       case Success(value: final newComment):
