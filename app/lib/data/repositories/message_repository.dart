@@ -1,4 +1,5 @@
-import '../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../core/di/injection.dart';
 import '../../core/error/result.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../../infrastructure/tools/log_service.dart';
@@ -11,6 +12,7 @@ import 'package:hive_ce/hive.dart';
 /// 留言 Repository
 ///
 /// 協調本地資料庫 (Hive) 與遠端資料來源 (API)，負責留言資料的 CRUD 與同步。
+@LazySingleton(as: IMessageRepository)
 class MessageRepository implements IMessageRepository {
   static const String _source = 'MessageRepository';
 

@@ -1,5 +1,6 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../core/error/result.dart';
 import '../models/itinerary_item.dart';
 import 'interfaces/i_itinerary_repository.dart';
@@ -11,6 +12,7 @@ import '../../infrastructure/tools/log_service.dart';
 /// 行程 Repository
 ///
 /// 協調本地資料庫 (Hive) 與遠端資料來源 (API)，負責行程資料的 CRUD 與同步。
+@LazySingleton(as: IItineraryRepository)
 class ItineraryRepository implements IItineraryRepository {
   static const String _source = 'ItineraryRepository';
 

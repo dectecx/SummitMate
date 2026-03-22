@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
 import '../../models/gear_item.dart';
 import '../../models/gear_set.dart';
@@ -6,6 +7,7 @@ import '../../../domain/interfaces/i_gear_cloud_service.dart';
 
 /// 模擬雲端裝備庫服務 (與 IGearCloudService 介面一致)
 /// 用於在遠端實作尚未完成或環境限制時，確保系統不崩潰。
+@LazySingleton(as: IGearCloudService)
 class FakeGearCloudService implements IGearCloudService {
   @override
   Future<Result<List<GearSet>, Exception>> getGearSets() async {

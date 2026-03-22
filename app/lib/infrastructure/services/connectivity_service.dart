@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../data/repositories/interfaces/i_settings_repository.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../tools/log_service.dart';
@@ -11,6 +12,7 @@ import '../tools/log_service.dart';
 /// 整合：
 /// - 實際網路狀態 (InternetConnectionChecker) - 具備防抖動 (Debounce) 機制
 /// - App 離線模式設定 (settings.isOfflineMode) - 具備即時監聽機制
+@LazySingleton(as: IConnectivityService)
 class ConnectivityService implements IConnectivityService {
   static const String _source = 'Connectivity';
   static const Duration _debounceDuration = Duration(seconds: 2);

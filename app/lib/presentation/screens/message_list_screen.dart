@@ -12,7 +12,7 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../../data/models/user_profile.dart';
 import '../../core/services/permission_service.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 
 /// 留言板畫面 (Tab 3 - 協作)
 ///

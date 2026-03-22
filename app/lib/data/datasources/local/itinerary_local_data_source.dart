@@ -1,12 +1,14 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../models/itinerary_item.dart';
 import '../interfaces/i_itinerary_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 
 /// 行程項目 (ItineraryItem) 的本地資料來源實作 (使用 Hive)
+@LazySingleton(as: IItineraryLocalDataSource)
 class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   static const String _boxName = HiveBoxNames.itinerary;
   static const String _prefKeyLastSync = 'itin_last_sync_time';

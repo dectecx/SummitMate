@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../../../core/constants.dart';
@@ -6,13 +7,12 @@ import 'mountain_favorites_state.dart';
 
 /// 管理山岳收藏功能的 Cubit
 /// 負責與 Hive 資料庫互動，並管理山岳收藏列表的狀態
+@injectable
 class MountainFavoritesCubit extends Cubit<MountainFavoritesState> {
   final HiveService _hiveService;
   Box<String>? _box;
 
-  MountainFavoritesCubit({required HiveService hiveService})
-    : _hiveService = hiveService,
-      super(MountainFavoritesInitial());
+  MountainFavoritesCubit(this._hiveService) : super(MountainFavoritesInitial());
 
   /// 載入收藏列表
   Future<void> loadFavorites() async {

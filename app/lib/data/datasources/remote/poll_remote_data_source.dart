@@ -1,10 +1,12 @@
+import 'package:injectable/injectable.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../../models/poll.dart';
 import '../interfaces/i_poll_remote_data_source.dart';
 
 /// 投票的遠端資料來源實作
+@LazySingleton(as: IPollRemoteDataSource)
 class PollRemoteDataSource implements IPollRemoteDataSource {
   static const String _source = 'PollRemoteDataSource';
 

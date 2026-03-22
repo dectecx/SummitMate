@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/error/result.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_poll_repository.dart';
 import '../datasources/interfaces/i_poll_local_data_source.dart';
@@ -10,6 +11,7 @@ import '../models/poll.dart';
 /// 投票 Repository (支援 Offline-First)
 ///
 /// 協調 LocalDataSource (Hive) 與 RemoteDataSource (API) 的資料存取。
+@LazySingleton(as: IPollRepository)
 class PollRepository implements IPollRepository {
   static const String _source = 'PollRepository';
   static const String _lastSyncKey = 'poll_last_sync_time';

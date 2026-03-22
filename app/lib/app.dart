@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme.dart';
-import 'core/di.dart';
+import 'core/di/injection.dart';
 import 'infrastructure/tools/toast_service.dart';
-import 'infrastructure/tools/hive_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'data/repositories/interfaces/i_settings_repository.dart';
 import 'presentation/cubits/auth/auth_cubit.dart';
 import 'presentation/cubits/sync/sync_cubit.dart';
 import 'presentation/cubits/trip/trip_cubit.dart';
@@ -34,25 +31,21 @@ class SummitMateApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthCubit()..checkAuthStatus()),
-        BlocProvider(create: (context) => SyncCubit()),
-        BlocProvider(create: (context) => TripCubit()..loadTrips()),
-        BlocProvider(create: (context) => ItineraryCubit()..loadItinerary()),
-        BlocProvider(create: (context) => GearCubit()),
-        BlocProvider(create: (context) => GearLibraryCubit()..loadItems()),
-        BlocProvider(create: (context) => MessageCubit()..loadMessages()),
-        BlocProvider(create: (context) => PollCubit()..loadPolls()),
-        BlocProvider(create: (_) => MealCubit()),
-        BlocProvider(create: (_) => MapCubit()..initLocation()),
-        BlocProvider(create: (_) => OfflineMapCubit()),
-        BlocProvider(create: (_) => GroupEventCubit()),
-        BlocProvider(
-          create: (context) =>
-              SettingsCubit(repository: getIt<ISettingsRepository>(), prefs: getIt<SharedPreferences>())
-                ..loadSettings(),
-        ),
-        BlocProvider(create: (context) => MountainFavoritesCubit(hiveService: getIt<HiveService>())..loadFavorites()),
-        BlocProvider(create: (context) => GroupEventFavoritesCubit(hiveService: getIt<HiveService>())..loadFavorites()),
+        BlocProvider(create: (_) => getIt<AuthCubit>()..checkAuthStatus()),
+        BlocProvider(create: (_) => getIt<SyncCubit>()),
+        BlocProvider(create: (_) => getIt<TripCubit>()..loadTrips()),
+        BlocProvider(create: (_) => getIt<ItineraryCubit>()..loadItinerary()),
+        BlocProvider(create: (_) => getIt<GearCubit>()),
+        BlocProvider(create: (_) => getIt<GearLibraryCubit>()..loadItems()),
+        BlocProvider(create: (_) => getIt<MessageCubit>()..loadMessages()),
+        BlocProvider(create: (_) => getIt<PollCubit>()..loadPolls()),
+        BlocProvider(create: (_) => getIt<MealCubit>()),
+        BlocProvider(create: (_) => getIt<MapCubit>()..initLocation()),
+        BlocProvider(create: (_) => getIt<OfflineMapCubit>()),
+        BlocProvider(create: (_) => getIt<GroupEventCubit>()),
+        BlocProvider(create: (_) => getIt<SettingsCubit>()..loadSettings()),
+        BlocProvider(create: (_) => getIt<MountainFavoritesCubit>()..loadFavorites()),
+        BlocProvider(create: (_) => getIt<GroupEventFavoritesCubit>()..loadFavorites()),
       ],
       child: _buildMaterialApp(),
     );

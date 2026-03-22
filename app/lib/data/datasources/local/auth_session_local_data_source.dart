@@ -1,7 +1,9 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../interfaces/i_auth_session_local_data_source.dart';
 
 /// 認證 Session 本地資料來源實作 (SecureStorage)
+@LazySingleton(as: IAuthSessionLocalDataSource)
 class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   static const String _keyToken = 'session_token';
   static const String _keyUserId = 'user_id';

@@ -1,4 +1,5 @@
-import '../../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../../core/di/injection.dart';
 import '../../models/trip.dart';
 import '../../models/user_profile.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
@@ -6,6 +7,7 @@ import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_trip_remote_data_source.dart';
 
 /// 行程 (Trip) 的遠端資料來源實作
+@LazySingleton(as: ITripRemoteDataSource)
 class TripRemoteDataSource implements ITripRemoteDataSource {
   static const String _source = 'TripRemoteDataSource';
 

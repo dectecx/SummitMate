@@ -1,4 +1,5 @@
-import '../../../core/di.dart';
+import 'package:injectable/injectable.dart';
+import '../../../core/di/injection.dart';
 import '../../models/gear_library_item.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -22,11 +23,12 @@ abstract class IGearLibraryRemoteDataSource {
 }
 
 /// 個人裝備庫 (Gear Library) 的遠端資料來源實作
+@LazySingleton(as: IGearLibraryRemoteDataSource)
 class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   static const String _source = 'GearLibraryRemoteDataSource';
   final NetworkAwareClient _apiClient;
 
-  GearLibraryRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
+  GearLibraryRemoteDataSource(this._apiClient);
 
   @override
   Future<List<GearLibraryItem>> getLibrary() async {

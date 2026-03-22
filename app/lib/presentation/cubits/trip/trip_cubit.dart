@@ -1,7 +1,8 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
@@ -15,6 +16,7 @@ import '../../../data/models/enums/sync_status.dart';
 import 'trip_state.dart';
 
 /// Manage Trip state and operations
+@injectable
 class TripCubit extends Cubit<TripState> {
   static const String _source = 'TripCubit';
 
@@ -24,11 +26,7 @@ class TripCubit extends Cubit<TripState> {
 
   final Uuid _uuid = const Uuid();
 
-  TripCubit({ITripRepository? tripRepository, ISyncService? syncService, IAuthService? authService})
-    : _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-      _syncService = syncService ?? getIt<ISyncService>(),
-      _authService = authService ?? getIt<IAuthService>(),
-      super(const TripInitial());
+  TripCubit(this._tripRepository, this._syncService, this._authService) : super(const TripInitial());
 
   /// 載入所有行程並自動判定活動行程
   Future<void> loadTrips() async {

@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import '../../models/trip.dart';
 import '../../../core/constants.dart';
@@ -5,6 +6,7 @@ import '../../datasources/interfaces/i_trip_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 
 /// 行程 (Trip) 的本地資料來源實作 (使用 Hive)
+@LazySingleton(as: ITripLocalDataSource)
 class TripLocalDataSource implements ITripLocalDataSource {
   final HiveService _hiveService;
   Box<Trip>? _box;

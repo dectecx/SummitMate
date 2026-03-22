@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../core/error/result.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
@@ -11,6 +12,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'sync_state.dart';
 
 /// 管理資料同步狀態的 Cubit
+@injectable
 class SyncCubit extends Cubit<SyncState> {
   static const String _source = 'SyncCubit';
 
@@ -20,18 +22,13 @@ class SyncCubit extends Cubit<SyncState> {
   final IAuthService _authService;
   final ITripRepository _tripRepository;
 
-  SyncCubit({
-    ISyncService? syncService,
-    IConnectivityService? connectivityService,
-    IItineraryRepository? itineraryRepository,
-    IAuthService? authService,
-    ITripRepository? tripRepository,
-  }) : _syncService = syncService ?? getIt<ISyncService>(),
-       _connectivityService = connectivityService ?? getIt<IConnectivityService>(),
-       _itineraryRepository = itineraryRepository ?? getIt<IItineraryRepository>(),
-       _authService = authService ?? getIt<IAuthService>(),
-       _tripRepository = tripRepository ?? getIt<ITripRepository>(),
-       super(const SyncInitial()) {
+  SyncCubit(
+    this._syncService,
+    this._connectivityService,
+    this._itineraryRepository,
+    this._authService,
+    this._tripRepository,
+  ) : super(const SyncInitial()) {
     _initLastSyncTime();
   }
 

@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -7,7 +8,7 @@ import '../tools/log_service.dart';
 import '../tools/hive_service.dart';
 import '../../core/env_config.dart';
 import '../../core/constants.dart';
-import '../../core/di.dart';
+import '../../core/di/injection.dart';
 import '../../data/repositories/interfaces/i_settings_repository.dart';
 
 import '../../domain/interfaces/i_weather_service.dart';
@@ -22,6 +23,7 @@ import '../../data/cwa/cwa_weather_source.dart';
 /// - 離線模式存取
 /// - 透過 [ILocationResolver] 解析地點名稱
 /// - 取得目前天氣與預報
+@LazySingleton(as: IWeatherService)
 class WeatherService implements IWeatherService {
   static const String _boxName = HiveBoxNames.weather;
 

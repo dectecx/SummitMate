@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/di.dart';
+import '../../../core/di/injection.dart';
 import '../../../data/models/group_event.dart';
 import '../../../data/models/enums/group_event_application_status.dart';
 import '../cubits/group_event/review/group_event_review_cubit.dart';
-import '../../../data/repositories/interfaces/i_group_event_repository.dart';
 
 class GroupEventReviewScreen extends StatelessWidget {
   final String eventId;
@@ -15,9 +14,7 @@ class GroupEventReviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          GroupEventReviewCubit(repository: getIt<IGroupEventRepository>(), eventId: eventId, userId: currentUserId)
-            ..loadApplications(),
+      create: (context) => getIt<GroupEventReviewCubit>(param1: eventId, param2: currentUserId)..loadApplications(),
       child: Scaffold(
         appBar: AppBar(title: const Text('審核報名')),
         body: BlocConsumer<GroupEventReviewCubit, GroupEventReviewState>(
