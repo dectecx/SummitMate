@@ -160,4 +160,16 @@ class NatureThemeStrategy implements AppThemeStrategy {
       Color(0xFFE8F5E9), // Green 50 (Back to subtle)
     ],
   );
+
+  @override
+  Color get successColor => const HSLColor.fromAHSL(1.0, 120, 0.45, 0.45).toColor();
+
+  @override
+  Color get warningColor => const HSLColor.fromAHSL(1.0, 45, 0.70, 0.50).toColor();
+
+  @override
+  Color get infoColor => const HSLColor.fromAHSL(1.0, 200, 0.50, 0.55).toColor();
+
+  @override
+  Color get errorColor => const HSLColor.fromAHSL(1.0, 0, 0.50, 0.45).toColor();
 }

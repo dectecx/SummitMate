@@ -1,13 +1,23 @@
 import 'dart:async';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/weather_data.dart';
 import 'package:summitmate/presentation/widgets/weather/weather_alert_card.dart';
 import 'package:summitmate/domain/interfaces/i_weather_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:summitmate/domain/interfaces/i_geolocator_service.dart';
+import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
+import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
+import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/core/theme/theme_types.dart';
+
+// Mocks
+class MockSettingsCubit extends MockCubit<SettingsState> implements SettingsCubit {}
 
 // Manual Fake implementation
 class FakeGeolocatorService implements IGeolocatorService {
@@ -58,6 +68,7 @@ class FakeWeatherService implements IWeatherService {
 void main() {
   final fakeWeatherService = FakeWeatherService();
   final fakeGeolocatorService = FakeGeolocatorService();
+  late MockSettingsCubit mockSettingsCubit;
 
   setUpAll(() {
     GetIt.I.registerSingleton<IWeatherService>(fakeWeatherService);
@@ -68,10 +79,26 @@ void main() {
     GetIt.I.reset();
   });
 
+  setUp(() {
+    mockSettingsCubit = MockSettingsCubit();
+    when(() => mockSettingsCubit.state).thenReturn(
+      SettingsLoaded(
+        settings: Settings(
+          username: 'Test User',
+          theme: AppThemeType.nature,
+        ),
+        hasSeenOnboarding: true,
+      ),
+    );
+  });
+
   Widget createWidgetUnderTest() {
-    return const MaterialApp(
+    return MaterialApp(
       home: Scaffold(
-        body: WeatherAlertCard(animate: false),
+        body: BlocProvider<SettingsCubit>.value(
+          value: mockSettingsCubit,
+          child: const WeatherAlertCard(animate: false),
+        ),
       ),
     );
   }

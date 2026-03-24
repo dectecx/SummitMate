@@ -16,4 +16,18 @@ abstract class AppThemeStrategy {
 
   /// 取得側邊欄漸層 (Optional)
   LinearGradient? get drawerGradient;
+
+  // --- 狀態色彩 (Status Colors) ---
+
+  /// 成功狀態顏色
+  Color get successColor;
+
+  /// 警告狀態顏色
+  Color get warningColor;
+
+  /// 提示/資訊狀態顏色
+  Color get infoColor;
+
+  /// 錯誤/危險狀態顏色
+  Color get errorColor;
 }
