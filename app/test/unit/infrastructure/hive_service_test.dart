@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -17,14 +18,23 @@ void main() {
   late HiveService hiveService;
   late MockFlutterSecureStorage mockSecureStorage;
   late MockPathProviderPlatform mockPathProvider;
+  late Directory tempDir;
   const keyStorageKey = 'hive_encryption_key';
 
-  setUpAll(() {
+  setUpAll(() async {
     mockPathProvider = MockPathProviderPlatform();
     PathProviderPlatform.instance = mockPathProvider;
 
-    // Stub path provider method used by Hive.initFlutter
-    when(() => mockPathProvider.getApplicationDocumentsPath()).thenAnswer((_) async => '.');
+    // 使用系統暫存目錄，避免測試檔案出現在專案根目錄
+    tempDir = await Directory.systemTemp.createTemp('summitmate_test');
+    when(() => mockPathProvider.getApplicationDocumentsPath()).thenAnswer((_) async => tempDir.path);
+  });
+
+  tearDownAll(() async {
+    // 測試結束後刪除暫存目錄
+    if (tempDir.existsSync()) {
+      await tempDir.delete(recursive: true);
+    }
   });
 
   setUp(() async {
