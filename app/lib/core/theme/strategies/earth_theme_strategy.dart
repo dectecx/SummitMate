@@ -132,4 +132,16 @@ class EarthThemeStrategy implements AppThemeStrategy {
       Color(0xFFD7CCC8), // Brown 100 (Visible)
     ],
   );
+
+  @override
+  Color get successColor => const HSLColor.fromAHSL(1.0, 100, 0.40, 0.40).toColor();
+
+  @override
+  Color get warningColor => const HSLColor.fromAHSL(1.0, 35, 0.50, 0.45).toColor();
+
+  @override
+  Color get infoColor => const HSLColor.fromAHSL(1.0, 190, 0.30, 0.50).toColor();
+
+  @override
+  Color get errorColor => const HSLColor.fromAHSL(1.0, 10, 0.45, 0.40).toColor();
 }
