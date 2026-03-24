@@ -17,16 +17,15 @@ class UsageTrackingService {
   String? _userType;
 
   final IApiClient _apiClient;
-  final bool _forceWeb;
 
-  UsageTrackingService(this._apiClient, {bool forceWeb = false}) : _forceWeb = forceWeb;
+  UsageTrackingService(this._apiClient);
 
   /// 啟動追蹤 (僅 Web 平台)
   ///
   /// [username] 顯示名稱
   /// [userId] 使用者 ID (若為 null 則視為訪客)
   void start(String username, {String? userId}) {
-    if (!kIsWeb && !_forceWeb) {
+    if (!kIsWeb) {
       LogService.debug('跳過心跳追蹤 (非 Web 平台)', source: _source);
       return;
     }

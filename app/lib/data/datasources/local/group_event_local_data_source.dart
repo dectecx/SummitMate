@@ -8,31 +8,12 @@ import '../interfaces/i_group_event_local_data_source.dart';
 /// 揪團本地資料來源實作 (Hive)
 @LazySingleton(as: IGroupEventLocalDataSource)
 class GroupEventLocalDataSource implements IGroupEventLocalDataSource {
-  final HiveService _hiveService;
-  Box<GroupEvent>? _eventsBox;
-  Box<GroupEventApplication>? _applicationsBox;
+  final Box<GroupEvent> _events;
+  final Box<GroupEventApplication> _applications;
 
-  GroupEventLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  @override
-  Future<void> init() async {
-    _eventsBox = await _hiveService.openBox<GroupEvent>(HiveBoxNames.groupEvents);
-    _applicationsBox = await _hiveService.openBox<GroupEventApplication>(HiveBoxNames.groupEventApplications);
-  }
-
-  Box<GroupEvent> get _events {
-    if (_eventsBox == null || !_eventsBox!.isOpen) {
-      throw StateError('GroupEventLocalDataSource not initialized. Call init() first.');
-    }
-    return _eventsBox!;
-  }
-
-  Box<GroupEventApplication> get _applications {
-    if (_applicationsBox == null || !_applicationsBox!.isOpen) {
-      throw StateError('GroupEventLocalDataSource not initialized. Call init() first.');
-    }
-    return _applicationsBox!;
-  }
+  GroupEventLocalDataSource({required HiveService hiveService})
+    : _events = hiveService.getBox<GroupEvent>(HiveBoxNames.groupEvents),
+      _applications = hiveService.getBox<GroupEventApplication>(HiveBoxNames.groupEventApplications);
 
   @override
   List<GroupEvent> getAllEvents() => _events.values.toList();

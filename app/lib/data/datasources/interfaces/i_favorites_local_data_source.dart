@@ -4,9 +4,6 @@ import '../../models/favorite.dart';
 /// 最愛 (Favorites) 的本地資料來源介面
 /// 管理最愛功能的本地儲存 (Hive)
 abstract interface class IFavoritesLocalDataSource {
-  /// 初始化資料來源 (例如開啟 Box)
-  Future<void> init();
-
   /// 取得所有最愛項目
   Future<List<Favorite>> getFavorites();
 

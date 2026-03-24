@@ -193,7 +193,7 @@ void main() {
       fakeConnectivity = FakeConnectivityService();
       fakeAuth = FakeAuthService();
 
-      cubit = GroupEventCubit(groupEventRepository: fakeRepo, connectivity: fakeConnectivity, authService: fakeAuth);
+      cubit = GroupEventCubit(fakeRepo, fakeConnectivity, fakeAuth);
     });
 
     tearDown(() => cubit.close());

@@ -13,23 +13,9 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   static const String _boxName = HiveBoxNames.messages;
   static const String _prefKeyLastSync = 'msg_last_sync_time';
 
-  final HiveService _hiveService;
-  Box<Message>? _box;
+  final Box<Message> box;
 
-  MessageLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  /// 初始化 Hive Box
-  @override
-  Future<void> init() async {
-    _box = await _hiveService.openBox<Message>(_boxName);
-  }
-
-  Box<Message> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('MessageLocalDataSource not initialized. Call init() first.');
-    }
-    return _box!;
-  }
+  MessageLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<Message>(_boxName);
 
   /// 取得所有訊息
   @override

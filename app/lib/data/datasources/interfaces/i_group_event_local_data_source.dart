@@ -4,9 +4,6 @@ import '../../models/group_event.dart';
 ///
 /// 負責定義對本地資料庫 (Hive) 的 CRUD 操作。
 abstract class IGroupEventLocalDataSource {
-  /// 初始化資料來源
-  Future<void> init();
-
   /// 取得所有揪團活動
   List<GroupEvent> getAllEvents();
 

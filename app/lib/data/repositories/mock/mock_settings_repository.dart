@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
-import '../../models/settings.dart';
+import 'package:summitmate/data/models/settings.dart';
 import '../interfaces/i_settings_repository.dart';
-import '../../../core/error/result.dart';
 
 /// 模擬設定資料倉庫
 ///
@@ -15,11 +14,6 @@ class MockSettingsRepository implements ISettingsRepository {
     isOfflineMode: false,
     lastSyncTime: DateTime.now(),
   );
-
-  // ========== Init ==========
-
-  @override
-  Future<Result<void, Exception>> init() async => const Success(null);
 
   // ========== Data Operations ==========
 

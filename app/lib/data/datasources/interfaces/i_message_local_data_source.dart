@@ -5,9 +5,6 @@ import '../../models/message.dart';
 ///
 /// 負責定義對本地訊息資料庫 (如 Hive) 的 CRUD 操作。
 abstract class IMessageLocalDataSource {
-  /// 初始化資料來源 (開啟 Box)
-  Future<void> init();
-
   /// 取得所有訊息
   List<Message> getAll();
 

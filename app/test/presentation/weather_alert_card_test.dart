@@ -69,7 +69,11 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return const MaterialApp(home: Scaffold(body: WeatherAlertCard()));
+    return const MaterialApp(
+      home: Scaffold(
+        body: WeatherAlertCard(animate: false),
+      ),
+    );
   }
 
   testWidgets('WeatherAlertCard displays info correctly for high rain probability', (WidgetTester tester) async {
@@ -93,7 +97,7 @@ void main() {
 
     // Act
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Assert
     expect(find.text('測試鄉鎮'), findsOneWidget);
@@ -123,7 +127,7 @@ void main() {
 
     // Act
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Assert
     expect(find.text('危險鄉鎮'), findsOneWidget);

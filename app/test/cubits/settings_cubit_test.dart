@@ -35,7 +35,7 @@ void main() {
       when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
       when(() => mockPrefs.setBool(any(), any())).thenAnswer((_) async => true);
 
-      settingsCubit = SettingsCubit(repository: mockRepo, prefs: mockPrefs);
+      settingsCubit = SettingsCubit(mockRepo, mockPrefs);
     });
 
     tearDown(() {

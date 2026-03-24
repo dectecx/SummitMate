@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/models/settings.dart';
 import 'package:summitmate/data/repositories/settings_repository.dart';
 import 'package:summitmate/data/datasources/interfaces/i_settings_local_data_source.dart';
@@ -20,26 +19,22 @@ void main() {
   setUp(() {
     mockDataSource = MockSettingsLocalDataSource();
 
-    // Inject mock via constructor
-    repository = SettingsRepository(localDataSource: mockDataSource);
+    // Default behaviors
+    when(() => mockDataSource.getSettings()).thenReturn(null);
+    when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
-    // Default init behavior
-    when(() => mockDataSource.init()).thenAnswer((_) async {});
+    // Inject mock via constructor (automatically calls getSettings)
+    repository = SettingsRepository(localDataSource: mockDataSource);
   });
 
   group('SettingsRepository', () {
-    test('init() should return Success', () async {
-      // Act
-      final result = await repository.init();
-
+    test('constructor should preload settings from DataSource', () async {
       // Assert
-      expect(result, isA<Success>());
-      verify(() => mockDataSource.init()).called(1);
+      verify(() => mockDataSource.getSettings()).called(1);
     });
 
     test('getSettings() returns existing settings if present', () async {
       // Arrange
-      await repository.init();
       final settings = Settings(username: 'Test User');
       when(() => mockDataSource.getSettings()).thenReturn(settings);
 
@@ -53,7 +48,6 @@ void main() {
 
     test('getSettings() creates default settings if missing', () async {
       // Arrange
-      await repository.init();
       when(() => mockDataSource.getSettings()).thenReturn(null);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
@@ -68,7 +62,6 @@ void main() {
 
     test('updateUsername() updates settings and saves', () async {
       // Arrange
-      await repository.init();
       final settings = Settings();
       when(() => mockDataSource.getSettings()).thenReturn(settings);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
@@ -84,7 +77,6 @@ void main() {
 
     test('updateOfflineMode() updates value and saves', () async {
       // Arrange
-      await repository.init();
       final settings = Settings();
       when(() => mockDataSource.getSettings()).thenReturn(settings);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
@@ -102,7 +94,6 @@ void main() {
 
     test('updateAvatar() updates avatar and saves', () async {
       // Arrange
-      await repository.init();
       final settings = Settings();
       when(() => mockDataSource.getSettings()).thenReturn(settings);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
@@ -118,7 +109,6 @@ void main() {
 
     test('updateLastSyncTime() updates time and saves', () async {
       // Arrange
-      await repository.init();
       final settings = Settings();
       when(() => mockDataSource.getSettings()).thenReturn(settings);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
@@ -136,7 +126,6 @@ void main() {
 
     test('resetSettings() clears via DataSource', () async {
       // Arrange
-      await repository.init();
       when(() => mockDataSource.clear()).thenAnswer((_) async {});
 
       // Act
@@ -148,8 +137,6 @@ void main() {
 
     test('watchSettings() returns empty stream (DataSource pattern)', () async {
       // Arrange
-      await repository.init();
-
       // Act
       final result = repository.watchSettings();
 

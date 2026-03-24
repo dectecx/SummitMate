@@ -110,12 +110,14 @@ class NatureThemeStrategy implements AppThemeStrategy {
     ),
 
     // 文字樣式
-    textTheme: GoogleFonts.outfitTextTheme(const TextTheme(
-      headlineLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(color: textMain),
-      bodyMedium: TextStyle(color: textBody),
-    )),
+    textTheme: GoogleFonts.outfitTextTheme(
+      const TextTheme(
+        headlineLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+        titleLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+        bodyLarge: TextStyle(color: textMain),
+        bodyMedium: TextStyle(color: textBody),
+      ),
+    ),
   );
 
   @override

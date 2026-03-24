@@ -8,22 +8,10 @@ import '../interfaces/i_gear_library_local_data_source.dart';
 /// 裝備庫本地資料來源實作 (Hive)
 @LazySingleton(as: IGearLibraryLocalDataSource)
 class GearLibraryLocalDataSource implements IGearLibraryLocalDataSource {
-  final HiveService _hiveService;
-  Box<GearLibraryItem>? _box;
+  final Box<GearLibraryItem> _items;
 
-  GearLibraryLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  @override
-  Future<void> init() async {
-    _box = await _hiveService.openBox<GearLibraryItem>(HiveBoxNames.gearLibrary);
-  }
-
-  Box<GearLibraryItem> get _items {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('GearLibraryLocalDataSource not initialized. Call init() first.');
-    }
-    return _box!;
-  }
+  GearLibraryLocalDataSource({required HiveService hiveService})
+    : _items = hiveService.getBox<GearLibraryItem>(HiveBoxNames.gearLibrary);
 
   @override
   List<GearLibraryItem> getAllItems() => _items.values.toList();

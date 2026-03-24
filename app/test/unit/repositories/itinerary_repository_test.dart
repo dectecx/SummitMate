@@ -39,12 +39,6 @@ void main() {
   });
 
   group('ItineraryRepository', () {
-    test('init calls localDataSource.init', () async {
-      when(() => mockLocalDataSource.init()).thenAnswer((_) async {});
-      await repository.init();
-      verify(() => mockLocalDataSource.init()).called(1);
-    });
-
     group('addItem', () {
       test('should call localDataSource.add', () async {
         // Arrange

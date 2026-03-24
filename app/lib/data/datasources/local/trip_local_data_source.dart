@@ -8,30 +8,14 @@ import '../../../infrastructure/tools/hive_service.dart';
 /// 行程 (Trip) 的本地資料來源實作 (使用 Hive)
 @LazySingleton(as: ITripLocalDataSource)
 class TripLocalDataSource implements ITripLocalDataSource {
-  final HiveService _hiveService;
-  Box<Trip>? _box;
+  final Box<Trip> box;
 
-  TripLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  /// 初始化 Hive Box
-  @override
-  Future<void> init() async {
-    if (_box == null || !_box!.isOpen) {
-      _box = await _hiveService.openBox<Trip>(HiveBoxNames.trips);
-    }
-  }
-
-  Box<Trip> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('TripLocalDataSource not initialized');
-    }
-    return _box!;
-  }
+  TripLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<Trip>(HiveBoxNames.trips);
 
   /// 取得所有行程
   @override
   List<Trip> getAllTrips() {
-    return _box?.values.toList() ?? [];
+    return box.values.toList();
   }
 
   /// 根據 ID 取得行程
@@ -39,7 +23,7 @@ class TripLocalDataSource implements ITripLocalDataSource {
   /// [id] 行程 ID
   @override
   Trip? getTripById(String id) {
-    return _box?.get(id);
+    return box.get(id);
   }
 
   /// 新增行程

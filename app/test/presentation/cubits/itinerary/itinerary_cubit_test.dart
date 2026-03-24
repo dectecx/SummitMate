@@ -61,9 +61,9 @@ void main() {
     when(() => mockTripRepository.getTripById(any())).thenAnswer((_) async => Success(testTrip));
 
     cubit = ItineraryCubit(
-      repository: mockItineraryRepository,
-      tripRepository: mockTripRepository,
-      authService: mockAuthService,
+      mockItineraryRepository,
+      mockTripRepository,
+      mockAuthService,
     );
   });
 
@@ -202,9 +202,9 @@ void main() {
 
         // Re-initialize cubit with reset mocks
         cubit = ItineraryCubit(
-          repository: mockItineraryRepository,
-          tripRepository: mockTripRepository,
-          authService: mockAuthService,
+          mockItineraryRepository,
+          mockTripRepository,
+          mockAuthService,
         );
       });
 

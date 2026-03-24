@@ -27,14 +27,14 @@ void main() {
     final gearItem2 = GearItem(uuid: 'item2', tripId: 'trip2', name: 'Stove', weight: 500, category: 'Cook');
 
     test('initial state is GearInitial', () {
-      expect(GearCubit(repository: mockGearRepository).state, const GearInitial());
+      expect(GearCubit(mockGearRepository).state, const GearInitial());
     });
 
     blocTest<GearCubit, GearState>(
       'loadGear emits [GearLoading, GearLoaded] with filtered items',
       build: () {
         when(() => mockGearRepository.getAllItems()).thenReturn([gearItem1, gearItem2]);
-        return GearCubit(repository: mockGearRepository);
+        return GearCubit(mockGearRepository);
       },
       act: (cubit) => cubit.loadGear('trip1'),
       expect: () => [
@@ -71,7 +71,7 @@ void main() {
         });
 
         when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => 1);
-        return GearCubit(repository: mockGearRepository);
+        return GearCubit(mockGearRepository);
       },
       act: (cubit) async {
         await cubit.loadGear('trip1');
@@ -101,7 +101,7 @@ void main() {
           return [];
         });
         when(() => mockGearRepository.deleteItem(any())).thenAnswer((_) async {});
-        return GearCubit(repository: mockGearRepository);
+        return GearCubit(mockGearRepository);
       },
       act: (cubit) async {
         await cubit.loadGear('trip1');
@@ -132,7 +132,7 @@ void main() {
           return [checkedItem];
         });
         when(() => mockGearRepository.toggleChecked(any())).thenAnswer((_) async {});
-        return GearCubit(repository: mockGearRepository);
+        return GearCubit(mockGearRepository);
       },
       act: (cubit) async {
         await cubit.loadGear('trip1');
@@ -151,7 +151,7 @@ void main() {
     test('loadGear emits GearError on failure', () async {
       when(() => mockGearRepository.getAllItems()).thenThrow(Exception('DB Error'));
 
-      final cubit = GearCubit(repository: mockGearRepository);
+      final cubit = GearCubit(mockGearRepository);
 
       expectLater(
         cubit.stream,
@@ -165,7 +165,7 @@ void main() {
       when(() => mockGearRepository.addItem(any())).thenThrow(Exception('Add Failed'));
       when(() => mockGearRepository.getAllItems()).thenReturn([]);
 
-      final cubit = GearCubit(repository: mockGearRepository);
+      final cubit = GearCubit(mockGearRepository);
       await cubit.loadGear('trip1'); // Prepare tripId
 
       expectLater(cubit.stream, emits(isA<GearError>().having((e) => e.message, 'message', contains('Add Failed'))));

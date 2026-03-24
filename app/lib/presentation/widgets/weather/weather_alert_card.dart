@@ -7,7 +7,8 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../data/models/weather_data.dart';
 
 class WeatherAlertCard extends StatefulWidget {
-  const WeatherAlertCard({super.key});
+  final bool animate;
+  const WeatherAlertCard({super.key, this.animate = true});
 
   @override
   State<WeatherAlertCard> createState() => _WeatherAlertCardState();
@@ -143,80 +144,103 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
       badgeText = null;
     }
 
+    // Icon widget
+    Widget iconWidget = Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), shape: BoxShape.circle),
+      child: Icon(statusIcon, color: statusColor, size: 28),
+    );
+
+    if (widget.animate) {
+      iconWidget = iconWidget
+          .animate(onPlay: (controller) => controller.repeat(reverse: true))
+          .shimmer(duration: 1200.ms, color: Colors.white.withValues(alpha: 0.2))
+          .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 2000.ms);
+    }
+
+    // Badge widget
+    Widget? badgeWidget;
+    if (badgeText != null) {
+      badgeWidget = Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(20)),
+        child: Text(
+          badgeText,
+          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+      );
+      if (widget.animate) {
+        badgeWidget = badgeWidget.animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack);
+      }
+    }
+
+    // Content Row
+    Widget content = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          iconWidget,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_weather!.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(_weather!.condition, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '降雨率 ${_weather!.rainProbability}%',
+                      style: TextStyle(
+                        color: isRainy ? statusColor : Colors.grey[600],
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (badgeWidget != null) badgeWidget,
+        ],
+      ),
+    );
+
+    // Main Container
+    Widget mainContainer = Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: statusColor, width: 6)),
+          ),
+          child: content,
+        ),
+      ),
+    );
+
+    if (widget.animate) {
+      mainContainer = mainContainer.animate().fadeIn(duration: 600.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuad);
+    }
+
     return Dismissible(
       key: const Key('weather_alert'),
       direction: DismissDirection.horizontal,
       onDismissed: (_) {
         setState(() => _isVisible = false);
       },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(left: BorderSide(color: statusColor, width: 6)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  // Icon
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), shape: BoxShape.circle),
-                    child: Icon(statusIcon, color: statusColor, size: 28),
-                  ).animate(onPlay: (controller) => controller.repeat(reverse: true)).shimmer(duration: 1200.ms, color: Colors.white.withValues(alpha: 0.2)).scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 2000.ms),
-                  const SizedBox(width: 16),
-
-                  // Text Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_weather!.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(_weather!.condition, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                            const SizedBox(width: 8),
-                            Text(
-                              '降雨率 ${_weather!.rainProbability}%',
-                              style: TextStyle(
-                                color: isRainy ? statusColor : Colors.grey[600],
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Badge
-                  if (badgeText != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(20)),
-                      child: Text(
-                        badgeText,
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
-                ],
-              ),
-            ),
-          ).animate().fadeIn(duration: 600.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuad),
-        ),
-      ),
+      child: mainContainer,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,6 +19,7 @@ void main() {
   late MockAuthService mockAuthService;
   late MockUsageTrackingService mockUsageTrackingService;
   late AuthCubit authCubit;
+  late StreamController<UserProfile?> authStateController;
 
   final testUser = UserProfile(
     id: 'test-uuid',
@@ -39,12 +41,15 @@ void main() {
   setUp(() {
     mockAuthService = MockAuthService();
     mockUsageTrackingService = MockUsageTrackingService();
+    authStateController = StreamController<UserProfile?>.broadcast();
+
+    when(() => mockAuthService.onAuthStateChanged).thenAnswer((_) => authStateController.stream);
 
     // Default mock behavior
     when(() => mockUsageTrackingService.start(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
     when(() => mockAuthService.isOfflineMode).thenReturn(false);
 
-    authCubit = AuthCubit(authService: mockAuthService, usageTrackingService: mockUsageTrackingService);
+    authCubit = AuthCubit(mockAuthService, mockUsageTrackingService);
   });
 
   group('AuthCubit', () {
@@ -55,6 +60,10 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'checkAuthStatus emits AuthAuthenticated when validateSession succeeds',
       build: () {
+        when(() => mockAuthService.validateSession()).thenAnswer((_) async {
+          authStateController.add(testUser);
+          return AuthResult.success(user: testUser);
+        });
         when(() => mockAuthService.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => testUser);
         when(() => mockAuthService.isOfflineMode).thenReturn(false);
@@ -77,6 +86,10 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'checkAuthStatus emits AuthUnauthenticated when validateSession fails',
       build: () {
+        when(() => mockAuthService.validateSession()).thenAnswer((_) async {
+          authStateController.add(null);
+          return AuthResult.failure(errorCode: 'AUTH_ERROR', errorMessage: 'invalid');
+        });
         when(() => mockAuthService.isLoggedIn()).thenAnswer((_) async => false);
         return authCubit;
       },
@@ -89,7 +102,10 @@ void main() {
       build: () {
         when(
           () => mockAuthService.login(email: 'email', password: 'password'),
-        ).thenAnswer((_) async => AuthResult.success(user: testUser));
+        ).thenAnswer((_) async {
+          authStateController.add(testUser);
+          return AuthResult.success(user: testUser);
+        });
         return authCubit;
       },
       act: (cubit) => cubit.login('email', 'password'),
@@ -159,7 +175,10 @@ void main() {
       build: () {
         when(
           () => mockAuthService.verifyEmail(email: 'email', code: '123456'),
-        ).thenAnswer((_) async => AuthResult.success());
+        ).thenAnswer((_) async {
+          authStateController.add(null);
+          return AuthResult.success();
+        });
         return authCubit;
       },
       act: (cubit) => cubit.verifyEmail('email', '123456'),

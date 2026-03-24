@@ -28,15 +28,10 @@ class ItineraryRepository implements IItineraryRepository {
        _remoteDataSource = remoteDataSource ?? getIt<IItineraryRemoteDataSource>(),
        _connectivity = connectivity ?? getIt<IConnectivityService>();
 
-  /// 初始化 Repository (主要是本地資料庫)
+  /// 初始化 Repository (主要是遠端資料庫或其他資源，本地已同步)
   @override
   Future<Result<void, Exception>> init() async {
-    try {
-      await _localDataSource.init();
-      return const Success(null);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+    return const Success(null);
   }
 
   // --- 本地操作代理 ---

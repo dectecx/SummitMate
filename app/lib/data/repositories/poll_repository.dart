@@ -27,13 +27,7 @@ class PollRepository implements IPollRepository {
 
   @override
   Future<Result<void, Exception>> init() async {
-    try {
-      await _localDataSource.init();
-      return const Success(null);
-    } catch (e) {
-      LogService.error('Init failed: $e', source: _source);
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
-    }
+    return const Success(null);
   }
 
   // ========== Data Operations ==========

@@ -1,14 +1,10 @@
 import 'package:summitmate/core/theme.dart';
 import 'package:hive_ce/hive.dart';
 import '../../models/settings.dart';
-import '../../../core/error/result.dart';
 
 /// Settings Repository 抽象介面
 /// 定義設定資料存取的契約 (本地儲存)
 abstract interface class ISettingsRepository {
-  /// 初始化 Repository
-  Future<Result<void, Exception>> init();
-
   // ========== Data Operations ==========
 
   /// 取得設定 (若不存在則建立預設值)

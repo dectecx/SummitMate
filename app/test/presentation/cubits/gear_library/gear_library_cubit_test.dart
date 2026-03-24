@@ -78,11 +78,11 @@ void main() {
       when(() => mockAuthService.currentUserEmail).thenReturn('u1@test.com');
 
       cubit = GearLibraryCubit(
-        repository: mockRepo,
-        gearRepository: mockGearRepo,
-        tripRepository: mockTripRepo,
-        authService: mockAuthService,
-        remoteDataSource: mockRemoteDataSource,
+        mockRepo,
+        mockGearRepo,
+        mockTripRepo,
+        mockAuthService,
+        mockRemoteDataSource,
       );
     });
 
