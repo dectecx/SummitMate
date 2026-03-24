@@ -42,8 +42,8 @@ class HiveService {
   Future<void> init() async {
     if (_isInitialized) return;
 
-    // 初始化 Hive Flutter
-    await Hive.initFlutter();
+    // 初始化 Hive Flutter，並指定儲存在 'db' 子目錄中
+    await Hive.initFlutter('db');
 
     // 初始化加密金鑰 (若為 Web 則跳過，因為 flutter_secure_storage 在 web 行為不同且通常不支援 Hive 非同步加密同樣方式)
     if (!kIsWeb) {
