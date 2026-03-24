@@ -132,4 +132,16 @@ class NightThemeStrategy implements AppThemeStrategy {
       Color(0xFF10131A), // Deep Black Blue bottom right
     ],
   );
+
+  @override
+  Color get successColor => const HSLColor.fromAHSL(1.0, 150, 0.60, 0.50).toColor();
+
+  @override
+  Color get warningColor => const HSLColor.fromAHSL(1.0, 40, 0.70, 0.55).toColor();
+
+  @override
+  Color get infoColor => const HSLColor.fromAHSL(1.0, 200, 0.60, 0.60).toColor();
+
+  @override
+  Color get errorColor => const HSLColor.fromAHSL(1.0, 350, 0.65, 0.55).toColor();
 }

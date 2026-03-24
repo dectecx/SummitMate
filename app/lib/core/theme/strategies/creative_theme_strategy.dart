@@ -118,4 +118,16 @@ class CreativeThemeStrategy implements AppThemeStrategy {
       Color(0xFFFFF3E0), // Orange 50 (Back to subtle)
     ],
   );
+
+  @override
+  Color get successColor => const HSLColor.fromAHSL(1.0, 140, 0.80, 0.45).toColor();
+
+  @override
+  Color get warningColor => const HSLColor.fromAHSL(1.0, 30, 0.90, 0.55).toColor();
+
+  @override
+  Color get infoColor => const HSLColor.fromAHSL(1.0, 210, 0.85, 0.55).toColor();
+
+  @override
+  Color get errorColor => const HSLColor.fromAHSL(1.0, 355, 0.85, 0.50).toColor();
 }
