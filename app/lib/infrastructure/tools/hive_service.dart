@@ -107,6 +107,20 @@ class HiveService {
     }
 
     _isInitialized = true;
+
+    // 預熱所有必要的 Box 以支援同步操作
+    await openBox<Settings>(HiveBoxNames.settings);
+    await openBox<Trip>(HiveBoxNames.trips);
+    await openBox<ItineraryItem>(HiveBoxNames.itinerary);
+    await openBox<Message>(HiveBoxNames.messages);
+    await openBox<GearItem>(HiveBoxNames.gear);
+    await openBox<GearLibraryItem>(HiveBoxNames.gearLibrary);
+    await openBox<Poll>(HiveBoxNames.polls);
+    await openBox<GroupEvent>(HiveBoxNames.groupEvents);
+    await openBox<GroupEventApplication>(HiveBoxNames.groupEventApplications);
+    await openBox<WeatherData>(HiveBoxNames.weather);
+    await openBox<Favorite>(HiveBoxNames.mountainFavorites);
+    await openBox<Favorite>(HiveBoxNames.groupEventFavorites);
   }
 
   /// 取得或生成加密金鑰
@@ -163,6 +177,15 @@ class HiveService {
       }
       rethrow;
     }
+  }
+
+  /// 取得已開啟的 Box (同步)
+  ///
+  /// [boxName] Box 名稱
+  /// 注意：必須確保 Box 已經被 openBox 呼叫過且完成
+  Box<T> getBox<T>(String boxName) {
+    if (!_isInitialized) throw StateError('HiveService not initialized');
+    return Hive.box<T>(boxName);
   }
 
   /// 關閉所有 Box

@@ -124,7 +124,13 @@ backend/__debug_bin*
 # backend/docs/swagger.yaml
 # backend/docs/docs.go
 
-# ============================================
 # Docker
-# ============================================
 docker-compose.override.yml
+
+# Hive Data Files (Local/Test)
+app/*.hive
+app/*.hive.lock
+
+# Test Outputs
+app/test_output*.txt
+app/test_output*.xml

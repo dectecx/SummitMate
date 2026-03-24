@@ -16,9 +16,7 @@ class GearRepository implements IGearRepository {
     : _localDataSource = localDataSource ?? getIt<IGearLocalDataSource>();
 
   @override
-  Future<void> init() async {
-    await _localDataSource.init();
-  }
+  Future<void> init() async {}
 
   /// 取得所有裝備 (依 orderIndex 排序)
   @override

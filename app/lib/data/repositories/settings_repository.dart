@@ -1,11 +1,9 @@
 import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
-import '../../core/error/result.dart';
 import '../models/settings.dart';
 import 'interfaces/i_settings_repository.dart';
 import '../datasources/interfaces/i_settings_local_data_source.dart';
-import '../../infrastructure/tools/log_service.dart';
 
 /// 設定 Repository (支援 DataSource 模式)
 ///
@@ -13,28 +11,14 @@ import '../../infrastructure/tools/log_service.dart';
 /// 設定資料為應用程式層級，儲存於本地 Hive。
 @LazySingleton(as: ISettingsRepository)
 class SettingsRepository implements ISettingsRepository {
-  static const String _source = 'SettingsRepository';
-
   final ISettingsLocalDataSource _localDataSource;
 
   /// 快取設定供同步讀取
   Settings? _cachedSettings;
 
-  SettingsRepository({required ISettingsLocalDataSource localDataSource}) : _localDataSource = localDataSource;
-
-  // ========== Init ==========
-
-  @override
-  Future<Result<void, Exception>> init() async {
-    try {
-      await _localDataSource.init();
-      // 預載設定到快取
-      _cachedSettings = _localDataSource.getSettings();
-      return const Success(null);
-    } catch (e) {
-      LogService.error('Init failed: $e', source: _source);
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
-    }
+  SettingsRepository({required ISettingsLocalDataSource localDataSource}) : _localDataSource = localDataSource {
+    // 預載設定到快取
+    _cachedSettings = _localDataSource.getSettings();
   }
 
   // ========== Data Operations ==========

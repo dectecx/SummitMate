@@ -9,25 +9,10 @@ import '../../datasources/interfaces/i_favorites_local_data_source.dart';
 /// 最愛 (Favorites) 的本地資料來源實作 (使用 Hive)
 @LazySingleton(as: IFavoritesLocalDataSource)
 class FavoritesLocalDataSource implements IFavoritesLocalDataSource {
-  final HiveService _hiveService;
-  Box<Favorite>? _box;
+  final Box<Favorite> box;
 
-  FavoritesLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  @override
-  Future<void> init() async {
-    // 使用獨立的 Box 儲存最愛項目
-    if (_box == null || !_box!.isOpen) {
-      _box = await _hiveService.openBox<Favorite>(HiveBoxNames.mountainFavorites);
-    }
-  }
-
-  Box<Favorite> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('FavoritesLocalDataSource not initialized. Call init() first.');
-    }
-    return _box!;
-  }
+  FavoritesLocalDataSource({required HiveService hiveService})
+    : box = hiveService.getBox<Favorite>(HiveBoxNames.mountainFavorites);
 
   @override
   Future<List<Favorite>> getFavorites() async {

@@ -10,21 +10,16 @@ import '../interfaces/i_settings_local_data_source.dart';
 class SettingsLocalDataSource implements ISettingsLocalDataSource {
   static const String _settingsKey = 'app_settings';
 
-  final HiveService _hiveService;
-  Box<Settings>? _box;
+  final Box<Settings> _box;
 
-  SettingsLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  @override
-  Future<void> init() async {
-    _box = await _hiveService.openBox<Settings>(HiveBoxNames.settings);
-  }
+  SettingsLocalDataSource({required HiveService hiveService})
+    : _box = hiveService.getBox<Settings>(HiveBoxNames.settings);
 
   Box<Settings> get _settings {
-    if (_box == null || !_box!.isOpen) {
+    if (!_box.isOpen) {
       throw StateError('SettingsLocalDataSource not initialized. Call init() first.');
     }
-    return _box!;
+    return _box;
   }
 
   @override

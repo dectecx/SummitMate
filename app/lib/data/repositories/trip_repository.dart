@@ -24,13 +24,7 @@ class TripRepository implements ITripRepository {
   /// 初始化本地資料庫
   @override
   Future<Result<void, Exception>> init() async {
-    try {
-      await _localDataSource.init();
-      return const Success(null);
-    } catch (e) {
-      LogService.error('Init failed: $e', source: _source);
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
-    }
+    return const Success(null);
   }
 
   /// 取得所有本地行程 (僅限目前登入使用者)

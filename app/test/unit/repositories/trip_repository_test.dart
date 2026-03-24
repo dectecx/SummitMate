@@ -42,14 +42,6 @@ void main() {
   });
 
   group('TripRepository', () {
-    test('init calls localDataSource.init', () async {
-      when(() => mockLocalDataSource.init()).thenAnswer((_) async {});
-
-      await repository.init();
-
-      verify(() => mockLocalDataSource.init()).called(1);
-    });
-
     test('getAllTrips delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getAllTrips()).thenReturn([testTrip]);
       final result = await repository.getAllTrips('user_1');

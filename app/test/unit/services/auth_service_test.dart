@@ -57,6 +57,8 @@ void main() {
     mockSessionRepo = MockAuthSessionRepository();
     mockTokenValidator = MockTokenValidator();
 
+    when(() => mockSessionRepo.getUserProfile()).thenAnswer((_) async => null);
+
     authService = AuthService(
       apiClient: mockApiClient,
       sessionRepository: mockSessionRepo,
