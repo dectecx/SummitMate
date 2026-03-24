@@ -13,23 +13,9 @@ class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   static const String _boxName = HiveBoxNames.itinerary;
   static const String _prefKeyLastSync = 'itin_last_sync_time';
 
-  final HiveService _hiveService;
-  Box<ItineraryItem>? _box;
+  final Box<ItineraryItem> box;
 
-  ItineraryLocalDataSource({required HiveService hiveService}) : _hiveService = hiveService;
-
-  /// 初始化 Hive Box
-  @override
-  Future<void> init() async {
-    _box = await _hiveService.openBox<ItineraryItem>(_boxName);
-  }
-
-  Box<ItineraryItem> get box {
-    if (_box == null || !_box!.isOpen) {
-      throw StateError('ItineraryLocalDataSource not initialized. Call init() first.');
-    }
-    return _box!;
-  }
+  ItineraryLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<ItineraryItem>(_boxName);
 
   /// 取得所有行程
   @override

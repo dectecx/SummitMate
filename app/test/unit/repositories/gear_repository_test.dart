@@ -32,12 +32,6 @@ void main() {
   });
 
   group('GearRepository', () {
-    test('init delegates to localDataSource', () async {
-      when(() => mockLocalDataSource.init()).thenAnswer((_) async {});
-      await repository.init();
-      verify(() => mockLocalDataSource.init()).called(1);
-    });
-
     group('getAllItems', () {
       test('returns sorted items', () {
         // Arrange: return unsorted list (by index)

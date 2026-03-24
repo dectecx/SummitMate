@@ -81,12 +81,14 @@ class MinimalistThemeStrategy implements AppThemeStrategy {
       labelStyle: TextStyle(color: mediumGrey),
     ),
 
-    textTheme: GoogleFonts.outfitTextTheme(const TextTheme(
-      headlineLarge: TextStyle(color: pureBlack, fontWeight: FontWeight.bold),
-      titleLarge: TextStyle(color: pureBlack, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(color: pureBlack),
-      bodyMedium: TextStyle(color: darkGrey),
-    )),
+    textTheme: GoogleFonts.outfitTextTheme(
+      const TextTheme(
+        headlineLarge: TextStyle(color: pureBlack, fontWeight: FontWeight.bold),
+        titleLarge: TextStyle(color: pureBlack, fontWeight: FontWeight.bold),
+        bodyLarge: TextStyle(color: pureBlack),
+        bodyMedium: TextStyle(color: darkGrey),
+      ),
+    ),
   );
 
   @override

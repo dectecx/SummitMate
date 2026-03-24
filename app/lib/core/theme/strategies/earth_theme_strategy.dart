@@ -86,11 +86,13 @@ class EarthThemeStrategy implements AppThemeStrategy {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
 
-    textTheme: GoogleFonts.outfitTextTheme(const TextTheme(
-      bodyLarge: TextStyle(color: darkLoam),
-      bodyMedium: TextStyle(color: darkLoam),
-      titleLarge: TextStyle(color: darkLoam, fontWeight: FontWeight.bold),
-    )),
+    textTheme: GoogleFonts.outfitTextTheme(
+      const TextTheme(
+        bodyLarge: TextStyle(color: darkLoam),
+        bodyMedium: TextStyle(color: darkLoam),
+        titleLarge: TextStyle(color: darkLoam, fontWeight: FontWeight.bold),
+      ),
+    ),
   );
 
   @override

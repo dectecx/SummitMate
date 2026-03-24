@@ -5,9 +5,6 @@ import '../../models/itinerary_item.dart';
 ///
 /// 負責定義對本地資料庫 (如 Hive) 的 CRUD 操作規範。
 abstract class IItineraryLocalDataSource {
-  /// 初始化資料來源 (例如開啟 Box)
-  Future<void> init();
-
   /// 取得所有行程項目
   List<ItineraryItem> getAll();
 

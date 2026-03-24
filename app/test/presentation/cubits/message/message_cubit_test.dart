@@ -91,7 +91,7 @@ void main() {
       ),
     );
 
-    cubit = MessageCubit(repository: mockRepo, tripRepository: mockTripRepo, authService: mockAuthService);
+    cubit = MessageCubit(mockRepo, mockTripRepo, mockAuthService);
   });
 
   tearDown(() {

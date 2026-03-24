@@ -13,15 +13,11 @@ Future<void> configureDependencies() async {
   LogService.info('🚀 [DI] Starting dependencies setup...');
 
   // 1. 並行執行非依賴性異步任務 (Optimization)
+  // 此處僅為「預熱」緩存，實際註冊將由 Stage 2 的 injectable 依據 RegisterModule 定義執行。
   LogService.info('🚀 [DI] Stage 1: Parallel Initialization (Prefs, PackageInfo, Hive)');
-  final results = await Future.wait([SharedPreferences.getInstance(), PackageInfo.fromPlatform(), _initHive()]);
+  await Future.wait([SharedPreferences.getInstance(), PackageInfo.fromPlatform(), _initHive()]);
 
-  // 2. 手動註冊這些實例，以便 injectable 的 init 可以直接使用它們
-  getIt.registerSingleton<SharedPreferences>(results[0] as SharedPreferences);
-  getIt.registerSingleton<PackageInfo>(results[1] as PackageInfo);
-  getIt.registerSingleton<HiveService>(results[2] as HiveService);
-
-  // 3. 執行產生的 init (處理剩餘的依賴與注入)
+  // 2. 執行產生的 init (處理依賴性註冊)
   LogService.info('🚀 [DI] Stage 2: Injectable Initialization');
   await getIt.init();
 

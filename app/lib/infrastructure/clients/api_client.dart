@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
 import '../../domain/interfaces/i_api_client.dart';
 import '../tools/log_service.dart';
 
 /// API 用戶端
 ///
 /// 作為與身分驗證伺服器溝通的底層介面實作 [IApiClient]。
+@LazySingleton(as: IApiClient)
 class ApiClient implements IApiClient {
   static const String _source = 'ApiClient';
 
@@ -15,7 +17,7 @@ class ApiClient implements IApiClient {
   ///
   /// [dio] Dio 客戶端實例
   /// [baseUrl] API 基礎 URL
-  ApiClient({Dio? dio, required String baseUrl}) : _dio = dio ?? Dio(), _baseUrl = baseUrl;
+  ApiClient({Dio? dio, @Named('baseUrl') required String baseUrl}) : _dio = dio ?? Dio(), _baseUrl = baseUrl;
 
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {

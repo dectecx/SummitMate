@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 import '../tools/log_service.dart';
 
 /// 用於處理 API 認證邏輯的攔截器 (Interceptor)
+@LazySingleton()
 class AuthInterceptor extends Interceptor {
   static const String _source = 'AuthInterceptor';
   final IAuthSessionRepository _sessionRepo;

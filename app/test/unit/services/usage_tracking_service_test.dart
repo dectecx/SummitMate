@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/infrastructure/tools/usage_tracking_service.dart';
@@ -12,20 +13,20 @@ void main() {
     registerFallbackValue(RequestOptions(path: ''));
   });
 
-  group('UsageTrackingService 測試', () {
+  group('UsageTrackingService Tests', () {
     late MockNetworkAwareClient mockApiClient;
     late UsageTrackingService service;
 
     setUp(() {
       mockApiClient = MockNetworkAwareClient();
-      service = UsageTrackingService(mockApiClient, forceWeb: true);
+      service = UsageTrackingService(mockApiClient);
     });
 
     tearDown(() {
       service.dispose();
     });
 
-    test('start() with userId should send member heartbeat', () async {
+    test('start() should send heartbeat on Web and skip on non-Web', () async {
       // 安排
       Map<String, dynamic>? capturedData;
 
@@ -44,14 +45,17 @@ void main() {
         );
       });
 
-      // 執行 - 啟動追蹤 (Member)
+      // 執行
       service.start('MemberUser', userId: 'user-123');
 
       // 驗證
-      expect(capturedData, isNotNull);
-      expect(capturedData!['user_name'], 'MemberUser');
-      expect(capturedData!['user_id'], 'user-123');
-      expect(capturedData!['user_type'], 'member');
+      if (kIsWeb) {
+        expect(capturedData, isNotNull);
+        expect(capturedData!['user_name'], 'MemberUser');
+      } else {
+        expect(capturedData, isNull);
+        verifyNever(() => mockApiClient.post(any(), data: any(named: 'data')));
+      }
     });
 
     test('start() without userId should send guest heartbeat', () async {
@@ -77,10 +81,15 @@ void main() {
       service.start('GuestUser');
 
       // 驗證
-      expect(capturedData, isNotNull);
-      expect(capturedData!['user_name'], 'GuestUser');
-      expect(capturedData!['user_id'], isNull);
-      expect(capturedData!['user_type'], 'guest');
+      if (kIsWeb) {
+        expect(capturedData, isNotNull);
+        expect(capturedData!['user_name'], 'GuestUser');
+        expect(capturedData!['user_id'], isNull);
+        expect(capturedData!['user_type'], 'guest');
+      } else {
+        expect(capturedData, isNull);
+        verifyNever(() => mockApiClient.post(any(), data: any(named: 'data')));
+      }
     });
 
     test('stop() 應取消定時器', () {

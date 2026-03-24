@@ -5,11 +5,6 @@ import '../../models/poll.dart';
 /// 負責定義對本地資料庫 (Hive) 的 CRUD 操作。
 /// 投票資料會在同步後快取至本地供離線讀取。
 abstract class IPollLocalDataSource {
-  /// 初始化資料來源
-  ///
-  /// 開啟 Hive Box，需在使用其他方法前呼叫。
-  Future<void> init();
-
   /// 取得所有投票
   ///
   /// 回傳: 投票列表

@@ -85,10 +85,12 @@ class NightThemeStrategy implements AppThemeStrategy {
     ),
 
     // Customizing text for better reading in dark mode
-    textTheme: GoogleFonts.outfitTextTheme(const TextTheme(
-      bodyLarge: TextStyle(color: textLight),
-      bodyMedium: TextStyle(color: Color(0xFFB0BEC5)), // Blue Grey Lighter
-    )),
+    textTheme: GoogleFonts.outfitTextTheme(
+      const TextTheme(
+        bodyLarge: TextStyle(color: textLight),
+        bodyMedium: TextStyle(color: Color(0xFFB0BEC5)), // Blue Grey Lighter
+      ),
+    ),
   );
 
   @override

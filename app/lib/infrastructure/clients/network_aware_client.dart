@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../core/di/injection.dart';
+import 'package:injectable/injectable.dart';
 import '../../core/exceptions/offline_exception.dart';
 import '../../domain/interfaces/i_api_client.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
@@ -14,15 +14,16 @@ import '../tools/log_service.dart';
 ///
 /// 使用方式:
 /// 所有需要打 API 的 Service 應使用此 Client，而非直接使用 basic API Client
+@LazySingleton()
 class NetworkAwareClient implements IApiClient {
   static const String _source = 'NetworkAwareClient';
 
   final IApiClient _apiClient;
   final IConnectivityService _connectivity;
 
-  NetworkAwareClient({IApiClient? apiClient, IConnectivityService? connectivity})
-    : _apiClient = apiClient ?? getIt<IApiClient>(),
-      _connectivity = connectivity ?? getIt<IConnectivityService>();
+  NetworkAwareClient({required IApiClient apiClient, required IConnectivityService connectivity})
+    : _apiClient = apiClient,
+      _connectivity = connectivity;
 
   /// 檢查是否離線，若是則拋出 [OfflineException]
   void _checkConnectivity(String operation) {

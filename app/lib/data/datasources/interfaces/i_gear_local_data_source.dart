@@ -5,9 +5,6 @@ import '../../models/gear_item.dart';
 ///
 /// 負責定義對本地裝備資料庫的 CRUD 操作。
 abstract class IGearLocalDataSource {
-  /// 初始化資料來源
-  Future<void> init();
-
   /// 取得所有裝備項目
   List<GearItem> getAll();
 

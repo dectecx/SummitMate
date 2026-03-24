@@ -49,14 +49,6 @@ void main() {
   });
 
   group('MessageRepository', () {
-    test('init calls localDataSource.init', () async {
-      when(() => mockLocalDataSource.init()).thenAnswer((_) async {});
-
-      await repository.init();
-
-      verify(() => mockLocalDataSource.init()).called(1);
-    });
-
     test('getAllMessages delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getAll()).thenReturn([testMessage]);
       final result = await repository.getAllMessages();
