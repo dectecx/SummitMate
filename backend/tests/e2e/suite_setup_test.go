@@ -607,8 +607,8 @@ func (s *APITestSuite) SetupSuite() {
 
 	authHandler := handler.NewAuthHandler(authService)
 	tripHandler := handler.NewTripHandler(tripService)
-	gearHandler := handler.NewGearLibraryHandler(gearLibService)
-	mealHandler := handler.NewMealLibraryHandler(mealLibService)
+	gearLibHandler := handler.NewGearLibraryHandler(gearLibService)
+	mealLibHandler := handler.NewMealLibraryHandler(mealLibService)
 	tripGearHandler := handler.NewTripGearHandler(tripGearService)
 	tripMealHandler := handler.NewTripMealHandler(tripMealService)
 	messageHandler := handler.NewMessageHandler(messageService)
@@ -624,8 +624,8 @@ func (s *APITestSuite) SetupSuite() {
 	srv := testServer{
 		authHandler:     authHandler,
 		tripHandler:     tripHandler,
-		gearHandler:     gearHandler,
-		mealHandler:     mealHandler,
+		gearHandler:     gearLibHandler,
+		mealHandler:     mealLibHandler,
 		tripGearHandler: tripGearHandler,
 		tripMealHandler: tripMealHandler,
 		messageHandler:  messageHandler,

@@ -14,11 +14,11 @@ import (
 
 // AuthHandler 處理認證相關的 HTTP 請求。
 type AuthHandler struct {
-	authService *service.AuthService
+	authService service.AuthService
 }
 
 // NewAuthHandler 建立 AuthHandler 實例。
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
+func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 

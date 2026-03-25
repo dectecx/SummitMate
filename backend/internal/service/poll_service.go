@@ -9,15 +9,25 @@ import (
 	"summitmate/internal/repository"
 )
 
-type PollService struct {
+// PollService 定義行程投票相關的業務邏輯介面。
+type PollService interface {
+	CreateTripPoll(ctx context.Context, tripID, userID string, poll *model.Poll) (*model.Poll, error)
+	ListTripPolls(ctx context.Context, tripID, userID string) ([]*model.Poll, error)
+	GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*model.Poll, error)
+	DeleteTripPoll(ctx context.Context, tripID, pollID, userID string) error
+	AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*model.Poll, error)
+	VoteOption(ctx context.Context, tripID, pollID, optionID, userID string) (*model.Poll, error)
+}
+
+type pollService struct {
 	logger     *slog.Logger
 	repo       repository.PollRepository
 	tripRepo   repository.TripRepository
 	memberRepo repository.TripMemberRepository
 }
 
-func NewPollService(logger *slog.Logger, repo repository.PollRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *PollService {
-	return &PollService{
+func NewPollService(logger *slog.Logger, repo repository.PollRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) PollService {
+	return &pollService{
 		logger:     logger.With("component", "poll"),
 		repo:       repo,
 		tripRepo:   tripRepo,
@@ -25,7 +35,7 @@ func NewPollService(logger *slog.Logger, repo repository.PollRepository, tripRep
 	}
 }
 
-func (s *PollService) CreateTripPoll(ctx context.Context, tripID, userID string, poll *model.Poll) (*model.Poll, error) {
+func (s *pollService) CreateTripPoll(ctx context.Context, tripID, userID string, poll *model.Poll) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -43,7 +53,7 @@ func (s *PollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 	return poll, nil
 }
 
-func (s *PollService) ListTripPolls(ctx context.Context, tripID, userID string) ([]*model.Poll, error) {
+func (s *pollService) ListTripPolls(ctx context.Context, tripID, userID string) ([]*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -51,7 +61,7 @@ func (s *PollService) ListTripPolls(ctx context.Context, tripID, userID string) 
 	return s.repo.ListTripPolls(ctx, tripID)
 }
 
-func (s *PollService) GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*model.Poll, error) {
+func (s *pollService) GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -66,7 +76,7 @@ func (s *PollService) GetTripPoll(ctx context.Context, tripID, pollID, userID st
 	return poll, nil
 }
 
-func (s *PollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID string) error {
+func (s *pollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID string) error {
 	poll, err := s.repo.GetPollByID(ctx, pollID)
 	if err != nil {
 		return err
@@ -86,7 +96,7 @@ func (s *PollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 	return s.repo.DeletePoll(ctx, pollID)
 }
 
-func (s *PollService) AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*model.Poll, error) {
+func (s *pollService) AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -117,7 +127,7 @@ func (s *PollService) AddPollOption(ctx context.Context, tripID, pollID, userID 
 	return s.repo.GetPollByID(ctx, pollID)
 }
 
-func (s *PollService) VoteOption(ctx context.Context, tripID, pollID, optionID, userID string) (*model.Poll, error) {
+func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, userID string) (*model.Poll, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -144,7 +154,7 @@ func (s *PollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 	return s.repo.GetPollByID(ctx, pollID)
 }
 
-func (s *PollService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
+func (s *pollService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err == nil && trip != nil && trip.UserID == userID {
 		return true

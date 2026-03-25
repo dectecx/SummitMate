@@ -15,11 +15,11 @@ import (
 
 // TripHandler 處理 /trips 相關的 HTTP 請求。
 type TripHandler struct {
-	svc *service.TripService
+	svc service.TripService
 }
 
 // NewTripHandler 建立 TripHandler 實例。
-func NewTripHandler(svc *service.TripService) *TripHandler {
+func NewTripHandler(svc service.TripService) *TripHandler {
 	return &TripHandler{svc: svc}
 }
 

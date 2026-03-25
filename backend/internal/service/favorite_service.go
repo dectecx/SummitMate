@@ -8,23 +8,31 @@ import (
 	"summitmate/internal/repository"
 )
 
-type FavoriteService struct {
+// FavoriteService 定義我的最愛相關的業務邏輯介面。
+type FavoriteService interface {
+	ListFavorites(ctx context.Context, userID string) ([]*model.Favorite, error)
+	AddFavorite(ctx context.Context, userID, targetID, favType string) (*model.Favorite, error)
+	RemoveFavorite(ctx context.Context, targetID, userID string) error
+	BatchUpdateFavorites(ctx context.Context, userID string, items []repository.BatchFavoriteItem) error
+}
+
+type favoriteService struct {
 	logger *slog.Logger
 	repo   repository.FavoriteRepository
 }
 
-func NewFavoriteService(logger *slog.Logger, repo repository.FavoriteRepository) *FavoriteService {
-	return &FavoriteService{
+func NewFavoriteService(logger *slog.Logger, repo repository.FavoriteRepository) FavoriteService {
+	return &favoriteService{
 		logger: logger.With("component", "favorite"),
 		repo:   repo,
 	}
 }
 
-func (s *FavoriteService) ListFavorites(ctx context.Context, userID string) ([]*model.Favorite, error) {
+func (s *favoriteService) ListFavorites(ctx context.Context, userID string) ([]*model.Favorite, error) {
 	return s.repo.ListByUserID(ctx, userID)
 }
 
-func (s *FavoriteService) AddFavorite(ctx context.Context, userID, targetID, favType string) (*model.Favorite, error) {
+func (s *favoriteService) AddFavorite(ctx context.Context, userID, targetID, favType string) (*model.Favorite, error) {
 	fav := &model.Favorite{
 		UserID:    userID,
 		TargetID:  targetID,
@@ -38,10 +46,10 @@ func (s *FavoriteService) AddFavorite(ctx context.Context, userID, targetID, fav
 	return fav, nil
 }
 
-func (s *FavoriteService) RemoveFavorite(ctx context.Context, targetID, userID string) error {
+func (s *favoriteService) RemoveFavorite(ctx context.Context, targetID, userID string) error {
 	return s.repo.DeleteByTargetAndUser(ctx, targetID, userID)
 }
 
-func (s *FavoriteService) BatchUpdateFavorites(ctx context.Context, userID string, items []repository.BatchFavoriteItem) error {
+func (s *favoriteService) BatchUpdateFavorites(ctx context.Context, userID string, items []repository.BatchFavoriteItem) error {
 	return s.repo.BatchUpdate(ctx, userID, items)
 }
