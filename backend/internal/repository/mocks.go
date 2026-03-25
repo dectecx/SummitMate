@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 	"summitmate/internal/model"
 
 	"github.com/stretchr/testify/mock"
@@ -52,11 +51,6 @@ func (m *MockUserRepository) DeleteByID(ctx context.Context, id string) error {
 
 func (m *MockUserRepository) SoftDelete(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) UpdateVerification(ctx context.Context, id string, code string, expiry time.Time) error {
-	args := m.Called(ctx, id, code, expiry)
 	return args.Error(0)
 }
 
