@@ -15,10 +15,10 @@ import (
 )
 
 type TripGearHandler struct {
-	svc *service.TripGearService
+	svc service.TripGearService
 }
 
-func NewTripGearHandler(svc *service.TripGearService) *TripGearHandler {
+func NewTripGearHandler(svc service.TripGearService) *TripGearHandler {
 	return &TripGearHandler{svc: svc}
 }
 

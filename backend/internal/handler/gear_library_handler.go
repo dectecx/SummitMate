@@ -15,10 +15,10 @@ import (
 )
 
 type GearLibraryHandler struct {
-	svc *service.GearLibraryService
+	svc service.GearLibraryService
 }
 
-func NewGearLibraryHandler(svc *service.GearLibraryService) *GearLibraryHandler {
+func NewGearLibraryHandler(svc service.GearLibraryService) *GearLibraryHandler {
 	return &GearLibraryHandler{svc: svc}
 }
 

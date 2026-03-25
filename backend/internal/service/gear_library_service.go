@@ -8,19 +8,29 @@ import (
 	"summitmate/internal/repository"
 )
 
-type GearLibraryService struct {
+// GearLibraryService 定義裝備庫相關的業務邏輯介面。
+type GearLibraryService interface {
+	CreateItem(ctx context.Context, userID string, req *model.GearLibraryItem) (*model.GearLibraryItem, error)
+	GetItem(ctx context.Context, itemID, userID string) (*model.GearLibraryItem, error)
+	ListItems(ctx context.Context, userID string, includeArchived bool) ([]*model.GearLibraryItem, error)
+	UpdateItem(ctx context.Context, itemID, userID string, req *model.GearLibraryItem) (*model.GearLibraryItem, error)
+	ReplaceAllItems(ctx context.Context, userID string, items []*model.GearLibraryItem) error
+	DeleteItem(ctx context.Context, itemID, userID string) error
+}
+
+type gearLibraryService struct {
 	logger *slog.Logger
 	repo   repository.GearLibraryRepository
 }
 
-func NewGearLibraryService(logger *slog.Logger, repo repository.GearLibraryRepository) *GearLibraryService {
-	return &GearLibraryService{
+func NewGearLibraryService(logger *slog.Logger, repo repository.GearLibraryRepository) GearLibraryService {
+	return &gearLibraryService{
 		logger: logger.With("component", "gear_library"),
 		repo:   repo,
 	}
 }
 
-func (s *GearLibraryService) CreateItem(ctx context.Context, userID string, req *model.GearLibraryItem) (*model.GearLibraryItem, error) {
+func (s *gearLibraryService) CreateItem(ctx context.Context, userID string, req *model.GearLibraryItem) (*model.GearLibraryItem, error) {
 	req.UserID = userID
 	req.CreatedBy = userID
 	req.UpdatedBy = userID
@@ -33,15 +43,15 @@ func (s *GearLibraryService) CreateItem(ctx context.Context, userID string, req 
 	return item, nil
 }
 
-func (s *GearLibraryService) GetItem(ctx context.Context, itemID, userID string) (*model.GearLibraryItem, error) {
+func (s *gearLibraryService) GetItem(ctx context.Context, itemID, userID string) (*model.GearLibraryItem, error) {
 	return s.repo.GetByID(ctx, itemID, userID)
 }
 
-func (s *GearLibraryService) ListItems(ctx context.Context, userID string, includeArchived bool) ([]*model.GearLibraryItem, error) {
+func (s *gearLibraryService) ListItems(ctx context.Context, userID string, includeArchived bool) ([]*model.GearLibraryItem, error) {
 	return s.repo.ListByUserID(ctx, userID, includeArchived)
 }
 
-func (s *GearLibraryService) UpdateItem(ctx context.Context, itemID, userID string, req *model.GearLibraryItem) (*model.GearLibraryItem, error) {
+func (s *gearLibraryService) UpdateItem(ctx context.Context, itemID, userID string, req *model.GearLibraryItem) (*model.GearLibraryItem, error) {
 	req.ID = itemID
 	req.UserID = userID
 	req.UpdatedBy = userID
@@ -54,7 +64,7 @@ func (s *GearLibraryService) UpdateItem(ctx context.Context, itemID, userID stri
 	return item, nil
 }
 
-func (s *GearLibraryService) ReplaceAllItems(ctx context.Context, userID string, items []*model.GearLibraryItem) error {
+func (s *gearLibraryService) ReplaceAllItems(ctx context.Context, userID string, items []*model.GearLibraryItem) error {
 	for _, item := range items {
 		item.UserID = userID
 		if item.CreatedBy == "" {
@@ -65,7 +75,7 @@ func (s *GearLibraryService) ReplaceAllItems(ctx context.Context, userID string,
 	return s.repo.ReplaceAll(ctx, userID, items)
 }
 
-func (s *GearLibraryService) DeleteItem(ctx context.Context, itemID, userID string) error {
+func (s *gearLibraryService) DeleteItem(ctx context.Context, itemID, userID string) error {
 	if err := s.repo.Delete(ctx, itemID, userID); err != nil {
 		s.logger.ErrorContext(ctx, "刪除裝備庫項目失敗", "item_id", itemID, "user_id", userID, "error", err)
 		return err

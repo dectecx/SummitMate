@@ -12,7 +12,23 @@ import (
 )
 
 // TripService 封裝行程相關的業務邏輯。
-type TripService struct {
+// TripService 定義行程相關的業務邏輯介面。
+type TripService interface {
+	CreateTrip(ctx context.Context, userID string, req *TripCreateRequest) (*model.Trip, error)
+	GetTrip(ctx context.Context, tripID, userID string) (*model.Trip, error)
+	ListTrips(ctx context.Context, userID string) ([]*model.Trip, error)
+	UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*model.Trip, error)
+	DeleteTrip(ctx context.Context, tripID, userID string) error
+	ListMembers(ctx context.Context, tripID, userID string) ([]*model.TripMember, error)
+	AddMember(ctx context.Context, tripID, userID, targetEmail string) (*model.TripMember, error)
+	RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error
+	ListItinerary(ctx context.Context, tripID, userID string) ([]*model.ItineraryItem, error)
+	AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error)
+	UpdateItineraryItem(ctx context.Context, tripID, itemID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error)
+	DeleteItineraryItem(ctx context.Context, tripID, itemID, userID string) error
+}
+
+type tripService struct {
 	logger        *slog.Logger
 	tripRepo      repository.TripRepository
 	memberRepo    repository.TripMemberRepository
@@ -26,8 +42,8 @@ func NewTripService(
 	memberRepo repository.TripMemberRepository,
 	itineraryRepo repository.ItineraryRepository,
 	userRepo repository.UserRepository,
-) *TripService {
-	return &TripService{
+) TripService {
+	return &tripService{
 		logger:        logger.With("component", "trip"),
 		tripRepo:      tripRepo,
 		memberRepo:    memberRepo,
@@ -39,7 +55,7 @@ func NewTripService(
 // --- Trip CRUD ---
 
 // CreateTrip 建立新行程，並且預設建立者成為行程成員。
-func (s *TripService) CreateTrip(ctx context.Context, userID string, req *TripCreateRequest) (*model.Trip, error) {
+func (s *tripService) CreateTrip(ctx context.Context, userID string, req *TripCreateRequest) (*model.Trip, error) {
 	trip := &model.Trip{
 		UserID:      userID,
 		Name:        req.Name,
@@ -73,7 +89,7 @@ func (s *TripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 	return createdTrip, nil
 }
 
-func (s *TripService) GetTrip(ctx context.Context, tripID, userID string) (*model.Trip, error) {
+func (s *tripService) GetTrip(ctx context.Context, tripID, userID string) (*model.Trip, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -88,11 +104,11 @@ func (s *TripService) GetTrip(ctx context.Context, tripID, userID string) (*mode
 }
 
 // ListTrips 取得使用者建立或已加入的行程。
-func (s *TripService) ListTrips(ctx context.Context, userID string) ([]*model.Trip, error) {
+func (s *tripService) ListTrips(ctx context.Context, userID string) ([]*model.Trip, error) {
 	return s.tripRepo.ListByUserID(ctx, userID)
 }
 
-func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*model.Trip, error) {
+func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*model.Trip, error) {
 	existingTrip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -139,7 +155,7 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	return updatedTrip, nil
 }
 
-func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
+func (s *tripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -163,7 +179,7 @@ func (s *TripService) DeleteTrip(ctx context.Context, tripID, userID string) err
 
 // --- Trip Members ---
 
-func (s *TripService) ListMembers(ctx context.Context, tripID, userID string) ([]*model.TripMember, error) {
+func (s *tripService) ListMembers(ctx context.Context, tripID, userID string) ([]*model.TripMember, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
@@ -174,7 +190,7 @@ func (s *TripService) ListMembers(ctx context.Context, tripID, userID string) ([
 	return s.memberRepo.ListByTripID(ctx, tripID)
 }
 
-func (s *TripService) AddMember(ctx context.Context, tripID, userID, targetEmail string) (*model.TripMember, error) {
+func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetEmail string) (*model.TripMember, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
@@ -212,7 +228,7 @@ func (s *TripService) AddMember(ctx context.Context, tripID, userID, targetEmail
 	return nil, apperror.InternalError("新增成員後查詢失敗")
 }
 
-func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error {
+func (s *tripService) RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return err
@@ -234,7 +250,7 @@ func (s *TripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 
 // --- Itinerary ---
 
-func (s *TripService) ListItinerary(ctx context.Context, tripID, userID string) ([]*model.ItineraryItem, error) {
+func (s *tripService) ListItinerary(ctx context.Context, tripID, userID string) ([]*model.ItineraryItem, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
@@ -245,7 +261,7 @@ func (s *TripService) ListItinerary(ctx context.Context, tripID, userID string) 
 	return s.itineraryRepo.ListByTripID(ctx, tripID)
 }
 
-func (s *TripService) AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error) {
+func (s *tripService) AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
@@ -270,7 +286,7 @@ func (s *TripService) AddItineraryItem(ctx context.Context, tripID, userID strin
 	return s.itineraryRepo.Create(ctx, item)
 }
 
-func (s *TripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error) {
+func (s *tripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, userID string, req *ItineraryItemRequest) (*model.ItineraryItem, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
@@ -300,7 +316,7 @@ func (s *TripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, u
 	return s.itineraryRepo.Update(ctx, existingItem)
 }
 
-func (s *TripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, userID string) error {
+func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return err
@@ -323,7 +339,7 @@ func (s *TripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 // --- 輔助函式 ---
 
 // isTripMember 判斷給定的 userID 是否已經被加入該行程。
-func (s *TripService) isTripMember(ctx context.Context, tripID, userID string) bool {
+func (s *tripService) isTripMember(ctx context.Context, tripID, userID string) bool {
 	members, err := s.memberRepo.ListByTripID(ctx, tripID)
 	if err != nil {
 		return false

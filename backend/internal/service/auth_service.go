@@ -14,8 +14,19 @@ import (
 	"summitmate/pkg/email"
 )
 
-// AuthService 封裝認證相關的業務邏輯 (註冊、登入、取得使用者)。
-type AuthService struct {
+// AuthService 定義認證相關的業務邏輯介面。
+type AuthService interface {
+	Register(ctx context.Context, email, password, displayName string) (*model.User, string, error)
+	Login(ctx context.Context, email, password string) (*model.User, string, error)
+	GetUserByID(ctx context.Context, id string) (*model.User, error)
+	UpdateProfile(ctx context.Context, id string, displayName, avatar *string) (*model.User, error)
+	DeleteAccount(ctx context.Context, id string) error
+	RefreshToken(ctx context.Context, oldToken string) (*model.User, string, error)
+	VerifyEmail(ctx context.Context, email, code string) error
+	ResendVerificationCode(ctx context.Context, email string) error
+}
+
+type authService struct {
 	logger       *slog.Logger
 	userRepo     repository.UserRepository
 	tokenManager *auth.TokenManager
@@ -31,8 +42,8 @@ func NewAuthService(
 	emailService *email.EmailService,
 	authCache cache.Cache[string],
 	jwtSecret string,
-) *AuthService {
-	return &AuthService{
+) AuthService {
+	return &authService{
 		logger:       logger.With("component", "auth"),
 		userRepo:     userRepo,
 		tokenManager: tokenManager,
@@ -49,7 +60,7 @@ func NewAuthService(
 //  4. 簽發 JWT Token
 //
 // 回傳新建的 User、JWT Token、或錯誤。
-func (svc *AuthService) Register(ctx context.Context, emailAddr, password, displayName string) (*model.User, string, error) {
+func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string) (*model.User, string, error) {
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err == nil {
@@ -118,7 +129,7 @@ func (svc *AuthService) Register(ctx context.Context, emailAddr, password, displ
 //  3. 簽發 JWT Token
 //
 // 回傳 User、JWT Token、或錯誤。
-func (svc *AuthService) Login(ctx context.Context, email, password string) (*model.User, string, error) {
+func (svc *authService) Login(ctx context.Context, email, password string) (*model.User, string, error) {
 	// 查詢使用者
 	user, err := svc.userRepo.GetByEmail(ctx, email)
 	if err != nil {
@@ -150,12 +161,12 @@ func (svc *AuthService) Login(ctx context.Context, email, password string) (*mod
 }
 
 // GetUserByID 依 ID 取得使用者資料。
-func (svc *AuthService) GetUserByID(ctx context.Context, id string) (*model.User, error) {
+func (svc *authService) GetUserByID(ctx context.Context, id string) (*model.User, error) {
 	return svc.userRepo.GetByID(ctx, id)
 }
 
 // UpdateProfile 更新使用者的個人資料 (display_name, avatar)。
-func (svc *AuthService) UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*model.User, error) {
+func (svc *authService) UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*model.User, error) {
 	user, err := svc.userRepo.Update(ctx, userID, displayName, avatar)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -167,7 +178,7 @@ func (svc *AuthService) UpdateProfile(ctx context.Context, userID string, displa
 }
 
 // DeleteAccount 軟刪除使用者帳號 (設定 is_active = false)。
-func (svc *AuthService) DeleteAccount(ctx context.Context, userID string) error {
+func (svc *authService) DeleteAccount(ctx context.Context, userID string) error {
 	err := svc.userRepo.SoftDelete(ctx, userID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -180,7 +191,7 @@ func (svc *AuthService) DeleteAccount(ctx context.Context, userID string) error 
 
 // RefreshToken 解析現有 Token 並簽發新的 JWT Token。
 // 即使 Token 已過期，只要格式正確且簽名有效，仍會簽發新 Token。
-func (svc *AuthService) RefreshToken(ctx context.Context, tokenString string) (*model.User, string, error) {
+func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*model.User, string, error) {
 	claims, err := svc.tokenManager.ParseToken(tokenString)
 	if err != nil {
 		return nil, "", apperror.ErrTokenExpired
@@ -207,7 +218,7 @@ func (svc *AuthService) RefreshToken(ctx context.Context, tokenString string) (*
 }
 
 // VerifyEmail 驗證使用者的 Email。
-func (svc *AuthService) VerifyEmail(ctx context.Context, emailAddr, code string) error {
+func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string) error {
 	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
@@ -243,7 +254,7 @@ func (svc *AuthService) VerifyEmail(ctx context.Context, emailAddr, code string)
 }
 
 // ResendVerificationCode 重發驗證碼。
-func (svc *AuthService) ResendVerificationCode(ctx context.Context, emailAddr string) error {
+func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr string) error {
 	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {

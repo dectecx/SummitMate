@@ -11,10 +11,10 @@ import (
 )
 
 type HeartbeatHandler struct {
-	svc *service.HeartbeatService
+	svc service.HeartbeatService
 }
 
-func NewHeartbeatHandler(svc *service.HeartbeatService) *HeartbeatHandler {
+func NewHeartbeatHandler(svc service.HeartbeatService) *HeartbeatHandler {
 	return &HeartbeatHandler{svc: svc}
 }
 

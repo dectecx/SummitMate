@@ -7,19 +7,24 @@ import (
 	"summitmate/internal/repository"
 )
 
-type HeartbeatService struct {
+// HeartbeatService 定義心跳相關的業務邏輯介面。
+type HeartbeatService interface {
+	HandleHeartbeat(ctx context.Context, userID string, req *HeartbeatRequest) error
+}
+
+type heartbeatService struct {
 	logger *slog.Logger
 	repo   repository.HeartbeatRepository
 }
 
-func NewHeartbeatService(logger *slog.Logger, repo repository.HeartbeatRepository) *HeartbeatService {
-	return &HeartbeatService{
+func NewHeartbeatService(logger *slog.Logger, repo repository.HeartbeatRepository) HeartbeatService {
+	return &heartbeatService{
 		logger: logger.With("component", "heartbeat"),
 		repo:   repo,
 	}
 }
 
-func (s *HeartbeatService) HandleHeartbeat(ctx context.Context, userID string, req *HeartbeatRequest) error {
+func (s *heartbeatService) HandleHeartbeat(ctx context.Context, userID string, req *HeartbeatRequest) error {
 	hb := &model.Heartbeat{
 		UserID:   userID,
 		UserType: req.UserType,

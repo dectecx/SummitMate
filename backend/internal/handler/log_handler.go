@@ -9,10 +9,10 @@ import (
 )
 
 type LogHandler struct {
-	logService *service.LogService
+	logService service.LogService
 }
 
-func NewLogHandler(logService *service.LogService) *LogHandler {
+func NewLogHandler(logService service.LogService) *LogHandler {
 	return &LogHandler{logService: logService}
 }
 
