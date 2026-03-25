@@ -4,12 +4,14 @@ import "net/http"
 
 // Auth 相關
 var (
-	ErrUnauthorized       = New(http.StatusUnauthorized, TypeAuth, "unauthorized", "未登入")
-	ErrInvalidCredentials = New(http.StatusUnauthorized, TypeAuth, "invalid_credentials", "帳號或密碼錯誤")
-	ErrEmailExists        = New(http.StatusConflict, TypeBusinessLogic, "email_already_exists", "此 Email 已經被註冊")
-	ErrAccessDenied       = New(http.StatusForbidden, TypeAuth, "permission_denied", "無權限執行此操作")
-	ErrUserNotFound       = New(http.StatusNotFound, TypeInvalidReq, "user_not_found", "找不到使用者")
-	ErrTokenExpired       = New(http.StatusUnauthorized, TypeAuth, "token_expired", "Token 已過期")
+	ErrUnauthorized            = New(http.StatusUnauthorized, TypeAuth, "unauthorized", "未登入")
+	ErrInvalidCredentials      = New(http.StatusUnauthorized, TypeAuth, "invalid_credentials", "帳號或密碼錯誤")
+	ErrEmailExists             = New(http.StatusConflict, TypeBusinessLogic, "email_already_exists", "此 Email 已經被註冊")
+	ErrAccessDenied            = New(http.StatusForbidden, TypeAuth, "permission_denied", "無權限執行此操作")
+	ErrUserNotFound            = New(http.StatusNotFound, TypeInvalidReq, "user_not_found", "找不到使用者")
+	ErrTokenExpired            = New(http.StatusUnauthorized, TypeAuth, "token_expired", "Token 已過期")
+	ErrInvalidVerificationCode = New(http.StatusBadRequest, TypeBusinessLogic, "invalid_verification_code", "驗證碼錯誤")
+	ErrVerificationCodeExpired = New(http.StatusBadRequest, TypeBusinessLogic, "verification_code_expired", "驗證碼已過期，請重新發送")
 )
 
 // Trip 相關

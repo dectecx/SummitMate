@@ -10,6 +10,7 @@ import (
 	"summitmate/internal/auth"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
+	"summitmate/pkg/email"
 )
 
 // AuthService 封裝認證相關的業務邏輯 (註冊、登入、取得使用者)。
@@ -17,14 +18,16 @@ type AuthService struct {
 	logger       *slog.Logger
 	userRepo     repository.UserRepository
 	tokenManager *auth.TokenManager
+	emailService *email.EmailService
 	jwtSecret    []byte
 }
 
-func NewAuthService(logger *slog.Logger, userRepo repository.UserRepository, tokenManager *auth.TokenManager, jwtSecret string) *AuthService {
+func NewAuthService(logger *slog.Logger, userRepo repository.UserRepository, tokenManager *auth.TokenManager, emailService *email.EmailService, jwtSecret string) *AuthService {
 	return &AuthService{
 		logger:       logger.With("component", "auth"),
 		userRepo:     userRepo,
 		tokenManager: tokenManager,
+		emailService: emailService,
 		jwtSecret:    []byte(jwtSecret),
 	}
 }
@@ -36,17 +39,24 @@ func NewAuthService(logger *slog.Logger, userRepo repository.UserRepository, tok
 //  4. 簽發 JWT Token
 //
 // 回傳新建的 User、JWT Token、或錯誤。
-func (svc *AuthService) Register(ctx context.Context, email, password, displayName string) (*model.User, string, error) {
+func (svc *AuthService) Register(ctx context.Context, emailAddr, password, displayName string) (*model.User, string, error) {
 	// 檢查 Email 是否已存在
-	_, err := svc.userRepo.GetByEmail(ctx, email)
+	_, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err == nil {
-		svc.logger.WarnContext(ctx, "註冊失敗: Email 已存在", "email", email)
+		svc.logger.WarnContext(ctx, "註冊失敗: Email 已存在", "email", emailAddr)
 		return nil, "", apperror.ErrEmailExists
 	}
 	if !errors.Is(err, repository.ErrNotFound) {
-		svc.logger.ErrorContext(ctx, "註冊時資料庫查詢失敗", "email", email, "error", err)
+		svc.logger.ErrorContext(ctx, "註冊時資料庫查詢失敗", "email", emailAddr, "error", err)
 		return nil, "", err // 資料庫錯誤
 	}
+
+	// 產生驗證碼
+	code, err := auth.GenerateVerificationCode()
+	if err != nil {
+		return nil, "", err
+	}
+	expiry := time.Now().Add(10 * time.Minute)
 
 	// 雜湊密碼
 	hash, err := auth.HashPassword(password)
@@ -56,17 +66,29 @@ func (svc *AuthService) Register(ctx context.Context, email, password, displayNa
 
 	// 寫入資料庫
 	newUser := &model.User{
-		Email:        email,
-		PasswordHash: hash,
-		DisplayName:  displayName,
+		Email:              emailAddr,
+		PasswordHash:       hash,
+		DisplayName:        displayName,
+		VerificationCode:   &code,
+		VerificationExpiry: &expiry,
+		IsVerified:         false,
 	}
 	createdUser, err := svc.userRepo.Create(ctx, newUser)
 	if err != nil {
-		svc.logger.ErrorContext(ctx, "註冊時寫入資料庫失敗", "email", email, "error", err)
+		svc.logger.ErrorContext(ctx, "註冊時寫入資料庫失敗", "email", emailAddr, "error", err)
 		return nil, "", err
 	}
 
-	svc.logger.InfoContext(ctx, "使用者註冊成功", "user_id", createdUser.ID, "email", email)
+	svc.logger.InfoContext(ctx, "使用者註冊成功", "user_id", createdUser.ID, "email", emailAddr)
+
+	// 非同步發送驗證信
+	if svc.emailService != nil {
+		go func() {
+			if err := svc.emailService.SendVerificationCode(createdUser.Email, code, 10); err != nil {
+				svc.logger.Error("發送驗證信失敗", "user_id", createdUser.ID, "error", err)
+			}
+		}()
+	}
 
 	// 簽發 JWT Token (有效期 24 小時)
 	token, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, 24*time.Hour)
@@ -169,4 +191,64 @@ func (svc *AuthService) RefreshToken(ctx context.Context, tokenString string) (*
 	}
 
 	return user, newToken, nil
+}
+
+// VerifyEmail 驗證使用者的 Email。
+func (svc *AuthService) VerifyEmail(ctx context.Context, emailAddr, code string) error {
+	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return apperror.ErrInvalidVerificationCode
+		}
+		return err
+	}
+
+	if user.IsVerified {
+		return nil // 已經驗證過了
+	}
+
+	if user.VerificationCode == nil || *user.VerificationCode != code {
+		return apperror.ErrInvalidVerificationCode
+	}
+
+	if user.VerificationExpiry == nil || time.Now().After(*user.VerificationExpiry) {
+		return apperror.ErrVerificationCodeExpired
+	}
+
+	return svc.userRepo.SetVerified(ctx, user.ID)
+}
+
+// ResendVerificationCode 重發驗證碼。
+func (svc *AuthService) ResendVerificationCode(ctx context.Context, emailAddr string) error {
+	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil // 基於安全性，隱藏使用者是否存在
+		}
+		return err
+	}
+
+	if user.IsVerified {
+		return nil
+	}
+
+	code, err := auth.GenerateVerificationCode()
+	if err != nil {
+		return err
+	}
+	expiry := time.Now().Add(10 * time.Minute)
+
+	if err := svc.userRepo.UpdateVerification(ctx, user.ID, code, expiry); err != nil {
+		return err
+	}
+
+	if svc.emailService != nil {
+		go func() {
+			if err := svc.emailService.SendVerificationCode(user.Email, code, 10); err != nil {
+				svc.logger.Error("重發驗證信失敗", "user_id", user.ID, "error", err)
+			}
+		}()
+	}
+
+	return nil
 }

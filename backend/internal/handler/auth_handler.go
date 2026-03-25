@@ -134,16 +134,36 @@ func (handler *AuthHandler) RefreshToken(writer http.ResponseWriter, request *ht
 	writeAuthResponse(writer, http.StatusOK, user, token)
 }
 
-// VerifyEmail 處理 POST /auth/verify-email 請求 (Stub)。
+// VerifyEmail 處理 POST /auth/verify-email 請求。
 func (handler *AuthHandler) VerifyEmail(writer http.ResponseWriter, request *http.Request) {
-	// TODO: 待實作 SMTP 信箱驗證與資料庫狀態更新邏輯
-	writer.WriteHeader(http.StatusNotImplemented)
+	var req api.VerifyEmailRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		sendError(writer, request, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		return
+	}
+
+	if err := handler.authService.VerifyEmail(request.Context(), string(req.Email), req.Code); err != nil {
+		sendError(writer, request, err)
+		return
+	}
+
+	sendJSON(writer, http.StatusOK, map[string]string{"message": "驗證成功"})
 }
 
-// ResendVerificationCode 處理 POST /auth/resend-verification 請求 (Stub)。
+// ResendVerificationCode 處理 POST /auth/resend-verification 請求。
 func (handler *AuthHandler) ResendVerificationCode(writer http.ResponseWriter, request *http.Request) {
-	// TODO: 待實作 SMTP 重發驗證信邏輯
-	writer.WriteHeader(http.StatusNotImplemented)
+	var req api.ResendVerificationRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		sendError(writer, request, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+		return
+	}
+
+	if err := handler.authService.ResendVerificationCode(request.Context(), string(req.Email)); err != nil {
+		sendError(writer, request, err)
+		return
+	}
+
+	sendJSON(writer, http.StatusOK, map[string]string{"message": "驗證碼已寄出"})
 }
 
 // --- 回應輔助函式 ---

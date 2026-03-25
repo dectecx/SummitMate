@@ -591,7 +591,7 @@ func (s *APITestSuite) SetupSuite() {
 	heartbeatRepo := repository.NewHeartbeatRepository(pool)
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
-	authService := service.NewAuthService(slog.Default(), userRepo, tokenManager, cfg.JWTSecret)
+	authService := service.NewAuthService(slog.Default(), userRepo, tokenManager, nil, cfg.JWTSecret)
 	tripService := service.NewTripService(slog.Default(), tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(slog.Default(), gearLibRepo)
 	mealLibService := service.NewMealLibraryService(slog.Default(), mealLibRepo)

@@ -19,6 +19,7 @@ import (
 	appMiddleware "summitmate/internal/middleware"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
+	"summitmate/pkg/email"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
@@ -559,7 +560,23 @@ func main() {
 
 	tokenManager := auth.NewTokenManager(cfg.JWTSecret)
 
-	authService := service.NewAuthService(logger, userRepo, tokenManager, cfg.JWTSecret)
+	// Email 服務初始化
+	smtpCfg := email.SMTPConfig{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		Username: cfg.SMTPUser,
+		Password: cfg.SMTPPass,
+		From:     cfg.SMTPFrom,
+	}
+	mailer := email.NewMailer(smtpCfg)
+	templateManager, err := email.NewTemplateManager()
+	if err != nil {
+		slog.Error("Email 模板管理員初始化失敗", "error", err)
+		os.Exit(1)
+	}
+	emailService := email.NewEmailService(mailer, templateManager)
+
+	authService := service.NewAuthService(logger, userRepo, tokenManager, emailService, cfg.JWTSecret)
 	tripService := service.NewTripService(logger, tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(logger, gearLibRepo)
 	mealLibService := service.NewMealLibraryService(logger, mealLibRepo)

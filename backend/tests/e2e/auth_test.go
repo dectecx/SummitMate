@@ -89,7 +89,7 @@ func (s *APITestSuite) TestRegister_DuplicateEmail() {
 	s.Require().NoError(err)
 	defer resp2.Body.Close()
 
-	s.Equal(http.StatusBadRequest, resp2.StatusCode, "重複 Email 應回傳 400")
+	s.Equal(http.StatusConflict, resp2.StatusCode, "重複 Email 應回傳 409")
 
 	var errResp api.ErrorResponse
 	json.NewDecoder(resp2.Body).Decode(&errResp)
