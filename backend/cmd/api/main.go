@@ -610,6 +610,7 @@ func main() {
 	router.Use(middleware.RequestID)
 	router.Use(appMiddleware.ContextLogger(logger))
 	router.Use(appMiddleware.RequestLogger(logger))
+	router.Use(appMiddleware.CORS(cfg.AllowedOrigins))
 	router.Use(middleware.Recoverer)
 
 	// OpenAPI 規格端點 (供 Scalar UI 使用)
