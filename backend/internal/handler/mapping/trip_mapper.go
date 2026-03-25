@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oapi-codegen/runtime/types"
 	"summitmate/api"
 	"summitmate/internal/model"
 	"summitmate/internal/service"
-	"github.com/oapi-codegen/runtime/types"
 )
 
 // ToServiceTripCreateReq converts api.TripCreateRequest to service.TripCreateRequest

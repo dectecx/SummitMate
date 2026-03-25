@@ -51,4 +51,3 @@ func ToModelMealLibraryItemFromAPI(item api.MealLibraryItem) *model.MealLibraryI
 		UpdatedAt:  item.UpdatedAt,
 	}
 }
-
