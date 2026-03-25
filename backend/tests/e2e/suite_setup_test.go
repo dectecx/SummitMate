@@ -39,20 +39,20 @@ import (
 // testServer 實作 api.ServerInterface，供測試使用
 // 由於不能循環 import main，我們在 e2e 複製一份 server 注入邏輯
 type testServer struct {
-	authHandler     *handler.AuthHandler
-	tripHandler     *handler.TripHandler
-	gearHandler     *handler.GearLibraryHandler
-	mealHandler     *handler.MealLibraryHandler
-	tripGearHandler *handler.TripGearHandler
-	tripMealHandler *handler.TripMealHandler
-	messageHandler  *handler.MessageHandler
-	pollHandler     *handler.PollHandler
-	favoriteHandler *handler.FavoriteHandler
-	groupHandler    *handler.GroupEventHandler
-	weatherHandler  *handler.WeatherHandler
-	logHandler      *handler.LogHandler
+	authHandler      *handler.AuthHandler
+	tripHandler      *handler.TripHandler
+	gearHandler      *handler.GearLibraryHandler
+	mealHandler      *handler.MealLibraryHandler
+	tripGearHandler  *handler.TripGearHandler
+	tripMealHandler  *handler.TripMealHandler
+	messageHandler   *handler.MessageHandler
+	pollHandler      *handler.PollHandler
+	favoriteHandler  *handler.FavoriteHandler
+	groupHandler     *handler.GroupEventHandler
+	weatherHandler   *handler.WeatherHandler
+	logHandler       *handler.LogHandler
 	heartbeatHandler *handler.HeartbeatHandler
-	tokenManager    *auth.TokenManager
+	tokenManager     *auth.TokenManager
 }
 
 func (srv testServer) GetHealth(writer http.ResponseWriter, request *http.Request) {
@@ -622,20 +622,20 @@ func (s *APITestSuite) SetupSuite() {
 	heartbeatHandler := handler.NewHeartbeatHandler(heartbeatService)
 
 	srv := testServer{
-		authHandler:     authHandler,
-		tripHandler:     tripHandler,
-		gearHandler:     gearLibHandler,
-		mealHandler:     mealLibHandler,
-		tripGearHandler: tripGearHandler,
-		tripMealHandler: tripMealHandler,
-		messageHandler:  messageHandler,
-		pollHandler:     pollHandler,
-		favoriteHandler: favoriteHandler,
-		groupHandler:    groupHandler,
-		weatherHandler:  weatherHandler,
-		logHandler:      logHandler,
+		authHandler:      authHandler,
+		tripHandler:      tripHandler,
+		gearHandler:      gearLibHandler,
+		mealHandler:      mealLibHandler,
+		tripGearHandler:  tripGearHandler,
+		tripMealHandler:  tripMealHandler,
+		messageHandler:   messageHandler,
+		pollHandler:      pollHandler,
+		favoriteHandler:  favoriteHandler,
+		groupHandler:     groupHandler,
+		weatherHandler:   weatherHandler,
+		logHandler:       logHandler,
 		heartbeatHandler: heartbeatHandler,
-		tokenManager:    tokenManager,
+		tokenManager:     tokenManager,
 	}
 
 	router := chi.NewRouter()

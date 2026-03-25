@@ -51,4 +51,3 @@ func ToModelGearLibraryItemFromAPI(item api.GearLibraryItem) *model.GearLibraryI
 		UpdatedAt:  item.UpdatedAt,
 	}
 }
-
