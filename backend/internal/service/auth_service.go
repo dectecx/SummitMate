@@ -10,6 +10,7 @@ import (
 	"summitmate/internal/auth"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
+	"summitmate/pkg/cache"
 	"summitmate/pkg/email"
 )
 
@@ -19,15 +20,24 @@ type AuthService struct {
 	userRepo     repository.UserRepository
 	tokenManager *auth.TokenManager
 	emailService *email.EmailService
+	authCache    cache.Cache[string]
 	jwtSecret    []byte
 }
 
-func NewAuthService(logger *slog.Logger, userRepo repository.UserRepository, tokenManager *auth.TokenManager, emailService *email.EmailService, jwtSecret string) *AuthService {
+func NewAuthService(
+	logger *slog.Logger,
+	userRepo repository.UserRepository,
+	tokenManager *auth.TokenManager,
+	emailService *email.EmailService,
+	authCache cache.Cache[string],
+	jwtSecret string,
+) *AuthService {
 	return &AuthService{
 		logger:       logger.With("component", "auth"),
 		userRepo:     userRepo,
 		tokenManager: tokenManager,
 		emailService: emailService,
+		authCache:    authCache,
 		jwtSecret:    []byte(jwtSecret),
 	}
 }
@@ -56,7 +66,12 @@ func (svc *AuthService) Register(ctx context.Context, emailAddr, password, displ
 	if err != nil {
 		return nil, "", err
 	}
-	expiry := time.Now().Add(10 * time.Minute)
+
+	// 存入快取 (10 分鐘)
+	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, 10*time.Minute); err != nil {
+		svc.logger.ErrorContext(ctx, "快取寫入失敗", "email", emailAddr, "error", err)
+		return nil, "", err
+	}
 
 	// 雜湊密碼
 	hash, err := auth.HashPassword(password)
@@ -66,12 +81,10 @@ func (svc *AuthService) Register(ctx context.Context, emailAddr, password, displ
 
 	// 寫入資料庫
 	newUser := &model.User{
-		Email:              emailAddr,
-		PasswordHash:       hash,
-		DisplayName:        displayName,
-		VerificationCode:   &code,
-		VerificationExpiry: &expiry,
-		IsVerified:         false,
+		Email:        emailAddr,
+		PasswordHash: hash,
+		DisplayName:  displayName,
+		IsVerified:   false,
 	}
 	createdUser, err := svc.userRepo.Create(ctx, newUser)
 	if err != nil {
@@ -207,15 +220,26 @@ func (svc *AuthService) VerifyEmail(ctx context.Context, emailAddr, code string)
 		return nil // 已經驗證過了
 	}
 
-	if user.VerificationCode == nil || *user.VerificationCode != code {
+	// 從快取取得驗證碼
+	cachedCode, err := svc.authCache.Get(ctx, authVerificationKey(emailAddr))
+	if err != nil {
+		if errors.Is(err, cache.ErrKeyNotFound) {
+			return apperror.ErrVerificationCodeExpired
+		}
+		return err
+	}
+
+	if cachedCode != code {
 		return apperror.ErrInvalidVerificationCode
 	}
 
-	if user.VerificationExpiry == nil || time.Now().After(*user.VerificationExpiry) {
-		return apperror.ErrVerificationCodeExpired
+	// 驗證成功，更新資料庫並刪除快取
+	if err := svc.userRepo.SetVerified(ctx, user.ID); err != nil {
+		return err
 	}
+	_ = svc.authCache.Delete(ctx, authVerificationKey(emailAddr))
 
-	return svc.userRepo.SetVerified(ctx, user.ID)
+	return nil
 }
 
 // ResendVerificationCode 重發驗證碼。
@@ -236,9 +260,9 @@ func (svc *AuthService) ResendVerificationCode(ctx context.Context, emailAddr st
 	if err != nil {
 		return err
 	}
-	expiry := time.Now().Add(10 * time.Minute)
 
-	if err := svc.userRepo.UpdateVerification(ctx, user.ID, code, expiry); err != nil {
+	// 更新快取
+	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, 10*time.Minute); err != nil {
 		return err
 	}
 
