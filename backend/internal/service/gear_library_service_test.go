@@ -51,4 +51,3 @@ func TestGearLibraryService_ListItems(t *testing.T) {
 		assert.Equal(t, "Tent", res[0].Name)
 	})
 }
-
