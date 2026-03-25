@@ -162,8 +162,6 @@ CREATE TABLE role_permissions (
 | **role_id**         | UUID         | **FK**      | Ref: roles.id  |
 | is_active           | BOOLEAN      | NN, Default | 帳號啟用       |
 | is_verified         | BOOLEAN      | NN, Default | Email 已驗證   |
-| verification_code   | VARCHAR(10)  |             | 驗證碼         |
-| verification_expiry | TIMESTAMPTZ  |             | 驗證碼過期時間 |
 | last_login_at       | TIMESTAMPTZ  |             |                |
 | created_at          | TIMESTAMPTZ  | NN, Default |                |
 | updated_at          | TIMESTAMPTZ  | NN, Default |                |
@@ -178,8 +176,6 @@ CREATE TABLE users (
     role_id             UUID REFERENCES roles(id),
     is_active           BOOLEAN      NOT NULL DEFAULT TRUE,
     is_verified         BOOLEAN      NOT NULL DEFAULT FALSE,
-    verification_code   VARCHAR(10),
-    verification_expiry TIMESTAMPTZ,
     last_login_at       TIMESTAMPTZ,
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
