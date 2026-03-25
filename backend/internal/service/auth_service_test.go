@@ -23,7 +23,7 @@ func TestAuthService_Register(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo := new(repository.MockUserRepository)
-		svc := NewAuthService(logger, mockRepo, tokenManager, secret)
+		svc := NewAuthService(logger, mockRepo, tokenManager, nil, secret)
 
 		email := "test@example.com"
 		password := "password123"
@@ -48,7 +48,7 @@ func TestAuthService_Register(t *testing.T) {
 
 	t.Run("EmailAlreadyExists", func(t *testing.T) {
 		mockRepo := new(repository.MockUserRepository)
-		svc := NewAuthService(logger, mockRepo, tokenManager, secret)
+		svc := NewAuthService(logger, mockRepo, tokenManager, nil, secret)
 
 		email := "existing@example.com"
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(&model.User{ID: "existing-id"}, nil)
@@ -69,7 +69,7 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo := new(repository.MockUserRepository)
-		svc := NewAuthService(logger, mockRepo, tokenManager, secret)
+		svc := NewAuthService(logger, mockRepo, tokenManager, nil, secret)
 
 		email := "login@example.com"
 		password := "correct-password"
@@ -93,7 +93,7 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("InvalidCredentials", func(t *testing.T) {
 		mockRepo := new(repository.MockUserRepository)
-		svc := NewAuthService(logger, mockRepo, tokenManager, secret)
+		svc := NewAuthService(logger, mockRepo, tokenManager, nil, secret)
 
 		email := "wrong@example.com"
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, repository.ErrNotFound)
@@ -114,7 +114,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo := new(repository.MockUserRepository)
-		svc := NewAuthService(logger, mockRepo, tokenManager, secret)
+		svc := NewAuthService(logger, mockRepo, tokenManager, nil, secret)
 
 		userID := "user-token"
 		email := "token@example.com"
