@@ -1,4 +1,3 @@
-import 'package:injectable/injectable.dart';
 import '../../../core/di/injection.dart';
 import '../../models/meal_item.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';

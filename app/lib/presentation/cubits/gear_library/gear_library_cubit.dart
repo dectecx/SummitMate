@@ -1,7 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import '../../../core/di/injection.dart';
 import '../../../data/models/gear_library_item.dart';
 import '../../../data/models/enums/sync_status.dart';
 import '../../../data/repositories/interfaces/i_gear_library_repository.dart';
