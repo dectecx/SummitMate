@@ -14,6 +14,11 @@ type Config struct {
 	CWAApiKey      string
 	Env            string
 	AllowedOrigins []string
+	SMTPHost       string
+	SMTPPort       string
+	SMTPUser       string
+	SMTPPass       string
+	SMTPFrom       string
 }
 
 // Load reads configuration from environment variables with defaults.
@@ -25,6 +30,11 @@ func Load() *Config {
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
 		Env:            getEnv("ENV", "development"),
 		AllowedOrigins: getEnvAsSlice("ALLOWED_ORIGINS", []string{"http://localhost:8083"}),
+		SMTPHost:       getEnv("SMTP_HOST", "smtp.gmail.com"),
+		SMTPPort:       getEnv("SMTP_PORT", "587"),
+		SMTPUser:       getEnv("SMTP_USER", ""),
+		SMTPPass:       getEnv("SMTP_PASS", ""),
+		SMTPFrom:       getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
 	}
 }
 
