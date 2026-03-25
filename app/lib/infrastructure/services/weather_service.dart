@@ -143,7 +143,11 @@ class WeatherService implements IWeatherService {
         final bodyMsgs = utf8.decode(response.bodyBytes);
         LogService.debug('天氣 API 回應 (長度: ${bodyMsgs.length})', source: 'WeatherService');
 
-        final List<dynamic> jsonList = json.decode(bodyMsgs) as List<dynamic>;
+        final decoded = json.decode(bodyMsgs);
+        if (decoded is! List) {
+          throw Exception('API 回傳格式錯誤：預期為陣列，實際為 ${decoded.runtimeType}');
+        }
+        final List<dynamic> jsonList = decoded;
 
         if (jsonList.isEmpty) {
           throw Exception('API 未回傳天氣資料');
@@ -197,11 +201,28 @@ class WeatherService implements IWeatherService {
     final locationRows = list.where((item) => item['location'] == locationName).toList();
 
     if (locationRows.isEmpty) {
-      throw Exception('資料中找不到地點 "$locationName"');
+      // 嘗試模糊比對 (移除空白、比對包含關係)
+      final fallbackRows = list.where((item) {
+        final loc = item['location']?.toString() ?? '';
+        return loc.replaceAll(' ', '') == locationName.replaceAll(' ', '') ||
+               loc.contains(locationName) ||
+               locationName.contains(loc);
+      }).toList();
+
+      if (fallbackRows.isNotEmpty) {
+        LogService.info('地點 "$locationName" 查無精確匹配，使用模糊匹配結果: ${fallbackRows.first['location']}', source: 'WeatherService');
+        locationRows.addAll(fallbackRows);
+      } else {
+        throw Exception('資料中找不到地點 "$locationName" (可用地點數量: ${list.map((e) => e['location']).toSet().length})');
+      }
     }
 
-    // 2. 依 start_time 排序
-    locationRows.sort((a, b) => a['start_time'].compareTo(b['start_time']));
+    // 2. 依 start_time 排序 (加上明確轉型以防 Web 下異常)
+    locationRows.sort((a, b) {
+      final startTimeA = a['start_time']?.toString() ?? '';
+      final startTimeB = b['start_time']?.toString() ?? '';
+      return startTimeA.compareTo(startTimeB);
+    });
 
     // 3. 目前天氣資訊
     final current = locationRows.first;
