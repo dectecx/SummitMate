@@ -20,17 +20,23 @@ const (
 	cwaBaseURL = "https://opendata.cwa.gov.tw/fileapi/v1/opendataapi"
 )
 
-// WeatherService 處理天氣資料的 ETL 與查詢
-type WeatherService struct {
-	logger    *slog.Logger
-	repo      repository.WeatherRepository
-	cwaAPIKey string
-	locations []string
+// WeatherService 定義天氣資料的 ETL 與查詢介面。
+type WeatherService interface {
+	FetchAndStore(ctx context.Context) error
+	ListAll(ctx context.Context) ([]model.WeatherRecord, error)
+	ListByLocation(ctx context.Context, location string) ([]model.WeatherRecord, error)
+}
+
+type weatherService struct {
+	logger     *slog.Logger
+	repo       repository.WeatherRepository
+	cwaAPIKey  string
+	locations  []string
 	httpClient *http.Client
 }
 
-func NewWeatherService(logger *slog.Logger, repo repository.WeatherRepository, cwaAPIKey string, locations []string) *WeatherService {
-	return &WeatherService{
+func NewWeatherService(logger *slog.Logger, repo repository.WeatherRepository, cwaAPIKey string, locations []string) WeatherService {
+	return &weatherService{
 		logger:    logger.With("component", "weather"),
 		repo:      repo,
 		cwaAPIKey: cwaAPIKey,
@@ -42,7 +48,7 @@ func NewWeatherService(logger *slog.Logger, repo repository.WeatherRepository, c
 }
 
 // FetchAndStore 執行完整的 ETL 流程：Fetch → Parse → Aggregate → Store
-func (s *WeatherService) FetchAndStore(ctx context.Context) error {
+func (s *weatherService) FetchAndStore(ctx context.Context) error {
 	if s.cwaAPIKey == "" {
 		return fmt.Errorf("CWA_API_KEY 未設定")
 	}
@@ -68,12 +74,12 @@ func (s *WeatherService) FetchAndStore(ctx context.Context) error {
 }
 
 // ListAll 取得所有天氣資料
-func (s *WeatherService) ListAll(ctx context.Context) ([]model.WeatherRecord, error) {
+func (s *weatherService) ListAll(ctx context.Context) ([]model.WeatherRecord, error) {
 	return s.repo.ListAll(ctx)
 }
 
 // ListByLocation 取得特定地點的天氣資料
-func (s *WeatherService) ListByLocation(ctx context.Context, location string) ([]model.WeatherRecord, error) {
+func (s *weatherService) ListByLocation(ctx context.Context, location string) ([]model.WeatherRecord, error) {
 	return s.repo.ListByLocation(ctx, location)
 }
 
@@ -113,7 +119,7 @@ type rawRow struct {
 	Value       string
 }
 
-func (s *WeatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time, error) {
+func (s *weatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time, error) {
 	url := fmt.Sprintf("%s/%s?Authorization=%s&format=JSON&downloadType=WEB", cwaBaseURL, cwaDataID, s.cwaAPIKey)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -223,7 +229,7 @@ func extractValue(elementName string, valObj interface{}) string {
 }
 
 // aggregate 將原始資料聚合為 WeatherRecord（對應 GAS 的 generateAppView）
-func (s *WeatherService) aggregate(rows []rawRow, issueTime *time.Time) []model.WeatherRecord {
+func (s *weatherService) aggregate(rows []rawRow, issueTime *time.Time) []model.WeatherRecord {
 	type shortKey = string
 	elementMap := map[string]shortKey{
 		"平均溫度":     "T",

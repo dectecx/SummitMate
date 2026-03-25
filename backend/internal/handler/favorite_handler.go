@@ -15,10 +15,10 @@ import (
 )
 
 type FavoriteHandler struct {
-	service *service.FavoriteService
+	service service.FavoriteService
 }
 
-func NewFavoriteHandler(service *service.FavoriteService) *FavoriteHandler {
+func NewFavoriteHandler(service service.FavoriteService) *FavoriteHandler {
 	return &FavoriteHandler{service: service}
 }
 

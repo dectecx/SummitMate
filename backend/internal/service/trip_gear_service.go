@@ -9,15 +9,24 @@ import (
 	"summitmate/internal/repository"
 )
 
-type TripGearService struct {
+// TripGearService 定義行程裝備相關的業務邏輯介面。
+type TripGearService interface {
+	ListItems(ctx context.Context, tripID, userID string) ([]*model.TripGearItem, error)
+	CreateItem(ctx context.Context, tripID, userID string, req *model.TripGearItem) (*model.TripGearItem, error)
+	UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripGearItem) (*model.TripGearItem, error)
+	DeleteItem(ctx context.Context, tripID, itemID, userID string) error
+	ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripGearItem) error
+}
+
+type tripGearService struct {
 	logger     *slog.Logger
 	repo       repository.TripGearRepository
 	tripRepo   repository.TripRepository
 	memberRepo repository.TripMemberRepository
 }
 
-func NewTripGearService(logger *slog.Logger, repo repository.TripGearRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *TripGearService {
-	return &TripGearService{
+func NewTripGearService(logger *slog.Logger, repo repository.TripGearRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) TripGearService {
+	return &tripGearService{
 		logger:     logger.With("component", "trip_gear"),
 		repo:       repo,
 		tripRepo:   tripRepo,
@@ -25,14 +34,14 @@ func NewTripGearService(logger *slog.Logger, repo repository.TripGearRepository,
 	}
 }
 
-func (s *TripGearService) ListItems(ctx context.Context, tripID, userID string) ([]*model.TripGearItem, error) {
+func (s *tripGearService) ListItems(ctx context.Context, tripID, userID string) ([]*model.TripGearItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
 	return s.repo.ListByTripID(ctx, tripID)
 }
 
-func (s *TripGearService) CreateItem(ctx context.Context, tripID, userID string, req *model.TripGearItem) (*model.TripGearItem, error) {
+func (s *tripGearService) CreateItem(ctx context.Context, tripID, userID string, req *model.TripGearItem) (*model.TripGearItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -48,7 +57,7 @@ func (s *TripGearService) CreateItem(ctx context.Context, tripID, userID string,
 	return item, nil
 }
 
-func (s *TripGearService) UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripGearItem) (*model.TripGearItem, error) {
+func (s *tripGearService) UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripGearItem) (*model.TripGearItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -64,7 +73,7 @@ func (s *TripGearService) UpdateItem(ctx context.Context, tripID, itemID, userID
 	return item, nil
 }
 
-func (s *TripGearService) DeleteItem(ctx context.Context, tripID, itemID, userID string) error {
+func (s *tripGearService) DeleteItem(ctx context.Context, tripID, itemID, userID string) error {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return apperror.ErrAccessDenied
 	}
@@ -76,7 +85,7 @@ func (s *TripGearService) DeleteItem(ctx context.Context, tripID, itemID, userID
 	return nil
 }
 
-func (s *TripGearService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripGearItem) error {
+func (s *tripGearService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripGearItem) error {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return apperror.ErrAccessDenied
 	}
@@ -92,7 +101,7 @@ func (s *TripGearService) ReplaceAllItems(ctx context.Context, tripID, userID st
 	return s.repo.ReplaceAll(ctx, tripID, items)
 }
 
-func (s *TripGearService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
+func (s *tripGearService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err == nil && trip.UserID == userID {
 		return true

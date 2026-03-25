@@ -9,15 +9,23 @@ import (
 	"summitmate/internal/repository"
 )
 
-type MessageService struct {
+// MessageService 定義行程留言相關的業務邏輯介面。
+type MessageService interface {
+	ListTripMessages(ctx context.Context, tripID, userID string) ([]*model.TripMessage, error)
+	AddTripMessage(ctx context.Context, tripID, userID string, msg *model.TripMessage) (*model.TripMessage, error)
+	UpdateTripMessage(ctx context.Context, tripID, messageID, userID string, msg *model.TripMessage) (*model.TripMessage, error)
+	DeleteTripMessage(ctx context.Context, tripID, messageID, userID string) error
+}
+
+type messageService struct {
 	logger     *slog.Logger
 	repo       repository.MessageRepository
 	tripRepo   repository.TripRepository
 	memberRepo repository.TripMemberRepository
 }
 
-func NewMessageService(logger *slog.Logger, repo repository.MessageRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) *MessageService {
-	return &MessageService{
+func NewMessageService(logger *slog.Logger, repo repository.MessageRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) MessageService {
+	return &messageService{
 		logger:     logger.With("component", "message"),
 		repo:       repo,
 		tripRepo:   tripRepo,
@@ -26,7 +34,7 @@ func NewMessageService(logger *slog.Logger, repo repository.MessageRepository, t
 }
 
 // ListTripMessages fetches messages and builds the reply tree structure.
-func (s *MessageService) ListTripMessages(ctx context.Context, tripID, userID string) ([]*model.TripMessage, error) {
+func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID string) ([]*model.TripMessage, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		s.logger.WarnContext(ctx, "嘗試讀取行程留言但權限不足", "trip_id", tripID, "user_id", userID)
 		return nil, apperror.ErrAccessDenied
@@ -40,7 +48,7 @@ func (s *MessageService) ListTripMessages(ctx context.Context, tripID, userID st
 	return s.buildMessageTree(messages), nil
 }
 
-func (s *MessageService) AddTripMessage(ctx context.Context, tripID, userID string, msg *model.TripMessage) (*model.TripMessage, error) {
+func (s *messageService) AddTripMessage(ctx context.Context, tripID, userID string, msg *model.TripMessage) (*model.TripMessage, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -58,7 +66,7 @@ func (s *MessageService) AddTripMessage(ctx context.Context, tripID, userID stri
 	return msg, nil
 }
 
-func (s *MessageService) UpdateTripMessage(ctx context.Context, tripID, messageID, userID string, msg *model.TripMessage) (*model.TripMessage, error) {
+func (s *messageService) UpdateTripMessage(ctx context.Context, tripID, messageID, userID string, msg *model.TripMessage) (*model.TripMessage, error) {
 	existing, err := s.repo.GetMessageByID(ctx, messageID)
 	if err != nil {
 		return nil, err
@@ -82,7 +90,7 @@ func (s *MessageService) UpdateTripMessage(ctx context.Context, tripID, messageI
 	return s.repo.GetMessageByID(ctx, messageID)
 }
 
-func (s *MessageService) DeleteTripMessage(ctx context.Context, tripID, messageID, userID string) error {
+func (s *messageService) DeleteTripMessage(ctx context.Context, tripID, messageID, userID string) error {
 	existing, err := s.repo.GetMessageByID(ctx, messageID)
 	if err != nil {
 		return err
@@ -107,7 +115,7 @@ func (s *MessageService) DeleteTripMessage(ctx context.Context, tripID, messageI
 	return nil
 }
 
-func (s *MessageService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
+func (s *messageService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err == nil && trip.UserID == userID {
 		return true
@@ -123,7 +131,7 @@ func (s *MessageService) isTripMemberOrCreator(ctx context.Context, tripID, user
 	return false
 }
 
-func (s *MessageService) buildMessageTree(messages []*model.TripMessage) []*model.TripMessage {
+func (s *messageService) buildMessageTree(messages []*model.TripMessage) []*model.TripMessage {
 	var rootMessages []*model.TripMessage
 	messageMap := make(map[string]*model.TripMessage)
 
