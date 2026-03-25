@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"summitmate/internal/apperror"
@@ -45,6 +46,7 @@ func sendError(w http.ResponseWriter, r *http.Request, err error) {
 				"code", appErr.Code,
 				"message", appErr.Message,
 				"error", err,
+				"stack", string(debug.Stack()),
 			)
 		}
 		sendJSON(w, appErr.HTTPStatus, errorEnvelope{
@@ -59,7 +61,10 @@ func sendError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	// 未預期錯誤 → 500 server_error
-	logger.ErrorContext(r.Context(), "unexpected error", "error", err)
+	logger.ErrorContext(r.Context(), "unexpected error",
+		"error", err,
+		"stack", string(debug.Stack()),
+	)
 	sendJSON(w, http.StatusInternalServerError, errorEnvelope{
 		Error: errorBody{
 			Type:    apperror.TypeServer,
