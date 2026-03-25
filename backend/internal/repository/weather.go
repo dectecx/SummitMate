@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"summitmate/internal/model"
@@ -36,19 +38,33 @@ func (r *weatherRepository) ReplaceAll(ctx context.Context, records []model.Weat
 		return err
 	}
 
-	// 寫入新資料
-	for _, rec := range records {
-		_, err := tx.Exec(ctx,
-			`INSERT INTO weather_data (location, start_time, end_time, wx, temp, pop, min_temp, max_temp, humidity, wind_speed, min_at, max_at, issue_time, fetched_at)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())`,
+	// 寫入新資料 (使用 CopyFrom 批次寫入)
+	columnNames := []string{
+		"location", "start_time", "end_time", "wx", "temp", "pop",
+		"min_temp", "max_temp", "humidity", "wind_speed", "min_at", "max_at",
+		"issue_time", "fetched_at",
+	}
+
+	now := time.Now()
+	copyRows := make([][]any, len(records))
+	for i, rec := range records {
+		copyRows[i] = []any{
 			rec.Location, rec.StartTime, rec.EndTime,
 			rec.Wx, rec.Temp, rec.PoP,
 			rec.MinTemp, rec.MaxTemp, rec.Humidity,
-			rec.WindSpeed, rec.MinAT, rec.MaxAT, rec.IssueTime,
-		)
-		if err != nil {
-			return err
+			rec.WindSpeed, rec.MinAT, rec.MaxAT,
+			rec.IssueTime, now,
 		}
+	}
+
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{"weather_data"},
+		columnNames,
+		pgx.CopyFromRows(copyRows),
+	)
+	if err != nil {
+		return err
 	}
 
 	return tx.Commit(ctx)
