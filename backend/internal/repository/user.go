@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,7 +21,6 @@ type UserRepository interface {
 	DeleteByID(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, displayName, avatar *string) (*model.User, error)
 	SoftDelete(ctx context.Context, id string) error
-	UpdateVerification(ctx context.Context, id string, code string, expiry time.Time) error
 	SetVerified(ctx context.Context, id string) error
 }
 
@@ -37,18 +35,16 @@ func NewUserRepository(pool *pgxpool.Pool) UserRepository {
 // Create 新增一筆使用者資料，回傳含有 DB 產生值 (id, avatar, created_at 等) 的完整 User。
 func (repo *userRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
 	query := `
-		INSERT INTO users (email, password_hash, display_name, verification_code, verification_expiry, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO users (email, password_hash, display_name, created_by, updated_by)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, email, password_hash, display_name, avatar, role_id,
-		          is_active, is_verified, verification_code, verification_expiry,
+		          is_active, is_verified,
 		          created_at, created_by, updated_at, updated_by
 	`
 	row := repo.pool.QueryRow(ctx, query,
 		user.Email,
 		user.PasswordHash,
 		user.DisplayName,
-		user.VerificationCode,
-		user.VerificationExpiry,
 		user.CreatedBy,
 		user.UpdatedBy,
 	)
@@ -63,8 +59,6 @@ func (repo *userRepository) Create(ctx context.Context, user *model.User) (*mode
 		&created.RoleID,
 		&created.IsActive,
 		&created.IsVerified,
-		&created.VerificationCode,
-		&created.VerificationExpiry,
 		&created.CreatedAt,
 		&created.CreatedBy,
 		&created.UpdatedAt,
@@ -98,12 +92,12 @@ func (repo *userRepository) Update(ctx context.Context, id string, displayName, 
 	query := `
 		UPDATE users
 		SET display_name = COALESCE($1, display_name),
-		    avatar = COALESCE($2, avatar),
-		    updated_at = NOW(),
-		    updated_by = $3
+			avatar = COALESCE($2, avatar),
+			updated_at = NOW(),
+			updated_by = $3
 		WHERE id = $3
 		RETURNING id, email, password_hash, display_name, avatar, role_id,
-		          is_active, is_verified, verification_code, verification_expiry,
+		          is_active, is_verified,
 		          created_at, created_by, updated_at, updated_by
 	`
 	row := repo.pool.QueryRow(ctx, query, displayName, avatar, id)
@@ -118,8 +112,6 @@ func (repo *userRepository) Update(ctx context.Context, id string, displayName, 
 		&user.RoleID,
 		&user.IsActive,
 		&user.IsVerified,
-		&user.VerificationCode,
-		&user.VerificationExpiry,
 		&user.CreatedAt,
 		&user.CreatedBy,
 		&user.UpdatedAt,
@@ -146,22 +138,9 @@ func (repo *userRepository) SoftDelete(ctx context.Context, id string) error {
 	return nil
 }
 
-// UpdateVerification 更新使用者的驗證碼與過期時間。
-func (repo *userRepository) UpdateVerification(ctx context.Context, id string, code string, expiry time.Time) error {
-	query := "UPDATE users SET verification_code = $1, verification_expiry = $2, updated_at = NOW() WHERE id = $3"
-	result, err := repo.pool.Exec(ctx, query, code, expiry, id)
-	if err != nil {
-		return err
-	}
-	if result.RowsAffected() == 0 {
-		return ErrNotFound
-	}
-	return nil
-}
-
-// SetVerified 將使用者設為已驗證，並清除驗證碼。
+// SetVerified 將使用者設為已驗證。
 func (repo *userRepository) SetVerified(ctx context.Context, id string) error {
-	query := "UPDATE users SET is_verified = true, verification_code = NULL, verification_expiry = NULL, updated_at = NOW() WHERE id = $1"
+	query := "UPDATE users SET is_verified = true, updated_at = NOW() WHERE id = $1"
 	result, err := repo.pool.Exec(ctx, query, id)
 	if err != nil {
 		return err
@@ -177,7 +156,7 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 	// 此處 column 為程式內部控制 ("id" 或 "email")，非外部輸入，可安全拼接
 	query := `
 		SELECT id, email, password_hash, display_name, avatar, role_id,
-		       is_active, is_verified, verification_code, verification_expiry,
+		       is_active, is_verified,
 		       created_at, created_by, updated_at, updated_by
 		FROM users
 		WHERE ` + column + ` = $1
@@ -194,8 +173,6 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 		&user.RoleID,
 		&user.IsActive,
 		&user.IsVerified,
-		&user.VerificationCode,
-		&user.VerificationExpiry,
 		&user.CreatedAt,
 		&user.CreatedBy,
 		&user.UpdatedAt,

@@ -36,8 +36,6 @@ CREATE TABLE users (
     role_id             UUID REFERENCES roles(id),
     is_active           BOOLEAN      NOT NULL DEFAULT TRUE,
     is_verified         BOOLEAN      NOT NULL DEFAULT FALSE,
-    verification_code   VARCHAR(10),
-    verification_expiry TIMESTAMPTZ,
     last_login_at       TIMESTAMPTZ,
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     created_by          UUID,
