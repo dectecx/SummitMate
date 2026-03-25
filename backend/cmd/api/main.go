@@ -65,20 +65,17 @@ func (srv server) LoginUser(writer http.ResponseWriter, request *http.Request) {
 // GetCurrentUser 處理 GET /auth/me — 取得當前登入使用者 (需 JWT)。
 // 使用 inline middleware 進行 JWT 驗證，以避免影響公開端點。
 func (srv server) GetCurrentUser(writer http.ResponseWriter, request *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.authHandler.GetCurrentUser)).ServeHTTP(writer, request)
+	srv.authHandler.GetCurrentUser(writer, request)
 }
 
 // UpdateCurrentUser 處理 PUT /auth/me — 更新當前使用者資料 (需 JWT)。
 func (srv server) UpdateCurrentUser(writer http.ResponseWriter, request *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.authHandler.UpdateCurrentUser)).ServeHTTP(writer, request)
+	srv.authHandler.UpdateCurrentUser(writer, request)
 }
 
 // DeleteCurrentUser 處理 DELETE /auth/me — 停用當前使用者帳號 (需 JWT)。
 func (srv server) DeleteCurrentUser(writer http.ResponseWriter, request *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.authHandler.DeleteCurrentUser)).ServeHTTP(writer, request)
+	srv.authHandler.DeleteCurrentUser(writer, request)
 }
 
 // RefreshToken 處理 POST /auth/refresh — 刷新 JWT Token (不需 JWT)。
@@ -99,335 +96,209 @@ func (srv server) ResendVerificationCode(writer http.ResponseWriter, request *ht
 // --- Trips ---
 
 func (srv server) ListTrips(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.tripHandler.ListTrips)).ServeHTTP(w, r)
+	srv.tripHandler.ListTrips(w, r)
 }
 
 func (srv server) CreateTrip(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.tripHandler.CreateTrip)).ServeHTTP(w, r)
+	srv.tripHandler.CreateTrip(w, r)
 }
 
 func (srv server) GetTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.GetTrip(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.GetTrip(w, r, tripId)
 }
 
 func (srv server) UpdateTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.UpdateTrip(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.UpdateTrip(w, r, tripId)
 }
 
 func (srv server) DeleteTrip(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.DeleteTrip(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.DeleteTrip(w, r, tripId)
 }
 
 // --- Trip Members ---
 
 func (srv server) ListTripMembers(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.ListTripMembers(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.ListTripMembers(w, r, tripId)
 }
 
 func (srv server) AddTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.AddTripMember(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.AddTripMember(w, r, tripId)
 }
 
 func (srv server) RemoveTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, userId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.RemoveTripMember(w, r, tripId, userId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.RemoveTripMember(w, r, tripId, userId)
 }
 
 // --- Itinerary ---
 
 func (srv server) ListItinerary(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.ListItinerary(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.ListItinerary(w, r, tripId)
 }
 
 func (srv server) AddItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.AddItineraryItem(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.AddItineraryItem(w, r, tripId)
 }
 
 func (srv server) UpdateItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.UpdateItineraryItem(w, r, tripId, itemId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.UpdateItineraryItem(w, r, tripId, itemId)
 }
 
 func (srv server) DeleteItineraryItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripHandler.DeleteItineraryItem(w, r, tripId, itemId)
-	})).ServeHTTP(w, r)
+	srv.tripHandler.DeleteItineraryItem(w, r, tripId, itemId)
 }
 
 // --- Gear Library ---
 
 func (srv server) ListGearLibrary(w http.ResponseWriter, r *http.Request, params api.ListGearLibraryParams) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.gearHandler.ListGearLibrary(w, r, params)
-	})).ServeHTTP(w, r)
+	srv.gearHandler.ListGearLibrary(w, r, params)
 }
 
 func (srv server) CreateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.gearHandler.CreateGearLibraryItem)).ServeHTTP(w, r)
+	srv.gearHandler.CreateGearLibraryItem(w, r)
 }
 
 func (srv server) GetGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.gearHandler.GetGearLibraryItem(w, r, itemId)
-	})).ServeHTTP(w, r)
+	srv.gearHandler.GetGearLibraryItem(w, r, itemId)
 }
 
 func (srv server) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.gearHandler.UpdateGearLibraryItem(w, r, itemId)
-	})).ServeHTTP(w, r)
+	srv.gearHandler.UpdateGearLibraryItem(w, r, itemId)
 }
 
 func (srv server) DeleteGearLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.gearHandler.DeleteGearLibraryItem(w, r, itemId)
-	})).ServeHTTP(w, r)
+	srv.gearHandler.DeleteGearLibraryItem(w, r, itemId)
 }
 
 func (srv server) ReplaceAllGearLibraryItems(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.gearHandler.ReplaceAllGearLibraryItems)).ServeHTTP(w, r)
+	srv.gearHandler.ReplaceAllGearLibraryItems(w, r)
 }
 
 // --- Meal Library ---
 
 func (srv server) ListMealLibrary(w http.ResponseWriter, r *http.Request, params api.ListMealLibraryParams) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.mealHandler.ListMealLibrary(w, r, params)
-	})).ServeHTTP(w, r)
+	srv.mealHandler.ListMealLibrary(w, r, params)
 }
 
 func (srv server) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.mealHandler.CreateMealLibraryItem)).ServeHTTP(w, r)
+	srv.mealHandler.CreateMealLibraryItem(w, r)
 }
 
 func (srv server) GetMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.mealHandler.GetMealLibraryItem(w, r, itemId)
-	})).ServeHTTP(w, r)
+	srv.mealHandler.GetMealLibraryItem(w, r, itemId)
 }
 
 func (srv server) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.mealHandler.UpdateMealLibraryItem(w, r, itemId)
-	})).ServeHTTP(w, r)
+	srv.mealHandler.UpdateMealLibraryItem(w, r, itemId)
 }
 
 func (srv server) DeleteMealLibraryItem(w http.ResponseWriter, r *http.Request, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.mealHandler.DeleteMealLibraryItem(w, r, itemId)
-	})).ServeHTTP(w, r)
+	srv.mealHandler.DeleteMealLibraryItem(w, r, itemId)
 }
 
 func (srv server) ReplaceAllMealLibraryItems(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.mealHandler.ReplaceAllMealLibraryItems)).ServeHTTP(w, r)
+	srv.mealHandler.ReplaceAllMealLibraryItems(w, r)
 }
 
 // --- Trip Gear ---
 
 func (srv server) ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripGearHandler.ListTripGear(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripGearHandler.ListTripGear(w, r, tripId)
 }
 
 func (srv server) AddTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripGearHandler.AddTripGear(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripGearHandler.AddTripGear(w, r, tripId)
 }
 
 func (srv server) UpdateTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripGearHandler.UpdateTripGear(w, r, tripId, itemId)
-	})).ServeHTTP(w, r)
+	srv.tripGearHandler.UpdateTripGear(w, r, tripId, itemId)
 }
 
 func (srv server) DeleteTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripGearHandler.RemoveTripGear(w, r, tripId, itemId)
-	})).ServeHTTP(w, r)
+	srv.tripGearHandler.RemoveTripGear(w, r, tripId, itemId)
 }
 
 func (srv server) ReplaceAllTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripGearHandler.ReplaceAllTripGear(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripGearHandler.ReplaceAllTripGear(w, r, tripId)
 }
 
 // --- Trip Meals ---
 
 func (srv server) ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripMealHandler.ListTripMeals(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripMealHandler.ListTripMeals(w, r, tripId)
 }
 
 func (srv server) AddTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripMealHandler.AddTripMeal(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripMealHandler.AddTripMeal(w, r, tripId)
 }
 
 func (srv server) UpdateTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripMealHandler.UpdateTripMeal(w, r, tripId, itemId)
-	})).ServeHTTP(w, r)
+	srv.tripMealHandler.UpdateTripMeal(w, r, tripId, itemId)
 }
 
 func (srv server) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripMealHandler.RemoveTripMeal(w, r, tripId, itemId)
-	})).ServeHTTP(w, r)
+	srv.tripMealHandler.RemoveTripMeal(w, r, tripId, itemId)
 }
 
 func (srv server) ReplaceAllTripMeals(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.tripMealHandler.ReplaceAllTripMeals(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.tripMealHandler.ReplaceAllTripMeals(w, r, tripId)
 }
 
 // --- Interaction API Stubs ---
 
 func (srv server) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.messageHandler.ListTripMessages(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.messageHandler.ListTripMessages(w, r, tripId)
 }
 
 func (srv server) AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.messageHandler.AddTripMessage(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.messageHandler.AddTripMessage(w, r, tripId)
 }
 
 func (srv server) UpdateTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.messageHandler.UpdateTripMessage(w, r, tripId, messageId)
-	})).ServeHTTP(w, r)
+	srv.messageHandler.UpdateTripMessage(w, r, tripId, messageId)
 }
 
 func (srv server) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, messageId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.messageHandler.DeleteTripMessage(w, r, tripId, messageId)
-	})).ServeHTTP(w, r)
+	srv.messageHandler.DeleteTripMessage(w, r, tripId, messageId)
 }
 
 func (srv server) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.pollHandler.ListTripPolls(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.pollHandler.ListTripPolls(w, r, tripId)
 }
 
 func (srv server) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.pollHandler.CreateTripPoll(w, r, tripId)
-	})).ServeHTTP(w, r)
+	srv.pollHandler.CreateTripPoll(w, r, tripId)
 }
 
 func (srv server) GetTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.pollHandler.GetTripPoll(w, r, tripId, pollId)
-	})).ServeHTTP(w, r)
+	srv.pollHandler.GetTripPoll(w, r, tripId, pollId)
 }
 
 func (srv server) DeleteTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.pollHandler.DeleteTripPoll(w, r, tripId, pollId)
-	})).ServeHTTP(w, r)
+	srv.pollHandler.DeleteTripPoll(w, r, tripId, pollId)
 }
 
 func (srv server) AddPollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.pollHandler.AddPollOption(w, r, tripId, pollId)
-	})).ServeHTTP(w, r)
+	srv.pollHandler.AddPollOption(w, r, tripId, pollId)
 }
 
 func (srv server) VotePollOption(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, pollId openapi_types.UUID, optionId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.pollHandler.VotePollOption(w, r, tripId, pollId, optionId)
-	})).ServeHTTP(w, r)
+	srv.pollHandler.VotePollOption(w, r, tripId, pollId, optionId)
 }
 
 func (srv server) ListFavorites(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.favoriteHandler.ListFavorites)).ServeHTTP(w, r)
+	srv.favoriteHandler.ListFavorites(w, r)
 }
 
 func (srv server) AddFavorite(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.favoriteHandler.AddFavorite)).ServeHTTP(w, r)
+	srv.favoriteHandler.AddFavorite(w, r)
 }
 
 func (srv server) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.favoriteHandler.RemoveFavorite(w, r, targetId)
-	})).ServeHTTP(w, r)
+	srv.favoriteHandler.RemoveFavorite(w, r, targetId)
 }
 
 func (srv server) BatchUpdateFavorites(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.favoriteHandler.BatchUpdateFavorites)).ServeHTTP(w, r)
+	srv.favoriteHandler.BatchUpdateFavorites(w, r)
 }
 
 // --- Group Events ---
@@ -437,8 +308,7 @@ func (srv server) GetGroupEvents(w http.ResponseWriter, r *http.Request, params 
 }
 
 func (srv server) PostGroupEvents(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.groupHandler.PostGroupEvents)).ServeHTTP(w, r)
+	srv.groupHandler.PostGroupEvents(w, r)
 }
 
 func (srv server) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
@@ -446,38 +316,23 @@ func (srv server) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id op
 }
 
 func (srv server) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.PatchGroupEventsId(w, r, id)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.PatchGroupEventsId(w, r, id)
 }
 
 func (srv server) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.DeleteGroupEventsId(w, r, id)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.DeleteGroupEventsId(w, r, id)
 }
 
 func (srv server) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.PostGroupEventsIdApply(w, r, id)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.PostGroupEventsIdApply(w, r, id)
 }
 
 func (srv server) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.GetGroupEventsIdApplications(w, r, id)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.GetGroupEventsIdApplications(w, r, id)
 }
 
 func (srv server) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.PatchGroupEventsApplicationsAppId(w, r, appId)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.PatchGroupEventsApplicationsAppId(w, r, appId)
 }
 
 func (srv server) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
@@ -485,24 +340,15 @@ func (srv server) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Reques
 }
 
 func (srv server) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.PostGroupEventsIdComments(w, r, id)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.PostGroupEventsIdComments(w, r, id)
 }
 
 func (srv server) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.DeleteGroupEventsCommentsCommentId(w, r, commentId)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.DeleteGroupEventsCommentsCommentId(w, r, commentId)
 }
 
 func (srv server) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		srv.groupHandler.PostGroupEventsIdLike(w, r, id)
-	})).ServeHTTP(w, r)
+	srv.groupHandler.PostGroupEventsIdLike(w, r, id)
 }
 
 // --- Weather (Public) ---
@@ -520,8 +366,7 @@ func (srv server) UploadLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (srv server) Heartbeat(w http.ResponseWriter, r *http.Request) {
-	jwtAuth := appMiddleware.JWTAuth(srv.tokenManager)
-	jwtAuth(http.HandlerFunc(srv.heartbeatHandler.Heartbeat)).ServeHTTP(w, r)
+	srv.heartbeatHandler.Heartbeat(w, r)
 }
 
 func main() {
@@ -664,10 +509,14 @@ func main() {
 </html>`))
 	})
 
-	// 掛載 API 路由 (前綴 /api/v1)
-	router.Route("/api/v1", func(router chi.Router) {
-		api.HandlerFromMux(srv, router)
+	// 初始化並掛載 API Handler (包含統一的 JWT 中間件)
+	apiHandler := api.HandlerWithOptions(srv, api.ChiServerOptions{
+		BaseURL: "/api/v1",
+		Middlewares: []api.MiddlewareFunc{
+			appMiddleware.JWTAuth(tokenManager),
+		},
 	})
+	router.Mount("/", apiHandler)
 
 	slog.Info("SummitMate API 已啟動", "addr", cfg.Addr(), "env", cfg.Env)
 	slog.Info("API 文件", "url", "http://localhost"+cfg.Addr()+"/docs")
