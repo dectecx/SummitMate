@@ -19,6 +19,7 @@ import (
 	appMiddleware "summitmate/internal/middleware"
 	"summitmate/internal/repository"
 	"summitmate/internal/service"
+	"summitmate/pkg/cache"
 	"summitmate/pkg/email"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -421,7 +422,8 @@ func main() {
 	}
 	emailService := email.NewEmailService(mailer, templateManager)
 
-	authService := service.NewAuthService(logger, userRepo, tokenManager, emailService, cfg.JWTSecret)
+	authCache := cache.NewMemoryCache[string]()
+	authService := service.NewAuthService(logger, userRepo, tokenManager, emailService, authCache, cfg.JWTSecret)
 	tripService := service.NewTripService(logger, tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(logger, gearLibRepo)
 	mealLibService := service.NewMealLibraryService(logger, mealLibRepo)
