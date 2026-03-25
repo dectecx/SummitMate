@@ -26,6 +26,7 @@ type WeatherService struct {
 	repo      repository.WeatherRepository
 	cwaAPIKey string
 	locations []string
+	httpClient *http.Client
 }
 
 func NewWeatherService(logger *slog.Logger, repo repository.WeatherRepository, cwaAPIKey string, locations []string) *WeatherService {
@@ -34,6 +35,9 @@ func NewWeatherService(logger *slog.Logger, repo repository.WeatherRepository, c
 		repo:      repo,
 		cwaAPIKey: cwaAPIKey,
 		locations: locations,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
 	}
 }
 
@@ -75,6 +79,31 @@ func (s *WeatherService) ListByLocation(ctx context.Context, location string) ([
 
 // --- 內部方法 ---
 
+// --- CWA API 結構體 ---
+
+type cwaResponse struct {
+	CwaOpenData struct {
+		Dataset struct {
+			DatasetInfo struct {
+				IssueTime string `json:"IssueTime"`
+			} `json:"DatasetInfo"`
+			Locations struct {
+				Location []struct {
+					LocationName   string `json:"LocationName"`
+					WeatherElement []struct {
+						ElementName string `json:"ElementName"`
+						Time        []struct {
+							StartTime    string `json:"StartTime"`
+							EndTime      string `json:"EndTime"`
+							ElementValue any    `json:"ElementValue"`
+						} `json:"Time"`
+					} `json:"WeatherElement"`
+				} `json:"Location"`
+			} `json:"Locations"`
+		} `json:"Dataset"`
+	} `json:"cwaopendata"`
+}
+
 // rawRow 代表攤平後的一筆原始資料
 type rawRow struct {
 	Location    string
@@ -92,7 +121,7 @@ func (s *WeatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time
 		return nil, nil, err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,100 +138,40 @@ func (s *WeatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time
 	}
 
 	// 解析 JSON
-	var root map[string]interface{}
+	var root cwaResponse
 	if err := json.Unmarshal(body, &root); err != nil {
 		return nil, nil, fmt.Errorf("JSON 解析失敗: %w", err)
 	}
 
-	cwaopendata, ok := root["cwaopendata"].(map[string]interface{})
-	if !ok {
-		return nil, nil, fmt.Errorf("JSON 結構不符: 缺少 cwaopendata")
-	}
-
-	dataset, ok := cwaopendata["Dataset"].(map[string]interface{})
-	if !ok {
-		return nil, nil, fmt.Errorf("JSON 結構不符: 缺少 Dataset")
-	}
-
-	// 取得 IssueTime
+	dataset := root.CwaOpenData.Dataset
+	issueTimeStr := dataset.DatasetInfo.IssueTime
 	var issueTime *time.Time
-	if dsInfo, ok := dataset["DatasetInfo"].(map[string]interface{}); ok {
-		if its, ok := dsInfo["IssueTime"].(string); ok && its != "" {
-			if t, err := time.Parse(time.RFC3339, its); err == nil {
-				issueTime = &t
-			}
+	if issueTimeStr != "" {
+		if t, err := time.Parse(time.RFC3339, issueTimeStr); err == nil {
+			issueTime = &t
 		}
 	}
-
-	locationsObj, ok := dataset["Locations"].(map[string]interface{})
-	if !ok {
-		return nil, nil, fmt.Errorf("JSON 結構不符: 缺少 Locations")
-	}
-
-	locList, ok := locationsObj["Location"].([]interface{})
-	if !ok {
-		return nil, nil, fmt.Errorf("JSON 結構不符: Location 不是陣列")
-	}
-
-	s.logger.Debug("解析地點數量", "count", len(locList))
 
 	var rows []rawRow
-
-	for _, locRaw := range locList {
-		loc, ok := locRaw.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		locName, _ := loc["LocationName"].(string)
-
-		elements, ok := loc["WeatherElement"].([]interface{})
-		if !ok {
-			continue
-		}
-
-		for _, elRaw := range elements {
-			el, ok := elRaw.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			elName, _ := el["ElementName"].(string)
-
-			timeSlots, ok := el["Time"].([]interface{})
-			if !ok {
-				continue
-			}
-
-			for _, tRaw := range timeSlots {
-				t, ok := tRaw.(map[string]interface{})
-				if !ok {
-					continue
-				}
-
-				startStr, _ := t["StartTime"].(string)
-				endStr, _ := t["EndTime"].(string)
-
-				startTime, err := time.Parse(time.RFC3339, startStr)
+	for _, loc := range dataset.Locations.Location {
+		for _, el := range loc.WeatherElement {
+			for _, t := range el.Time {
+				startTime, err := time.Parse(time.RFC3339, t.StartTime)
 				if err != nil {
-					startTime, err = time.Parse("2006-01-02T15:04:05", startStr)
-					if err != nil {
-						continue
-					}
+					startTime, _ = time.Parse("2006-01-02T15:04:05", t.StartTime)
 				}
-				endTime, err := time.Parse(time.RFC3339, endStr)
+				endTime, err := time.Parse(time.RFC3339, t.EndTime)
 				if err != nil {
-					endTime, err = time.Parse("2006-01-02T15:04:05", endStr)
-					if err != nil {
-						continue
-					}
+					endTime, _ = time.Parse("2006-01-02T15:04:05", t.EndTime)
 				}
 
-				val := extractValue(elName, t["ElementValue"])
+				val := extractValue(el.ElementName, t.ElementValue)
 
 				rows = append(rows, rawRow{
-					Location:    locName,
+					Location:    loc.LocationName,
 					StartTime:   startTime,
 					EndTime:     endTime,
-					ElementName: elName,
+					ElementName: el.ElementName,
 					Value:       val,
 				})
 			}
