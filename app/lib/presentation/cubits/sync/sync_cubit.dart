@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/di/injection.dart';
 import '../../../core/error/result.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
