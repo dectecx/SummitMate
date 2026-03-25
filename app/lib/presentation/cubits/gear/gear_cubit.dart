@@ -4,7 +4,6 @@ import '../../../data/models/gear_item.dart';
 import '../../../core/error/app_error_handler.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../../core/di/injection.dart';
 import '../../cubits/gear/gear_state.dart';
 
 /// 裝備清單 (行程) Cubit
