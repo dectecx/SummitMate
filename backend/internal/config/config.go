@@ -19,6 +19,10 @@ type Config struct {
 	SMTPUser       string
 	SMTPPass       string
 	SMTPFrom       string
+	CacheType      string
+	RedisAddr      string
+	RedisPassword  string
+	RedisDB        string
 }
 
 // Load reads configuration from environment variables with defaults.
@@ -35,6 +39,10 @@ func Load() *Config {
 		SMTPUser:       getEnv("SMTP_USER", ""),
 		SMTPPass:       getEnv("SMTP_PASS", ""),
 		SMTPFrom:       getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
+		CacheType:      getEnv("CACHE_TYPE", "memory"),
+		RedisAddr:      getEnv("REDIS_ADDR", "localhost:6379"),
+		RedisPassword:  getEnv("REDIS_PASSWORD", ""),
+		RedisDB:        getEnv("REDIS_DB", "0"),
 	}
 }
 

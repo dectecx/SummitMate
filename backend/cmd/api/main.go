@@ -422,7 +422,16 @@ func main() {
 	}
 	emailService := email.NewEmailService(mailer, templateManager)
 
-	authCache := cache.NewMemoryCache[string]()
+	authCache, err := cache.NewCache[string](cache.Config{
+		Type:          cache.Provider(cfg.CacheType),
+		RedisAddr:     cfg.RedisAddr,
+		RedisPassword: cfg.RedisPassword,
+		RedisDB:       cfg.RedisDB,
+	})
+	if err != nil {
+		slog.Error("快取初始化失敗", "error", err)
+		os.Exit(1)
+	}
 	authService := service.NewAuthService(logger, userRepo, tokenManager, emailService, authCache, cfg.JWTSecret)
 	tripService := service.NewTripService(logger, tripRepo, memberRepo, itineraryRepo, userRepo)
 	gearLibService := service.NewGearLibraryService(logger, gearLibRepo)
