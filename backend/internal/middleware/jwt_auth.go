@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"summitmate/api"
 	"summitmate/internal/auth"
 )
 
@@ -14,15 +15,25 @@ type contextKey string
 // UserIDKey 是存放在 context 中的使用者 ID 鍵值。
 const UserIDKey contextKey = "user_id"
 
-// JWTAuth 回傳一個 HTTP middleware，負責：
-//  1. 從 Authorization header 取得 Bearer Token
-//  2. 驗證 Token 有效性
-//  3. 將 user_id 注入到 request context 中
-//
-// 若驗證失敗，直接回傳 401 Unauthorized。
+// JWTAuth 目標：
+// 1. 自動偵測 oapi-codegen 注入的 BearerAuthScopes (Context Key)
+// 2. 如果不存在，表示為公開路徑，直接放行。
+// 3. 如果存在，執行 Bearer Token 驗證並注入 UserID。
 func JWTAuth(tokenManager *auth.TokenManager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			// 檢查 oapi-codegen 注入的 Security Scopes
+			// api.BearerAuthScopes 是 gen.go 中自動定義的常量 "bearerAuth.Scopes"
+			_, required := request.Context().Value(api.BearerAuthScopes).([]string)
+
+			if !required {
+				// 公開端點，直接放行
+				next.ServeHTTP(writer, request)
+				return
+			}
+
+			// --- 以下為驗證邏輯 ---
+
 			// 取得 Authorization header
 			header := request.Header.Get("Authorization")
 			if header == "" {
