@@ -123,13 +123,32 @@ go run ./cmd/migrate drop
 
 ### 環境變數
 
-| 變數           | 預設值                                                              | 說明                                   |
-| :------------- | :------------------------------------------------------------------ | :------------------------------------- |
-| `ENV`          | `development`                                                       | 執行環境 (`production`, `development`) |
-| `PORT`         | `8080`                                                              | HTTP 監聽埠                            |
-| `DATABASE_URL` | `postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable` | PostgreSQL 連線                        |
-| `JWT_SECRET`   | `summitmate-dev-secret-change-in-production`                        | JWT 簽名密鑰                           |
-| `CWA_API_KEY`  | (必填)                                                              | 中央氣象署 Open Data API Key           |
+#### Secrets（Cloud Run Secrets 管理）
+
+| 變數             | 說明                         |
+| :--------------- | :--------------------------- |
+| `DB_HOST`        | PostgreSQL 主機 IP           |
+| `DB_PORT`        | PostgreSQL 埠號              |
+| `DB_USER`        | PostgreSQL 使用者名稱        |
+| `DB_PASS`        | PostgreSQL 密碼              |
+| `DB_NAME`        | PostgreSQL 資料庫名稱        |
+| `JWT_SECRET`     | JWT 簽名密鑰                 |
+| `CWA_API_KEY`    | 中央氣象署 Open Data API Key |
+| `SMTP_USER`      | SMTP 寄件帳號                |
+| `SMTP_PASS`      | SMTP 密碼                    |
+| `REDIS_ADDR`     | Redis 連線地址 (`host:port`) |
+| `REDIS_PASSWORD` | Redis 密碼                   |
+| `REDIS_DB`       | Redis DB 編號                |
+
+#### Environment Variables（一般設定）
+
+| 變數              | 值             | 說明                                   |
+| :---------------- | :------------- | :------------------------------------- |
+| `ENV`             | `production`   | 執行環境 (`production`, `development`) |
+| `CACHE_TYPE`      | `memory`       | 快取類型 (`memory` / `redis`)          |
+| `ALLOWED_ORIGINS` | （依環境設定） | CORS 允許來源                          |
+
+> 本地開發預設值參見 [`internal/config/config.go`](internal/config/config.go)
 
 ## 定時任務
 
