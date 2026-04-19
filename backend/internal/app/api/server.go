@@ -17,8 +17,8 @@ type Server struct {
 	InteractionHandler *interaction.InteractionHandler
 
 	// Legacy Handlers (pending migration)
-	TripGearHandler  *handler.TripGearHandler
-	TripMealHandler  *handler.TripMealHandler
+	TripGearHandler  *trip.TripGearHandler
+	TripMealHandler  *trip.TripMealHandler
 	FavoriteHandler  *handler.FavoriteHandler
 	GroupHandler     *handler.GroupEventHandler
 	WeatherHandler   *handler.WeatherHandler
@@ -33,8 +33,8 @@ func NewServer(
 	tripH *trip.TripHandler,
 	libH *library.LibraryHandler,
 	interH *interaction.InteractionHandler,
-	gearH *handler.TripGearHandler,
-	mealH *handler.TripMealHandler,
+	gearH *trip.TripGearHandler,
+	mealH *trip.TripMealHandler,
 	favH *handler.FavoriteHandler,
 	groupH *handler.GroupEventHandler,
 	weatherH *handler.WeatherHandler,

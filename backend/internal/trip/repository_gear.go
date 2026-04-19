@@ -1,4 +1,4 @@
-package repository
+package trip
 
 import (
 	"context"
@@ -6,17 +6,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"summitmate/internal/model"
 )
 
 // TripGearRepository 定義行程裝備資料存取介面。
 type TripGearRepository interface {
-	ListByTripID(ctx context.Context, tripID string) ([]*model.TripGearItem, error)
-	Create(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error)
-	GetByID(ctx context.Context, id string, tripID string) (*model.TripGearItem, error)
-	Update(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error)
+	ListByTripID(ctx context.Context, tripID string) ([]*TripGearItem, error)
+	Create(ctx context.Context, item *TripGearItem) (*TripGearItem, error)
+	GetByID(ctx context.Context, id string, tripID string) (*TripGearItem, error)
+	Update(ctx context.Context, item *TripGearItem) (*TripGearItem, error)
 	Delete(ctx context.Context, id string, tripID string) error
-	ReplaceAll(ctx context.Context, tripID string, items []*model.TripGearItem) error
+	ReplaceAll(ctx context.Context, tripID string, items []*TripGearItem) error
 }
 
 type tripGearRepository struct {
@@ -27,7 +26,7 @@ func NewTripGearRepository(pool *pgxpool.Pool) TripGearRepository {
 	return &tripGearRepository{pool: pool}
 }
 
-func (repo *tripGearRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripGearItem, error) {
+func (repo *tripGearRepository) ListByTripID(ctx context.Context, tripID string) ([]*TripGearItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by
 		FROM gear_items
@@ -40,7 +39,7 @@ func (repo *tripGearRepository) ListByTripID(ctx context.Context, tripID string)
 	}
 	defer rows.Close()
 
-	var items []*model.TripGearItem
+	var items []*TripGearItem
 	for rows.Next() {
 		item, err := repo.scanItem(rows)
 		if err != nil {
@@ -55,7 +54,7 @@ func (repo *tripGearRepository) ListByTripID(ctx context.Context, tripID string)
 	return items, nil
 }
 
-func (repo *tripGearRepository) Create(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) Create(ctx context.Context, item *TripGearItem) (*TripGearItem, error) {
 	query := `
 		INSERT INTO gear_items (trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -67,7 +66,7 @@ func (repo *tripGearRepository) Create(ctx context.Context, item *model.TripGear
 	return repo.scanItem(row)
 }
 
-func (repo *tripGearRepository) GetByID(ctx context.Context, id string, tripID string) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) GetByID(ctx context.Context, id string, tripID string) (*TripGearItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by
 		FROM gear_items
@@ -77,7 +76,7 @@ func (repo *tripGearRepository) GetByID(ctx context.Context, id string, tripID s
 	return repo.scanItem(row)
 }
 
-func (repo *tripGearRepository) Update(ctx context.Context, item *model.TripGearItem) (*model.TripGearItem, error) {
+func (repo *tripGearRepository) Update(ctx context.Context, item *TripGearItem) (*TripGearItem, error) {
 	query := `
 		UPDATE gear_items
 		SET library_item_id = $1, name = $2, weight = $3, category = $4, quantity = $5, is_checked = $6, order_index = $7, updated_at = NOW(), updated_by = $8
@@ -105,7 +104,7 @@ func (repo *tripGearRepository) Delete(ctx context.Context, id string, tripID st
 	return nil
 }
 
-func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripGearItem) error {
+func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, items []*TripGearItem) error {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -134,8 +133,8 @@ func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, i
 	return tx.Commit(ctx)
 }
 
-func (repo *tripGearRepository) scanItem(row pgx.Row) (*model.TripGearItem, error) {
-	var i model.TripGearItem
+func (repo *tripGearRepository) scanItem(row pgx.Row) (*TripGearItem, error) {
+	var i TripGearItem
 	err := row.Scan(
 		&i.ID, &i.TripID, &i.LibraryItemID, &i.Name, &i.Weight, &i.Category,
 		&i.Quantity, &i.IsChecked, &i.OrderIndex,

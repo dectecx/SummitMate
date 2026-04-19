@@ -1,14 +1,13 @@
-package mapping
+package trip
 
 import (
 	"summitmate/api"
-	"summitmate/internal/model"
 
 	"github.com/google/uuid"
 )
 
-// ToTripMealItemResponse converts model.TripMealItem to api.TripMealItem
-func ToTripMealItemResponse(item *model.TripMealItem) api.TripMealItem {
+// ToTripMealItemResponse converts TripMealItem to api.TripMealItem
+func ToTripMealItemResponse(item *TripMealItem) api.TripMealItem {
 	var libID *uuid.UUID
 	if item.LibraryItemID != nil {
 		parsed := uuid.MustParse(*item.LibraryItemID)
@@ -31,8 +30,8 @@ func ToTripMealItemResponse(item *model.TripMealItem) api.TripMealItem {
 	}
 }
 
-// ToModelTripMealItem converts api.TripMealItemRequest to model.TripMealItem for service layer
-func ToModelTripMealItem(req api.TripMealItemRequest) model.TripMealItem {
+// ToModelTripMealItem converts api.TripMealItemRequest to TripMealItem for service layer
+func ToModelTripMealItem(req api.TripMealItemRequest) TripMealItem {
 	var libIDStr *string
 	if req.LibraryItemId != nil {
 		s := req.LibraryItemId.String()
@@ -44,7 +43,7 @@ func ToModelTripMealItem(req api.TripMealItemRequest) model.TripMealItem {
 		quantity = *req.Quantity
 	}
 
-	return model.TripMealItem{
+	return TripMealItem{
 		LibraryItemID: libIDStr,
 		Day:           req.Day,
 		MealType:      req.MealType,
@@ -56,15 +55,15 @@ func ToModelTripMealItem(req api.TripMealItemRequest) model.TripMealItem {
 	}
 }
 
-// ToModelTripMealItemFromAPI converts api.TripMealItem to model.TripMealItem for batch sync
-func ToModelTripMealItemFromAPI(item api.TripMealItem) *model.TripMealItem {
+// ToModelTripMealItemFromAPI converts api.TripMealItem to TripMealItem for batch sync
+func ToModelTripMealItemFromAPI(item api.TripMealItem) *TripMealItem {
 	var libIDStr *string
 	if item.LibraryItemId != nil {
 		s := item.LibraryItemId.String()
 		libIDStr = &s
 	}
 
-	return &model.TripMealItem{
+	return &TripMealItem{
 		ID:            item.Id.String(),
 		TripID:        item.TripId.String(),
 		LibraryItemID: libIDStr,
