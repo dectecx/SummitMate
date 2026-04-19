@@ -20,7 +20,7 @@ type Server struct {
 	LibraryHandler     *library.LibraryHandler
 	InteractionHandler *interaction.InteractionHandler
 
-	// Legacy Handlers (pending migration)
+	// Feature Handlers
 	TripGearHandler  *trip.TripGearHandler
 	TripMealHandler  *trip.TripMealHandler
 	FavoriteHandler  *favorite.FavoriteHandler

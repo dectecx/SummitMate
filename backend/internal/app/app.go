@@ -163,7 +163,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	messageRepo := interaction.NewMessageRepository(pool)
 	pollRepo := interaction.NewPollRepository(pool)
 
-	// Legacy Repositories
+	// --- Feature Repositories ---
 	tripGearRepo := trip.NewTripGearRepository(pool)
 	tripMealRepo := trip.NewTripMealRepository(pool)
 	favoriteRepo := favorite.NewFavoriteRepository(pool)
@@ -196,7 +196,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	messageService := interaction.NewMessageService(logger, messageRepo, tripRepo, tripMemberRepo)
 	pollService := interaction.NewPollService(logger, pollRepo, tripRepo, tripMemberRepo)
 
-	// Legacy Services
+	// --- Feature Services ---
 	tripGearService := trip.NewTripGearService(logger, tripGearRepo, tripRepo, tripMemberRepo)
 	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
 	favoriteService := favorite.NewFavoriteService(logger, favoriteRepo)
@@ -211,7 +211,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	libraryHandler := library.NewLibraryHandler(gearLibService, mealLibService)
 	interactionHandler := interaction.NewInteractionHandler(messageService, pollService)
 
-	// Legacy Handlers
+	// --- Feature Handlers ---
 	tripGearHandler := trip.NewTripGearHandler(tripGearService)
 	tripMealHandler := trip.NewTripMealHandler(tripMealService)
 	favoriteHandler := favorite.NewFavoriteHandler(favoriteService)
