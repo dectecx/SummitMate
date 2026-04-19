@@ -157,26 +157,19 @@ backend/
 │   └── gen.go                         # oapi-codegen 產生
 │
 ├── internal/                          # 內部套件 (不可外部引用)
-│   ├── apperror/                      # 錯誤碼定義
-│   ├── auth/                          # JWT + bcrypt
-│   │   ├── jwt.go                     # Token 簽發/驗證
-│   │   └── password.go                # 密碼雜湊
-│   ├── config/                        # 環境設定
-│   ├── database/                      # DB 連線池
-│   ├── handler/                       # HTTP Handler (13)
-│   │   ├── mapping/                   # DTO ↔ Domain 轉換
-│   │   ├── helpers.go                 # 共用 sendError/sendJSON
-│   │   ├── auth_handler.go
-│   │   ├── trip_handler.go
-│   │   └── ...
-│   ├── logger/                        # slog Logger 工廠
-│   ├── middleware/                     # Chi Middleware
-│   │   ├── context_logger.go          # Request ID + Logger
-│   │   ├── jwt_auth.go               # JWT 驗證
-│   │   └── request_logger.go         # HTTP 請求日誌
-│   ├── model/                         # Domain Model (13)
-│   ├── repository/                    # Data Access (15)
-│   └── service/                       # Business Logic (13)
+│   ├── auth/                          # 認證領域 (JWT + bcrypt)
+│   ├── trip/                          # 行程領域 (含 Gear/Meals/Members/Itinerary)
+│   ├── library/                       # 模板庫 (Gear/Meal Libraries)
+│   ├── interaction/                   # 互動領域 (Polls, Messages)
+│   ├── favorite/                      # 最愛領域
+│   ├── groupevent/                    # 揪團領域
+│   ├── weather/                       # 天氣領域
+│   ├── log/                           # 系統日誌領域
+│   ├── heartbeat/                     # 系統監控領域
+│   ├── common/                        # 共享層 (apiutil, middleware, logger)
+│   ├── app/                           # 應用層 (啟動與路由分配)
+│   │   └── api/                       # API 轉接層 (Adapters)
+│   └── apperror/                      # 錯誤碼定義
 │
 ├── migrations/                        # SQL Migration 檔案
 ├── tests/                             # E2E 測試
@@ -201,11 +194,12 @@ backend/
 
 ### Backend (Go)
 
-| Layer          | 職責                    | 位置                           |
-| :------------- | :---------------------- | :----------------------------- |
-| **Handler**    | HTTP 請求處理, DTO 轉換 | `backend/internal/handler/`    |
-| **Service**    | 商業邏輯                | `backend/internal/service/`    |
-| **Repository** | 資料存取 (PostgreSQL)   | `backend/internal/repository/` |
-| **Model**      | Domain 結構定義         | `backend/internal/model/`      |
-| **Auth**       | JWT, 密碼雜湊           | `backend/internal/auth/`       |
-| **Middleware** | 請求攔截 (JWT, Logger)  | `backend/internal/middleware/` |
+| Layer          | 職責                    | 位置                         |
+| :------------- | :---------------------- | :--------------------------- |
+| **Adapter**    | API 路由轉接, DTO 映射  | `backend/internal/app/api/`  |
+| **Handler**    | 領域 Request/Response   | `backend/internal/<domain>/` |
+| **Service**    | 商業邏輯                | `backend/internal/<domain>/` |
+| **Repository** | 資料存取 (PostgreSQL)   | `backend/internal/<domain>/` |
+| **Domain**     | 業務實體與規則          | `backend/internal/<domain>/` |
+| **Common**     | 共享工具 (API, MW, Log) | `backend/internal/common/`   |
+| **App**        | 應用程序啟動與 DI       | `backend/internal/app/`      |

@@ -34,16 +34,22 @@ backend/
 │   │   └── main.go         # DB Migration CLI
 │   └── weatherjob/
 │       └── main.go         # 天氣 ETL 排程任務 (Standalone CLI)
-│ ├── internal/               # 內部套件 (不對外開放)
-│   ├── config/             # 環境變數設定
-│   ├── database/           # DB 連線池 + Migration
-│   ├── handler/            # HTTP Handlers (實作 ServerInterface)
-│   ├── service/            # Business Logic
-│   ├── repository/         # DB Access
-│   └── model/              # Domain Models
+├── internal/               # 內部套件 (不對外開放)
+│   ├── auth/               # 認證領域 (JWT + bcrypt)
+│   ├── trip/               # 行程領域 (含裝備、餐食、成員、行程節點)
+│   ├── library/            # 模板庫 (Gear/Meal Libraries)
+│   ├── interaction/        # 互動領域 (Polls, Messages)
+│   ├── favorite/           # 最愛管理
+│   ├── groupevent/         # 揪團活動
+│   ├── weather/            # 天氣服務
+│   ├── log/                # 系統日誌
+│   ├── heartbeat/          # 系統監控
+│   ├── common/             # 共享工具 (apiutil, middleware, logger)
+│   ├── app/                # 應用啟動
+│   │   └── api/            # API 轉接層 (Routing Adapters)
+│   └── apperror/           # 錯誤碼定義
 ├── migrations/             # SQL Migration 檔案
-│   ├── 000001_init_schema.up.sql
-│   └── 000001_init_schema.down.sql
+├── tests/                  # E2E 測試
 ├── Dockerfile              # 多階段建置
 ├── go.mod
 └── go.sum
@@ -148,7 +154,8 @@ CWA_API_KEY=your_key_here go run ./cmd/weatherjob
    ```bash
    go generate ./api/...
    ```
-3. **實作 Handler**：在 `internal/handler/` 實作新的 `ServerInterface` 方法
+3. **實作領域邏輯**：在 `internal/<domain>/` 下實作對應的 Handler、Service 與 Repository
+4. **掛載路由**：在 `internal/app/api/` 對應的轉接檔中掛載方法
 4. **驗證**：瀏覽 http://localhost:8080/docs 確認新 endpoint
 
 ### 建置
