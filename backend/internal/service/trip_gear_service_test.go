@@ -8,6 +8,7 @@ import (
 
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
+	"summitmate/internal/trip"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,15 +17,15 @@ import (
 func TestTripGearService_ListItems(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(repository.MockTripGearRepository)
-	mockTripRepo := new(repository.MockTripRepository)
-	mockMemberRepo := new(repository.MockTripMemberRepository)
+	mockTripRepo := new(trip.MockTripRepository)
+	mockMemberRepo := new(trip.MockTripMemberRepository)
 	svc := NewTripGearService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
 	t.Run("Success", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&model.Trip{ID: tripID, UserID: userID}, nil)
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
 		mockRepo.On("ListByTripID", mock.Anything, tripID).Return([]*model.TripGearItem{
 			{ID: "tg1", Name: "Rope"},
 		}, nil)
@@ -40,8 +41,8 @@ func TestTripGearService_ListItems(t *testing.T) {
 func TestTripGearService_CreateItem(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(repository.MockTripGearRepository)
-	mockTripRepo := new(repository.MockTripRepository)
-	mockMemberRepo := new(repository.MockTripMemberRepository)
+	mockTripRepo := new(trip.MockTripRepository)
+	mockMemberRepo := new(trip.MockTripMemberRepository)
 	svc := NewTripGearService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
 	t.Run("Success", func(t *testing.T) {
@@ -49,7 +50,7 @@ func TestTripGearService_CreateItem(t *testing.T) {
 		userID := "u1"
 		item := &model.TripGearItem{Name: "Carabiner"}
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&model.Trip{ID: tripID, UserID: userID}, nil)
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
 		mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(g *model.TripGearItem) bool {
 			return g.Name == "Carabiner" && g.TripID == tripID
 		})).Return(&model.TripGearItem{ID: "tg1", Name: "Carabiner", TripID: tripID}, nil)
@@ -65,8 +66,8 @@ func TestTripGearService_CreateItem(t *testing.T) {
 func TestTripGearService_ReplaceAllItems(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(repository.MockTripGearRepository)
-	mockTripRepo := new(repository.MockTripRepository)
-	mockMemberRepo := new(repository.MockTripMemberRepository)
+	mockTripRepo := new(trip.MockTripRepository)
+	mockMemberRepo := new(trip.MockTripMemberRepository)
 	svc := NewTripGearService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
 	t.Run("Success", func(t *testing.T) {
@@ -77,7 +78,7 @@ func TestTripGearService_ReplaceAllItems(t *testing.T) {
 			{ID: "tg2", Name: "Harness"},
 		}
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&model.Trip{ID: tripID, UserID: userID}, nil)
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
 		mockRepo.On("ReplaceAll", mock.Anything, tripID, mock.MatchedBy(func(args []*model.TripGearItem) bool {
 			return len(args) == 2 && args[0].Name == "Rope" && args[1].Name == "Harness"
 		})).Return(nil)
