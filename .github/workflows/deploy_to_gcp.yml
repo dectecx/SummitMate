@@ -97,8 +97,8 @@ jobs:
             --image=${{ env.IMAGE }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --service-account=${{ env.RUNTIME_SA }} \
-            --update-env-vars="ENV=production,CACHE_TYPE=memory" \
-            --update-secrets="DB_HOST=DB_HOST:latest,DB_PORT=DB_PORT:latest,DB_USER=DB_USER:latest,DB_PASS=DB_PASS:latest,DB_NAME=DB_NAME:latest,JWT_SECRET=JWT_SECRET:latest,CWA_API_KEY=CWA_API_KEY:latest,SMTP_USER=SMTP_USER:latest,SMTP_PASS=SMTP_PASS:latest,REDIS_ADDR=REDIS_ADDR:latest,REDIS_PASSWORD=REDIS_PASSWORD:latest,REDIS_DB=REDIS_DB:latest" \
+            --set-env-vars="ENV=production,CACHE_TYPE=memory" \
+            --set-secrets="DB_HOST=DB_HOST:latest,DB_PORT=DB_PORT:latest,DB_USER=DB_USER:latest,DB_PASS=DB_PASS:latest,DB_NAME=DB_NAME:latest,JWT_SECRET=JWT_SECRET:latest,CWA_API_KEY=CWA_API_KEY:latest,SMTP_USER=SMTP_USER:latest,SMTP_PASS=SMTP_PASS:latest,REDIS_ADDR=REDIS_ADDR:latest,REDIS_PASSWORD=REDIS_PASSWORD:latest,REDIS_DB=REDIS_DB:latest" \
             --quiet
 
       - name: ✅ Output Deployed URL
