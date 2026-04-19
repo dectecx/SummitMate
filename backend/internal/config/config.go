@@ -9,6 +9,12 @@ import (
 // Config holds all application configuration.
 type Config struct {
 	Port           string
+	DBHost         string
+	DBPort         string
+	DBUser         string
+	DBPass         string
+	DBName         string
+	DBSSLMode      string
 	DatabaseURL    string
 	JWTSecret      string
 	CWAApiKey      string
@@ -27,9 +33,14 @@ type Config struct {
 
 // Load reads configuration from environment variables with defaults.
 func Load() *Config {
-	return &Config{
+	cfg := &Config{
 		Port:           getEnv("PORT", "8080"),
-		DatabaseURL:    getEnv("DATABASE_URL", "postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable"),
+		DBHost:         getEnv("DB_HOST", "localhost"),
+		DBPort:         getEnv("DB_PORT", "5432"),
+		DBUser:         getEnv("DB_USER", "dev"),
+		DBPass:         getEnv("DB_PASS", "dev2026!"),
+		DBName:         getEnv("DB_NAME", "summitmate"),
+		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:      getEnv("JWT_SECRET", "summitmate-dev-secret-change-in-production"),
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
 		Env:            getEnv("ENV", "development"),
@@ -44,6 +55,11 @@ func Load() *Config {
 		RedisPassword:  getEnv("REDIS_PASSWORD", ""),
 		RedisDB:        getEnv("REDIS_DB", "0"),
 	}
+
+	cfg.DatabaseURL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.DBUser, cfg.DBPass, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
+
+	return cfg
 }
 
 func getEnvAsSlice(key string, fallback []string) []string {
