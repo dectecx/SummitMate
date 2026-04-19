@@ -185,27 +185,60 @@ docker build -t summitmate-api .
 
 ## 部署
 
-- **目標平台**：GCP Cloud Run (API)
-- **資料庫**：GCP e2-micro VM + Docker (PostgreSQL 18)
+| 項目           | 說明                                                             |
+| :------------- | :--------------------------------------------------------------- |
+| 平台           | GCP Cloud Run (`summitmate-api`, us-central1)                    |
+| Image Registry | GCP Artifact Registry (`summitmate-repo`)                        |
+| 資料庫         | GCP e2-micro VM + Docker (PostgreSQL 18)                         |
+| Secrets        | GCP Secret Manager (`DATABASE_URL`, `JWT_SECRET`, `CWA_API_KEY`) |
+
+### CI/CD 自動部署
+
+push 到 `main` 且 `backend/` 有任何異動時，GitHub Actions 自動執行：
+
+1. 🧪 跑單元測試 (`go test -short ./...`)
+2. 🐳 建置並推送 Docker Image 至 Artifact Registry
+3. 🚀 部署新 Revision 至 Cloud Run
+
+> 手動觸發：GitHub → Actions → `Deploy Backend to GCP Cloud Run` → Run workflow
+
+**所需 GitHub Secrets：** `GCP_WORKLOAD_IDENTITY_PROVIDER`、`GCP_SERVICE_ACCOUNT`
+
+> 完整 GCP 初始化指令（SA、WIF、Secret Manager 設定）參見 [`_local_docs/gcp-setup.md`](../_local_docs/gcp-setup.md)
 
 ## 基礎設施維護 (Maintenance)
 
 ### 進入正式環境資料庫 (psql)
+
 若需手動執行 SQL 或查看資料，請先 SSH 進入 GCP VM，然後執行：
+
 ```bash
 sudo docker exec -it summitmate-db psql -U dev -d summitmate
 ```
 
-### GCP Artifact Registry 部署
+### 手動推送 Image 至 GCP Artifact Registry（緊急部署 / 繞過 CI）
 
 ```powershell
 # 1. Docker 驗證
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
-# 2. 建置與推送鏡像
+# 2. 建置與推送
 cd backend
 $PROJECT_ID="summitmate"
 
-docker build -t us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:v1 .
-docker push us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:v1
+docker build -t us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:latest .
+docker push us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:latest
+
+# 3. 部署至 Cloud Run
+gcloud run deploy summitmate-api `
+  --image=us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:latest `
+  --region=us-central1
+```
+
+### 更新 GCP Secret 值
+
+```bash
+echo -n "new-value" | gcloud secrets versions add SECRET_NAME --data-file=-
+# 例如：
+echo -n "new-jwt-secret" | gcloud secrets versions add JWT_SECRET --data-file=-
 ```
