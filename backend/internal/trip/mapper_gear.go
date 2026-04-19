@@ -1,14 +1,13 @@
-package mapping
+package trip
 
 import (
 	"summitmate/api"
-	"summitmate/internal/model"
 
 	"github.com/google/uuid"
 )
 
-// ToTripGearItemResponse converts model.TripGearItem to api.TripGearItem
-func ToTripGearItemResponse(item *model.TripGearItem) api.TripGearItem {
+// ToTripGearItemResponse converts TripGearItem to api.TripGearItem
+func ToTripGearItemResponse(item *TripGearItem) api.TripGearItem {
 	var libID *uuid.UUID
 	if item.LibraryItemID != nil {
 		parsed := uuid.MustParse(*item.LibraryItemID)
@@ -30,8 +29,8 @@ func ToTripGearItemResponse(item *model.TripGearItem) api.TripGearItem {
 	}
 }
 
-// ToModelTripGearItem converts api.TripGearItemRequest to model.TripGearItem for service layer
-func ToModelTripGearItem(req api.TripGearItemRequest) model.TripGearItem {
+// ToModelTripGearItem converts api.TripGearItemRequest to TripGearItem for service layer
+func ToModelTripGearItem(req api.TripGearItemRequest) TripGearItem {
 	var libIDStr *string
 	if req.LibraryItemId != nil {
 		s := req.LibraryItemId.String()
@@ -48,7 +47,7 @@ func ToModelTripGearItem(req api.TripGearItemRequest) model.TripGearItem {
 		isChecked = *req.IsChecked
 	}
 
-	return model.TripGearItem{
+	return TripGearItem{
 		LibraryItemID: libIDStr,
 		Name:          req.Name,
 		Weight:        req.Weight,
@@ -59,15 +58,15 @@ func ToModelTripGearItem(req api.TripGearItemRequest) model.TripGearItem {
 	}
 }
 
-// ToModelTripGearItemFromAPI converts api.TripGearItem to model.TripGearItem for batch sync
-func ToModelTripGearItemFromAPI(item api.TripGearItem) *model.TripGearItem {
+// ToModelTripGearItemFromAPI converts api.TripGearItem to TripGearItem for batch sync
+func ToModelTripGearItemFromAPI(item api.TripGearItem) *TripGearItem {
 	var libIDStr *string
 	if item.LibraryItemId != nil {
 		s := item.LibraryItemId.String()
 		libIDStr = &s
 	}
 
-	return &model.TripGearItem{
+	return &TripGearItem{
 		ID:            item.Id.String(),
 		TripID:        item.TripId.String(),
 		LibraryItemID: libIDStr,
