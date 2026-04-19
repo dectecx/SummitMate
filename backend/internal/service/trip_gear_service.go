@@ -7,6 +7,7 @@ import (
 	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
+	"summitmate/internal/trip"
 )
 
 // TripGearService 定義行程裝備相關的業務邏輯介面。
@@ -21,11 +22,11 @@ type TripGearService interface {
 type tripGearService struct {
 	logger     *slog.Logger
 	repo       repository.TripGearRepository
-	tripRepo   repository.TripRepository
-	memberRepo repository.TripMemberRepository
+	tripRepo   trip.TripRepository
+	memberRepo trip.TripMemberRepository
 }
 
-func NewTripGearService(logger *slog.Logger, repo repository.TripGearRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) TripGearService {
+func NewTripGearService(logger *slog.Logger, repo repository.TripGearRepository, tripRepo trip.TripRepository, memberRepo trip.TripMemberRepository) TripGearService {
 	return &tripGearService{
 		logger:     logger.With("component", "trip_gear"),
 		repo:       repo,

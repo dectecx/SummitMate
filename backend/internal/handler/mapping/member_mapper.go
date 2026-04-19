@@ -2,14 +2,14 @@ package mapping
 
 import (
 	"summitmate/api"
-	"summitmate/internal/model"
+	"summitmate/internal/trip"
 
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// ToTripMemberGetResponse converts model.TripMember to api.TripMemberGetResponse
-func ToTripMemberGetResponse(m *model.TripMember) api.TripMemberGetResponse {
+// ToTripMemberGetResponse converts trip.TripMember to api.TripMemberGetResponse
+func ToTripMemberGetResponse(m *trip.TripMember) api.TripMemberGetResponse {
 	apiUser := api.User{
 		Id:          uuid.MustParse(m.UserID),
 		Email:       openapi_types.Email(m.UserEmail),
@@ -26,7 +26,7 @@ func ToTripMemberGetResponse(m *model.TripMember) api.TripMemberGetResponse {
 	}
 }
 
-// ToTripMemberListItemResponse converts model.TripMember to api.TripMemberListItemResponse
-func ToTripMemberListItemResponse(m *model.TripMember) api.TripMemberListItemResponse {
+// ToTripMemberListItemResponse converts trip.TripMember to api.TripMemberListItemResponse
+func ToTripMemberListItemResponse(m *trip.TripMember) api.TripMemberListItemResponse {
 	return api.TripMemberListItemResponse(ToTripMemberGetResponse(m))
 }
