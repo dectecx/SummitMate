@@ -17,13 +17,15 @@ import (
 	"summitmate/internal/auth/tokens"
 	"summitmate/internal/config"
 	"summitmate/internal/database"
-	"summitmate/internal/handler"
+	"summitmate/internal/favorite"
+	"summitmate/internal/groupevent"
+	"summitmate/internal/heartbeat"
 	"summitmate/internal/interaction"
 	"summitmate/internal/library"
+	"summitmate/internal/log"
 	"summitmate/internal/middleware"
-	"summitmate/internal/repository"
-	"summitmate/internal/service"
 	"summitmate/internal/trip"
+	"summitmate/internal/weather"
 	"summitmate/pkg/cache"
 	"summitmate/pkg/email"
 
@@ -164,11 +166,11 @@ func (a *App) initializeAPI() *appapi.Server {
 	// Legacy Repositories
 	tripGearRepo := trip.NewTripGearRepository(pool)
 	tripMealRepo := trip.NewTripMealRepository(pool)
-	favoriteRepo := repository.NewFavoriteRepository(pool)
-	groupRepo := repository.NewGroupEventRepository(pool)
-	weatherRepo := repository.NewWeatherRepository(pool)
-	logRepo := repository.NewLogRepository(pool)
-	heartbeatRepo := repository.NewHeartbeatRepository(pool)
+	favoriteRepo := favorite.NewFavoriteRepository(pool)
+	groupRepo := groupevent.NewGroupEventRepository(pool)
+	weatherRepo := weather.NewWeatherRepository(pool)
+	logRepo := log.NewLogRepository(pool)
+	heartbeatRepo := heartbeat.NewHeartbeatRepository(pool)
 
 	// --- Utilities ---
 	tokenManager := tokens.NewTokenManager(cfg.JWTSecret)
@@ -197,11 +199,11 @@ func (a *App) initializeAPI() *appapi.Server {
 	// Legacy Services
 	tripGearService := trip.NewTripGearService(logger, tripGearRepo, tripRepo, tripMemberRepo)
 	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
-	favoriteService := service.NewFavoriteService(logger, favoriteRepo)
-	groupService := service.NewGroupEventService(logger, groupRepo)
-	weatherService := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
-	logService := service.NewLogService(logger, logRepo)
-	heartbeatService := service.NewHeartbeatService(logger, heartbeatRepo)
+	favoriteService := favorite.NewFavoriteService(logger, favoriteRepo)
+	groupService := groupevent.NewGroupEventService(logger, groupRepo)
+	weatherService := weather.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
+	logService := log.NewLogService(logger, logRepo)
+	heartbeatService := heartbeat.NewHeartbeatService(logger, heartbeatRepo)
 
 	// --- Handlers ---
 	authHandler := auth.NewAuthHandler(authService)
@@ -212,11 +214,11 @@ func (a *App) initializeAPI() *appapi.Server {
 	// Legacy Handlers
 	tripGearHandler := trip.NewTripGearHandler(tripGearService)
 	tripMealHandler := trip.NewTripMealHandler(tripMealService)
-	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
-	groupHandler := handler.NewGroupEventHandler(groupService)
-	weatherHandler := handler.NewWeatherHandler(weatherService)
-	logHandler := handler.NewLogHandler(logService)
-	heartbeatHandler := handler.NewHeartbeatHandler(heartbeatService)
+	favoriteHandler := favorite.NewFavoriteHandler(favoriteService)
+	groupHandler := groupevent.NewGroupEventHandler(groupService)
+	weatherHandler := weather.NewWeatherHandler(weatherService)
+	logHandler := log.NewLogHandler(logService)
+	heartbeatHandler := heartbeat.NewHeartbeatHandler(heartbeatService)
 
 	return appapi.NewServer(
 		authHandler, tripHandler, libraryHandler, interactionHandler,
