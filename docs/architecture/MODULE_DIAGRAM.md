@@ -82,18 +82,26 @@ graph TB
 
 ```mermaid
 graph TB
-    subgraph Backend["Go Backend"]
+    subgraph Backend["Go Backend (DDD)"]
         Router["Chi Router"]
         MW["Middleware (JWT, Logger, RequestID)"]
-        Handlers["Handlers (13)"]
-        Services["Services (13)"]
-        Repos["Repositories (14)"]
+
+        subgraph DomainPkg["Domain Packages (internal/<domain>/)"]
+            Handlers["Handlers"]
+            Services["Services"]
+            Models["Domain Models"]
+            Repos["Repositories"]
+        end
+
+        Adapters["API Adapters (internal/app/api/)"]
         PG[(PostgreSQL)]
     end
 
-    Router --> MW --> Handlers
+    Router --> MW --> Adapters
+    Adapters --> Handlers
     Handlers --> Services
     Services --> Repos
+    Repos --> Models
     Repos --> PG
 ```
 
