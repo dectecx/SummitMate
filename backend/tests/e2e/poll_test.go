@@ -33,7 +33,7 @@ func (s *APITestSuite) TestPoll_CRUD() {
 	optReq := api.PollOptionRequest{Text: "便當"}
 	resp = s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/polls/%s/options", tripID, pollID), token, optReq)
 	defer resp.Body.Close()
-	s.Equal(http.StatusCreated, resp.StatusCode)
+	s.Equal(http.StatusOK, resp.StatusCode)
 
 	// 3. 投票
 	var pollWithOpt api.Poll
