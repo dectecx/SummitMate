@@ -1,32 +1,29 @@
-package service
+package trip
 
 import (
 	"context"
 	"log/slog"
 
 	"summitmate/internal/apperror"
-	"summitmate/internal/model"
-	"summitmate/internal/repository"
-	"summitmate/internal/trip"
 )
 
 // TripMealService 定義行程伙食相關的業務邏輯介面。
 type TripMealService interface {
-	ListItems(ctx context.Context, tripID, userID string) ([]*model.TripMealItem, error)
-	CreateItem(ctx context.Context, tripID, userID string, req *model.TripMealItem) (*model.TripMealItem, error)
-	UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripMealItem) (*model.TripMealItem, error)
+	ListItems(ctx context.Context, tripID, userID string) ([]*TripMealItem, error)
+	CreateItem(ctx context.Context, tripID, userID string, req *TripMealItem) (*TripMealItem, error)
+	UpdateItem(ctx context.Context, tripID, itemID, userID string, req *TripMealItem) (*TripMealItem, error)
 	DeleteItem(ctx context.Context, tripID, itemID, userID string) error
-	ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripMealItem) error
+	ReplaceAllItems(ctx context.Context, tripID, userID string, items []*TripMealItem) error
 }
 
 type tripMealService struct {
 	logger     *slog.Logger
-	repo       repository.TripMealRepository
-	tripRepo   trip.TripRepository
-	memberRepo trip.TripMemberRepository
+	repo       TripMealRepository
+	tripRepo   TripRepository
+	memberRepo TripMemberRepository
 }
 
-func NewTripMealService(logger *slog.Logger, repo repository.TripMealRepository, tripRepo trip.TripRepository, memberRepo trip.TripMemberRepository) TripMealService {
+func NewTripMealService(logger *slog.Logger, repo TripMealRepository, tripRepo TripRepository, memberRepo TripMemberRepository) TripMealService {
 	return &tripMealService{
 		logger:     logger.With("component", "trip_meal"),
 		repo:       repo,
@@ -35,14 +32,14 @@ func NewTripMealService(logger *slog.Logger, repo repository.TripMealRepository,
 	}
 }
 
-func (s *tripMealService) ListItems(ctx context.Context, tripID, userID string) ([]*model.TripMealItem, error) {
+func (s *tripMealService) ListItems(ctx context.Context, tripID, userID string) ([]*TripMealItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
 	return s.repo.ListByTripID(ctx, tripID)
 }
 
-func (s *tripMealService) CreateItem(ctx context.Context, tripID, userID string, req *model.TripMealItem) (*model.TripMealItem, error) {
+func (s *tripMealService) CreateItem(ctx context.Context, tripID, userID string, req *TripMealItem) (*TripMealItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -58,7 +55,7 @@ func (s *tripMealService) CreateItem(ctx context.Context, tripID, userID string,
 	return item, nil
 }
 
-func (s *tripMealService) UpdateItem(ctx context.Context, tripID, itemID, userID string, req *model.TripMealItem) (*model.TripMealItem, error) {
+func (s *tripMealService) UpdateItem(ctx context.Context, tripID, itemID, userID string, req *TripMealItem) (*TripMealItem, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
@@ -86,7 +83,7 @@ func (s *tripMealService) DeleteItem(ctx context.Context, tripID, itemID, userID
 	return nil
 }
 
-func (s *tripMealService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*model.TripMealItem) error {
+func (s *tripMealService) ReplaceAllItems(ctx context.Context, tripID, userID string, items []*TripMealItem) error {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		return apperror.ErrAccessDenied
 	}

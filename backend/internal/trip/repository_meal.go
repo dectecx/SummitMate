@@ -1,4 +1,4 @@
-package repository
+package trip
 
 import (
 	"context"
@@ -6,17 +6,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"summitmate/internal/model"
 )
 
 // TripMealRepository 定義行程餐食資料存取介面。
 type TripMealRepository interface {
-	ListByTripID(ctx context.Context, tripID string) ([]*model.TripMealItem, error)
-	Create(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error)
-	GetByID(ctx context.Context, id string, tripID string) (*model.TripMealItem, error)
-	Update(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error)
+	ListByTripID(ctx context.Context, tripID string) ([]*TripMealItem, error)
+	Create(ctx context.Context, item *TripMealItem) (*TripMealItem, error)
+	GetByID(ctx context.Context, id string, tripID string) (*TripMealItem, error)
+	Update(ctx context.Context, item *TripMealItem) (*TripMealItem, error)
 	Delete(ctx context.Context, id string, tripID string) error
-	ReplaceAll(ctx context.Context, tripID string, items []*model.TripMealItem) error
+	ReplaceAll(ctx context.Context, tripID string, items []*TripMealItem) error
 }
 
 type tripMealRepository struct {
@@ -27,7 +26,7 @@ func NewTripMealRepository(pool *pgxpool.Pool) TripMealRepository {
 	return &tripMealRepository{pool: pool}
 }
 
-func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripMealItem, error) {
+func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string) ([]*TripMealItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 		FROM meal_items
@@ -40,7 +39,7 @@ func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string)
 	}
 	defer rows.Close()
 
-	var items []*model.TripMealItem
+	var items []*TripMealItem
 	for rows.Next() {
 		item, err := repo.scanItem(rows)
 		if err != nil {
@@ -55,7 +54,7 @@ func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string)
 	return items, nil
 }
 
-func (repo *tripMealRepository) Create(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) Create(ctx context.Context, item *TripMealItem) (*TripMealItem, error) {
 	query := `
 		INSERT INTO meal_items (trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -67,7 +66,7 @@ func (repo *tripMealRepository) Create(ctx context.Context, item *model.TripMeal
 	return repo.scanItem(row)
 }
 
-func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID string) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID string) (*TripMealItem, error) {
 	query := `
 		SELECT id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 		FROM meal_items
@@ -77,7 +76,7 @@ func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID s
 	return repo.scanItem(row)
 }
 
-func (repo *tripMealRepository) Update(ctx context.Context, item *model.TripMealItem) (*model.TripMealItem, error) {
+func (repo *tripMealRepository) Update(ctx context.Context, item *TripMealItem) (*TripMealItem, error) {
 	query := `
 		UPDATE meal_items
 		SET library_item_id = $1, day = $2, meal_type = $3, name = $4, weight = $5, calories = $6, quantity = $7, note = $8, updated_at = NOW(), updated_by = $9
@@ -105,7 +104,7 @@ func (repo *tripMealRepository) Delete(ctx context.Context, id string, tripID st
 	return nil
 }
 
-func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, items []*model.TripMealItem) error {
+func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, items []*TripMealItem) error {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -133,8 +132,8 @@ func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 	return tx.Commit(ctx)
 }
 
-func (repo *tripMealRepository) scanItem(row pgx.Row) (*model.TripMealItem, error) {
-	var i model.TripMealItem
+func (repo *tripMealRepository) scanItem(row pgx.Row) (*TripMealItem, error) {
+	var i TripMealItem
 	err := row.Scan(
 		&i.ID, &i.TripID, &i.LibraryItemID, &i.Day, &i.MealType, &i.Name,
 		&i.Weight, &i.Calories, &i.Quantity, &i.Note,

@@ -8,45 +8,6 @@ import (
 
 // Legacy domain adapters (to be migrated)
 
-func (s *Server) ListTripGearItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.TripGearHandler.ListTripGear(w, r, tripId)
-}
-
-func (s *Server) AddTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.TripGearHandler.AddTripGear(w, r, tripId)
-}
-
-func (s *Server) UpdateTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	s.TripGearHandler.UpdateTripGear(w, r, tripId, itemId)
-}
-
-func (s *Server) DeleteTripGearItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	s.TripGearHandler.RemoveTripGear(w, r, tripId, itemId)
-}
-
-func (s *Server) ReplaceAllTripGear(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.TripGearHandler.ReplaceAllTripGear(w, r, tripId)
-}
-
-func (s *Server) ListTripMealItems(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.TripMealHandler.ListTripMeals(w, r, tripId)
-}
-
-func (s *Server) AddTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.TripMealHandler.AddTripMeal(w, r, tripId)
-}
-
-func (s *Server) UpdateTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	s.TripMealHandler.UpdateTripMeal(w, r, tripId, itemId)
-}
-
-func (s *Server) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, itemId openapi_types.UUID) {
-	s.TripMealHandler.RemoveTripMeal(w, r, tripId, itemId)
-}
-
-func (srv *Server) ReplaceAllTripMeals(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	srv.TripMealHandler.ReplaceAllTripMeals(w, r, tripId)
-}
 
 func (s *Server) ListFavorites(w http.ResponseWriter, r *http.Request) {
 	s.FavoriteHandler.ListFavorites(w, r)

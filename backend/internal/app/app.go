@@ -162,8 +162,8 @@ func (a *App) initializeAPI() *appapi.Server {
 	pollRepo := interaction.NewPollRepository(pool)
 
 	// Legacy Repositories
-	tripGearRepo := repository.NewTripGearRepository(pool)
-	tripMealRepo := repository.NewTripMealRepository(pool)
+	tripGearRepo := trip.NewTripGearRepository(pool)
+	tripMealRepo := trip.NewTripMealRepository(pool)
 	favoriteRepo := repository.NewFavoriteRepository(pool)
 	groupRepo := repository.NewGroupEventRepository(pool)
 	weatherRepo := repository.NewWeatherRepository(pool)
@@ -195,8 +195,8 @@ func (a *App) initializeAPI() *appapi.Server {
 	pollService := interaction.NewPollService(logger, pollRepo, tripRepo, tripMemberRepo)
 
 	// Legacy Services
-	tripGearService := service.NewTripGearService(logger, tripGearRepo, tripRepo, tripMemberRepo)
-	tripMealService := service.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
+	tripGearService := trip.NewTripGearService(logger, tripGearRepo, tripRepo, tripMemberRepo)
+	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
 	favoriteService := service.NewFavoriteService(logger, favoriteRepo)
 	groupService := service.NewGroupEventService(logger, groupRepo)
 	weatherService := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
@@ -210,8 +210,8 @@ func (a *App) initializeAPI() *appapi.Server {
 	interactionHandler := interaction.NewInteractionHandler(messageService, pollService)
 
 	// Legacy Handlers
-	tripGearHandler := handler.NewTripGearHandler(tripGearService)
-	tripMealHandler := handler.NewTripMealHandler(tripMealService)
+	tripGearHandler := trip.NewTripGearHandler(tripGearService)
+	tripMealHandler := trip.NewTripMealHandler(tripMealService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 	groupHandler := handler.NewGroupEventHandler(groupService)
 	weatherHandler := handler.NewWeatherHandler(weatherService)
