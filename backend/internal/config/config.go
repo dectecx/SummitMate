@@ -41,7 +41,7 @@ func Load() *Config {
 		DBPass:         getEnv("DB_PASS", "dev2026!"),
 		DBName:         getEnv("DB_NAME", "summitmate"),
 		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
-		JWTSecret:      getEnv("JWT_SECRET", "summitmate-dev-secret-change-in-production"),
+		JWTSecret:      getEnv("JWT_SECRET", ""),
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
 		Env:            getEnv("ENV", "development"),
 		AllowedOrigins: getEnvAsSlice("ALLOWED_ORIGINS", []string{"http://localhost:8083"}),
