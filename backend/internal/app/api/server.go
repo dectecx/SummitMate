@@ -3,10 +3,14 @@ package api
 import (
 	"summitmate/internal/auth"
 	"summitmate/internal/auth/tokens"
-	"summitmate/internal/handler"
+	"summitmate/internal/favorite"
+	"summitmate/internal/groupevent"
+	"summitmate/internal/heartbeat"
 	"summitmate/internal/interaction"
 	"summitmate/internal/library"
+	"summitmate/internal/log"
 	"summitmate/internal/trip"
+	"summitmate/internal/weather"
 )
 
 // Server 實作 api.ServerInterface，作為各個 Domain Handler 的聚合器 (Glue Layer)
@@ -19,11 +23,11 @@ type Server struct {
 	// Legacy Handlers (pending migration)
 	TripGearHandler  *trip.TripGearHandler
 	TripMealHandler  *trip.TripMealHandler
-	FavoriteHandler  *handler.FavoriteHandler
-	GroupHandler     *handler.GroupEventHandler
-	WeatherHandler   *handler.WeatherHandler
-	LogHandler       *handler.LogHandler
-	HeartbeatHandler *handler.HeartbeatHandler
+	FavoriteHandler  *favorite.FavoriteHandler
+	GroupHandler     *groupevent.GroupEventHandler
+	WeatherHandler   *weather.WeatherHandler
+	LogHandler       *log.LogHandler
+	HeartbeatHandler *heartbeat.HeartbeatHandler
 
 	TokenManager *tokens.TokenManager
 }
@@ -35,11 +39,11 @@ func NewServer(
 	interH *interaction.InteractionHandler,
 	gearH *trip.TripGearHandler,
 	mealH *trip.TripMealHandler,
-	favH *handler.FavoriteHandler,
-	groupH *handler.GroupEventHandler,
-	weatherH *handler.WeatherHandler,
-	logH *handler.LogHandler,
-	hbH *handler.HeartbeatHandler,
+	favH *favorite.FavoriteHandler,
+	groupH *groupevent.GroupEventHandler,
+	weatherH *weather.WeatherHandler,
+	logH *log.LogHandler,
+	hbH *heartbeat.HeartbeatHandler,
 	tm *tokens.TokenManager,
 ) *Server {
 	return &Server{

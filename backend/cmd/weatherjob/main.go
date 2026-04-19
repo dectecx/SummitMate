@@ -8,8 +8,7 @@ import (
 	"summitmate/internal/config"
 	"summitmate/internal/database"
 	appLogger "summitmate/internal/logger"
-	"summitmate/internal/repository"
-	"summitmate/internal/service"
+	"summitmate/internal/weather"
 )
 
 func main() {
@@ -34,8 +33,8 @@ func main() {
 	defer pool.Close()
 
 	// 執行 ETL
-	weatherRepo := repository.NewWeatherRepository(pool)
-	weatherSvc := service.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
+	weatherRepo := weather.NewWeatherRepository(pool)
+	weatherSvc := weather.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
 
 	slog.Info("開始執行天氣 ETL")
 	if err := weatherSvc.FetchAndStore(ctx); err != nil {
