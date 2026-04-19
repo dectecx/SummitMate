@@ -7,6 +7,7 @@ import (
 	"summitmate/internal/apperror"
 	"summitmate/internal/model"
 	"summitmate/internal/repository"
+	"summitmate/internal/trip"
 )
 
 // TripMealService 定義行程伙食相關的業務邏輯介面。
@@ -21,11 +22,11 @@ type TripMealService interface {
 type tripMealService struct {
 	logger     *slog.Logger
 	repo       repository.TripMealRepository
-	tripRepo   repository.TripRepository
-	memberRepo repository.TripMemberRepository
+	tripRepo   trip.TripRepository
+	memberRepo trip.TripMemberRepository
 }
 
-func NewTripMealService(logger *slog.Logger, repo repository.TripMealRepository, tripRepo repository.TripRepository, memberRepo repository.TripMemberRepository) TripMealService {
+func NewTripMealService(logger *slog.Logger, repo repository.TripMealRepository, tripRepo trip.TripRepository, memberRepo trip.TripMemberRepository) TripMealService {
 	return &tripMealService{
 		logger:     logger.With("component", "trip_meal"),
 		repo:       repo,

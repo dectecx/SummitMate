@@ -2,205 +2,52 @@ package repository
 
 import (
 	"context"
+	"summitmate/internal/library"
 	"summitmate/internal/model"
 
 	"github.com/stretchr/testify/mock"
 )
 
-// MockUserRepository is a mock implementation of the UserRepository interface
-type MockUserRepository struct {
-	mock.Mock
-}
 
-func (m *MockUserRepository) Create(ctx context.Context, user *model.User) (*model.User, error) {
-	args := m.Called(ctx, user)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
+// MockGearLibraryRepository is a mock implementation of the GearLibraryRepository interface
 
-func (m *MockUserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
-	args := m.Called(ctx, email)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
 
-func (m *MockUserRepository) GetByID(ctx context.Context, id string) (*model.User, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) Update(ctx context.Context, id string, displayName, avatar *string) (*model.User, error) {
-	args := m.Called(ctx, id, displayName, avatar)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.User), args.Error(1)
-}
-
-func (m *MockUserRepository) DeleteByID(ctx context.Context, id string) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) SoftDelete(ctx context.Context, id string) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-func (m *MockUserRepository) SetVerified(ctx context.Context, id string) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-// MockTripRepository is a mock implementation of the TripRepository interface
-type MockTripRepository struct {
-	mock.Mock
-}
-
-func (m *MockTripRepository) Create(ctx context.Context, trip *model.Trip) (*model.Trip, error) {
-	args := m.Called(ctx, trip)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.Trip), args.Error(1)
-}
-
-func (m *MockTripRepository) GetByID(ctx context.Context, id string) (*model.Trip, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.Trip), args.Error(1)
-}
-
-func (m *MockTripRepository) ListByUserID(ctx context.Context, userID string) ([]*model.Trip, error) {
-	args := m.Called(ctx, userID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*model.Trip), args.Error(1)
-}
-
-func (m *MockTripRepository) Update(ctx context.Context, trip *model.Trip) (*model.Trip, error) {
-	args := m.Called(ctx, trip)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.Trip), args.Error(1)
-}
-
-func (m *MockTripRepository) DeleteByID(ctx context.Context, id string) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
-
-// MockTripMemberRepository is a mock implementation of the TripMemberRepository interface
-type MockTripMemberRepository struct {
-	mock.Mock
-}
-
-func (m *MockTripMemberRepository) AddMember(ctx context.Context, tripID, userID string) error {
-	args := m.Called(ctx, tripID, userID)
-	return args.Error(0)
-}
-
-func (m *MockTripMemberRepository) RemoveMember(ctx context.Context, tripID, userID string) error {
-	args := m.Called(ctx, tripID, userID)
-	return args.Error(0)
-}
-
-func (m *MockTripMemberRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.TripMember, error) {
-	args := m.Called(ctx, tripID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*model.TripMember), args.Error(1)
-}
-
-// MockItineraryRepository is a mock implementation of the ItineraryRepository interface
-type MockItineraryRepository struct {
-	mock.Mock
-}
-
-func (m *MockItineraryRepository) Create(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error) {
-	args := m.Called(ctx, item)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ItineraryItem), args.Error(1)
-}
-
-func (m *MockItineraryRepository) GetByID(ctx context.Context, id string) (*model.ItineraryItem, error) {
-	args := m.Called(ctx, id)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ItineraryItem), args.Error(1)
-}
-
-func (m *MockItineraryRepository) ListByTripID(ctx context.Context, tripID string) ([]*model.ItineraryItem, error) {
-	args := m.Called(ctx, tripID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*model.ItineraryItem), args.Error(1)
-}
-
-func (m *MockItineraryRepository) Update(ctx context.Context, item *model.ItineraryItem) (*model.ItineraryItem, error) {
-	args := m.Called(ctx, item)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*model.ItineraryItem), args.Error(1)
-}
-
-func (m *MockItineraryRepository) DeleteByID(ctx context.Context, id string) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
 
 // MockGearLibraryRepository is a mock implementation of the GearLibraryRepository interface
 type MockGearLibraryRepository struct {
 	mock.Mock
 }
 
-func (m *MockGearLibraryRepository) Create(ctx context.Context, gear *model.GearLibraryItem) (*model.GearLibraryItem, error) {
+func (m *MockGearLibraryRepository) Create(ctx context.Context, gear *library.GearLibraryItem) (*library.GearLibraryItem, error) {
 	args := m.Called(ctx, gear)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.GearLibraryItem), args.Error(1)
+	return args.Get(0).(*library.GearLibraryItem), args.Error(1)
 }
 
-func (m *MockGearLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*model.GearLibraryItem, error) {
+func (m *MockGearLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*library.GearLibraryItem, error) {
 	args := m.Called(ctx, id, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.GearLibraryItem), args.Error(1)
+	return args.Get(0).(*library.GearLibraryItem), args.Error(1)
 }
 
-func (m *MockGearLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*model.GearLibraryItem, error) {
+func (m *MockGearLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*library.GearLibraryItem, error) {
 	args := m.Called(ctx, userID, includeArchived)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*model.GearLibraryItem), args.Error(1)
+	return args.Get(0).([]*library.GearLibraryItem), args.Error(1)
 }
 
-func (m *MockGearLibraryRepository) Update(ctx context.Context, gear *model.GearLibraryItem) (*model.GearLibraryItem, error) {
+func (m *MockGearLibraryRepository) Update(ctx context.Context, gear *library.GearLibraryItem) (*library.GearLibraryItem, error) {
 	args := m.Called(ctx, gear)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.GearLibraryItem), args.Error(1)
+	return args.Get(0).(*library.GearLibraryItem), args.Error(1)
 }
 
 func (m *MockGearLibraryRepository) Delete(ctx context.Context, id string, userID string) error {
@@ -208,7 +55,7 @@ func (m *MockGearLibraryRepository) Delete(ctx context.Context, id string, userI
 	return args.Error(0)
 }
 
-func (m *MockGearLibraryRepository) ReplaceAll(ctx context.Context, userID string, gears []*model.GearLibraryItem) error {
+func (m *MockGearLibraryRepository) ReplaceAll(ctx context.Context, userID string, gears []*library.GearLibraryItem) error {
 	args := m.Called(ctx, userID, gears)
 	return args.Error(0)
 }
@@ -265,36 +112,36 @@ type MockMealLibraryRepository struct {
 	mock.Mock
 }
 
-func (m *MockMealLibraryRepository) Create(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error) {
+func (m *MockMealLibraryRepository) Create(ctx context.Context, item *library.MealLibraryItem) (*library.MealLibraryItem, error) {
 	args := m.Called(ctx, item)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.MealLibraryItem), args.Error(1)
+	return args.Get(0).(*library.MealLibraryItem), args.Error(1)
 }
 
-func (m *MockMealLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*model.MealLibraryItem, error) {
+func (m *MockMealLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*library.MealLibraryItem, error) {
 	args := m.Called(ctx, id, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.MealLibraryItem), args.Error(1)
+	return args.Get(0).(*library.MealLibraryItem), args.Error(1)
 }
 
-func (m *MockMealLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*model.MealLibraryItem, error) {
+func (m *MockMealLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*library.MealLibraryItem, error) {
 	args := m.Called(ctx, userID, includeArchived)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*model.MealLibraryItem), args.Error(1)
+	return args.Get(0).([]*library.MealLibraryItem), args.Error(1)
 }
 
-func (m *MockMealLibraryRepository) Update(ctx context.Context, item *model.MealLibraryItem) (*model.MealLibraryItem, error) {
+func (m *MockMealLibraryRepository) Update(ctx context.Context, item *library.MealLibraryItem) (*library.MealLibraryItem, error) {
 	args := m.Called(ctx, item)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*model.MealLibraryItem), args.Error(1)
+	return args.Get(0).(*library.MealLibraryItem), args.Error(1)
 }
 
 func (m *MockMealLibraryRepository) Delete(ctx context.Context, id string, userID string) error {
@@ -302,7 +149,7 @@ func (m *MockMealLibraryRepository) Delete(ctx context.Context, id string, userI
 	return args.Error(0)
 }
 
-func (m *MockMealLibraryRepository) ReplaceAll(ctx context.Context, userID string, items []*model.MealLibraryItem) error {
+func (m *MockMealLibraryRepository) ReplaceAll(ctx context.Context, userID string, items []*library.MealLibraryItem) error {
 	args := m.Called(ctx, userID, items)
 	return args.Error(0)
 }

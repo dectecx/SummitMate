@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"summitmate/api"
-	"summitmate/internal/auth"
+	"summitmate/internal/auth/tokens"
 )
 
 // contextKey 為自訂型別，避免 context key 與其他套件衝突。
@@ -19,7 +19,7 @@ const UserIDKey contextKey = "user_id"
 // 1. 自動偵測 oapi-codegen 注入的 BearerAuthScopes (Context Key)
 // 2. 如果不存在，表示為公開路徑，直接放行。
 // 3. 如果存在，執行 Bearer Token 驗證並注入 UserID。
-func JWTAuth(tokenManager *auth.TokenManager) func(http.Handler) http.Handler {
+func JWTAuth(tokenManager *tokens.TokenManager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			// 檢查 oapi-codegen 注入的 Security Scopes
