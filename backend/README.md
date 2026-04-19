@@ -123,13 +123,13 @@ go run ./cmd/migrate drop
 
 ### 環境變數
 
-| 變數           | 預設值                                                              | 說明                         |
-| :------------- | :------------------------------------------------------------------ | :--------------------------- |
+| 變數           | 預設值                                                              | 說明                                   |
+| :------------- | :------------------------------------------------------------------ | :------------------------------------- |
 | `ENV`          | `development`                                                       | 執行環境 (`production`, `development`) |
-| `PORT`         | `8080`                                                              | HTTP 監聽埠                  |
-| `DATABASE_URL` | `postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable` | PostgreSQL 連線              |
-| `JWT_SECRET`   | `summitmate-dev-secret-change-in-production`                        | JWT 簽名密鑰                 |
-| `CWA_API_KEY`  | (必填)                                                              | 中央氣象署 Open Data API Key |
+| `PORT`         | `8080`                                                              | HTTP 監聽埠                            |
+| `DATABASE_URL` | `postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable` | PostgreSQL 連線                        |
+| `JWT_SECRET`   | `summitmate-dev-secret-change-in-production`                        | JWT 簽名密鑰                           |
+| `CWA_API_KEY`  | (必填)                                                              | 中央氣象署 Open Data API Key           |
 
 ## 定時任務
 
@@ -156,7 +156,7 @@ CWA_API_KEY=your_key_here go run ./cmd/weatherjob
    ```
 3. **實作領域邏輯**：在 `internal/<domain>/` 下實作對應的 Handler、Service 與 Repository
 4. **掛載路由**：在 `internal/app/api/` 對應的轉接檔中掛載方法
-4. **驗證**：瀏覽 http://localhost:8080/docs 確認新 endpoint
+5. **驗證**：瀏覽 http://localhost:8080/docs 確認新 endpoint
 
 ### 建置
 
@@ -172,14 +172,14 @@ docker build -t summitmate-api .
 
 系統採用 Go 標準庫 `log/slog` 進行結構化日誌記錄。日誌行為會根據 `ENV` 環境變數自動切換：
 
--   **開發環境 (`ENV=development`)**：
-    -   格式：人類可讀的 Text 格式。
-    -   輸出：同時輸出至 `stdout` (控制台) 與 `backend/logs/app.log` 檔案。
-    -   用途：方便開發者在控制台即時除錯，並保留本地日誌檔案供後續查驗。
--   **正式環境 (`ENV=production`)**：
-    -   格式：結構化 **JSON** 格式。
-    -   輸出：僅輸出至 `stdout`。
-    -   用途：符合雲端平台 (如 GCP, Azure, AWS) 的日誌收集慣例，方便集中化監控與檢索。
+- **開發環境 (`ENV=development`)**：
+  - 格式：人類可讀的 Text 格式。
+  - 輸出：同時輸出至 `stdout` (控制台) 與 `backend/logs/app.log` 檔案。
+  - 用途：方便開發者在控制台即時除錯，並保留本地日誌檔案供後續查驗。
+- **正式環境 (`ENV=production`)**：
+  - 格式：結構化 **JSON** 格式。
+  - 輸出：僅輸出至 `stdout`。
+  - 用途：符合雲端平台 (如 GCP, Azure, AWS) 的日誌收集慣例，方便集中化監控與檢索。
 
 所有 HTTP 請求皆會自動附帶 `request_id` 與執行時長，業務邏輯層則會記錄關鍵動作 (如註冊、行程建立等) 以供追蹤使用者操作流程。
 
@@ -187,4 +187,17 @@ docker build -t summitmate-api .
 
 - **目標平台**：GCP e2-micro (Free Tier)
 - **資料庫**：Supabase PostgreSQL (Free Tier, 500MB)
-- 詳細部署指南待 Phase 4 完成後補充
+
+### GCP Artifact Registry 部署
+
+```powershell
+# 1. Docker 驗證
+gcloud auth configure-docker us-central1-docker.pkg.dev
+
+# 2. 建置與推送鏡像
+cd backend
+$PROJECT_ID="summitmate"
+
+docker build -t us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:v1 .
+docker push us-central1-docker.pkg.dev/${PROJECT_ID}/summitmate-repo/api:v1
+```
