@@ -32,6 +32,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type App struct {
@@ -121,6 +122,13 @@ func (a *App) setupDocs(router *chi.Mux) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		// Dynamically set the server to a relative path.
+		// This ensures the API explorer works regardless of the domain it's hosted on.
+		swagger.Servers = []*openapi3.Server{
+			{URL: "/api/v1", Description: "Auto-detected"},
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(swagger)
 	})

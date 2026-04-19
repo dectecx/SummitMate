@@ -27,7 +27,8 @@ jobs:
 
       - name: 🔑 Create .env.prod
         run: |
-          echo "GAS_BASE_URL=${{ secrets.GAS_BASE_URL }}" > .env.prod
+          echo "API_BASE_URL=${{ vars.API_BASE_URL }}" > .env.prod
+          echo "ENVIRONMENT=prod" >> .env.prod
           echo "CWA_API_KEY=${{ secrets.CWA_API_KEY }}" >> .env.prod
           echo "CWA_API_HOST=/cwa-proxy" >> .env.prod
 
