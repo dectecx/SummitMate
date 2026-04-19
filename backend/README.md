@@ -185,8 +185,16 @@ docker build -t summitmate-api .
 
 ## 部署
 
-- **目標平台**：GCP e2-micro (Free Tier)
-- **資料庫**：Supabase PostgreSQL (Free Tier, 500MB)
+- **目標平台**：GCP Cloud Run (API)
+- **資料庫**：GCP e2-micro VM + Docker (PostgreSQL 18)
+
+## 基礎設施維護 (Maintenance)
+
+### 進入正式環境資料庫 (psql)
+若需手動執行 SQL 或查看資料，請先 SSH 進入 GCP VM，然後執行：
+```bash
+sudo docker exec -it summitmate-db psql -U dev -d summitmate
+```
 
 ### GCP Artifact Registry 部署
 
