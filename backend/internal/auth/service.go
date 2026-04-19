@@ -254,6 +254,7 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
+			svc.logger.WarnContext(ctx, "重發驗證碼失敗: 找不到使用者 (基於安全隱藏)", "email", emailAddr)
 			return nil // 基於安全性，隱藏使用者是否存在
 		}
 		return err
