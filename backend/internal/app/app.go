@@ -54,8 +54,7 @@ func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	return app, nil
 }
 
-func (a *App) Run() error {
-	// Initialize everything
+func (a *App) InitRouter() *chi.Mux {
 	apiServer := a.initializeAPI()
 
 	router := chi.NewRouter()
@@ -64,9 +63,6 @@ func (a *App) Run() error {
 	router.Use(middleware.RequestLogger(a.Logger))
 	router.Use(middleware.CORS(a.Config.AllowedOrigins))
 	router.Use(chiMiddleware.Recoverer)
-
-	// Scalar API Reference & OpenAPI JSON
-	a.setupDocs(router)
 
 	// API Handler
 	apiHandler := api.HandlerWithOptions(apiServer, api.ChiServerOptions{
@@ -82,6 +78,15 @@ func (a *App) Run() error {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "version": "1.0.0"})
 	})
+
+	return router
+}
+
+func (a *App) Run() error {
+	router := a.InitRouter()
+
+	// Scalar API Reference & OpenAPI JSON
+	a.setupDocs(router)
 
 	a.Server = &http.Server{
 		Addr:    a.Config.Addr(),
