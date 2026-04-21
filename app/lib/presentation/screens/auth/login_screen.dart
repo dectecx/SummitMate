@@ -227,8 +227,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return '請輸入密碼';
                         }
-                        if (value.length < 6) {
-                          return '密碼至少需要 6 個字元';
+                        if (value.length < 8) {
+                          return '密碼至少需要 8 個字元';
                         }
                         return null;
                       },
