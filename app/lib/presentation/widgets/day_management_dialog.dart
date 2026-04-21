@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
@@ -15,6 +16,7 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
   // Local state for reordering to avoid flickering and rebuilds during drag
   List<String> _localDays = [];
   bool _isLoading = true;
+  int _pendingActions = 0;
 
   @override
   void initState() {
@@ -38,6 +40,16 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
       listener: (context, state) {
         if (state is ItineraryError) {
           ToastService.error(state.message);
+          if (_pendingActions == 0) {
+            _initData();
+            setState(() {});
+          }
+        } else if (state is ItineraryLoaded) {
+          if (_pendingActions == 0 && !listEquals(_localDays, state.dayNames)) {
+            setState(() {
+              _localDays = List.from(state.dayNames);
+            });
+          }
         }
       },
       child: AlertDialog(
@@ -95,13 +107,23 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
+
+    if (oldIndex == newIndex) return;
+
     setState(() {
+      _pendingActions++;
       final item = _localDays.removeAt(oldIndex);
       _localDays.insert(newIndex, item);
+      _localDays = List.from(_localDays);
     });
 
-    // Save to Cubit (Fire and forget, or await without rebuilding UI dependency)
-    await context.read<ItineraryCubit>().reorderDays(_localDays);
+    try {
+      await context.read<ItineraryCubit>().reorderDays(List.from(_localDays));
+    } finally {
+      if (mounted) {
+        setState(() => _pendingActions--);
+      }
+    }
   }
 
   Future<void> _showAddDialog(BuildContext context) async {
@@ -130,10 +152,20 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
       }
 
       setState(() {
+        _pendingActions++;
         _localDays.add(result);
+        _localDays = List.from(_localDays);
       });
 
-      await cubit.addDay(result);
+      try {
+        await cubit.addDay(result);
+      } finally {
+        if (mounted) {
+          setState(() {
+            _pendingActions--;
+          });
+        }
+      }
     }
   }
 
@@ -164,10 +196,20 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
       }
 
       setState(() {
+        _pendingActions++;
         _localDays[index] = result;
+        _localDays = List.from(_localDays);
       });
 
-      await cubit.renameDay(oldName, result);
+      try {
+        await cubit.renameDay(oldName, result);
+      } finally {
+        if (mounted) {
+          setState(() {
+            _pendingActions--;
+          });
+        }
+      }
     }
   }
 
@@ -196,15 +238,25 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
       // 若刪除失敗 (例如該天數下仍有行程)，Cubit 會拋出錯誤，
       // 此時 catch 區塊會捕捉錯誤並呼叫 _initData() 還原本地列表。
       setState(() {
+        _pendingActions++;
         _localDays.removeAt(index);
+        _localDays = List.from(_localDays);
       });
 
       try {
         await cubit.removeDay(name);
       } catch (e) {
-        // 發生錯誤時還原資料
-        _initData();
-        setState(() {});
+        // 發生錯誤時由 BlocListener 處理 Error 顯示，此處僅負責還原資料
+        if (mounted) {
+          _initData();
+          setState(() {});
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _pendingActions--;
+          });
+        }
       }
     }
   }
