@@ -293,7 +293,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, MessageCubit cubit, String uuid) {
+  void _confirmDelete(BuildContext context, MessageCubit cubit, String id) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -303,7 +303,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () {
-              cubit.deleteMessage(uuid);
+              cubit.deleteMessage(id);
               Navigator.pop(context);
             },
             child: const Text('刪除'),

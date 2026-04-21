@@ -133,10 +133,10 @@ class MessageCubit extends Cubit<MessageState> {
 
   /// 刪除留言
   ///
-  /// [uuid] 留言 UUID
-  Future<void> deleteMessage(String uuid) async {
+  /// [id] 留言 ID
+  Future<void> deleteMessage(String id) async {
     try {
-      final result = await _repository.deleteById(uuid);
+      final result = await _repository.deleteById(id);
       if (result is Failure) {
         throw result.exception;
       }

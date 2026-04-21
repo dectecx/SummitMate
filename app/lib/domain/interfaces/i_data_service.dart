@@ -30,8 +30,8 @@ abstract interface class IDataService {
 
   /// 刪除留言
   ///
-  /// [uuid] 留言 UUID
-  Future<Result<void, Exception>> deleteMessage(String uuid);
+  /// [id] 留言 ID
+  Future<Result<void, Exception>> deleteMessage(String id);
 
   /// 批次新增留言
   ///
