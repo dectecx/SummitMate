@@ -4,6 +4,7 @@
 DROP INDEX IF EXISTS idx_weather_start_time;
 DROP INDEX IF EXISTS idx_weather_location;
 DROP TABLE IF EXISTS weather_data;
+DROP TABLE IF EXISTS system_flags;
 DROP TABLE IF EXISTS heartbeats;
 DROP TABLE IF EXISTS favorites;
 DROP INDEX IF EXISTS idx_logs_level;

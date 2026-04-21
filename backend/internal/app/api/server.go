@@ -3,6 +3,7 @@ package api
 import (
 	"summitmate/internal/auth"
 	"summitmate/internal/auth/tokens"
+	"summitmate/internal/flag"
 	"summitmate/internal/favorite"
 	"summitmate/internal/groupevent"
 	"summitmate/internal/heartbeat"
@@ -19,6 +20,7 @@ type Server struct {
 	TripHandler        *trip.TripHandler
 	LibraryHandler     *library.LibraryHandler
 	InteractionHandler *interaction.InteractionHandler
+	FlagHandler        *flag.FlagHandler
 
 	// Feature Handlers
 	TripGearHandler  *trip.TripGearHandler
@@ -44,6 +46,7 @@ func NewServer(
 	weatherH *weather.WeatherHandler,
 	logH *log.LogHandler,
 	hbH *heartbeat.HeartbeatHandler,
+	flagH *flag.FlagHandler,
 	tm *tokens.TokenManager,
 ) *Server {
 	return &Server{
@@ -51,6 +54,7 @@ func NewServer(
 		TripHandler:        tripH,
 		LibraryHandler:     libH,
 		InteractionHandler: interH,
+		FlagHandler:        flagH,
 		TripGearHandler:    gearH,
 		TripMealHandler:    mealH,
 		FavoriteHandler:    favH,

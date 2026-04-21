@@ -8,6 +8,7 @@ import (
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth/tokens"
+	"summitmate/internal/flag"
 	"summitmate/pkg/cache"
 	"summitmate/pkg/email"
 )
@@ -30,6 +31,7 @@ type authService struct {
 	tokenManager *tokens.TokenManager
 	emailService *email.EmailService
 	authCache    cache.Cache[string]
+	flagService  flag.Service
 	jwtSecret    []byte
 }
 
@@ -39,6 +41,7 @@ func NewAuthService(
 	tokenManager *tokens.TokenManager,
 	emailService *email.EmailService,
 	authCache cache.Cache[string],
+	flagService flag.Service,
 	jwtSecret string,
 ) AuthService {
 	return &authService{
@@ -47,6 +50,7 @@ func NewAuthService(
 		tokenManager: tokenManager,
 		emailService: emailService,
 		authCache:    authCache,
+		flagService:  flagService,
 		jwtSecret:    []byte(jwtSecret),
 	}
 }
@@ -103,13 +107,15 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 
 	svc.logger.InfoContext(ctx, "使用者註冊成功", "user_id", createdUser.ID, "email", emailAddr)
 
-	// 非同步發送驗證信
-	if svc.emailService != nil {
+	// 非同步發送驗證信 (檢查旗標)
+	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		go func() {
 			if err := svc.emailService.SendVerificationCode(createdUser.Email, code, 10); err != nil {
 				svc.logger.Error("發送驗證信失敗", "user_id", createdUser.ID, "error", err)
 			}
 		}()
+	} else if !svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
+		svc.logger.Info("發送驗證信已停用 (旗標控制)", "email", createdUser.Email, "code", code)
 	}
 
 	// 簽發 JWT Token (有效期 24 小時)
@@ -227,6 +233,15 @@ func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string)
 		return nil // 已經驗證過了
 	}
 
+	// 檢查旗標是否允許跳過驗證碼校驗
+	if svc.flagService.IsEnabled(ctx, flag.SkipVerificationCode) {
+		svc.logger.Info("驗證碼校驗跳過 (旗標控制)", "email", emailAddr, "input_code", code)
+		if err := svc.userRepo.SetVerified(ctx, user.ID); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	// 從快取取得驗證碼
 	cachedCode, err := svc.authCache.Get(ctx, authVerificationKey(emailAddr))
 	if err != nil {
@@ -274,12 +289,14 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 		return err
 	}
 
-	if svc.emailService != nil {
+	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		go func() {
 			if err := svc.emailService.SendVerificationCode(user.Email, code, 10); err != nil {
 				svc.logger.Error("重發驗證信失敗", "user_id", user.ID, "error", err)
 			}
 		}()
+	} else if !svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
+		svc.logger.Info("重發驗證信已停用 (旗標控制)", "email", user.Email, "code", code)
 	}
 
 	return nil

@@ -394,3 +394,18 @@ CREATE TABLE IF NOT EXISTS weather_data (
 
 CREATE INDEX idx_weather_location ON weather_data (location);
 CREATE INDEX idx_weather_start_time ON weather_data (start_time);
+
+-- 3.9 System Flags
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS system_flags (
+    key         TEXT PRIMARY KEY,
+    value       BOOLEAN NOT NULL DEFAULT FALSE,
+    description TEXT,
+    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO system_flags (key, value, description) VALUES
+    ('skip_verification_code', FALSE, 'Whether to allow any verification code to pass'),
+    ('enable_email_sending',   TRUE,  'Whether to actually send emails')
+ON CONFLICT (key) DO NOTHING;
