@@ -26,6 +26,7 @@ import (
 	"summitmate/internal/middleware"
 	"summitmate/internal/trip"
 	"summitmate/internal/weather"
+	"summitmate/internal/flag"
 	"summitmate/pkg/cache"
 	"summitmate/pkg/email"
 
@@ -80,6 +81,12 @@ func (a *App) InitRouter() *chi.Mux {
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "version": "1.0.0"})
+	})
+
+	// System Flags API
+	router.Route("/api/v1/system", func(r chi.Router) {
+		r.Get("/flags", apiServer.FlagHandler.GetFlags)
+		r.Post("/flags", apiServer.FlagHandler.UpdateFlag)
 	})
 
 	return router
@@ -179,6 +186,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	weatherRepo := weather.NewWeatherRepository(pool)
 	logRepo := log.NewLogRepository(pool)
 	heartbeatRepo := heartbeat.NewHeartbeatRepository(pool)
+	flagRepo := flag.NewRepository(pool)
 
 	// --- Utilities ---
 	tokenManager := tokens.NewTokenManager(cfg.JWTSecret)
@@ -196,8 +204,10 @@ func (a *App) initializeAPI() *appapi.Server {
 		RedisAddr: cfg.RedisAddr, RedisPassword: cfg.RedisPassword, RedisDB: cfg.RedisDB,
 	})
 
+	flagService := flag.NewService(flagRepo, logger)
+
 	// --- Services ---
-	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, cfg.JWTSecret)
+	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret)
 	tripService := trip.NewTripService(logger, tripRepo, tripMemberRepo, tripItineraryRepo, authRepo)
 	gearLibService := library.NewGearLibraryService(logger, gearLibRepo)
 	mealLibService := library.NewMealLibraryService(logger, mealLibRepo)
@@ -227,11 +237,13 @@ func (a *App) initializeAPI() *appapi.Server {
 	weatherHandler := weather.NewWeatherHandler(weatherService)
 	logHandler := log.NewLogHandler(logService)
 	heartbeatHandler := heartbeat.NewHeartbeatHandler(heartbeatService)
+	flagHandler := flag.NewFlagHandler(flagService)
 
 	return appapi.NewServer(
 		authHandler, tripHandler, libraryHandler, interactionHandler,
 		tripGearHandler, tripMealHandler, favoriteHandler,
 		groupHandler, weatherHandler, logHandler, heartbeatHandler,
+		flagHandler,
 		tokenManager,
 	)
 }
