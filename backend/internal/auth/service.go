@@ -23,6 +23,7 @@ type AuthService interface {
 	RefreshToken(ctx context.Context, oldToken string) (*User, string, error)
 	VerifyEmail(ctx context.Context, email, code string) error
 	ResendVerificationCode(ctx context.Context, email string) error
+	SearchUserByEmail(ctx context.Context, email string) (*User, error)
 }
 
 type authService struct {
@@ -301,3 +302,9 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 
 	return nil
 }
+
+// SearchUserByEmail 透過 Email 搜尋使用者。
+func (svc *authService) SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error) {
+	return svc.userRepo.GetByEmail(ctx, emailAddr)
+}
+

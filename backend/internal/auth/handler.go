@@ -164,6 +164,35 @@ func (h *AuthHandler) ResendVerificationCode(w http.ResponseWriter, r *http.Requ
 	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "驗證碼已寄出"})
 }
 
+// SearchUserByEmail 處理 GET /users/search 請求。
+func (h *AuthHandler) SearchUserByEmail(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
+	if email == "" {
+		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("必須提供 email 參數"))
+		return
+	}
+
+	user, err := h.authService.SearchUserByEmail(r.Context(), email)
+	if err != nil {
+		apiutil.SendError(w, r, apperror.ErrUserNotFound)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, ToUserResponse(user))
+}
+
+// GetUserByID 處理 GET /users/{userId} 請求。
+func (h *AuthHandler) GetUserByID(w http.ResponseWriter, r *http.Request, userID string) {
+	user, err := h.authService.GetUserByID(r.Context(), userID)
+	if err != nil {
+		apiutil.SendError(w, r, apperror.ErrUserNotFound)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, ToUserResponse(user))
+}
+
+
 // --- 回應輔助函式 ---
 
 func (h *AuthHandler) writeAuthResponse(w http.ResponseWriter, statusCode int, user *User, token string) {

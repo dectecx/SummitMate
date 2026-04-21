@@ -17,6 +17,8 @@ tags:
     description: Authentication & Authorization
   - name: trips
     description: Trip Management
+  - name: users
+    description: User Management
   - name: gear-library
     description: Personal Gear Library
   - name: meal-library
@@ -230,6 +232,62 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+
+  /users/search:
+    get:
+      summary: Search User by Email
+      description: 透過 Email 搜尋使用者資料 (用於新增成員前確認)
+      operationId: searchUserByEmail
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        "200":
+          description: 成功找到使用者
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 未登入
+        "404":
+          description: 找不到該使用者
+
+  /users/{userId}:
+    get:
+      summary: Get User Profile by ID
+      description: 透過 User ID 取得使用者資料
+      operationId: getUserById
+      tags:
+        - users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得資料
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 未登入
+        "404":
+          description: 找不到該使用者
 
   /trips:
     get:
