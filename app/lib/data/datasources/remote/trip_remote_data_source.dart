@@ -50,6 +50,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
           'description': trip.description ?? '',
           'cover_image': trip.coverImage ?? '',
           'is_active': trip.isActive,
+          'day_names': trip.dayNames,
         },
       );
 
@@ -79,6 +80,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
           'description': trip.description ?? '',
           'cover_image': trip.coverImage ?? '',
           'is_active': trip.isActive,
+          'day_names': trip.dayNames,
         },
       );
 
