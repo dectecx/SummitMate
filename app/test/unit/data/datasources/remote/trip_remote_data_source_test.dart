@@ -51,6 +51,7 @@ void main() {
           'updated_at': '2024-01-01T00:00:00.000Z',
           'updated_by': 'user-456',
           'is_active': true,
+          'day_names': [],
         },
       ];
 
