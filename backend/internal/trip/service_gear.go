@@ -104,13 +104,9 @@ func (s *tripGearService) isTripMemberOrCreator(ctx context.Context, tripID, use
 	if err == nil && trip.UserID == userID {
 		return true
 	}
-	members, err := s.memberRepo.ListByTripID(ctx, tripID)
-	if err == nil {
-		for _, m := range members {
-			if m.UserID == userID {
-				return true
-			}
-		}
+	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
+	if err != nil {
+		return false
 	}
-	return false
+	return isMember
 }

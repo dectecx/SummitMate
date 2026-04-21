@@ -12,6 +12,7 @@ type TripMemberRepository interface {
 	AddMember(ctx context.Context, tripID string, userID string) error
 	RemoveMember(ctx context.Context, tripID string, userID string) error
 	ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error)
+	IsMember(ctx context.Context, tripID string, userID string) (bool, error)
 }
 
 type tripMemberRepository struct {
@@ -43,6 +44,18 @@ func (repo *tripMemberRepository) RemoveMember(ctx context.Context, tripID strin
 	db := database.GetQuerier(ctx, repo.pool)
 	_, err := db.Exec(ctx, query, tripID, userID)
 	return err
+}
+
+// IsMember 回傳指定使用者是否為行程成員。
+func (repo *tripMemberRepository) IsMember(ctx context.Context, tripID string, userID string) (bool, error) {
+	query := `SELECT EXISTS(SELECT 1 FROM trip_members WHERE trip_id = $1 AND user_id = $2)`
+	db := database.GetQuerier(ctx, repo.pool)
+	var exists bool
+	err := db.QueryRow(ctx, query, tripID, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 // ListByTripID 取得行程的所有成員，同時結合 users 表的顯示名稱與 Email 等資訊。

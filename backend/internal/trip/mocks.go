@@ -105,6 +105,11 @@ func (m *MockTripMemberRepository) RemoveMember(ctx context.Context, tripID, use
 	return args.Error(0)
 }
 
+func (m *MockTripMemberRepository) IsMember(ctx context.Context, tripID, userID string) (bool, error) {
+	args := m.Called(ctx, tripID, userID)
+	return args.Bool(0), args.Error(1)
+}
+
 func (m *MockTripMemberRepository) ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error) {
 	args := m.Called(ctx, tripID)
 	if args.Get(0) == nil {
