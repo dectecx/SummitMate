@@ -26,7 +26,7 @@ void main() {
     email: 'test@example.com',
     displayName: 'Test User',
     avatar: 'test-avatar',
-    roleCode: RoleConstants.member,
+    role: RoleConstants.member,
     isVerified: true,
   );
 
@@ -34,7 +34,7 @@ void main() {
     id: 'unverified-uuid',
     email: 'unverified@example.com',
     displayName: 'Unverified User',
-    roleCode: RoleConstants.member,
+    role: RoleConstants.member,
     isVerified: false,
   );
 
@@ -76,7 +76,7 @@ void main() {
             .having((s) => s.userName, 'userName', testUser.displayName)
             .having((s) => s.email, 'email', testUser.email)
             .having((s) => s.avatar, 'avatar', testUser.avatar)
-            .having((s) => s.roleCode, 'roleCode', testUser.roleCode)
+            .having((s) => s.role, 'role', testUser.role)
             .having((s) => s.permissions, 'permissions', testUser.permissions)
             .having((s) => s.isGuest, 'isGuest', false)
             .having((s) => s.isOffline, 'isOffline', false),
@@ -115,7 +115,7 @@ void main() {
             .having((s) => s.userId, 'userId', testUser.id)
             .having((s) => s.userName, 'userName', testUser.displayName)
             .having((s) => s.avatar, 'avatar', testUser.avatar)
-            .having((s) => s.roleCode, 'roleCode', testUser.roleCode)
+            .having((s) => s.role, 'role', testUser.role)
             .having((s) => s.permissions, 'permissions', testUser.permissions)
             .having((s) => s.isGuest, 'isGuest', false),
       ],

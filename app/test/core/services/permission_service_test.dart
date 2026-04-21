@@ -18,15 +18,15 @@ void main() {
     id: 'admin-id',
     email: 'admin@test.com',
     displayName: 'Admin',
-    roleCode: RoleConstants.admin,
-    permissions: [], // Admin implies all permissions usually, but logic checks roleCode
+    role: RoleConstants.admin,
+    permissions: [], // Admin implies all permissions usually, but logic checks role
   );
 
   final leaderUser = UserProfile(
     id: 'leader-id',
     email: 'leader@test.com',
     displayName: 'Leader',
-    roleCode: RoleConstants.leader,
+    role: RoleConstants.leader,
     permissions: ['trip.edit', 'trip.delete', 'member.manage'], // Typical leader perms
   );
 
@@ -34,7 +34,7 @@ void main() {
     id: 'member-id',
     email: 'member@test.com',
     displayName: 'Member',
-    roleCode: RoleConstants.member,
+    role: RoleConstants.member,
     permissions: ['trip.view'],
   );
 
@@ -42,7 +42,7 @@ void main() {
     id: 'super-member-id',
     email: 'super@test.com',
     displayName: 'Super Member',
-    roleCode: RoleConstants.member,
+    role: RoleConstants.member,
     permissions: ['trip.view', 'trip.edit'], // Member with extra permission
   );
 
@@ -114,7 +114,7 @@ void main() {
           id: 'owner-id',
           email: '',
           displayName: '',
-          roleCode: RoleConstants.member,
+          role: RoleConstants.member,
           permissions: [], // No explicit permissions
         );
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => ownerUser);
@@ -174,7 +174,7 @@ void main() {
           id: 'mem-id',
           email: '',
           displayName: '',
-          roleCode: RoleConstants.member,
+          role: RoleConstants.member,
           permissions: [],
         );
         when(() => myTrip.userId).thenReturn('mem-id');

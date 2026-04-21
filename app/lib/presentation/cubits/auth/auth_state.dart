@@ -31,7 +31,7 @@ final class AuthAuthenticated extends AuthState {
   final String? avatar;
 
   /// 角色代碼
-  final String? roleCode;
+  final String? role;
 
   /// 權限列表
   final List<String> permissions;
@@ -48,7 +48,7 @@ final class AuthAuthenticated extends AuthState {
   /// [userName] 使用者名稱
   /// [email] Email
   /// [avatar] 頭像 URL
-  /// [roleCode] 角色代碼
+  /// [role] 角色代碼
   /// [permissions] 權限列表
   /// [isGuest] 是否為訪客
   /// [isOffline] 是否為離線模式
@@ -57,7 +57,7 @@ final class AuthAuthenticated extends AuthState {
     this.userName,
     this.email,
     this.avatar,
-    this.roleCode,
+    this.role,
     this.permissions = const [],
     this.isGuest = false,
     this.isOffline = false,
@@ -69,13 +69,13 @@ final class AuthAuthenticated extends AuthState {
     email: email ?? '',
     displayName: userName ?? '',
     avatar: avatar ?? '🐻',
-    roleCode: roleCode ?? RoleConstants.member,
+    role: role ?? RoleConstants.member,
     permissions: permissions,
     isVerified: true, // 假設已認證，若需準確需存更多欄位
   );
 
   @override
-  List<Object?> get props => [userId, userName, email, avatar, roleCode, permissions, isGuest, isOffline];
+  List<Object?> get props => [userId, userName, email, avatar, role, permissions, isGuest, isOffline];
 }
 
 /// 未認證 (未登入)

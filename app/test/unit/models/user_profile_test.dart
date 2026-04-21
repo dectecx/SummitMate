@@ -9,7 +9,7 @@ void main() {
       'email': 'test@example.com',
       'display_name': 'Test User',
       'avatar': '🐻',
-      'role_code': RoleConstants.leader,
+      'role': RoleConstants.leader,
       'is_verified': true,
     };
 
@@ -20,7 +20,7 @@ void main() {
       expect(user.email, 'test@example.com');
       expect(user.displayName, 'Test User');
       expect(user.avatar, '🐻');
-      expect(user.roleCode, RoleConstants.leader);
+      expect(user.role, RoleConstants.leader);
       expect(user.isVerified, isTrue);
     });
 
@@ -30,7 +30,7 @@ void main() {
         email: 'test@example.com',
         displayName: 'Test User',
         avatar: '🐻',
-        roleCode: RoleConstants.leader,
+        role: RoleConstants.leader,
         isVerified: true,
       );
 
@@ -40,7 +40,7 @@ void main() {
       expect(json['email'], 'test@example.com');
       expect(json['display_name'], 'Test User');
       expect(json['avatar'], '🐻');
-      expect(json['role_code'], RoleConstants.leader);
+      expect(json['role'], RoleConstants.leader);
       expect(json['is_verified'], isTrue);
     });
 
@@ -51,7 +51,7 @@ void main() {
 
       expect(user.id, 'user-456');
       expect(user.avatar, '🐻'); // Default value in constructor
-      expect(user.roleCode, RoleConstants.member); // Default value in constructor
+      expect(user.role, RoleConstants.member); // Default value in constructor
       expect(user.isVerified, isFalse); // Default value in constructor
     });
 
@@ -73,9 +73,9 @@ void main() {
     });
 
     test('Method: isLeader and isAdmin', () {
-      final admin = UserProfile(id: '1', email: 'a@a.com', displayName: 'A', roleCode: RoleConstants.admin);
-      final leader = UserProfile(id: '2', email: 'l@l.com', displayName: 'L', roleCode: RoleConstants.leader);
-      final member = UserProfile(id: '3', email: 'm@m.com', displayName: 'M', roleCode: RoleConstants.member);
+      final admin = UserProfile(id: '1', email: 'a@a.com', displayName: 'A', role: RoleConstants.admin);
+      final leader = UserProfile(id: '2', email: 'l@l.com', displayName: 'L', role: RoleConstants.leader);
+      final member = UserProfile(id: '3', email: 'm@m.com', displayName: 'M', role: RoleConstants.member);
 
       expect(admin.isAdmin, isTrue);
       expect(admin.isLeader, isTrue);
