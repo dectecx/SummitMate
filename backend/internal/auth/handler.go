@@ -33,7 +33,7 @@ func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName)
+	user, token, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName, req.Avatar)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return

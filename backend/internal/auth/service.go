@@ -15,7 +15,7 @@ import (
 
 // AuthService 定義認證相關的業務邏輯介面。
 type AuthService interface {
-	Register(ctx context.Context, email, password, displayName string) (*User, string, error)
+	Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, error)
 	Login(ctx context.Context, email, password string) (*User, string, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	UpdateProfile(ctx context.Context, id string, displayName, avatar *string) (*User, error)
@@ -63,7 +63,7 @@ func NewAuthService(
 //  4. 簽發 JWT Token
 //
 // 回傳新建的 User、JWT Token、或錯誤。
-func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string) (*User, string, error) {
+func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string, avatar *string) (*User, string, error) {
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err == nil {
@@ -99,6 +99,9 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 		PasswordHash: hash,
 		DisplayName:  displayName,
 		IsVerified:   false,
+	}
+	if avatar != nil && *avatar != "" {
+		newUser.Avatar = *avatar
 	}
 	createdUser, err := svc.userRepo.Create(ctx, newUser)
 	if err != nil {
