@@ -3232,7 +3232,7 @@ components:
           maxLength: 100
         avatar:
           type: string
-          maxLength: 10
+          maxLength: 255
 
     RefreshTokenRequest:
       type: object
