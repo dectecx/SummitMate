@@ -226,7 +226,7 @@ class AuthCubit extends Cubit<AuthState> {
         userName: user.displayName,
         email: user.email,
         avatar: user.avatar,
-        roleCode: user.roleCode,
+        role: user.role,
         permissions: user.permissions,
         isGuest: isGuest,
         isOffline: isOffline,

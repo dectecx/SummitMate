@@ -22,7 +22,7 @@ class UserProfile {
 
   final String roleId; // Role UUID
 
-  final String roleCode; // e.g., 'ADMIN', 'LEADER'
+  final String role; // e.g., 'ADMIN', 'LEADER'
 
   final List<String> permissions; // e.g., ['trip.edit', 'trip.view']
 
@@ -34,14 +34,14 @@ class UserProfile {
     required this.displayName,
     this.avatar = '🐻',
     this.roleId = '',
-    this.roleCode = RoleConstants.member,
+    this.role = RoleConstants.member,
     this.permissions = const [],
     this.isVerified = false,
   });
 
   /// 角色顯示名稱 (暫時簡單對應，之後建議移動到 Service 或 i18n)
   String get roleName {
-    switch (roleCode) {
+    switch (role) {
       case RoleConstants.admin:
         return '管理員';
       case RoleConstants.leader:
@@ -54,8 +54,8 @@ class UserProfile {
   }
 
   // 保留相容性 Getters
-  bool get isAdmin => roleCode == RoleConstants.admin;
-  bool get isLeader => roleCode == RoleConstants.leader || roleCode == RoleConstants.admin;
+  bool get isAdmin => role == RoleConstants.admin;
+  bool get isLeader => role == RoleConstants.leader || role == RoleConstants.admin;
 
   // Helper to check permission directly on model
   bool can(String permission) => permissions.contains(permission);
@@ -68,7 +68,7 @@ class UserProfile {
     String? displayName,
     String? avatar,
     String? roleId,
-    String? roleCode,
+    String? role,
     List<String>? permissions,
     bool? isVerified,
   }) {
@@ -78,12 +78,12 @@ class UserProfile {
       displayName: displayName ?? this.displayName,
       avatar: avatar ?? this.avatar,
       roleId: roleId ?? this.roleId,
-      roleCode: roleCode ?? this.roleCode,
+      role: role ?? this.role,
       permissions: permissions ?? this.permissions,
       isVerified: isVerified ?? this.isVerified,
     );
   }
 
   @override
-  String toString() => 'UserProfile($email, $displayName, roleCode=$roleCode)';
+  String toString() => 'UserProfile($email, $displayName, role=$role)';
 }

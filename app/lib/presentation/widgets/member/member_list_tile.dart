@@ -37,19 +37,19 @@ class MemberListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final roleCode = member['role_code'] ?? 'member';
+    final role = member['role'] ?? 'member';
 
     // Determine role style
     String roleText;
     IconData roleIcon;
     Color? roleColor;
 
-    if (roleCode == RoleConstants.admin || roleCode == RoleConstants.leader || isOwner) {
+    if (role == RoleConstants.admin || role == RoleConstants.leader || isOwner) {
       roleText = _getRoleName(RoleConstants.leader);
       if (isOwner) roleText += ' (擁)';
       roleIcon = Icons.stars;
       roleColor = Colors.amber;
-    } else if (roleCode == RoleConstants.guide) {
+    } else if (role == RoleConstants.guide) {
       roleText = _getRoleName(RoleConstants.guide);
       roleIcon = Icons.hiking;
       roleColor = Colors.green;

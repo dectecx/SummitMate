@@ -24,7 +24,7 @@ class PermissionService {
   bool canSync(UserProfile? user, String permission) {
     if (user == null) return false;
     // Admin 擁有所有權限
-    if (user.roleCode == RoleConstants.admin) return true;
+    if (user.role == RoleConstants.admin) return true;
     return user.permissions.contains(permission);
   }
 
@@ -39,7 +39,7 @@ class PermissionService {
   /// 是否可以編輯行程 (Sync)
   bool canEditTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.roleCode == RoleConstants.admin) return true;
+    if (user.role == RoleConstants.admin) return true;
 
     // 0. 團長 (Leader/Owner) 絕對擁有編輯權限
     if (trip.userId == user.id) return true;
@@ -62,7 +62,7 @@ class PermissionService {
   /// 是否可以刪除行程 (Sync)
   bool canDeleteTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.roleCode == RoleConstants.admin) return true;
+    if (user.role == RoleConstants.admin) return true;
 
     // 0. 團長 (Leader/Owner) 絕對擁有刪除權限
     if (trip.userId == user.id) return true;
@@ -82,7 +82,7 @@ class PermissionService {
   /// 是否可以移交團長 (Sync)
   bool canTransferTripSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.roleCode == RoleConstants.admin) return true;
+    if (user.role == RoleConstants.admin) return true;
 
     if (!trip.members.contains(user.id)) return false;
 
@@ -98,7 +98,7 @@ class PermissionService {
   /// 是否可以管理成員 (Sync)
   bool canManageMembersSync(UserProfile? user, Trip trip) {
     if (user == null) return false;
-    if (user.roleCode == RoleConstants.admin) return true;
+    if (user.role == RoleConstants.admin) return true;
 
     if (!trip.members.contains(user.id)) return false;
 
@@ -108,7 +108,7 @@ class PermissionService {
   /// 是否可以刪除留言 (Sync)
   bool canDeleteMessageSync(UserProfile? user, Message message) {
     if (user == null) return false;
-    if (user.roleCode == RoleConstants.admin) return true;
+    if (user.role == RoleConstants.admin) return true;
 
     // 用戶只能刪除自己的留言
     return message.userId == user.id;
