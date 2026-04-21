@@ -338,18 +338,13 @@ func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 	return s.itineraryRepo.DeleteByID(ctx, itemID)
 }
 
-// isTripMember 判斷給定的 userID 是否已經被加入該行程。
+// isTripMember 判斷給定的 userID 是否已加入該行程。
 func (s *tripService) isTripMember(ctx context.Context, tripID, userID string) bool {
-	members, err := s.memberRepo.ListByTripID(ctx, tripID)
+	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
 	if err != nil {
 		return false
 	}
-	for _, m := range members {
-		if m.UserID == userID {
-			return true
-		}
-	}
-	return false
+	return isMember
 }
 
 // --- Requests models used in service logic ---
