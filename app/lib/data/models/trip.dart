@@ -44,11 +44,6 @@ class Trip extends HiveObject {
   @JsonKey(name: 'is_active', defaultValue: false, fromJson: _parseBool)
   bool isActive;
 
-  /// 行程成員 (User IDs)
-  @HiveField(8)
-  @JsonKey(defaultValue: <String>[])
-  List<String> members;
-
   /// 每天的名稱 (自定義)
   @HiveField(9)
   @JsonKey(defaultValue: <String>[])
@@ -85,15 +80,13 @@ class Trip extends HiveObject {
     this.endDate,
     this.coverImage,
     this.isActive = false,
-    List<String>? members,
     List<String>? dayNames,
     this.syncStatus = SyncStatus.pendingCreate,
     required this.createdAt,
     required this.createdBy,
     required this.updatedAt,
     required this.updatedBy,
-  }) : members = members ?? [userId], // 預設包含 owner (userId)
-       dayNames = dayNames ?? [];
+  }) : dayNames = dayNames ?? [];
 
   /// 行程天數
   int get durationDays {
