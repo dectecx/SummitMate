@@ -39,7 +39,7 @@ func TestAuthService_Register(t *testing.T) {
 			return u.Email == email && u.DisplayName == displayName
 		})).Return(&User{ID: "user-123", Email: email, DisplayName: displayName}, nil)
 
-		user, token, err := svc.Register(context.Background(), email, password, displayName)
+		user, token, err := svc.Register(context.Background(), email, password, displayName, nil)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, user)
@@ -57,7 +57,7 @@ func TestAuthService_Register(t *testing.T) {
 		email := "existing@example.com"
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(&User{ID: "existing-id"}, nil)
 
-		user, token, err := svc.Register(context.Background(), email, "any", "any")
+		user, token, err := svc.Register(context.Background(), email, "any", "any", nil)
 
 		assert.Error(t, err)
 		assert.Equal(t, apperror.ErrEmailExists, err)

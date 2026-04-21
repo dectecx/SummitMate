@@ -502,6 +502,7 @@ type RefreshTokenRequest struct {
 
 // RegisterRequest defines model for RegisterRequest.
 type RegisterRequest struct {
+	Avatar      *string             `json:"avatar,omitempty"`
 	DisplayName string              `json:"display_name"`
 	Email       openapi_types.Email `json:"email"`
 	Password    string              `json:"password"`

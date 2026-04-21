@@ -2254,6 +2254,9 @@ components:
         display_name:
           type: string
           minLength: 2
+        avatar:
+          type: string
+          maxLength: 255
 
     LoginRequest:
       type: object
