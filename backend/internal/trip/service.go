@@ -8,6 +8,7 @@ import (
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth"
+	"summitmate/internal/database"
 )
 
 // TripService 封裝行程相關的業務邏輯。
@@ -28,6 +29,7 @@ type TripService interface {
 
 type tripService struct {
 	logger        *slog.Logger
+	db            database.Beginner
 	tripRepo      TripRepository
 	memberRepo    TripMemberRepository
 	itineraryRepo ItineraryRepository
@@ -36,6 +38,7 @@ type tripService struct {
 
 func NewTripService(
 	logger *slog.Logger,
+	db database.Beginner,
 	tripRepo TripRepository,
 	memberRepo TripMemberRepository,
 	itineraryRepo ItineraryRepository,
@@ -43,6 +46,7 @@ func NewTripService(
 ) TripService {
 	return &tripService{
 		logger:        logger.With("component", "trip"),
+		db:            db,
 		tripRepo:      tripRepo,
 		memberRepo:    memberRepo,
 		itineraryRepo: itineraryRepo,
@@ -53,31 +57,41 @@ func NewTripService(
 // --- Trip CRUD ---
 
 func (s *tripService) CreateTrip(ctx context.Context, userID string, req *TripCreateRequest) (*Trip, error) {
-	trip := &Trip{
-		UserID:      userID,
-		Name:        req.Name,
-		Description: req.Description,
-		StartDate:   req.StartDate,
-		EndDate:     req.EndDate,
-		CoverImage:  req.CoverImage,
-		IsActive:    false,
-		DayNames:    req.DayNames,
-		CreatedBy:   userID,
-		UpdatedBy:   userID,
-	}
-	if trip.DayNames == nil {
-		trip.DayNames = []string{}
-	}
+	var createdTrip *Trip
 
-	createdTrip, err := s.tripRepo.Create(ctx, trip)
-	if err != nil {
-		s.logger.ErrorContext(ctx, "建立行程失敗", "user_id", userID, "error", err)
-		return nil, err
-	}
+	err := database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		trip := &Trip{
+			UserID:      userID,
+			Name:        req.Name,
+			Description: req.Description,
+			StartDate:   req.StartDate,
+			EndDate:     req.EndDate,
+			CoverImage:  req.CoverImage,
+			IsActive:    false,
+			DayNames:    req.DayNames,
+			CreatedBy:   userID,
+			UpdatedBy:   userID,
+		}
+		if trip.DayNames == nil {
+			trip.DayNames = []string{}
+		}
 
-	err = s.memberRepo.AddMember(ctx, createdTrip.ID, userID)
+		var err error
+		createdTrip, err = s.tripRepo.Create(txCtx, trip)
+		if err != nil {
+			s.logger.ErrorContext(txCtx, "建立行程失敗", "user_id", userID, "error", err)
+			return err
+		}
+
+		err = s.memberRepo.AddMember(txCtx, createdTrip.ID, userID)
+		if err != nil {
+			s.logger.ErrorContext(txCtx, "建立者加入行程成員失敗", "trip_id", createdTrip.ID, "user_id", userID, "error", err)
+			return err
+		}
+		return nil
+	})
+
 	if err != nil {
-		s.logger.ErrorContext(ctx, "建立者加入行程成員失敗", "trip_id", createdTrip.ID, "user_id", userID, "error", err)
 		return nil, err
 	}
 
