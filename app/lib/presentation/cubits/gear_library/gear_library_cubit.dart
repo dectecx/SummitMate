@@ -125,7 +125,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
   /// 刪除庫存項目
   ///
-  /// [uuid] 項目 UUID
+  /// [id] 項目 ID
   Future<void> deleteItem(String id) async {
     try {
       // 解除連結 (Unlink)
@@ -147,7 +147,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
   /// 切換封存狀態
   ///
-  /// [uuid] 項目 UUID
+  /// [id] 項目 ID
   Future<void> toggleArchive(String id) async {
     try {
       final item = _repository.getById(id);

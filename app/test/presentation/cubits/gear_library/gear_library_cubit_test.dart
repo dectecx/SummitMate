@@ -129,7 +129,7 @@ void main() {
         when(() => mockRepo.getAll(any())).thenReturn([libItem1]);
 
         // Mock sync logic
-        final linkedGear = GearItem(uuid: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1');
+        final linkedGear = GearItem(id: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1');
         when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
         when(() => mockTripRepo.getTripById('t1')).thenAnswer(
           (_) async => Success(

@@ -194,7 +194,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
           controller: _queryController,
           decoration: InputDecoration(
             labelText: _searchType == SearchType.email ? '輸入使用者 Email' : '輸入 User ID',
-            hintText: _searchType == SearchType.email ? 'example@gmail.com' : '使用者 UUID',
+            hintText: _searchType == SearchType.email ? 'example@gmail.com' : '使用者 ID',
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.search),
             errorText: _errorMsg,

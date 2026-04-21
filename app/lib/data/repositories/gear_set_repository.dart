@@ -35,11 +35,11 @@ class GearSetRepository implements IGearSetRepository {
 
   /// 下載並匯入裝備組合至指定行程
   ///
-  /// [uuid] 本地識別碼 (可選)
+  /// [id] 本地識別碼 (可選)
   /// [key] 雲端識別碼
   @override
-  Future<Result<GearSet, Exception>> downloadGearSet(String uuid, {String? key}) =>
-      _remoteDataSource.downloadGearSet(uuid, key: key);
+  Future<Result<GearSet, Exception>> downloadGearSet(String id, {String? key}) =>
+      _remoteDataSource.downloadGearSet(id, key: key);
 
   /// 上傳/分享裝備組合
   ///
@@ -71,10 +71,10 @@ class GearSetRepository implements IGearSetRepository {
 
   /// 刪除雲端裝備組合
   ///
-  /// [uuid] 本地識別碼 (若有)
+  /// [id] 本地識別碼 (若有)
   /// [key] 雲端識別碼
   @override
-  Future<Result<bool, Exception>> deleteGearSet(String uuid, String key) => _remoteDataSource.deleteGearSet(uuid, key);
+  Future<Result<bool, Exception>> deleteGearSet(String id, String key) => _remoteDataSource.deleteGearSet(id, key);
 
   // --- Local (本地紀錄) ---
 

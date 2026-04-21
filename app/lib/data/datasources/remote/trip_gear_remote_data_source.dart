@@ -71,12 +71,12 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   /// 更新行程中的單項裝備
   ///
   /// [tripId] 行程 ID
-  /// [item] 欲更新的裝備項 (需含 uuid)
+  /// [item] 欲更新的裝備項 (需含 id)
   @override
   Future<void> updateTripGear(String tripId, GearItem item) async {
     try {
-      LogService.info('更新裝備: $tripId, 項目: ${item.uuid}', source: _source);
-      final response = await _apiClient.put('/trips/$tripId/gear/${item.uuid}', data: item.toJson());
+      LogService.info('更新裝備: $tripId, 項目: ${item.id}', source: _source);
+      final response = await _apiClient.put('/trips/$tripId/gear/${item.id}', data: item.toJson());
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}');
@@ -90,7 +90,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   /// 刪除行程中的裝備
   ///
   /// [tripId] 行程 ID
-  /// [itemId] 裝備 ID (uuid)
+  /// [itemId] 裝備 ID (id)
   @override
   Future<void> deleteTripGear(String tripId, String itemId) async {
     try {

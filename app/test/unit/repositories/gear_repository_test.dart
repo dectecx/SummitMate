@@ -17,10 +17,10 @@ void main() {
     mockLocalDataSource = MockGearLocalDataSource();
     repository = GearRepository(localDataSource: mockLocalDataSource);
 
-    testItem1 = GearItem(uuid: 'item_1', name: 'Tent', category: 'Shelter', weight: 2000, quantity: 1, orderIndex: 0);
+    testItem1 = GearItem(id: 'item_1', name: 'Tent', category: 'Shelter', weight: 2000, quantity: 1, orderIndex: 0);
 
     testItem2 = GearItem(
-      uuid: 'item_2',
+      id: 'item_2',
       name: 'Sleeping Bag',
       category: 'Sleep',
       weight: 1000,
@@ -44,8 +44,8 @@ void main() {
 
         // Assert
         expect(result.length, 2);
-        expect(result[0].uuid, testItem2.uuid); // Should be first
-        expect(result[1].uuid, testItem1.uuid);
+        expect(result[0].id, testItem2.id); // Should be first
+        expect(result[1].id, testItem1.id);
       });
 
       test('handles null orderIndex sorting (pushes to end)', () {
@@ -55,8 +55,8 @@ void main() {
 
         final result = repository.getAllItems();
 
-        expect(result[0].uuid, testItem2.uuid);
-        expect(result[1].uuid, testItem1.uuid);
+        expect(result[0].id, testItem2.id);
+        expect(result[1].id, testItem1.id);
       });
     });
 
@@ -65,7 +65,7 @@ void main() {
         when(() => mockLocalDataSource.getAll()).thenReturn([testItem2]); // item2 has index 1
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async => 0); // returns key (int)
 
-        final newItem = GearItem(uuid: 'new', name: 'New', category: 'Misc', weight: 100);
+        final newItem = GearItem(id: 'new', name: 'New', category: 'Misc', weight: 100);
         await repository.addItem(newItem);
 
         verify(() => mockLocalDataSource.getAll()).called(1);

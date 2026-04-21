@@ -22,7 +22,7 @@ class GearItem extends HiveObject {
 
   /// 裝備唯一識別碼 (PK)
   @HiveField(0, defaultValue: '')
-  String uuid;
+  String id;
 
   // ========================================
   // FK (Foreign Keys)
@@ -95,7 +95,7 @@ class GearItem extends HiveObject {
   // ========================================
 
   GearItem({
-    String? uuid,
+    String? id,
     this.tripId,
     this.libraryItemId,
     this.name = '',
@@ -108,7 +108,7 @@ class GearItem extends HiveObject {
     this.createdBy,
     this.updatedAt,
     this.updatedBy,
-  }) : uuid = uuid?.isNotEmpty == true ? uuid! : const Uuid().v4();
+  }) : id = id?.isNotEmpty == true ? id! : const Uuid().v4();
 
   // ========================================
   // Computed Properties

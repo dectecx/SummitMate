@@ -18,13 +18,13 @@ void main() {
     GetIt.I.registerSingleton<IGearRepository>(mockGearRepository);
 
     // Fallback registration
-    registerFallbackValue(GearItem(uuid: 'fallback', tripId: 'fallback', name: 'fallback'));
+    registerFallbackValue(GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback'));
   });
 
   group('GearCubit', () {
-    final gearItem1 = GearItem(uuid: 'item1', tripId: 'trip1', name: 'Tent', weight: 2000, category: 'Sleep');
+    final gearItem1 = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', weight: 2000, category: 'Sleep');
 
-    final gearItem2 = GearItem(uuid: 'item2', tripId: 'trip2', name: 'Stove', weight: 500, category: 'Cook');
+    final gearItem2 = GearItem(id: 'item2', tripId: 'trip2', name: 'Stove', weight: 500, category: 'Cook');
 
     test('initial state is GearInitial', () {
       expect(GearCubit(mockGearRepository).state, const GearInitial());
@@ -120,8 +120,8 @@ void main() {
     blocTest<GearCubit, GearState>(
       'toggleChecked calls repo and reloads',
       build: () {
-        final uncheckedItem = GearItem(uuid: 'item1', tripId: 'trip1', name: 'Tent', isChecked: false);
-        final checkedItem = GearItem(uuid: 'item1', tripId: 'trip1', name: 'Tent', isChecked: true);
+        final uncheckedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: false);
+        final checkedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: true);
 
         var callCount = 0;
         when(() => mockGearRepository.getAllItems()).thenAnswer((_) {

@@ -20,9 +20,9 @@ abstract class IGearSetRepository {
 
   /// 下載特定裝備組合
   ///
-  /// [uuid] 本地識別碼 (可選)
+  /// [id] 本地識別碼 (可選)
   /// [key] 雲端識別碼
-  Future<Result<GearSet, Exception>> downloadGearSet(String uuid, {String? key});
+  Future<Result<GearSet, Exception>> downloadGearSet(String id, {String? key});
 
   /// 上傳裝備組合 (建立分享連結)
   ///
@@ -45,9 +45,9 @@ abstract class IGearSetRepository {
 
   /// 刪除雲端上的裝備組合
   ///
-  /// [uuid] 本地識別碼 (若有)
+  /// [id] 本地識別碼 (若有)
   /// [key] 雲端識別碼
-  Future<Result<bool, Exception>> deleteGearSet(String uuid, String key);
+  Future<Result<bool, Exception>> deleteGearSet(String id, String key);
 
   // === 本地金鑰儲存 (Local Key Storage) ===
 

@@ -9,7 +9,7 @@ import 'mock_itinerary_repository.dart';
 class MockGearRepository implements IGearRepository {
   final List<GearItem> _mockItems = [
     GearItem(
-      uuid: 'mock-gear-001',
+      id: 'mock-gear-001',
       tripId: MockItineraryRepository.mockTripId,
       category: '睡眠系統',
       name: '睡袋',
@@ -19,7 +19,7 @@ class MockGearRepository implements IGearRepository {
       orderIndex: 0,
     ),
     GearItem(
-      uuid: 'mock-gear-002',
+      id: 'mock-gear-002',
       tripId: MockItineraryRepository.mockTripId,
       category: '睡眠系統',
       name: '睡墊',
@@ -29,7 +29,7 @@ class MockGearRepository implements IGearRepository {
       orderIndex: 1,
     ),
     GearItem(
-      uuid: 'mock-gear-003',
+      id: 'mock-gear-003',
       tripId: MockItineraryRepository.mockTripId,
       category: '炊事系統',
       name: '爐頭',
@@ -39,7 +39,7 @@ class MockGearRepository implements IGearRepository {
       orderIndex: 2,
     ),
     GearItem(
-      uuid: 'mock-gear-004',
+      id: 'mock-gear-004',
       tripId: MockItineraryRepository.mockTripId,
       category: '穿著系統',
       name: '羽絨外套',

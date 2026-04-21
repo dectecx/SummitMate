@@ -7,7 +7,7 @@ import 'package:summitmate/presentation/widgets/gear/gear_mode_selector.dart';
 void main() {
   group('GearItemTile Widget Test', () {
     final gearItem = GearItem(
-      uuid: '1',
+      id: '1',
       name: 'Test Gear',
       weight: 100,
       category: 'Other',

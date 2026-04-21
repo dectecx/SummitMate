@@ -16,7 +16,7 @@ void main() {
     dataSource = TripGearRemoteDataSource(apiClient: mockApiClient);
   });
 
-  final testGear = GearItem(uuid: 'gear-1', name: 'Tent', category: 'Sleep', weight: 2000);
+  final testGear = GearItem(id: 'gear-1', name: 'Tent', category: 'Sleep', weight: 2000);
 
   group('TripGearRemoteDataSource.getTripGear', () {
     test('returns list of gear items on success', () async {
@@ -58,12 +58,12 @@ void main() {
     test('updateTripGear calls put', () async {
       final tripId = 'trip-1';
       when(
-        () => mockApiClient.put('/trips/$tripId/gear/${testGear.uuid}', data: any(named: 'data')),
+        () => mockApiClient.put('/trips/$tripId/gear/${testGear.id}', data: any(named: 'data')),
       ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200));
 
       await dataSource.updateTripGear(tripId, testGear);
 
-      verify(() => mockApiClient.put('/trips/$tripId/gear/${testGear.uuid}', data: any(named: 'data'))).called(1);
+      verify(() => mockApiClient.put('/trips/$tripId/gear/${testGear.id}', data: any(named: 'data'))).called(1);
     });
   });
 }
