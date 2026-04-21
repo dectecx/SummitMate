@@ -32,7 +32,7 @@ CREATE TABLE users (
     email               VARCHAR(255) NOT NULL UNIQUE,
     password_hash       TEXT         NOT NULL,
     display_name        VARCHAR(100) NOT NULL,
-    avatar              VARCHAR(10)  NOT NULL DEFAULT '🐻',
+    avatar              VARCHAR(255) NOT NULL DEFAULT '🐻',
     role_id             UUID REFERENCES roles(id),
     is_active           BOOLEAN      NOT NULL DEFAULT TRUE,
     is_verified         BOOLEAN      NOT NULL DEFAULT FALSE,
