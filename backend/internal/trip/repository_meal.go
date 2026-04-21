@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"summitmate/internal/database"
 )
 
 // TripMealRepository 定義行程餐食資料存取介面。
@@ -33,7 +34,8 @@ func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string)
 		WHERE trip_id = $1
 		ORDER BY day ASC, meal_type ASC, created_at ASC
 	`
-	rows, err := repo.pool.Query(ctx, query, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +62,8 @@ func (repo *tripMealRepository) Create(ctx context.Context, item *TripMealItem) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		item.TripID, item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedBy, item.UpdatedBy,
 	)
 	return repo.scanItem(row)
@@ -72,7 +75,8 @@ func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID s
 		FROM meal_items
 		WHERE id = $1 AND trip_id = $2
 	`
-	row := repo.pool.QueryRow(ctx, query, id, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query, id, tripID)
 	return repo.scanItem(row)
 }
 
@@ -83,7 +87,8 @@ func (repo *tripMealRepository) Update(ctx context.Context, item *TripMealItem) 
 		WHERE id = $10 AND trip_id = $11
 		RETURNING id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.UpdatedBy, item.ID, item.TripID,
 	)
 	return repo.scanItem(row)
@@ -94,7 +99,8 @@ func (repo *tripMealRepository) Delete(ctx context.Context, id string, tripID st
 		DELETE FROM meal_items
 		WHERE id = $1 AND trip_id = $2
 	`
-	commandTag, err := repo.pool.Exec(ctx, query, id, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	commandTag, err := db.Exec(ctx, query, id, tripID)
 	if err != nil {
 		return err
 	}
@@ -105,13 +111,19 @@ func (repo *tripMealRepository) Delete(ctx context.Context, id string, tripID st
 }
 
 func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, items []*TripMealItem) error {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
+	db := database.GetQuerier(ctx, repo.pool)
 
-	_, err = tx.Exec(ctx, "DELETE FROM meal_items WHERE trip_id = $1", tripID)
+	// If an outer transaction was injected via context (e.g., from a service-level
+	// WithTransaction call), use it directly so ReplaceAll participates in that transaction.
+	// Otherwise, start a local transaction to guarantee atomicity for the delete + insert pair.
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, repo.pool, func(txCtx context.Context) error {
+			return repo.ReplaceAll(txCtx, tripID, items)
+		})
+	}
+
+	_, err := tx.Exec(ctx, "DELETE FROM meal_items WHERE trip_id = $1", tripID)
 	if err != nil {
 		return err
 	}
@@ -129,7 +141,7 @@ func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (repo *tripMealRepository) scanItem(row pgx.Row) (*TripMealItem, error) {

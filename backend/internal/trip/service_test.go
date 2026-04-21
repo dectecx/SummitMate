@@ -21,13 +21,19 @@ func TestTripService_CreateTrip(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
 		mockMemberRepo := new(MockTripMemberRepository)
-		svc := NewTripService(logger, mockTripRepo, mockMemberRepo, nil, nil)
+		mockBeginner := new(MockBeginner)
+		mockTx := new(MockTx)
+
+		svc := NewTripService(logger, mockBeginner, mockTripRepo, mockMemberRepo, nil, nil)
 
 		userID := "user-1"
 		req := &TripCreateRequest{
 			Name:      "Test Trip",
 			StartDate: time.Now(),
 		}
+
+		mockBeginner.On("Begin", mock.Anything).Return(mockTx, nil)
+		mockTx.On("Commit", mock.Anything).Return(nil)
 
 		mockTripRepo.On("Create", mock.Anything, mock.AnythingOfType("*trip.Trip")).Return(&Trip{
 			ID:     "trip-1",
@@ -48,7 +54,13 @@ func TestTripService_CreateTrip(t *testing.T) {
 
 	t.Run("RepoError", func(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
-		svc := NewTripService(logger, mockTripRepo, nil, nil, nil)
+		mockBeginner := new(MockBeginner)
+		mockTx := new(MockTx)
+
+		svc := NewTripService(logger, mockBeginner, mockTripRepo, nil, nil, nil)
+
+		mockBeginner.On("Begin", mock.Anything).Return(mockTx, nil)
+		mockTx.On("Rollback", mock.Anything).Return(nil)
 
 		mockTripRepo.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("db error"))
 
@@ -64,7 +76,7 @@ func TestTripService_GetTrip(t *testing.T) {
 
 	t.Run("Success_AsCreator", func(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
-		svc := NewTripService(logger, mockTripRepo, nil, nil, nil)
+		svc := NewTripService(logger, nil, mockTripRepo, nil, nil, nil)
 
 		tripID := "trip-1"
 		userID := "user-creator"
@@ -80,7 +92,7 @@ func TestTripService_GetTrip(t *testing.T) {
 
 	t.Run("NotFound", func(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
-		svc := NewTripService(logger, mockTripRepo, nil, nil, nil)
+		svc := NewTripService(logger, nil, mockTripRepo, nil, nil, nil)
 
 		mockTripRepo.On("GetByID", mock.Anything, "none").Return(nil, ErrNotFound)
 
@@ -99,7 +111,7 @@ func TestTripService_AddMember(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
 		mockMemberRepo := new(MockTripMemberRepository)
 		mockUserRepo := new(auth.MockUserRepository)
-		svc := NewTripService(logger, mockTripRepo, mockMemberRepo, nil, mockUserRepo)
+		svc := NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, mockUserRepo)
 
 		tripID := "trip-1"
 		requesterID := "creator"

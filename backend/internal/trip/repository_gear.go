@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"summitmate/internal/database"
 )
 
 // TripGearRepository 定義行程裝備資料存取介面。
@@ -33,7 +34,8 @@ func (repo *tripGearRepository) ListByTripID(ctx context.Context, tripID string)
 		WHERE trip_id = $1
 		ORDER BY order_index ASC NULLS LAST, created_at ASC
 	`
-	rows, err := repo.pool.Query(ctx, query, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +62,8 @@ func (repo *tripGearRepository) Create(ctx context.Context, item *TripGearItem) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		item.TripID, item.LibraryItemID, item.Name, item.Weight, item.Category, item.Quantity, item.IsChecked, item.OrderIndex, item.CreatedBy, item.UpdatedBy,
 	)
 	return repo.scanItem(row)
@@ -72,7 +75,8 @@ func (repo *tripGearRepository) GetByID(ctx context.Context, id string, tripID s
 		FROM gear_items
 		WHERE id = $1 AND trip_id = $2
 	`
-	row := repo.pool.QueryRow(ctx, query, id, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query, id, tripID)
 	return repo.scanItem(row)
 }
 
@@ -83,7 +87,8 @@ func (repo *tripGearRepository) Update(ctx context.Context, item *TripGearItem) 
 		WHERE id = $9 AND trip_id = $10
 		RETURNING id, trip_id, library_item_id, name, weight, category, quantity, is_checked, order_index, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		item.LibraryItemID, item.Name, item.Weight, item.Category, item.Quantity, item.IsChecked, item.OrderIndex, item.UpdatedBy, item.ID, item.TripID,
 	)
 	return repo.scanItem(row)
@@ -94,7 +99,8 @@ func (repo *tripGearRepository) Delete(ctx context.Context, id string, tripID st
 		DELETE FROM gear_items
 		WHERE id = $1 AND trip_id = $2
 	`
-	commandTag, err := repo.pool.Exec(ctx, query, id, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	commandTag, err := db.Exec(ctx, query, id, tripID)
 	if err != nil {
 		return err
 	}
@@ -105,13 +111,20 @@ func (repo *tripGearRepository) Delete(ctx context.Context, id string, tripID st
 }
 
 func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, items []*TripGearItem) error {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
+	db := database.GetQuerier(ctx, repo.pool)
 
-	_, err = tx.Exec(ctx, "DELETE FROM gear_items WHERE trip_id = $1", tripID)
+	// If an outer transaction was injected via context (e.g., from a service-level
+	// WithTransaction call), use it directly so ReplaceAll participates in that transaction.
+	// Otherwise, start a local transaction to guarantee atomicity for the delete + insert pair.
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		// Start a local transaction if not provided
+		return database.WithTransaction(ctx, repo.pool, func(txCtx context.Context) error {
+			return repo.ReplaceAll(txCtx, tripID, items)
+		})
+	}
+
+	_, err := tx.Exec(ctx, "DELETE FROM gear_items WHERE trip_id = $1", tripID)
 	if err != nil {
 		return err
 	}
@@ -121,7 +134,6 @@ func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, i
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10, NOW()), $11, COALESCE($12, NOW()), $13)
 	`
 	for _, item := range items {
-		// Ensure tripID is strictly applied from the route argument, ignoring what client sends
 		_, err := tx.Exec(ctx, query,
 			item.ID, tripID, item.LibraryItemID, item.Name, item.Weight, item.Category, item.Quantity, item.IsChecked, item.OrderIndex, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
 		)
@@ -130,7 +142,7 @@ func (repo *tripGearRepository) ReplaceAll(ctx context.Context, tripID string, i
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (repo *tripGearRepository) scanItem(row pgx.Row) (*TripGearItem, error) {

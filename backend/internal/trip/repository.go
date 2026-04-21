@@ -6,6 +6,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"summitmate/internal/database"
 )
 
 // ErrNotFound 代表查詢結果為空 (無符合條件的資料列)。
@@ -35,7 +37,8 @@ func (repo *tripRepository) Create(ctx context.Context, trip *Trip) (*Trip, erro
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		trip.UserID, trip.Name, trip.Description, trip.StartDate, trip.EndDate,
 		trip.CoverImage, trip.IsActive, trip.DayNames, trip.CreatedBy, trip.UpdatedBy,
 	)
@@ -50,7 +53,8 @@ func (repo *tripRepository) GetByID(ctx context.Context, id string) (*Trip, erro
 		FROM trips
 		WHERE id = $1
 	`
-	row := repo.pool.QueryRow(ctx, query, id)
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query, id)
 	return repo.scanTrip(row)
 }
 
@@ -64,7 +68,8 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]
 		WHERE t.user_id = $1 OR tm.user_id = $1
 		ORDER BY t.created_at DESC
 	`
-	rows, err := repo.pool.Query(ctx, query, userID)
+	db := database.GetQuerier(ctx, repo.pool)
+	rows, err := db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +103,8 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip) (*Trip, erro
 		WHERE id = $9
 		RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		trip.Name, trip.Description, trip.StartDate, trip.EndDate,
 		trip.CoverImage, trip.IsActive, trip.DayNames, trip.UpdatedBy, trip.ID,
 	)
@@ -108,7 +114,8 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip) (*Trip, erro
 
 // DeleteByID 刪除指定 ID 的行程。
 func (repo *tripRepository) DeleteByID(ctx context.Context, id string) error {
-	_, err := repo.pool.Exec(ctx, "DELETE FROM trips WHERE id = $1", id)
+	db := database.GetQuerier(ctx, repo.pool)
+	_, err := db.Exec(ctx, "DELETE FROM trips WHERE id = $1", id)
 	return err
 }
 

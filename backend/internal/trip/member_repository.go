@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // TripMemberRepository 定義行程成員資料存取介面。
@@ -28,7 +29,8 @@ func (repo *tripMemberRepository) AddMember(ctx context.Context, tripID string, 
 		VALUES ($1, $2)
 		ON CONFLICT (trip_id, user_id) DO NOTHING
 	`
-	_, err := repo.pool.Exec(ctx, query, tripID, userID)
+	db := database.GetQuerier(ctx, repo.pool)
+	_, err := db.Exec(ctx, query, tripID, userID)
 	return err
 }
 
@@ -38,7 +40,8 @@ func (repo *tripMemberRepository) RemoveMember(ctx context.Context, tripID strin
 		DELETE FROM trip_members
 		WHERE trip_id = $1 AND user_id = $2
 	`
-	_, err := repo.pool.Exec(ctx, query, tripID, userID)
+	db := database.GetQuerier(ctx, repo.pool)
+	_, err := db.Exec(ctx, query, tripID, userID)
 	return err
 }
 
@@ -51,7 +54,8 @@ func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID strin
 		WHERE tm.trip_id = $1
 		ORDER BY tm.joined_at ASC
 	`
-	rows, err := repo.pool.Query(ctx, query, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
 		return nil, err
 	}

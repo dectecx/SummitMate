@@ -6,6 +6,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"summitmate/internal/database"
 )
 
 // ItineraryRepository 定義行程節點資料存取介面。
@@ -32,7 +34,8 @@ func (repo *itineraryRepository) Create(ctx context.Context, item *ItineraryItem
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, trip_id, day, name, est_time, actual_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		item.TripID, item.Day, item.Name, item.EstTime, item.Altitude, item.Distance,
 		item.Note, item.ImageAsset, item.CreatedBy, item.UpdatedBy,
 	)
@@ -47,7 +50,8 @@ func (repo *itineraryRepository) GetByID(ctx context.Context, id string) (*Itine
 		FROM itinerary_items
 		WHERE id = $1
 	`
-	row := repo.pool.QueryRow(ctx, query, id)
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query, id)
 	return repo.scanItem(row)
 }
 
@@ -59,7 +63,8 @@ func (repo *itineraryRepository) ListByTripID(ctx context.Context, tripID string
 		WHERE trip_id = $1
 		ORDER BY day ASC, est_time ASC
 	`
-	rows, err := repo.pool.Query(ctx, query, tripID)
+	db := database.GetQuerier(ctx, repo.pool)
+	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +98,8 @@ func (repo *itineraryRepository) Update(ctx context.Context, item *ItineraryItem
 		WHERE id = $12
 		RETURNING id, trip_id, day, name, est_time, actual_time, altitude, distance, note, image_asset, is_checked_in, checked_in_at, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query,
 		item.Day, item.Name, item.EstTime, item.ActualTime, item.Altitude, item.Distance,
 		item.Note, item.ImageAsset, item.IsCheckedIn, item.CheckedInAt, item.UpdatedBy, item.ID,
 	)
@@ -103,7 +109,8 @@ func (repo *itineraryRepository) Update(ctx context.Context, item *ItineraryItem
 
 // DeleteByID 刪除單一行程表節點。
 func (repo *itineraryRepository) DeleteByID(ctx context.Context, id string) error {
-	_, err := repo.pool.Exec(ctx, "DELETE FROM itinerary_items WHERE id = $1", id)
+	db := database.GetQuerier(ctx, repo.pool)
+	_, err := db.Exec(ctx, "DELETE FROM itinerary_items WHERE id = $1", id)
 	return err
 }
 
