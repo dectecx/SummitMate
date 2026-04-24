@@ -78,7 +78,9 @@ func ToTripGetResponse(t Trip) api.TripGetResponse {
 		IsActive:    t.IsActive,
 		DayNames:    t.DayNames,
 		CreatedAt:   t.CreatedAt,
+		CreatedBy:   uuid.MustParse(t.CreatedBy),
 		UpdatedAt:   t.UpdatedAt,
+		UpdatedBy:   uuid.MustParse(t.UpdatedBy),
 	}
 }
 

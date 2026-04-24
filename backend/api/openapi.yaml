@@ -2294,7 +2294,9 @@ components:
           is_active,
           day_names,
           created_at,
+          created_by,
           updated_at,
+          updated_by,
         ]
       properties:
         id: { type: string, format: uuid }
@@ -2307,7 +2309,9 @@ components:
         is_active: { type: boolean }
         day_names: { type: array, items: { type: string } }
         created_at: { type: string, format: date-time }
+        created_by: { type: string, format: uuid }
         updated_at: { type: string, format: date-time }
+        updated_by: { type: string, format: uuid }
 
     TripCreateResponse:
       $ref: "#/components/schemas/TripGetResponse"
