@@ -164,9 +164,8 @@ func (h *AuthHandler) ResendVerificationCode(w http.ResponseWriter, r *http.Requ
 	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "驗證碼已寄出"})
 }
 
-// SearchUserByEmail 處理 GET /users/search 請求。
-func (h *AuthHandler) SearchUserByEmail(w http.ResponseWriter, r *http.Request) {
-	email := r.URL.Query().Get("email")
+// SearchUserByEmail 處理搜尋使用者請求。
+func (h *AuthHandler) SearchUserByEmail(w http.ResponseWriter, r *http.Request, email string) {
 	if email == "" {
 		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("必須提供 email 參數"))
 		return
