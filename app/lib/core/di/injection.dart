@@ -3,7 +3,6 @@ import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../infrastructure/infrastructure.dart';
-import '../../infrastructure/tools/log_service.dart';
 import 'injection.config.dart';
 
 final getIt = GetIt.instance;

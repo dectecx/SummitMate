@@ -7,7 +7,7 @@ part 'message_api_models.g.dart';
 
 /// 留言回應（對應 Message schema）
 @freezed
-class MessageResponse with _$MessageResponse {
+abstract class MessageResponse with _$MessageResponse {
   const factory MessageResponse({
     required String id,
     @JsonKey(name: 'trip_id') required String tripId,
@@ -31,7 +31,7 @@ class MessageResponse with _$MessageResponse {
 
 /// 建立/更新留言請求（對應 MessageRequest schema）
 @freezed
-class MessageCreateRequest with _$MessageCreateRequest {
+abstract class MessageCreateRequest with _$MessageCreateRequest {
   const factory MessageCreateRequest({
     required String content,
     String? category,

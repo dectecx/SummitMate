@@ -7,7 +7,7 @@ part 'itinerary_api_models.g.dart';
 
 /// 行程節點回應（對應 ItineraryItemListItemResponse schema）
 @freezed
-class ItineraryItemResponse with _$ItineraryItemResponse {
+abstract class ItineraryItemResponse with _$ItineraryItemResponse {
   const factory ItineraryItemResponse({
     required String id,
     @JsonKey(name: 'trip_id') required String tripId,
@@ -33,7 +33,7 @@ class ItineraryItemResponse with _$ItineraryItemResponse {
 
 /// 行程節點建立/更新請求（對應 ItineraryItemRequest schema）
 @freezed
-class ItineraryItemRequest with _$ItineraryItemRequest {
+abstract class ItineraryItemRequest with _$ItineraryItemRequest {
   const factory ItineraryItemRequest({
     required String day,
     required String name,
