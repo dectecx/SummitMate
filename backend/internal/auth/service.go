@@ -105,11 +105,19 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 		return nil, "", err
 	}
 
+	// 取得預設 MEMBER 角色
+	roleID, err := svc.userRepo.GetRoleIDByCode(ctx, "MEMBER")
+	if err != nil {
+		svc.logger.ErrorContext(ctx, "無法取得預設角色", "error", err)
+		return nil, "", err
+	}
+
 	// 寫入資料庫
 	newUser := &User{
 		Email:        emailAddr,
 		PasswordHash: hash,
 		DisplayName:  displayName,
+		RoleID:       &roleID,
 		IsVerified:   false,
 	}
 	if avatar != nil && *avatar != "" {

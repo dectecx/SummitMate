@@ -34,16 +34,20 @@ func TestAuthService_Register(t *testing.T) {
 		// Mock GetByEmail returns ErrNotFound (email doesn't exist)
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, ErrNotFound)
 
+		// Mock GetRoleIDByCode returns a role-123
+		mockRepo.On("GetRoleIDByCode", mock.Anything, "MEMBER").Return("role-123", nil)
+
 		// Mock Create success
 		mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(u *User) bool {
-			return u.Email == email && u.DisplayName == displayName
-		})).Return(&User{ID: "user-123", Email: email, DisplayName: displayName}, nil)
+			return u.Email == email && u.DisplayName == displayName && *u.RoleID == "role-123"
+		})).Return(&User{ID: "user-123", Email: email, DisplayName: displayName, RoleCode: "MEMBER"}, nil)
 
 		user, token, err := svc.Register(context.Background(), email, password, displayName, nil)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, user)
 		assert.Equal(t, email, user.Email)
+		assert.Equal(t, "MEMBER", user.RoleCode)
 		assert.NotEmpty(t, token)
 		mockRepo.AssertExpectations(t)
 	})

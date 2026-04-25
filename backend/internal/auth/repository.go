@@ -22,6 +22,7 @@ type UserRepository interface {
 	Update(ctx context.Context, id string, displayName, avatar *string) (*User, error)
 	SoftDelete(ctx context.Context, id string) error
 	SetVerified(ctx context.Context, id string) error
+	GetRoleIDByCode(ctx context.Context, code string) (string, error)
 }
 
 type userRepository struct {
@@ -35,8 +36,8 @@ func NewUserRepository(db database.Querier) UserRepository {
 // Create 新增一筆使用者資料，回傳含有 DB 產生值 (id, avatar, created_at 等) 的完整 User。
 func (repo *userRepository) Create(ctx context.Context, user *User) (*User, error) {
 	query := `
-		INSERT INTO users (email, password_hash, display_name, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO users (email, password_hash, display_name, created_by, updated_by, role_id)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, email, password_hash, display_name, avatar, role_id,
 		          (SELECT code FROM roles WHERE id = users.role_id) as role_code,
 		          is_active, is_verified,
@@ -49,6 +50,7 @@ func (repo *userRepository) Create(ctx context.Context, user *User) (*User, erro
 		user.DisplayName,
 		user.CreatedBy,
 		user.UpdatedBy,
+		user.RoleID,
 	)
 
 	var created User
@@ -112,7 +114,7 @@ func (repo *userRepository) Update(ctx context.Context, id string, displayName, 
 			updated_by = $3
 		WHERE id = $3
 		RETURNING id, email, password_hash, display_name, avatar, role_id,
-		          (SELECT code FROM roles WHERE id = users.role_id) as role_code,
+		          COALESCE((SELECT code FROM roles WHERE id = users.role_id), 'MEMBER') as role_code,
 		          is_active, is_verified,
 		          created_at, created_by, updated_at, updated_by
 	`
@@ -176,7 +178,7 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 	// 此處 column 為程式內部控制 ("id" 或 "email")，非外部輸入，可安全拼接
 	query := `
 		SELECT u.id, u.email, u.password_hash, u.display_name, u.avatar, u.role_id,
-		       r.code as role_code,
+		       COALESCE(r.code, 'MEMBER') as role_code,
 		       u.is_active, u.is_verified,
 		       u.created_at, u.created_by, u.updated_at, u.updated_by
 		FROM users u
@@ -210,4 +212,18 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 	}
 
 	return &user, nil
+}
+// GetRoleIDByCode 透過角色代碼取得角色 ID。
+func (repo *userRepository) GetRoleIDByCode(ctx context.Context, code string) (string, error) {
+	var id string
+	query := "SELECT id FROM roles WHERE code = $1"
+	db := database.GetQuerier(ctx, repo.db)
+	err := db.QueryRow(ctx, query, code).Scan(&id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrNotFound
+		}
+		return "", fmt.Errorf("get role id by code %s: %w", code, err)
+	}
+	return id, nil
 }

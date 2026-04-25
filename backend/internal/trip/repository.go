@@ -109,7 +109,7 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string, pag
 
 	mainQuery := fmt.Sprintf(`
 		WITH TargetPageIDs AS (
-			SELECT DISTINCT t.id
+			SELECT DISTINCT t.id, t.created_at
 			FROM trips t
 			LEFT JOIN trip_members tm ON t.id = tm.trip_id
 			%s
