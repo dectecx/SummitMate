@@ -7,7 +7,7 @@ part 'group_event_api_models.g.dart';
 
 /// 建立揪團請求
 @freezed
-class GroupEventCreateRequest with _$GroupEventCreateRequest {
+abstract class GroupEventCreateRequest with _$GroupEventCreateRequest {
   const factory GroupEventCreateRequest({
     required String title,
     required String description,
@@ -26,7 +26,7 @@ class GroupEventCreateRequest with _$GroupEventCreateRequest {
 
 /// 更新揪團請求
 @freezed
-class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
+abstract class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
   const factory GroupEventUpdateRequest({
     String? title,
     String? description,
@@ -44,7 +44,7 @@ class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
 
 /// 更新揪團狀態請求
 @freezed
-class GroupEventStatusRequest with _$GroupEventStatusRequest {
+abstract class GroupEventStatusRequest with _$GroupEventStatusRequest {
   const factory GroupEventStatusRequest({
     required String status,
     String? action,
@@ -56,7 +56,7 @@ class GroupEventStatusRequest with _$GroupEventStatusRequest {
 
 /// 申請揪團請求
 @freezed
-class GroupEventApplyRequest with _$GroupEventApplyRequest {
+abstract class GroupEventApplyRequest with _$GroupEventApplyRequest {
   const factory GroupEventApplyRequest({
     String? message,
   }) = _GroupEventApplyRequest;
@@ -67,7 +67,7 @@ class GroupEventApplyRequest with _$GroupEventApplyRequest {
 
 /// 審核申請請求
 @freezed
-class GroupEventReviewRequest with _$GroupEventReviewRequest {
+abstract class GroupEventReviewRequest with _$GroupEventReviewRequest {
   const factory GroupEventReviewRequest({
     required String action,
   }) = _GroupEventReviewRequest;
@@ -78,7 +78,7 @@ class GroupEventReviewRequest with _$GroupEventReviewRequest {
 
 /// 新增留言請求
 @freezed
-class GroupEventCommentRequest with _$GroupEventCommentRequest {
+abstract class GroupEventCommentRequest with _$GroupEventCommentRequest {
   const factory GroupEventCommentRequest({
     required String content,
   }) = _GroupEventCommentRequest;

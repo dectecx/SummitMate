@@ -7,7 +7,7 @@ part 'favorites_api_models.g.dart';
 
 /// 最愛回應（對應 Favorite schema）
 @freezed
-class FavoriteResponse with _$FavoriteResponse {
+abstract class FavoriteResponse with _$FavoriteResponse {
   const factory FavoriteResponse({
     required String id,
     @JsonKey(name: 'target_id') required String targetId,
@@ -26,7 +26,7 @@ class FavoriteResponse with _$FavoriteResponse {
 
 /// 新增最愛請求（對應 FavoriteRequest schema）
 @freezed
-class FavoriteAddRequest with _$FavoriteAddRequest {
+abstract class FavoriteAddRequest with _$FavoriteAddRequest {
   const factory FavoriteAddRequest({
     @JsonKey(name: 'target_id') required String targetId,
     required String type,
@@ -38,7 +38,7 @@ class FavoriteAddRequest with _$FavoriteAddRequest {
 
 /// 批量更新最愛請求項目（對應 BatchFavoriteRequest schema）
 @freezed
-class BatchFavoriteItem with _$BatchFavoriteItem {
+abstract class BatchFavoriteItem with _$BatchFavoriteItem {
   const factory BatchFavoriteItem({
     @JsonKey(name: 'target_id') required String targetId,
     required String type,

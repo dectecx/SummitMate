@@ -7,7 +7,7 @@ part 'gear_library_api_models.g.dart';
 
 /// 新增/更新裝備庫項目請求（對應 GearLibraryItemRequest schema）
 @freezed
-class GearLibraryItemRequest with _$GearLibraryItemRequest {
+abstract class GearLibraryItemRequest with _$GearLibraryItemRequest {
   const factory GearLibraryItemRequest({
     required String name,
     required double weight,

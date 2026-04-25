@@ -7,7 +7,7 @@ part 'poll_api_models.g.dart';
 
 /// 建立投票請求
 @freezed
-class PollCreateRequest with _$PollCreateRequest {
+abstract class PollCreateRequest with _$PollCreateRequest {
   const factory PollCreateRequest({
     required String title,
     @JsonKey(defaultValue: '') String? description,
@@ -29,7 +29,7 @@ class PollCreateRequest with _$PollCreateRequest {
 
 /// 新增投票選項請求
 @freezed
-class PollOptionRequest with _$PollOptionRequest {
+abstract class PollOptionRequest with _$PollOptionRequest {
   const factory PollOptionRequest({
     required String text,
   }) = _PollOptionRequest;

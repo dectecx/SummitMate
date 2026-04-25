@@ -7,7 +7,7 @@ part 'trip_api_models.g.dart';
 
 /// 行程回應（對應 TripGetResponse / TripCreateResponse / TripUpdateResponse）
 @freezed
-class TripResponse with _$TripResponse {
+abstract class TripResponse with _$TripResponse {
   const factory TripResponse({
     required String id,
     @JsonKey(name: 'user_id') required String userId,
@@ -30,7 +30,7 @@ class TripResponse with _$TripResponse {
 
 /// 行程列表項目回應（對應 TripListItemResponse）
 @freezed
-class TripListItemResponse with _$TripListItemResponse {
+abstract class TripListItemResponse with _$TripListItemResponse {
   const factory TripListItemResponse({
     required String id,
     required String name,
@@ -47,7 +47,7 @@ class TripListItemResponse with _$TripListItemResponse {
 
 /// 行程成員回應（對應 TripMemberListItemResponse）
 @freezed
-class TripMemberResponse with _$TripMemberResponse {
+abstract class TripMemberResponse with _$TripMemberResponse {
   const factory TripMemberResponse({
     @JsonKey(name: 'trip_id') required String tripId,
     @JsonKey(name: 'user_id') required String userId,
@@ -61,7 +61,7 @@ class TripMemberResponse with _$TripMemberResponse {
 
 /// 成員的使用者 metadata（對應 User schema）
 @freezed
-class TripMemberUserMetadata with _$TripMemberUserMetadata {
+abstract class TripMemberUserMetadata with _$TripMemberUserMetadata {
   const factory TripMemberUserMetadata({
     required String id,
     required String nickname,
@@ -78,7 +78,7 @@ class TripMemberUserMetadata with _$TripMemberUserMetadata {
 
 /// 建立行程請求（對應 TripCreateRequest）
 @freezed
-class TripCreateRequest with _$TripCreateRequest {
+abstract class TripCreateRequest with _$TripCreateRequest {
   const factory TripCreateRequest({
     required String name,
     @JsonKey(name: 'start_date') required DateTime startDate,
@@ -94,7 +94,7 @@ class TripCreateRequest with _$TripCreateRequest {
 
 /// 更新行程請求（對應 TripUpdateRequest）
 @freezed
-class TripUpdateRequest with _$TripUpdateRequest {
+abstract class TripUpdateRequest with _$TripUpdateRequest {
   const factory TripUpdateRequest({
     String? name,
     String? description,
@@ -112,7 +112,7 @@ class TripUpdateRequest with _$TripUpdateRequest {
 
 /// 新增成員請求（對應 AddMemberRequest）
 @freezed
-class AddMemberRequest with _$AddMemberRequest {
+abstract class AddMemberRequest with _$AddMemberRequest {
   const factory AddMemberRequest({
     required String email,
   }) = _AddMemberRequest;
@@ -123,7 +123,7 @@ class AddMemberRequest with _$AddMemberRequest {
 
 /// 更新成員角色請求
 @freezed
-class UpdateMemberRoleRequest with _$UpdateMemberRoleRequest {
+abstract class UpdateMemberRoleRequest with _$UpdateMemberRoleRequest {
   const factory UpdateMemberRoleRequest({
     required String role,
   }) = _UpdateMemberRoleRequest;
