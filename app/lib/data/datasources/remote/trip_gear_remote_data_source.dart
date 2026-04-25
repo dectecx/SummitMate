@@ -1,6 +1,4 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:meta/meta.dart';
 import '../../models/gear_item.dart';
 import '../../api/mappers/trip_gear_api_mapper.dart';
 import '../../api/services/trip_gear_api_service.dart';
@@ -14,11 +12,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
 
   final TripGearApiService _tripGearApi;
 
-  TripGearRemoteDataSource(Dio dio) : _tripGearApi = TripGearApiService(dio);
-
-  /// 僅供測試使用：注入預建立的 ApiService
-  @visibleForTesting
-  TripGearRemoteDataSource.testable(this._tripGearApi);
+  TripGearRemoteDataSource(this._tripGearApi);
 
   @override
   Future<List<GearItem>> getTripGear(String tripId) async {

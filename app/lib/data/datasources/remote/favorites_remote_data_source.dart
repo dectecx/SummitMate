@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
 import '../../models/favorite.dart';
@@ -16,7 +15,7 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
 
   final FavoritesApiService _favoritesApi;
 
-  FavoritesRemoteDataSource(Dio dio) : _favoritesApi = FavoritesApiService(dio);
+  FavoritesRemoteDataSource(this._favoritesApi);
 
   @override
   Future<Result<List<Favorite>, Exception>> getFavorites() async {

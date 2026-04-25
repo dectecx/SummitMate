@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/poll.dart';
 import '../../api/mappers/poll_api_mapper.dart';
@@ -7,14 +6,14 @@ import '../../api/services/poll_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_poll_remote_data_source.dart';
 
-/// 投票的遠端資料來源實作
+/// 投票 (Poll) 的遠端資料來源實作
 @LazySingleton(as: IPollRemoteDataSource)
 class PollRemoteDataSource implements IPollRemoteDataSource {
   static const String _source = 'PollRemoteDataSource';
 
   final PollApiService _pollApi;
 
-  PollRemoteDataSource(Dio dio) : _pollApi = PollApiService(dio);
+  PollRemoteDataSource(this._pollApi);
 
   @override
   Future<List<Poll>> getPolls(String tripId) async {

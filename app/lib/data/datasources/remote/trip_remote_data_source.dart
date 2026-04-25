@@ -16,7 +16,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   final TripApiService _tripApi;
   final Dio _dio;
 
-  TripRemoteDataSource(this._dio) : _tripApi = TripApiService(_dio);
+  TripRemoteDataSource(this._tripApi, this._dio);
 
   @override
   Future<List<Trip>> getTrips() async {
