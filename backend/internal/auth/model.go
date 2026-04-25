@@ -10,6 +10,7 @@ type User struct {
 	DisplayName  string     // 顯示名稱
 	Avatar       string     // Emoji 頭像 (預設 🐻)
 	RoleID       *string    // 角色 ID (FK → roles.id)
+	RoleCode     string     // 角色代碼 (例如 ADMIN, MEMBER)
 	IsActive     bool       // 帳號是否啟用
 	IsVerified   bool       // Email 是否已驗證
 	LastLoginAt  *time.Time // 最後登入時間 (Nullable)

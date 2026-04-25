@@ -9,8 +9,10 @@ import (
 
 // ToUserResponse converts User to api.User
 func ToUserResponse(user *User) api.User {
-	// TODO: 未來應透過查詢或快取將 role_id 轉為實際角色代碼
-	role := "MEMBER"
+	role := user.RoleCode
+	if role == "" {
+		role = "MEMBER"
+	}
 
 	var createdBy *uuid.UUID
 	if user.CreatedBy != nil {
