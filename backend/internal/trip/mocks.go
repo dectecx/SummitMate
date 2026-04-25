@@ -3,6 +3,8 @@ package trip
 import (
 	"context"
 
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/mock"
@@ -77,8 +79,8 @@ func (m *MockTripRepository) ListByUserID(ctx context.Context, userID string) ([
 	return args.Get(0).([]*Trip), args.Error(1)
 }
 
-func (m *MockTripRepository) Update(ctx context.Context, trip *Trip) (*Trip, error) {
-	args := m.Called(ctx, trip)
+func (m *MockTripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedAt *time.Time) (*Trip, error) {
+	args := m.Called(ctx, trip, lastUpdatedAt)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
