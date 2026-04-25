@@ -273,11 +273,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i21.IMessageLocalDataSource>(
       () => _i783.MessageLocalDataSource(hiveService: gh<_i771.HiveService>()),
     );
-    gh.lazySingleton<_i307.IItineraryRemoteDataSource>(
-      () => _i636.ItineraryRemoteDataSource(
-        apiClient: gh<_i7.NetworkAwareClient>(),
-      ),
-    );
     gh.lazySingleton<_i365.IGearLibraryRepository>(
       () => _i540.GearLibraryRepository(
         localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
@@ -297,11 +292,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i222.PollRepository(
         localDataSource: gh<_i930.IPollLocalDataSource>(),
         remoteDataSource: gh<_i644.IPollRemoteDataSource>(),
-      ),
-    );
-    gh.lazySingleton<_i342.IFavoritesRemoteDataSource>(
-      () => _i168.FavoritesRemoteDataSource(
-        apiClient: gh<_i7.NetworkAwareClient>(),
       ),
     );
     gh.factory<_i55.GearCubit>(
@@ -371,13 +361,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i165.PermissionService>(
       () => _i165.PermissionService(gh<_i147.IAuthService>()),
     );
-    gh.lazySingleton<_i721.IFavoritesRepository>(
-      () => _i803.FavoritesRepository(
-        localDataSource: gh<_i307.IFavoritesLocalDataSource>(),
-        remoteDataSource: gh<_i342.IFavoritesRemoteDataSource>(),
-        authService: gh<_i147.IAuthService>(),
-      ),
-    );
     gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
       (eventId, _) => _i10.GroupEventCommentCubit(
         gh<_i1055.IGroupEventRepository>(),
@@ -423,11 +406,24 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i254.ConnectivityInterceptor>(),
       ),
     );
+    gh.lazySingleton<_i307.IItineraryRemoteDataSource>(
+      () => _i636.ItineraryRemoteDataSource(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i941.ITripRemoteDataSource>(
       () => _i989.TripRemoteDataSource(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i342.IFavoritesRemoteDataSource>(
+      () => _i168.FavoritesRemoteDataSource(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i721.IFavoritesRepository>(
+      () => _i803.FavoritesRepository(
+        localDataSource: gh<_i307.IFavoritesLocalDataSource>(),
+        remoteDataSource: gh<_i342.IFavoritesRemoteDataSource>(),
+        authService: gh<_i147.IAuthService>(),
+      ),
     );
     gh.lazySingleton<_i106.ITripRepository>(
       () => _i564.TripRepository(
