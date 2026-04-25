@@ -28,11 +28,6 @@ func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(req.Password) < 8 {
-		apiutil.SendError(w, r, apperror.ErrPasswordTooShort)
-		return
-	}
-
 	user, token, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName, req.Avatar)
 	if err != nil {
 		apiutil.SendError(w, r, err)
