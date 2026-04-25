@@ -61,6 +61,7 @@ func (s *APITestSuite) TestRegister_Success() {
 	s.NotEmpty(authResp.Token, "Token 不應為空")
 	s.Equal(email, string(authResp.User.Email), "Email 應相符")
 	s.Equal("測試使用者", authResp.User.DisplayName, "顯示名稱應相符")
+	s.Equal("MEMBER", authResp.User.Role, "新註冊使用者角色應預設為 MEMBER")
 	s.NotEmpty(authResp.User.Id.String(), "User ID 不應為空")
 
 	s.T().Logf("✅ 註冊成功: id=%s, email=%s", authResp.User.Id.String(), authResp.User.Email)
@@ -209,6 +210,7 @@ func (s *APITestSuite) TestGetMe_Success() {
 
 	s.Equal(email, string(user.Email), "Email 應相符")
 	s.Equal("Me 測試者", user.DisplayName, "顯示名稱應相符")
+	s.Equal("MEMBER", user.Role, "使用者角色應為 MEMBER")
 	s.T().Logf("✅ GetMe 成功: id=%s, email=%s, name=%s", user.Id.String(), user.Email, user.DisplayName)
 }
 

@@ -58,3 +58,8 @@ func (m *MockUserRepository) SetVerified(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
+
+func (m *MockUserRepository) GetRoleIDByCode(ctx context.Context, code string) (string, error) {
+	args := m.Called(ctx, code)
+	return args.String(0), args.Error(1)
+}
