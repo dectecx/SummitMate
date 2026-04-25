@@ -30,6 +30,7 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 		Id:               uuid.MustParse(e.ID),
 		Title:            e.Title,
 		Description:      e.Description,
+		Category:         string(e.Category),
 		Location:         e.Location,
 		StartDate:        openapi_types.Date{Time: e.StartDate},
 		EndDate:          endDate,

@@ -2,10 +2,20 @@ package groupevent
 
 import "time"
 
+type Category string
+
+const (
+	CategoryHiking     Category = "Hiking"
+	CategoryCamping    Category = "Camping"
+	CategoryBouldering Category = "Bouldering"
+	CategoryOther      Category = "Other"
+)
+
 type GroupEvent struct {
 	ID               string     `json:"id" db:"id"`
 	Title            string     `json:"title" db:"title"`
 	Description      string     `json:"description" db:"description"`
+	Category         Category   `json:"category" db:"category"`
 	Location         string     `json:"location" db:"location"`
 	StartDate        time.Time  `json:"start_date" db:"start_date"`
 	EndDate          *time.Time `json:"end_date" db:"end_date"`

@@ -1874,6 +1874,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: category
+          in: query
+          description: 活動分類
+          required: false
+          schema:
+            type: string
         - name: page
           in: query
           description: 頁碼 (1-indexed)
@@ -3150,6 +3156,7 @@ components:
         - id
         - title
         - description
+        - category
         - location
         - start_date
         - status
@@ -3169,6 +3176,8 @@ components:
           type: string
           maxLength: 200
         description:
+          type: string
+        category:
           type: string
         location:
           type: string
@@ -3214,6 +3223,7 @@ components:
       required:
         - title
         - description
+        - category
         - location
         - start_date
       properties:
@@ -3224,6 +3234,8 @@ components:
         description:
           type: string
           minLength: 1
+        category:
+          type: string
         location:
           type: string
         start_date:

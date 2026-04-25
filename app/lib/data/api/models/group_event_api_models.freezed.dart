@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$GroupEventResponse {
 
- String get id;@JsonKey(name: 'creator_id') String get creatorId; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(defaultValue: '') String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'creator_name', defaultValue: '') String get creatorName;@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String get creatorAvatar;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'creator_id') String get creatorId; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category;@JsonKey(defaultValue: '') String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'creator_name', defaultValue: '') String get creatorName;@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String get creatorAvatar;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -318,16 +318,16 @@ $GroupEventResponseCopyWith<GroupEventResponse> get copyWith => _$GroupEventResp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.creatorId, creatorId) || other.creatorId == creatorId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&const DeepCollectionEquality().equals(other.latestComments, latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.creatorId, creatorId) || other.creatorId == creatorId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&const DeepCollectionEquality().equals(other.latestComments, latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,creatorId,title,description,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,likeCount,commentCount,isLiked,myApplicationStatus,creatorName,creatorAvatar,const DeepCollectionEquality().hash(latestComments),createdAt,createdBy,updatedAt,updatedBy]);
+int get hashCode => Object.hashAll([runtimeType,id,creatorId,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,likeCount,commentCount,isLiked,myApplicationStatus,creatorName,creatorAvatar,const DeepCollectionEquality().hash(latestComments),createdAt,createdBy,updatedAt,updatedBy]);
 
 @override
 String toString() {
-  return 'GroupEventResponse(id: $id, creatorId: $creatorId, title: $title, description: $description, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, creatorName: $creatorName, creatorAvatar: $creatorAvatar, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventResponse(id: $id, creatorId: $creatorId, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, creatorName: $creatorName, creatorAvatar: $creatorAvatar, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -338,7 +338,7 @@ abstract mixin class $GroupEventResponseCopyWith<$Res>  {
   factory $GroupEventResponseCopyWith(GroupEventResponse value, $Res Function(GroupEventResponse) _then) = _$GroupEventResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -355,13 +355,14 @@ class _$GroupEventResponseCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? creatorId = null,Object? title = null,Object? description = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? creatorName = null,Object? creatorAvatar = null,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? creatorId = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? creatorName = null,Object? creatorAvatar = null,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,creatorId: null == creatorId ? _self.creatorId : creatorId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as GroupEventCategory,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -467,10 +468,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventResponse() when $default != null:
-return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -488,10 +489,10 @@ return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.loc
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventResponse():
-return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -508,10 +509,10 @@ return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.loc
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventResponse() when $default != null:
-return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -523,13 +524,14 @@ return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.loc
 @JsonSerializable()
 
 class _GroupEventResponse implements GroupEventResponse {
-  const _GroupEventResponse({required this.id, @JsonKey(name: 'creator_id') required this.creatorId, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(defaultValue: '') required this.location, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(defaultValue: 'open') required this.status, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'application_count', defaultValue: 0) required this.applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0) required this.totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message', defaultValue: '') required this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0) required this.likeCount, @JsonKey(name: 'comment_count', defaultValue: 0) required this.commentCount, @JsonKey(name: 'is_liked', defaultValue: false) required this.isLiked, @JsonKey(name: 'my_application_status') this.myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '') required this.creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻') required this.creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: []) required final  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _latestComments = latestComments;
+  const _GroupEventResponse({required this.id, @JsonKey(name: 'creator_id') required this.creatorId, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, @JsonKey(defaultValue: '') required this.location, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(defaultValue: 'open') required this.status, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'application_count', defaultValue: 0) required this.applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0) required this.totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message', defaultValue: '') required this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId, @JsonKey(name: 'like_count', defaultValue: 0) required this.likeCount, @JsonKey(name: 'comment_count', defaultValue: 0) required this.commentCount, @JsonKey(name: 'is_liked', defaultValue: false) required this.isLiked, @JsonKey(name: 'my_application_status') this.myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '') required this.creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻') required this.creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: []) required final  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _latestComments = latestComments;
   factory _GroupEventResponse.fromJson(Map<String, dynamic> json) => _$GroupEventResponseFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'creator_id') final  String creatorId;
 @override final  String title;
 @override@JsonKey(defaultValue: '') final  String description;
+@override@JsonKey(defaultValue: GroupEventCategory.other) final  GroupEventCategory category;
 @override@JsonKey(defaultValue: '') final  String location;
 @override@JsonKey(name: 'start_date') final  DateTime startDate;
 @override@JsonKey(name: 'end_date') final  DateTime? endDate;
@@ -571,16 +573,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.creatorId, creatorId) || other.creatorId == creatorId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&const DeepCollectionEquality().equals(other._latestComments, _latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.creatorId, creatorId) || other.creatorId == creatorId)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&const DeepCollectionEquality().equals(other._latestComments, _latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,creatorId,title,description,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,likeCount,commentCount,isLiked,myApplicationStatus,creatorName,creatorAvatar,const DeepCollectionEquality().hash(_latestComments),createdAt,createdBy,updatedAt,updatedBy]);
+int get hashCode => Object.hashAll([runtimeType,id,creatorId,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,likeCount,commentCount,isLiked,myApplicationStatus,creatorName,creatorAvatar,const DeepCollectionEquality().hash(_latestComments),createdAt,createdBy,updatedAt,updatedBy]);
 
 @override
 String toString() {
-  return 'GroupEventResponse(id: $id, creatorId: $creatorId, title: $title, description: $description, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, creatorName: $creatorName, creatorAvatar: $creatorAvatar, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventResponse(id: $id, creatorId: $creatorId, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, creatorName: $creatorName, creatorAvatar: $creatorAvatar, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -591,7 +593,7 @@ abstract mixin class _$GroupEventResponseCopyWith<$Res> implements $GroupEventRe
   factory _$GroupEventResponseCopyWith(_GroupEventResponse value, $Res Function(_GroupEventResponse) _then) = __$GroupEventResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -608,13 +610,14 @@ class __$GroupEventResponseCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? creatorId = null,Object? title = null,Object? description = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? creatorName = null,Object? creatorAvatar = null,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? creatorId = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? creatorName = null,Object? creatorAvatar = null,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_GroupEventResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,creatorId: null == creatorId ? _self.creatorId : creatorId // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as GroupEventCategory,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -1220,7 +1223,7 @@ as DateTime,
 /// @nodoc
 mixin _$GroupEventCreateRequest {
 
- String get title; String get description; String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;
+ String get title; String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category; String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;
 /// Create a copy of GroupEventCreateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1233,16 +1236,16 @@ $GroupEventCreateRequestCopyWith<GroupEventCreateRequest> get copyWith => _$Grou
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventCreateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventCreateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,description,location,startDate,endDate,maxMembers,approvalRequired,privateMessage,linkedTripId);
+int get hashCode => Object.hash(runtimeType,title,description,category,location,startDate,endDate,maxMembers,approvalRequired,privateMessage,linkedTripId);
 
 @override
 String toString() {
-  return 'GroupEventCreateRequest(title: $title, description: $description, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId)';
+  return 'GroupEventCreateRequest(title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId)';
 }
 
 
@@ -1253,7 +1256,7 @@ abstract mixin class $GroupEventCreateRequestCopyWith<$Res>  {
   factory $GroupEventCreateRequestCopyWith(GroupEventCreateRequest value, $Res Function(GroupEventCreateRequest) _then) = _$GroupEventCreateRequestCopyWithImpl;
 @useResult
 $Res call({
- String title, String description, String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
+ String title, String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category, String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
 });
 
 
@@ -1270,11 +1273,12 @@ class _$GroupEventCreateRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventCreateRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? description = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? maxMembers = null,Object? approvalRequired = null,Object? privateMessage = freezed,Object? linkedTripId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? maxMembers = null,Object? approvalRequired = null,Object? privateMessage = freezed,Object? linkedTripId = freezed,}) {
   return _then(_self.copyWith(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as GroupEventCategory,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,maxMembers: null == maxMembers ? _self.maxMembers : maxMembers // ignore: cast_nullable_to_non_nullable
@@ -1366,10 +1370,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String description,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventCreateRequest() when $default != null:
-return $default(_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
+return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
   return orElse();
 
 }
@@ -1387,10 +1391,10 @@ return $default(_that.title,_that.description,_that.location,_that.startDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String description,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventCreateRequest():
-return $default(_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
+return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1407,10 +1411,10 @@ return $default(_that.title,_that.description,_that.location,_that.startDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String description,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventCreateRequest() when $default != null:
-return $default(_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
+return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
   return null;
 
 }
@@ -1422,11 +1426,12 @@ return $default(_that.title,_that.description,_that.location,_that.startDate,_th
 @JsonSerializable()
 
 class _GroupEventCreateRequest implements GroupEventCreateRequest {
-  const _GroupEventCreateRequest({required this.title, required this.description, required this.location, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId});
+  const _GroupEventCreateRequest({required this.title, required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, required this.location, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId});
   factory _GroupEventCreateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventCreateRequestFromJson(json);
 
 @override final  String title;
 @override final  String description;
+@override@JsonKey(defaultValue: GroupEventCategory.other) final  GroupEventCategory category;
 @override final  String location;
 @override@JsonKey(name: 'start_date') final  DateTime startDate;
 @override@JsonKey(name: 'end_date') final  DateTime? endDate;
@@ -1448,16 +1453,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventCreateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventCreateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,description,location,startDate,endDate,maxMembers,approvalRequired,privateMessage,linkedTripId);
+int get hashCode => Object.hash(runtimeType,title,description,category,location,startDate,endDate,maxMembers,approvalRequired,privateMessage,linkedTripId);
 
 @override
 String toString() {
-  return 'GroupEventCreateRequest(title: $title, description: $description, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId)';
+  return 'GroupEventCreateRequest(title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId)';
 }
 
 
@@ -1468,7 +1473,7 @@ abstract mixin class _$GroupEventCreateRequestCopyWith<$Res> implements $GroupEv
   factory _$GroupEventCreateRequestCopyWith(_GroupEventCreateRequest value, $Res Function(_GroupEventCreateRequest) _then) = __$GroupEventCreateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String title, String description, String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
+ String title, String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category, String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
 });
 
 
@@ -1485,11 +1490,12 @@ class __$GroupEventCreateRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventCreateRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? description = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? maxMembers = null,Object? approvalRequired = null,Object? privateMessage = freezed,Object? linkedTripId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? maxMembers = null,Object? approvalRequired = null,Object? privateMessage = freezed,Object? linkedTripId = freezed,}) {
   return _then(_GroupEventCreateRequest(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as GroupEventCategory,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,maxMembers: null == maxMembers ? _self.maxMembers : maxMembers // ignore: cast_nullable_to_non_nullable
@@ -1507,7 +1513,7 @@ as String?,
 /// @nodoc
 mixin _$GroupEventUpdateRequest {
 
- String? get title; String? get description; String? get location;@JsonKey(name: 'start_date') DateTime? get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'max_members') int? get maxMembers;@JsonKey(name: 'approval_required') bool? get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;
+ String? get title; String? get description; GroupEventCategory? get category; String? get location;@JsonKey(name: 'start_date') DateTime? get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'max_members') int? get maxMembers;@JsonKey(name: 'approval_required') bool? get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;
 /// Create a copy of GroupEventUpdateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1520,16 +1526,16 @@ $GroupEventUpdateRequestCopyWith<GroupEventUpdateRequest> get copyWith => _$Grou
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventUpdateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventUpdateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,description,location,startDate,endDate,maxMembers,approvalRequired,privateMessage);
+int get hashCode => Object.hash(runtimeType,title,description,category,location,startDate,endDate,maxMembers,approvalRequired,privateMessage);
 
 @override
 String toString() {
-  return 'GroupEventUpdateRequest(title: $title, description: $description, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage)';
+  return 'GroupEventUpdateRequest(title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage)';
 }
 
 
@@ -1540,7 +1546,7 @@ abstract mixin class $GroupEventUpdateRequestCopyWith<$Res>  {
   factory $GroupEventUpdateRequestCopyWith(GroupEventUpdateRequest value, $Res Function(GroupEventUpdateRequest) _then) = _$GroupEventUpdateRequestCopyWithImpl;
 @useResult
 $Res call({
- String? title, String? description, String? location,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage
+ String? title, String? description, GroupEventCategory? category, String? location,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage
 });
 
 
@@ -1557,11 +1563,12 @@ class _$GroupEventUpdateRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventUpdateRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? title = freezed,Object? description = freezed,Object? location = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? maxMembers = freezed,Object? approvalRequired = freezed,Object? privateMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? title = freezed,Object? description = freezed,Object? category = freezed,Object? location = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? maxMembers = freezed,Object? approvalRequired = freezed,Object? privateMessage = freezed,}) {
   return _then(_self.copyWith(
 title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as GroupEventCategory?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,startDate: freezed == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,maxMembers: freezed == maxMembers ? _self.maxMembers : maxMembers // ignore: cast_nullable_to_non_nullable
@@ -1652,10 +1659,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? title,  String? description,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventUpdateRequest() when $default != null:
-return $default(_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage);case _:
+return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage);case _:
   return orElse();
 
 }
@@ -1673,10 +1680,10 @@ return $default(_that.title,_that.description,_that.location,_that.startDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? title,  String? description,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventUpdateRequest():
-return $default(_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage);case _:
+return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1693,10 +1700,10 @@ return $default(_that.title,_that.description,_that.location,_that.startDate,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? title,  String? description,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventUpdateRequest() when $default != null:
-return $default(_that.title,_that.description,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage);case _:
+return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage);case _:
   return null;
 
 }
@@ -1708,11 +1715,12 @@ return $default(_that.title,_that.description,_that.location,_that.startDate,_th
 @JsonSerializable()
 
 class _GroupEventUpdateRequest implements GroupEventUpdateRequest {
-  const _GroupEventUpdateRequest({this.title, this.description, this.location, @JsonKey(name: 'start_date') this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'max_members') this.maxMembers, @JsonKey(name: 'approval_required') this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage});
+  const _GroupEventUpdateRequest({this.title, this.description, this.category, this.location, @JsonKey(name: 'start_date') this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'max_members') this.maxMembers, @JsonKey(name: 'approval_required') this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage});
   factory _GroupEventUpdateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventUpdateRequestFromJson(json);
 
 @override final  String? title;
 @override final  String? description;
+@override final  GroupEventCategory? category;
 @override final  String? location;
 @override@JsonKey(name: 'start_date') final  DateTime? startDate;
 @override@JsonKey(name: 'end_date') final  DateTime? endDate;
@@ -1733,16 +1741,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventUpdateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventUpdateRequest&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,description,location,startDate,endDate,maxMembers,approvalRequired,privateMessage);
+int get hashCode => Object.hash(runtimeType,title,description,category,location,startDate,endDate,maxMembers,approvalRequired,privateMessage);
 
 @override
 String toString() {
-  return 'GroupEventUpdateRequest(title: $title, description: $description, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage)';
+  return 'GroupEventUpdateRequest(title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, maxMembers: $maxMembers, approvalRequired: $approvalRequired, privateMessage: $privateMessage)';
 }
 
 
@@ -1753,7 +1761,7 @@ abstract mixin class _$GroupEventUpdateRequestCopyWith<$Res> implements $GroupEv
   factory _$GroupEventUpdateRequestCopyWith(_GroupEventUpdateRequest value, $Res Function(_GroupEventUpdateRequest) _then) = __$GroupEventUpdateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String? title, String? description, String? location,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage
+ String? title, String? description, GroupEventCategory? category, String? location,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage
 });
 
 
@@ -1770,11 +1778,12 @@ class __$GroupEventUpdateRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventUpdateRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? title = freezed,Object? description = freezed,Object? location = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? maxMembers = freezed,Object? approvalRequired = freezed,Object? privateMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? title = freezed,Object? description = freezed,Object? category = freezed,Object? location = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? maxMembers = freezed,Object? approvalRequired = freezed,Object? privateMessage = freezed,}) {
   return _then(_GroupEventUpdateRequest(
 title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
+as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as GroupEventCategory?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,startDate: freezed == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,maxMembers: freezed == maxMembers ? _self.maxMembers : maxMembers // ignore: cast_nullable_to_non_nullable

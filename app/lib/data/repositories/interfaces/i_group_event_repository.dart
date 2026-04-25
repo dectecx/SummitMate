@@ -1,6 +1,7 @@
 import '../../../core/error/result.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
+import '../../models/enums/group_event_category.dart';
 
 /// 揪團 Repository 抽象介面
 /// 定義揪團資料存取的契約 (支援 Offline-First)
@@ -44,7 +45,7 @@ abstract interface class IGroupEventRepository {
   DateTime? getLastSyncTime();
 
   /// 同步所有揪團 (類別篩選)
-  Future<Result<List<GroupEvent>, Exception>> syncEvents({String? category});
+  Future<Result<List<GroupEvent>, Exception>> syncEvents({GroupEventCategory? category});
 
   /// 同步指定揪團詳細資料
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId);
@@ -58,7 +59,7 @@ abstract interface class IGroupEventRepository {
   Future<Result<String, Exception>> create({
     required String title,
     required String description,
-    required String category,
+    required GroupEventCategory category,
     required DateTime eventDate,
     required String eventLocation,
     required int maxParticipants,

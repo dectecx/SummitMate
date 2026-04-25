@@ -249,6 +249,7 @@ CREATE TABLE group_events (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title             VARCHAR(200) NOT NULL,
     description       TEXT         NOT NULL DEFAULT '',
+    category          VARCHAR(50)  NOT NULL DEFAULT 'Other' CHECK (category IN ('Hiking', 'Camping', 'Bouldering', 'Other')),
     location          VARCHAR(200) NOT NULL DEFAULT '',
     start_date        DATE         NOT NULL,
     end_date          DATE,

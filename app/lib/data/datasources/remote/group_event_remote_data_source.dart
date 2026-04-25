@@ -8,6 +8,7 @@ import '../../api/models/group_event_api_models.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_group_event_remote_data_source.dart';
 import '../../../core/error/result.dart';
+import '../../models/enums/group_event_category.dart';
 
 /// 揪團 (Group Event) 的遠端資料來源實作
 @LazySingleton(as: IGroupEventRemoteDataSource)
@@ -23,7 +24,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     int? page,
     int? limit,
     String? status,
-    String? category,
+    GroupEventCategory? category,
   }) async {
     try {
       LogService.info('獲取揪團列表 (page: $page, limit: $limit, category: $category)...', source: _source);
@@ -31,17 +32,19 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
         page: page,
         limit: limit,
         status: status,
-        category: category,
+        category: category?.value,
       );
-      
+
       final items = response.items.map(GroupEventApiMapper.fromResponse).toList();
-      
-      return Success(PaginatedList<GroupEvent>(
-        items: items,
-        page: response.pagination.page,
-        total: response.pagination.total,
-        hasMore: response.pagination.hasMore,
-      ));
+
+      return Success(
+        PaginatedList<GroupEvent>(
+          items: items,
+          page: response.pagination.page,
+          total: response.pagination.total,
+          hasMore: response.pagination.hasMore,
+        ),
+      );
     } catch (e) {
       LogService.error('獲取揪團失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -62,7 +65,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   Future<Result<String, Exception>> createEvent({
     required String title,
     required String description,
-    required String category,
+    required GroupEventCategory category,
     required DateTime eventDate,
     required String eventLocation,
     required int maxParticipants,
@@ -72,6 +75,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
       final request = GroupEventCreateRequest(
         title: title,
         description: description,
+        category: category,
         location: eventLocation,
         startDate: eventDate,
         maxMembers: maxParticipants,
@@ -95,10 +99,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<String, Exception>> applyEvent({
-    required String eventId,
-    String? note,
-  }) async {
+  Future<Result<String, Exception>> applyEvent({required String eventId, String? note}) async {
     try {
       final response = await _groupEventApi.applyEvent(eventId, GroupEventApplyRequest(message: note));
       return Success(response.id);
@@ -198,10 +199,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<GroupEventComment, Exception>> addComment({
-    required String eventId,
-    required String content,
-  }) async {
+  Future<Result<GroupEventComment, Exception>> addComment({required String eventId, required String content}) async {
     try {
       final response = await _groupEventApi.addComment(eventId, GroupEventCommentRequest(content: content));
       return Success(GroupEventApiMapper.fromCommentResponse(response));

@@ -2,6 +2,7 @@ import '../../../core/models/paginated_list.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
 import '../../../core/error/result.dart';
+import '../../models/enums/group_event_category.dart';
 
 /// 揪團 (Group Event) 的遠端資料來源介面
 abstract interface class IGroupEventRemoteDataSource {
@@ -10,7 +11,7 @@ abstract interface class IGroupEventRemoteDataSource {
     int? page,
     int? limit,
     String? status,
-    String? category,
+    GroupEventCategory? category,
   });
 
   /// 獲取單一揪團詳情
@@ -20,7 +21,7 @@ abstract interface class IGroupEventRemoteDataSource {
   Future<Result<String, Exception>> createEvent({
     required String title,
     required String description,
-    required String category,
+    required GroupEventCategory category,
     required DateTime eventDate,
     required String eventLocation,
     required int maxParticipants,

@@ -12,7 +12,7 @@ import (
 type GroupEventRepository interface {
 	CreateEvent(ctx context.Context, event *GroupEvent) error
 	GetEventByID(ctx context.Context, id string) (*GroupEvent, error)
-	ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error)
+	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error)
 	UpdateEvent(ctx context.Context, event *GroupEvent) error
 	DeleteEvent(ctx context.Context, id string) error
 
@@ -38,16 +38,16 @@ func NewGroupEventRepository(db database.DB) GroupEventRepository {
 func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEvent) error {
 	query := `
 		INSERT INTO group_events (
-			title, description, location, start_date, end_date,
+			title, description, category, location, start_date, end_date,
 			max_members, approval_required, private_message, linked_trip_id,
 			created_by, updated_by
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 		) RETURNING id, status, like_count, comment_count, created_at, updated_at
 	`
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
-		event.Title, event.Description, event.Location, event.StartDate, event.EndDate,
+		event.Title, event.Description, event.Category, event.Location, event.StartDate, event.EndDate,
 		event.MaxMembers, event.ApprovalRequired, event.PrivateMessage, event.LinkedTripID,
 		event.CreatedBy, event.UpdatedBy,
 	).Scan(&event.ID, &event.Status, &event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.UpdatedAt)
@@ -59,7 +59,7 @@ func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEven
 
 func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*GroupEvent, error) {
 	query := `
-		SELECT id, title, description, location, start_date, end_date,
+		SELECT id, title, description, category, location, start_date, end_date,
             status, max_members, approval_required, private_message, linked_trip_id,
             like_count, comment_count, created_at, created_by, updated_at, updated_by
 		FROM group_events
@@ -68,7 +68,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 	event := &GroupEvent{}
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query, id).Scan(
-		&event.ID, &event.Title, &event.Description, &event.Location, &event.StartDate, &event.EndDate,
+		&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 		&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 	)
@@ -81,7 +81,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 	return event, nil
 }
 
-func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
+func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
 	if limit <= 0 {
 		limit = 20
 	}
@@ -95,6 +95,10 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 	if status != nil {
 		args = append(args, *status)
 		whereClause += fmt.Sprintf(" AND status = $%d", len(args))
+	}
+	if category != nil {
+		args = append(args, *category)
+		whereClause += fmt.Sprintf(" AND category = $%d", len(args))
 	}
 	if creatorID != nil {
 		args = append(args, *creatorID)
@@ -114,7 +118,7 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 
 	dataArgs := append(args, limit, (page-1)*limit)
 	mainQuery := fmt.Sprintf(`
-		SELECT id, title, description, location, start_date, end_date,
+		SELECT id, title, description, category, location, start_date, end_date,
 			status, max_members, approval_required, private_message, linked_trip_id,
 			like_count, comment_count, created_at, created_by, updated_at, updated_by
 		FROM group_events
@@ -133,7 +137,7 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 	for rows.Next() {
 		event := &GroupEvent{}
 		err := rows.Scan(
-			&event.ID, &event.Title, &event.Description, &event.Location, &event.StartDate, &event.EndDate,
+			&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 		)
@@ -152,15 +156,15 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 func (r *groupEventRepository) UpdateEvent(ctx context.Context, event *GroupEvent) error {
 	query := `
 		UPDATE group_events
-		SET title = $1, description = $2, location = $3, start_date = $4, end_date = $5,
-            max_members = $6, approval_required = $7, private_message = $8, linked_trip_id = $9,
-            updated_at = NOW(), updated_by = $10
-		WHERE id = $11
+		SET title = $1, description = $2, category = $3, location = $4, start_date = $5, end_date = $6,
+            max_members = $7, approval_required = $8, private_message = $9, linked_trip_id = $10,
+            updated_at = NOW(), updated_by = $11
+		WHERE id = $12
 		RETURNING updated_at
 	`
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
-		event.Title, event.Description, event.Location, event.StartDate, event.EndDate,
+		event.Title, event.Description, event.Category, event.Location, event.StartDate, event.EndDate,
 		event.MaxMembers, event.ApprovalRequired, event.PrivateMessage, event.LinkedTripID,
 		event.UpdatedBy, event.ID,
 	).Scan(&event.UpdatedAt)

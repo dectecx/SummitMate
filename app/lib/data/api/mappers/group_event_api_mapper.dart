@@ -13,6 +13,7 @@ class GroupEventApiMapper {
       creatorId: response.creatorId,
       title: response.title,
       description: response.description,
+      category: response.category,
       location: response.location,
       startDate: response.startDate.toLocal(),
       endDate: response.endDate?.toLocal(),

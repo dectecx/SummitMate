@@ -4,6 +4,7 @@ import 'package:summitmate/data/api/models/group_event_api_models.dart';
 import 'package:summitmate/data/api/services/group_event_api_service.dart';
 import 'package:summitmate/data/datasources/remote/group_event_remote_data_source.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/data/models/enums/group_event_category.dart';
 
 class MockGroupEventApiService extends Mock implements GroupEventApiService {}
 
@@ -116,7 +117,7 @@ void main() {
       final result = await dataSource.createEvent(
         title: 'New Event',
         description: 'Desc',
-        category: 'Hiking',
+        category: GroupEventCategory.other,
         eventDate: DateTime.now(),
         eventLocation: 'Mountain',
         maxParticipants: 10,

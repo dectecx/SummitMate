@@ -23,8 +23,8 @@ func (m *MockGroupEventRepository) GetEventByID(ctx context.Context, id string) 
 	return args.Get(0).(*GroupEvent), args.Error(1)
 }
 
-func (m *MockGroupEventRepository) ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
-	args := m.Called(ctx, status, creatorID, page, limit, search)
+func (m *MockGroupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
+	args := m.Called(ctx, status, category, creatorID, page, limit, search)
 	if args.Get(0) == nil {
 		return nil, 0, false, args.Error(3)
 	}

@@ -10,6 +10,7 @@ import '../cubits/group_event/group_event_state.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import '../cubits/favorites/group_event/group_event_favorites_state.dart';
 import '../../data/models/enums/group_event_status.dart';
+import '../../data/models/enums/group_event_category.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
@@ -30,11 +31,12 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
   // 0: 全部, 1: 即將出發
   int _selectedFilter = 0;
   bool _onlyFavorites = false;
+  GroupEventCategory? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
-    context.read<GroupEventCubit>().fetchEvents(isAuto: true);
+    context.read<GroupEventCubit>().fetchEvents(isAuto: true, category: _selectedCategory);
   }
 
   Widget _buildEventCard(BuildContext context, GroupEvent event, String currentUserId, bool isGuest, bool isFavorite) {
@@ -273,6 +275,9 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
             final favoritesCubit = context.read<GroupEventFavoritesCubit>();
 
             List<GroupEvent> filteredEvents = events.where((e) {
+              if (_selectedCategory != null && e.category != _selectedCategory) {
+                return false;
+              }
               // 1. 收藏篩選: 若開啟收藏篩選，只顯示已收藏的項目
               if (_onlyFavorites && !favoritesCubit.isFavorite(e.id)) {
                 return false;
@@ -374,6 +379,29 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                                     ),
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                DropdownButtonHideUnderline(
+                                  child: DropdownButton<GroupEventCategory?>(
+                                    value: _selectedCategory,
+                                    hint: const Text('所有分類', style: TextStyle(fontSize: 13)),
+                                    items: [
+                                      const DropdownMenuItem<GroupEventCategory?>(
+                                        value: null,
+                                        child: Text('所有分類', style: TextStyle(fontSize: 13)),
+                                      ),
+                                      ...GroupEventCategory.values.map(
+                                        (cat) => DropdownMenuItem<GroupEventCategory?>(
+                                          value: cat,
+                                          child: Text(cat.displayName, style: const TextStyle(fontSize: 13)),
+                                        ),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() => _selectedCategory = value);
+                                      context.read<GroupEventCubit>().fetchEvents(category: _selectedCategory);
+                                    },
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -464,7 +492,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                             ),
                           )
                         : RefreshIndicator(
-                            onRefresh: () => context.read<GroupEventCubit>().fetchEvents(),
+                            onRefresh: () => context.read<GroupEventCubit>().fetchEvents(category: _selectedCategory),
                             child: ListView.builder(
                               itemCount: filteredEvents.length,
                               padding: const EdgeInsets.only(bottom: 80),

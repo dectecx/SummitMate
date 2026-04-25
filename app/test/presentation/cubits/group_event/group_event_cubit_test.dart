@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/models/group_event.dart';
 import 'package:summitmate/data/models/group_event_comment.dart';
+import 'package:summitmate/data/models/enums/group_event_category.dart';
 import 'package:summitmate/data/repositories/interfaces/i_group_event_repository.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
@@ -78,7 +79,7 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   @override
   Future<void> saveApplications(List<GroupEventApplication> applications) async {}
   @override
-  Future<Result<List<GroupEvent>, Exception>> syncEvents({String? category}) async => Success(_events);
+  Future<Result<List<GroupEvent>, Exception>> syncEvents({GroupEventCategory? category}) async => Success(_events);
   @override
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId) async => Failure(Exception('Not implemented'));
   @override
@@ -87,7 +88,7 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   Future<Result<String, Exception>> create({
     required String title,
     required String description,
-    required String category,
+    required GroupEventCategory category,
     required DateTime eventDate,
     required String eventLocation,
     required int maxParticipants,
