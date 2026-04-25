@@ -23,8 +23,7 @@ abstract class MessageResponse with _$MessageResponse {
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _MessageResponse;
 
-  factory MessageResponse.fromJson(Map<String, dynamic> json) =>
-      _$MessageResponseFromJson(json);
+  factory MessageResponse.fromJson(Map<String, dynamic> json) => _$MessageResponseFromJson(json);
 }
 
 // ── Request ──
@@ -38,6 +37,5 @@ abstract class MessageCreateRequest with _$MessageCreateRequest {
     @JsonKey(name: 'parent_id') String? parentId,
   }) = _MessageCreateRequest;
 
-  factory MessageCreateRequest.fromJson(Map<String, dynamic> json) =>
-      _$MessageCreateRequestFromJson(json);
+  factory MessageCreateRequest.fromJson(Map<String, dynamic> json) => _$MessageCreateRequestFromJson(json);
 }

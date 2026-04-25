@@ -22,8 +22,7 @@ abstract class TripGearItemResponse with _$TripGearItemResponse {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _TripGearItemResponse;
 
-  factory TripGearItemResponse.fromJson(Map<String, dynamic> json) =>
-      _$TripGearItemResponseFromJson(json);
+  factory TripGearItemResponse.fromJson(Map<String, dynamic> json) => _$TripGearItemResponseFromJson(json);
 }
 
 // ── Requests ──
@@ -41,6 +40,5 @@ abstract class TripGearItemRequest with _$TripGearItemRequest {
     @JsonKey(name: 'order_index') int? orderIndex,
   }) = _TripGearItemRequest;
 
-  factory TripGearItemRequest.fromJson(Map<String, dynamic> json) =>
-      _$TripGearItemRequestFromJson(json);
+  factory TripGearItemRequest.fromJson(Map<String, dynamic> json) => _$TripGearItemRequestFromJson(json);
 }

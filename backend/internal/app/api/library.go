@@ -1,9 +1,9 @@
 package api
 
 import (
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"net/http"
 	"summitmate/api"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 func (s *Server) ListGearLibrary(w http.ResponseWriter, r *http.Request, params api.ListGearLibraryParams) {

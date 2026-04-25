@@ -18,6 +18,7 @@ import (
 	"summitmate/internal/config"
 	"summitmate/internal/database"
 	"summitmate/internal/favorite"
+	"summitmate/internal/flag"
 	"summitmate/internal/groupevent"
 	"summitmate/internal/heartbeat"
 	"summitmate/internal/interaction"
@@ -26,14 +27,13 @@ import (
 	"summitmate/internal/middleware"
 	"summitmate/internal/trip"
 	"summitmate/internal/weather"
-	"summitmate/internal/flag"
 	"summitmate/pkg/cache"
 	"summitmate/pkg/email"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type App struct {

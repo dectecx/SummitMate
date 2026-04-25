@@ -16,14 +16,8 @@ abstract class MessageApiService {
   Future<List<MessageResponse>> listMessages(@Path('tripId') String tripId);
 
   @POST('/trips/{tripId}/messages')
-  Future<MessageResponse> addMessage(
-    @Path('tripId') String tripId,
-    @Body() MessageCreateRequest request,
-  );
+  Future<MessageResponse> addMessage(@Path('tripId') String tripId, @Body() MessageCreateRequest request);
 
   @DELETE('/trips/{tripId}/messages/{messageId}')
-  Future<void> deleteMessage(
-    @Path('tripId') String tripId,
-    @Path('messageId') String messageId,
-  );
+  Future<void> deleteMessage(@Path('tripId') String tripId, @Path('messageId') String messageId);
 }

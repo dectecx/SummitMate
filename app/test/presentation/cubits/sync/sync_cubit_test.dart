@@ -62,13 +62,7 @@ void main() {
       when(() => mockSyncService.lastItinerarySync).thenReturn(now);
       when(() => mockConnectivityService.isOffline).thenReturn(false);
 
-      cubit = SyncCubit(
-        mockSyncService,
-        mockConnectivityService,
-        mockItineraryRepo,
-        mockAuthService,
-        mockTripRepo,
-      );
+      cubit = SyncCubit(mockSyncService, mockConnectivityService, mockItineraryRepo, mockAuthService, mockTripRepo);
 
       expect(cubit.state, isA<SyncInitial>().having((s) => s.lastSyncTime, 'lastSyncTime', now));
     });
@@ -79,13 +73,8 @@ void main() {
         setUp: () {
           when(() => mockConnectivityService.isOffline).thenReturn(true);
         },
-        build: () => SyncCubit(
-          mockSyncService,
-          mockConnectivityService,
-          mockItineraryRepo,
-          mockAuthService,
-          mockTripRepo,
-        ),
+        build: () =>
+            SyncCubit(mockSyncService, mockConnectivityService, mockItineraryRepo, mockAuthService, mockTripRepo),
         act: (cubit) => cubit.syncAll(),
         expect: () => [isA<SyncFailure>().having((s) => s.errorMessage, 'errorMessage', contains('離線模式'))],
       );
@@ -98,13 +87,8 @@ void main() {
             () => mockSyncService.syncAll(isAuto: true),
           ).thenAnswer((_) async => SyncResult.success(syncedAt: DateTime.now()));
         },
-        build: () => SyncCubit(
-          mockSyncService,
-          mockConnectivityService,
-          mockItineraryRepo,
-          mockAuthService,
-          mockTripRepo,
-        ),
+        build: () =>
+            SyncCubit(mockSyncService, mockConnectivityService, mockItineraryRepo, mockAuthService, mockTripRepo),
         act: (cubit) => cubit.syncAll(),
         expect: () => [isA<SyncInProgress>(), isA<SyncSuccess>()],
       );
@@ -116,13 +100,8 @@ void main() {
         setUp: () {
           when(() => mockConnectivityService.isOffline).thenReturn(true);
         },
-        build: () => SyncCubit(
-          mockSyncService,
-          mockConnectivityService,
-          mockItineraryRepo,
-          mockAuthService,
-          mockTripRepo,
-        ),
+        build: () =>
+            SyncCubit(mockSyncService, mockConnectivityService, mockItineraryRepo, mockAuthService, mockTripRepo),
         act: (cubit) => cubit.uploadItinerary(),
         expect: () => [isA<SyncFailure>().having((s) => s.errorMessage, 'errorMessage', contains('離線模式'))],
       );
@@ -148,13 +127,8 @@ void main() {
           );
           when(() => mockItineraryRepo.sync('t1')).thenAnswer((_) async => const Success(null));
         },
-        build: () => SyncCubit(
-          mockSyncService,
-          mockConnectivityService,
-          mockItineraryRepo,
-          mockAuthService,
-          mockTripRepo,
-        ),
+        build: () =>
+            SyncCubit(mockSyncService, mockConnectivityService, mockItineraryRepo, mockAuthService, mockTripRepo),
         act: (cubit) => cubit.uploadItinerary(),
         expect: () => [isA<SyncInProgress>(), isA<SyncSuccess>()],
       );

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"net/http"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"net/http"
 )
 
 func (s *Server) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {

@@ -16,10 +16,7 @@ abstract class TripGearApiService {
   Future<List<TripGearItemResponse>> listGear(@Path('tripId') String tripId);
 
   @POST('/trips/{tripId}/gear')
-  Future<TripGearItemResponse> addGear(
-    @Path('tripId') String tripId,
-    @Body() TripGearItemRequest request,
-  );
+  Future<TripGearItemResponse> addGear(@Path('tripId') String tripId, @Body() TripGearItemRequest request);
 
   @PUT('/trips/{tripId}/gear/{itemId}')
   Future<TripGearItemResponse> updateGear(
@@ -29,14 +26,8 @@ abstract class TripGearApiService {
   );
 
   @DELETE('/trips/{tripId}/gear/{itemId}')
-  Future<void> deleteGear(
-    @Path('tripId') String tripId,
-    @Path('itemId') String itemId,
-  );
+  Future<void> deleteGear(@Path('tripId') String tripId, @Path('itemId') String itemId);
 
   @PUT('/trips/{tripId}/gear')
-  Future<void> replaceAllGear(
-    @Path('tripId') String tripId,
-    @Body() List<TripGearItemRequest> items,
-  );
+  Future<void> replaceAllGear(@Path('tripId') String tripId, @Body() List<TripGearItemRequest> items);
 }

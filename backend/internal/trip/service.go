@@ -366,11 +366,11 @@ type TripCreateRequest struct {
 }
 
 type TripUpdateRequest struct {
-	Name        *string
-	Description *string
-	StartDate   *time.Time
-	EndDate     *time.Time
-	CoverImage  *string
+	Name          *string
+	Description   *string
+	StartDate     *time.Time
+	EndDate       *time.Time
+	CoverImage    *string
 	IsActive      *bool
 	DayNames      *[]string
 	LastUpdatedAt *time.Time

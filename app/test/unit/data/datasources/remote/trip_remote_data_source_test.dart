@@ -8,9 +8,13 @@ import 'package:summitmate/data/datasources/remote/trip_remote_data_source.dart'
 import 'package:summitmate/data/models/trip.dart';
 
 class MockTripApiService extends Mock implements TripApiService {}
+
 class MockUserApiService extends Mock implements UserApiService {}
+
 class FakeTripCreateRequest extends Fake implements TripCreateRequest {}
+
 class FakeTripUpdateRequest extends Fake implements TripUpdateRequest {}
+
 class FakeAddMemberRequest extends Fake implements AddMemberRequest {}
 
 void main() {

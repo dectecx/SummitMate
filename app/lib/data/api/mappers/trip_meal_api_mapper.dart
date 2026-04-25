@@ -26,11 +26,7 @@ class TripMealApiMapper {
   /// [item] 餐點 domain model
   /// [day] 天次，例如 "D1"、"D2"
   /// [mealType] 餐食類型，例如 "breakfast"、"lunch"
-  static TripMealItemRequest toRequest(
-    MealItem item, {
-    required String day,
-    required String mealType,
-  }) {
+  static TripMealItemRequest toRequest(MealItem item, {required String day, required String mealType}) {
     return TripMealItemRequest(
       day: day,
       mealType: mealType,

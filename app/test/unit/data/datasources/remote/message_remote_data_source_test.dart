@@ -6,6 +6,7 @@ import 'package:summitmate/data/datasources/remote/message_remote_data_source.da
 import 'package:summitmate/data/models/message.dart';
 
 class MockMessageApiService extends Mock implements MessageApiService {}
+
 class FakeMessageCreateRequest extends Fake implements MessageCreateRequest {}
 
 void main() {

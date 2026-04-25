@@ -57,32 +57,18 @@ void main() {
 
   group('TripMealRemoteDataSource CRUD', () {
     test('addTripMeal calls api and returns mapped item', () async {
-      when(
-        () => mockApiService.addMeal('trip-1', any()),
-      ).thenAnswer((_) async => testResponse);
+      when(() => mockApiService.addMeal('trip-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.addTripMeal(
-        'trip-1',
-        testMeal,
-        day: 'D1',
-        mealType: 'breakfast',
-      );
+      final result = await dataSource.addTripMeal('trip-1', testMeal, day: 'D1', mealType: 'breakfast');
 
       expect(result.name, 'Rice');
       verify(() => mockApiService.addMeal('trip-1', any())).called(1);
     });
 
     test('updateTripMeal calls api and returns mapped item', () async {
-      when(
-        () => mockApiService.updateMeal('trip-1', 'meal-1', any()),
-      ).thenAnswer((_) async => testResponse);
+      when(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.updateTripMeal(
-        'trip-1',
-        testMeal,
-        day: 'D1',
-        mealType: 'breakfast',
-      );
+      final result = await dataSource.updateTripMeal('trip-1', testMeal, day: 'D1', mealType: 'breakfast');
 
       expect(result.name, 'Rice');
       verify(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).called(1);
@@ -99,9 +85,7 @@ void main() {
     test('replaceAllTripMeals calls api with mapped requests', () async {
       when(() => mockApiService.replaceAllMeals('trip-1', any())).thenAnswer((_) async {});
 
-      await dataSource.replaceAllTripMeals('trip-1', [
-        (item: testMeal, day: 'D1', mealType: 'breakfast'),
-      ]);
+      await dataSource.replaceAllTripMeals('trip-1', [(item: testMeal, day: 'D1', mealType: 'breakfast')]);
 
       verify(() => mockApiService.replaceAllMeals('trip-1', any())).called(1);
     });

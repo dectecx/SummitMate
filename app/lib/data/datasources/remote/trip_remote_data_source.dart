@@ -81,11 +81,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> updateMemberRole(String tripId, String userId, String role) async {
     try {
-      await _tripApi.updateMemberRole(
-        tripId,
-        userId,
-        UpdateMemberRoleRequest(role: role),
-      );
+      await _tripApi.updateMemberRole(tripId, userId, UpdateMemberRoleRequest(role: role));
     } catch (e) {
       LogService.error('Remote UpdateMemberRole failed: $e', source: _source);
       rethrow;

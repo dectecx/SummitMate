@@ -22,8 +22,7 @@ abstract class GearLibraryItemResponse with _$GearLibraryItemResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GearLibraryItemResponse;
 
-  factory GearLibraryItemResponse.fromJson(Map<String, dynamic> json) =>
-      _$GearLibraryItemResponseFromJson(json);
+  factory GearLibraryItemResponse.fromJson(Map<String, dynamic> json) => _$GearLibraryItemResponseFromJson(json);
 }
 
 // ── Requests ──
@@ -39,6 +38,5 @@ abstract class GearLibraryItemRequest with _$GearLibraryItemRequest {
     @JsonKey(name: 'is_archived', defaultValue: false) required bool isArchived,
   }) = _GearLibraryItemRequest;
 
-  factory GearLibraryItemRequest.fromJson(Map<String, dynamic> json) =>
-      _$GearLibraryItemRequestFromJson(json);
+  factory GearLibraryItemRequest.fromJson(Map<String, dynamic> json) => _$GearLibraryItemRequestFromJson(json);
 }

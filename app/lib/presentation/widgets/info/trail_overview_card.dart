@@ -101,10 +101,7 @@ class _TrailOverviewCardState extends State<TrailOverviewCard> {
 
             const SizedBox(height: 16),
             const TextRenderer(
-              child: Text(
-                '嘉明湖國家步道為中央山脈南二段的一部分，穿越台灣鐵杉林、高山深谷與箭竹草原，以高山寒原與藍寶石般的嘉明湖聞名。',
-                style: TextStyle(height: 1.5),
-              ),
+              child: Text('嘉明湖國家步道為中央山脈南二段的一部分，穿越台灣鐵杉林、高山深谷與箭竹草原，以高山寒原與藍寶石般的嘉明湖聞名。', style: TextStyle(height: 1.5)),
             ),
             const SizedBox(height: 16),
             SizedBox(

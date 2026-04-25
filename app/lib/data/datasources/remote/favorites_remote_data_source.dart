@@ -30,11 +30,7 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
   }
 
   @override
-  Future<Result<void, Exception>> updateFavorite(
-    String id,
-    FavoriteType type,
-    bool isFavorite,
-  ) async {
+  Future<Result<void, Exception>> updateFavorite(String id, FavoriteType type, bool isFavorite) async {
     try {
       LogService.info('更新最愛狀態: $id (${type.value}) -> $isFavorite', source: _source);
       if (isFavorite) {
@@ -50,17 +46,17 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
   }
 
   @override
-  Future<Result<void, Exception>> batchUpdateFavorites(
-    List<Map<String, dynamic>> items,
-  ) async {
+  Future<Result<void, Exception>> batchUpdateFavorites(List<Map<String, dynamic>> items) async {
     try {
       LogService.info('批量更新最愛狀態: 數量 ${items.length}', source: _source);
       final requests = items
-          .map((m) => BatchFavoriteItem(
-                targetId: m['target_id'] as String,
-                type: m['type'] as String,
-                isFavorite: m['is_favorite'] as bool,
-              ))
+          .map(
+            (m) => BatchFavoriteItem(
+              targetId: m['target_id'] as String,
+              type: m['type'] as String,
+              isFavorite: m['is_favorite'] as bool,
+            ),
+          )
           .toList();
       await _favoritesApi.batchUpdate(requests);
       return const Success(null);

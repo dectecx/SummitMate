@@ -24,10 +24,7 @@ abstract class TripApiService {
   Future<TripResponse> getTrip(@Path('tripId') String tripId);
 
   @PATCH('/trips/{tripId}')
-  Future<TripResponse> updateTrip(
-    @Path('tripId') String tripId,
-    @Body() TripUpdateRequest request,
-  );
+  Future<TripResponse> updateTrip(@Path('tripId') String tripId, @Body() TripUpdateRequest request);
 
   @DELETE('/trips/{tripId}')
   Future<void> deleteTrip(@Path('tripId') String tripId);
@@ -38,10 +35,7 @@ abstract class TripApiService {
   Future<List<TripMemberResponse>> getMembers(@Path('tripId') String tripId);
 
   @POST('/trips/{tripId}/members')
-  Future<void> addMember(
-    @Path('tripId') String tripId,
-    @Body() AddMemberRequest request,
-  );
+  Future<void> addMember(@Path('tripId') String tripId, @Body() AddMemberRequest request);
 
   @PUT('/trips/{tripId}/members/{userId}')
   Future<void> updateMemberRole(
@@ -51,8 +45,5 @@ abstract class TripApiService {
   );
 
   @DELETE('/trips/{tripId}/members/{userId}')
-  Future<void> removeMember(
-    @Path('tripId') String tripId,
-    @Path('userId') String userId,
-  );
+  Future<void> removeMember(@Path('tripId') String tripId, @Path('userId') String userId);
 }

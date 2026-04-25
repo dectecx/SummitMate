@@ -225,7 +225,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                const TextRenderer(child: Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey))),
+                                const TextRenderer(
+                                  child: Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
+                                ),
                                 const SizedBox(height: 32),
                                 FilledButton.icon(
                                   onPressed: () => TripSelectionDialog.show(context),

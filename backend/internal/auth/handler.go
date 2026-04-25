@@ -191,7 +191,6 @@ func (h *AuthHandler) GetUserByID(w http.ResponseWriter, r *http.Request, userID
 	apiutil.SendJSON(w, http.StatusOK, ToUserResponse(user))
 }
 
-
 // --- 回應輔助函式 ---
 
 func (h *AuthHandler) writeAuthResponse(w http.ResponseWriter, statusCode int, user *User, token string) {

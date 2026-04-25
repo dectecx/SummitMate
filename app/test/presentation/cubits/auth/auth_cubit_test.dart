@@ -100,9 +100,7 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'login emits AuthLoading then AuthAuthenticated on success',
       build: () {
-        when(
-          () => mockAuthService.login(email: 'email', password: 'password'),
-        ).thenAnswer((_) async {
+        when(() => mockAuthService.login(email: 'email', password: 'password')).thenAnswer((_) async {
           authStateController.add(testUser);
           return AuthResult.success(user: testUser);
         });
@@ -173,9 +171,7 @@ void main() {
     blocTest<AuthCubit, AuthState>(
       'verifyEmail emits AuthLoading then AuthOperationSuccess then AuthUnauthenticated on success',
       build: () {
-        when(
-          () => mockAuthService.verifyEmail(email: 'email', code: '123456'),
-        ).thenAnswer((_) async {
+        when(() => mockAuthService.verifyEmail(email: 'email', code: '123456')).thenAnswer((_) async {
           authStateController.add(null);
           return AuthResult.success();
         });

@@ -7,8 +7,11 @@ import 'package:summitmate/data/models/group_event.dart';
 import 'package:summitmate/data/models/enums/group_event_status.dart';
 
 class MockGroupEventApiService extends Mock implements GroupEventApiService {}
+
 class FakeGroupEventCreateRequest extends Fake implements GroupEventCreateRequest {}
+
 class FakeGroupEventCommentRequest extends Fake implements GroupEventCommentRequest {}
+
 class FakeGroupEventApplyRequest extends Fake implements GroupEventApplyRequest {}
 
 void main() {

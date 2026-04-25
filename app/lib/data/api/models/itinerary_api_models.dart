@@ -25,8 +25,7 @@ abstract class ItineraryItemResponse with _$ItineraryItemResponse {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _ItineraryItemResponse;
 
-  factory ItineraryItemResponse.fromJson(Map<String, dynamic> json) =>
-      _$ItineraryItemResponseFromJson(json);
+  factory ItineraryItemResponse.fromJson(Map<String, dynamic> json) => _$ItineraryItemResponseFromJson(json);
 }
 
 // ── Request ──
@@ -44,6 +43,5 @@ abstract class ItineraryItemRequest with _$ItineraryItemRequest {
     @JsonKey(name: 'image_asset') String? imageAsset,
   }) = _ItineraryItemRequest;
 
-  factory ItineraryItemRequest.fromJson(Map<String, dynamic> json) =>
-      _$ItineraryItemRequestFromJson(json);
+  factory ItineraryItemRequest.fromJson(Map<String, dynamic> json) => _$ItineraryItemRequestFromJson(json);
 }
