@@ -3,27 +3,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/remote/favorites_remote_data_source.dart';
 import 'package:summitmate/data/models/enums/favorite_type.dart';
-import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 import 'package:summitmate/core/error/result.dart';
 
-class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}
+class MockDio extends Mock implements Dio {}
 
 void main() {
   late FavoritesRemoteDataSource dataSource;
-  late MockNetworkAwareClient mockApiClient;
+  late MockDio mockDio;
 
   setUp(() {
-    mockApiClient = MockNetworkAwareClient();
-    dataSource = FavoritesRemoteDataSource(apiClient: mockApiClient);
+    mockDio = MockDio();
+    dataSource = FavoritesRemoteDataSource(mockDio);
   });
 
   group('FavoritesRemoteDataSource.getFavorites', () {
     test('returns success with list of maps on success', () async {
       final responseData = [
-        {'target_id': '1', 'type': 'trip'},
+        {
+          'id': 'fav-1',
+          'target_id': '1',
+          'type': 'trip',
+          'created_at': DateTime.now().toIso8601String(),
+          'created_by': 'user-1',
+          'updated_at': DateTime.now().toIso8601String(),
+          'updated_by': 'user-1',
+        },
       ];
 
-      when(() => mockApiClient.get('/favorites')).thenAnswer(
+      when(() => mockDio.get('/favorites')).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/favorites'),
           data: responseData,
@@ -34,13 +41,13 @@ void main() {
       final result = await dataSource.getFavorites();
 
       expect(result, isA<Success>());
-      expect((result as Success).value.length, 1);
+      final list = (result as Success).value as List;
+      expect(list.length, 1);
+      expect(list[0]['target_id'], '1');
     });
 
-    test('returns failure on non-200 status', () async {
-      when(
-        () => mockApiClient.get('/favorites'),
-      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/favorites'), statusCode: 500));
+    test('returns failure on exception', () async {
+      when(() => mockDio.get('/favorites')).thenThrow(Exception('Fail'));
 
       final result = await dataSource.getFavorites();
       expect(result, isA<Failure>());
@@ -48,17 +55,36 @@ void main() {
   });
 
   group('FavoritesRemoteDataSource.updateFavorite', () {
-    test('returns success on valid update', () async {
-      when(
-        () => mockApiClient.post('/favorites', data: any(named: 'data')),
-      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/favorites'), statusCode: 200));
+    test('calls POST when isFavorite is true', () async {
+      final responseData = {
+        'id': 'fav-1',
+        'target_id': 't1',
+        'type': 'route',
+        'created_at': DateTime.now().toIso8601String(),
+        'created_by': 'u1',
+        'updated_at': DateTime.now().toIso8601String(),
+        'updated_by': 'u1',
+      };
+      
+      when(() => mockDio.post('/favorites', data: any(named: 'data'))).thenAnswer(
+        (_) async => Response(requestOptions: RequestOptions(path: '/favorites'), data: responseData, statusCode: 201),
+      );
 
       final result = await dataSource.updateFavorite('t1', FavoriteType.route, true);
 
       expect(result, isA<Success>());
-      verify(
-        () => mockApiClient.post('/favorites', data: {'target_id': 't1', 'type': 'route', 'is_favorite': true}),
-      ).called(1);
+      verify(() => mockDio.post('/favorites', data: {'target_id': 't1', 'type': 'route'})).called(1);
+    });
+
+    test('calls DELETE when isFavorite is false', () async {
+      when(() => mockDio.delete('/favorites/t1')).thenAnswer(
+        (_) async => Response(requestOptions: RequestOptions(path: '/favorites/t1'), statusCode: 200),
+      );
+
+      final result = await dataSource.updateFavorite('t1', FavoriteType.route, false);
+
+      expect(result, isA<Success>());
+      verify(() => mockDio.delete('/favorites/t1')).called(1);
     });
   });
 }

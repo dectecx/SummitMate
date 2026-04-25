@@ -29,6 +29,8 @@ import '../../data/datasources/interfaces/i_gear_key_local_data_source.dart'
     as _i484;
 import '../../data/datasources/interfaces/i_gear_library_local_data_source.dart'
     as _i240;
+import '../../data/datasources/interfaces/i_gear_library_remote_data_source.dart'
+    as _i31;
 import '../../data/datasources/interfaces/i_gear_local_data_source.dart'
     as _i691;
 import '../../data/datasources/interfaces/i_group_event_local_data_source.dart'
@@ -278,20 +280,11 @@ extension GetItInjectableX on _i174.GetIt {
         localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
       ),
     );
-    gh.lazySingleton<_i644.IPollRemoteDataSource>(
-      () => _i621.PollRemoteDataSource(apiClient: gh<_i7.NetworkAwareClient>()),
-    );
     gh.lazySingleton<_i1034.IMessageRepository>(
       () => _i1040.MessageRepository(
         localDataSource: gh<_i21.IMessageLocalDataSource>(),
         remoteDataSource: gh<_i880.IMessageRemoteDataSource>(),
         connectivity: gh<_i751.IConnectivityService>(),
-      ),
-    );
-    gh.lazySingleton<_i577.IPollRepository>(
-      () => _i222.PollRepository(
-        localDataSource: gh<_i930.IPollLocalDataSource>(),
-        remoteDataSource: gh<_i644.IPollRemoteDataSource>(),
       ),
     );
     gh.factory<_i55.GearCubit>(
@@ -305,11 +298,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i52.ISettingsRepository>(
       () => _i373.SettingsRepository(
         localDataSource: gh<_i393.ISettingsLocalDataSource>(),
-      ),
-    );
-    gh.lazySingleton<_i25.IGroupEventRemoteDataSource>(
-      () => _i959.GroupEventRemoteDataSource(
-        apiClient: gh<_i7.NetworkAwareClient>(),
       ),
     );
     gh.lazySingleton<_i563.IGearSetRepository>(
@@ -333,13 +321,6 @@ extension GetItInjectableX on _i174.GetIt {
         tokenValidator: gh<_i1012.ITokenValidator>(),
       ),
     );
-    gh.lazySingleton<_i1055.IGroupEventRepository>(
-      () => _i354.GroupEventRepository(
-        localDataSource: gh<_i529.IGroupEventLocalDataSource>(),
-        remoteDataSource: gh<_i25.IGroupEventRemoteDataSource>(),
-        authService: gh<_i614.IAuthService>(),
-      ),
-    );
     gh.lazySingleton<_i254.ConnectivityInterceptor>(
       () => _i254.ConnectivityInterceptor(gh<_i751.IConnectivityService>()),
     );
@@ -355,26 +336,8 @@ extension GetItInjectableX on _i174.GetIt {
         connectivity: gh<_i751.IConnectivityService>(),
       ),
     );
-    gh.lazySingleton<_i781.IGearLibraryRemoteDataSource>(
-      () => _i781.GearLibraryRemoteDataSource(gh<_i7.NetworkAwareClient>()),
-    );
     gh.lazySingleton<_i165.PermissionService>(
       () => _i165.PermissionService(gh<_i147.IAuthService>()),
-    );
-    gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
-      (eventId, _) => _i10.GroupEventCommentCubit(
-        gh<_i1055.IGroupEventRepository>(),
-        gh<_i614.IAuthService>(),
-        eventId,
-      ),
-    );
-    gh.factory<_i1040.PollCubit>(
-      () => _i1040.PollCubit(
-        gh<_i614.IPollService>(),
-        gh<_i577.IPollRepository>(),
-        gh<_i614.IConnectivityService>(),
-        gh<_i614.IAuthService>(),
-      ),
     );
     gh.factory<_i266.SettingsCubit>(
       () => _i266.SettingsCubit(
@@ -384,20 +347,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i27.AuthInterceptor>(
       () => _i27.AuthInterceptor(gh<_i395.IAuthSessionRepository>()),
-    );
-    gh.factoryParam<_i963.GroupEventReviewCubit, String?, String?>(
-      (eventId, userId) => _i963.GroupEventReviewCubit(
-        gh<_i1055.IGroupEventRepository>(),
-        eventId,
-        userId,
-      ),
-    );
-    gh.factory<_i882.GroupEventCubit>(
-      () => _i882.GroupEventCubit(
-        gh<_i1055.IGroupEventRepository>(),
-        gh<_i614.IConnectivityService>(),
-        gh<_i614.IAuthService>(),
-      ),
     );
     gh.lazySingleton<_i361.Dio>(
       () => registerModule.dio(
@@ -412,8 +361,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i941.ITripRemoteDataSource>(
       () => _i989.TripRemoteDataSource(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i644.IPollRemoteDataSource>(
+      () => _i621.PollRemoteDataSource(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i342.IFavoritesRemoteDataSource>(
       () => _i168.FavoritesRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i31.IGearLibraryRemoteDataSource>(
+      () => _i781.GearLibraryRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i25.IGroupEventRemoteDataSource>(
+      () => _i959.GroupEventRemoteDataSource(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i361.Dio>()),
@@ -423,6 +381,20 @@ extension GetItInjectableX on _i174.GetIt {
         localDataSource: gh<_i307.IFavoritesLocalDataSource>(),
         remoteDataSource: gh<_i342.IFavoritesRemoteDataSource>(),
         authService: gh<_i147.IAuthService>(),
+      ),
+    );
+    gh.lazySingleton<_i577.IPollRepository>(
+      () => _i222.PollRepository(
+        localDataSource: gh<_i930.IPollLocalDataSource>(),
+        remoteDataSource: gh<_i644.IPollRemoteDataSource>(),
+      ),
+    );
+    gh.factory<_i1040.PollCubit>(
+      () => _i1040.PollCubit(
+        gh<_i614.IPollService>(),
+        gh<_i577.IPollRepository>(),
+        gh<_i614.IConnectivityService>(),
+        gh<_i614.IAuthService>(),
       ),
     );
     gh.lazySingleton<_i106.ITripRepository>(
@@ -438,13 +410,11 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IAuthService>(),
       ),
     );
-    gh.factory<_i757.GearLibraryCubit>(
-      () => _i757.GearLibraryCubit(
-        gh<_i365.IGearLibraryRepository>(),
-        gh<_i20.IGearRepository>(),
-        gh<_i106.ITripRepository>(),
-        gh<_i614.IAuthService>(),
-        gh<_i781.IGearLibraryRemoteDataSource>(),
+    gh.lazySingleton<_i1055.IGroupEventRepository>(
+      () => _i354.GroupEventRepository(
+        localDataSource: gh<_i529.IGroupEventLocalDataSource>(),
+        remoteDataSource: gh<_i25.IGroupEventRemoteDataSource>(),
+        authService: gh<_i614.IAuthService>(),
       ),
     );
     gh.factory<_i354.ItineraryCubit>(
@@ -452,6 +422,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i860.IItineraryRepository>(),
         gh<_i106.ITripRepository>(),
         gh<_i614.IAuthService>(),
+      ),
+    );
+    gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
+      (eventId, _) => _i10.GroupEventCommentCubit(
+        gh<_i1055.IGroupEventRepository>(),
+        gh<_i614.IAuthService>(),
+        eventId,
       ),
     );
     gh.lazySingleton<_i518.ISyncService>(
@@ -463,6 +440,15 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i147.IAuthService>(),
       ),
     );
+    gh.factory<_i757.GearLibraryCubit>(
+      () => _i757.GearLibraryCubit(
+        gh<_i365.IGearLibraryRepository>(),
+        gh<_i20.IGearRepository>(),
+        gh<_i106.ITripRepository>(),
+        gh<_i614.IAuthService>(),
+        gh<_i31.IGearLibraryRemoteDataSource>(),
+      ),
+    );
     gh.factory<_i846.SyncCubit>(
       () => _i846.SyncCubit(
         gh<_i614.ISyncService>(),
@@ -470,6 +456,20 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i860.IItineraryRepository>(),
         gh<_i614.IAuthService>(),
         gh<_i106.ITripRepository>(),
+      ),
+    );
+    gh.factoryParam<_i963.GroupEventReviewCubit, String?, String?>(
+      (eventId, userId) => _i963.GroupEventReviewCubit(
+        gh<_i1055.IGroupEventRepository>(),
+        eventId,
+        userId,
+      ),
+    );
+    gh.factory<_i882.GroupEventCubit>(
+      () => _i882.GroupEventCubit(
+        gh<_i1055.IGroupEventRepository>(),
+        gh<_i614.IConnectivityService>(),
+        gh<_i614.IAuthService>(),
       ),
     );
     gh.factory<_i32.TripCubit>(

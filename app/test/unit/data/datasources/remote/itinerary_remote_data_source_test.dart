@@ -2,32 +2,35 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/remote/itinerary_remote_data_source.dart';
-import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 
-class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}
+class MockDio extends Mock implements Dio {}
 
 void main() {
   late ItineraryRemoteDataSource dataSource;
-  late MockNetworkAwareClient mockApiClient;
+  late MockDio mockDio;
 
   setUp(() {
-    mockApiClient = MockNetworkAwareClient();
-    dataSource = ItineraryRemoteDataSource(apiClient: mockApiClient);
+    mockDio = MockDio();
+    dataSource = ItineraryRemoteDataSource(mockDio);
   });
 
   group('ItineraryRemoteDataSource.getItinerary', () {
     test('returns list of itinerary items on success', () async {
       final tripId = 'trip-1';
-      final responseData = {
-        'id': tripId,
-        'itinerary': [
-          {'id': 'item-1', 'trip_id': tripId, 'day': 'D1', 'name': 'Start Hiking'},
-        ],
-      };
+      final responseData = [
+        {
+          'id': 'item-1',
+          'trip_id': tripId,
+          'day': 'D1',
+          'name': 'Start Hiking',
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+      ];
 
-      when(() => mockApiClient.get('/trips/$tripId')).thenAnswer(
+      when(() => mockDio.get('/trips/$tripId/itinerary')).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(path: '/trips/$tripId'),
+          requestOptions: RequestOptions(path: '/trips/$tripId/itinerary'),
           data: responseData,
           statusCode: 200,
         ),
@@ -38,28 +41,23 @@ void main() {
       expect(result.length, 1);
       expect(result[0].id, 'item-1');
       expect(result[0].name, 'Start Hiking');
+      verify(() => mockDio.get('/trips/$tripId/itinerary')).called(1);
     });
 
-    test('returns empty list if itinerary field is null', () async {
-      final tripId = 'trip-1';
-      when(() => mockApiClient.get('/trips/$tripId')).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: '/trips/$tripId'),
-          data: {'id': tripId, 'itinerary': null},
-          statusCode: 200,
+    test('throws exception on error', () async {
+      final tripId = 'fail';
+      when(() => mockDio.get('/trips/$tripId/itinerary')).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: '/trips/$tripId/itinerary'),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: '/trips/$tripId/itinerary'),
+            statusCode: 404,
+          ),
         ),
       );
 
-      final result = await dataSource.getItinerary(tripId);
-      expect(result, isEmpty);
-    });
-
-    test('throws exception on non-200 status', () async {
-      when(
-        () => mockApiClient.get('/trips/fail'),
-      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/trips/fail'), statusCode: 404));
-
-      expect(() => dataSource.getItinerary('fail'), throwsException);
+      expect(() => dataSource.getItinerary(tripId), throwsA(isA<DioException>()));
     });
   });
 }

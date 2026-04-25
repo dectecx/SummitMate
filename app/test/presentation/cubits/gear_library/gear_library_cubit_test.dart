@@ -11,7 +11,7 @@ import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.d
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/core/error/result.dart';
-import 'package:summitmate/data/datasources/remote/gear_library_remote_data_source.dart';
+import 'package:summitmate/data/datasources/interfaces/i_gear_library_remote_data_source.dart';
 
 class MockGearLibraryRepository extends Mock implements IGearLibraryRepository {}
 

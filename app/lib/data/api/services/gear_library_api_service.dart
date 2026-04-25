@@ -1,0 +1,33 @@
+import 'package:dio/dio.dart';
+import 'package:retrofit/retrofit.dart';
+
+import '../../models/gear_library_item.dart';
+import '../models/gear_library_api_models.dart';
+
+part 'gear_library_api_service.g.dart';
+
+/// GearLibrary API Service
+///
+/// Retrofit 介面，對應後端 `/gear-library` 相關的 API endpoint。
+@RestApi()
+abstract class GearLibraryApiService {
+  factory GearLibraryApiService(Dio dio, {String baseUrl}) = _GearLibraryApiService;
+
+  @GET('/gear-library')
+  Future<List<GearLibraryItem>> listItems();
+
+  @POST('/gear-library')
+  Future<GearLibraryItem> addItem(@Body() GearLibraryItemRequest request);
+
+  @PUT('/gear-library/{itemId}')
+  Future<GearLibraryItem> updateItem(
+    @Path('itemId') String itemId,
+    @Body() GearLibraryItemRequest request,
+  );
+
+  @DELETE('/gear-library/{itemId}')
+  Future<void> deleteItem(@Path('itemId') String itemId);
+
+  @PUT('/gear-library')
+  Future<void> replaceAll(@Body() List<GearLibraryItemRequest> items);
+}
