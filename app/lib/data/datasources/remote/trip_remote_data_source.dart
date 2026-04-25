@@ -81,6 +81,7 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
           'cover_image': trip.coverImage ?? '',
           'is_active': trip.isActive,
           'day_names': trip.dayNames,
+          'last_updated_at': trip.updatedAt.toIso8601String(),
         },
       );
 
