@@ -36,8 +36,7 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GroupEventResponse;
 
-  factory GroupEventResponse.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventResponseFromJson(json);
+  factory GroupEventResponse.fromJson(Map<String, dynamic> json) => _$GroupEventResponseFromJson(json);
 }
 
 /// 揪團報名紀錄回應
@@ -74,8 +73,7 @@ abstract class GroupEventCommentResponse with _$GroupEventCommentResponse {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _GroupEventCommentResponse;
 
-  factory GroupEventCommentResponse.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventCommentResponseFromJson(json);
+  factory GroupEventCommentResponse.fromJson(Map<String, dynamic> json) => _$GroupEventCommentResponseFromJson(json);
 }
 
 // ── Requests ──
@@ -95,8 +93,7 @@ abstract class GroupEventCreateRequest with _$GroupEventCreateRequest {
     @JsonKey(name: 'linked_trip_id') String? linkedTripId,
   }) = _GroupEventCreateRequest;
 
-  factory GroupEventCreateRequest.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventCreateRequestFromJson(json);
+  factory GroupEventCreateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventCreateRequestFromJson(json);
 }
 
 /// 更新揪團請求
@@ -113,51 +110,37 @@ abstract class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
     @JsonKey(name: 'private_message') String? privateMessage,
   }) = _GroupEventUpdateRequest;
 
-  factory GroupEventUpdateRequest.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventUpdateRequestFromJson(json);
+  factory GroupEventUpdateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventUpdateRequestFromJson(json);
 }
 
 /// 更新揪團狀態請求
 @freezed
 abstract class GroupEventStatusRequest with _$GroupEventStatusRequest {
-  const factory GroupEventStatusRequest({
-    required String status,
-    String? action,
-  }) = _GroupEventStatusRequest;
+  const factory GroupEventStatusRequest({required String status, String? action}) = _GroupEventStatusRequest;
 
-  factory GroupEventStatusRequest.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventStatusRequestFromJson(json);
+  factory GroupEventStatusRequest.fromJson(Map<String, dynamic> json) => _$GroupEventStatusRequestFromJson(json);
 }
 
 /// 申請揪團請求
 @freezed
 abstract class GroupEventApplyRequest with _$GroupEventApplyRequest {
-  const factory GroupEventApplyRequest({
-    String? message,
-  }) = _GroupEventApplyRequest;
+  const factory GroupEventApplyRequest({String? message}) = _GroupEventApplyRequest;
 
-  factory GroupEventApplyRequest.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventApplyRequestFromJson(json);
+  factory GroupEventApplyRequest.fromJson(Map<String, dynamic> json) => _$GroupEventApplyRequestFromJson(json);
 }
 
 /// 審核申請請求
 @freezed
 abstract class GroupEventReviewRequest with _$GroupEventReviewRequest {
-  const factory GroupEventReviewRequest({
-    required String action,
-  }) = _GroupEventReviewRequest;
+  const factory GroupEventReviewRequest({required String action}) = _GroupEventReviewRequest;
 
-  factory GroupEventReviewRequest.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventReviewRequestFromJson(json);
+  factory GroupEventReviewRequest.fromJson(Map<String, dynamic> json) => _$GroupEventReviewRequestFromJson(json);
 }
 
 /// 新增留言請求
 @freezed
 abstract class GroupEventCommentRequest with _$GroupEventCommentRequest {
-  const factory GroupEventCommentRequest({
-    required String content,
-  }) = _GroupEventCommentRequest;
+  const factory GroupEventCommentRequest({required String content}) = _GroupEventCommentRequest;
 
-  factory GroupEventCommentRequest.fromJson(Map<String, dynamic> json) =>
-      _$GroupEventCommentRequestFromJson(json);
+  factory GroupEventCommentRequest.fromJson(Map<String, dynamic> json) => _$GroupEventCommentRequestFromJson(json);
 }

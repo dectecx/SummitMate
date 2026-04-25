@@ -57,9 +57,7 @@ void main() {
 
   group('TripGearRemoteDataSource CRUD', () {
     test('addTripGear calls api and returns mapped item', () async {
-      when(
-        () => mockApiService.addGear('trip-1', any()),
-      ).thenAnswer((_) async => testResponse);
+      when(() => mockApiService.addGear('trip-1', any())).thenAnswer((_) async => testResponse);
 
       final result = await dataSource.addTripGear('trip-1', testItem);
 
@@ -68,9 +66,7 @@ void main() {
     });
 
     test('updateTripGear calls api and returns mapped item', () async {
-      when(
-        () => mockApiService.updateGear('trip-1', 'gear-1', any()),
-      ).thenAnswer((_) async => testResponse);
+      when(() => mockApiService.updateGear('trip-1', 'gear-1', any())).thenAnswer((_) async => testResponse);
 
       final result = await dataSource.updateTripGear('trip-1', testItem);
 

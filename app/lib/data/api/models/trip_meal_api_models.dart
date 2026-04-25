@@ -23,8 +23,7 @@ abstract class TripMealItemResponse with _$TripMealItemResponse {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _TripMealItemResponse;
 
-  factory TripMealItemResponse.fromJson(Map<String, dynamic> json) =>
-      _$TripMealItemResponseFromJson(json);
+  factory TripMealItemResponse.fromJson(Map<String, dynamic> json) => _$TripMealItemResponseFromJson(json);
 }
 
 // ── Requests ──
@@ -43,6 +42,5 @@ abstract class TripMealItemRequest with _$TripMealItemRequest {
     String? note,
   }) = _TripMealItemRequest;
 
-  factory TripMealItemRequest.fromJson(Map<String, dynamic> json) =>
-      _$TripMealItemRequestFromJson(json);
+  factory TripMealItemRequest.fromJson(Map<String, dynamic> json) => _$TripMealItemRequestFromJson(json);
 }

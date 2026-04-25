@@ -56,12 +56,7 @@ void main() {
     when(() => mockRepo.getAll()).thenReturn([]);
     when(() => mockRepo.getLastSyncTime()).thenReturn(null);
 
-    cubit = PollCubit(
-      mockPollService,
-      mockRepo,
-      mockConnectivity,
-      mockAuthService,
-    );
+    cubit = PollCubit(mockPollService, mockRepo, mockConnectivity, mockAuthService);
   });
 
   tearDown(() {

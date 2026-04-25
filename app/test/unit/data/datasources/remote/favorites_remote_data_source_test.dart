@@ -7,6 +7,7 @@ import 'package:summitmate/data/models/enums/favorite_type.dart';
 import 'package:summitmate/core/error/result.dart';
 
 class MockFavoritesApiService extends Mock implements FavoritesApiService {}
+
 class FakeFavoriteAddRequest extends Fake implements FavoriteAddRequest {}
 
 void main() {

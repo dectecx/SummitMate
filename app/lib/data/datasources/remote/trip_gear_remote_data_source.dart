@@ -67,10 +67,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   Future<void> replaceAllTripGear(String tripId, List<GearItem> items) async {
     try {
       LogService.info('批量替換行程裝備: $tripId, 數量: ${items.length}', source: _source);
-      await _tripGearApi.replaceAllGear(
-        tripId,
-        items.map(TripGearApiMapper.toRequest).toList(),
-      );
+      await _tripGearApi.replaceAllGear(tripId, items.map(TripGearApiMapper.toRequest).toList());
     } catch (e) {
       LogService.error('replaceAllTripGear 失敗: $e', source: _source);
       rethrow;

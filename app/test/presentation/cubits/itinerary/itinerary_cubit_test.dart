@@ -60,11 +60,7 @@ void main() {
     when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(testTrip));
     when(() => mockTripRepository.getTripById(any())).thenAnswer((_) async => Success(testTrip));
 
-    cubit = ItineraryCubit(
-      mockItineraryRepository,
-      mockTripRepository,
-      mockAuthService,
-    );
+    cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);
   });
 
   tearDown(() {
@@ -201,11 +197,7 @@ void main() {
         when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
 
         // Re-initialize cubit with reset mocks
-        cubit = ItineraryCubit(
-          mockItineraryRepository,
-          mockTripRepository,
-          mockAuthService,
-        );
+        cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);
       });
 
       blocTest<ItineraryCubit, ItineraryState>(

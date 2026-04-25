@@ -19,9 +19,6 @@ class UserApiMapper {
 
   /// UserProfile → UserUpdateRequest
   static UserUpdateRequest toUpdateRequest(UserProfile profile) {
-    return UserUpdateRequest(
-      displayName: profile.displayName,
-      avatar: profile.avatar,
-    );
+    return UserUpdateRequest(displayName: profile.displayName, avatar: profile.avatar);
   }
 }

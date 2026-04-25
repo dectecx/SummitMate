@@ -205,12 +205,15 @@ class WeatherService implements IWeatherService {
       final fallbackRows = list.where((item) {
         final loc = item['location']?.toString() ?? '';
         return loc.replaceAll(' ', '') == locationName.replaceAll(' ', '') ||
-               loc.contains(locationName) ||
-               locationName.contains(loc);
+            loc.contains(locationName) ||
+            locationName.contains(loc);
       }).toList();
 
       if (fallbackRows.isNotEmpty) {
-        LogService.info('地點 "$locationName" 查無精確匹配，使用模糊匹配結果: ${fallbackRows.first['location']}', source: 'WeatherService');
+        LogService.info(
+          '地點 "$locationName" 查無精確匹配，使用模糊匹配結果: ${fallbackRows.first['location']}',
+          source: 'WeatherService',
+        );
         locationRows.addAll(fallbackRows);
       } else {
         throw Exception('資料中找不到地點 "$locationName" (可用地點數量: ${list.map((e) => e['location']).toSet().length})');

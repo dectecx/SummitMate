@@ -27,12 +27,7 @@ class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   }
 
   @override
-  Future<MealItem> addTripMeal(
-    String tripId,
-    MealItem item, {
-    required String day,
-    required String mealType,
-  }) async {
+  Future<MealItem> addTripMeal(String tripId, MealItem item, {required String day, required String mealType}) async {
     try {
       LogService.info('新增餐點至行程: $tripId', source: _source);
       final request = TripMealApiMapper.toRequest(item, day: day, mealType: mealType);
@@ -45,12 +40,7 @@ class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   }
 
   @override
-  Future<MealItem> updateTripMeal(
-    String tripId,
-    MealItem item, {
-    required String day,
-    required String mealType,
-  }) async {
+  Future<MealItem> updateTripMeal(String tripId, MealItem item, {required String day, required String mealType}) async {
     try {
       LogService.info('更新餐點: $tripId, 項目: ${item.id}', source: _source);
       final request = TripMealApiMapper.toRequest(item, day: day, mealType: mealType);
@@ -74,17 +64,12 @@ class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   }
 
   @override
-  Future<void> replaceAllTripMeals(
-    String tripId,
-    List<({MealItem item, String day, String mealType})> requests,
-  ) async {
+  Future<void> replaceAllTripMeals(String tripId, List<({MealItem item, String day, String mealType})> requests) async {
     try {
       LogService.info('批量替換行程餐飲: $tripId, 數量: ${requests.length}', source: _source);
       await _tripMealApi.replaceAllMeals(
         tripId,
-        requests
-            .map((r) => TripMealApiMapper.toRequest(r.item, day: r.day, mealType: r.mealType))
-            .toList(),
+        requests.map((r) => TripMealApiMapper.toRequest(r.item, day: r.day, mealType: r.mealType)).toList(),
       );
     } catch (e) {
       LogService.error('replaceAllTripMeals 失敗: $e', source: _source);

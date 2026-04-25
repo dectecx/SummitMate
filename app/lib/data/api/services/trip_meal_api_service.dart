@@ -16,10 +16,7 @@ abstract class TripMealApiService {
   Future<List<TripMealItemResponse>> listMeals(@Path('tripId') String tripId);
 
   @POST('/trips/{tripId}/meals')
-  Future<TripMealItemResponse> addMeal(
-    @Path('tripId') String tripId,
-    @Body() TripMealItemRequest request,
-  );
+  Future<TripMealItemResponse> addMeal(@Path('tripId') String tripId, @Body() TripMealItemRequest request);
 
   @PUT('/trips/{tripId}/meals/{itemId}')
   Future<TripMealItemResponse> updateMeal(
@@ -29,14 +26,8 @@ abstract class TripMealApiService {
   );
 
   @DELETE('/trips/{tripId}/meals/{itemId}')
-  Future<void> deleteMeal(
-    @Path('tripId') String tripId,
-    @Path('itemId') String itemId,
-  );
+  Future<void> deleteMeal(@Path('tripId') String tripId, @Path('itemId') String itemId);
 
   @PUT('/trips/{tripId}/meals')
-  Future<void> replaceAllMeals(
-    @Path('tripId') String tripId,
-    @Body() List<TripMealItemRequest> items,
-  );
+  Future<void> replaceAllMeals(@Path('tripId') String tripId, @Body() List<TripMealItemRequest> items);
 }

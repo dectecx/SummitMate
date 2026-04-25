@@ -61,11 +61,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   }
 
   @override
-  Future<void> voteOption({
-    required String tripId,
-    required String pollId,
-    required String optionId,
-  }) async {
+  Future<void> voteOption({required String tripId, required String pollId, required String optionId}) async {
     try {
       LogService.info('投票操作: $pollId, 選項: $optionId', source: _source);
       await _pollApi.voteOption(tripId, pollId, optionId);
@@ -76,11 +72,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   }
 
   @override
-  Future<void> addOption({
-    required String tripId,
-    required String pollId,
-    required String text,
-  }) async {
+  Future<void> addOption({required String tripId, required String pollId, required String text}) async {
     try {
       LogService.info('新增投票選項 "$text" 至投票 $pollId', source: _source);
       await _pollApi.addOption(tripId, pollId, PollOptionRequest(text: text));
@@ -91,10 +83,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   }
 
   @override
-  Future<void> deletePoll({
-    required String tripId,
-    required String pollId,
-  }) async {
+  Future<void> deletePoll({required String tripId, required String pollId}) async {
     try {
       LogService.info('刪除投票: $pollId', source: _source);
       await _pollApi.deletePoll(tripId, pollId);
@@ -105,11 +94,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   }
 
   @override
-  Future<void> deleteOption({
-    required String tripId,
-    required String pollId,
-    required String optionId,
-  }) async {
+  Future<void> deleteOption({required String tripId, required String pollId, required String optionId}) async {
     try {
       LogService.info('刪除投票選項: $optionId', source: _source);
       await _pollApi.deleteOption(tripId, pollId, optionId);

@@ -29,13 +29,13 @@ type MockTx struct {
 }
 
 func (m *MockTx) Begin(ctx context.Context) (pgx.Tx, error) { return nil, nil }
-func (m *MockTx) Commit(ctx context.Context) error        { return m.Called(ctx).Error(0) }
-func (m *MockTx) Rollback(ctx context.Context) error      { return m.Called(ctx).Error(0) }
+func (m *MockTx) Commit(ctx context.Context) error          { return m.Called(ctx).Error(0) }
+func (m *MockTx) Rollback(ctx context.Context) error        { return m.Called(ctx).Error(0) }
 func (m *MockTx) CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error) {
 	return 0, nil
 }
 func (m *MockTx) SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults { return nil }
-func (m *MockTx) LargeObjects() pgx.LargeObjects              { return pgx.LargeObjects{} }
+func (m *MockTx) LargeObjects() pgx.LargeObjects                               { return pgx.LargeObjects{} }
 func (m *MockTx) Prepare(ctx context.Context, name, sql string) (*pgconn.StatementDescription, error) {
 	return nil, nil
 }
@@ -161,5 +161,3 @@ func (m *MockItineraryRepository) DeleteByID(ctx context.Context, id string) err
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
-
-

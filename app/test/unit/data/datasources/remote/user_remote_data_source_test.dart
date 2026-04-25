@@ -6,6 +6,7 @@ import 'package:summitmate/data/datasources/remote/user_remote_data_source.dart'
 import 'package:summitmate/data/models/user_profile.dart';
 
 class MockUserApiService extends Mock implements UserApiService {}
+
 class FakeUserUpdateRequest extends Fake implements UserUpdateRequest {}
 
 void main() {
@@ -33,8 +34,7 @@ void main() {
 
   group('UserRemoteDataSource', () {
     test('searchUserByEmail returns mapped user', () async {
-      when(() => mockUserApi.searchUserByEmail('test@example.com'))
-          .thenAnswer((_) async => testUserResponse);
+      when(() => mockUserApi.searchUserByEmail('test@example.com')).thenAnswer((_) async => testUserResponse);
 
       final result = await dataSource.searchUserByEmail('test@example.com');
 
@@ -44,8 +44,7 @@ void main() {
     });
 
     test('getUserById returns mapped user', () async {
-      when(() => mockUserApi.getUserById('user-1'))
-          .thenAnswer((_) async => testUserResponse);
+      when(() => mockUserApi.getUserById('user-1')).thenAnswer((_) async => testUserResponse);
 
       final result = await dataSource.getUserById('user-1');
 
@@ -54,8 +53,7 @@ void main() {
     });
 
     test('getCurrentUser returns mapped user', () async {
-      when(() => mockUserApi.getCurrentUser())
-          .thenAnswer((_) async => testUserResponse);
+      when(() => mockUserApi.getCurrentUser()).thenAnswer((_) async => testUserResponse);
 
       final result = await dataSource.getCurrentUser();
 
@@ -64,14 +62,9 @@ void main() {
     });
 
     test('updateProfile returns mapped updated user', () async {
-      when(() => mockUserApi.updateProfile(any()))
-          .thenAnswer((_) async => testUserResponse);
+      when(() => mockUserApi.updateProfile(any())).thenAnswer((_) async => testUserResponse);
 
-      final profile = UserProfile(
-        id: 'user-1',
-        email: 'test@example.com',
-        displayName: 'New Name',
-      );
+      final profile = UserProfile(id: 'user-1', email: 'test@example.com', displayName: 'New Name');
 
       final result = await dataSource.updateProfile(profile);
 

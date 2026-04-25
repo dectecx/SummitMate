@@ -19,10 +19,7 @@ abstract class GearLibraryApiService {
   Future<GearLibraryItemResponse> addItem(@Body() GearLibraryItemRequest request);
 
   @PUT('/gear-library/{itemId}')
-  Future<GearLibraryItemResponse> updateItem(
-    @Path('itemId') String itemId,
-    @Body() GearLibraryItemRequest request,
-  );
+  Future<GearLibraryItemResponse> updateItem(@Path('itemId') String itemId, @Body() GearLibraryItemRequest request);
 
   @DELETE('/gear-library/{itemId}')
   Future<void> deleteItem(@Path('itemId') String itemId);

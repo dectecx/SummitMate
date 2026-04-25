@@ -21,8 +21,7 @@ abstract class PollOptionResponse with _$PollOptionResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _PollOptionResponse;
 
-  factory PollOptionResponse.fromJson(Map<String, dynamic> json) =>
-      _$PollOptionResponseFromJson(json);
+  factory PollOptionResponse.fromJson(Map<String, dynamic> json) => _$PollOptionResponseFromJson(json);
 }
 
 /// 投票回應（對應 Poll schema）
@@ -48,8 +47,7 @@ abstract class PollResponse with _$PollResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _PollResponse;
 
-  factory PollResponse.fromJson(Map<String, dynamic> json) =>
-      _$PollResponseFromJson(json);
+  factory PollResponse.fromJson(Map<String, dynamic> json) => _$PollResponseFromJson(json);
 }
 
 // ── Requests ──
@@ -68,17 +66,13 @@ abstract class PollCreateRequest with _$PollCreateRequest {
     @JsonKey(name: 'result_display_type', defaultValue: 'realtime') required String resultDisplayType,
   }) = _PollCreateRequest;
 
-  factory PollCreateRequest.fromJson(Map<String, dynamic> json) =>
-      _$PollCreateRequestFromJson(json);
+  factory PollCreateRequest.fromJson(Map<String, dynamic> json) => _$PollCreateRequestFromJson(json);
 }
 
 /// 新增投票選項請求
 @freezed
 abstract class PollOptionRequest with _$PollOptionRequest {
-  const factory PollOptionRequest({
-    required String text,
-  }) = _PollOptionRequest;
+  const factory PollOptionRequest({required String text}) = _PollOptionRequest;
 
-  factory PollOptionRequest.fromJson(Map<String, dynamic> json) =>
-      _$PollOptionRequestFromJson(json);
+  factory PollOptionRequest.fromJson(Map<String, dynamic> json) => _$PollOptionRequestFromJson(json);
 }

@@ -66,9 +66,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<void> replaceAllLibraryItems(List<GearLibraryItem> items) async {
     try {
       LogService.info('批量替換雲端裝備庫: 數量 ${items.length}', source: _source);
-      await _apiService.replaceAll(
-        items.map(GearLibraryApiMapper.toRequest).toList(),
-      );
+      await _apiService.replaceAll(items.map(GearLibraryApiMapper.toRequest).toList());
     } catch (e) {
       LogService.error('replaceAllLibraryItems 失敗: $e', source: _source);
       rethrow;

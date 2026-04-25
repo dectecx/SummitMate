@@ -135,15 +135,12 @@ void main() {
         expect(await permissionService.canDeleteTrip(myTrip), isTrue);
       });
 
-      test(
-        'Leader can delete trip if owner even if permissions are limited (owner rule bypasses)',
-        () async {
-          when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
-          when(() => otherTrip.userId).thenReturn('leader-id'); // Make them owner
+      test('Leader can delete trip if owner even if permissions are limited (owner rule bypasses)', () async {
+        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
+        when(() => otherTrip.userId).thenReturn('leader-id'); // Make them owner
 
-          expect(await permissionService.canDeleteTrip(otherTrip), isTrue);
-        },
-      );
+        expect(await permissionService.canDeleteTrip(otherTrip), isTrue);
+      });
 
       test('Leader cannot delete OTHER people trip if no permission', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
@@ -169,8 +166,7 @@ void main() {
     group('canManageMembers()', () {
       final myTrip = MockTrip();
 
-      setUp(() {
-      });
+      setUp(() {});
 
       test('Admin can always manage members', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => adminUser);
@@ -181,7 +177,6 @@ void main() {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
         expect(await permissionService.canManageMembers(myTrip), isTrue);
       });
-
     });
   });
 }

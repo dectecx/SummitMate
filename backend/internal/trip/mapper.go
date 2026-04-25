@@ -50,11 +50,11 @@ func ToServiceTripUpdateReq(req api.TripUpdateRequest) *TripUpdateRequest {
 	}
 
 	return &TripUpdateRequest{
-		Name:        req.Name,
-		Description: req.Description,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		CoverImage:  req.CoverImage,
+		Name:          req.Name,
+		Description:   req.Description,
+		StartDate:     startDate,
+		EndDate:       endDate,
+		CoverImage:    req.CoverImage,
 		IsActive:      req.IsActive,
 		DayNames:      req.DayNames,
 		LastUpdatedAt: req.LastUpdatedAt,

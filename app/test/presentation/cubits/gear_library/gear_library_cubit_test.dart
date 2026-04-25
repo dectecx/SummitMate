@@ -77,13 +77,7 @@ void main() {
       when(() => mockAuthService.currentUserId).thenReturn('u1');
       when(() => mockAuthService.currentUserEmail).thenReturn('u1@test.com');
 
-      cubit = GearLibraryCubit(
-        mockRepo,
-        mockGearRepo,
-        mockTripRepo,
-        mockAuthService,
-        mockRemoteDataSource,
-      );
+      cubit = GearLibraryCubit(mockRepo, mockGearRepo, mockTripRepo, mockAuthService, mockRemoteDataSource);
     });
 
     tearDown(() {

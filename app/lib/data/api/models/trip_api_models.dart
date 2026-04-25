@@ -24,8 +24,7 @@ abstract class TripResponse with _$TripResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _TripResponse;
 
-  factory TripResponse.fromJson(Map<String, dynamic> json) =>
-      _$TripResponseFromJson(json);
+  factory TripResponse.fromJson(Map<String, dynamic> json) => _$TripResponseFromJson(json);
 }
 
 /// 行程列表項目回應（對應 TripListItemResponse）
@@ -41,8 +40,7 @@ abstract class TripListItemResponse with _$TripListItemResponse {
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _TripListItemResponse;
 
-  factory TripListItemResponse.fromJson(Map<String, dynamic> json) =>
-      _$TripListItemResponseFromJson(json);
+  factory TripListItemResponse.fromJson(Map<String, dynamic> json) => _$TripListItemResponseFromJson(json);
 }
 
 /// 行程成員回應（對應 TripMemberListItemResponse）
@@ -55,8 +53,7 @@ abstract class TripMemberResponse with _$TripMemberResponse {
     @JsonKey(name: 'user_metadata') required TripMemberUserMetadata userMetadata,
   }) = _TripMemberResponse;
 
-  factory TripMemberResponse.fromJson(Map<String, dynamic> json) =>
-      _$TripMemberResponseFromJson(json);
+  factory TripMemberResponse.fromJson(Map<String, dynamic> json) => _$TripMemberResponseFromJson(json);
 }
 
 /// 成員的使用者 metadata（對應 User schema）
@@ -70,8 +67,7 @@ abstract class TripMemberUserMetadata with _$TripMemberUserMetadata {
     required String role,
   }) = _TripMemberUserMetadata;
 
-  factory TripMemberUserMetadata.fromJson(Map<String, dynamic> json) =>
-      _$TripMemberUserMetadataFromJson(json);
+  factory TripMemberUserMetadata.fromJson(Map<String, dynamic> json) => _$TripMemberUserMetadataFromJson(json);
 }
 
 // ── Requests ──
@@ -88,8 +84,7 @@ abstract class TripCreateRequest with _$TripCreateRequest {
     @JsonKey(name: 'day_names') List<String>? dayNames,
   }) = _TripCreateRequest;
 
-  factory TripCreateRequest.fromJson(Map<String, dynamic> json) =>
-      _$TripCreateRequestFromJson(json);
+  factory TripCreateRequest.fromJson(Map<String, dynamic> json) => _$TripCreateRequestFromJson(json);
 }
 
 /// 更新行程請求（對應 TripUpdateRequest）
@@ -106,28 +101,21 @@ abstract class TripUpdateRequest with _$TripUpdateRequest {
     @JsonKey(name: 'last_updated_at') DateTime? lastUpdatedAt,
   }) = _TripUpdateRequest;
 
-  factory TripUpdateRequest.fromJson(Map<String, dynamic> json) =>
-      _$TripUpdateRequestFromJson(json);
+  factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
 }
 
 /// 新增成員請求（對應 AddMemberRequest）
 @freezed
 abstract class AddMemberRequest with _$AddMemberRequest {
-  const factory AddMemberRequest({
-    required String email,
-  }) = _AddMemberRequest;
+  const factory AddMemberRequest({required String email}) = _AddMemberRequest;
 
-  factory AddMemberRequest.fromJson(Map<String, dynamic> json) =>
-      _$AddMemberRequestFromJson(json);
+  factory AddMemberRequest.fromJson(Map<String, dynamic> json) => _$AddMemberRequestFromJson(json);
 }
 
 /// 更新成員角色請求
 @freezed
 abstract class UpdateMemberRoleRequest with _$UpdateMemberRoleRequest {
-  const factory UpdateMemberRoleRequest({
-    required String role,
-  }) = _UpdateMemberRoleRequest;
+  const factory UpdateMemberRoleRequest({required String role}) = _UpdateMemberRoleRequest;
 
-  factory UpdateMemberRoleRequest.fromJson(Map<String, dynamic> json) =>
-      _$UpdateMemberRoleRequestFromJson(json);
+  factory UpdateMemberRoleRequest.fromJson(Map<String, dynamic> json) => _$UpdateMemberRoleRequestFromJson(json);
 }

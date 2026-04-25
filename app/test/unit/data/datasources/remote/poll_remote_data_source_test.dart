@@ -5,7 +5,9 @@ import 'package:summitmate/data/api/services/poll_api_service.dart';
 import 'package:summitmate/data/datasources/remote/poll_remote_data_source.dart';
 
 class MockPollApiService extends Mock implements PollApiService {}
+
 class FakePollCreateRequest extends Fake implements PollCreateRequest {}
+
 class FakePollOptionRequest extends Fake implements PollOptionRequest {}
 
 void main() {

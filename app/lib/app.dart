@@ -71,9 +71,7 @@ class SummitMateApp extends StatelessWidget {
         return MaterialApp(
           title: 'SummitMate',
           debugShowCheckedModeBanner: false,
-          navigatorObservers: [
-            if (kIsWeb) seoRouteObserver,
-          ],
+          navigatorObservers: [if (kIsWeb) seoRouteObserver],
 
           // Toast 訊息的 key
           scaffoldMessengerKey: ToastService.messengerKey,
@@ -83,9 +81,7 @@ class SummitMateApp extends StatelessWidget {
           themeMode: ThemeMode.light, // 目前強制 Light Mode，由 Strategy 控制顏色
           // 錯誤監聽與 Overlay
           builder: (context, child) {
-            final content = GlobalTutorialWrapper(
-              child: GlobalErrorListener(child: child ?? const SizedBox.shrink()),
-            );
+            final content = GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
 
             if (kIsWeb) {
               return RobotDetector(child: content);

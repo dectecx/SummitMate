@@ -246,7 +246,10 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
         );
 
         if (widget.animate) {
-          mainContainer = mainContainer.animate().fadeIn(duration: 600.ms).slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuad);
+          mainContainer = mainContainer
+              .animate()
+              .fadeIn(duration: 600.ms)
+              .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuad);
         }
 
         return Dismissible(

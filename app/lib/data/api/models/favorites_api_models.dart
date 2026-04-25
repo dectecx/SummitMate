@@ -18,8 +18,7 @@ abstract class FavoriteResponse with _$FavoriteResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _FavoriteResponse;
 
-  factory FavoriteResponse.fromJson(Map<String, dynamic> json) =>
-      _$FavoriteResponseFromJson(json);
+  factory FavoriteResponse.fromJson(Map<String, dynamic> json) => _$FavoriteResponseFromJson(json);
 }
 
 // ── Requests ──
@@ -27,13 +26,10 @@ abstract class FavoriteResponse with _$FavoriteResponse {
 /// 新增最愛請求（對應 FavoriteRequest schema）
 @freezed
 abstract class FavoriteAddRequest with _$FavoriteAddRequest {
-  const factory FavoriteAddRequest({
-    @JsonKey(name: 'target_id') required String targetId,
-    required String type,
-  }) = _FavoriteAddRequest;
+  const factory FavoriteAddRequest({@JsonKey(name: 'target_id') required String targetId, required String type}) =
+      _FavoriteAddRequest;
 
-  factory FavoriteAddRequest.fromJson(Map<String, dynamic> json) =>
-      _$FavoriteAddRequestFromJson(json);
+  factory FavoriteAddRequest.fromJson(Map<String, dynamic> json) => _$FavoriteAddRequestFromJson(json);
 }
 
 /// 批量更新最愛請求項目（對應 BatchFavoriteRequest schema）
@@ -45,6 +41,5 @@ abstract class BatchFavoriteItem with _$BatchFavoriteItem {
     @JsonKey(name: 'is_favorite') required bool isFavorite,
   }) = _BatchFavoriteItem;
 
-  factory BatchFavoriteItem.fromJson(Map<String, dynamic> json) =>
-      _$BatchFavoriteItemFromJson(json);
+  factory BatchFavoriteItem.fromJson(Map<String, dynamic> json) => _$BatchFavoriteItemFromJson(json);
 }

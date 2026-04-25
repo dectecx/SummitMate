@@ -13,12 +13,7 @@ abstract interface class ITripMealRemoteDataSource {
   /// [item] 餐點資料
   /// [day] 天次，例如 "D1"、"D2"
   /// [mealType] 餐食類型，例如 "breakfast"、"lunch"
-  Future<MealItem> addTripMeal(
-    String tripId,
-    MealItem item, {
-    required String day,
-    required String mealType,
-  });
+  Future<MealItem> addTripMeal(String tripId, MealItem item, {required String day, required String mealType});
 
   /// 更新行程餐點內容
   ///
@@ -26,12 +21,7 @@ abstract interface class ITripMealRemoteDataSource {
   /// [item] 欲更新的餐點（需含 id）
   /// [day] 天次
   /// [mealType] 餐食類型
-  Future<MealItem> updateTripMeal(
-    String tripId,
-    MealItem item, {
-    required String day,
-    required String mealType,
-  });
+  Future<MealItem> updateTripMeal(String tripId, MealItem item, {required String day, required String mealType});
 
   /// 從行程中刪除餐點
   ///
@@ -43,8 +33,5 @@ abstract interface class ITripMealRemoteDataSource {
   ///
   /// [tripId] 行程 ID
   /// [requests] 完整餐點清單（含 day/mealType 上下文）
-  Future<void> replaceAllTripMeals(
-    String tripId,
-    List<({MealItem item, String day, String mealType})> requests,
-  );
+  Future<void> replaceAllTripMeals(String tripId, List<({MealItem item, String day, String mealType})> requests);
 }

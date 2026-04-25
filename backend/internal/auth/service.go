@@ -310,4 +310,3 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 func (svc *authService) SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error) {
 	return svc.userRepo.GetByEmail(ctx, emailAddr)
 }
-

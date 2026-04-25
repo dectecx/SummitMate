@@ -1,8 +1,8 @@
 package api
 
 import (
-	"net/http"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"net/http"
 )
 
 func (s *Server) ListTrips(w http.ResponseWriter, r *http.Request) {

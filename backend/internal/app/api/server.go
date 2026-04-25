@@ -3,8 +3,8 @@ package api
 import (
 	"summitmate/internal/auth"
 	"summitmate/internal/auth/tokens"
-	"summitmate/internal/flag"
 	"summitmate/internal/favorite"
+	"summitmate/internal/flag"
 	"summitmate/internal/groupevent"
 	"summitmate/internal/heartbeat"
 	"summitmate/internal/interaction"

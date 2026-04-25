@@ -83,10 +83,7 @@ void main() {
     mockSettingsCubit = MockSettingsCubit();
     when(() => mockSettingsCubit.state).thenReturn(
       SettingsLoaded(
-        settings: Settings(
-          username: 'Test User',
-          theme: AppThemeType.nature,
-        ),
+        settings: Settings(username: 'Test User', theme: AppThemeType.nature),
         hasSeenOnboarding: true,
       ),
     );

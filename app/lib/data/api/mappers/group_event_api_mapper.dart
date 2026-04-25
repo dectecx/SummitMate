@@ -31,9 +31,7 @@ class GroupEventApiMapper {
           : null,
       creatorName: response.creatorName,
       creatorAvatar: response.creatorAvatar,
-      latestComments: response.latestComments
-          .map(fromCommentResponse)
-          .toList(),
+      latestComments: response.latestComments.map(fromCommentResponse).toList(),
       createdAt: response.createdAt.toLocal(),
       createdBy: response.createdBy,
       updatedAt: response.updatedAt.toLocal(),
@@ -42,9 +40,7 @@ class GroupEventApiMapper {
   }
 
   /// GroupEventApplicationResponse → GroupEventApplication (domain model)
-  static GroupEventApplication fromApplicationResponse(
-    GroupEventApplicationResponse response,
-  ) {
+  static GroupEventApplication fromApplicationResponse(GroupEventApplicationResponse response) {
     return GroupEventApplication(
       id: response.id,
       eventId: response.eventId,
@@ -60,9 +56,7 @@ class GroupEventApiMapper {
   }
 
   /// GroupEventCommentResponse → GroupEventComment (domain model)
-  static GroupEventComment fromCommentResponse(
-    GroupEventCommentResponse response,
-  ) {
+  static GroupEventComment fromCommentResponse(GroupEventCommentResponse response) {
     return GroupEventComment(
       id: response.id,
       eventId: response.eventId,
@@ -76,10 +70,7 @@ class GroupEventApiMapper {
   }
 
   static GroupEventStatus _parseStatus(String value) {
-    return GroupEventStatus.values.firstWhere(
-      (e) => e.name == value,
-      orElse: () => GroupEventStatus.open,
-    );
+    return GroupEventStatus.values.firstWhere((e) => e.name == value, orElse: () => GroupEventStatus.open);
   }
 
   static GroupEventApplicationStatus _parseApplicationStatus(String value) {

@@ -21,8 +21,7 @@ abstract class UserResponse with _$UserResponse {
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _UserResponse;
 
-  factory UserResponse.fromJson(Map<String, dynamic> json) =>
-      _$UserResponseFromJson(json);
+  factory UserResponse.fromJson(Map<String, dynamic> json) => _$UserResponseFromJson(json);
 }
 
 // ── Request ──
@@ -30,11 +29,8 @@ abstract class UserResponse with _$UserResponse {
 /// 更新使用者資料請求
 @freezed
 abstract class UserUpdateRequest with _$UserUpdateRequest {
-  const factory UserUpdateRequest({
-    @JsonKey(name: 'display_name') String? displayName,
-    String? avatar,
-  }) = _UserUpdateRequest;
+  const factory UserUpdateRequest({@JsonKey(name: 'display_name') String? displayName, String? avatar}) =
+      _UserUpdateRequest;
 
-  factory UserUpdateRequest.fromJson(Map<String, dynamic> json) =>
-      _$UserUpdateRequestFromJson(json);
+  factory UserUpdateRequest.fromJson(Map<String, dynamic> json) => _$UserUpdateRequestFromJson(json);
 }

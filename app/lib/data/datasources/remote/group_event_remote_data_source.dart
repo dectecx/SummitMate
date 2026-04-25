@@ -87,17 +87,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> closeEvent({
-    required String eventId,
-    required String userId,
-    String action = 'close',
-  }) async {
+  Future<void> closeEvent({required String eventId, required String userId, String action = 'close'}) async {
     try {
       LogService.info('結束揪團: $eventId', source: _source);
-      await _groupEventApi.updateEventStatus(
-        eventId,
-        GroupEventStatusRequest(status: 'closed', action: action),
-      );
+      await _groupEventApi.updateEventStatus(eventId, GroupEventStatusRequest(status: 'closed', action: action));
     } catch (e) {
       LogService.error('closeEvent 失敗: $e', source: _source);
       rethrow;
@@ -116,17 +109,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<String> applyEvent({
-    required String eventId,
-    required String userId,
-    String? message,
-  }) async {
+  Future<String> applyEvent({required String eventId, required String userId, String? message}) async {
     try {
       LogService.info('申請參加揪團: $eventId', source: _source);
-      final response = await _groupEventApi.applyEvent(
-        eventId,
-        GroupEventApplyRequest(message: message),
-      );
+      final response = await _groupEventApi.applyEvent(eventId, GroupEventApplyRequest(message: message));
       return response.id;
     } catch (e) {
       LogService.error('applyEvent 失敗: $e', source: _source);
@@ -135,10 +121,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> cancelApplication({
-    required String applicationId,
-    required String userId,
-  }) async {
+  Future<void> cancelApplication({required String applicationId, required String userId}) async {
     try {
       LogService.info('取消報名申請: $applicationId', source: _source);
       await _groupEventApi.cancelApplication(applicationId);
@@ -156,10 +139,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }) async {
     try {
       LogService.info('審核申請: $applicationId ($action)', source: _source);
-      await _groupEventApi.reviewApplication(
-        applicationId,
-        GroupEventReviewRequest(action: action),
-      );
+      await _groupEventApi.reviewApplication(applicationId, GroupEventReviewRequest(action: action));
     } catch (e) {
       LogService.error('reviewApplication 失敗: $e', source: _source);
       rethrow;
@@ -167,10 +147,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<List<GroupEventApplication>> getApplications({
-    required String eventId,
-    required String userId,
-  }) async {
+  Future<List<GroupEventApplication>> getApplications({required String eventId, required String userId}) async {
     try {
       LogService.info('獲取揪團申請列表: $eventId', source: _source);
       final responses = await _groupEventApi.listApplications(eventId);
@@ -182,10 +159,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<List<GroupEvent>> getMyEvents({
-    required String userId,
-    required String type,
-  }) async {
+  Future<List<GroupEvent>> getMyEvents({required String userId, required String type}) async {
     try {
       LogService.info('獲取我的揪團: $userId, 類型: $type', source: _source);
       final responses = await _groupEventApi.listMyEvents(type);
@@ -226,10 +200,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }) async {
     try {
       LogService.info('新增揪團留言: $eventId', source: _source);
-      final response = await _groupEventApi.addComment(
-        eventId,
-        GroupEventCommentRequest(content: content),
-      );
+      final response = await _groupEventApi.addComment(eventId, GroupEventCommentRequest(content: content));
       return GroupEventApiMapper.fromCommentResponse(response);
     } catch (e) {
       LogService.error('addComment 失敗: $e', source: _source);
@@ -250,10 +221,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> deleteComment({
-    required String commentId,
-    required String userId,
-  }) async {
+  Future<void> deleteComment({required String commentId, required String userId}) async {
     try {
       LogService.info('刪除留言: $commentId', source: _source);
       await _groupEventApi.deleteComment(commentId);

@@ -15,9 +15,7 @@ abstract class GroupEventApiService {
   // ── Events ──
 
   @GET('/group-events')
-  Future<List<GroupEventResponse>> listEvents(
-    @Query('status') String? status,
-  );
+  Future<List<GroupEventResponse>> listEvents(@Query('status') String? status);
 
   @GET('/group-events/my')
   Future<List<GroupEventResponse>> listMyEvents(@Query('type') String type);
@@ -29,16 +27,10 @@ abstract class GroupEventApiService {
   Future<GroupEventResponse> createEvent(@Body() GroupEventCreateRequest request);
 
   @PUT('/group-events/{eventId}')
-  Future<GroupEventResponse> updateEvent(
-    @Path('eventId') String eventId,
-    @Body() GroupEventUpdateRequest request,
-  );
+  Future<GroupEventResponse> updateEvent(@Path('eventId') String eventId, @Body() GroupEventUpdateRequest request);
 
   @PUT('/group-events/{eventId}/status')
-  Future<void> updateEventStatus(
-    @Path('eventId') String eventId,
-    @Body() GroupEventStatusRequest request,
-  );
+  Future<void> updateEventStatus(@Path('eventId') String eventId, @Body() GroupEventStatusRequest request);
 
   @DELETE('/group-events/{eventId}')
   Future<void> deleteEvent(@Path('eventId') String eventId);
@@ -46,9 +38,7 @@ abstract class GroupEventApiService {
   // ── Applications ──
 
   @GET('/group-events/{eventId}/applications')
-  Future<List<GroupEventApplicationResponse>> listApplications(
-    @Path('eventId') String eventId,
-  );
+  Future<List<GroupEventApplicationResponse>> listApplications(@Path('eventId') String eventId);
 
   @POST('/group-events/{eventId}/apply')
   Future<GroupEventApplicationResponse> applyEvent(
@@ -60,10 +50,7 @@ abstract class GroupEventApiService {
   Future<void> cancelApplication(@Path('applicationId') String applicationId);
 
   @PUT('/group-events/applications/{applicationId}')
-  Future<void> reviewApplication(
-    @Path('applicationId') String applicationId,
-    @Body() GroupEventReviewRequest request,
-  );
+  Future<void> reviewApplication(@Path('applicationId') String applicationId, @Body() GroupEventReviewRequest request);
 
   // ── Likes ──
 

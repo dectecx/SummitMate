@@ -16,16 +16,10 @@ abstract class PollApiService {
   Future<List<PollResponse>> listPolls(@Path('tripId') String tripId);
 
   @POST('/trips/{tripId}/polls')
-  Future<PollResponse> createPoll(
-    @Path('tripId') String tripId,
-    @Body() PollCreateRequest request,
-  );
+  Future<PollResponse> createPoll(@Path('tripId') String tripId, @Body() PollCreateRequest request);
 
   @DELETE('/trips/{tripId}/polls/{pollId}')
-  Future<void> deletePoll(
-    @Path('tripId') String tripId,
-    @Path('pollId') String pollId,
-  );
+  Future<void> deletePoll(@Path('tripId') String tripId, @Path('pollId') String pollId);
 
   // ── Options ──
 

@@ -16,10 +16,7 @@ abstract class ItineraryApiService {
   Future<List<ItineraryItemResponse>> listItinerary(@Path('tripId') String tripId);
 
   @POST('/trips/{tripId}/itinerary')
-  Future<ItineraryItemResponse> addItem(
-    @Path('tripId') String tripId,
-    @Body() ItineraryItemRequest request,
-  );
+  Future<ItineraryItemResponse> addItem(@Path('tripId') String tripId, @Body() ItineraryItemRequest request);
 
   @PATCH('/trips/{tripId}/itinerary/{itemId}')
   Future<ItineraryItemResponse> updateItem(
@@ -29,8 +26,5 @@ abstract class ItineraryApiService {
   );
 
   @DELETE('/trips/{tripId}/itinerary/{itemId}')
-  Future<void> deleteItem(
-    @Path('tripId') String tripId,
-    @Path('itemId') String itemId,
-  );
+  Future<void> deleteItem(@Path('tripId') String tripId, @Path('itemId') String itemId);
 }

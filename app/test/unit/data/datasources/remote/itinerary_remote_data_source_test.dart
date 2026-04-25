@@ -4,8 +4,8 @@ import 'package:summitmate/data/api/models/itinerary_api_models.dart';
 import 'package:summitmate/data/api/services/itinerary_api_service.dart';
 import 'package:summitmate/data/datasources/remote/itinerary_remote_data_source.dart';
 
-
 class MockItineraryApiService extends Mock implements ItineraryApiService {}
+
 class FakeItineraryItemRequest extends Fake implements ItineraryItemRequest {}
 
 void main() {
@@ -52,6 +52,4 @@ void main() {
       expect(() => dataSource.getItinerary('fail'), throwsException);
     });
   });
-
-
 }

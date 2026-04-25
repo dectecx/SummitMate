@@ -34,10 +34,7 @@ abstract class RegisterModule {
     ConnectivityInterceptor connectivityInterceptor,
   ) {
     final dio = Dio(BaseOptions(baseUrl: baseUrl));
-    dio.interceptors.addAll([
-      connectivityInterceptor,
-      authInterceptor,
-    ]);
+    dio.interceptors.addAll([connectivityInterceptor, authInterceptor]);
     return dio;
   }
 
