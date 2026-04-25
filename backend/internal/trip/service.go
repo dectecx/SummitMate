@@ -153,8 +153,15 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	}
 	existingTrip.UpdatedBy = userID
 
-	updatedTrip, err := s.tripRepo.Update(ctx, existingTrip)
+	updatedTrip, err := s.tripRepo.Update(ctx, existingTrip, req.LastUpdatedAt)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			// 如果提供了 LastUpdatedAt 但找不到對應行，表示 updated_at 已變動 (或是行程被刪除)
+			if req.LastUpdatedAt != nil {
+				return nil, apperror.ErrUpdateConflict
+			}
+			return nil, apperror.ErrTripNotFound
+		}
 		s.logger.ErrorContext(ctx, "更新行程失敗", "trip_id", tripID, "user_id", userID, "error", err)
 		return nil, err
 	}
@@ -364,8 +371,9 @@ type TripUpdateRequest struct {
 	StartDate   *time.Time
 	EndDate     *time.Time
 	CoverImage  *string
-	IsActive    *bool
-	DayNames    *[]string
+	IsActive      *bool
+	DayNames      *[]string
+	LastUpdatedAt *time.Time
 }
 
 type ItineraryItemRequest struct {

@@ -3,6 +3,7 @@ package trip
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,7 +19,7 @@ type TripRepository interface {
 	Create(ctx context.Context, trip *Trip) (*Trip, error)
 	GetByID(ctx context.Context, id string) (*Trip, error)
 	ListByUserID(ctx context.Context, userID string) ([]*Trip, error)
-	Update(ctx context.Context, trip *Trip) (*Trip, error)
+	Update(ctx context.Context, trip *Trip, lastUpdatedAt *time.Time) (*Trip, error)
 	DeleteByID(ctx context.Context, id string) error
 }
 
@@ -96,18 +97,28 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]
 }
 
 // Update 更新行程資料，必須提供 tripId，並僅更新允許修改的欄位。
-func (repo *tripRepository) Update(ctx context.Context, trip *Trip) (*Trip, error) {
+// 如果提供了 lastUpdatedAt，則會檢查資料庫中的 updated_at 是否相符 (樂觀鎖)。
+func (repo *tripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedAt *time.Time) (*Trip, error) {
 	query := `
 		UPDATE trips
 		SET name = $1, description = $2, start_date = $3, end_date = $4, cover_image = $5, is_active = $6, day_names = $7, updated_at = NOW(), updated_by = $8
 		WHERE id = $9
-		RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by
 	`
-	db := database.GetQuerier(ctx, repo.pool)
-	row := db.QueryRow(ctx, query,
+
+	args := []interface{}{
 		trip.Name, trip.Description, trip.StartDate, trip.EndDate,
 		trip.CoverImage, trip.IsActive, trip.DayNames, trip.UpdatedBy, trip.ID,
-	)
+	}
+
+	if lastUpdatedAt != nil {
+		query += " AND updated_at = $10"
+		args = append(args, *lastUpdatedAt)
+	}
+
+	query += " RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by"
+
+	db := database.GetQuerier(ctx, repo.pool)
+	row := db.QueryRow(ctx, query, args...)
 
 	return repo.scanTrip(row)
 }

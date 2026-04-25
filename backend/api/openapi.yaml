@@ -2379,6 +2379,10 @@ components:
           type: array
           items:
             type: string
+        last_updated_at:
+          type: string
+          format: date-time
+          description: 用於樂觀鎖 (Optimistic Locking) 檢查。如果提供，伺服器將驗證資料庫中的更新時間是否與此相符。
 
     TripMemberListItemResponse:
       type: object
