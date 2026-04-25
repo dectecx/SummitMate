@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
+import '../../core/di/injection.dart';
+import '../../domain/interfaces/i_auth_service.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 import '../tools/log_service.dart';
 
@@ -39,13 +41,42 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     // 處理 401 Unauthorized 錯誤
     if (err.response?.statusCode == 401) {
-      LogService.warning('[AuthInterceptor] 401 Unauthorized detected. Triggering logout.', source: _source);
+      final path = err.requestOptions.path;
+      // 避免無限迴圈：若本身是 refresh 或 login 介面 401，直接清除 Session 並回傳錯誤
+      if (path.contains('/auth/refresh') || path.contains('/auth/login')) {
+        LogService.warning('[AuthInterceptor] 401 on auth endpoint ($path). Triggering logout.', source: _source);
+        await _sessionRepo.clearSession();
+        return handler.next(err);
+      }
 
-      // 此處目前的權宜之計是直接清除 Session。
-      // TODO: 未來若有 Refresh Token，應在此嘗試換發 Token。
-      await _sessionRepo.clearSession();
+      LogService.warning('[AuthInterceptor] 401 Unauthorized detected. Attempting to refresh token.', source: _source);
 
-      // 注意：此處僅清除資料，UI 層的跳轉通常由 AuthCubit 監聽狀態或全域攔截處理。
+      try {
+        // 使用 getIt 獲取 IAuthService 避免循環依賴
+        final authService = getIt<IAuthService>();
+        final result = await authService.refreshToken();
+
+        if (result.isSuccess && result.accessToken != null) {
+          LogService.info(
+            '[AuthInterceptor] Token refreshed successfully. Retrying original request.',
+            source: _source,
+          );
+
+          // 更新原始請求的 Authorization header
+          err.requestOptions.headers['Authorization'] = 'Bearer ${result.accessToken}';
+
+          // 使用 getIt 取得現有的 Dio 實例重新發送請求
+          final dio = getIt<Dio>();
+          final response = await dio.fetch(err.requestOptions);
+          return handler.resolve(response);
+        } else {
+          LogService.warning('[AuthInterceptor] Refresh token failed. Triggering logout.', source: _source);
+          await _sessionRepo.clearSession();
+        }
+      } catch (e) {
+        LogService.error('[AuthInterceptor] Refresh token exception: $e', source: _source);
+        await _sessionRepo.clearSession();
+      }
     }
 
     return handler.next(err);
