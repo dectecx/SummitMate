@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"summitmate/internal/database"
 )
@@ -24,11 +23,11 @@ type TripRepository interface {
 }
 
 type tripRepository struct {
-	pool *pgxpool.Pool
+	db database.Querier
 }
 
-func NewTripRepository(pool *pgxpool.Pool) TripRepository {
-	return &tripRepository{pool: pool}
+func NewTripRepository(db database.Querier) TripRepository {
+	return &tripRepository{db: db}
 }
 
 // Create 新增一筆行程資料，回傳含有 DB 產生值 (id, created_at 等) 的完整 Trip。
@@ -38,7 +37,7 @@ func (repo *tripRepository) Create(ctx context.Context, trip *Trip) (*Trip, erro
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by
 	`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query,
 		trip.UserID, trip.Name, trip.Description, trip.StartDate, trip.EndDate,
 		trip.CoverImage, trip.IsActive, trip.DayNames, trip.CreatedBy, trip.UpdatedBy,
@@ -54,7 +53,7 @@ func (repo *tripRepository) GetByID(ctx context.Context, id string) (*Trip, erro
 		FROM trips
 		WHERE id = $1
 	`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query, id)
 	return repo.scanTrip(row)
 }
@@ -69,7 +68,7 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]
 		WHERE t.user_id = $1 OR tm.user_id = $1
 		ORDER BY t.created_at DESC
 	`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	rows, err := db.Query(ctx, query, userID)
 	if err != nil {
 		return nil, err
@@ -117,7 +116,7 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedA
 
 	query += " RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by"
 
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query, args...)
 
 	return repo.scanTrip(row)
@@ -125,7 +124,7 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedA
 
 // DeleteByID 刪除指定 ID 的行程。
 func (repo *tripRepository) DeleteByID(ctx context.Context, id string) error {
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	_, err := db.Exec(ctx, "DELETE FROM trips WHERE id = $1", id)
 	return err
 }
