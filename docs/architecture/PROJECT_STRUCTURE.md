@@ -32,7 +32,7 @@ lib/
 ├── data/                              # 資料層
 │   ├── data.dart                      # Barrel export
 │   ├── cwa/                           # 氣象局資料結構
-│   ├── models/                        # 資料模型 (HiveType)
+│   ├── models/                        # 資料模型 (HiveType / Freezed)
 │   │   ├── enums/                     # 列舉 (SyncStatus, FavoriteType)
 │   │   ├── settings.dart              # [TypeId: 0] 全域設定
 │   │   ├── itinerary_item.dart        # [TypeId: 1] 行程節點
@@ -48,6 +48,10 @@ lib/
 │   │   ├── favorite.dart              # [TypeId: 14] 最愛
 │   │   ├── gear_set.dart              # 雲端裝備組合 (非 Hive)
 │   │   └── meal_item.dart             # 菜單項目 (記憶體)
+│   ├── api/                           # API 層 (Retrofit)
+│   │   ├── models/                    # API Request/Response Models (Freezed)
+│   │   ├── services/                  # Retrofit API Services
+│   │   └── mappers/                   # API <-> Domain 模型轉換層
 │   ├── datasources/                   # 資料來源層 (Offline-First)
 │   │   ├── interfaces/                # DataSource 介面
 │   │   ├── local/                     # 本地儲存實作 (Hive)
@@ -78,16 +82,13 @@ lib/
 │   ├── infrastructure.dart            # Barrel export
 │   ├── adapters/                      # Hive 型別轉接器
 │   ├── clients/                       # HTTP 客戶端
-│   │   ├── gas_api_client.dart        # GAS REST 客戶端
+│   │   ├── api_client.dart            # Go API REST 客戶端 (Dio)
 │   │   └── network_aware_client.dart  # 離線攔截裝飾器
 │   ├── interceptors/                  # Dio 攔截器
 │   │   └── auth_interceptor.dart      # 認證攔截器
 │   ├── services/                      # 服務實作
-│   │   ├── gas_auth_service.dart      # 會員認證 (IAuthService)
+│   │   ├── auth_service.dart          # 會員認證 (IAuthService)
 │   │   ├── sync_service.dart          # 雙向同步 (ISyncService)
-│   │   ├── google_sheets_service.dart # API Gateway (IDataService)
-│   │   ├── gear_cloud_service.dart    # 雲端裝備 (IGearCloudService)
-│   │   ├── poll_service.dart          # 投票 API (IPollService)
 │   │   ├── weather_service.dart       # 氣象服務 (IWeatherService)
 │   │   ├── connectivity_service.dart  # 網路狀態 (IConnectivityService)
 │   │   ├── geolocator_service.dart    # 定位服務
