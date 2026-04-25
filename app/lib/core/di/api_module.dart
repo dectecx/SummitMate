@@ -10,6 +10,7 @@ import '../../data/api/services/poll_api_service.dart';
 import '../../data/api/services/trip_api_service.dart';
 import '../../data/api/services/trip_gear_api_service.dart';
 import '../../data/api/services/trip_meal_api_service.dart';
+import '../../data/api/services/user_api_service.dart';
 
 @module
 abstract class ApiModule {
@@ -39,4 +40,7 @@ abstract class ApiModule {
 
   @lazySingleton
   TripMealApiService getTripMealApi(Dio dio) => TripMealApiService(dio);
+
+  @lazySingleton
+  UserApiService getUserApi(Dio dio) => UserApiService(dio);
 }

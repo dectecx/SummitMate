@@ -1,10 +1,11 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/trip.dart';
 import '../../models/user_profile.dart';
 import '../../api/models/trip_api_models.dart';
 import '../../api/services/trip_api_service.dart';
+import '../../api/services/user_api_service.dart';
 import '../../api/mappers/trip_api_mapper.dart';
+import '../../api/mappers/user_api_mapper.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_trip_remote_data_source.dart';
 
@@ -14,9 +15,9 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   static const String _source = 'TripRemoteDataSource';
 
   final TripApiService _tripApi;
-  final Dio _dio;
+  final UserApiService _userApi;
 
-  TripRemoteDataSource(this._tripApi, this._dio);
+  TripRemoteDataSource(this._tripApi, this._userApi);
 
   @override
   Future<List<Trip>> getTrips() async {
@@ -114,15 +115,12 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   @override
   Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) async {
     try {
-      // TODO: 後端 AddMember API 使用 email，此處需透過 userId 查詢 email 後再呼叫
-      // 暫時維持透過 Dio 直接呼叫，待 User API Service 建立後再重構
-      final response = await _dio.post(
-        '/trips/$tripId/members',
-        data: {'user_id': userId, 'role': role},
-      );
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      // 透過 UserApiService 查詢 email
+      final userResponse = await _userApi.getUserById(userId);
+      final email = userResponse.email;
+
+      // 呼叫現有的 addMemberByEmail (內部使用 _tripApi.addMember)
+      await addMemberByEmail(tripId, email, role: role);
     } catch (e) {
       LogService.error('Remote AddMemberById failed: $e', source: _source);
       rethrow;
@@ -133,12 +131,8 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   Future<UserProfile> searchUserByEmail(String email) async {
     try {
       LogService.info('Searching user by email: $email', source: _source);
-      // TODO: 待 UserApiService 建立後改用 Retrofit
-      final response = await _dio.get('/users/search', queryParameters: {'email': email});
-      if (response.statusCode == 200) {
-        return UserProfile.fromJson(response.data as Map<String, dynamic>);
-      }
-      throw Exception('HTTP ${response.statusCode}');
+      final response = await _userApi.searchUserByEmail(email);
+      return UserApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('Remote SearchUserByEmail failed: $e', source: _source);
       rethrow;
@@ -149,12 +143,8 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   Future<UserProfile> searchUserById(String userId) async {
     try {
       LogService.info('Searching user by ID: $userId', source: _source);
-      // TODO: 待 UserApiService 建立後改用 Retrofit
-      final response = await _dio.get('/users/$userId');
-      if (response.statusCode == 200) {
-        return UserProfile.fromJson(response.data as Map<String, dynamic>);
-      }
-      throw Exception('HTTP ${response.statusCode}');
+      final response = await _userApi.getUserById(userId);
+      return UserApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('Remote SearchUserById failed: $e', source: _source);
       rethrow;
