@@ -36,4 +36,6 @@ var (
 // Validation 相關
 var (
 	ErrPasswordTooShort = New(http.StatusBadRequest, TypeValidation, "password_too_short", "密碼長度至少需要 8 個字元")
+	ErrPasswordTooWeak  = New(http.StatusBadRequest, TypeValidation, "password_too_weak", "密碼強度不足，請包含字母與數字")
+	ErrInvalidEmail     = New(http.StatusBadRequest, TypeValidation, "invalid_email", "Email 格式不正確")
 )
