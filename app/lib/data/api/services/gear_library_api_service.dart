@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
-import '../../models/gear_library_item.dart';
 import '../models/gear_library_api_models.dart';
 
 part 'gear_library_api_service.g.dart';
@@ -14,13 +13,13 @@ abstract class GearLibraryApiService {
   factory GearLibraryApiService(Dio dio, {String baseUrl}) = _GearLibraryApiService;
 
   @GET('/gear-library')
-  Future<List<GearLibraryItem>> listItems();
+  Future<List<GearLibraryItemResponse>> listItems();
 
   @POST('/gear-library')
-  Future<GearLibraryItem> addItem(@Body() GearLibraryItemRequest request);
+  Future<GearLibraryItemResponse> addItem(@Body() GearLibraryItemRequest request);
 
   @PUT('/gear-library/{itemId}')
-  Future<GearLibraryItem> updateItem(
+  Future<GearLibraryItemResponse> updateItem(
     @Path('itemId') String itemId,
     @Body() GearLibraryItemRequest request,
   );

@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
-import '../../models/group_event.dart';
-import '../../models/group_event_comment.dart';
 import '../models/group_event_api_models.dart';
 
 part 'group_event_api_service.g.dart';
@@ -17,21 +15,21 @@ abstract class GroupEventApiService {
   // ── Events ──
 
   @GET('/group-events')
-  Future<List<GroupEvent>> listEvents(
+  Future<List<GroupEventResponse>> listEvents(
     @Query('status') String? status,
   );
 
   @GET('/group-events/my')
-  Future<List<GroupEvent>> listMyEvents(@Query('type') String type);
+  Future<List<GroupEventResponse>> listMyEvents(@Query('type') String type);
 
   @GET('/group-events/{eventId}')
-  Future<GroupEvent> getEvent(@Path('eventId') String eventId);
+  Future<GroupEventResponse> getEvent(@Path('eventId') String eventId);
 
   @POST('/group-events')
-  Future<GroupEvent> createEvent(@Body() GroupEventCreateRequest request);
+  Future<GroupEventResponse> createEvent(@Body() GroupEventCreateRequest request);
 
   @PUT('/group-events/{eventId}')
-  Future<GroupEvent> updateEvent(
+  Future<GroupEventResponse> updateEvent(
     @Path('eventId') String eventId,
     @Body() GroupEventUpdateRequest request,
   );
@@ -48,12 +46,12 @@ abstract class GroupEventApiService {
   // ── Applications ──
 
   @GET('/group-events/{eventId}/applications')
-  Future<List<GroupEventApplication>> listApplications(
+  Future<List<GroupEventApplicationResponse>> listApplications(
     @Path('eventId') String eventId,
   );
 
   @POST('/group-events/{eventId}/apply')
-  Future<GroupEventApplication> applyEvent(
+  Future<GroupEventApplicationResponse> applyEvent(
     @Path('eventId') String eventId,
     @Body() GroupEventApplyRequest request,
   );
@@ -78,10 +76,10 @@ abstract class GroupEventApiService {
   // ── Comments ──
 
   @GET('/group-events/{eventId}/comments')
-  Future<List<GroupEventComment>> listComments(@Path('eventId') String eventId);
+  Future<List<GroupEventCommentResponse>> listComments(@Path('eventId') String eventId);
 
   @POST('/group-events/{eventId}/comments')
-  Future<GroupEventComment> addComment(
+  Future<GroupEventCommentResponse> addComment(
     @Path('eventId') String eventId,
     @Body() GroupEventCommentRequest request,
   );

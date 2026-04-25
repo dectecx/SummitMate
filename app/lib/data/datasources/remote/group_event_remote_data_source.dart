@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
+import '../../api/mappers/group_event_api_mapper.dart';
 import '../../api/models/group_event_api_models.dart';
 import '../../api/services/group_event_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -21,7 +22,8 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   Future<List<GroupEvent>> getEvents({required String userId, String? status}) async {
     try {
       LogService.info('獲取揪團列表: $userId', source: _source);
-      final events = await _groupEventApi.listEvents(status ?? 'open');
+      final responses = await _groupEventApi.listEvents(status ?? 'open');
+      final events = responses.map(GroupEventApiMapper.fromResponse).toList();
       LogService.info('已獲取 ${events.length} 個揪團', source: _source);
       return events;
     } catch (e) {
@@ -34,7 +36,8 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   Future<GroupEvent> getEvent({required String eventId, required String userId}) async {
     try {
       LogService.info('獲取揪團詳情: $eventId', source: _source);
-      return await _groupEventApi.getEvent(eventId);
+      final response = await _groupEventApi.getEvent(eventId);
+      return GroupEventApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('getEvent 失敗: $e', source: _source);
       rethrow;
@@ -56,8 +59,8 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
         privateMessage: event.privateMessage.isNotEmpty ? event.privateMessage : null,
         linkedTripId: event.linkedTripId,
       );
-      final created = await _groupEventApi.createEvent(request);
-      return created.id;
+      final response = await _groupEventApi.createEvent(request);
+      return response.id;
     } catch (e) {
       LogService.error('createEvent 失敗: $e', source: _source);
       rethrow;
@@ -86,7 +89,11 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> closeEvent({required String eventId, required String userId, String action = 'close'}) async {
+  Future<void> closeEvent({
+    required String eventId,
+    required String userId,
+    String action = 'close',
+  }) async {
     try {
       LogService.info('結束揪團: $eventId', source: _source);
       await _groupEventApi.updateEventStatus(
@@ -111,14 +118,18 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<String> applyEvent({required String eventId, required String userId, String? message}) async {
+  Future<String> applyEvent({
+    required String eventId,
+    required String userId,
+    String? message,
+  }) async {
     try {
       LogService.info('申請參加揪團: $eventId', source: _source);
-      final result = await _groupEventApi.applyEvent(
+      final response = await _groupEventApi.applyEvent(
         eventId,
         GroupEventApplyRequest(message: message),
       );
-      return result.id;
+      return response.id;
     } catch (e) {
       LogService.error('applyEvent 失敗: $e', source: _source);
       rethrow;
@@ -126,7 +137,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> cancelApplication({required String applicationId, required String userId}) async {
+  Future<void> cancelApplication({
+    required String applicationId,
+    required String userId,
+  }) async {
     try {
       LogService.info('取消報名申請: $applicationId', source: _source);
       await _groupEventApi.cancelApplication(applicationId);
@@ -155,10 +169,14 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<List<GroupEventApplication>> getApplications({required String eventId, required String userId}) async {
+  Future<List<GroupEventApplication>> getApplications({
+    required String eventId,
+    required String userId,
+  }) async {
     try {
       LogService.info('獲取揪團申請列表: $eventId', source: _source);
-      return await _groupEventApi.listApplications(eventId);
+      final responses = await _groupEventApi.listApplications(eventId);
+      return responses.map(GroupEventApiMapper.fromApplicationResponse).toList();
     } catch (e) {
       LogService.error('getApplications 失敗: $e', source: _source);
       rethrow;
@@ -166,10 +184,14 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<List<GroupEvent>> getMyEvents({required String userId, required String type}) async {
+  Future<List<GroupEvent>> getMyEvents({
+    required String userId,
+    required String type,
+  }) async {
     try {
       LogService.info('獲取我的揪團: $userId, 類型: $type', source: _source);
-      return await _groupEventApi.listMyEvents(type);
+      final responses = await _groupEventApi.listMyEvents(type);
+      return responses.map(GroupEventApiMapper.fromResponse).toList();
     } catch (e) {
       LogService.error('getMyEvents 失敗: $e', source: _source);
       rethrow;
@@ -206,10 +228,11 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }) async {
     try {
       LogService.info('新增揪團留言: $eventId', source: _source);
-      return await _groupEventApi.addComment(
+      final response = await _groupEventApi.addComment(
         eventId,
         GroupEventCommentRequest(content: content),
       );
+      return GroupEventApiMapper.fromCommentResponse(response);
     } catch (e) {
       LogService.error('addComment 失敗: $e', source: _source);
       rethrow;
@@ -220,7 +243,8 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   Future<List<GroupEventComment>> getComments({required String eventId}) async {
     try {
       LogService.info('獲取揪團留言: $eventId', source: _source);
-      return await _groupEventApi.listComments(eventId);
+      final responses = await _groupEventApi.listComments(eventId);
+      return responses.map(GroupEventApiMapper.fromCommentResponse).toList();
     } catch (e) {
       LogService.error('getComments 失敗: $e', source: _source);
       rethrow;
@@ -228,7 +252,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<void> deleteComment({required String commentId, required String userId}) async {
+  Future<void> deleteComment({
+    required String commentId,
+    required String userId,
+  }) async {
     try {
       LogService.info('刪除留言: $commentId', source: _source);
       await _groupEventApi.deleteComment(commentId);

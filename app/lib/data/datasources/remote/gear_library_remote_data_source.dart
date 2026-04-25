@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/gear_library_item.dart';
-import '../../api/models/gear_library_api_models.dart';
+import '../../api/mappers/gear_library_api_mapper.dart';
 import '../../api/services/gear_library_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_gear_library_remote_data_source.dart';
@@ -20,7 +20,8 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<List<GearLibraryItem>> getLibrary() async {
     try {
       LogService.info('取得個人裝備庫列表...', source: _source);
-      return await _gearLibraryApi.listItems();
+      final responses = await _gearLibraryApi.listItems();
+      return responses.map(GearLibraryApiMapper.fromResponse).toList();
     } catch (e) {
       LogService.error('getLibrary 失敗: $e', source: _source);
       rethrow;
@@ -31,8 +32,9 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<GearLibraryItem> addLibraryItem(GearLibraryItem item) async {
     try {
       LogService.info('新增裝備至雲端庫: ${item.name}', source: _source);
-      final request = _toRequest(item);
-      return await _gearLibraryApi.addItem(request);
+      final request = GearLibraryApiMapper.toRequest(item);
+      final response = await _gearLibraryApi.addItem(request);
+      return GearLibraryApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('addLibraryItem 失敗: $e', source: _source);
       rethrow;
@@ -43,7 +45,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<void> updateLibraryItem(GearLibraryItem item) async {
     try {
       LogService.info('更新雲端裝備項目: ${item.id}', source: _source);
-      final request = _toRequest(item);
+      final request = GearLibraryApiMapper.toRequest(item);
       await _gearLibraryApi.updateItem(item.id, request);
     } catch (e) {
       LogService.error('updateLibraryItem 失敗: $e', source: _source);
@@ -66,20 +68,12 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<void> replaceAllLibraryItems(List<GearLibraryItem> items) async {
     try {
       LogService.info('批量替換雲端裝備庫: 數量 ${items.length}', source: _source);
-      await _gearLibraryApi.replaceAll(items.map(_toRequest).toList());
+      await _gearLibraryApi.replaceAll(
+        items.map(GearLibraryApiMapper.toRequest).toList(),
+      );
     } catch (e) {
       LogService.error('replaceAllLibraryItems 失敗: $e', source: _source);
       rethrow;
     }
-  }
-
-  GearLibraryItemRequest _toRequest(GearLibraryItem item) {
-    return GearLibraryItemRequest(
-      name: item.name,
-      weight: item.weight,
-      category: item.category,
-      notes: item.notes,
-      isArchived: item.isArchived,
-    );
   }
 }

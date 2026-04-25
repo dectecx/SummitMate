@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../../core/error/result.dart';
+import '../../models/favorite.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../api/models/favorites_api_models.dart';
+import '../../api/mappers/favorites_api_mapper.dart';
 import '../../api/services/favorites_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_favorites_remote_data_source.dart';
@@ -17,11 +19,11 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
   FavoritesRemoteDataSource(Dio dio) : _favoritesApi = FavoritesApiService(dio);
 
   @override
-  Future<Result<List<Map<String, dynamic>>, Exception>> getFavorites() async {
+  Future<Result<List<Favorite>, Exception>> getFavorites() async {
     try {
       LogService.info('獲取雲端最愛列表...', source: _source);
       final responses = await _favoritesApi.listFavorites();
-      return Success(responses.map((r) => r.toJson()).toList());
+      return Success(responses.map(FavoritesApiMapper.fromResponse).toList());
     } catch (e) {
       LogService.error('獲取最愛列表失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -41,7 +43,6 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
       } else {
         await _favoritesApi.removeFavorite(id);
       }
-      LogService.info('遠端更新成功', source: _source);
       return const Success(null);
     } catch (e) {
       LogService.error('更新最愛狀態失敗: $e', source: _source);
@@ -63,7 +64,6 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
               ))
           .toList();
       await _favoritesApi.batchUpdate(requests);
-      LogService.info('遠端批次更新成功', source: _source);
       return const Success(null);
     } catch (e) {
       LogService.error('批次更新最愛狀態失敗: $e', source: _source);
