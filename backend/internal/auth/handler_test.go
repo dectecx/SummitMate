@@ -96,6 +96,8 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
+		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return(nil, "", apperror.ErrPasswordTooShort).Once()
+
 		req := httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
 

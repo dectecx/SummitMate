@@ -57,12 +57,40 @@ func TestAuthService_Register(t *testing.T) {
 		email := "existing@example.com"
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(&User{ID: "existing-id"}, nil)
 
-		user, token, err := svc.Register(context.Background(), email, "any", "any", nil)
+		user, token, err := svc.Register(context.Background(), email, "password123", "any", nil)
 
 		assert.Error(t, err)
 		assert.Equal(t, apperror.ErrEmailExists, err)
 		assert.Nil(t, user)
 		assert.Empty(t, token)
+	})
+
+	t.Run("InvalidEmail", func(t *testing.T) {
+		svc := NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
+		user, token, err := svc.Register(context.Background(), "invalid-email", "password123", "any", nil)
+		assert.Error(t, err)
+		assert.Equal(t, apperror.ErrInvalidEmail, err)
+		assert.Nil(t, user)
+		assert.Empty(t, token)
+	})
+
+	t.Run("WeakPassword", func(t *testing.T) {
+		svc := NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
+
+		// Too short
+		_, _, err := svc.Register(context.Background(), "test@example.com", "short1", "any", nil)
+		assert.Error(t, err)
+		assert.Equal(t, apperror.ErrPasswordTooShort, err)
+
+		// No letters
+		_, _, err = svc.Register(context.Background(), "test@example.com", "12345678", "any", nil)
+		assert.Error(t, err)
+		assert.Equal(t, apperror.ErrPasswordTooWeak, err)
+
+		// No numbers
+		_, _, err = svc.Register(context.Background(), "test@example.com", "abcdefgh", "any", nil)
+		assert.Error(t, err)
+		assert.Equal(t, apperror.ErrPasswordTooWeak, err)
 	})
 }
 
