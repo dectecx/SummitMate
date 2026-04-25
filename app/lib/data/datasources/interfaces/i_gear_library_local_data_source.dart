@@ -4,7 +4,7 @@ import '../../models/gear_library_item.dart';
 ///
 /// 負責定義對本地資料庫 (Hive) 的 CRUD 操作。
 /// 裝備庫為使用者個人的裝備清單，獨立於行程儲存。
-abstract class IGearLibraryLocalDataSource {
+abstract interface class IGearLibraryLocalDataSource {
   /// 取得所有裝備庫項目
   ///
   /// 回傳: 裝備庫項目列表

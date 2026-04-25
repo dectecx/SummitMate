@@ -4,7 +4,7 @@ import '../../models/message.dart';
 /// 留言訊息 (Message) 的本地資料來源介面
 ///
 /// 負責定義對本地訊息資料庫 (如 Hive) 的 CRUD 操作。
-abstract class IMessageLocalDataSource {
+abstract interface class IMessageLocalDataSource {
   /// 取得所有訊息
   List<Message> getAll();
 

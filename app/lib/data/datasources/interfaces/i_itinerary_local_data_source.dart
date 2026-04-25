@@ -4,7 +4,7 @@ import '../../models/itinerary_item.dart';
 /// 行程項目 (ItineraryItem) 的本地資料來源介面
 ///
 /// 負責定義對本地資料庫 (如 Hive) 的 CRUD 操作規範。
-abstract class IItineraryLocalDataSource {
+abstract interface class IItineraryLocalDataSource {
   /// 取得所有行程項目
   List<ItineraryItem> getAll();
 

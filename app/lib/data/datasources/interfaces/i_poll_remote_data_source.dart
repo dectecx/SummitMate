@@ -4,7 +4,7 @@ import '../../models/poll.dart';
 ///
 /// 負責定義與後端 API 進行投票資料交換的操作。
 /// 所有方法皆需網路連線，失敗時會拋出 Exception。
-abstract class IPollRemoteDataSource {
+abstract interface class IPollRemoteDataSource {
   /// 取得投票列表
   ///
   /// [tripId] 行程 ID

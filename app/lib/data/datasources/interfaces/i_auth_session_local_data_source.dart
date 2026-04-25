@@ -2,7 +2,7 @@
 ///
 /// 使用 SecureStorage 進行安全儲存，管理使用者登入 Session 相關資訊。
 /// 所有敏感資料皆透過此介面存取，確保安全性。
-abstract class IAuthSessionLocalDataSource {
+abstract interface class IAuthSessionLocalDataSource {
   /// 儲存 Session Token
   ///
   /// [token] 認證 Token (由 Google OAuth 或後端簽發)

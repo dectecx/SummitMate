@@ -3,7 +3,7 @@ import '../../models/trip.dart';
 /// 行程 (Trip) 的本地資料來源介面
 ///
 /// 負責定義對本地行程資料庫 (如 Hive) 的 CRUD 操作，以及管理當前活動行程。
-abstract class ITripLocalDataSource {
+abstract interface class ITripLocalDataSource {
   /// 初始化資料來源
   /// 取得所有行程列表
   List<Trip> getAllTrips();
