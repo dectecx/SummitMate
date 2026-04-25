@@ -13,6 +13,296 @@ part of 'group_event_api_models.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$GroupEventPaginationResponse {
+
+ List<GroupEventResponse> get items; PaginationMetadata get pagination;
+/// Create a copy of GroupEventPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GroupEventPaginationResponseCopyWith<GroupEventPaginationResponse> get copyWith => _$GroupEventPaginationResponseCopyWithImpl<GroupEventPaginationResponse>(this as GroupEventPaginationResponse, _$identity);
+
+  /// Serializes this GroupEventPaginationResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventPaginationResponse&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),pagination);
+
+@override
+String toString() {
+  return 'GroupEventPaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GroupEventPaginationResponseCopyWith<$Res>  {
+  factory $GroupEventPaginationResponseCopyWith(GroupEventPaginationResponse value, $Res Function(GroupEventPaginationResponse) _then) = _$GroupEventPaginationResponseCopyWithImpl;
+@useResult
+$Res call({
+ List<GroupEventResponse> items, PaginationMetadata pagination
+});
+
+
+$PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class _$GroupEventPaginationResponseCopyWithImpl<$Res>
+    implements $GroupEventPaginationResponseCopyWith<$Res> {
+  _$GroupEventPaginationResponseCopyWithImpl(this._self, this._then);
+
+  final GroupEventPaginationResponse _self;
+  final $Res Function(GroupEventPaginationResponse) _then;
+
+/// Create a copy of GroupEventPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_self.copyWith(
+items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<GroupEventResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+/// Create a copy of GroupEventPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [GroupEventPaginationResponse].
+extension GroupEventPaginationResponsePatterns on GroupEventPaginationResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GroupEventPaginationResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GroupEventPaginationResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GroupEventPaginationResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _GroupEventPaginationResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GroupEventPaginationResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GroupEventPaginationResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GroupEventResponse> items,  PaginationMetadata pagination)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GroupEventPaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GroupEventResponse> items,  PaginationMetadata pagination)  $default,) {final _that = this;
+switch (_that) {
+case _GroupEventPaginationResponse():
+return $default(_that.items,_that.pagination);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GroupEventResponse> items,  PaginationMetadata pagination)?  $default,) {final _that = this;
+switch (_that) {
+case _GroupEventPaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _GroupEventPaginationResponse implements GroupEventPaginationResponse {
+  const _GroupEventPaginationResponse({required final  List<GroupEventResponse> items, required this.pagination}): _items = items;
+  factory _GroupEventPaginationResponse.fromJson(Map<String, dynamic> json) => _$GroupEventPaginationResponseFromJson(json);
+
+ final  List<GroupEventResponse> _items;
+@override List<GroupEventResponse> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
+@override final  PaginationMetadata pagination;
+
+/// Create a copy of GroupEventPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GroupEventPaginationResponseCopyWith<_GroupEventPaginationResponse> get copyWith => __$GroupEventPaginationResponseCopyWithImpl<_GroupEventPaginationResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$GroupEventPaginationResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventPaginationResponse&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),pagination);
+
+@override
+String toString() {
+  return 'GroupEventPaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GroupEventPaginationResponseCopyWith<$Res> implements $GroupEventPaginationResponseCopyWith<$Res> {
+  factory _$GroupEventPaginationResponseCopyWith(_GroupEventPaginationResponse value, $Res Function(_GroupEventPaginationResponse) _then) = __$GroupEventPaginationResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ List<GroupEventResponse> items, PaginationMetadata pagination
+});
+
+
+@override $PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class __$GroupEventPaginationResponseCopyWithImpl<$Res>
+    implements _$GroupEventPaginationResponseCopyWith<$Res> {
+  __$GroupEventPaginationResponseCopyWithImpl(this._self, this._then);
+
+  final _GroupEventPaginationResponse _self;
+  final $Res Function(_GroupEventPaginationResponse) _then;
+
+/// Create a copy of GroupEventPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_GroupEventPaginationResponse(
+items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<GroupEventResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+
+/// Create a copy of GroupEventPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$GroupEventResponse {
 
  String get id;@JsonKey(name: 'creator_id') String get creatorId; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(defaultValue: '') String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'creator_name', defaultValue: '') String get creatorName;@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String get creatorAvatar;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;

@@ -13,7 +13,7 @@ import (
 type GearLibraryRepository interface {
 	Create(ctx context.Context, item *GearLibraryItem) (*GearLibraryItem, error)
 	GetByID(ctx context.Context, id string, userID string) (*GearLibraryItem, error)
-	ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*GearLibraryItem, error)
+	ListByUserID(ctx context.Context, userID string, includeArchived bool, page int, limit int, search string) ([]*GearLibraryItem, int, bool, error)
 	Update(ctx context.Context, item *GearLibraryItem) (*GearLibraryItem, error)
 	Delete(ctx context.Context, id string, userID string) error
 	ReplaceAll(ctx context.Context, userID string, items []*GearLibraryItem) error
@@ -39,10 +39,10 @@ func (repo *gearLibraryRepository) Create(ctx context.Context, item *GearLibrary
 	)
 
 	it, err := repo.scanItem(row)
- 	if err != nil {
- 		return nil, fmt.Errorf("create gear library item: %w", err)
- 	}
- 	return it, nil
+	if err != nil {
+		return nil, fmt.Errorf("create gear library item: %w", err)
+	}
+	return it, nil
 }
 
 func (repo *gearLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*GearLibraryItem, error) {
@@ -60,17 +60,41 @@ func (repo *gearLibraryRepository) GetByID(ctx context.Context, id string, userI
 	return it, nil
 }
 
-func (repo *gearLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*GearLibraryItem, error) {
-	query := `
+func (repo *gearLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool, page int, limit int, search string) ([]*GearLibraryItem, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	whereClause := "WHERE user_id = $1 AND ($2 OR is_archived = false)"
+	args := []any{userID, includeArchived}
+
+	if search != "" {
+		args = append(args, "%"+search+"%")
+		whereClause += " AND name ILIKE $" + fmt.Sprint(len(args))
+	}
+
+	db := database.GetQuerier(ctx, repo.db)
+	var total int
+	countQuery := fmt.Sprintf(`SELECT COUNT(*) FROM gear_library_items %s`, whereClause)
+	if err := db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+		return nil, 0, false, fmt.Errorf("count gear library for user %s: %w", userID, err)
+	}
+
+	dataArgs := append(args, limit, (page-1)*limit)
+	mainQuery := fmt.Sprintf(`
 		SELECT id, user_id, name, weight, category, notes, is_archived, created_at, created_by, updated_at, updated_by
 		FROM gear_library_items
-		WHERE user_id = $1 AND ($2 OR is_archived = false)
-		ORDER BY created_at DESC
-	`
-	db := database.GetQuerier(ctx, repo.db)
-	rows, err := db.Query(ctx, query, userID, includeArchived)
+		%s
+		ORDER BY created_at DESC, id DESC
+		LIMIT $%d OFFSET $%d
+	`, whereClause, len(args)+1, len(args)+2)
+
+	rows, err := db.Query(ctx, mainQuery, dataArgs...)
 	if err != nil {
-		return nil, fmt.Errorf("query gear library for user %s: %w", userID, err)
+		return nil, 0, false, fmt.Errorf("query gear library for user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -78,15 +102,15 @@ func (repo *gearLibraryRepository) ListByUserID(ctx context.Context, userID stri
 	for rows.Next() {
 		item, err := repo.scanItem(rows)
 		if err != nil {
-			return nil, fmt.Errorf("scan gear library row: %w", err)
+			return nil, 0, false, fmt.Errorf("scan gear library row: %w", err)
 		}
 		items = append(items, item)
 	}
-
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate gear library rows: %w", err)
+		return nil, 0, false, fmt.Errorf("iterate gear library rows: %w", err)
 	}
-	return items, nil
+
+	return items, total, page*limit < total, nil
 }
 
 func (repo *gearLibraryRepository) Update(ctx context.Context, item *GearLibraryItem) (*GearLibraryItem, error) {

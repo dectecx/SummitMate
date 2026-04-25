@@ -26,12 +26,12 @@ func (m *MockTripService) GetTrip(ctx context.Context, tripID, userID string) (*
 	return args.Get(0).(*Trip), args.Error(1)
 }
 
-func (m *MockTripService) ListTrips(ctx context.Context, userID string) ([]*Trip, error) {
-	args := m.Called(ctx, userID)
+func (m *MockTripService) ListTrips(ctx context.Context, userID string, page int, limit int, search string) ([]*Trip, int, bool, error) {
+	args := m.Called(ctx, userID, page, limit, search)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, 0, false, args.Error(3)
 	}
-	return args.Get(0).([]*Trip), args.Error(1)
+	return args.Get(0).([]*Trip), args.Int(1), args.Bool(2), args.Error(3)
 }
 
 func (m *MockTripService) UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*Trip, error) {

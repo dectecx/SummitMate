@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
 import '../../api/mappers/group_event_api_mapper.dart';
@@ -17,13 +18,31 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   GroupEventRemoteDataSource(this._groupEventApi);
 
   @override
-  Future<List<GroupEvent>> getEvents({required String userId, String? status}) async {
+  Future<PaginatedList<GroupEvent>> getEvents({
+    required String userId,
+    String? status,
+    String? creatorId,
+    String? cursor,
+    int? limit,
+    String? search,
+  }) async {
     try {
-      LogService.info('獲取揪團列表: $userId', source: _source);
-      final responses = await _groupEventApi.listEvents(status ?? 'open');
-      final events = responses.map(GroupEventApiMapper.fromResponse).toList();
+      LogService.info('獲取揪團列表: $userId (status: $status, cursor: $cursor, limit: $limit, search: $search)',
+          source: _source);
+      final response = await _groupEventApi.listEvents(
+        status: status ?? 'open',
+        creatorId: creatorId,
+        cursor: cursor,
+        limit: limit,
+        search: search,
+      );
+      final events = response.items.map(GroupEventApiMapper.fromResponse).toList();
       LogService.info('已獲取 ${events.length} 個揪團', source: _source);
-      return events;
+      return PaginatedList<GroupEvent>(
+        items: events,
+        nextCursor: response.pagination.nextCursor,
+        hasMore: response.pagination.hasMore,
+      );
     } catch (e) {
       LogService.error('getEvents 失敗: $e', source: _source);
       rethrow;

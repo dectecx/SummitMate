@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../core/models/paginated_list.dart';
 import '../../core/offline_config.dart';
 import '../../data/models/trip.dart';
 import '../../data/repositories/interfaces/i_itinerary_repository.dart';
@@ -139,12 +140,12 @@ class SyncService implements ISyncService {
   }
 
   @override
-  Future<Result<List<Trip>, Exception>> getCloudTrips() async {
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({String? cursor, int? limit}) async {
     if (_isOffline) {
       return Failure(GeneralException('離線模式無法取得行程列表'));
     }
     try {
-      return await _tripRepo.getRemoteTrips();
+      return await _tripRepo.getRemoteTrips(cursor: cursor, limit: limit);
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }

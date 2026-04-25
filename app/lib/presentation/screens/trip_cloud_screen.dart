@@ -55,7 +55,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     try {
       final result = await _tripRepository.getRemoteTrips();
       final trips = switch (result) {
-        Success(value: final t) => t,
+        Success(value: final paginated) => paginated.items,
         Failure(exception: final e) => throw e,
       };
 

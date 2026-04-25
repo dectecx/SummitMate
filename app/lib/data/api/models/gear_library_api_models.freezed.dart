@@ -13,6 +13,296 @@ part of 'gear_library_api_models.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$GearLibraryPaginationResponse {
+
+ List<GearLibraryItemResponse> get items; PaginationMetadata get pagination;
+/// Create a copy of GearLibraryPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GearLibraryPaginationResponseCopyWith<GearLibraryPaginationResponse> get copyWith => _$GearLibraryPaginationResponseCopyWithImpl<GearLibraryPaginationResponse>(this as GearLibraryPaginationResponse, _$identity);
+
+  /// Serializes this GearLibraryPaginationResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GearLibraryPaginationResponse&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),pagination);
+
+@override
+String toString() {
+  return 'GearLibraryPaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GearLibraryPaginationResponseCopyWith<$Res>  {
+  factory $GearLibraryPaginationResponseCopyWith(GearLibraryPaginationResponse value, $Res Function(GearLibraryPaginationResponse) _then) = _$GearLibraryPaginationResponseCopyWithImpl;
+@useResult
+$Res call({
+ List<GearLibraryItemResponse> items, PaginationMetadata pagination
+});
+
+
+$PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class _$GearLibraryPaginationResponseCopyWithImpl<$Res>
+    implements $GearLibraryPaginationResponseCopyWith<$Res> {
+  _$GearLibraryPaginationResponseCopyWithImpl(this._self, this._then);
+
+  final GearLibraryPaginationResponse _self;
+  final $Res Function(GearLibraryPaginationResponse) _then;
+
+/// Create a copy of GearLibraryPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_self.copyWith(
+items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<GearLibraryItemResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+/// Create a copy of GearLibraryPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [GearLibraryPaginationResponse].
+extension GearLibraryPaginationResponsePatterns on GearLibraryPaginationResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GearLibraryPaginationResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GearLibraryPaginationResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GearLibraryPaginationResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _GearLibraryPaginationResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GearLibraryPaginationResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GearLibraryPaginationResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<GearLibraryItemResponse> items,  PaginationMetadata pagination)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GearLibraryPaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<GearLibraryItemResponse> items,  PaginationMetadata pagination)  $default,) {final _that = this;
+switch (_that) {
+case _GearLibraryPaginationResponse():
+return $default(_that.items,_that.pagination);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<GearLibraryItemResponse> items,  PaginationMetadata pagination)?  $default,) {final _that = this;
+switch (_that) {
+case _GearLibraryPaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _GearLibraryPaginationResponse implements GearLibraryPaginationResponse {
+  const _GearLibraryPaginationResponse({required final  List<GearLibraryItemResponse> items, required this.pagination}): _items = items;
+  factory _GearLibraryPaginationResponse.fromJson(Map<String, dynamic> json) => _$GearLibraryPaginationResponseFromJson(json);
+
+ final  List<GearLibraryItemResponse> _items;
+@override List<GearLibraryItemResponse> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
+@override final  PaginationMetadata pagination;
+
+/// Create a copy of GearLibraryPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GearLibraryPaginationResponseCopyWith<_GearLibraryPaginationResponse> get copyWith => __$GearLibraryPaginationResponseCopyWithImpl<_GearLibraryPaginationResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$GearLibraryPaginationResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GearLibraryPaginationResponse&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),pagination);
+
+@override
+String toString() {
+  return 'GearLibraryPaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GearLibraryPaginationResponseCopyWith<$Res> implements $GearLibraryPaginationResponseCopyWith<$Res> {
+  factory _$GearLibraryPaginationResponseCopyWith(_GearLibraryPaginationResponse value, $Res Function(_GearLibraryPaginationResponse) _then) = __$GearLibraryPaginationResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ List<GearLibraryItemResponse> items, PaginationMetadata pagination
+});
+
+
+@override $PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class __$GearLibraryPaginationResponseCopyWithImpl<$Res>
+    implements _$GearLibraryPaginationResponseCopyWith<$Res> {
+  __$GearLibraryPaginationResponseCopyWithImpl(this._self, this._then);
+
+  final _GearLibraryPaginationResponse _self;
+  final $Res Function(_GearLibraryPaginationResponse) _then;
+
+/// Create a copy of GearLibraryPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_GearLibraryPaginationResponse(
+items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<GearLibraryItemResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+
+/// Create a copy of GearLibraryPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$GearLibraryItemResponse {
 
  String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: '') String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 'Other') String get category; String? get notes;@JsonKey(name: 'is_archived', defaultValue: false) bool get isArchived;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;

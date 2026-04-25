@@ -11,7 +11,7 @@ import (
 )
 
 type MessageRepository interface {
-	ListTripMessages(ctx context.Context, tripID string) ([]*TripMessage, error)
+	ListTripMessages(ctx context.Context, tripID string, page int, limit int) ([]*TripMessage, int, bool, error)
 	CreateMessage(ctx context.Context, msg *TripMessage) error
 	GetMessageByID(ctx context.Context, messageID string) (*TripMessage, error)
 	UpdateMessage(ctx context.Context, msg *TripMessage) error
@@ -26,20 +26,35 @@ func NewMessageRepository(db database.DB) MessageRepository {
 	return &messageRepository{db: db}
 }
 
-func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string) ([]*TripMessage, error) {
-	query := `
+func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string, page int, limit int) ([]*TripMessage, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	countQuery := `SELECT COUNT(*) FROM messages WHERE trip_id = $1`
+	db := database.GetQuerier(ctx, r.db)
+	var total int
+	if err := db.QueryRow(ctx, countQuery, tripID).Scan(&total); err != nil {
+		return nil, 0, false, fmt.Errorf("count trip messages for trip %s: %w", tripID, err)
+	}
+
+	query := fmt.Sprintf(`
 		SELECT
 			m.id, m.trip_id, m.parent_id, m.user_id, u.display_name, u.avatar,
 			m.category, m.content, m.timestamp, m.created_at, m.created_by, m.updated_at, m.updated_by
 		FROM messages m
 		JOIN users u ON m.user_id = u.id
 		WHERE m.trip_id = $1
-		ORDER BY m.timestamp ASC
-	`
-	db := database.GetQuerier(ctx, r.db)
-	rows, err := db.Query(ctx, query, tripID)
+		ORDER BY m.id ASC
+		LIMIT $2 OFFSET $3
+	`)
+
+	rows, err := db.Query(ctx, query, tripID, limit, (page-1)*limit)
 	if err != nil {
-		return nil, fmt.Errorf("list trip messages for trip %s: %w", tripID, err)
+		return nil, 0, false, fmt.Errorf("list trip messages for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -51,16 +66,16 @@ func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string)
 			&msg.Category, &msg.Content, &msg.Timestamp, &msg.CreatedAt, &msg.CreatedBy, &msg.UpdatedAt, &msg.UpdatedBy,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("scan trip message row: %w", err)
+			return nil, 0, false, fmt.Errorf("scan trip message row: %w", err)
 		}
 		msg.Replies = []*TripMessage{}
 		messages = append(messages, &msg)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate trip message rows: %w", err)
+		return nil, 0, false, fmt.Errorf("iterate trip message rows: %w", err)
 	}
 
-	return messages, nil
+	return messages, total, page*limit < total, nil
 }
 
 func (r *messageRepository) CreateMessage(ctx context.Context, msg *TripMessage) error {

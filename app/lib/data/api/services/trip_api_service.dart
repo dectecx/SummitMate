@@ -15,7 +15,11 @@ abstract class TripApiService {
   // ── Trip CRUD ──
 
   @GET('/trips')
-  Future<List<TripResponse>> listTrips();
+  Future<TripListPaginationResponse> listTrips({
+    @Query('cursor') String? cursor,
+    @Query('limit') int? limit,
+    @Query('search') String? search,
+  });
 
   @POST('/trips')
   Future<TripResponse> createTrip(@Body() TripCreateRequest request);

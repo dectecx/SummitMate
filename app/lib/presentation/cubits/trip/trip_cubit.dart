@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/di/injection.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
@@ -263,8 +264,8 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 透過 SyncService 取得雲端行程列表
-  Future<Result<List<Trip>, Exception>> getCloudTrips() {
-    return _syncService.getCloudTrips();
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({String? cursor, int? limit}) {
+    return _syncService.getCloudTrips(cursor: cursor, limit: limit);
   }
 
   /// 根據 ID 取得行程 (優先從 State 讀取，若無則查 Repo)

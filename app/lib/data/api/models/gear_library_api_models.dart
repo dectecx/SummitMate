@@ -1,7 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'pagination_api_models.dart';
 
 part 'gear_library_api_models.freezed.dart';
 part 'gear_library_api_models.g.dart';
+
+@freezed
+abstract class GearLibraryPaginationResponse with _$GearLibraryPaginationResponse {
+  const factory GearLibraryPaginationResponse({
+    required List<GearLibraryItemResponse> items,
+    required PaginationMetadata pagination,
+  }) = _GearLibraryPaginationResponse;
+
+  factory GearLibraryPaginationResponse.fromJson(Map<String, dynamic> json) => _$GearLibraryPaginationResponseFromJson(json);
+}
 
 // ── Response ──
 

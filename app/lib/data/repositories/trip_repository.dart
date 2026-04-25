@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_trip_repository.dart';
@@ -134,9 +135,17 @@ class TripRepository implements ITripRepository {
 
   /// 取得雲端行程列表
   @override
-  Future<Result<List<Trip>, Exception>> getRemoteTrips() async {
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
+    String? cursor,
+    int? limit,
+    String? search,
+  }) async {
     try {
-      return Success(await _remoteDataSource.getTrips());
+      return Success(await _remoteDataSource.getTrips(
+        cursor: cursor,
+        limit: limit,
+        search: search,
+      ));
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }

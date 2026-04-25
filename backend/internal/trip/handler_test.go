@@ -33,7 +33,7 @@ func TestTripHandler_ListTrips(t *testing.T) {
 			},
 		}
 
-		mockSvc.On("ListTrips", mock.Anything, userID).Return(trips, nil).Once()
+		mockSvc.On("ListTrips", mock.Anything, userID, 1, 20, "").Return(trips, 1, false, nil).Once()
 
 		req := httptest.NewRequest("GET", "/trips", nil)
 		// Inject userID into context
@@ -42,14 +42,15 @@ func TestTripHandler_ListTrips(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		handler.ListTrips(w, req)
+		params := api.ListTripsParams{}
+		handler.ListTrips(w, req, params)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		var resp []api.TripListItemResponse
+		var resp api.TripListPaginationResponse
 		json.NewDecoder(w.Body).Decode(&resp)
-		assert.Len(t, resp, 1)
-		assert.Equal(t, trips[0].ID, resp[0].Id.String())
+		assert.Len(t, resp.Items, 1)
+		assert.Equal(t, trips[0].ID, resp.Items[0].Id.String())
 		mockSvc.AssertExpectations(t)
 	})
 }

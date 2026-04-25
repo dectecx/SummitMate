@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/data/models/trip.dart';
@@ -71,14 +72,16 @@ void main() {
       expect((result as Success).value, isNull);
     });
 
-    test('Positive: getRemoteTrips fetches from remote and returns list', () async {
-      final remoteTrips = [testTrip];
-      when(() => mockRemoteDataSource.getTrips()).thenAnswer((_) async => remoteTrips);
+    test('Positive: getRemoteTrips fetches from remote and returns PaginatedList', () async {
+      final paginated = PaginatedList(items: [testTrip], nextCursor: null, hasMore: false);
+      when(() => mockRemoteDataSource.getTrips()).thenAnswer((_) async => paginated);
 
       final result = await repository.getRemoteTrips();
 
       expect(result, isA<Success>());
-      expect((result as Success).value, remoteTrips);
+      final value = (result as Success<PaginatedList<Trip>, Exception>).value;
+      expect(value.items, [testTrip]);
+      expect(value.hasMore, false);
       verify(() => mockRemoteDataSource.getTrips()).called(1);
     });
 

@@ -13,7 +13,7 @@ import (
 type PollRepository interface {
 	CreatePoll(ctx context.Context, poll *Poll) error
 	GetPollByID(ctx context.Context, pollID string) (*Poll, error)
-	ListTripPolls(ctx context.Context, tripID string) ([]*Poll, error)
+	ListTripPolls(ctx context.Context, tripID string, page int, limit int) ([]*Poll, int, bool, error)
 	DeletePoll(ctx context.Context, pollID string) error
 
 	AddPollOption(ctx context.Context, option *PollOption) error
@@ -136,18 +136,32 @@ func (r *pollRepository) GetPollByID(ctx context.Context, pollID string) (*Poll,
 	return &p, nil
 }
 
-func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*Poll, error) {
+func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string, page int, limit int) ([]*Poll, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	db := database.GetQuerier(ctx, r.db)
+	var total int
+	if err := db.QueryRow(ctx, `SELECT COUNT(*) FROM polls WHERE trip_id = $1`, tripID).Scan(&total); err != nil {
+		return nil, 0, false, fmt.Errorf("count polls for trip %s: %w", tripID, err)
+	}
+
 	query := `
 		SELECT id, trip_id, title, description, deadline,
 		is_allow_add_option, max_option_limit, allow_multiple_votes,
 		result_display_type, status, created_at, created_by, updated_at, updated_by
 		FROM polls WHERE trip_id = $1
-		ORDER BY created_at DESC
+		ORDER BY created_at DESC, id DESC
+		LIMIT $2 OFFSET $3
 	`
-	db := database.GetQuerier(ctx, r.db)
-	rows, err := db.Query(ctx, query, tripID)
+
+	rows, err := db.Query(ctx, query, tripID, limit, (page-1)*limit)
 	if err != nil {
-		return nil, fmt.Errorf("query polls for trip %s: %w", tripID, err)
+		return nil, 0, false, fmt.Errorf("query polls for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -159,13 +173,12 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*P
 			&p.IsAllowAddOption, &p.MaxOptionLimit, &p.AllowMultipleVotes,
 			&p.ResultDisplayType, &p.Status, &p.CreatedAt, &p.CreatedBy, &p.UpdatedAt, &p.UpdatedBy,
 		); err != nil {
-			return nil, fmt.Errorf("scan poll row: %w", err)
+			return nil, 0, false, fmt.Errorf("scan poll row: %w", err)
 		}
 		polls = append(polls, &p)
 	}
-
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate poll rows: %w", err)
+		return nil, 0, false, fmt.Errorf("iterate poll rows: %w", err)
 	}
 
 	for _, p := range polls {
@@ -177,7 +190,7 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*P
 		}
 	}
 
-	return polls, nil
+	return polls, total, page*limit < total, nil
 }
 
 func (r *pollRepository) DeletePoll(ctx context.Context, pollID string) error {

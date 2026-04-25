@@ -10,7 +10,7 @@ import (
 
 // MessageService 定義行程留言相關的業務邏輯介面。
 type MessageService interface {
-	ListTripMessages(ctx context.Context, tripID, userID string) ([]*TripMessage, error)
+	ListTripMessages(ctx context.Context, tripID, userID string, page int, limit int) ([]*TripMessage, int, bool, error)
 	AddTripMessage(ctx context.Context, tripID, userID string, msg *TripMessage) (*TripMessage, error)
 	UpdateTripMessage(ctx context.Context, tripID, messageID, userID string, msg *TripMessage) (*TripMessage, error)
 	DeleteTripMessage(ctx context.Context, tripID, messageID, userID string) error
@@ -32,18 +32,18 @@ func NewMessageService(logger *slog.Logger, repo MessageRepository, tripRepo tri
 	}
 }
 
-func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID string) ([]*TripMessage, error) {
+func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID string, page int, limit int) ([]*TripMessage, int, bool, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
 		s.logger.WarnContext(ctx, "嘗試讀取行程留言但權限不足", "trip_id", tripID, "user_id", userID)
-		return nil, apperror.ErrAccessDenied
+		return nil, 0, false, apperror.ErrAccessDenied
 	}
 
-	messages, err := s.repo.ListTripMessages(ctx, tripID)
+	messages, total, hasMore, err := s.repo.ListTripMessages(ctx, tripID, page, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, false, err
 	}
 
-	return s.buildMessageTree(messages), nil
+	return s.buildMessageTree(messages), total, hasMore, nil
 }
 
 func (s *messageService) AddTripMessage(ctx context.Context, tripID, userID string, msg *TripMessage) (*TripMessage, error) {
@@ -147,10 +147,10 @@ func (s *messageService) buildMessageTree(messages []*TripMessage) []*TripMessag
 	return rootMessages
 }
 
-// PollService 定義行程投票相關的業務邏輯介面。
+// PollService 定義行程投票活動相關的業務邏輯介面。
 type PollService interface {
 	CreateTripPoll(ctx context.Context, tripID, userID string, poll *Poll) (*Poll, error)
-	ListTripPolls(ctx context.Context, tripID, userID string) ([]*Poll, error)
+	ListTripPolls(ctx context.Context, tripID, userID string, page int, limit int) ([]*Poll, int, bool, error)
 	GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*Poll, error)
 	DeleteTripPoll(ctx context.Context, tripID, pollID, userID string) error
 	AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*Poll, error)
@@ -189,11 +189,11 @@ func (s *pollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 	return poll, nil
 }
 
-func (s *pollService) ListTripPolls(ctx context.Context, tripID, userID string) ([]*Poll, error) {
+func (s *pollService) ListTripPolls(ctx context.Context, tripID, userID string, page int, limit int) ([]*Poll, int, bool, error) {
 	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+		return nil, 0, false, apperror.ErrAccessDenied
 	}
-	return s.repo.ListTripPolls(ctx, tripID)
+	return s.repo.ListTripPolls(ctx, tripID, page, limit)
 }
 
 func (s *pollService) GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*Poll, error) {

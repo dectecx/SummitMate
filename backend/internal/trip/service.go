@@ -15,7 +15,7 @@ import (
 type TripService interface {
 	CreateTrip(ctx context.Context, userID string, req *TripCreateRequest) (*Trip, error)
 	GetTrip(ctx context.Context, tripID, userID string) (*Trip, error)
-	ListTrips(ctx context.Context, userID string) ([]*Trip, error)
+	ListTrips(ctx context.Context, userID string, page int, limit int, search string) ([]*Trip, int, bool, error)
 	UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*Trip, error)
 	DeleteTrip(ctx context.Context, tripID, userID string) error
 	ListMembers(ctx context.Context, tripID, userID string) ([]*TripMember, error)
@@ -113,8 +113,8 @@ func (s *tripService) GetTrip(ctx context.Context, tripID, userID string) (*Trip
 	return trip, nil
 }
 
-func (s *tripService) ListTrips(ctx context.Context, userID string) ([]*Trip, error) {
-	return s.tripRepo.ListByUserID(ctx, userID)
+func (s *tripService) ListTrips(ctx context.Context, userID string, page int, limit int, search string) ([]*Trip, int, bool, error) {
+	return s.tripRepo.ListByUserID(ctx, userID, page, limit, search)
 }
 
 func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*Trip, error) {

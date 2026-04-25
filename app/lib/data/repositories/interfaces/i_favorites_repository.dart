@@ -1,3 +1,4 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../../core/error/result.dart';
 import '../../models/favorite.dart';
@@ -13,5 +14,8 @@ abstract interface class IFavoritesRepository {
   Future<Result<void, Exception>> toggleFavorite(String id, FavoriteType type, bool isFavorite);
 
   /// 回傳最愛項目列表 (包含 ID 與 Type)
-  Future<Result<List<Favorite>, Exception>> getFavorites();
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({
+    String? cursor,
+    int? limit,
+  });
 }

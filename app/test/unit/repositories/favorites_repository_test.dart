@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_remote_data_source.dart';
 import 'package:summitmate/data/models/enums/favorite_type.dart';
@@ -61,15 +62,20 @@ void main() {
         when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
         when(
           () => mockRemoteDataSource.getFavorites(),
-        ).thenAnswer((_) async => const Success<List<Favorite>, Exception>([])); // Remote empty, but success
+        ).thenAnswer(
+          (_) async => Success<PaginatedList<Favorite>, Exception>(
+            PaginatedList(items: [], nextCursor: null, hasMore: false),
+          ),
+        );
         when(() => mockLocalDataSource.saveFavorites(any())).thenAnswer((_) async {});
 
         // Act
         final result = await repository.getFavorites();
 
         // Assert
-        expect(result, isA<Success<List<Favorite>, Exception>>());
-        expect((result as Success).value, [tFavorite]);
+        expect(result, isA<Success<PaginatedList<Favorite>, Exception>>());
+        final paginated = (result as Success<PaginatedList<Favorite>, Exception>).value;
+        expect(paginated.items, [tFavorite]);
 
         verify(() => mockLocalDataSource.getFavorites()).called(1);
         verify(() => mockRemoteDataSource.getFavorites()).called(1);
@@ -83,7 +89,7 @@ void main() {
         final result = await repository.getFavorites();
 
         // Assert
-        expect(result, isA<Failure<List<Favorite>, Exception>>());
+        expect(result, isA<Failure<PaginatedList<Favorite>, Exception>>());
         expect((result as Failure).exception, tException);
       });
     });

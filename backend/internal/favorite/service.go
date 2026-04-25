@@ -7,7 +7,7 @@ import (
 
 // FavoriteService 定義我的最愛相關的業務邏輯介面。
 type FavoriteService interface {
-	ListFavorites(ctx context.Context, userID string) ([]*Favorite, error)
+	ListFavorites(ctx context.Context, userID string, page int, limit int) ([]*Favorite, int, bool, error)
 	AddFavorite(ctx context.Context, userID, targetID, favType string) (*Favorite, error)
 	RemoveFavorite(ctx context.Context, targetID, userID string) error
 	BatchUpdateFavorites(ctx context.Context, userID string, items []BatchFavoriteItem) error
@@ -25,8 +25,8 @@ func NewFavoriteService(logger *slog.Logger, repo FavoriteRepository) FavoriteSe
 	}
 }
 
-func (s *favoriteService) ListFavorites(ctx context.Context, userID string) ([]*Favorite, error) {
-	return s.repo.ListByUserID(ctx, userID)
+func (s *favoriteService) ListFavorites(ctx context.Context, userID string, page int, limit int) ([]*Favorite, int, bool, error) {
+	return s.repo.ListByUserID(ctx, userID, page, limit)
 }
 
 func (s *favoriteService) AddFavorite(ctx context.Context, userID, targetID, favType string) (*Favorite, error) {

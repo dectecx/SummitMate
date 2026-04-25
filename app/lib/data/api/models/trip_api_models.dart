@@ -1,9 +1,20 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'pagination_api_models.dart';
 
 part 'trip_api_models.freezed.dart';
 part 'trip_api_models.g.dart';
 
 // ── Responses ──
+
+@freezed
+abstract class TripListPaginationResponse with _$TripListPaginationResponse {
+  const factory TripListPaginationResponse({
+    required List<TripListItemResponse> items,
+    required PaginationMetadata pagination,
+  }) = _TripListPaginationResponse;
+
+  factory TripListPaginationResponse.fromJson(Map<String, dynamic> json) => _$TripListPaginationResponseFromJson(json);
+}
 
 /// 行程回應（對應 TripGetResponse / TripCreateResponse / TripUpdateResponse）
 @freezed
@@ -32,12 +43,16 @@ abstract class TripResponse with _$TripResponse {
 abstract class TripListItemResponse with _$TripListItemResponse {
   const factory TripListItemResponse({
     required String id,
+    @JsonKey(name: 'user_id') required String userId,
     required String name,
     @JsonKey(name: 'cover_image') String? coverImage,
     @JsonKey(name: 'start_date') required DateTime startDate,
     @JsonKey(name: 'end_date') DateTime? endDate,
     @JsonKey(name: 'is_active') required bool isActive,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_by') required String createdBy,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _TripListItemResponse;
 
   factory TripListItemResponse.fromJson(Map<String, dynamic> json) => _$TripListItemResponseFromJson(json);

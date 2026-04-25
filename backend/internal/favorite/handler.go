@@ -20,23 +20,43 @@ func NewFavoriteHandler(service FavoriteService) *FavoriteHandler {
 	return &FavoriteHandler{service: service}
 }
 
-func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request) {
+func (h *FavoriteHandler) ListFavorites(w http.ResponseWriter, r *http.Request, params api.ListFavoritesParams) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
-	favs, err := h.service.ListFavorites(r.Context(), userID)
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+
+	favs, total, hasMore, err := h.service.ListFavorites(r.Context(), userID, page, limit)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	resp := make([]api.Favorite, len(favs))
+	items := make([]api.Favorite, len(favs))
 	for i, f := range favs {
-		resp[i] = ToFavoriteResponse(f)
+		items[i] = ToFavoriteResponse(f)
 	}
+
+	resp := api.FavoritePaginationResponse{
+		Items: items,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+	}
+
 	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 

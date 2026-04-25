@@ -1,4 +1,5 @@
 import '../../core/error/result.dart';
+import '../../core/models/paginated_list.dart';
 import '../../data/models/trip.dart';
 
 /// 同步結果
@@ -78,7 +79,7 @@ abstract interface class ISyncService {
   Future<SyncResult> syncAll({bool isAuto = false});
 
   /// 取得雲端行程列表
-  Future<Result<List<Trip>, Exception>> getCloudTrips();
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({String? cursor, int? limit});
 
   /// 取得最後同步時間
   DateTime? get lastItinerarySync;

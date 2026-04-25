@@ -13,6 +13,296 @@ part of 'poll_api_models.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$PollPaginationResponse {
+
+ List<PollResponse> get items; PaginationMetadata get pagination;
+/// Create a copy of PollPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PollPaginationResponseCopyWith<PollPaginationResponse> get copyWith => _$PollPaginationResponseCopyWithImpl<PollPaginationResponse>(this as PollPaginationResponse, _$identity);
+
+  /// Serializes this PollPaginationResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PollPaginationResponse&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),pagination);
+
+@override
+String toString() {
+  return 'PollPaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $PollPaginationResponseCopyWith<$Res>  {
+  factory $PollPaginationResponseCopyWith(PollPaginationResponse value, $Res Function(PollPaginationResponse) _then) = _$PollPaginationResponseCopyWithImpl;
+@useResult
+$Res call({
+ List<PollResponse> items, PaginationMetadata pagination
+});
+
+
+$PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class _$PollPaginationResponseCopyWithImpl<$Res>
+    implements $PollPaginationResponseCopyWith<$Res> {
+  _$PollPaginationResponseCopyWithImpl(this._self, this._then);
+
+  final PollPaginationResponse _self;
+  final $Res Function(PollPaginationResponse) _then;
+
+/// Create a copy of PollPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_self.copyWith(
+items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<PollResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+/// Create a copy of PollPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [PollPaginationResponse].
+extension PollPaginationResponsePatterns on PollPaginationResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PollPaginationResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PollPaginationResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PollPaginationResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _PollPaginationResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PollPaginationResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PollPaginationResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<PollResponse> items,  PaginationMetadata pagination)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PollPaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<PollResponse> items,  PaginationMetadata pagination)  $default,) {final _that = this;
+switch (_that) {
+case _PollPaginationResponse():
+return $default(_that.items,_that.pagination);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<PollResponse> items,  PaginationMetadata pagination)?  $default,) {final _that = this;
+switch (_that) {
+case _PollPaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _PollPaginationResponse implements PollPaginationResponse {
+  const _PollPaginationResponse({required final  List<PollResponse> items, required this.pagination}): _items = items;
+  factory _PollPaginationResponse.fromJson(Map<String, dynamic> json) => _$PollPaginationResponseFromJson(json);
+
+ final  List<PollResponse> _items;
+@override List<PollResponse> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
+@override final  PaginationMetadata pagination;
+
+/// Create a copy of PollPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PollPaginationResponseCopyWith<_PollPaginationResponse> get copyWith => __$PollPaginationResponseCopyWithImpl<_PollPaginationResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$PollPaginationResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PollPaginationResponse&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),pagination);
+
+@override
+String toString() {
+  return 'PollPaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PollPaginationResponseCopyWith<$Res> implements $PollPaginationResponseCopyWith<$Res> {
+  factory _$PollPaginationResponseCopyWith(_PollPaginationResponse value, $Res Function(_PollPaginationResponse) _then) = __$PollPaginationResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ List<PollResponse> items, PaginationMetadata pagination
+});
+
+
+@override $PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class __$PollPaginationResponseCopyWithImpl<$Res>
+    implements _$PollPaginationResponseCopyWith<$Res> {
+  __$PollPaginationResponseCopyWithImpl(this._self, this._then);
+
+  final _PollPaginationResponse _self;
+  final $Res Function(_PollPaginationResponse) _then;
+
+/// Create a copy of PollPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_PollPaginationResponse(
+items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<PollResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+
+/// Create a copy of PollPaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$PollOptionResponse {
 
  String get id;@JsonKey(name: 'poll_id') String get pollId; String get text;@JsonKey(name: 'creator_id') String get creatorId;@JsonKey(name: 'vote_count', defaultValue: 0) int get voteCount;@JsonKey(defaultValue: []) List<Map<String, dynamic>> get voters;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;

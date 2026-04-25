@@ -232,7 +232,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-
   /users/search:
     get:
       summary: Search User by Email
@@ -298,15 +297,34 @@ paths:
         - trips
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          description: 搜尋關鍵字 (行程名稱)
+          required: false
+          schema:
+            type: string
       responses:
         "200":
-          description: 回傳行程列表
+          description: 回傳行程列表與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/TripListItemResponse"
+                $ref: "#/components/schemas/TripListPaginationResponse"
         "401":
           description: 未登入
           content:
@@ -665,15 +683,32 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: search
+          in: query
+          description: 搜尋關鍵字
+          required: false
+          schema:
+            type: string
       responses:
         "200":
-          description: 成功回傳列表
+          description: 成功回傳列表與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GearLibraryItem"
+                $ref: "#/components/schemas/GearLibraryPaginationResponse"
         "401":
           description: 未登入
     post:
@@ -827,15 +862,32 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: search
+          in: query
+          description: 搜尋關鍵字
+          required: false
+          schema:
+            type: string
       responses:
         "200":
-          description: 成功回傳食物列表
+          description: 成功回傳食物列表與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/MealLibraryItem"
+                $ref: "#/components/schemas/MealLibraryPaginationResponse"
         "401":
           description: 未登入
     post:
@@ -1337,15 +1389,26 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 50
       responses:
         "200":
-          description: 成功取得留言
+          description: 成功取得留言列表與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Message"
+                $ref: "#/components/schemas/MessagePaginationResponse"
         "401":
           description: 未登入
         "403":
@@ -1475,15 +1538,26 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 20
       responses:
         "200":
-          description: 成功取得投票清單
+          description: 成功取得投票清單與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Poll"
+                $ref: "#/components/schemas/PollPaginationResponse"
         "401":
           description: 未登入
         "403":
@@ -1682,15 +1756,27 @@ paths:
         - favorites
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 50
       responses:
         "200":
-          description: 成功取得收藏清單
+          description: 成功取得收藏清單與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Favorite"
+                $ref: "#/components/schemas/FavoritePaginationResponse"
         "401":
           description: 未登入
     post:
@@ -1776,23 +1862,44 @@ paths:
       parameters:
         - name: status
           in: query
+          description: 活動狀態
+          required: false
           schema:
             type: string
-            enum: [open, full, completed, cancelled]
+            enum: [open, closed, cancelled]
         - name: creator_id
           in: query
+          description: 建立者 ID
+          required: false
           schema:
             type: string
             format: uuid
+        - name: page
+          in: query
+          description: 頁碼 (1-indexed)
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: 每頁筆數
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          description: 搜尋關鍵字 (標題或描述)
+          required: false
+          schema:
+            type: string
       responses:
         "200":
-          description: 成功取得活動列表
+          description: 成功取得活動列表與分頁資訊
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GroupEvent"
+                $ref: "#/components/schemas/GroupEventPaginationResponse"
 
     post:
       tags: [Community]
@@ -2321,15 +2428,19 @@ components:
 
     TripListItemResponse:
       type: object
-      required: [id, name, start_date, is_active, created_at]
+      required: [id, user_id, name, start_date, is_active, created_at, created_by, updated_at, updated_by]
       properties:
         id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
         name: { type: string }
         cover_image: { type: string, nullable: true }
         start_date: { type: string, format: date }
         end_date: { type: string, format: date, nullable: true }
         is_active: { type: boolean }
         created_at: { type: string, format: date-time }
+        created_by: { type: string, format: uuid }
+        updated_at: { type: string, format: date-time }
+        updated_by: { type: string, format: uuid }
 
     TripCreateRequest:
       type: object
@@ -3394,3 +3505,102 @@ components:
         platform:
           type: string
           description: 作業平台 (e.g. android, ios, web)
+
+    # --- Pagination & Standards ---
+    PaginationMetadata:
+      type: object
+      required: [has_more, page, limit, total]
+      properties:
+        has_more:
+          type: boolean
+          description: 是否還有下一頁
+        page:
+          type: integer
+          description: 目前頁碼 (1-indexed)
+        limit:
+          type: integer
+          description: 每頁筆數
+        total:
+          type: integer
+          description: 符合條件的總筆數
+        next_cursor:
+          type: string
+          description: 下一頁的指標（cursor-based 相容用，可為 null）
+          nullable: true
+
+    TripListPaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripListItemResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    GearLibraryPaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GearLibraryItem"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    MealLibraryPaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealLibraryItem"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    MessagePaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    PollPaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Poll"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    FavoritePaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Favorite"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    GroupEventPaginationResponse:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GroupEvent"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"

@@ -21,22 +21,45 @@ func NewTripHandler(svc TripService) *TripHandler {
 }
 
 // ListTrips 取得當前使用者的行程列表 (GET /trips)
-func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request) {
+func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request, params api.ListTripsParams) {
 	userID, ok := apiutil.GetUserIDFromRequest(r)
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
-	trips, err := h.svc.ListTrips(r.Context(), userID)
+	page := 1
+	if params.Page != nil && *params.Page > 0 {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil && *params.Limit > 0 {
+		limit = *params.Limit
+	}
+	search := ""
+	if params.Search != nil {
+		search = *params.Search
+	}
+
+	trips, total, hasMore, err := h.svc.ListTrips(r.Context(), userID, page, limit, search)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	resp := make([]api.TripListItemResponse, len(trips))
+	items := make([]api.TripListItemResponse, len(trips))
 	for i, t := range trips {
-		resp[i] = ToTripListItem(*t)
+		items[i] = ToTripListItem(*t)
+	}
+
+	resp := api.TripListPaginationResponse{
+		Items: items,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
 	}
 
 	apiutil.SendJSON(w, http.StatusOK, resp)

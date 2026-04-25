@@ -1,3 +1,4 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
 
@@ -5,11 +6,19 @@ import '../../models/group_event_comment.dart';
 ///
 /// 負責定義與後端 API 進行揪團資料交換的操作。
 abstract interface class IGroupEventRemoteDataSource {
-  /// 取得揪團列表
+  /// 取得揪團列表 (支援分頁與搜尋)
   ///
   /// [userId] 目前登入使用者 ID (用於計算 my_application_status)
   /// [status] 篩選條件 (open, closed, all)
-  Future<List<GroupEvent>> getEvents({required String userId, String? status});
+  /// [creatorId] 建立者 ID
+  Future<PaginatedList<GroupEvent>> getEvents({
+    required String userId,
+    String? status,
+    String? creatorId,
+    String? cursor,
+    int? limit,
+    String? search,
+  });
 
   /// 取得揪團詳情
   ///

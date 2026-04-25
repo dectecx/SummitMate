@@ -1,8 +1,10 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import 'interfaces/i_gear_library_repository.dart';
 import '../datasources/interfaces/i_gear_library_local_data_source.dart';
+import '../datasources/interfaces/i_gear_library_remote_data_source.dart';
 import '../models/gear_library_item.dart';
 
 /// 裝備庫 Repository (支援 Offline-First)
@@ -14,8 +16,13 @@ class GearLibraryRepository implements IGearLibraryRepository {
   static const String _source = 'GearLibraryRepository';
 
   final IGearLibraryLocalDataSource _localDataSource;
+  final IGearLibraryRemoteDataSource _remoteDataSource;
 
-  GearLibraryRepository({required IGearLibraryLocalDataSource localDataSource}) : _localDataSource = localDataSource;
+  GearLibraryRepository({
+    required IGearLibraryLocalDataSource localDataSource,
+    required IGearLibraryRemoteDataSource remoteDataSource,
+  }) : _localDataSource = localDataSource,
+       _remoteDataSource = remoteDataSource;
 
   // ========== Init ==========
 
@@ -81,5 +88,22 @@ class GearLibraryRepository implements IGearLibraryRepository {
       result[item.category] = (result[item.category] ?? 0) + item.weight;
     }
     return result;
+  }
+
+  @override
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
+    String? cursor,
+    int? limit,
+    String? search,
+  }) async {
+    try {
+      return Success(await _remoteDataSource.getLibrary(
+        cursor: cursor,
+        limit: limit,
+        search: search,
+      ));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
   }
 }

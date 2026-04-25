@@ -106,12 +106,16 @@ func ToTripListItem(t Trip) api.TripListItemResponse {
 
 	return api.TripListItemResponse{
 		Id:         uuid.MustParse(t.ID),
+		UserId:     uuid.MustParse(t.UserID),
 		Name:       t.Name,
 		CoverImage: t.CoverImage,
 		StartDate:  types.Date{Time: t.StartDate},
 		EndDate:    endDate,
 		IsActive:   t.IsActive,
 		CreatedAt:  t.CreatedAt,
+		CreatedBy:  uuid.MustParse(t.CreatedBy),
+		UpdatedAt:  t.UpdatedAt,
+		UpdatedBy:  uuid.MustParse(t.UpdatedBy),
 	}
 }
 

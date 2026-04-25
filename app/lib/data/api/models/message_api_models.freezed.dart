@@ -13,6 +13,296 @@ part of 'message_api_models.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$MessagePaginationResponse {
+
+ List<MessageResponse> get items; PaginationMetadata get pagination;
+/// Create a copy of MessagePaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MessagePaginationResponseCopyWith<MessagePaginationResponse> get copyWith => _$MessagePaginationResponseCopyWithImpl<MessagePaginationResponse>(this as MessagePaginationResponse, _$identity);
+
+  /// Serializes this MessagePaginationResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MessagePaginationResponse&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),pagination);
+
+@override
+String toString() {
+  return 'MessagePaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MessagePaginationResponseCopyWith<$Res>  {
+  factory $MessagePaginationResponseCopyWith(MessagePaginationResponse value, $Res Function(MessagePaginationResponse) _then) = _$MessagePaginationResponseCopyWithImpl;
+@useResult
+$Res call({
+ List<MessageResponse> items, PaginationMetadata pagination
+});
+
+
+$PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class _$MessagePaginationResponseCopyWithImpl<$Res>
+    implements $MessagePaginationResponseCopyWith<$Res> {
+  _$MessagePaginationResponseCopyWithImpl(this._self, this._then);
+
+  final MessagePaginationResponse _self;
+  final $Res Function(MessagePaginationResponse) _then;
+
+/// Create a copy of MessagePaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_self.copyWith(
+items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
+as List<MessageResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+/// Create a copy of MessagePaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [MessagePaginationResponse].
+extension MessagePaginationResponsePatterns on MessagePaginationResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MessagePaginationResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MessagePaginationResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MessagePaginationResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _MessagePaginationResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MessagePaginationResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MessagePaginationResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<MessageResponse> items,  PaginationMetadata pagination)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MessagePaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<MessageResponse> items,  PaginationMetadata pagination)  $default,) {final _that = this;
+switch (_that) {
+case _MessagePaginationResponse():
+return $default(_that.items,_that.pagination);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<MessageResponse> items,  PaginationMetadata pagination)?  $default,) {final _that = this;
+switch (_that) {
+case _MessagePaginationResponse() when $default != null:
+return $default(_that.items,_that.pagination);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _MessagePaginationResponse implements MessagePaginationResponse {
+  const _MessagePaginationResponse({required final  List<MessageResponse> items, required this.pagination}): _items = items;
+  factory _MessagePaginationResponse.fromJson(Map<String, dynamic> json) => _$MessagePaginationResponseFromJson(json);
+
+ final  List<MessageResponse> _items;
+@override List<MessageResponse> get items {
+  if (_items is EqualUnmodifiableListView) return _items;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_items);
+}
+
+@override final  PaginationMetadata pagination;
+
+/// Create a copy of MessagePaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MessagePaginationResponseCopyWith<_MessagePaginationResponse> get copyWith => __$MessagePaginationResponseCopyWithImpl<_MessagePaginationResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$MessagePaginationResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MessagePaginationResponse&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.pagination, pagination) || other.pagination == pagination));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),pagination);
+
+@override
+String toString() {
+  return 'MessagePaginationResponse(items: $items, pagination: $pagination)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MessagePaginationResponseCopyWith<$Res> implements $MessagePaginationResponseCopyWith<$Res> {
+  factory _$MessagePaginationResponseCopyWith(_MessagePaginationResponse value, $Res Function(_MessagePaginationResponse) _then) = __$MessagePaginationResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ List<MessageResponse> items, PaginationMetadata pagination
+});
+
+
+@override $PaginationMetadataCopyWith<$Res> get pagination;
+
+}
+/// @nodoc
+class __$MessagePaginationResponseCopyWithImpl<$Res>
+    implements _$MessagePaginationResponseCopyWith<$Res> {
+  __$MessagePaginationResponseCopyWithImpl(this._self, this._then);
+
+  final _MessagePaginationResponse _self;
+  final $Res Function(_MessagePaginationResponse) _then;
+
+/// Create a copy of MessagePaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? pagination = null,}) {
+  return _then(_MessagePaginationResponse(
+items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
+as List<MessageResponse>,pagination: null == pagination ? _self.pagination : pagination // ignore: cast_nullable_to_non_nullable
+as PaginationMetadata,
+  ));
+}
+
+/// Create a copy of MessagePaginationResponse
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$PaginationMetadataCopyWith<$Res> get pagination {
+  
+  return $PaginationMetadataCopyWith<$Res>(_self.pagination, (value) {
+    return _then(_self.copyWith(pagination: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$MessageResponse {
 
  String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'parent_id') String? get parentId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'display_name', defaultValue: '') String get displayName;@JsonKey(defaultValue: '🐻') String? get avatar;@JsonKey(defaultValue: '') String get category;@JsonKey(defaultValue: '') String get content; DateTime get timestamp; List<MessageResponse>? get replies;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;

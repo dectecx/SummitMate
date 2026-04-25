@@ -12,7 +12,7 @@ import (
 type GroupEventRepository interface {
 	CreateEvent(ctx context.Context, event *GroupEvent) error
 	GetEventByID(ctx context.Context, id string) (*GroupEvent, error)
-	ListEvents(ctx context.Context, status *string, creatorID *string) ([]*GroupEvent, error)
+	ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error)
 	UpdateEvent(ctx context.Context, event *GroupEvent) error
 	DeleteEvent(ctx context.Context, id string) error
 
@@ -81,34 +81,51 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 	return event, nil
 }
 
-func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, creatorID *string) ([]*GroupEvent, error) {
-	query := `
-		SELECT id, title, description, location, start_date, end_date,
-            status, max_members, approval_required, private_message, linked_trip_id,
-            like_count, comment_count, created_at, created_by, updated_at, updated_by
-		FROM group_events
-		WHERE 1=1
-	`
-	args := []interface{}{}
-	argCount := 1
+func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	whereClause := "WHERE 1=1"
+	args := []any{}
 
 	if status != nil {
-		query += fmt.Sprintf(" AND status = $%d", argCount)
 		args = append(args, *status)
-		argCount++
+		whereClause += fmt.Sprintf(" AND status = $%d", len(args))
 	}
 	if creatorID != nil {
-		query += fmt.Sprintf(" AND created_by = $%d", argCount)
 		args = append(args, *creatorID)
-		argCount++
+		whereClause += fmt.Sprintf(" AND created_by = $%d", len(args))
+	}
+	if search != "" {
+		args = append(args, "%"+search+"%")
+		whereClause += fmt.Sprintf(" AND title ILIKE $%d", len(args))
 	}
 
-	query += " ORDER BY created_at DESC"
-
 	db := database.GetQuerier(ctx, r.db)
-	rows, err := db.Query(ctx, query, args...)
+	var total int
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM group_events %s", whereClause)
+	if err := db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+		return nil, 0, false, fmt.Errorf("count group events: %w", err)
+	}
+
+	dataArgs := append(args, limit, (page-1)*limit)
+	mainQuery := fmt.Sprintf(`
+		SELECT id, title, description, location, start_date, end_date,
+			status, max_members, approval_required, private_message, linked_trip_id,
+			like_count, comment_count, created_at, created_by, updated_at, updated_by
+		FROM group_events
+		%s
+		ORDER BY created_at DESC, id DESC
+		LIMIT $%d OFFSET $%d
+	`, whereClause, len(args)+1, len(args)+2)
+
+	rows, err := db.Query(ctx, mainQuery, dataArgs...)
 	if err != nil {
-		return nil, fmt.Errorf("query group events: %w", err)
+		return nil, 0, false, fmt.Errorf("query group events: %w", err)
 	}
 	defer rows.Close()
 
@@ -121,14 +138,15 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("scan group event row: %w", err)
+			return nil, 0, false, fmt.Errorf("scan group event row: %w", err)
 		}
 		events = append(events, event)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate group event rows: %w", err)
+		return nil, 0, false, fmt.Errorf("iterate group event rows: %w", err)
 	}
-	return events, nil
+
+	return events, total, page*limit < total, nil
 }
 
 func (r *groupEventRepository) UpdateEvent(ctx context.Context, event *GroupEvent) error {

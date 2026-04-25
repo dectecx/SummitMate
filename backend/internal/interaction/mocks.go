@@ -23,12 +23,12 @@ func (m *MockMessageRepository) GetMessageByID(ctx context.Context, id string) (
 	return args.Get(0).(*TripMessage), args.Error(1)
 }
 
-func (m *MockMessageRepository) ListTripMessages(ctx context.Context, tripID string) ([]*TripMessage, error) {
-	args := m.Called(ctx, tripID)
+func (m *MockMessageRepository) ListTripMessages(ctx context.Context, tripID string, page int, limit int) ([]*TripMessage, int, bool, error) {
+	args := m.Called(ctx, tripID, page, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, 0, false, args.Error(3)
 	}
-	return args.Get(0).([]*TripMessage), args.Error(1)
+	return args.Get(0).([]*TripMessage), args.Int(1), args.Bool(2), args.Error(3)
 }
 
 func (m *MockMessageRepository) UpdateMessage(ctx context.Context, msg *TripMessage) error {
@@ -58,12 +58,12 @@ func (m *MockPollRepository) GetPollByID(ctx context.Context, id string) (*Poll,
 	return args.Get(0).(*Poll), args.Error(1)
 }
 
-func (m *MockPollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*Poll, error) {
-	args := m.Called(ctx, tripID)
+func (m *MockPollRepository) ListTripPolls(ctx context.Context, tripID string, page int, limit int) ([]*Poll, int, bool, error) {
+	args := m.Called(ctx, tripID, page, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, 0, false, args.Error(3)
 	}
-	return args.Get(0).([]*Poll), args.Error(1)
+	return args.Get(0).([]*Poll), args.Int(1), args.Bool(2), args.Error(3)
 }
 
 func (m *MockPollRepository) UpdatePoll(ctx context.Context, poll *Poll) error {

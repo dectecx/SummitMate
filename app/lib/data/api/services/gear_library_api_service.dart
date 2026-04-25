@@ -13,7 +13,12 @@ abstract class GearLibraryApiService {
   factory GearLibraryApiService(Dio dio, {String baseUrl}) = _GearLibraryApiService;
 
   @GET('/gear-library')
-  Future<List<GearLibraryItemResponse>> listItems();
+  Future<GearLibraryPaginationResponse> listItems({
+    @Query('include_archived') bool? includeArchived,
+    @Query('cursor') String? cursor,
+    @Query('limit') int? limit,
+    @Query('search') String? search,
+  });
 
   @POST('/gear-library')
   Future<GearLibraryItemResponse> addItem(@Body() GearLibraryItemRequest request);

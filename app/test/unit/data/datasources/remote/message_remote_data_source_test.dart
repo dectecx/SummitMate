@@ -36,17 +36,33 @@ void main() {
 
   group('MessageRemoteDataSource.getMessages', () {
     test('returns list of messages on success', () async {
-      when(() => mockApiService.listMessages('trip-1')).thenAnswer((_) async => [testResponse]);
+      final paginationResponse = MessagePaginationResponse.fromJson({
+        'items': [
+          {
+            'id': 'msg-1',
+            'trip_id': 'trip-1',
+            'user_id': 'user-1',
+            'display_name': 'Test User',
+            'avatar': '🐻',
+            'category': 'general',
+            'content': 'Hello world',
+            'timestamp': '2024-01-01T00:00:00Z',
+            'created_at': '2024-01-01T00:00:00Z',
+          }
+        ],
+        'pagination': {'next_cursor': null, 'has_more': false},
+      });
+      when(() => mockApiService.listTripMessages('trip-1')).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getMessages('trip-1');
 
-      expect(result.length, 1);
-      expect(result[0].id, 'msg-1');
-      expect(result[0].content, 'Hello world');
+      expect(result.items.length, 1);
+      expect(result.items[0].id, 'msg-1');
+      expect(result.items[0].content, 'Hello world');
     });
 
     test('throws exception on error', () async {
-      when(() => mockApiService.listMessages('fail')).thenThrow(Exception('Error'));
+      when(() => mockApiService.listTripMessages('fail')).thenThrow(Exception('Error'));
 
       expect(() => dataSource.getMessages('fail'), throwsException);
     });

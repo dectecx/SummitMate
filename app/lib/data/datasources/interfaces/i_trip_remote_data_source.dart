@@ -1,3 +1,4 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/trip.dart';
 import '../../models/user_profile.dart';
 
@@ -5,8 +6,8 @@ import '../../models/user_profile.dart';
 ///
 /// 負責定義與後端 API 進行行程資料交換的操作。
 abstract interface class ITripRemoteDataSource {
-  /// 取得所有雲端行程列表
-  Future<List<Trip>> getTrips();
+  /// 取得雲端行程列表 (支援分頁與搜尋)
+  Future<PaginatedList<Trip>> getTrips({String? cursor, int? limit, String? search});
 
   /// 上傳單一行程 (僅行程 Meta)
   ///

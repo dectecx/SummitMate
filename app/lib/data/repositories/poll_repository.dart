@@ -64,10 +64,10 @@ class PollRepository implements IPollRepository {
   Future<Result<void, Exception>> sync({required String tripId}) async {
     try {
       LogService.info('Syncing polls for trip: $tripId', source: _source);
-      final polls = await _remoteDataSource.getPolls(tripId);
-      await _localDataSource.savePolls(polls);
+      final paginatedPolls = await _remoteDataSource.getPolls(tripId);
+      await _localDataSource.savePolls(paginatedPolls.items);
       await _saveLastSyncTime(DateTime.now());
-      LogService.info('Synced ${polls.length} polls', source: _source);
+      LogService.info('Synced ${paginatedPolls.items.length} polls', source: _source);
       return const Success(null);
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);

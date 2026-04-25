@@ -15,12 +15,12 @@ func (m *MockFavoriteRepository) Create(ctx context.Context, fav *Favorite) erro
 	return args.Error(0)
 }
 
-func (m *MockFavoriteRepository) ListByUserID(ctx context.Context, userID string) ([]*Favorite, error) {
-	args := m.Called(ctx, userID)
+func (m *MockFavoriteRepository) ListByUserID(ctx context.Context, userID string, page int, limit int) ([]*Favorite, int, bool, error) {
+	args := m.Called(ctx, userID, page, limit)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, 0, false, args.Error(3)
 	}
-	return args.Get(0).([]*Favorite), args.Error(1)
+	return args.Get(0).([]*Favorite), args.Int(1), args.Bool(2), args.Error(3)
 }
 
 func (m *MockFavoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID, userID string) error {

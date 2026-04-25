@@ -1,3 +1,4 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/trip.dart';
 import '../../models/user_profile.dart';
 import '../../../core/error/result.dart';
@@ -45,7 +46,11 @@ abstract interface class ITripRepository {
   // ========== Remote Operations ==========
 
   /// 取得遠端行程列表 (Cloud Management)
-  Future<Result<List<Trip>, Exception>> getRemoteTrips();
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
+    String? cursor,
+    int? limit,
+    String? search,
+  });
 
   /// 上傳行程至遠端 (手動備份用)
   Future<Result<String, Exception>> uploadTripToRemote(Trip trip);

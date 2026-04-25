@@ -1,3 +1,4 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/poll.dart';
 
 /// 投票遠端資料來源介面
@@ -5,12 +6,14 @@ import '../../models/poll.dart';
 /// 負責定義與後端 API 進行投票資料交換的操作。
 /// 所有方法皆需網路連線，失敗時會拋出 Exception。
 abstract interface class IPollRemoteDataSource {
-  /// 取得投票列表
+  /// 取得投票列表 (支援分頁)
   ///
   /// [tripId] 行程 ID
-  /// 回傳: 投票列表
-  /// 拋出: Exception 當 API 呼叫失敗
-  Future<List<Poll>> getPolls(String tripId);
+  Future<PaginatedList<Poll>> getPolls(
+    String tripId, {
+    String? cursor,
+    int? limit,
+  });
 
   /// 建立新投票
   ///

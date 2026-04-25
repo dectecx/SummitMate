@@ -60,12 +60,25 @@ void main() {
 
   group('TripRemoteDataSource', () {
     test('getTrips returns list of trips on success', () async {
-      when(() => mockTripApi.listTrips()).thenAnswer((_) async => [testTripResponse]);
+      final paginationResponse = TripListPaginationResponse.fromJson({
+        'items': [
+          {
+            'id': 'trip-123',
+            'user_id': 'user-456',
+            'name': 'Test Trip',
+            'start_date': '2024-01-01',
+            'end_date': '2024-01-05',
+            'is_active': true,
+          }
+        ],
+        'pagination': {'next_cursor': null, 'has_more': false},
+      });
+      when(() => mockTripApi.listTrips()).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getTrips();
 
-      expect(result.length, 1);
-      expect(result.first.id, 'trip-123');
+      expect(result.items.length, 1);
+      expect(result.items.first.id, 'trip-123');
     });
 
     test('uploadTrip returns new id on success', () async {

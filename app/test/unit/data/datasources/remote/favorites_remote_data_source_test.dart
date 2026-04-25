@@ -35,13 +35,27 @@ void main() {
 
   group('FavoritesRemoteDataSource.getFavorites', () {
     test('returns success with list on success', () async {
-      when(() => mockApi.listFavorites()).thenAnswer((_) async => [testResponse]);
+      final paginationResponse = FavoritePaginationResponse.fromJson({
+        'items': [
+          {
+            'id': 'fav-1',
+            'target_id': '1',
+            'type': 'trip',
+            'created_at': '2024-01-01T00:00:00Z',
+            'created_by': 'user-1',
+            'updated_at': '2024-01-01T00:00:00Z',
+            'updated_by': 'user-1',
+          }
+        ],
+        'pagination': {'next_cursor': null, 'has_more': false},
+      });
+      when(() => mockApi.listFavorites()).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getFavorites();
 
       expect(result, isA<Success>());
-      final list = (result as Success).value as List;
-      expect(list.length, 1);
+      final paginated = (result as Success).value;
+      expect(paginated.items.length, 1);
     });
 
     test('returns failure on exception', () async {

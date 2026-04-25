@@ -1,7 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'pagination_api_models.dart';
 
 part 'group_event_api_models.freezed.dart';
 part 'group_event_api_models.g.dart';
+
+@freezed
+abstract class GroupEventPaginationResponse with _$GroupEventPaginationResponse {
+  const factory GroupEventPaginationResponse({
+    required List<GroupEventResponse> items,
+    required PaginationMetadata pagination,
+  }) = _GroupEventPaginationResponse;
+
+  factory GroupEventPaginationResponse.fromJson(Map<String, dynamic> json) => _$GroupEventPaginationResponseFromJson(json);
+}
 
 // ── Response ──
 

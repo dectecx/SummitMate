@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/infrastructure/services/sync_service.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
@@ -147,26 +148,26 @@ void main() {
 
     test('getCloudTrips delegates to trip repository', () async {
       // Arrange
-      final trips = [
-        Trip(
-          id: '1',
-          userId: 'u1',
-          name: 'Test Trip',
-          startDate: DateTime.now(),
-          createdAt: DateTime.now(),
-          createdBy: 'u1',
-          updatedAt: DateTime.now(),
-          updatedBy: 'u1',
-        ),
-      ];
-      when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => Success(trips));
+      final trip = Trip(
+        id: '1',
+        userId: 'u1',
+        name: 'Test Trip',
+        startDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: 'u1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'u1',
+      );
+      final paginated = PaginatedList(items: [trip], nextCursor: null, hasMore: false);
+      when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => Success(paginated));
 
       // Act
       final result = await syncService.getCloudTrips();
 
       // Assert
       expect(result is Success, true);
-      expect((result as Success).value, trips);
+      final value = (result as Success<PaginatedList<Trip>, Exception>).value;
+      expect(value.items, [trip]);
       verify(() => mockTripRepo.getRemoteTrips()).called(1);
     });
   });

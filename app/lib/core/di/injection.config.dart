@@ -298,11 +298,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i21.IMessageLocalDataSource>(
       () => _i783.MessageLocalDataSource(hiveService: gh<_i771.HiveService>()),
     );
-    gh.lazySingleton<_i365.IGearLibraryRepository>(
-      () => _i540.GearLibraryRepository(
-        localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i1034.IMessageRepository>(
       () => _i1040.MessageRepository(
         localDataSource: gh<_i21.IMessageLocalDataSource>(),
@@ -466,6 +461,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i564.TripRepository(
         localDataSource: gh<_i774.ITripLocalDataSource>(),
         remoteDataSource: gh<_i941.ITripRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i365.IGearLibraryRepository>(
+      () => _i540.GearLibraryRepository(
+        localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
+        remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),
       ),
     );
     gh.factory<_i675.MessageCubit>(

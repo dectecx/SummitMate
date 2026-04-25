@@ -1,5 +1,6 @@
 import 'package:summitmate/domain/interfaces/i_sync_service.dart';
 import '../../core/error/result.dart';
+import '../../core/models/paginated_list.dart';
 import '../../data/models/trip.dart';
 
 /// Mock 同步服務
@@ -22,8 +23,11 @@ class MockSyncService implements ISyncService {
   }
 
   @override
-  Future<Result<List<Trip>, Exception>> getCloudTrips() async {
-    return const Success([]);
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({
+    String? cursor,
+    int? limit,
+  }) async {
+    return Success(PaginatedList(items: [], nextCursor: null, hasMore: false));
   }
 
   @override
