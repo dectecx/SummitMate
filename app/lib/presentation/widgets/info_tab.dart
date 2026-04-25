@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seo_renderer/seo_renderer.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/di/injection.dart';
@@ -180,13 +181,15 @@ class InfoTabState extends State<InfoTab> {
             const Positioned(
               bottom: 16,
               left: 16,
-              child: Text(
-                '嘉明湖國家步道',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+              child: TextRenderer(
+                child: Text(
+                  '嘉明湖國家步道',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                  ),
                 ),
               ),
             ),

@@ -18,7 +18,27 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="嘉明湖登山行程助手">
+  
+  <!-- Basic SEO -->
+  <title>SummitMate 山友 - 嘉明湖登山行程助手</title>
+  <meta name="description" content="SummitMate (山友) 是您登嘉明湖的最佳夥伴。提供行程規劃、裝備檢查清單、地圖導航及山友互動功能，讓您的登山之旅更安全、更順暢。">
+  <meta name="keywords" content="嘉明湖, 登山, 行程規劃, 裝備清單, 山友, 登山地圖, 台灣百岳, 登山App">
+  <meta name="author" content="SummitMate Team">
+  <link rel="canonical" href="https://summitmate.netlify.app/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://summitmate.netlify.app/">
+  <meta property="og:title" content="SummitMate 山友 - 嘉明湖登山行程助手">
+  <meta property="og:description" content="嘉明湖登山必備工具：行程管理、裝備檢查、離線地圖與團隊溝通。">
+  <meta property="og:image" content="https://summitmate.netlify.app/icons/Icon-512.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://summitmate.netlify.app/">
+  <meta property="twitter:title" content="SummitMate 山友 - 嘉明湖登山行程助手">
+  <meta property="twitter:description" content="嘉明湖登山必備工具：行程管理、裝備檢查、離線地圖與團隊溝通。">
+  <meta property="twitter:image" content="https://summitmate.netlify.app/icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,15 +49,23 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <!-- Disable Caching -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
-  <title>SummitMate 山友</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!-- Semantic content for SEO crawlers (will be covered by Flutter Canvas) -->
+  <div aria-hidden="true" style="position: absolute; top: -10000px; left: -10000px; width: 1px; height: 1px; overflow: hidden;">
+    <h1>SummitMate 山友 - 嘉明湖登山行程助手</h1>
+    <p>SummitMate (山友) 是一款專為嘉明湖登山者設計的行動助理。我們提供完整的登山行程規劃、精確的裝備檢查清單、詳細的離線地圖導航，以及便捷的隊友溝通平台。</p>
+    <p>嘉明湖登山必備工具：行程管理、裝備檢查、離線地圖與團隊溝通。</p>
+    <nav>
+      <a href="/">首頁</a>
+      <a href="/itinerary">行程規劃</a>
+      <a href="/gear">裝備清單</a>
+      <a href="/collaboration">隊友協作</a>
+      <a href="/info">登山資訊</a>
+    </nav>
+  </div>
+
   <script>
     // Dynamically load flutter_bootstrap.js with a timestamp to prevent caching
     var script = document.createElement('script');
