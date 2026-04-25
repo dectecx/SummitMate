@@ -328,11 +328,6 @@ extension GetItInjectableX on _i174.GetIt {
         localDataSource: gh<_i484.IGearKeyLocalDataSource>(),
       ),
     );
-    gh.lazySingleton<_i880.IMessageRemoteDataSource>(
-      () => _i1017.MessageRemoteDataSource(
-        apiClient: gh<_i7.NetworkAwareClient>(),
-      ),
-    );
     gh.lazySingleton<_i755.UsageTrackingService>(
       () => _i755.UsageTrackingService(gh<_i418.IApiClient>()),
     );
@@ -430,6 +425,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i941.ITripRemoteDataSource>(
       () => _i989.TripRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i880.IMessageRemoteDataSource>(
+      () => _i1017.MessageRemoteDataSource(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i106.ITripRepository>(
       () => _i564.TripRepository(
