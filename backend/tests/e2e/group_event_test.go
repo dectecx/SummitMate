@@ -20,6 +20,7 @@ func (s *APITestSuite) TestGroupEvent_CRUD() {
 	reqEvent := api.GroupEventRequest{
 		Title:            "登山口集合點",
 		Description:      "大家在登山口集合一起出發",
+		Category:         "Hiking",
 		Location:         "玉山登山口",
 		StartDate:        openapi_types.Date{Time: time.Date(2026, 5, 20, 0, 0, 0, 0, time.UTC)},
 		MaxMembers:       &maxMem,
