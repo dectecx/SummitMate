@@ -3,6 +3,7 @@ package trip
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -40,7 +41,11 @@ func (repo *itineraryRepository) Create(ctx context.Context, item *ItineraryItem
 		item.Note, item.ImageAsset, item.CreatedBy, item.UpdatedBy,
 	)
 
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("create itinerary item: %w", err)
+	}
+	return it, nil
 }
 
 // GetByID 取得單一行程表節點資訊。
@@ -52,7 +57,11 @@ func (repo *itineraryRepository) GetByID(ctx context.Context, id string) (*Itine
 	`
 	db := database.GetQuerier(ctx, repo.pool)
 	row := db.QueryRow(ctx, query, id)
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("get itinerary item %s: %w", id, err)
+	}
+	return it, nil
 }
 
 // ListByTripID 取得特定行程的所有行程表節點，通常依時間序與天數排列。
@@ -66,7 +75,7 @@ func (repo *itineraryRepository) ListByTripID(ctx context.Context, tripID string
 	db := database.GetQuerier(ctx, repo.pool)
 	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query itinerary items for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -79,13 +88,13 @@ func (repo *itineraryRepository) ListByTripID(ctx context.Context, tripID string
 			&i.CheckedInAt, &i.CreatedAt, &i.CreatedBy, &i.UpdatedAt, &i.UpdatedBy,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan itinerary item row: %w", err)
 		}
 		items = append(items, &i)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate itinerary item rows: %w", err)
 	}
 	return items, nil
 }
@@ -104,14 +113,21 @@ func (repo *itineraryRepository) Update(ctx context.Context, item *ItineraryItem
 		item.Note, item.ImageAsset, item.IsCheckedIn, item.CheckedInAt, item.UpdatedBy, item.ID,
 	)
 
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("update itinerary item %s: %w", item.ID, err)
+	}
+	return it, nil
 }
 
 // DeleteByID 刪除單一行程表節點。
 func (repo *itineraryRepository) DeleteByID(ctx context.Context, id string) error {
 	db := database.GetQuerier(ctx, repo.pool)
 	_, err := db.Exec(ctx, "DELETE FROM itinerary_items WHERE id = $1", id)
-	return err
+	if err != nil {
+		return fmt.Errorf("delete itinerary item %s: %w", id, err)
+	}
+	return nil
 }
 
 // scanItem 是共用掃描行列輔助函式。
@@ -126,7 +142,7 @@ func (repo *itineraryRepository) scanItem(row pgx.Row) (*ItineraryItem, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("scan itinerary item: %w", err)
 	}
 	return &i, nil
 }

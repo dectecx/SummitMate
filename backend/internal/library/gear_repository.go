@@ -3,8 +3,10 @@ package library
 import (
 	"context"
 
+	"fmt"
+
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // GearLibraryRepository 定義裝備庫資料存取介面。
@@ -18,11 +20,11 @@ type GearLibraryRepository interface {
 }
 
 type gearLibraryRepository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewGearLibraryRepository(pool *pgxpool.Pool) GearLibraryRepository {
-	return &gearLibraryRepository{pool: pool}
+func NewGearLibraryRepository(db database.DB) GearLibraryRepository {
+	return &gearLibraryRepository{db: db}
 }
 
 func (repo *gearLibraryRepository) Create(ctx context.Context, item *GearLibraryItem) (*GearLibraryItem, error) {
@@ -31,11 +33,16 @@ func (repo *gearLibraryRepository) Create(ctx context.Context, item *GearLibrary
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, user_id, name, weight, category, notes, is_archived, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query,
 		item.UserID, item.Name, item.Weight, item.Category, item.Notes, item.IsArchived, item.CreatedBy, item.UpdatedBy,
 	)
 
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("create gear library item: %w", err)
+ 	}
+ 	return it, nil
 }
 
 func (repo *gearLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*GearLibraryItem, error) {
@@ -44,8 +51,13 @@ func (repo *gearLibraryRepository) GetByID(ctx context.Context, id string, userI
 		FROM gear_library_items
 		WHERE id = $1 AND user_id = $2
 	`
-	row := repo.pool.QueryRow(ctx, query, id, userID)
-	return repo.scanItem(row)
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query, id, userID)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("get gear library item %s for user %s: %w", id, userID, err)
+	}
+	return it, nil
 }
 
 func (repo *gearLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*GearLibraryItem, error) {
@@ -55,9 +67,10 @@ func (repo *gearLibraryRepository) ListByUserID(ctx context.Context, userID stri
 		WHERE user_id = $1 AND ($2 OR is_archived = false)
 		ORDER BY created_at DESC
 	`
-	rows, err := repo.pool.Query(ctx, query, userID, includeArchived)
+	db := database.GetQuerier(ctx, repo.db)
+	rows, err := db.Query(ctx, query, userID, includeArchived)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query gear library for user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -65,13 +78,13 @@ func (repo *gearLibraryRepository) ListByUserID(ctx context.Context, userID stri
 	for rows.Next() {
 		item, err := repo.scanItem(rows)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan gear library row: %w", err)
 		}
 		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate gear library rows: %w", err)
 	}
 	return items, nil
 }
@@ -83,11 +96,16 @@ func (repo *gearLibraryRepository) Update(ctx context.Context, item *GearLibrary
 		WHERE id = $7 AND user_id = $8
 		RETURNING id, user_id, name, weight, category, notes, is_archived, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query,
 		item.Name, item.Weight, item.Category, item.Notes, item.IsArchived, item.UpdatedBy, item.ID, item.UserID,
 	)
 
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("update gear library item %s for user %s: %w", item.ID, item.UserID, err)
+	}
+	return it, nil
 }
 
 func (repo *gearLibraryRepository) Delete(ctx context.Context, id string, userID string) error {
@@ -95,26 +113,27 @@ func (repo *gearLibraryRepository) Delete(ctx context.Context, id string, userID
 		DELETE FROM gear_library_items
 		WHERE id = $1 AND user_id = $2
 	`
-	commandTag, err := repo.pool.Exec(ctx, query, id, userID)
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, query, id, userID)
 	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
+		return fmt.Errorf("delete gear library item %s for user %s: %w", id, userID, err)
 	}
 	return nil
 }
 
 func (repo *gearLibraryRepository) ReplaceAll(ctx context.Context, userID string, items []*GearLibraryItem) error {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
+	db := database.GetQuerier(ctx, repo.db)
 
-	_, err = tx.Exec(ctx, "DELETE FROM gear_library_items WHERE user_id = $1", userID)
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, repo.db, func(txCtx context.Context) error {
+			return repo.ReplaceAll(txCtx, userID, items)
+		})
+	}
+
+	_, err := tx.Exec(ctx, "DELETE FROM gear_library_items WHERE user_id = $1", userID)
 	if err != nil {
-		return err
+		return fmt.Errorf("replace all gear library (delete phase) for user %s: %w", userID, err)
 	}
 
 	query := `
@@ -126,11 +145,11 @@ func (repo *gearLibraryRepository) ReplaceAll(ctx context.Context, userID string
 			item.ID, userID, item.Name, item.Weight, item.Category, item.Notes, item.IsArchived, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("replace all gear library (insert phase) item %s for user %s: %w", item.ID, userID, err)
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (repo *gearLibraryRepository) scanItem(row pgx.Row) (*GearLibraryItem, error) {
@@ -141,7 +160,7 @@ func (repo *gearLibraryRepository) scanItem(row pgx.Row) (*GearLibraryItem, erro
 		&i.CreatedAt, &i.CreatedBy, &i.UpdatedAt, &i.UpdatedBy,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scan gear library item: %w", err)
 	}
 	return &i, nil
 }

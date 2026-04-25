@@ -2,10 +2,11 @@ package groupevent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 type GroupEventRepository interface {
@@ -27,10 +28,10 @@ type GroupEventRepository interface {
 }
 
 type groupEventRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewGroupEventRepository(db *pgxpool.Pool) GroupEventRepository {
+func NewGroupEventRepository(db database.DB) GroupEventRepository {
 	return &groupEventRepository{db: db}
 }
 
@@ -44,13 +45,14 @@ func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEven
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 		) RETURNING id, status, like_count, comment_count, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query,
 		event.Title, event.Description, event.Location, event.StartDate, event.EndDate,
 		event.MaxMembers, event.ApprovalRequired, event.PrivateMessage, event.LinkedTripID,
 		event.CreatedBy, event.UpdatedBy,
 	).Scan(&event.ID, &event.Status, &event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to create group event: %w", err)
+		return fmt.Errorf("create group event: %w", err)
 	}
 	return nil
 }
@@ -64,16 +66,17 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 		WHERE id = $1
 	`
 	event := &GroupEvent{}
-	err := r.db.QueryRow(ctx, query, id).Scan(
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, id).Scan(
 		&event.ID, &event.Title, &event.Description, &event.Location, &event.StartDate, &event.EndDate,
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 		&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to get group event: %w", err)
+		return nil, fmt.Errorf("get group event %s: %w", id, err)
 	}
 	return event, nil
 }
@@ -102,9 +105,10 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 
 	query += " ORDER BY created_at DESC"
 
-	rows, err := r.db.Query(ctx, query, args...)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list group events: %w", err)
+		return nil, fmt.Errorf("query group events: %w", err)
 	}
 	defer rows.Close()
 
@@ -117,9 +121,12 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan group event: %w", err)
+			return nil, fmt.Errorf("scan group event row: %w", err)
 		}
 		events = append(events, event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate group event rows: %w", err)
 	}
 	return events, nil
 }
@@ -133,22 +140,24 @@ func (r *groupEventRepository) UpdateEvent(ctx context.Context, event *GroupEven
 		WHERE id = $11
 		RETURNING updated_at
 	`
-	err := r.db.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query,
 		event.Title, event.Description, event.Location, event.StartDate, event.EndDate,
 		event.MaxMembers, event.ApprovalRequired, event.PrivateMessage, event.LinkedTripID,
 		event.UpdatedBy, event.ID,
 	).Scan(&event.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to update group event: %w", err)
+		return fmt.Errorf("update group event %s: %w", event.ID, err)
 	}
 	return nil
 }
 
 func (r *groupEventRepository) DeleteEvent(ctx context.Context, id string) error {
 	query := `DELETE FROM group_events WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id)
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("failed to delete group event: %w", err)
+		return fmt.Errorf("delete group event %s: %w", id, err)
 	}
 	return nil
 }
@@ -160,11 +169,12 @@ func (r *groupEventRepository) ApplyToEvent(ctx context.Context, app *GroupEvent
 		) VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, status, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query,
 		app.EventID, app.UserID, app.Message, app.CreatedBy, app.UpdatedBy,
 	).Scan(&app.ID, &app.Status, &app.CreatedAt, &app.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to apply to group event: %w", err)
+		return fmt.Errorf("apply to group event %s by user %s: %w", app.EventID, app.UserID, err)
 	}
 	return nil
 }
@@ -176,9 +186,10 @@ func (r *groupEventRepository) ListApplications(ctx context.Context, eventID str
 		WHERE event_id = $1
 		ORDER BY created_at ASC
 	`
-	rows, err := r.db.Query(ctx, query, eventID)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, query, eventID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list applications: %w", err)
+		return nil, fmt.Errorf("list applications for group event %s: %w", eventID, err)
 	}
 	defer rows.Close()
 
@@ -190,9 +201,12 @@ func (r *groupEventRepository) ListApplications(ctx context.Context, eventID str
 			&app.CreatedAt, &app.CreatedBy, &app.UpdatedAt, &app.UpdatedBy,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan application: %w", err)
+			return nil, fmt.Errorf("scan application row: %w", err)
 		}
 		apps = append(apps, app)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate application rows: %w", err)
 	}
 	return apps, nil
 }
@@ -203,19 +217,23 @@ func (r *groupEventRepository) UpdateApplicationStatus(ctx context.Context, even
 		SET status = $1, updated_at = NOW(), updated_by = $2
 		WHERE event_id = $3 AND user_id = $4
 	`
-	_, err := r.db.Exec(ctx, query, status, updatedBy, eventID, userID)
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, query, status, updatedBy, eventID, userID)
 	if err != nil {
-		return fmt.Errorf("failed to update application status: %w", err)
+		return fmt.Errorf("update application status for event %s, user %s: %w", eventID, userID, err)
 	}
 	return nil
 }
 
 func (r *groupEventRepository) AddComment(ctx context.Context, comment *GroupEventComment) error {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return err
+	db := database.GetQuerier(ctx, r.db)
+
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+			return r.AddComment(txCtx, comment)
+		})
 	}
-	defer tx.Rollback(ctx)
 
 	query := `
 		INSERT INTO group_event_comments (
@@ -223,19 +241,19 @@ func (r *groupEventRepository) AddComment(ctx context.Context, comment *GroupEve
 		) VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at, updated_at
 	`
-	err = tx.QueryRow(ctx, query,
+	err := tx.QueryRow(ctx, query,
 		comment.EventID, comment.UserID, comment.Content, comment.CreatedBy, comment.UpdatedBy,
 	).Scan(&comment.ID, &comment.CreatedAt, &comment.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to insert comment: %w", err)
+		return fmt.Errorf("insert comment to event %s: %w", comment.EventID, err)
 	}
 
 	_, err = tx.Exec(ctx, "UPDATE group_events SET comment_count = comment_count + 1 WHERE id = $1", comment.EventID)
 	if err != nil {
-		return fmt.Errorf("failed to increment comment count: %w", err)
+		return fmt.Errorf("increment comment count for event %s: %w", comment.EventID, err)
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (r *groupEventRepository) ListComments(ctx context.Context, eventID string) ([]*GroupEventComment, error) {
@@ -248,9 +266,10 @@ func (r *groupEventRepository) ListComments(ctx context.Context, eventID string)
 		WHERE c.event_id = $1
 		ORDER BY c.created_at ASC
 	`
-	rows, err := r.db.Query(ctx, query, eventID)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, query, eventID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list comments: %w", err)
+		return nil, fmt.Errorf("list comments for event %s: %w", eventID, err)
 	}
 	defer rows.Close()
 
@@ -263,73 +282,85 @@ func (r *groupEventRepository) ListComments(ctx context.Context, eventID string)
 			&c.DisplayName, &c.Avatar,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan comment: %w", err)
+			return nil, fmt.Errorf("scan comment row: %w", err)
 		}
 		comments = append(comments, c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate comment rows: %w", err)
 	}
 	return comments, nil
 }
 
 func (r *groupEventRepository) DeleteComment(ctx context.Context, commentID string, userID string) error {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return err
+	db := database.GetQuerier(ctx, r.db)
+
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+			return r.DeleteComment(txCtx, commentID, userID)
+		})
 	}
-	defer tx.Rollback(ctx)
 
 	var eventID string
-	err = tx.QueryRow(ctx, "DELETE FROM group_event_comments WHERE id = $1 AND user_id = $2 RETURNING event_id", commentID, userID).Scan(&eventID)
+	err := tx.QueryRow(ctx, "DELETE FROM group_event_comments WHERE id = $1 AND user_id = $2 RETURNING event_id", commentID, userID).Scan(&eventID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return fmt.Errorf("comment not found or unauthorized")
+		if errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("comment %s not found or unauthorized", commentID)
 		}
-		return fmt.Errorf("failed to delete comment: %w", err)
+		return fmt.Errorf("delete comment %s: %w", commentID, err)
 	}
 
 	_, err = tx.Exec(ctx, "UPDATE group_events SET comment_count = comment_count - 1 WHERE id = $1", eventID)
 	if err != nil {
-		return fmt.Errorf("failed to decrement comment count: %w", err)
+		return fmt.Errorf("decrement comment count for event %s: %w", eventID, err)
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (r *groupEventRepository) ToggleLike(ctx context.Context, eventID, userID string) (bool, error) {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return false, err
+	db := database.GetQuerier(ctx, r.db)
+
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		var isLiked bool
+		err := database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+			var err error
+			isLiked, err = r.ToggleLike(txCtx, eventID, userID)
+			return err
+		})
+		return isLiked, err
 	}
-	defer tx.Rollback(ctx)
+
+	var exists bool
+	err := tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = $1 AND user_id = $2)", eventID, userID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("check existing like for event %s, user %s: %w", eventID, userID, err)
+	}
 
 	var isLiked bool
-	var exists bool
-	err = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = $1 AND user_id = $2)", eventID, userID).Scan(&exists)
-	if err != nil {
-		return false, err
-	}
-
 	if exists {
 		_, err = tx.Exec(ctx, "DELETE FROM group_event_likes WHERE event_id = $1 AND user_id = $2", eventID, userID)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("delete like for event %s, user %s: %w", eventID, userID, err)
 		}
 		_, err = tx.Exec(ctx, "UPDATE group_events SET like_count = like_count - 1 WHERE id = $1", eventID)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("decrement like count for event %s: %w", eventID, err)
 		}
 		isLiked = false
 	} else {
 		_, err = tx.Exec(ctx, "INSERT INTO group_event_likes (event_id, user_id, created_by) VALUES ($1, $2, $2)", eventID, userID)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("insert like for event %s, user %s: %w", eventID, userID, err)
 		}
 		_, err = tx.Exec(ctx, "UPDATE group_events SET like_count = like_count + 1 WHERE id = $1", eventID)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("increment like count for event %s: %w", eventID, err)
 		}
 		isLiked = true
 	}
 
-	err = tx.Commit(ctx)
-	return isLiked, err
+	return isLiked, nil
 }

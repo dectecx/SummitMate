@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 type BatchFavoriteItem struct {
@@ -22,18 +22,19 @@ type FavoriteRepository interface {
 }
 
 type favoriteRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewFavoriteRepository(db *pgxpool.Pool) FavoriteRepository {
+func NewFavoriteRepository(db database.DB) FavoriteRepository {
 	return &favoriteRepository{db: db}
 }
 
 func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([]*Favorite, error) {
 	query := `SELECT id, user_id, target_id, type, created_at, created_by, updated_at, updated_by FROM favorites WHERE user_id = $1 ORDER BY created_at DESC`
-	rows, err := r.db.Query(ctx, query, userID)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list favorites: %w", err)
+		return nil, fmt.Errorf("list favorites for user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -41,11 +42,14 @@ func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([
 	for rows.Next() {
 		var f Favorite
 		if err := rows.Scan(&f.ID, &f.UserID, &f.TargetID, &f.Type, &f.CreatedAt, &f.CreatedBy, &f.UpdatedAt, &f.UpdatedBy); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan favorite row: %w", err)
 		}
 		favs = append(favs, &f)
 	}
-	return favs, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate favorite rows: %w", err)
+	}
+	return favs, nil
 }
 
 func (r *favoriteRepository) Create(ctx context.Context, fav *Favorite) error {
@@ -54,18 +58,20 @@ func (r *favoriteRepository) Create(ctx context.Context, fav *Favorite) error {
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query, fav.UserID, fav.TargetID, fav.Type, fav.CreatedBy, fav.UpdatedBy).Scan(&fav.ID, &fav.CreatedAt, &fav.UpdatedAt)
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, fav.UserID, fav.TargetID, fav.Type, fav.CreatedBy, fav.UpdatedBy).Scan(&fav.ID, &fav.CreatedAt, &fav.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to create favorite: %w", err)
+		return fmt.Errorf("create favorite for user %s on target %s: %w", fav.UserID, fav.TargetID, err)
 	}
 	return nil
 }
 
 func (r *favoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID, userID string) error {
 	query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2`
-	cmd, err := r.db.Exec(ctx, query, targetID, userID)
+	db := database.GetQuerier(ctx, r.db)
+	cmd, err := db.Exec(ctx, query, targetID, userID)
 	if err != nil {
-		return fmt.Errorf("failed to delete favorite: %w", err)
+		return fmt.Errorf("delete favorite for user %s on target %s: %w", userID, targetID, err)
 	}
 	if cmd.RowsAffected() == 0 {
 		return pgx.ErrNoRows
@@ -74,11 +80,14 @@ func (r *favoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID
 }
 
 func (r *favoriteRepository) BatchUpdate(ctx context.Context, userID string, items []BatchFavoriteItem) error {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+	db := database.GetQuerier(ctx, r.db)
+
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+			return r.BatchUpdate(txCtx, userID, items)
+		})
 	}
-	defer tx.Rollback(ctx)
 
 	for _, item := range items {
 		if item.IsFavorite {
@@ -89,16 +98,16 @@ func (r *favoriteRepository) BatchUpdate(ctx context.Context, userID string, ite
 			`
 			_, err := tx.Exec(ctx, query, userID, item.TargetID, item.Type, userID, userID)
 			if err != nil {
-				return err
+				return fmt.Errorf("batch insert favorite for user %s on target %s: %w", userID, item.TargetID, err)
 			}
 		} else {
 			query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2`
 			_, err := tx.Exec(ctx, query, item.TargetID, userID)
 			if err != nil {
-				return err
+				return fmt.Errorf("batch delete favorite for user %s on target %s: %w", userID, item.TargetID, err)
 			}
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }

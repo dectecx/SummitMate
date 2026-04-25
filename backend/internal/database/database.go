@@ -17,11 +17,18 @@ type Querier interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
 }
 
 // Beginner defines the interface for starting a transaction.
 type Beginner interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
+}
+
+// DB combines Querier and Beginner interfaces.
+type DB interface {
+	Querier
+	Beginner
 }
 
 type txKey struct{}

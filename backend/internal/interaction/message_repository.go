@@ -2,11 +2,12 @@ package interaction
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 type MessageRepository interface {
@@ -18,10 +19,10 @@ type MessageRepository interface {
 }
 
 type messageRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewMessageRepository(db *pgxpool.Pool) MessageRepository {
+func NewMessageRepository(db database.DB) MessageRepository {
 	return &messageRepository{db: db}
 }
 
@@ -35,9 +36,10 @@ func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string)
 		WHERE m.trip_id = $1
 		ORDER BY m.timestamp ASC
 	`
-	rows, err := r.db.Query(ctx, query, tripID)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list trip messages: %w", err)
+		return nil, fmt.Errorf("list trip messages for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -49,13 +51,13 @@ func (r *messageRepository) ListTripMessages(ctx context.Context, tripID string)
 			&msg.Category, &msg.Content, &msg.Timestamp, &msg.CreatedAt, &msg.CreatedBy, &msg.UpdatedAt, &msg.UpdatedBy,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan trip message: %w", err)
+			return nil, fmt.Errorf("scan trip message row: %w", err)
 		}
 		msg.Replies = []*TripMessage{}
 		messages = append(messages, &msg)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows error: %w", err)
+		return nil, fmt.Errorf("iterate trip message rows: %w", err)
 	}
 
 	return messages, nil
@@ -71,11 +73,12 @@ func (r *messageRepository) CreateMessage(ctx context.Context, msg *TripMessage)
 	`
 	var id string
 	var createdAt, updatedAt time.Time
-	err := r.db.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query,
 		msg.TripID, msg.ParentID, msg.UserID, msg.Category, msg.Content, msg.Timestamp, msg.CreatedBy, msg.UpdatedBy,
 	).Scan(&id, &createdAt, &updatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to create message: %w", err)
+		return fmt.Errorf("create message for trip %s: %w", msg.TripID, err)
 	}
 
 	msg.ID = id
@@ -84,9 +87,9 @@ func (r *messageRepository) CreateMessage(ctx context.Context, msg *TripMessage)
 
 	// Fetch User info string immediately
 	userQuery := `SELECT display_name, avatar FROM users WHERE id = $1`
-	err = r.db.QueryRow(ctx, userQuery, msg.UserID).Scan(&msg.DisplayName, &msg.Avatar)
+	err = db.QueryRow(ctx, userQuery, msg.UserID).Scan(&msg.DisplayName, &msg.Avatar)
 	if err != nil {
-		return fmt.Errorf("failed to fetch user info for new message: %w", err)
+		return fmt.Errorf("fetch user info for new message %s: %w", msg.ID, err)
 	}
 
 	return nil
@@ -102,15 +105,16 @@ func (r *messageRepository) GetMessageByID(ctx context.Context, messageID string
 		WHERE m.id = $1
 	`
 	var msg TripMessage
-	err := r.db.QueryRow(ctx, query, messageID).Scan(
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, messageID).Scan(
 		&msg.ID, &msg.TripID, &msg.ParentID, &msg.UserID, &msg.DisplayName, &msg.Avatar,
 		&msg.Category, &msg.Content, &msg.Timestamp, &msg.CreatedAt, &msg.CreatedBy, &msg.UpdatedAt, &msg.UpdatedBy,
 	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil // Not found
 		}
-		return nil, fmt.Errorf("failed to get message: %w", err)
+		return nil, fmt.Errorf("get message %s: %w", messageID, err)
 	}
 	return &msg, nil
 }
@@ -122,13 +126,14 @@ func (r *messageRepository) UpdateMessage(ctx context.Context, msg *TripMessage)
 		WHERE id = $4
 		RETURNING updated_at
 	`
+	db := database.GetQuerier(ctx, r.db)
 	var updatedAt time.Time
-	err := r.db.QueryRow(ctx, query, msg.Category, msg.Content, msg.UpdatedBy, msg.ID).Scan(&updatedAt)
+	err := db.QueryRow(ctx, query, msg.Category, msg.Content, msg.UpdatedBy, msg.ID).Scan(&updatedAt)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return fmt.Errorf("message not found")
+		if errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("message %s not found", msg.ID)
 		}
-		return fmt.Errorf("failed to update message: %w", err)
+		return fmt.Errorf("update message %s: %w", msg.ID, err)
 	}
 	msg.UpdatedAt = updatedAt
 	return nil
@@ -136,12 +141,13 @@ func (r *messageRepository) UpdateMessage(ctx context.Context, msg *TripMessage)
 
 func (r *messageRepository) DeleteMessage(ctx context.Context, messageID string) error {
 	query := `DELETE FROM messages WHERE id = $1`
-	cmd, err := r.db.Exec(ctx, query, messageID)
+	db := database.GetQuerier(ctx, r.db)
+	cmd, err := db.Exec(ctx, query, messageID)
 	if err != nil {
-		return fmt.Errorf("failed to delete message: %w", err)
+		return fmt.Errorf("delete message %s: %w", messageID, err)
 	}
 	if cmd.RowsAffected() == 0 {
-		return fmt.Errorf("message not found")
+		return fmt.Errorf("message %s not found", messageID)
 	}
 	return nil
 }

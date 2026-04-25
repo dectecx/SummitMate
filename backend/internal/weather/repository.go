@@ -2,10 +2,11 @@ package weather
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // WeatherRepository 定義天氣資料存取介面。
@@ -16,24 +17,27 @@ type WeatherRepository interface {
 }
 
 type weatherRepository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewWeatherRepository(pool *pgxpool.Pool) WeatherRepository {
-	return &weatherRepository{pool: pool}
+func NewWeatherRepository(db database.DB) WeatherRepository {
+	return &weatherRepository{db: db}
 }
 
 // ReplaceAll 以 Transaction 方式先清除舊資料再寫入新資料
 func (r *weatherRepository) ReplaceAll(ctx context.Context, records []WeatherRecord) error {
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return err
+	db := database.GetQuerier(ctx, r.db)
+
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+			return r.ReplaceAll(txCtx, records)
+		})
 	}
-	defer tx.Rollback(ctx)
 
 	// 清除舊資料
 	if _, err := tx.Exec(ctx, "DELETE FROM weather_data"); err != nil {
-		return err
+		return fmt.Errorf("clear old weather data: %w", err)
 	}
 
 	// 寫入新資料 (使用 CopyFrom 批次寫入)
@@ -55,26 +59,27 @@ func (r *weatherRepository) ReplaceAll(ctx context.Context, records []WeatherRec
 		}
 	}
 
-	_, err = tx.CopyFrom(
+	_, err := tx.CopyFrom(
 		ctx,
 		pgx.Identifier{"weather_data"},
 		columnNames,
 		pgx.CopyFromRows(copyRows),
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("copy weather records to database: %w", err)
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 // ListAll 取得所有天氣資料
 func (r *weatherRepository) ListAll(ctx context.Context) ([]WeatherRecord, error) {
-	rows, err := r.pool.Query(ctx,
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx,
 		`SELECT id, location, start_time, end_time, wx, temp, pop, min_temp, max_temp, humidity, wind_speed, min_at, max_at, issue_time, fetched_at
 		 FROM weather_data ORDER BY location, start_time`)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query all weather data: %w", err)
 	}
 	defer rows.Close()
 
@@ -88,20 +93,24 @@ func (r *weatherRepository) ListAll(ctx context.Context) ([]WeatherRecord, error
 			&rec.WindSpeed, &rec.MinAT, &rec.MaxAT,
 			&rec.IssueTime, &rec.FetchedAt,
 		); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan weather record row: %w", err)
 		}
 		results = append(results, rec)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate weather rows: %w", err)
 	}
 	return results, nil
 }
 
 // ListByLocation 取得特定地點的天氣資料
 func (r *weatherRepository) ListByLocation(ctx context.Context, location string) ([]WeatherRecord, error) {
-	rows, err := r.pool.Query(ctx,
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx,
 		`SELECT id, location, start_time, end_time, wx, temp, pop, min_temp, max_temp, humidity, wind_speed, min_at, max_at, issue_time, fetched_at
 		 FROM weather_data WHERE location = $1 ORDER BY start_time`, location)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query weather data for location %s: %w", location, err)
 	}
 	defer rows.Close()
 
@@ -115,9 +124,12 @@ func (r *weatherRepository) ListByLocation(ctx context.Context, location string)
 			&rec.WindSpeed, &rec.MinAT, &rec.MaxAT,
 			&rec.IssueTime, &rec.FetchedAt,
 		); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan weather record row for location %s: %w", location, err)
 		}
 		results = append(results, rec)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate weather rows for location %s: %w", location, err)
 	}
 	return results, nil
 }

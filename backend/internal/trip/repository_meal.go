@@ -2,6 +2,7 @@ package trip
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -37,7 +38,7 @@ func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string)
 	db := database.GetQuerier(ctx, repo.pool)
 	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query meals for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -45,13 +46,13 @@ func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string)
 	for rows.Next() {
 		item, err := repo.scanItem(rows)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan meal item row: %w", err)
 		}
 		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate meal item rows: %w", err)
 	}
 	return items, nil
 }
@@ -66,7 +67,11 @@ func (repo *tripMealRepository) Create(ctx context.Context, item *TripMealItem) 
 	row := db.QueryRow(ctx, query,
 		item.TripID, item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedBy, item.UpdatedBy,
 	)
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("create meal item: %w", err)
+	}
+	return it, nil
 }
 
 func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID string) (*TripMealItem, error) {
@@ -77,7 +82,11 @@ func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID s
 	`
 	db := database.GetQuerier(ctx, repo.pool)
 	row := db.QueryRow(ctx, query, id, tripID)
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("get meal item %s in trip %s: %w", id, tripID, err)
+	}
+	return it, nil
 }
 
 func (repo *tripMealRepository) Update(ctx context.Context, item *TripMealItem) (*TripMealItem, error) {
@@ -91,7 +100,11 @@ func (repo *tripMealRepository) Update(ctx context.Context, item *TripMealItem) 
 	row := db.QueryRow(ctx, query,
 		item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.UpdatedBy, item.ID, item.TripID,
 	)
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("update meal item %s in trip %s: %w", item.ID, item.TripID, err)
+	}
+	return it, nil
 }
 
 func (repo *tripMealRepository) Delete(ctx context.Context, id string, tripID string) error {
@@ -100,12 +113,9 @@ func (repo *tripMealRepository) Delete(ctx context.Context, id string, tripID st
 		WHERE id = $1 AND trip_id = $2
 	`
 	db := database.GetQuerier(ctx, repo.pool)
-	commandTag, err := db.Exec(ctx, query, id, tripID)
+	_, err := db.Exec(ctx, query, id, tripID)
 	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
+		return fmt.Errorf("delete meal item %s in trip %s: %w", id, tripID, err)
 	}
 	return nil
 }
@@ -125,7 +135,7 @@ func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 
 	_, err := tx.Exec(ctx, "DELETE FROM meal_items WHERE trip_id = $1", tripID)
 	if err != nil {
-		return err
+		return fmt.Errorf("replace all meals (delete phase) for trip %s: %w", tripID, err)
 	}
 
 	query := `
@@ -137,7 +147,7 @@ func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 			item.ID, tripID, item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("replace all meals (insert phase) item %s for trip %s: %w", item.ID, tripID, err)
 		}
 	}
 
@@ -152,7 +162,7 @@ func (repo *tripMealRepository) scanItem(row pgx.Row) (*TripMealItem, error) {
 		&i.CreatedAt, &i.CreatedBy, &i.UpdatedAt, &i.UpdatedBy,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scan meal item: %w", err)
 	}
 	return &i, nil
 }

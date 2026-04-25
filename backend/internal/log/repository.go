@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // LogRepository 定義日誌資料存取介面。
@@ -14,11 +14,11 @@ type LogRepository interface {
 }
 
 type logRepository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewLogRepository(pool *pgxpool.Pool) LogRepository {
-	return &logRepository{pool: pool}
+func NewLogRepository(db database.DB) LogRepository {
+	return &logRepository{db: db}
 }
 
 // BatchCreate 批次建立日誌
@@ -44,7 +44,8 @@ func (r *logRepository) BatchCreate(ctx context.Context, deviceID, deviceName st
 		}
 	}
 
-	count, err := r.pool.CopyFrom(
+	db := database.GetQuerier(ctx, r.db)
+	count, err := db.CopyFrom(
 		ctx,
 		pgx.Identifier{"logs"},
 		[]string{"device_id", "device_name", "timestamp", "level", "source", "message"},
@@ -52,7 +53,7 @@ func (r *logRepository) BatchCreate(ctx context.Context, deviceID, deviceName st
 	)
 
 	if err != nil {
-		return 0, fmt.Errorf("failed to batch insert logs: %w", err)
+		return 0, fmt.Errorf("batch insert logs for device %s: %w", deviceID, err)
 	}
 
 	return int(count), nil

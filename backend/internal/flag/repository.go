@@ -2,8 +2,9 @@ package flag
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 type Repository interface {
@@ -13,27 +14,29 @@ type Repository interface {
 }
 
 type repository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewRepository(pool *pgxpool.Pool) Repository {
-	return &repository{pool: pool}
+func NewRepository(db database.DB) Repository {
+	return &repository{db: db}
 }
 
 func (r *repository) GetByKey(ctx context.Context, key string) (*Flag, error) {
 	var f Flag
-	err := r.pool.QueryRow(ctx, "SELECT key, value, description, updated_at FROM system_flags WHERE key = $1", key).
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, "SELECT key, value, description, updated_at FROM system_flags WHERE key = $1", key).
 		Scan(&f.Key, &f.Value, &f.Description, &f.UpdatedAt)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get system flag %s: %w", key, err)
 	}
 	return &f, nil
 }
 
 func (r *repository) GetAll(ctx context.Context) ([]Flag, error) {
-	rows, err := r.pool.Query(ctx, "SELECT key, value, description, updated_at FROM system_flags")
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, "SELECT key, value, description, updated_at FROM system_flags")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query all system flags: %w", err)
 	}
 	defer rows.Close()
 
@@ -41,14 +44,21 @@ func (r *repository) GetAll(ctx context.Context) ([]Flag, error) {
 	for rows.Next() {
 		var f Flag
 		if err := rows.Scan(&f.Key, &f.Value, &f.Description, &f.UpdatedAt); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan system flag row: %w", err)
 		}
 		flags = append(flags, f)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate system flag rows: %w", err)
 	}
 	return flags, nil
 }
 
 func (r *repository) Update(ctx context.Context, key string, value bool) error {
-	_, err := r.pool.Exec(ctx, "UPDATE system_flags SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2", value, key)
-	return err
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, "UPDATE system_flags SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2", value, key)
+	if err != nil {
+		return fmt.Errorf("update system flag %s: %w", key, err)
+	}
+	return nil
 }
