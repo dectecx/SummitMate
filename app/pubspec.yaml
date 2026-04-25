@@ -39,7 +39,7 @@ dependencies:
   url_launcher: ^6.3.0
 
   # 程式碼生成輔助
-  json_annotation: ^4.9.0
+  json_annotation: ^4.11.0
   flutter_slidable: ^4.0.3
   flutter_map: ^8.1.0
   latlong2: ^0.9.1
