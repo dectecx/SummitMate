@@ -5,6 +5,7 @@ import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/auth_state.dart'
     show AuthState, AuthLoading, AuthAuthenticated, AuthError, AuthRequiresVerification;
 import '../../cubits/settings/settings_cubit.dart';
+import '../../../core/utils/validators.dart';
 import 'verification_screen.dart';
 
 /// Register Screen
@@ -52,22 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _onPasswordChanged() {
     final password = _passwordController.text;
     setState(() {
-      _passwordStrength = _calculatePasswordStrength(password);
+      _passwordStrength = Validators.calculatePasswordStrength(password);
     });
-  }
-
-  double _calculatePasswordStrength(String password) {
-    if (password.isEmpty) return 0;
-    if (password.length < 8) return 0.2;
-
-    bool hasLetters = password.contains(RegExp(r'[a-zA-Z]'));
-    bool hasNumbers = password.contains(RegExp(r'[0-9]'));
-    bool hasSpecial = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
-
-    if (!hasLetters || !hasNumbers) return 0.4; // 弱 (雖然長度夠但種類不足)
-    if (password.length < 10) return 0.7; // 中 (長度 8-9)
-    if (hasSpecial) return 1.0; // 強 (長度 10+ 且有特殊字元)
-    return 0.85; // 強 (長度 10+)
   }
 
   void _handleRegister() {
@@ -214,17 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         prefixIcon: Icon(Icons.email_outlined),
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '請輸入 Email';
-                        }
-                        // 強化 Email 正則表達式
-                        final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-                        if (!emailRegex.hasMatch(value)) {
-                          return '請輸入有效的 Email 格式';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validateEmail,
                     ),
                     const SizedBox(height: 16),
 
@@ -242,18 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return '請輸入密碼';
-                        }
-                        if (value.length < 8) {
-                          return '密碼至少需要 8 個字元';
-                        }
-                        if (!value.contains(RegExp(r'[a-zA-Z]')) || !value.contains(RegExp(r'[0-9]'))) {
-                          return '密碼需包含英文字母與數字';
-                        }
-                        return null;
-                      },
+                      validator: Validators.validatePassword,
                     ),
                     const SizedBox(height: 8),
 
