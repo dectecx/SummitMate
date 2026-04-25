@@ -45,7 +45,13 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 		search = *params.Search
 	}
 
-	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, creatorIDPtr, page, limit, search)
+	var categoryPtr *Category
+	if params.Category != nil && *params.Category != "" {
+		c := Category(*params.Category)
+		categoryPtr = &c
+	}
+
+	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, categoryPtr, creatorIDPtr, page, limit, search)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
@@ -113,6 +119,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 	event := &GroupEvent{
 		Title:            req.Title,
 		Description:      req.Description,
+		Category:         Category(req.Category),
 		Location:         req.Location,
 		StartDate:        req.StartDate.Time,
 		EndDate:          endDate,
@@ -191,6 +198,7 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		ID:               id.String(),
 		Title:            req.Title,
 		Description:      req.Description,
+		Category:         Category(req.Category),
 		Location:         req.Location,
 		StartDate:        req.StartDate.Time,
 		EndDate:          endDate,

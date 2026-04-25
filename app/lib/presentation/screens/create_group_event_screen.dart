@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
+import '../../data/models/enums/group_event_category.dart';
+
 /// 建立揪團畫面
 class CreateGroupEventScreen extends StatefulWidget {
   const CreateGroupEventScreen({super.key});
@@ -23,6 +25,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
 
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
   DateTime? _endDate;
+  GroupEventCategory _selectedCategory = GroupEventCategory.other;
   bool _approvalRequired = false;
   bool _isSubmitting = false;
 
@@ -71,6 +74,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
     final success = await cubit.createEvent(
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
+      category: _selectedCategory,
       location: _locationController.text.trim(),
       startDate: _startDate,
       endDate: _endDate,
@@ -123,6 +127,29 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                         return '請輸入活動名稱';
                       }
                       return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 活動分類
+                  DropdownButtonFormField<GroupEventCategory>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: '活動分類 *',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: GroupEventCategory.values.map((cat) {
+                      return DropdownMenuItem(
+                        value: cat,
+                        child: Text(cat.displayName),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      }
                     },
                   ),
                   const SizedBox(height: 16),

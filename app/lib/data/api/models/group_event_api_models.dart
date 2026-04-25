@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'pagination_api_models.dart';
+import '../../models/enums/group_event_category.dart';
 
 part 'group_event_api_models.freezed.dart';
 part 'group_event_api_models.g.dart';
@@ -24,6 +25,7 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'creator_id') required String creatorId,
     required String title,
     @JsonKey(defaultValue: '') required String description,
+    @JsonKey(defaultValue: GroupEventCategory.other) required GroupEventCategory category,
     @JsonKey(defaultValue: '') required String location,
     @JsonKey(name: 'start_date') required DateTime startDate,
     @JsonKey(name: 'end_date') DateTime? endDate,
@@ -95,6 +97,7 @@ abstract class GroupEventCreateRequest with _$GroupEventCreateRequest {
   const factory GroupEventCreateRequest({
     required String title,
     required String description,
+    @JsonKey(defaultValue: GroupEventCategory.other) required GroupEventCategory category,
     required String location,
     @JsonKey(name: 'start_date') required DateTime startDate,
     @JsonKey(name: 'end_date') DateTime? endDate,
@@ -113,6 +116,7 @@ abstract class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
   const factory GroupEventUpdateRequest({
     String? title,
     String? description,
+    GroupEventCategory? category,
     String? location,
     @JsonKey(name: 'start_date') DateTime? startDate,
     @JsonKey(name: 'end_date') DateTime? endDate,

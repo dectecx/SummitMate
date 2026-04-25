@@ -2,6 +2,7 @@ import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'enums/group_event_status.dart';
 import 'enums/group_event_application_status.dart';
+import 'enums/group_event_category.dart';
 
 import 'group_event_comment.dart';
 
@@ -28,105 +29,110 @@ class GroupEvent {
   @JsonKey(defaultValue: '')
   final String description;
 
-  /// 地點
+  /// 分類
   @HiveField(4)
+  @JsonKey(defaultValue: GroupEventCategory.other)
+  final GroupEventCategory category;
+
+  /// 地點
+  @HiveField(5)
   @JsonKey(defaultValue: '')
   final String location;
 
   /// 開始日期
-  @HiveField(5)
+  @HiveField(6)
   @JsonKey(name: 'start_date')
   final DateTime startDate;
 
   /// 結束日期
-  @HiveField(6)
+  @HiveField(7)
   @JsonKey(name: 'end_date')
   final DateTime? endDate;
 
   /// 狀態
-  @HiveField(7)
+  @HiveField(8)
   @JsonKey(defaultValue: GroupEventStatus.open)
   final GroupEventStatus status;
 
   /// 招募人數上限
-  @HiveField(8)
+  @HiveField(9)
   @JsonKey(defaultValue: 10, fromJson: _parseInt)
   final int maxMembers;
 
   /// 已報名人數 (計算欄位)
-  @HiveField(9)
+  @HiveField(10)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int applicationCount;
 
   /// 總報名人數 (含審核中)
-  @HiveField(10)
+  @HiveField(11)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int totalApplicationCount;
 
   /// 是否需審核
-  @HiveField(11)
+  @HiveField(12)
   @JsonKey(defaultValue: false)
   final bool approvalRequired;
 
   /// 報名成功訊息 (審核通過後顯示)
-  @HiveField(12)
+  @HiveField(13)
   @JsonKey(defaultValue: '')
   final String privateMessage;
 
   /// 關聯的行程 ID (TODO: 整合行程)
-  @HiveField(13)
+  @HiveField(14)
   final String? linkedTripId;
 
   /// 喜歡數量 (快取)
-  @HiveField(14)
+  @HiveField(15)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int likeCount;
 
   /// 留言數量 (快取)
-  @HiveField(15)
+  @HiveField(16)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int commentCount;
 
   /// 當前使用者是否已喜歡
-  @HiveField(16)
+  @HiveField(17)
   @JsonKey(defaultValue: false)
   final bool isLiked;
 
   /// 當前使用者報名狀態 (null=未報名)
-  @HiveField(17)
+  @HiveField(18)
   final GroupEventApplicationStatus? myApplicationStatus;
 
   /// 建立者資訊 (快照)
-  @HiveField(18)
+  @HiveField(19)
   @JsonKey(defaultValue: '')
   final String creatorName;
 
-  @HiveField(19)
+  @HiveField(20)
   @JsonKey(defaultValue: '🐻')
   final String creatorAvatar;
 
   /// 建立時間
-  @HiveField(20)
+  @HiveField(21)
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   /// 建立者 ID
-  @HiveField(21)
+  @HiveField(22)
   @JsonKey(name: 'created_by')
   final String createdBy;
 
   /// 更新時間
-  @HiveField(22)
+  @HiveField(23)
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   /// 更新者 ID
-  @HiveField(23)
+  @HiveField(24)
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
   /// 最新留言 (Preview)
-  @HiveField(24)
+  @HiveField(25)
   @JsonKey(defaultValue: [])
   final List<GroupEventComment> latestComments;
 
@@ -135,6 +141,7 @@ class GroupEvent {
     required this.creatorId,
     required this.title,
     this.description = '',
+    this.category = GroupEventCategory.other,
     this.location = '',
     required this.startDate,
     this.endDate,
@@ -191,6 +198,7 @@ class GroupEvent {
     String? creatorId,
     String? title,
     String? description,
+    GroupEventCategory? category,
     String? location,
     DateTime? startDate,
     DateTime? endDate,
@@ -218,6 +226,7 @@ class GroupEvent {
       creatorId: creatorId ?? this.creatorId,
       title: title ?? this.title,
       description: description ?? this.description,
+      category: category ?? this.category,
       location: location ?? this.location,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

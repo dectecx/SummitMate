@@ -5,6 +5,7 @@ import '../datasources/interfaces/i_group_event_local_data_source.dart';
 import '../datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../models/group_event.dart';
 import '../models/group_event_comment.dart';
+import '../models/enums/group_event_category.dart';
 import 'interfaces/i_group_event_repository.dart';
 
 /// 揪團 Repository
@@ -45,7 +46,7 @@ class GroupEventRepository implements IGroupEventRepository {
   DateTime? getLastSyncTime() => null; // Not implemented in interface
 
   @override
-  Future<Result<List<GroupEvent>, Exception>> syncEvents({String? category}) async {
+  Future<Result<List<GroupEvent>, Exception>> syncEvents({GroupEventCategory? category}) async {
     final result = await _remoteDataSource.getEvents(category: category);
     if (result is Success<PaginatedList<GroupEvent>, Exception>) {
       await _localDataSource.saveEvents(result.value.items);
@@ -67,7 +68,7 @@ class GroupEventRepository implements IGroupEventRepository {
   Future<Result<String, Exception>> create({
     required String title,
     required String description,
-    required String category,
+    required GroupEventCategory category,
     required DateTime eventDate,
     required String eventLocation,
     required int maxParticipants,

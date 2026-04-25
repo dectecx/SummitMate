@@ -4,6 +4,7 @@ import '../../../core/core.dart';
 import '../../../domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
+import '../../../data/models/enums/group_event_category.dart';
 import '../../../data/repositories/interfaces/i_group_event_repository.dart';
 import 'group_event_state.dart';
 
@@ -36,7 +37,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   }
 
   /// Fetch events from API
-  Future<void> fetchEvents({bool isAuto = false}) async {
+  Future<void> fetchEvents({bool isAuto = false, GroupEventCategory? category}) async {
     if (_isOffline) {
       if (!isAuto) ToastService.warning('離線模式無法使用揪團功能');
       return;
@@ -59,7 +60,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     }
 
     try {
-      final result = await _groupEventRepository.syncEvents();
+      final result = await _groupEventRepository.syncEvents(category: category);
       final fetchedEvents = switch (result) {
         Success(value: final e) => e,
         Failure(exception: final e) => throw e,
@@ -125,7 +126,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     try {
       final result = await action();
       if (result is Failure) throw result.exception;
-      await fetchEvents(isAuto: false);
+      await fetchEvents(isAuto: false, category: null);
       return true;
     } catch (e) {
       LogService.error('Action failed: $e', source: _source);
@@ -150,6 +151,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   Future<bool> createEvent({
     required String title,
     String description = '',
+    required GroupEventCategory category,
     String location = '',
     required DateTime startDate,
     DateTime? endDate,
@@ -157,18 +159,12 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     bool approvalRequired = false,
     String privateMessage = '',
   }) async {
-    // TODO(future): 加入活動分類 UI，目前預設為 'general'
-    // 需同步新增:
-    // 1. GroupEvent model 新增 category 欄位
-    // 2. CreateGroupEventScreen 新增分類選擇器
-    // 3. 後端支援分類篩選
-    const defaultCategory = 'general';
 
     return await _executeRemoteAction(
       () => _groupEventRepository.create(
         title: title,
         description: description,
-        category: defaultCategory,
+        category: category,
         eventDate: startDate,
         eventLocation: location,
         maxParticipants: maxMembers,
