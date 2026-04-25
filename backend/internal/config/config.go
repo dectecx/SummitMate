@@ -25,6 +25,7 @@ type Config struct {
 	SMTPUser       string
 	SMTPPass       string
 	SMTPFrom       string
+	SMTPUseSSL     bool
 	CacheType      string
 	RedisAddr      string
 	RedisPassword  string
@@ -50,6 +51,7 @@ func Load() *Config {
 		SMTPUser:       getEnv("SMTP_USER", ""),
 		SMTPPass:       getEnv("SMTP_PASS", ""),
 		SMTPFrom:       getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
+		SMTPUseSSL:     getEnv("SMTP_USE_SSL", "false") == "true",
 		CacheType:      getEnv("CACHE_TYPE", "memory"),
 		RedisAddr:      getEnv("REDIS_ADDR", "localhost:6379"),
 		RedisPassword:  getEnv("REDIS_PASSWORD", ""),

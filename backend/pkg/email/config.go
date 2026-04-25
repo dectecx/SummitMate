@@ -7,4 +7,5 @@ type SMTPConfig struct {
 	Username string
 	Password string
 	From     string
+	UseSSL   bool
 }

@@ -194,6 +194,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	smtpCfg := email.SMTPConfig{
 		Host: cfg.SMTPHost, Port: cfg.SMTPPort,
 		Username: cfg.SMTPUser, Password: cfg.SMTPPass, From: cfg.SMTPFrom,
+		UseSSL: cfg.SMTPUseSSL,
 	}
 	mailer := email.NewMailer(smtpCfg)
 	templateManager, _ := email.NewTemplateManager()
