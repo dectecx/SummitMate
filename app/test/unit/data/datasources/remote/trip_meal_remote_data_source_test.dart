@@ -1,69 +1,109 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:summitmate/data/api/models/trip_meal_api_models.dart';
+import 'package:summitmate/data/api/services/trip_meal_api_service.dart';
 import 'package:summitmate/data/datasources/remote/trip_meal_remote_data_source.dart';
 import 'package:summitmate/data/models/meal_item.dart';
-import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 
-class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}
+class MockTripMealApiService extends Mock implements TripMealApiService {}
+
+class FakeTripMealItemRequest extends Fake implements TripMealItemRequest {}
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeTripMealItemRequest());
+  });
+
   late TripMealRemoteDataSource dataSource;
-  late MockNetworkAwareClient mockApiClient;
+  late MockTripMealApiService mockApiService;
 
   setUp(() {
-    mockApiClient = MockNetworkAwareClient();
-    dataSource = TripMealRemoteDataSource(apiClient: mockApiClient);
+    mockApiService = MockTripMealApiService();
+    dataSource = TripMealRemoteDataSource.testable(mockApiService);
   });
+
+  final testResponse = TripMealItemResponse(
+    id: 'meal-1',
+    tripId: 'trip-1',
+    day: 'D1',
+    mealType: 'breakfast',
+    name: 'Rice',
+    weight: 500,
+    calories: 500,
+    quantity: 1,
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+  );
 
   final testMeal = MealItem(id: 'meal-1', name: 'Rice', weight: 500, calories: 500);
 
   group('TripMealRemoteDataSource.getTripMeals', () {
     test('returns list of meal items on success', () async {
-      final tripId = 'trip-1';
-      final responseData = [testMeal.toJson()];
+      when(() => mockApiService.listMeals('trip-1')).thenAnswer((_) async => [testResponse]);
 
-      when(() => mockApiClient.get('/trips/$tripId/meals')).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: responseData,
-          statusCode: 200,
-        ),
-      );
-
-      final result = await dataSource.getTripMeals(tripId);
+      final result = await dataSource.getTripMeals('trip-1');
 
       expect(result.length, 1);
       expect(result[0].name, 'Rice');
+      verify(() => mockApiService.listMeals('trip-1')).called(1);
+    });
+
+    test('rethrows exception on failure', () async {
+      when(() => mockApiService.listMeals(any())).thenThrow(Exception('Network error'));
+
+      expect(() => dataSource.getTripMeals('trip-1'), throwsException);
     });
   });
 
   group('TripMealRemoteDataSource CRUD', () {
-    test('addTripMeal calls post and returns item', () async {
-      final tripId = 'trip-1';
-      when(() => mockApiClient.post('/trips/$tripId/meals', data: any(named: 'data'))).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: testMeal.toJson(),
-          statusCode: 201,
-        ),
+    test('addTripMeal calls api and returns mapped item', () async {
+      when(
+        () => mockApiService.addMeal('trip-1', any()),
+      ).thenAnswer((_) async => testResponse);
+
+      final result = await dataSource.addTripMeal(
+        'trip-1',
+        testMeal,
+        day: 'D1',
+        mealType: 'breakfast',
       );
 
-      final result = await dataSource.addTripMeal(tripId, testMeal);
-
       expect(result.name, 'Rice');
-      verify(() => mockApiClient.post('/trips/$tripId/meals', data: any(named: 'data'))).called(1);
+      verify(() => mockApiService.addMeal('trip-1', any())).called(1);
     });
 
-    test('updateTripMeal calls put', () async {
-      final tripId = 'trip-1';
+    test('updateTripMeal calls api and returns mapped item', () async {
       when(
-        () => mockApiClient.put('/trips/$tripId/meals/${testMeal.id}', data: any(named: 'data')),
-      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 200));
+        () => mockApiService.updateMeal('trip-1', 'meal-1', any()),
+      ).thenAnswer((_) async => testResponse);
 
-      await dataSource.updateTripMeal(tripId, testMeal);
+      final result = await dataSource.updateTripMeal(
+        'trip-1',
+        testMeal,
+        day: 'D1',
+        mealType: 'breakfast',
+      );
 
-      verify(() => mockApiClient.put('/trips/$tripId/meals/${testMeal.id}', data: any(named: 'data'))).called(1);
+      expect(result.name, 'Rice');
+      verify(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).called(1);
+    });
+
+    test('deleteTripMeal calls api', () async {
+      when(() => mockApiService.deleteMeal('trip-1', 'meal-1')).thenAnswer((_) async {});
+
+      await dataSource.deleteTripMeal('trip-1', 'meal-1');
+
+      verify(() => mockApiService.deleteMeal('trip-1', 'meal-1')).called(1);
+    });
+
+    test('replaceAllTripMeals calls api with mapped requests', () async {
+      when(() => mockApiService.replaceAllMeals('trip-1', any())).thenAnswer((_) async {});
+
+      await dataSource.replaceAllTripMeals('trip-1', [
+        (item: testMeal, day: 'D1', mealType: 'breakfast'),
+      ]);
+
+      verify(() => mockApiService.replaceAllMeals('trip-1', any())).called(1);
     });
   });
 }
