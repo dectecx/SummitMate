@@ -2,8 +2,8 @@ package trip
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"summitmate/internal/database"
 )
 
@@ -16,11 +16,11 @@ type TripMemberRepository interface {
 }
 
 type tripMemberRepository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewTripMemberRepository(pool *pgxpool.Pool) TripMemberRepository {
-	return &tripMemberRepository{pool: pool}
+func NewTripMemberRepository(db database.DB) TripMemberRepository {
+	return &tripMemberRepository{db: db}
 }
 
 // AddMember 新增一位成員到指定行程中。
@@ -30,9 +30,12 @@ func (repo *tripMemberRepository) AddMember(ctx context.Context, tripID string, 
 		VALUES ($1, $2)
 		ON CONFLICT (trip_id, user_id) DO NOTHING
 	`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	_, err := db.Exec(ctx, query, tripID, userID)
-	return err
+	if err != nil {
+		return fmt.Errorf("add member %s to trip %s: %w", userID, tripID, err)
+	}
+	return nil
 }
 
 // RemoveMember 從指定行程中移除一位成員。
@@ -41,19 +44,22 @@ func (repo *tripMemberRepository) RemoveMember(ctx context.Context, tripID strin
 		DELETE FROM trip_members
 		WHERE trip_id = $1 AND user_id = $2
 	`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	_, err := db.Exec(ctx, query, tripID, userID)
-	return err
+	if err != nil {
+		return fmt.Errorf("remove member %s from trip %s: %w", userID, tripID, err)
+	}
+	return nil
 }
 
 // IsMember 回傳指定使用者是否為行程成員。
 func (repo *tripMemberRepository) IsMember(ctx context.Context, tripID string, userID string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM trip_members WHERE trip_id = $1 AND user_id = $2)`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	var exists bool
 	err := db.QueryRow(ctx, query, tripID, userID).Scan(&exists)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("check membership for user %s in trip %s: %w", userID, tripID, err)
 	}
 	return exists, nil
 }
@@ -67,10 +73,10 @@ func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID strin
 		WHERE tm.trip_id = $1
 		ORDER BY tm.joined_at ASC
 	`
-	db := database.GetQuerier(ctx, repo.pool)
+	db := database.GetQuerier(ctx, repo.db)
 	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query trip members for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -82,13 +88,13 @@ func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID strin
 			&m.UserEmail, &m.UserDisplayName, &m.UserAvatar,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan trip member row: %w", err)
 		}
 		members = append(members, &m)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate trip member rows: %w", err)
 	}
 	return members, nil
 }

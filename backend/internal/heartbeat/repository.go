@@ -2,8 +2,9 @@ package heartbeat
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // HeartbeatRepository 定義心跳資料存取介面。
@@ -12,11 +13,11 @@ type HeartbeatRepository interface {
 }
 
 type heartbeatRepository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewHeartbeatRepository(pool *pgxpool.Pool) HeartbeatRepository {
-	return &heartbeatRepository{pool: pool}
+func NewHeartbeatRepository(db database.DB) HeartbeatRepository {
+	return &heartbeatRepository{db: db}
 }
 
 // Upsert 更新或插入心跳資訊
@@ -30,6 +31,10 @@ func (r *heartbeatRepository) Upsert(ctx context.Context, hb *Heartbeat) error {
 			view = EXCLUDED.view,
 			platform = EXCLUDED.platform
 	`
-	_, err := r.pool.Exec(ctx, query, hb.UserID, hb.UserType, hb.View, hb.Platform)
-	return err
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, query, hb.UserID, hb.UserType, hb.View, hb.Platform)
+	if err != nil {
+		return fmt.Errorf("upsert heartbeat for user %s: %w", hb.UserID, err)
+	}
+	return nil
 }

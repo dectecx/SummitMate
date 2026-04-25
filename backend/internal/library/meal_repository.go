@@ -2,9 +2,10 @@ package library
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // MealLibraryRepository 定義餐食庫資料存取介面。
@@ -18,11 +19,11 @@ type MealLibraryRepository interface {
 }
 
 type mealLibraryRepository struct {
-	pool *pgxpool.Pool
+	db database.DB
 }
 
-func NewMealLibraryRepository(pool *pgxpool.Pool) MealLibraryRepository {
-	return &mealLibraryRepository{pool: pool}
+func NewMealLibraryRepository(db database.DB) MealLibraryRepository {
+	return &mealLibraryRepository{db: db}
 }
 
 func (repo *mealLibraryRepository) Create(ctx context.Context, item *MealLibraryItem) (*MealLibraryItem, error) {
@@ -31,11 +32,16 @@ func (repo *mealLibraryRepository) Create(ctx context.Context, item *MealLibrary
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query,
 		item.UserID, item.Name, item.Weight, item.Calories, item.Notes, item.IsArchived, item.CreatedBy, item.UpdatedBy,
 	)
 
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("create meal library item: %w", err)
+	}
+	return it, nil
 }
 
 func (repo *mealLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*MealLibraryItem, error) {
@@ -44,8 +50,13 @@ func (repo *mealLibraryRepository) GetByID(ctx context.Context, id string, userI
 		FROM meal_library_items
 		WHERE id = $1 AND user_id = $2
 	`
-	row := repo.pool.QueryRow(ctx, query, id, userID)
-	return repo.scanItem(row)
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query, id, userID)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("get meal library item %s for user %s: %w", id, userID, err)
+	}
+	return it, nil
 }
 
 func (repo *mealLibraryRepository) ListByUserID(ctx context.Context, userID string, includeArchived bool) ([]*MealLibraryItem, error) {
@@ -55,9 +66,10 @@ func (repo *mealLibraryRepository) ListByUserID(ctx context.Context, userID stri
 		WHERE user_id = $1 AND ($2 OR is_archived = false)
 		ORDER BY created_at DESC
 	`
-	rows, err := repo.pool.Query(ctx, query, userID, includeArchived)
+	db := database.GetQuerier(ctx, repo.db)
+	rows, err := db.Query(ctx, query, userID, includeArchived)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query meal library for user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -65,13 +77,13 @@ func (repo *mealLibraryRepository) ListByUserID(ctx context.Context, userID stri
 	for rows.Next() {
 		item, err := repo.scanItem(rows)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan meal library row: %w", err)
 		}
 		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate meal library rows: %w", err)
 	}
 	return items, nil
 }
@@ -83,11 +95,16 @@ func (repo *mealLibraryRepository) Update(ctx context.Context, item *MealLibrary
 		WHERE id = $7 AND user_id = $8
 		RETURNING id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query,
 		item.Name, item.Weight, item.Calories, item.Notes, item.IsArchived, item.UpdatedBy, item.ID, item.UserID,
 	)
 
-	return repo.scanItem(row)
+	it, err := repo.scanItem(row)
+	if err != nil {
+		return nil, fmt.Errorf("update meal library item %s for user %s: %w", item.ID, item.UserID, err)
+	}
+	return it, nil
 }
 
 func (repo *mealLibraryRepository) Delete(ctx context.Context, id string, userID string) error {
@@ -95,26 +112,27 @@ func (repo *mealLibraryRepository) Delete(ctx context.Context, id string, userID
 		DELETE FROM meal_library_items
 		WHERE id = $1 AND user_id = $2
 	`
-	commandTag, err := repo.pool.Exec(ctx, query, id, userID)
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, query, id, userID)
 	if err != nil {
-		return err
-	}
-	if commandTag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
+		return fmt.Errorf("delete meal library item %s for user %s: %w", id, userID, err)
 	}
 	return nil
 }
 
 func (repo *mealLibraryRepository) ReplaceAll(ctx context.Context, userID string, items []*MealLibraryItem) error {
-	tx, err := repo.pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
+	db := database.GetQuerier(ctx, repo.db)
 
-	_, err = tx.Exec(ctx, "DELETE FROM meal_library_items WHERE user_id = $1", userID)
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, repo.db, func(txCtx context.Context) error {
+			return repo.ReplaceAll(txCtx, userID, items)
+		})
+	}
+
+	_, err := tx.Exec(ctx, "DELETE FROM meal_library_items WHERE user_id = $1", userID)
 	if err != nil {
-		return err
+		return fmt.Errorf("replace all meal library (delete phase) for user %s: %w", userID, err)
 	}
 
 	query := `
@@ -126,11 +144,11 @@ func (repo *mealLibraryRepository) ReplaceAll(ctx context.Context, userID string
 			item.ID, userID, item.Name, item.Weight, item.Calories, item.Notes, item.IsArchived, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("replace all meal library (insert phase) item %s for user %s: %w", item.ID, userID, err)
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (repo *mealLibraryRepository) scanItem(row pgx.Row) (*MealLibraryItem, error) {
@@ -141,7 +159,7 @@ func (repo *mealLibraryRepository) scanItem(row pgx.Row) (*MealLibraryItem, erro
 		&i.CreatedAt, &i.CreatedBy, &i.UpdatedAt, &i.UpdatedBy,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scan meal library item: %w", err)
 	}
 	return &i, nil
 }

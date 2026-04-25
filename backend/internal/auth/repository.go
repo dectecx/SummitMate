@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"fmt"
+
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 // ErrNotFound 代表查詢結果為空 (無符合條件的資料列)。
@@ -23,11 +25,11 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	pool *pgxpool.Pool
+	db database.Querier
 }
 
-func NewUserRepository(pool *pgxpool.Pool) UserRepository {
-	return &userRepository{pool: pool}
+func NewUserRepository(db database.Querier) UserRepository {
+	return &userRepository{db: db}
 }
 
 // Create 新增一筆使用者資料，回傳含有 DB 產生值 (id, avatar, created_at 等) 的完整 User。
@@ -39,7 +41,8 @@ func (repo *userRepository) Create(ctx context.Context, user *User) (*User, erro
 		          is_active, is_verified,
 		          created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, repo.db)
+	row := db.QueryRow(ctx, query,
 		user.Email,
 		user.PasswordHash,
 		user.DisplayName,
@@ -63,7 +66,7 @@ func (repo *userRepository) Create(ctx context.Context, user *User) (*User, erro
 		&created.UpdatedBy,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create user: %w", err)
 	}
 
 	return &created, nil
@@ -71,18 +74,30 @@ func (repo *userRepository) Create(ctx context.Context, user *User) (*User, erro
 
 // GetByEmail 以 Email 查詢使用者。若不存在回傳 ErrNotFound。
 func (repo *userRepository) GetByEmail(ctx context.Context, email string) (*User, error) {
-	return repo.getOneUser(ctx, "email", email)
+	user, err := repo.getOneUser(ctx, "email", email)
+	if err != nil {
+		return nil, fmt.Errorf("get user by email %s: %w", email, err)
+	}
+	return user, nil
 }
 
 // GetByID 以 UUID 查詢使用者。若不存在回傳 ErrNotFound。
 func (repo *userRepository) GetByID(ctx context.Context, id string) (*User, error) {
-	return repo.getOneUser(ctx, "id", id)
+	user, err := repo.getOneUser(ctx, "id", id)
+	if err != nil {
+		return nil, fmt.Errorf("get user by id %s: %w", id, err)
+	}
+	return user, nil
 }
 
 // DeleteByID 刪除指定 ID 的使用者。用於測試資料清理等場景。
 func (repo *userRepository) DeleteByID(ctx context.Context, id string) error {
-	_, err := repo.pool.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
-	return err
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, "DELETE FROM users WHERE id = $1", id)
+	if err != nil {
+		return fmt.Errorf("delete user %s: %w", id, err)
+	}
+	return nil
 }
 
 // Update 更新使用者的 display_name 與 avatar。
@@ -98,7 +113,8 @@ func (repo *userRepository) Update(ctx context.Context, id string, displayName, 
 		          is_active, is_verified,
 		          created_at, created_by, updated_at, updated_by
 	`
-	row := repo.pool.QueryRow(ctx, query, displayName, avatar, id)
+	db := database.GetQuerier(ctx, repo.db)
+ 	row := db.QueryRow(ctx, query, displayName, avatar, id)
 
 	var user User
 	err := row.Scan(
@@ -119,16 +135,17 @@ func (repo *userRepository) Update(ctx context.Context, id string, displayName, 
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("update user %s: %w", id, err)
 	}
 	return &user, nil
 }
 
 // SoftDelete 將使用者設為停用 (is_active = false)。
 func (repo *userRepository) SoftDelete(ctx context.Context, id string) error {
-	result, err := repo.pool.Exec(ctx, "UPDATE users SET is_active = false, updated_at = NOW(), updated_by = $1 WHERE id = $1", id)
+	db := database.GetQuerier(ctx, repo.db)
+	result, err := db.Exec(ctx, "UPDATE users SET is_active = false, updated_at = NOW(), updated_by = $1 WHERE id = $1", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("soft delete user %s: %w", id, err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrNotFound
@@ -139,9 +156,10 @@ func (repo *userRepository) SoftDelete(ctx context.Context, id string) error {
 // SetVerified 將使用者設為已驗證。
 func (repo *userRepository) SetVerified(ctx context.Context, id string) error {
 	query := "UPDATE users SET is_verified = true, updated_at = NOW() WHERE id = $1"
-	result, err := repo.pool.Exec(ctx, query, id)
+	db := database.GetQuerier(ctx, repo.db)
+	result, err := db.Exec(ctx, query, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("set verified for user %s: %w", id, err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrNotFound
@@ -159,7 +177,8 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 		FROM users
 		WHERE ` + column + ` = $1
 	`
-	row := repo.pool.QueryRow(ctx, query, value)
+	db := database.GetQuerier(ctx, repo.db)
+ 	row := db.QueryRow(ctx, query, value)
 
 	var user User
 	err := row.Scan(
@@ -180,7 +199,7 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("scan user: %w", err)
 	}
 
 	return &user, nil

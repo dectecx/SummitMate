@@ -3,6 +3,7 @@ package trip
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -43,7 +44,11 @@ func (repo *tripRepository) Create(ctx context.Context, trip *Trip) (*Trip, erro
 		trip.CoverImage, trip.IsActive, trip.DayNames, trip.CreatedBy, trip.UpdatedBy,
 	)
 
-	return repo.scanTrip(row)
+	t, err := repo.scanTrip(row)
+	if err != nil {
+		return nil, fmt.Errorf("create trip: %w", err)
+	}
+	return t, nil
 }
 
 // GetByID 以 UUID 查詢行程。若不存在回傳 ErrNotFound。
@@ -55,7 +60,11 @@ func (repo *tripRepository) GetByID(ctx context.Context, id string) (*Trip, erro
 	`
 	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query, id)
-	return repo.scanTrip(row)
+	t, err := repo.scanTrip(row)
+	if err != nil {
+		return nil, fmt.Errorf("get trip %s: %w", id, err)
+	}
+	return t, nil
 }
 
 // ListByUserID 取得特定使用者建立或加入的行程列表。
@@ -71,7 +80,7 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]
 	db := database.GetQuerier(ctx, repo.db)
 	rows, err := db.Query(ctx, query, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query trips by user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -84,13 +93,13 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]
 			&t.CreatedAt, &t.CreatedBy, &t.UpdatedAt, &t.UpdatedBy,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan trip row: %w", err)
 		}
 		trips = append(trips, &t)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate trip rows: %w", err)
 	}
 	return trips, nil
 }
@@ -119,14 +128,21 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedA
 	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query, args...)
 
-	return repo.scanTrip(row)
+	t, err := repo.scanTrip(row)
+	if err != nil {
+		return nil, fmt.Errorf("update trip %s: %w", trip.ID, err)
+	}
+	return t, nil
 }
 
 // DeleteByID 刪除指定 ID 的行程。
 func (repo *tripRepository) DeleteByID(ctx context.Context, id string) error {
 	db := database.GetQuerier(ctx, repo.db)
 	_, err := db.Exec(ctx, "DELETE FROM trips WHERE id = $1", id)
-	return err
+	if err != nil {
+		return fmt.Errorf("delete trip %s: %w", id, err)
+	}
+	return nil
 }
 
 // scanTrip 是共用掃描行列輔助函式。
@@ -141,7 +157,7 @@ func (repo *tripRepository) scanTrip(row pgx.Row) (*Trip, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("scan trip: %w", err)
 	}
 	return &t, nil
 }

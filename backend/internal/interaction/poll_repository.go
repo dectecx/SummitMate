@@ -2,11 +2,12 @@ package interaction
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"summitmate/internal/database"
 )
 
 type PollRepository interface {
@@ -22,10 +23,10 @@ type PollRepository interface {
 }
 
 type pollRepository struct {
-	db *pgxpool.Pool
+	db database.DB
 }
 
-func NewPollRepository(db *pgxpool.Pool) PollRepository {
+func NewPollRepository(db database.DB) PollRepository {
 	return &pollRepository{db: db}
 }
 
@@ -42,13 +43,14 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *Poll) error {
 	var id string
 	var createdAt, updatedAt time.Time
 
-	err := r.db.QueryRow(ctx, query,
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query,
 		poll.TripID, poll.Title, poll.Description, poll.Deadline,
 		poll.IsAllowAddOption, poll.MaxOptionLimit, poll.AllowMultipleVotes,
 		poll.ResultDisplayType, poll.Status, poll.CreatedBy, poll.UpdatedBy,
 	).Scan(&id, &createdAt, &updatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to create poll: %w", err)
+		return fmt.Errorf("create poll for trip %s: %w", poll.TripID, err)
 	}
 
 	poll.ID = id
@@ -61,9 +63,10 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *Poll) error {
 func (r *pollRepository) loadPollOptions(ctx context.Context, pollID string) ([]*PollOption, error) {
 	// First fetch all options
 	optQuery := `SELECT id, poll_id, text, created_at, created_by, updated_at, updated_by FROM poll_options WHERE poll_id = $1 ORDER BY created_at ASC`
-	rows, err := r.db.Query(ctx, optQuery, pollID)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, optQuery, pollID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch options: %w", err)
+		return nil, fmt.Errorf("query poll options for poll %s: %w", pollID, err)
 	}
 	defer rows.Close()
 
@@ -72,20 +75,20 @@ func (r *pollRepository) loadPollOptions(ctx context.Context, pollID string) ([]
 	for rows.Next() {
 		var opt PollOption
 		if err := rows.Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatedAt, &opt.CreatedBy, &opt.UpdatedAt, &opt.UpdatedBy); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan poll option row: %w", err)
 		}
 		opt.Voters = []string{}
 		options = append(options, &opt)
 		optMap[opt.ID] = &opt
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate poll option rows: %w", err)
 	}
 
 	// Then fetch votes for those options
 	if len(options) > 0 {
 		voteQuery := `SELECT option_id, user_id FROM poll_votes WHERE poll_id = $1`
-		vRows, err := r.db.Query(ctx, voteQuery, pollID)
+		vRows, err := db.Query(ctx, voteQuery, pollID)
 		if err == nil {
 			defer vRows.Close()
 			for vRows.Next() {
@@ -111,21 +114,22 @@ func (r *pollRepository) GetPollByID(ctx context.Context, pollID string) (*Poll,
 		FROM polls WHERE id = $1
 	`
 	var p Poll
-	err := r.db.QueryRow(ctx, query, pollID).Scan(
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, pollID).Scan(
 		&p.ID, &p.TripID, &p.Title, &p.Description, &p.Deadline,
 		&p.IsAllowAddOption, &p.MaxOptionLimit, &p.AllowMultipleVotes,
 		&p.ResultDisplayType, &p.Status, &p.CreatedAt, &p.CreatedBy, &p.UpdatedAt, &p.UpdatedBy,
 	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("get poll %s: %w", pollID, err)
 	}
 
 	options, err := r.loadPollOptions(ctx, p.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load options for poll %s: %w", p.ID, err)
 	}
 	p.Options = options
 
@@ -140,9 +144,10 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*P
 		FROM polls WHERE trip_id = $1
 		ORDER BY created_at DESC
 	`
-	rows, err := r.db.Query(ctx, query, tripID)
+	db := database.GetQuerier(ctx, r.db)
+	rows, err := db.Query(ctx, query, tripID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("query polls for trip %s: %w", tripID, err)
 	}
 	defer rows.Close()
 
@@ -154,13 +159,13 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*P
 			&p.IsAllowAddOption, &p.MaxOptionLimit, &p.AllowMultipleVotes,
 			&p.ResultDisplayType, &p.Status, &p.CreatedAt, &p.CreatedBy, &p.UpdatedAt, &p.UpdatedBy,
 		); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("scan poll row: %w", err)
 		}
 		polls = append(polls, &p)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("iterate poll rows: %w", err)
 	}
 
 	for _, p := range polls {
@@ -177,12 +182,13 @@ func (r *pollRepository) ListTripPolls(ctx context.Context, tripID string) ([]*P
 
 func (r *pollRepository) DeletePoll(ctx context.Context, pollID string) error {
 	query := `DELETE FROM polls WHERE id = $1`
-	cmd, err := r.db.Exec(ctx, query, pollID)
+	db := database.GetQuerier(ctx, r.db)
+	cmd, err := db.Exec(ctx, query, pollID)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete poll %s: %w", pollID, err)
 	}
 	if cmd.RowsAffected() == 0 {
-		return fmt.Errorf("poll not found")
+		return fmt.Errorf("poll %s not found", pollID)
 	}
 	return nil
 }
@@ -193,9 +199,10 @@ func (r *pollRepository) AddPollOption(ctx context.Context, option *PollOption) 
 		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at, updated_at
 	`
-	err := r.db.QueryRow(ctx, query, option.PollID, option.Text, option.CreatedBy, option.UpdatedBy).Scan(&option.ID, &option.CreatedAt, &option.UpdatedAt)
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, option.PollID, option.Text, option.CreatedBy, option.UpdatedBy).Scan(&option.ID, &option.CreatedAt, &option.UpdatedAt)
 	if err != nil {
-		return fmt.Errorf("failed to add poll option: %w", err)
+		return fmt.Errorf("add poll option to poll %s: %w", option.PollID, err)
 	}
 	option.Voters = []string{}
 	option.VoteCount = 0
@@ -204,30 +211,34 @@ func (r *pollRepository) AddPollOption(ctx context.Context, option *PollOption) 
 
 func (r *pollRepository) GetPollOption(ctx context.Context, optionID string) (*PollOption, error) {
 	query := `SELECT id, poll_id, text, created_at, created_by, updated_at, updated_by FROM poll_options WHERE id = $1`
+	db := database.GetQuerier(ctx, r.db)
 	var opt PollOption
-	err := r.db.QueryRow(ctx, query, optionID).Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatedAt, &opt.CreatedBy, &opt.UpdatedAt, &opt.UpdatedBy)
+	err := db.QueryRow(ctx, query, optionID).Scan(&opt.ID, &opt.PollID, &opt.Text, &opt.CreatedAt, &opt.CreatedBy, &opt.UpdatedAt, &opt.UpdatedBy)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("get poll option %s: %w", optionID, err)
 	}
 	return &opt, nil
 }
 
 func (r *pollRepository) VoteOption(ctx context.Context, pollID, optionID, userID string, allowMultiple bool) error {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return err
+	db := database.GetQuerier(ctx, r.db)
+
+	tx, ok := db.(pgx.Tx)
+	if !ok {
+		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+			return r.VoteOption(txCtx, pollID, optionID, userID, allowMultiple)
+		})
 	}
-	defer tx.Rollback(ctx)
 
 	// Check if already voted for this specific option
 	var count int
 	checkQuery := `SELECT COUNT(*) FROM poll_votes WHERE poll_id = $1 AND option_id = $2 AND user_id = $3`
-	err = tx.QueryRow(ctx, checkQuery, pollID, optionID, userID).Scan(&count)
+	err := tx.QueryRow(ctx, checkQuery, pollID, optionID, userID).Scan(&count)
 	if err != nil {
-		return err
+		return fmt.Errorf("check existing vote for poll %s: %w", pollID, err)
 	}
 
 	if count > 0 {
@@ -235,7 +246,7 @@ func (r *pollRepository) VoteOption(ctx context.Context, pollID, optionID, userI
 		deleteQuery := `DELETE FROM poll_votes WHERE poll_id = $1 AND option_id = $2 AND user_id = $3`
 		_, err = tx.Exec(ctx, deleteQuery, pollID, optionID, userID)
 		if err != nil {
-			return err
+			return fmt.Errorf("toggle poll vote (remove) for poll %s: %w", pollID, err)
 		}
 	} else {
 		// Does not have a vote for this specific option. Add vote.
@@ -244,16 +255,16 @@ func (r *pollRepository) VoteOption(ctx context.Context, pollID, optionID, userI
 			clearQuery := `DELETE FROM poll_votes WHERE poll_id = $1 AND user_id = $2`
 			_, err = tx.Exec(ctx, clearQuery, pollID, userID)
 			if err != nil {
-				return err
+				return fmt.Errorf("clear existing votes for poll %s: %w", pollID, err)
 			}
 		}
 
 		insertQuery := `INSERT INTO poll_votes (poll_id, option_id, user_id) VALUES ($1, $2, $3)`
 		_, err = tx.Exec(ctx, insertQuery, pollID, optionID, userID)
 		if err != nil {
-			return err
+			return fmt.Errorf("insert poll vote for poll %s: %w", pollID, err)
 		}
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
