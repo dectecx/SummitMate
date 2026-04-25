@@ -43,26 +43,9 @@ class FavoritesRepository implements IFavoritesRepository {
 
   Future<void> _syncFromRemote() async {
     final result = await _remoteDataSource.getFavorites();
-    if (result is Success<List<Map<String, dynamic>>, Exception>) {
-      final remoteList = result.value;
-
-      // 轉換 Remote Map -> List<Favorite>
-      final rows = remoteList
-          .map((data) {
-            try {
-              // 使用 fromJson 統一解析邏輯
-              return Favorite.fromJson(data);
-            } catch (e) {
-              LogService.error('Error parsing favorite item: $e', source: 'FavoritesRepository');
-              return null;
-            }
-          })
-          .whereType<Favorite>()
-          .toList();
-
-      await _localDataSource.saveFavorites(rows);
-
-      LogService.info('從遠端同步了用最愛列表: ${rows.length} 筆', source: 'FavoritesRepository');
+    if (result is Success<List<Favorite>, Exception>) {
+      await _localDataSource.saveFavorites(result.value);
+      LogService.info('從遠端同步了最愛列表: ${result.value.length} 筆', source: 'FavoritesRepository');
     }
   }
 

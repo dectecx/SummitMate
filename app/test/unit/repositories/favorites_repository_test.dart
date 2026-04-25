@@ -61,7 +61,7 @@ void main() {
         when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
         when(
           () => mockRemoteDataSource.getFavorites(),
-        ).thenAnswer((_) async => Success<List<Map<String, dynamic>>, Exception>([])); // Remote empty, but success
+        ).thenAnswer((_) async => const Success<List<Favorite>, Exception>([])); // Remote empty, but success
         when(() => mockLocalDataSource.saveFavorites(any())).thenAnswer((_) async {});
 
         // Act
