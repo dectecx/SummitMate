@@ -4,17 +4,16 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/remote/group_event_remote_data_source.dart';
 import 'package:summitmate/data/models/group_event.dart';
 import 'package:summitmate/data/models/enums/group_event_status.dart';
-import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 
-class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}
+class MockDio extends Mock implements Dio {}
 
 void main() {
   late GroupEventRemoteDataSource dataSource;
-  late MockNetworkAwareClient mockApiClient;
+  late MockDio mockDio;
 
   setUp(() {
-    mockApiClient = MockNetworkAwareClient();
-    dataSource = GroupEventRemoteDataSource(apiClient: mockApiClient);
+    mockDio = MockDio();
+    dataSource = GroupEventRemoteDataSource(mockDio);
   });
 
   group('GroupEventRemoteDataSource.getEvents', () {
@@ -34,9 +33,9 @@ void main() {
         },
       ];
 
-      when(() => mockApiClient.get('/group-events', queryParameters: any(named: 'queryParameters'))).thenAnswer(
+      when(() => mockDio.get('/group-events', queryParameters: any(named: 'queryParameters'))).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(path: '/group-events'),
           data: responseData,
           statusCode: 200,
         ),
@@ -63,10 +62,19 @@ void main() {
         updatedBy: 'u1',
       );
 
-      when(() => mockApiClient.post('/group-events', data: any(named: 'data'))).thenAnswer(
+      when(() => mockDio.post('/group-events', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: {'id': 'evt-999'},
+          requestOptions: RequestOptions(path: '/group-events'),
+          data: {
+            'id': 'evt-999',
+            'title': 'New Event',
+            'creator_id': 'u1',
+            'start_date': DateTime(2024, 1, 1).toIso8601String(),
+            'created_at': DateTime(2024, 1, 1).toIso8601String(),
+            'created_by': 'u1',
+            'updated_at': DateTime(2024, 1, 1).toIso8601String(),
+            'updated_by': 'u1',
+          },
           statusCode: 201,
         ),
       );
@@ -78,21 +86,28 @@ void main() {
 
     test('deleteEvent calls delete', () async {
       when(
-        () => mockApiClient.delete('/group-events/evt-1'),
-      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: ''), statusCode: 204));
+        () => mockDio.delete('/group-events/evt-1'),
+      ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/group-events/evt-1'), statusCode: 204));
 
       await dataSource.deleteEvent(eventId: 'evt-1', userId: 'u1');
 
-      verify(() => mockApiClient.delete('/group-events/evt-1')).called(1);
+      verify(() => mockDio.delete('/group-events/evt-1')).called(1);
     });
   });
 
   group('Application and Comments', () {
     test('applyEvent returns application ID', () async {
-      when(() => mockApiClient.post('/group-events/evt-1/apply', data: any(named: 'data'))).thenAnswer(
+      when(() => mockDio.post('/group-events/evt-1/apply', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
-          data: {'id': 'app-123'},
+          requestOptions: RequestOptions(path: '/group-events/evt-1/apply'),
+          data: {
+            'id': 'app-123',
+            'event_id': 'evt-1',
+            'user_id': 'u1',
+            'created_at': '2024-01-01T00:00:00Z',
+            'updated_at': '2024-01-01T00:00:00Z',
+            'updated_by': 'u1',
+          },
           statusCode: 201,
         ),
       );
@@ -114,9 +129,9 @@ void main() {
         'updated_at': '2024-01-01T00:00:00Z',
       };
 
-      when(() => mockApiClient.post('/group-events/e1/comments', data: any(named: 'data'))).thenAnswer(
+      when(() => mockDio.post('/group-events/e1/comments', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(path: '/group-events/e1/comments'),
           data: commentJson,
           statusCode: 201,
         ),

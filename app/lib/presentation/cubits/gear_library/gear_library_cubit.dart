@@ -9,7 +9,7 @@ import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../../data/datasources/remote/gear_library_remote_data_source.dart';
+import 'package:summitmate/data/datasources/interfaces/i_gear_library_remote_data_source.dart';
 import 'gear_library_state.dart';
 
 @injectable
