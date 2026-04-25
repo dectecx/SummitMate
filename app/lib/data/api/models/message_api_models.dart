@@ -1,7 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'pagination_api_models.dart';
 
 part 'message_api_models.freezed.dart';
 part 'message_api_models.g.dart';
+
+@freezed
+abstract class MessagePaginationResponse with _$MessagePaginationResponse {
+  const factory MessagePaginationResponse({
+    required List<MessageResponse> items,
+    required PaginationMetadata pagination,
+  }) = _MessagePaginationResponse;
+
+  factory MessagePaginationResponse.fromJson(Map<String, dynamic> json) => _$MessagePaginationResponseFromJson(json);
+}
 
 // ── Response ──
 

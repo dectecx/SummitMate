@@ -13,7 +13,11 @@ abstract class PollApiService {
   factory PollApiService(Dio dio, {String baseUrl}) = _PollApiService;
 
   @GET('/trips/{tripId}/polls')
-  Future<List<PollResponse>> listPolls(@Path('tripId') String tripId);
+  Future<PollPaginationResponse> listTripPolls(
+    @Path('tripId') String tripId, {
+    @Query('cursor') String? cursor,
+    @Query('limit') int? limit,
+  });
 
   @POST('/trips/{tripId}/polls')
   Future<PollResponse> createPoll(@Path('tripId') String tripId, @Body() PollCreateRequest request);

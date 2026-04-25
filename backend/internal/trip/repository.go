@@ -18,7 +18,7 @@ var ErrNotFound = errors.New("not found")
 type TripRepository interface {
 	Create(ctx context.Context, trip *Trip) (*Trip, error)
 	GetByID(ctx context.Context, id string) (*Trip, error)
-	ListByUserID(ctx context.Context, userID string) ([]*Trip, error)
+	ListByUserID(ctx context.Context, userID string, page int, limit int, search string) ([]*Trip, int, bool, error)
 	Update(ctx context.Context, trip *Trip, lastUpdatedAt *time.Time) (*Trip, error)
 	DeleteByID(ctx context.Context, id string) error
 }
@@ -67,20 +67,66 @@ func (repo *tripRepository) GetByID(ctx context.Context, id string) (*Trip, erro
 	return t, nil
 }
 
-// ListByUserID 取得特定使用者建立或加入的行程列表。
-// 這裡預期回傳包含 created 或是加入 trip_members 的所有行程。
-func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]*Trip, error) {
-	query := `
-		SELECT DISTINCT t.id, t.user_id, t.name, t.description, t.start_date, t.end_date, t.cover_image, t.is_active, t.day_names, t.created_at, t.created_by, t.updated_at, t.updated_by
+// ListByUserID 取得特定使用者建立或加入的行程列表，支援頁碼分頁與搜尋。
+func (repo *tripRepository) ListByUserID(ctx context.Context, userID string, page int, limit int, search string) ([]*Trip, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
+	args := []interface{}{userID}
+	argIdx := 2
+
+	// 構建過濾條件子句
+	whereClause := "WHERE (t.user_id = $1 OR tm.user_id = $1)"
+	if search != "" {
+		whereClause += fmt.Sprintf(" AND t.name ILIKE $%d", argIdx)
+		args = append(args, "%"+search+"%")
+		argIdx++
+	}
+
+	// COUNT 查詢
+	countQuery := fmt.Sprintf(`
+		SELECT COUNT(DISTINCT t.id)
 		FROM trips t
 		LEFT JOIN trip_members tm ON t.id = tm.trip_id
-		WHERE t.user_id = $1 OR tm.user_id = $1
-		ORDER BY t.created_at DESC
-	`
+		%s
+	`, whereClause)
+
 	db := database.GetQuerier(ctx, repo.db)
-	rows, err := db.Query(ctx, query, userID)
+	var total int
+	err := db.QueryRow(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
-		return nil, fmt.Errorf("query trips by user %s: %w", userID, err)
+		return nil, 0, false, fmt.Errorf("count trips by user %s: %w", userID, err)
+	}
+
+	dataArgs := append(args, limit+1, offset)
+	limitIdx := argIdx
+	offsetIdx := argIdx + 1
+
+	mainQuery := fmt.Sprintf(`
+		WITH TargetPageIDs AS (
+			SELECT DISTINCT t.id
+			FROM trips t
+			LEFT JOIN trip_members tm ON t.id = tm.trip_id
+			%s
+			ORDER BY t.created_at DESC, t.id ASC
+			LIMIT $%d OFFSET $%d
+		)
+		SELECT t.id, t.user_id, t.name, t.description, t.start_date, t.end_date,
+			t.cover_image, t.is_active, t.day_names,
+			t.created_at, t.created_by, t.updated_at, t.updated_by
+		FROM trips t
+		INNER JOIN TargetPageIDs target ON t.id = target.id
+		ORDER BY t.created_at DESC, t.id ASC
+	`, whereClause, limitIdx, offsetIdx)
+
+	rows, err := db.Query(ctx, mainQuery, dataArgs...)
+	if err != nil {
+		return nil, 0, false, fmt.Errorf("query trips by user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -93,15 +139,17 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string) ([]
 			&t.CreatedAt, &t.CreatedBy, &t.UpdatedAt, &t.UpdatedBy,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("scan trip row: %w", err)
+			return nil, 0, false, fmt.Errorf("scan trip row: %w", err)
 		}
 		trips = append(trips, &t)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate trip rows: %w", err)
+		return nil, 0, false, fmt.Errorf("iterate trip rows: %w", err)
 	}
-	return trips, nil
+
+	hasMore := page*limit < total
+	return trips, total, hasMore, nil
 }
 
 // Update 更新行程資料，必須提供 tripId，並僅更新允許修改的欄位。

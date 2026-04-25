@@ -32,15 +32,38 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 		creatorIDPtr = &c
 	}
 
-	events, err := h.service.ListEvents(r.Context(), statusPtr, creatorIDPtr)
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+	search := ""
+	if params.Search != nil {
+		search = *params.Search
+	}
+
+	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, creatorIDPtr, page, limit, search)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	resp := make([]api.GroupEvent, len(events))
+	items := make([]api.GroupEvent, len(events))
 	for i, e := range events {
-		resp[i] = ToGroupEventResponse(e)
+		items[i] = ToGroupEventResponse(e)
+	}
+
+	resp := api.GroupEventPaginationResponse{
+		Items: items,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
 	}
 
 	apiutil.SendJSON(w, http.StatusOK, resp)

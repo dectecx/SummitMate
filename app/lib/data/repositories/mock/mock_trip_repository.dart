@@ -1,4 +1,5 @@
 import '../../../core/error/result.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../models/user_profile.dart';
 import '../../models/enums/sync_status.dart';
 import '../../models/trip.dart';
@@ -75,8 +76,12 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<List<Trip>, Exception>> getRemoteTrips() async {
-    return Success([_mockTrip]);
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
+    String? cursor,
+    int? limit,
+    String? search,
+  }) async {
+    return Success(PaginatedList(items: [_mockTrip], nextCursor: null, hasMore: false));
   }
 
   @override

@@ -1,12 +1,14 @@
 package api
 
 import (
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"net/http"
+	"summitmate/api"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-func (s *Server) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.InteractionHandler.ListTripMessages(w, r, tripId)
+func (s *Server) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, params api.ListTripMessagesParams) {
+	s.InteractionHandler.ListTripMessages(w, r, tripId, params)
 }
 
 func (s *Server) AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
@@ -21,8 +23,8 @@ func (s *Server) DeleteTripMessage(w http.ResponseWriter, r *http.Request, tripI
 	s.InteractionHandler.DeleteTripMessage(w, r, tripId, messageId)
 }
 
-func (s *Server) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
-	s.InteractionHandler.ListTripPolls(w, r, tripId)
+func (s *Server) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, params api.ListTripPollsParams) {
+	s.InteractionHandler.ListTripPolls(w, r, tripId, params)
 }
 
 func (s *Server) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {

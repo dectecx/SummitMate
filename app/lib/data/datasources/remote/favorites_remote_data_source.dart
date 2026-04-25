@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
 import '../../models/favorite.dart';
 import '../../models/enums/favorite_type.dart';
@@ -18,11 +19,16 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
   FavoritesRemoteDataSource(this._favoritesApi);
 
   @override
-  Future<Result<List<Favorite>, Exception>> getFavorites() async {
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({String? cursor, int? limit}) async {
     try {
-      LogService.info('獲取雲端最愛列表...', source: _source);
-      final responses = await _favoritesApi.listFavorites();
-      return Success(responses.map(FavoritesApiMapper.fromResponse).toList());
+      LogService.info('獲取雲端最愛列表 (cursor: $cursor, limit: $limit)...', source: _source);
+      final response = await _favoritesApi.listFavorites(cursor: cursor, limit: limit);
+      final list = PaginatedList<Favorite>(
+        items: response.items.map(FavoritesApiMapper.fromResponse).toList(),
+        nextCursor: response.pagination.nextCursor,
+        hasMore: response.pagination.hasMore,
+      );
+      return Success(list);
     } catch (e) {
       LogService.error('獲取最愛列表失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));

@@ -1,6 +1,7 @@
 import '../../models/gear_library_item.dart';
 import '../interfaces/i_gear_library_repository.dart';
 import '../../../core/error/result.dart';
+import '../../../core/models/paginated_list.dart';
 
 /// 模擬裝備庫資料倉庫
 ///
@@ -86,5 +87,13 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
       map[item.category] = (map[item.category] ?? 0) + item.weight;
     }
     return map;
+  }
+  @override
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
+    String? cursor,
+    int? limit,
+    String? search,
+  }) async {
+    return Success(PaginatedList(items: [], nextCursor: null, hasMore: false));
   }
 }

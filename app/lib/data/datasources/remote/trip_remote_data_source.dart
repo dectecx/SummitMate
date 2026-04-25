@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../models/trip.dart';
 import '../../models/user_profile.dart';
 import '../../api/models/trip_api_models.dart';
@@ -20,11 +21,15 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   TripRemoteDataSource(this._tripApi, this._userApi);
 
   @override
-  Future<List<Trip>> getTrips() async {
+  Future<PaginatedList<Trip>> getTrips({String? cursor, int? limit, String? search}) async {
     try {
-      LogService.info('取得雲端行程列表...', source: _source);
-      final responses = await _tripApi.listTrips();
-      return responses.map(TripApiMapper.fromResponse).toList();
+      LogService.info('取得雲端行程列表 (cursor: $cursor, limit: $limit, search: $search)...', source: _source);
+      final response = await _tripApi.listTrips(cursor: cursor, limit: limit, search: search);
+      return PaginatedList<Trip>(
+        items: response.items.map(TripApiMapper.fromListItemResponse).toList(),
+        nextCursor: response.pagination.nextCursor,
+        hasMore: response.pagination.hasMore,
+      );
     } catch (e) {
       LogService.error('Remote GetTrips failed: $e', source: _source);
       rethrow;

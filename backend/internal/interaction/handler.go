@@ -25,25 +25,44 @@ func NewInteractionHandler(msgSvc MessageService, pollSvc PollService) *Interact
 
 // Message Handlers
 
-func (h *InteractionHandler) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+func (h *InteractionHandler) ListTripMessages(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, params api.ListTripMessagesParams) {
 	userID, ok := apiutil.GetUserIDFromRequest(r)
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
-	messages, err := h.msgSvc.ListTripMessages(r.Context(), tripId.String(), userID)
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+
+	messages, total, hasMore, err := h.msgSvc.ListTripMessages(r.Context(), tripId.String(), userID, page, limit)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	res := make([]api.Message, len(messages))
+	items := make([]api.Message, len(messages))
 	for i, m := range messages {
-		res[i] = ToMessageResponse(m)
+		items[i] = ToMessageResponse(m)
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, res)
+	resp := api.MessagePaginationResponse{
+		Items: items,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
 func (h *InteractionHandler) AddTripMessage(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
@@ -125,25 +144,44 @@ func (h *InteractionHandler) DeleteTripMessage(w http.ResponseWriter, r *http.Re
 
 // Poll Handlers
 
-func (h *InteractionHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+func (h *InteractionHandler) ListTripPolls(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, params api.ListTripPollsParams) {
 	userID, ok := apiutil.GetUserIDFromRequest(r)
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
-	polls, err := h.pollSvc.ListTripPolls(r.Context(), tripId.String(), userID)
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+
+	polls, total, hasMore, err := h.pollSvc.ListTripPolls(r.Context(), tripId.String(), userID, page, limit)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	res := make([]api.Poll, len(polls))
+	items := make([]api.Poll, len(polls))
 	for i, p := range polls {
-		res[i] = ToPollResponse(p)
+		items[i] = ToPollResponse(p)
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, res)
+	resp := api.PollPaginationResponse{
+		Items: items,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
 func (h *InteractionHandler) CreateTripPoll(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {

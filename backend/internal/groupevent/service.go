@@ -11,7 +11,7 @@ import (
 type GroupEventService interface {
 	CreateEvent(ctx context.Context, event *GroupEvent) error
 	GetEvent(ctx context.Context, id string) (*GroupEvent, error)
-	ListEvents(ctx context.Context, status *string, creatorID *string) ([]*GroupEvent, error)
+	ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error)
 	UpdateEvent(ctx context.Context, event *GroupEvent, userID string) error
 	DeleteEvent(ctx context.Context, id string, userID string) error
 
@@ -55,8 +55,8 @@ func (s *groupEventService) GetEvent(ctx context.Context, id string) (*GroupEven
 	return s.repo.GetEventByID(ctx, id)
 }
 
-func (s *groupEventService) ListEvents(ctx context.Context, status *string, creatorID *string) ([]*GroupEvent, error) {
-	return s.repo.ListEvents(ctx, status, creatorID)
+func (s *groupEventService) ListEvents(ctx context.Context, status *string, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
+	return s.repo.ListEvents(ctx, status, creatorID, page, limit, search)
 }
 
 func (s *groupEventService) UpdateEvent(ctx context.Context, event *GroupEvent, userID string) error {

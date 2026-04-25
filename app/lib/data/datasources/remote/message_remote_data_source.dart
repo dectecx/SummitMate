@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../models/message.dart';
 import '../../api/services/message_api_service.dart';
 import '../../api/mappers/message_api_mapper.dart';
@@ -15,11 +16,19 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   MessageRemoteDataSource(this._messageApi);
 
   @override
-  Future<List<Message>> getMessages(String tripId) async {
+  Future<PaginatedList<Message>> getMessages(
+    String tripId, {
+    String? cursor,
+    int? limit,
+  }) async {
     try {
-      LogService.info('Fetching messages for trip: $tripId', source: _source);
-      final responses = await _messageApi.listMessages(tripId);
-      return responses.map(MessageApiMapper.fromResponse).toList();
+      LogService.info('Fetching messages for trip: $tripId (cursor: $cursor, limit: $limit)', source: _source);
+      final response = await _messageApi.listTripMessages(tripId, cursor: cursor, limit: limit);
+      return PaginatedList<Message>(
+        items: response.items.map(MessageApiMapper.fromResponse).toList(),
+        nextCursor: response.pagination.nextCursor,
+        hasMore: response.pagination.hasMore,
+      );
     } catch (e) {
       LogService.error('FetchMessages failed: $e', source: _source);
       rethrow;

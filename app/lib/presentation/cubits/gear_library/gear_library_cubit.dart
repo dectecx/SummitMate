@@ -202,7 +202,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final userId = _authService.currentUserId;
       if (userId == null) return Failure(Exception('未登入'));
 
-      final cloudItems = await _remoteDataSource.getLibrary();
+      final cloudResult = await _remoteDataSource.getLibrary();
+      final cloudItems = cloudResult.items;
       await _repository.importAll(cloudItems);
 
       reload();

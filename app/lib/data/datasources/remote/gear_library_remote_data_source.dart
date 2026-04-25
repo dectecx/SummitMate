@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../models/gear_library_item.dart';
 import '../../api/mappers/gear_library_api_mapper.dart';
 import '../../api/services/gear_library_api_service.dart';
@@ -15,11 +16,25 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   GearLibraryRemoteDataSource(this._apiService);
 
   @override
-  Future<List<GearLibraryItem>> getLibrary() async {
+  Future<PaginatedList<GearLibraryItem>> getLibrary({
+    bool? includeArchived,
+    String? cursor,
+    int? limit,
+    String? search,
+  }) async {
     try {
-      LogService.info('取得個人裝備庫列表...', source: _source);
-      final responses = await _apiService.listItems();
-      return responses.map(GearLibraryApiMapper.fromResponse).toList();
+      LogService.info('取得個人裝備庫列表 (cursor: $cursor, limit: $limit, search: $search)...', source: _source);
+      final response = await _apiService.listItems(
+        includeArchived: includeArchived,
+        cursor: cursor,
+        limit: limit,
+        search: search,
+      );
+      return PaginatedList<GearLibraryItem>(
+        items: response.items.map(GearLibraryApiMapper.fromResponse).toList(),
+        nextCursor: response.pagination.nextCursor,
+        hasMore: response.pagination.hasMore,
+      );
     } catch (e) {
       LogService.error('getLibrary 失敗: $e', source: _source);
       rethrow;

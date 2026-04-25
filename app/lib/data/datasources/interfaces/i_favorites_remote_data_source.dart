@@ -1,13 +1,12 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/favorite.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../../core/error/result.dart';
 
 /// 最愛 (Favorites) 的遠端資料來源介面
 abstract interface class IFavoritesRemoteDataSource {
-  /// 從後端獲取所有最愛列表
-  ///
-  /// 回傳: 最愛列表
-  Future<Result<List<Favorite>, Exception>> getFavorites();
+  /// 從後端獲取最愛列表 (支援分頁)
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({String? cursor, int? limit});
 
   /// 在後端切換最愛狀態
   ///

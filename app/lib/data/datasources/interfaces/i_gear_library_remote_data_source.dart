@@ -1,9 +1,15 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/gear_library_item.dart';
 
 /// 個人裝備庫 (Gear Library) 的遠端資料來源介面
 abstract interface class IGearLibraryRemoteDataSource {
-  /// 取得所有雲端裝備庫項目
-  Future<List<GearLibraryItem>> getLibrary();
+  /// 取得雲端裝備庫項目 (支援分頁與搜尋)
+  Future<PaginatedList<GearLibraryItem>> getLibrary({
+    bool? includeArchived,
+    String? cursor,
+    int? limit,
+    String? search,
+  });
 
   /// 新增裝備至雲端庫
   ///

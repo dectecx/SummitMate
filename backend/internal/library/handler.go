@@ -36,19 +36,41 @@ func (h *LibraryHandler) ListGearLibrary(w http.ResponseWriter, r *http.Request,
 	if params.IncludeArchived != nil {
 		includeArchived = *params.IncludeArchived
 	}
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+	search := ""
+	if params.Search != nil {
+		search = *params.Search
+	}
 
-	items, err := h.gearSvc.ListItems(r.Context(), userID, includeArchived)
+	items, total, hasMore, err := h.gearSvc.ListItems(r.Context(), userID, includeArchived, page, limit, search)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	res := make([]api.GearLibraryItem, 0, len(items))
+	resItems := make([]api.GearLibraryItem, 0, len(items))
 	for _, item := range items {
-		res = append(res, ToGearLibraryItemResponse(item))
+		resItems = append(resItems, ToGearLibraryItemResponse(item))
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, res)
+	resp := api.GearLibraryPaginationResponse{
+		Items: resItems,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
 func (h *LibraryHandler) CreateGearLibraryItem(w http.ResponseWriter, r *http.Request) {
@@ -169,19 +191,41 @@ func (h *LibraryHandler) ListMealLibrary(w http.ResponseWriter, r *http.Request,
 	if params.IncludeArchived != nil {
 		includeArchived = *params.IncludeArchived
 	}
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+	search := ""
+	if params.Search != nil {
+		search = *params.Search
+	}
 
-	items, err := h.mealSvc.ListItems(r.Context(), userID, includeArchived)
+	items, total, hasMore, err := h.mealSvc.ListItems(r.Context(), userID, includeArchived, page, limit, search)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	res := make([]api.MealLibraryItem, 0, len(items))
+	resItems := make([]api.MealLibraryItem, 0, len(items))
 	for _, item := range items {
-		res = append(res, ToMealLibraryItemResponse(item))
+		resItems = append(resItems, ToMealLibraryItemResponse(item))
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, res)
+	resp := api.MealLibraryPaginationResponse{
+		Items: resItems,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
 func (h *LibraryHandler) CreateMealLibraryItem(w http.ResponseWriter, r *http.Request) {

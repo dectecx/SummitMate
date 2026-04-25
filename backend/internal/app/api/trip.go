@@ -1,12 +1,14 @@
 package api
 
 import (
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"net/http"
+	"summitmate/api"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-func (s *Server) ListTrips(w http.ResponseWriter, r *http.Request) {
-	s.TripHandler.ListTrips(w, r)
+func (s *Server) ListTrips(w http.ResponseWriter, r *http.Request, params api.ListTripsParams) {
+	s.TripHandler.ListTrips(w, r, params)
 }
 
 func (s *Server) CreateTrip(w http.ResponseWriter, r *http.Request) {

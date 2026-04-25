@@ -201,8 +201,8 @@ class MessageRepository implements IMessageRepository {
 
     try {
       LogService.info('Syncing messages for trip: $tripId', source: _source);
-      final cloudMessages = await _remoteDataSource.getMessages(tripId);
-      final result = await syncFromCloud(cloudMessages);
+      final cloudMessagesList = await _remoteDataSource.getMessages(tripId);
+      final result = await syncFromCloud(cloudMessagesList.items);
       if (result is Failure) throw result.exception;
       LogService.info('Sync messages complete', source: _source);
       return const Success(null);

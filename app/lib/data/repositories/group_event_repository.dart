@@ -91,7 +91,8 @@ class GroupEventRepository implements IGroupEventRepository {
     try {
       // Note: Remote API takes userId and status, category filtering done locally
       final userId = _getCurrentUserId() ?? 'guest';
-      final events = await _remoteDataSource.getEvents(userId: userId, status: 'open');
+      final paginated = await _remoteDataSource.getEvents(userId: userId, status: 'open');
+      final events = paginated.items;
 
       // Filter by category if specified
       final filtered = category != null ? events.where((e) => e.description.contains(category)).toList() : events;

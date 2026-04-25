@@ -13,7 +13,10 @@ abstract class FavoritesApiService {
   factory FavoritesApiService(Dio dio, {String baseUrl}) = _FavoritesApiService;
 
   @GET('/favorites')
-  Future<List<FavoriteResponse>> listFavorites();
+  Future<FavoritePaginationResponse> listFavorites({
+    @Query('cursor') String? cursor,
+    @Query('limit') int? limit,
+  });
 
   @POST('/favorites')
   Future<FavoriteResponse> addFavorite(@Body() FavoriteAddRequest request);

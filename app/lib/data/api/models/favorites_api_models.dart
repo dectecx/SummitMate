@@ -1,7 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'pagination_api_models.dart';
 
 part 'favorites_api_models.freezed.dart';
 part 'favorites_api_models.g.dart';
+
+@freezed
+abstract class FavoritePaginationResponse with _$FavoritePaginationResponse {
+  const factory FavoritePaginationResponse({
+    required List<FavoriteResponse> items,
+    required PaginationMetadata pagination,
+  }) = _FavoritePaginationResponse;
+
+  factory FavoritePaginationResponse.fromJson(Map<String, dynamic> json) => _$FavoritePaginationResponseFromJson(json);
+}
 
 // ── Response ──
 

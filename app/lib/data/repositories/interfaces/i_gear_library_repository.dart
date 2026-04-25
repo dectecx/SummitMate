@@ -1,3 +1,4 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/gear_library_item.dart';
 import '../../../core/error/result.dart';
 
@@ -13,11 +14,18 @@ abstract class IGearLibraryRepository {
 
   // ========== Data Operations ==========
 
-  /// 取得所有裝備庫項目
+  /// 取得所有裝備庫項目 (本地)
   ///
   /// [userId] 使用者 ID
   /// 回傳: 裝備庫項目列表 (依名稱排序)
   List<GearLibraryItem> getAll(String userId);
+
+  /// 取得雲端裝備庫項目
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
+    String? cursor,
+    int? limit,
+    String? search,
+  });
 
   /// 依 ID 取得裝備項目
   ///

@@ -1,13 +1,18 @@
+import '../../../core/models/paginated_list.dart';
 import '../../models/message.dart';
 
 /// 留言訊息 (Message) 的遠端資料來源介面
 ///
 /// 負責定義與後端 API 進行訊息資料交換的操作。
 abstract interface class IMessageRemoteDataSource {
-  /// 取得雲端留言列表 (透過 sync/getAll API)
+  /// 取得雲端留言列表 (支援分頁)
   ///
   /// [tripId] 指定的行程 ID
-  Future<List<Message>> getMessages(String tripId);
+  Future<PaginatedList<Message>> getMessages(
+    String tripId, {
+    String? cursor,
+    int? limit,
+  });
 
   /// 新增留言
   ///

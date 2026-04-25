@@ -56,12 +56,41 @@ void main() {
 
   group('GroupEventRemoteDataSource.getEvents', () {
     test('returns list of events on success', () async {
-      when(() => mockApiService.listEvents(any())).thenAnswer((_) async => [testEventResponse]);
+      final paginationResponse = GroupEventPaginationResponse.fromJson({
+        'items': [
+          {
+            'id': 'evt-999',
+            'title': 'Hiking Trip',
+            'creator_id': 'u1',
+            'creator_name': 'User 1',
+            'creator_avatar': '',
+            'status': 'open',
+            'start_date': '2024-01-01T00:00:00Z',
+            'location': 'Mountain',
+            'description': 'A test trip',
+            'max_members': 10,
+            'application_count': 0,
+            'total_application_count': 0,
+            'approval_required': false,
+            'private_message': '',
+            'like_count': 0,
+            'comment_count': 0,
+            'is_liked': false,
+            'latest_comments': [],
+            'created_at': '2024-01-01T00:00:00Z',
+            'created_by': 'u1',
+            'updated_at': '2024-01-01T00:00:00Z',
+            'updated_by': 'u1',
+          }
+        ],
+        'pagination': {'next_cursor': null, 'has_more': false},
+      });
+      when(() => mockApiService.listEvents(any())).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getEvents(userId: 'user-123');
 
-      expect(result.length, 1);
-      expect(result[0].title, 'Hiking Trip');
+      expect(result.items.length, 1);
+      expect(result.items[0].title, 'Hiking Trip');
     });
   });
 

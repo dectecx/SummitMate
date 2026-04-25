@@ -13,7 +13,11 @@ abstract class MessageApiService {
   factory MessageApiService(Dio dio, {String baseUrl}) = _MessageApiService;
 
   @GET('/trips/{tripId}/messages')
-  Future<List<MessageResponse>> listMessages(@Path('tripId') String tripId);
+  Future<MessagePaginationResponse> listTripMessages(
+    @Path('tripId') String tripId, {
+    @Query('cursor') String? cursor,
+    @Query('limit') int? limit,
+  });
 
   @POST('/trips/{tripId}/messages')
   Future<MessageResponse> addMessage(@Path('tripId') String tripId, @Body() MessageCreateRequest request);

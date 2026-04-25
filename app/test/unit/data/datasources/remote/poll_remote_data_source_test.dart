@@ -46,13 +46,37 @@ void main() {
 
   group('PollRemoteDataSource.getPolls', () {
     test('returns list of polls on success', () async {
-      when(() => mockApiService.listPolls('trip-1')).thenAnswer((_) async => [testPollResponse]);
+      final paginationResponse = PollPaginationResponse.fromJson({
+        'items': [
+          {
+            'id': 'poll-1',
+            'trip_id': 'trip-1',
+            'title': 'Test Poll',
+            'description': '',
+            'creator_id': 'user-1',
+            'is_allow_add_option': true,
+            'max_option_limit': 10,
+            'allow_multiple_votes': false,
+            'result_display_type': 'always',
+            'status': 'active',
+            'options': [],
+            'my_votes': [],
+            'total_votes': 0,
+            'created_at': '2024-01-01T00:00:00Z',
+            'created_by': 'user-1',
+            'updated_at': '2024-01-01T00:00:00Z',
+            'updated_by': 'user-1',
+          }
+        ],
+        'pagination': {'next_cursor': null, 'has_more': false},
+      });
+      when(() => mockApiService.listTripPolls('trip-1')).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getPolls('trip-1');
 
-      expect(result.length, 1);
-      expect(result[0].id, 'poll-1');
-      expect(result[0].title, 'Test Poll');
+      expect(result.items.length, 1);
+      expect(result.items[0].id, 'poll-1');
+      expect(result.items[0].title, 'Test Poll');
     });
   });
 

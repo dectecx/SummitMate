@@ -15,7 +15,7 @@ type BatchFavoriteItem struct {
 }
 
 type FavoriteRepository interface {
-	ListByUserID(ctx context.Context, userID string) ([]*Favorite, error)
+	ListByUserID(ctx context.Context, userID string, page int, limit int) ([]*Favorite, int, bool, error)
 	Create(ctx context.Context, fav *Favorite) error
 	DeleteByTargetAndUser(ctx context.Context, targetID, userID string) error
 	BatchUpdate(ctx context.Context, userID string, items []BatchFavoriteItem) error
@@ -29,12 +29,29 @@ func NewFavoriteRepository(db database.DB) FavoriteRepository {
 	return &favoriteRepository{db: db}
 }
 
-func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([]*Favorite, error) {
-	query := `SELECT id, user_id, target_id, type, created_at, created_by, updated_at, updated_by FROM favorites WHERE user_id = $1 ORDER BY created_at DESC`
+func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string, page int, limit int) ([]*Favorite, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+
 	db := database.GetQuerier(ctx, r.db)
-	rows, err := db.Query(ctx, query, userID)
+	var total int
+	if err := db.QueryRow(ctx, `SELECT COUNT(*) FROM favorites WHERE user_id = $1`, userID).Scan(&total); err != nil {
+		return nil, 0, false, fmt.Errorf("count favorites for user %s: %w", userID, err)
+	}
+
+	rows, err := db.Query(ctx,
+		`SELECT id, user_id, target_id, type, created_at, created_by, updated_at, updated_by
+		FROM favorites WHERE user_id = $1
+		ORDER BY created_at DESC, id DESC
+		LIMIT $2 OFFSET $3`,
+		userID, limit, (page-1)*limit,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("list favorites for user %s: %w", userID, err)
+		return nil, 0, false, fmt.Errorf("list favorites for user %s: %w", userID, err)
 	}
 	defer rows.Close()
 
@@ -42,14 +59,15 @@ func (r *favoriteRepository) ListByUserID(ctx context.Context, userID string) ([
 	for rows.Next() {
 		var f Favorite
 		if err := rows.Scan(&f.ID, &f.UserID, &f.TargetID, &f.Type, &f.CreatedAt, &f.CreatedBy, &f.UpdatedAt, &f.UpdatedBy); err != nil {
-			return nil, fmt.Errorf("scan favorite row: %w", err)
+			return nil, 0, false, fmt.Errorf("scan favorite row: %w", err)
 		}
 		favs = append(favs, &f)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterate favorite rows: %w", err)
+		return nil, 0, false, fmt.Errorf("iterate favorite rows: %w", err)
 	}
-	return favs, nil
+
+	return favs, total, page*limit < total, nil
 }
 
 func (r *favoriteRepository) Create(ctx context.Context, fav *Favorite) error {

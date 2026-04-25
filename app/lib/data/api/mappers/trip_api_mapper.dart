@@ -24,6 +24,26 @@ class TripApiMapper {
     );
   }
 
+  /// TripListItemResponse → Trip (domain model)
+  static Trip fromListItemResponse(TripListItemResponse response) {
+    return Trip(
+      id: response.id,
+      userId: response.userId,
+      name: response.name,
+      description: '', // 列表不含描述
+      startDate: response.startDate.toLocal(),
+      endDate: response.endDate?.toLocal(),
+      coverImage: response.coverImage,
+      isActive: response.isActive,
+      dayNames: const [], // 列表不含天數名稱
+      syncStatus: SyncStatus.synced,
+      createdAt: response.createdAt.toLocal(),
+      createdBy: response.createdBy,
+      updatedAt: response.updatedAt.toLocal(),
+      updatedBy: response.updatedBy,
+    );
+  }
+
   /// Trip (domain model) → TripCreateRequest
   static TripCreateRequest toCreateRequest(Trip trip) {
     return TripCreateRequest(
