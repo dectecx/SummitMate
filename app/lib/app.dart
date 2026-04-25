@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:seo_renderer/seo_renderer.dart';
+
 import 'core/theme.dart';
 import 'core/di/injection.dart';
 import 'infrastructure/tools/toast_service.dart';
@@ -71,7 +71,7 @@ class SummitMateApp extends StatelessWidget {
         return MaterialApp(
           title: 'SummitMate',
           debugShowCheckedModeBanner: false,
-          navigatorObservers: [if (kIsWeb) seoRouteObserver],
+          navigatorObservers: const [],
 
           // Toast 訊息的 key
           scaffoldMessengerKey: ToastService.messengerKey,
@@ -84,7 +84,7 @@ class SummitMateApp extends StatelessWidget {
             final content = GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
 
             if (kIsWeb) {
-              return RobotDetector(child: content);
+              return content;
             }
             return content;
           },
