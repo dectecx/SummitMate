@@ -64,6 +64,16 @@ func NewAuthService(
 //
 // 回傳新建的 User、JWT Token、或錯誤。
 func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string, avatar *string) (*User, string, error) {
+	// 驗證 Email 格式
+	if !isValidEmail(emailAddr) {
+		return nil, "", apperror.ErrInvalidEmail
+	}
+
+	// 驗證密碼強度
+	if err := validatePasswordStrength(password); err != nil {
+		return nil, "", err
+	}
+
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err == nil {
@@ -309,4 +319,34 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 // SearchUserByEmail 透過 Email 搜尋使用者。
 func (svc *authService) SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error) {
 	return svc.userRepo.GetByEmail(ctx, emailAddr)
+}
+
+// --- Validation Helpers ---
+
+func isValidEmail(email string) bool {
+	// 簡單的 Email 正則表達式
+	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	match, _ := regexp.MatchString(pattern, email)
+	return match
+}
+
+func validatePasswordStrength(password string) error {
+	if len(password) < 8 {
+		return apperror.ErrPasswordTooShort
+	}
+
+	var hasLetter, hasNumber bool
+	for _, r := range password {
+		if unicode.IsLetter(r) {
+			hasLetter = true
+		} else if unicode.IsNumber(r) {
+			hasNumber = true
+		}
+	}
+
+	if !hasLetter || !hasNumber {
+		return apperror.ErrPasswordTooWeak
+	}
+
+	return nil
 }
