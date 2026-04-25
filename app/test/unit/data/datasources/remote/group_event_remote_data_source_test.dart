@@ -3,8 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/group_event_api_models.dart';
 import 'package:summitmate/data/api/services/group_event_api_service.dart';
 import 'package:summitmate/data/datasources/remote/group_event_remote_data_source.dart';
-import 'package:summitmate/data/models/group_event.dart';
-import 'package:summitmate/data/models/enums/group_event_status.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockGroupEventApiService extends Mock implements GroupEventApiService {}
 
@@ -14,11 +13,14 @@ class FakeGroupEventCommentRequest extends Fake implements GroupEventCommentRequ
 
 class FakeGroupEventApplyRequest extends Fake implements GroupEventApplyRequest {}
 
+class FakeGroupEventReviewRequest extends Fake implements GroupEventReviewRequest {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeGroupEventCreateRequest());
     registerFallbackValue(FakeGroupEventCommentRequest());
     registerFallbackValue(FakeGroupEventApplyRequest());
+    registerFallbackValue(FakeGroupEventReviewRequest());
   });
 
   late GroupEventRemoteDataSource dataSource;
@@ -83,43 +85,54 @@ void main() {
             'updated_by': 'u1',
           }
         ],
-        'pagination': {'next_cursor': null, 'has_more': false},
+        'pagination': {
+          'next_cursor': null,
+          'has_more': false,
+          'page': 1,
+          'limit': 20,
+          'total': 1,
+        },
       });
-      when(() => mockApiService.listEvents(any())).thenAnswer((_) async => paginationResponse);
+      when(() => mockApiService.listEvents(
+            status: any(named: 'status'),
+            category: any(named: 'category'),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenAnswer((_) async => paginationResponse);
 
-      final result = await dataSource.getEvents(userId: 'user-123');
+      final result = await dataSource.getEvents();
 
-      expect(result.items.length, 1);
-      expect(result.items[0].title, 'Hiking Trip');
+      expect(result, isA<Success>());
+      final paginated = (result as Success).value;
+      expect(paginated.items.length, 1);
+      expect(paginated.items[0].title, 'Hiking Trip');
     });
   });
 
   group('GroupEventRemoteDataSource CRUD', () {
     test('createEvent returns ID', () async {
-      final event = GroupEvent(
-        id: 'e1',
-        creatorId: 'u1',
-        title: 'New Event',
-        startDate: DateTime(2024, 1, 1),
-        status: GroupEventStatus.open,
-        createdAt: DateTime(2024, 1, 1),
-        createdBy: 'u1',
-        updatedAt: DateTime(2024, 1, 1),
-        updatedBy: 'u1',
-      );
-
       when(() => mockApiService.createEvent(any())).thenAnswer((_) async => testEventResponse);
 
-      final result = await dataSource.createEvent(event);
+      final result = await dataSource.createEvent(
+        title: 'New Event',
+        description: 'Desc',
+        category: 'Hiking',
+        eventDate: DateTime.now(),
+        eventLocation: 'Mountain',
+        maxParticipants: 10,
+        deadline: DateTime.now(),
+      );
 
-      expect(result, 'evt-999');
+      expect(result, isA<Success>());
+      expect((result as Success).value, 'evt-999');
     });
 
     test('deleteEvent calls delete', () async {
       when(() => mockApiService.deleteEvent('evt-1')).thenAnswer((_) async {});
 
-      await dataSource.deleteEvent(eventId: 'evt-1', userId: 'u1');
+      final result = await dataSource.deleteEvent('evt-1');
 
+      expect(result, isA<Success>());
       verify(() => mockApiService.deleteEvent('evt-1')).called(1);
     });
   });
@@ -141,9 +154,10 @@ void main() {
 
       when(() => mockApiService.applyEvent('evt-1', any())).thenAnswer((_) async => appResponse);
 
-      final result = await dataSource.applyEvent(eventId: 'evt-1', userId: 'u1', message: 'Pick me!');
+      final result = await dataSource.applyEvent(eventId: 'evt-1', note: 'Pick me!');
 
-      expect(result, 'app-123');
+      expect(result, isA<Success>());
+      expect((result as Success).value, 'app-123');
     });
 
     test('addComment returns comment object', () async {
@@ -160,10 +174,12 @@ void main() {
 
       when(() => mockApiService.addComment('e1', any())).thenAnswer((_) async => commentResponse);
 
-      final result = await dataSource.addComment(eventId: 'e1', userId: 'u1', content: 'Nice!');
+      final result = await dataSource.addComment(eventId: 'e1', content: 'Nice!');
 
-      expect(result.content, 'Nice!');
-      expect(result.id, 'c1');
+      expect(result, isA<Success>());
+      final comment = (result as Success).value;
+      expect(comment.content, 'Nice!');
+      expect(comment.id, 'c1');
     });
   });
 }

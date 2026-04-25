@@ -21,7 +21,7 @@ void main() {
   late MockFavoritesRemoteDataSource mockRemoteDataSource;
   late MockAuthService mockAuthService;
 
-  setUp(() {
+  setUpAll(() {
     registerFallbackValue(FavoriteType.mountain);
     registerFallbackValue(
       Favorite(
@@ -34,6 +34,9 @@ void main() {
         updatedBy: 'dummy',
       ),
     );
+  });
+
+  setUp(() {
     mockLocalDataSource = MockFavoritesLocalDataSource();
     mockRemoteDataSource = MockFavoritesRemoteDataSource();
     mockAuthService = MockAuthService();
@@ -61,10 +64,13 @@ void main() {
         // Arrange
         when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
         when(
-          () => mockRemoteDataSource.getFavorites(),
+          () => mockRemoteDataSource.getFavorites(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
         ).thenAnswer(
           (_) async => Success<PaginatedList<Favorite>, Exception>(
-            PaginatedList(items: [], nextCursor: null, hasMore: false),
+            const PaginatedList(items: [], page: 1, total: 0, hasMore: false),
           ),
         );
         when(() => mockLocalDataSource.saveFavorites(any())).thenAnswer((_) async {});
@@ -78,7 +84,10 @@ void main() {
         expect(paginated.items, [tFavorite]);
 
         verify(() => mockLocalDataSource.getFavorites()).called(1);
-        verify(() => mockRemoteDataSource.getFavorites()).called(1);
+        verify(() => mockRemoteDataSource.getFavorites(
+              page: any(named: 'page'),
+              limit: any(named: 'limit'),
+            )).called(1);
       });
 
       test('should return Failure when local fetch fails', () async {
@@ -105,7 +114,7 @@ void main() {
         when(
           () => mockLocalDataSource.toggleFavorite(any(), any(), any(), userId: any(named: 'userId')),
         ).thenAnswer((_) async {});
-        when(() => mockRemoteDataSource.updateFavorite(any(), any(), any())).thenAnswer((_) async => Success(null));
+        when(() => mockRemoteDataSource.updateFavorite(any(), any(), any())).thenAnswer((_) async => const Success(null));
 
         // Act
         final result = await repository.toggleFavorite(tId, tType, true);

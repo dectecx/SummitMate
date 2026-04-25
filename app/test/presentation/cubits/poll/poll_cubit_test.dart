@@ -1,10 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:summitmate/core/constants.dart';
+import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/models/poll.dart';
+import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_poll_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
 import 'package:summitmate/domain/interfaces/i_poll_service.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
@@ -16,20 +17,19 @@ class MockPollService extends Mock implements IPollService {}
 
 class MockPollRepository extends Mock implements IPollRepository {}
 
-class MockConnectivityService extends Mock implements IConnectivityService {}
+class MockTripRepository extends Mock implements ITripRepository {}
 
-class MockSharedPreferences extends Mock implements SharedPreferences {}
+class MockConnectivityService extends Mock implements IConnectivityService {}
 
 class MockAuthService extends Mock implements IAuthService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockPollService mockPollService;
   late MockPollRepository mockRepo;
+  late MockTripRepository mockTripRepo;
   late MockConnectivityService mockConnectivity;
   late MockAuthService mockAuthService;
-  late MockSharedPreferences mockPrefs;
   late PollCubit cubit;
 
   final testPoll = Poll(
@@ -43,20 +43,29 @@ void main() {
     options: [],
   );
 
+  final testTrip = Trip(
+    id: 'trip1',
+    userId: 'u1',
+    name: 'Trip 1',
+    startDate: DateTime.now(),
+    createdAt: DateTime.now(),
+    createdBy: 'u1',
+    updatedAt: DateTime.now(),
+    updatedBy: 'u1',
+  );
+
   setUp(() {
-    mockPollService = MockPollService();
     mockRepo = MockPollRepository();
+    mockTripRepo = MockTripRepository();
     mockConnectivity = MockConnectivityService();
     mockAuthService = MockAuthService();
-    mockPrefs = MockSharedPreferences();
 
     when(() => mockAuthService.currentUserId).thenReturn('u1');
-    when(() => mockPrefs.getString(PrefKeys.username)).thenReturn('u1');
     when(() => mockConnectivity.isOffline).thenReturn(false);
-    when(() => mockRepo.getAll()).thenReturn([]);
-    when(() => mockRepo.getLastSyncTime()).thenReturn(null);
+    when(() => mockTripRepo.getActiveTrip(any())).thenAnswer((_) async => Success(testTrip));
+    when(() => mockRepo.getByTripId(any())).thenReturn([]);
 
-    cubit = PollCubit(mockPollService, mockRepo, mockConnectivity, mockAuthService);
+    cubit = PollCubit(mockRepo, mockTripRepo, mockConnectivity, mockAuthService);
   });
 
   tearDown(() {
@@ -71,7 +80,7 @@ void main() {
     blocTest<PollCubit, PollState>(
       'loads polls from repository',
       setUp: () {
-        when(() => mockRepo.getAll()).thenReturn([testPoll]);
+        when(() => mockRepo.getByTripId('trip1')).thenReturn([testPoll]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadPolls(),
@@ -84,96 +93,51 @@ void main() {
 
   group('fetchPolls', () {
     blocTest<PollCubit, PollState>(
-      'fetches polls from service and saves to repo',
+      'fetches polls from repository syncPolls',
       setUp: () {
-        when(() => mockRepo.getAll()).thenReturn([testPoll]);
-        when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
-        when(() => mockRepo.saveAll([testPoll])).thenAnswer((_) async {});
+        final paginated = PaginatedList<Poll>(items: [testPoll], page: 1, total: 1, hasMore: false);
+        when(() => mockRepo.syncPolls('trip1')).thenAnswer((_) async => Success(paginated));
       },
       build: () => cubit,
       act: (cubit) => cubit.fetchPolls(),
       verify: (_) {
-        verify(() => mockPollService.getPolls(userId: 'u1')).called(1);
-        verify(() => mockRepo.saveAll([testPoll])).called(1);
+        verify(() => mockRepo.syncPolls('trip1')).called(1);
       },
       expect: () => [
         const PollLoading(),
         isA<PollLoaded>().having((s) => s.polls, 'polls', [testPoll]).having((s) => s.isSyncing, 'syncing', false),
       ],
     );
-
-    blocTest<PollCubit, PollState>(
-      'handles offline mode gracefully',
-      setUp: () {
-        when(() => mockConnectivity.isOffline).thenReturn(true);
-      },
-      build: () => cubit,
-      seed: () => const PollLoaded(polls: [], currentUserId: 'u1'),
-      act: (cubit) => cubit.fetchPolls(),
-      expect: () => [], // Should just return, maybe show toast
-    );
   });
 
   group('createPoll', () {
     blocTest<PollCubit, PollState>(
-      'calls service to create poll',
+      'calls repo to create poll',
       setUp: () {
-        when(
-          () => mockPollService.createPoll(
-            title: 'New Poll',
-            description: '', // default
-            creatorId: 'u1',
-            deadline: null,
-            isAllowAddOption: false, // default
-            maxOptionLimit: 20, // default
-            allowMultipleVotes: false, // default
-            initialOptions: const [],
-          ),
-        ).thenAnswer((_) async => const Success(null));
+        when(() => mockRepo.create(
+              tripId: any(named: 'tripId'),
+              title: any(named: 'title'),
+              options: any(named: 'options'),
+              allowMultiple: any(named: 'allowMultiple'),
+            )).thenAnswer((_) async => const Success('p1'));
 
-        // Mock fetchPolls called internally
-        when(() => mockPollService.getPolls(userId: 'u1')).thenAnswer((_) async => Success([testPoll]));
-        when(() => mockRepo.saveAll(any())).thenAnswer((_) async {});
+        final paginated = PaginatedList<Poll>(items: [testPoll], page: 1, total: 1, hasMore: false);
+        when(() => mockRepo.syncPolls('trip1')).thenAnswer((_) async => Success(paginated));
       },
       build: () => cubit,
       seed: () => const PollLoaded(polls: [], currentUserId: 'u1'),
       act: (cubit) => cubit.createPoll(title: 'New Poll'),
       verify: (_) {
-        verify(
-          () => mockPollService.createPoll(
-            title: 'New Poll',
-            description: '',
-            creatorId: 'u1',
-            deadline: null,
-            isAllowAddOption: false,
-            maxOptionLimit: 20,
-            allowMultipleVotes: false,
-            initialOptions: const [],
-          ),
-        ).called(1);
+        verify(() => mockRepo.create(
+              tripId: 'trip1',
+              title: 'New Poll',
+              options: const [],
+              allowMultiple: false,
+            )).called(1);
       },
       expect: () => [
         isA<PollLoaded>().having((s) => s.isSyncing, 'syncing start', true),
-        // Wait, inside _performAction we call action then fetchPolls.
-        // fetchPolls emits isSyncing=true if in loaded state?
-        // fetchPolls calls emit(copyWith(isSyncing: true)) if loaded.
-        // But _performAction already did emit(isSyncing: true).
-        // So fetchPolls sees isSyncing=true already? No, it emits again likely or distinct check?
-        // Cubit doesn't distinct by default unless Equatable props are same.
-        // If state is same, bloc skips.
-        // _performAction: emits syncing=true.
-        // fetchPolls: checks loaded, emits syncing=true (if not already checking? Logic in fetchPolls: emit(copyWith(isSyncing: true))).
-        // If it's already true, and I emit true, Equatable props are identical, so no new emission.
-        // Then fetch calls service.
-        // Then fetch success: emits loaded(syncing: false).
-        // So expected emissions:
-        // 1. isSyncing=true (from _performAction)
-        // 2. isSyncing=false (from fetchPolls success)
-
-        // Let's verify.
-        isA<PollLoaded>().having((s) => s.isSyncing, 'syncing end', false).having((s) => s.polls, 'polls populated', [
-          testPoll,
-        ]),
+        isA<PollLoaded>().having((s) => s.isSyncing, 'syncing end', false).having((s) => s.polls, 'polls populated', [testPoll]),
       ],
     );
   });

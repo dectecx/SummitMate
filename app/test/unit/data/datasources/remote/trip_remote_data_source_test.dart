@@ -1,37 +1,29 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/trip_api_models.dart';
-import 'package:summitmate/data/api/models/user_api_models.dart';
 import 'package:summitmate/data/api/services/trip_api_service.dart';
-import 'package:summitmate/data/api/services/user_api_service.dart';
 import 'package:summitmate/data/datasources/remote/trip_remote_data_source.dart';
 import 'package:summitmate/data/models/trip.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockTripApiService extends Mock implements TripApiService {}
-
-class MockUserApiService extends Mock implements UserApiService {}
 
 class FakeTripCreateRequest extends Fake implements TripCreateRequest {}
 
 class FakeTripUpdateRequest extends Fake implements TripUpdateRequest {}
 
-class FakeAddMemberRequest extends Fake implements AddMemberRequest {}
-
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeTripCreateRequest());
     registerFallbackValue(FakeTripUpdateRequest());
-    registerFallbackValue(FakeAddMemberRequest());
   });
 
   late TripRemoteDataSource dataSource;
   late MockTripApiService mockTripApi;
-  late MockUserApiService mockUserApi;
 
   setUp(() {
     mockTripApi = MockTripApiService();
-    mockUserApi = MockUserApiService();
-    dataSource = TripRemoteDataSource(mockTripApi, mockUserApi);
+    dataSource = TripRemoteDataSource(mockTripApi);
   });
 
   final testTripResponse = TripResponse.fromJson({
@@ -48,18 +40,8 @@ void main() {
     'updated_by': 'user-456',
   });
 
-  final testUserResponse = UserResponse.fromJson({
-    'id': 'user-456',
-    'email': 'test@example.com',
-    'display_name': 'Test User',
-    'avatar': '🐻',
-    'role': 'member',
-    'permissions': [],
-    'is_verified': true,
-  });
-
   group('TripRemoteDataSource', () {
-    test('getTrips returns list of trips on success', () async {
+    test('getRemoteTrips returns list of trips on success', () async {
       final paginationResponse = TripListPaginationResponse.fromJson({
         'items': [
           {
@@ -69,16 +51,31 @@ void main() {
             'start_date': '2024-01-01',
             'end_date': '2024-01-05',
             'is_active': true,
+            'created_at': '2024-01-01T00:00:00Z',
+            'created_by': 'user-456',
+            'updated_at': '2024-01-01T00:00:00Z',
+            'updated_by': 'user-456',
           }
         ],
-        'pagination': {'next_cursor': null, 'has_more': false},
+        'pagination': {
+          'next_cursor': null,
+          'has_more': false,
+          'page': 1,
+          'limit': 20,
+          'total': 1,
+        },
       });
-      when(() => mockTripApi.listTrips()).thenAnswer((_) async => paginationResponse);
+      when(() => mockTripApi.listTrips(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenAnswer((_) async => paginationResponse);
 
-      final result = await dataSource.getTrips();
+      final result = await dataSource.getRemoteTrips();
 
-      expect(result.items.length, 1);
-      expect(result.items.first.id, 'trip-123');
+      expect(result, isA<Success>());
+      final paginated = (result as Success).value;
+      expect(paginated.items.length, 1);
+      expect(paginated.items.first.id, 'trip-123');
     });
 
     test('uploadTrip returns new id on success', () async {
@@ -97,26 +94,26 @@ void main() {
       });
 
       final result = await dataSource.uploadTrip(trip);
-      expect(result, 'trip-123');
+      expect(result, isA<Success>());
+      expect((result as Success).value, 'trip-123');
     });
 
-    test('addMemberById searches user and then adds member', () async {
-      when(() => mockUserApi.getUserById('user-456')).thenAnswer((_) async => testUserResponse);
-      when(() => mockTripApi.addMember('trip-123', any())).thenAnswer((_) async => {});
+    test('deleteTrip calls api', () async {
+      when(() => mockTripApi.deleteTrip('trip-123')).thenAnswer((_) async {});
 
-      await dataSource.addMemberById('trip-123', 'user-456');
+      final result = await dataSource.deleteTrip('trip-123');
 
-      verify(() => mockUserApi.getUserById('user-456')).called(1);
-      verify(() => mockTripApi.addMember('trip-123', any())).called(1);
+      expect(result, isA<Success>());
+      verify(() => mockTripApi.deleteTrip('trip-123')).called(1);
     });
 
-    test('searchUserByEmail calls UserApiService', () async {
-      when(() => mockUserApi.searchUserByEmail('test@example.com')).thenAnswer((_) async => testUserResponse);
+    test('getTripDetails returns trip on success', () async {
+      when(() => mockTripApi.getTrip('trip-123')).thenAnswer((_) async => testTripResponse);
 
-      final result = await dataSource.searchUserByEmail('test@example.com');
+      final result = await dataSource.getTripDetails('trip-123');
 
-      expect(result.email, 'test@example.com');
-      verify(() => mockUserApi.searchUserByEmail('test@example.com')).called(1);
+      expect(result, isA<Success>());
+      expect((result as Success).value.id, 'trip-123');
     });
   });
 }

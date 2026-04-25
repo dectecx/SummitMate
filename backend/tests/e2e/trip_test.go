@@ -144,10 +144,10 @@ func (s *APITestSuite) TestTrip_ListMyTrips() {
 	defer resp.Body.Close()
 	s.Require().Equal(http.StatusOK, resp.StatusCode)
 
-	var trips []api.TripListItemResponse
-	err := json.NewDecoder(resp.Body).Decode(&trips)
+	var listResp api.TripListPaginationResponse
+	err := json.NewDecoder(resp.Body).Decode(&listResp)
 	s.Require().NoError(err)
-	s.Len(trips, 2, "應該回傳兩筆資料")
+	s.Len(listResp.Items, 2, "應該回傳兩筆資料")
 }
 
 func (s *APITestSuite) TestTrip_Update() {

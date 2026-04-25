@@ -10,6 +10,8 @@ import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/message/message_cubit.dart';
 import 'package:summitmate/presentation/cubits/message/message_state.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/core/models/paginated_list.dart';
+
 
 class MockMessageRepository extends Mock implements IMessageRepository {}
 
@@ -49,16 +51,6 @@ void main() {
     createdAt: DateTime.now().add(const Duration(minutes: 1)),
     createdBy: 'u1',
     updatedAt: DateTime.now().add(const Duration(minutes: 1)),
-    updatedBy: 'u1',
-  );
-  final globalMessage = Message(
-    id: 'm3',
-    content: 'Global',
-    category: 'chat',
-    timestamp: DateTime.now(),
-    createdAt: DateTime.now(),
-    createdBy: 'u1',
-    updatedAt: DateTime.now(),
     updatedBy: 'u1',
   );
 
@@ -104,39 +96,15 @@ void main() {
 
   group('loadMessages', () {
     blocTest<MessageCubit, MessageState>(
-      'emits [MessageLoading, MessageLoaded] with filtered messages',
+      'emits [MessageLoading, MessageLoaded] with messages',
       setUp: () {
-        when(
-          () => mockRepo.getAllMessages(),
-        ).thenAnswer((_) async => Success([testMessage1, testMessage2, globalMessage]));
+        when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1, testMessage2]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadMessages(),
       expect: () => [
         const MessageLoading(),
-        isA<MessageLoaded>().having((s) => s.allMessages.length, 'length', 3), // Should contain trip + global
-      ],
-    );
-
-    blocTest<MessageCubit, MessageState>(
-      'filters messages not belonging to current trip',
-      setUp: () {
-        final otherTripMsg = Message(
-          id: 'm4',
-          content: 'Other',
-          tripId: 't2',
-          createdAt: DateTime.now(),
-          createdBy: 'u2',
-          updatedAt: DateTime.now(),
-          updatedBy: 'u2',
-        );
-        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1, otherTripMsg]));
-      },
-      build: () => cubit,
-      act: (cubit) => cubit.loadMessages(),
-      expect: () => [
-        const MessageLoading(),
-        isA<MessageLoaded>().having((s) => s.allMessages, 'filtered', [testMessage1]),
+        isA<MessageLoaded>().having((s) => s.allMessages.length, 'length', 2),
       ],
     );
   });
@@ -145,15 +113,26 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'calls repo.addMessage and reloads',
       setUp: () {
-        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
-        when(() => mockRepo.addMessage(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1]);
+        when(() => mockRepo.addMessage(
+              tripId: any(named: 'tripId'),
+              content: any(named: 'content'),
+              replyToId: any(named: 'replyToId'),
+            )).thenAnswer((_) async => const Success('m_new'));
+        when(() => mockRepo.getRemoteMessages(any())).thenAnswer(
+          (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
+        );
       },
       build: () => cubit,
       seed: () => MessageLoaded(allMessages: [testMessage1]),
       act: (cubit) => cubit.addMessage(user: 'User', avatar: 'A', content: 'New Msg'),
       verify: (_) {
-        verify(() => mockRepo.addMessage(any())).called(1);
-        verify(() => mockRepo.getAllMessages()).called(1); // Reload called
+        verify(() => mockRepo.addMessage(
+              tripId: 't1',
+              content: 'New Msg',
+              replyToId: null,
+            )).called(1);
+        verify(() => mockRepo.getByTripId('t1')).called(greaterThanOrEqualTo(1));
       },
     );
   });
@@ -162,8 +141,10 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'emits isSyncing true then false, reloads on success',
       setUp: () {
-        when(() => mockRepo.sync(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => Success([testMessage1]));
+        when(() => mockRepo.getRemoteMessages(any())).thenAnswer(
+          (_) async => Success(PaginatedList<Message>(items: [testMessage1], page: 1, total: 1, hasMore: false)),
+        );
+        when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1]);
       },
       build: () => cubit,
       seed: () => const MessageLoaded(allMessages: []),
@@ -172,18 +153,17 @@ void main() {
         isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', true),
         isA<MessageLoaded>()
             .having((s) => s.allMessages, 'messages', [testMessage1])
-            .having((s) => s.isSyncing, 'syncing', true),
-        isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', false).having((s) => s.allMessages, 'messages', [
-          testMessage1,
-        ]),
+            .having((s) => s.isSyncing, 'syncing', false),
       ],
     );
 
     blocTest<MessageCubit, MessageState>(
       'emits error on sync failure (manual)',
       setUp: () {
-        when(() => mockRepo.sync(any())).thenAnswer((_) async => Failure(GeneralException('Network error')));
-        when(() => mockRepo.getAllMessages()).thenAnswer((_) async => const Success([]));
+        when(() => mockRepo.getRemoteMessages(any())).thenAnswer(
+          (_) async => Failure(GeneralException('Network error')),
+        );
+        when(() => mockRepo.getByTripId(any())).thenReturn([]);
       },
       build: () => cubit,
       seed: () => const MessageLoaded(allMessages: []),

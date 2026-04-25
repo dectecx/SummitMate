@@ -12,13 +12,15 @@ class MockGearRepository extends Mock implements IGearRepository {}
 void main() {
   late MockGearRepository mockGearRepository;
 
+  setUpAll(() {
+    // Fallback registration
+    registerFallbackValue(GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback'));
+  });
+
   setUp(() {
     mockGearRepository = MockGearRepository();
     GetIt.I.reset();
     GetIt.I.registerSingleton<IGearRepository>(mockGearRepository);
-
-    // Fallback registration
-    registerFallbackValue(GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback'));
   });
 
   group('GearCubit', () {
