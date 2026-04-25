@@ -61,13 +61,14 @@ void main() {
       ),
     );
 
-    // Default: No last sync time
+    // Default: Itinerary sync behavior
     when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
-    when(() => mockMessageRepo.getLastSyncTime()).thenAnswer((_) async => const Success(null));
+    when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
 
-    // Default: Save sync time success
-    when(() => mockItineraryRepo.saveLastSyncTime(any())).thenAnswer((_) async => const Success(null));
-    when(() => mockMessageRepo.saveLastSyncTime(any())).thenAnswer((_) async => const Success(null));
+    // Default: Message sync behavior
+    when(() => mockMessageRepo.getRemoteMessages(any())).thenAnswer(
+      (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
+    );
 
     syncService = SyncService(
       tripRepo: mockTripRepo,
@@ -91,7 +92,6 @@ void main() {
         updatedBy: 'user',
       ),
     );
-    // registerFallbackValue(Settings()); // HiveObject might be hard to instantiate directly without hive
   });
 
   group('SyncService Tests', () {
@@ -110,33 +110,25 @@ void main() {
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
       when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockMessageRepo.sync(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.getRemoteMessages(any())).thenAnswer(
+        (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
+      );
 
       // Act
       final result = await syncService.syncAll();
 
       // Assert
       expect(result.isSuccess, isTrue);
-      // Wait for async operations
       verify(() => mockItineraryRepo.sync('test-trip-1')).called(1);
-      verify(() => mockMessageRepo.sync('test-trip-1')).called(1);
+      verify(() => mockMessageRepo.getRemoteMessages('test-trip-1')).called(1);
     });
 
     test('syncAll failure handles error', () async {
       // Arrange
-      when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
-      when(() => mockMessageRepo.getLastSyncTime()).thenAnswer((_) async => const Success(null));
-      // Re-init to load new mock times
-      syncService = SyncService(
-        tripRepo: mockTripRepo,
-        itineraryRepo: mockItineraryRepo,
-        messageRepo: mockMessageRepo,
-        connectivity: mockConnectivity,
-        authService: mockAuthService,
-      );
-
       when(() => mockItineraryRepo.sync(any())).thenThrow(Exception('Network Error'));
-      when(() => mockMessageRepo.sync(any())).thenAnswer((_) async => const Success(null));
+      when(() => mockMessageRepo.getRemoteMessages(any())).thenAnswer(
+        (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
+      );
 
       // Act
       final result = await syncService.syncAll(isAuto: false);
@@ -158,8 +150,12 @@ void main() {
         updatedAt: DateTime.now(),
         updatedBy: 'u1',
       );
-      final paginated = PaginatedList(items: [trip], nextCursor: null, hasMore: false);
-      when(() => mockTripRepo.getRemoteTrips()).thenAnswer((_) async => Success(paginated));
+      final paginated = PaginatedList<Trip>(items: [trip], page: 1, total: 1, hasMore: false);
+      when(() => mockTripRepo.getRemoteTrips(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+            search: any(named: 'search'),
+          )).thenAnswer((_) async => Success(paginated));
 
       // Act
       final result = await syncService.getCloudTrips();
@@ -168,7 +164,10 @@ void main() {
       expect(result is Success, true);
       final value = (result as Success<PaginatedList<Trip>, Exception>).value;
       expect(value.items, [trip]);
-      verify(() => mockTripRepo.getRemoteTrips()).called(1);
+      verify(() => mockTripRepo.getRemoteTrips(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).called(1);
     });
   });
 }

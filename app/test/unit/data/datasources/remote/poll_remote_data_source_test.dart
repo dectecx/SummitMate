@@ -3,6 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/poll_api_models.dart';
 import 'package:summitmate/data/api/services/poll_api_service.dart';
 import 'package:summitmate/data/datasources/remote/poll_remote_data_source.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockPollApiService extends Mock implements PollApiService {}
 
@@ -68,15 +69,27 @@ void main() {
             'updated_by': 'user-1',
           }
         ],
-        'pagination': {'next_cursor': null, 'has_more': false},
+        'pagination': {
+          'next_cursor': null,
+          'has_more': false,
+          'page': 1,
+          'limit': 20,
+          'total': 1,
+        },
       });
-      when(() => mockApiService.listTripPolls('trip-1')).thenAnswer((_) async => paginationResponse);
+      when(() => mockApiService.listTripPolls(
+            any(),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getPolls('trip-1');
 
-      expect(result.items.length, 1);
-      expect(result.items[0].id, 'poll-1');
-      expect(result.items[0].title, 'Test Poll');
+      expect(result, isA<Success>());
+      final paginated = (result as Success).value;
+      expect(paginated.items.length, 1);
+      expect(paginated.items[0].id, 'poll-1');
+      expect(paginated.items[0].title, 'Test Poll');
     });
   });
 
@@ -87,21 +100,23 @@ void main() {
       final result = await dataSource.createPoll(
         tripId: 'trip-1',
         title: 'Test Poll',
-        initialOptions: ['Op 1', 'Op 2'],
+        options: ['Op 1', 'Op 2'],
       );
 
-      expect(result, 'poll-1');
+      expect(result, isA<Success>());
+      expect((result as Success).value, 'poll-1');
       verify(() => mockApiService.createPoll('trip-1', any())).called(1);
     });
   });
 
   group('PollRemoteDataSource Operations', () {
-    test('voteOption calls api correctly', () async {
-      when(() => mockApiService.voteOption('t1', 'p1', 'o1')).thenAnswer((_) async {});
+    test('vote calls api correctly', () async {
+      when(() => mockApiService.voteOption('t1', 'p1', any())).thenAnswer((_) async {});
 
-      await dataSource.voteOption(tripId: 't1', pollId: 'p1', optionId: 'o1');
+      final result = await dataSource.vote('t1', 'p1', ['o1']);
 
-      verify(() => mockApiService.voteOption('t1', 'p1', 'o1')).called(1);
+      expect(result, isA<Success>());
+      verify(() => mockApiService.voteOption('t1', 'p1', any())).called(1);
     });
 
     test('addOption calls api correctly', () async {
@@ -120,8 +135,9 @@ void main() {
 
       when(() => mockApiService.addOption('t1', 'p1', any())).thenAnswer((_) async => optionResponse);
 
-      await dataSource.addOption(tripId: 't1', pollId: 'p1', text: 'New Case');
+      final result = await dataSource.addOption('t1', 'p1', 'New Case');
 
+      expect(result, isA<Success>());
       verify(() => mockApiService.addOption('t1', 'p1', any())).called(1);
     });
   });

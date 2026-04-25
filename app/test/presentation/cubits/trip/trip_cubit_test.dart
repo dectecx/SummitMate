@@ -35,6 +35,22 @@ void main() {
   late MockItineraryRepository mockItineraryRepository;
   late MockGearRepository mockGearRepository;
 
+  setUpAll(() {
+    // Register fallback values if needed
+    registerFallbackValue(
+      Trip(
+        id: 'fallback',
+        userId: 'u1',
+        name: 'fallback',
+        startDate: DateTime.now(),
+        createdAt: DateTime.now(),
+        createdBy: 'u1',
+        updatedAt: DateTime.now(),
+        updatedBy: 'u1',
+      ),
+    );
+  });
+
   setUp(() {
     mockTripRepository = MockTripRepository();
     mockSyncService = MockSyncService();
@@ -58,20 +74,6 @@ void main() {
     // Default stubs
     when(() => mockAuthService.currentUserId).thenReturn('user-1');
     when(() => mockAuthService.currentUserEmail).thenReturn('user@example.com');
-
-    // Register fallback values if needed
-    registerFallbackValue(
-      Trip(
-        id: 'fallback',
-        userId: 'u1',
-        name: 'fallback',
-        startDate: DateTime.now(),
-        createdAt: DateTime.now(),
-        createdBy: 'u1',
-        updatedAt: DateTime.now(),
-        updatedBy: 'u1',
-      ),
-    );
   });
 
   group('TripCubit', () {
@@ -118,8 +120,8 @@ void main() {
       build: () {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
-        when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
         return TripCubit(mockTripRepository, mockSyncService, mockAuthService);
       },
       act: (cubit) => cubit.addTrip(name: 'New Trip', startDate: DateTime.now()),
@@ -135,8 +137,8 @@ void main() {
         isA<TripLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockTripRepository.addTrip(any())).called(1);
-        verify(() => mockTripRepository.setActiveTrip(any())).called(1);
+        verify(() => mockTripRepository.saveTrip(any())).called(1);
+        verify(() => mockTripRepository.setActiveTrip(any(), any())).called(1);
       },
     );
 
@@ -145,13 +147,13 @@ void main() {
       build: () {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
-        when(() => mockTripRepository.addTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
         return TripCubit(mockTripRepository, mockSyncService, mockAuthService);
       },
       act: (cubit) => cubit.importTrip(trip2),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
-        verify(() => mockTripRepository.addTrip(trip2)).called(1);
+        verify(() => mockTripRepository.saveTrip(trip2)).called(1);
       },
     );
 
@@ -160,13 +162,13 @@ void main() {
       build: () {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
-        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
         return TripCubit(mockTripRepository, mockSyncService, mockAuthService);
       },
       act: (cubit) => cubit.setActiveTrip('trip2'),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
-        verify(() => mockTripRepository.setActiveTrip('trip2')).called(1);
+        verify(() => mockTripRepository.setActiveTrip(any(), 'trip2')).called(1);
       },
     );
 
@@ -176,7 +178,7 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip2])); // After delete
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
         when(() => mockTripRepository.deleteTrip(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockTripRepository.setActiveTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
         return TripCubit(mockTripRepository, mockSyncService, mockAuthService);
       },
       seed: () => TripLoaded(trips: [trip1, trip2], activeTrip: trip2), // Start with state
@@ -200,7 +202,7 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip2]));
 
         // Mock logic for setActiveTrip (logic searches otherTrips.first -> trip2)
-        when(() => mockTripRepository.setActiveTrip('trip2')).thenAnswer((_) async => const Success(null));
+        when(() => mockTripRepository.setActiveTrip(any(), 'trip2')).thenAnswer((_) async => const Success(null));
 
         when(() => mockTripRepository.deleteTrip('trip1')).thenAnswer((_) async => const Success(null));
 
@@ -214,7 +216,7 @@ void main() {
       expect: () => [const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
         // Verify implicit switch
-        verify(() => mockTripRepository.setActiveTrip('trip2')).called(1);
+        verify(() => mockTripRepository.setActiveTrip(any(), 'trip2')).called(1);
         verify(() => mockTripRepository.deleteTrip('trip1')).called(1);
       },
     );
@@ -223,7 +225,7 @@ void main() {
       // Setup
       when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
       when(() => mockGearRepository.getAllItems()).thenReturn([]);
-      when(() => mockTripRepository.uploadTripToRemote(any())).thenAnswer((_) async => const Success('mock-id'));
+      when(() => mockTripRepository.uploadToCloud(any())).thenAnswer((_) async => const Success('mock-id'));
       when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => const Success(null));
       final mockTripGearRemote = GetIt.I<ITripGearRemoteDataSource>();
       when(() => mockTripGearRemote.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());
@@ -233,7 +235,7 @@ void main() {
       final result = await cubit.uploadFullTrip(trip1);
 
       expect(result, true);
-      verify(() => mockTripRepository.uploadTripToRemote(trip1)).called(1);
+      verify(() => mockTripRepository.uploadToCloud(trip1)).called(1);
       verify(() => mockItineraryRepository.sync('trip1')).called(1);
     });
 

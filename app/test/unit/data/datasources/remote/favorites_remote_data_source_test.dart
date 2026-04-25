@@ -47,19 +47,33 @@ void main() {
             'updated_by': 'user-1',
           }
         ],
-        'pagination': {'next_cursor': null, 'has_more': false},
+        'pagination': {
+          'next_cursor': null,
+          'has_more': false,
+          'page': 1,
+          'limit': 20,
+          'total': 1,
+        },
       });
-      when(() => mockApi.listFavorites()).thenAnswer((_) async => paginationResponse);
+      when(() => mockApi.listFavorites(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getFavorites();
 
       expect(result, isA<Success>());
       final paginated = (result as Success).value;
       expect(paginated.items.length, 1);
+      expect(paginated.page, 1);
+      expect(paginated.total, 1);
     });
 
     test('returns failure on exception', () async {
-      when(() => mockApi.listFavorites()).thenThrow(Exception('Error'));
+      when(() => mockApi.listFavorites(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenThrow(Exception('Error'));
 
       final result = await dataSource.getFavorites();
 

@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/message_api_models.dart';
 import 'package:summitmate/data/api/services/message_api_service.dart';
 import 'package:summitmate/data/datasources/remote/message_remote_data_source.dart';
-import 'package:summitmate/data/models/message.dart';
+import 'package:summitmate/core/error/result.dart';
 
 class MockMessageApiService extends Mock implements MessageApiService {}
 
@@ -50,50 +50,58 @@ void main() {
             'created_at': '2024-01-01T00:00:00Z',
           }
         ],
-        'pagination': {'next_cursor': null, 'has_more': false},
+        'pagination': {
+          'next_cursor': null,
+          'has_more': false,
+          'page': 1,
+          'limit': 20,
+          'total': 1,
+        },
       });
-      when(() => mockApiService.listTripMessages('trip-1')).thenAnswer((_) async => paginationResponse);
+      when(() => mockApiService.listTripMessages(
+            any(),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getMessages('trip-1');
 
-      expect(result.items.length, 1);
-      expect(result.items[0].id, 'msg-1');
-      expect(result.items[0].content, 'Hello world');
+      expect(result, isA<Success>());
+      final paginated = (result as Success).value;
+      expect(paginated.items.length, 1);
+      expect(paginated.items[0].id, 'msg-1');
+      expect(paginated.items[0].content, 'Hello world');
     });
 
-    test('throws exception on error', () async {
-      when(() => mockApiService.listTripMessages('fail')).thenThrow(Exception('Error'));
+    test('returns failure on error', () async {
+      when(() => mockApiService.listTripMessages(
+            any(),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          )).thenThrow(Exception('Error'));
 
-      expect(() => dataSource.getMessages('fail'), throwsException);
+      final result = await dataSource.getMessages('fail');
+
+      expect(result, isA<Failure>());
     });
   });
 
   group('MessageRemoteDataSource operations', () {
     test('addMessage calls api correctly', () async {
-      when(() => mockApiService.addMessage('trip-1', any())).thenAnswer((_) async => testResponse);
+      when(() => mockApiService.addMessage(any(), any())).thenAnswer((_) async => testResponse);
 
-      final message = Message.fromJson({
-        'id': 'msg-1',
-        'trip_id': 'trip-1',
-        'user_id': 'user-1',
-        'content': 'Hello world',
-        'timestamp': '2024-01-01T00:00:00Z',
-        'created_at': '2024-01-01T00:00:00Z',
-        'created_by': 'user-1',
-        'updated_at': '2024-01-01T00:00:00Z',
-        'updated_by': 'user-1',
-      });
+      final result = await dataSource.addMessage(tripId: 'trip-1', content: 'Hello world');
 
-      await dataSource.addMessage(message);
-
+      expect(result, isA<Success>());
       verify(() => mockApiService.addMessage('trip-1', any())).called(1);
     });
 
     test('deleteMessage calls api correctly', () async {
       when(() => mockApiService.deleteMessage('trip-1', 'msg-1')).thenAnswer((_) async {});
 
-      await dataSource.deleteMessage('trip-1', 'msg-1');
+      final result = await dataSource.deleteMessage('trip-1', 'msg-1');
 
+      expect(result, isA<Success>());
       verify(() => mockApiService.deleteMessage('trip-1', 'msg-1')).called(1);
     });
   });

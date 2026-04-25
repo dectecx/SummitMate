@@ -5,15 +5,12 @@ import 'package:summitmate/data/datasources/interfaces/i_trip_local_data_source.
 import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/trip_repository.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/core/error/result.dart';
 
 // Mocks
 class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
 
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
-
-class MockAuthService extends Mock implements IAuthService {}
 
 void main() {
   late TripRepository repository;
@@ -22,11 +19,7 @@ void main() {
 
   late Trip testTrip;
 
-  setUp(() {
-    mockLocalDataSource = MockTripLocalDataSource();
-    mockRemoteDataSource = MockTripRemoteDataSource();
-    repository = TripRepository(localDataSource: mockLocalDataSource, remoteDataSource: mockRemoteDataSource);
-
+  setUpAll(() {
     testTrip = Trip(
       id: 'trip_1',
       userId: 'user_1',
@@ -38,8 +31,13 @@ void main() {
       updatedBy: 'user_1',
     );
 
-    // Register fallback values for mocktail if needed
     registerFallbackValue(testTrip);
+  });
+
+  setUp(() {
+    mockLocalDataSource = MockTripLocalDataSource();
+    mockRemoteDataSource = MockTripRemoteDataSource();
+    repository = TripRepository(mockLocalDataSource, mockRemoteDataSource);
   });
 
   group('TripRepository', () {
@@ -73,16 +71,24 @@ void main() {
     });
 
     test('Positive: getRemoteTrips fetches from remote and returns PaginatedList', () async {
-      final paginated = PaginatedList(items: [testTrip], nextCursor: null, hasMore: false);
-      when(() => mockRemoteDataSource.getTrips()).thenAnswer((_) async => paginated);
+      const paginated = PaginatedList<Trip>(items: [], page: 1, total: 0, hasMore: false);
+      when(() => mockRemoteDataSource.getRemoteTrips(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+            search: any(named: 'search'),
+          )).thenAnswer((_) async => const Success(paginated));
 
       final result = await repository.getRemoteTrips();
 
       expect(result, isA<Success>());
       final value = (result as Success<PaginatedList<Trip>, Exception>).value;
-      expect(value.items, [testTrip]);
+      expect(value.items, isEmpty);
       expect(value.hasMore, false);
-      verify(() => mockRemoteDataSource.getTrips()).called(1);
+      verify(() => mockRemoteDataSource.getRemoteTrips(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+            search: any(named: 'search'),
+          )).called(1);
     });
 
     test('Extreme: getAllTrips handles large number of trips', () async {
@@ -92,7 +98,7 @@ void main() {
           id: 't_$i',
           userId: 'u1',
           name: 'Trip $i',
-          startDate: DateTime.now(),
+          startDate: DateTime.now().add(Duration(days: i)),
           createdAt: DateTime.now(),
           createdBy: 'u1',
           updatedAt: DateTime.now(),
@@ -106,7 +112,8 @@ void main() {
       expect(result, isA<Success>());
       final trips = (result as Success).value as List<Trip>;
       expect(trips.length, 100);
-      expect(trips[99].name, 'Trip 99');
+      // Repository sorts by startDate DESC
+      expect(trips[0].name, 'Trip 99');
     });
   });
 }

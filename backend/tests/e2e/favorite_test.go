@@ -30,9 +30,9 @@ func (s *APITestSuite) TestFavorite_CRUD() {
 	// 2. 列出收藏
 	resp = s.sendAuthRequest("GET", "/favorites", token, nil)
 	defer resp.Body.Close()
-	var favs []api.Favorite
-	json.NewDecoder(resp.Body).Decode(&favs)
-	s.Len(favs, 1)
+	var listResp api.FavoritePaginationResponse
+	json.NewDecoder(resp.Body).Decode(&listResp)
+	s.Len(listResp.Items, 1)
 
 	// 3. 移除收藏
 	resp = s.sendAuthRequest("DELETE", fmt.Sprintf("/favorites/%s", tripID), token, nil)

@@ -40,9 +40,9 @@ func (s *APITestSuite) TestGroupEvent_CRUD() {
 	defer resp.Body.Close()
 	s.Equal(http.StatusOK, resp.StatusCode)
 
-	var events []api.GroupEvent
-	json.NewDecoder(resp.Body).Decode(&events)
-	s.NotEmpty(events)
+	var listResp api.GroupEventPaginationResponse
+	json.NewDecoder(resp.Body).Decode(&listResp)
+	s.NotEmpty(listResp.Items)
 
 	// 3. 申請加入 (用另一個使用者)
 	token2, _ := s.registerAndLogin("報名者A")

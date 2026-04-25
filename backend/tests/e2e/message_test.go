@@ -39,9 +39,9 @@ func (s *APITestSuite) TestMessage_CRUD() {
 	// 4. 再次列出
 	resp = s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/messages", tripID), token, nil)
 	defer resp.Body.Close()
-	var messages []api.Message
-	json.NewDecoder(resp.Body).Decode(&messages)
-	s.Len(messages, 1)
+	var listResp api.MessagePaginationResponse
+	json.NewDecoder(resp.Body).Decode(&listResp)
+	s.Len(listResp.Items, 1)
 
 	// 5. 刪除
 	resp = s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s/messages/%s", tripID, msgID), token, nil)
@@ -70,9 +70,9 @@ func (s *APITestSuite) TestMessage_Reply() {
 	// 驗證巢狀結構
 	resp = s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/messages", tripID), token, nil)
 	defer resp.Body.Close()
-	var msgs []api.Message
-	json.NewDecoder(resp.Body).Decode(&msgs)
-	s.Len(msgs, 1)
-	s.Require().NotNil(msgs[0].Replies)
-	s.Len(*msgs[0].Replies, 1)
+	var listResp api.MessagePaginationResponse
+	json.NewDecoder(resp.Body).Decode(&listResp)
+	s.Len(listResp.Items, 1)
+	s.Require().NotNil(listResp.Items[0].Replies)
+	s.Len(*listResp.Items[0].Replies, 1)
 }
