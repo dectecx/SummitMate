@@ -17,10 +17,9 @@ abstract class GroupEventApiService {
   @GET('/group-events')
   Future<GroupEventPaginationResponse> listEvents({
     @Query('status') String? status,
-    @Query('creator_id') String? creatorId,
-    @Query('cursor') String? cursor,
+    @Query('category') String? category,
+    @Query('page') int? page,
     @Query('limit') int? limit,
-    @Query('search') String? search,
   });
 
   @GET('/group-events/my')

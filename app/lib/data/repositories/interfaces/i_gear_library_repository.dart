@@ -22,7 +22,7 @@ abstract class IGearLibraryRepository {
 
   /// 取得雲端裝備庫項目
   Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
-    String? cursor,
+    int? page,
     int? limit,
     String? search,
   });

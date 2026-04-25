@@ -24,14 +24,10 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }) : _localDataSource = localDataSource,
        _remoteDataSource = remoteDataSource;
 
-  // ========== Init ==========
-
   @override
   Future<Result<void, Exception>> init() async {
     return const Success(null);
   }
-
-  // ========== Data Operations ==========
 
   @override
   List<GearLibraryItem> getAll(String userId) {
@@ -71,8 +67,6 @@ class GearLibraryRepository implements IGearLibraryRepository {
     }
   }
 
-  // ========== Statistics ==========
-
   @override
   int getCount(String userId) => getAll(userId).length;
 
@@ -92,18 +86,16 @@ class GearLibraryRepository implements IGearLibraryRepository {
 
   @override
   Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
-    String? cursor,
+    int? page,
     int? limit,
+    String? category,
     String? search,
   }) async {
-    try {
-      return Success(await _remoteDataSource.getLibrary(
-        cursor: cursor,
-        limit: limit,
-        search: search,
-      ));
-    } catch (e) {
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
-    }
+    return _remoteDataSource.listLibrary(
+      page: page,
+      limit: limit,
+      category: category,
+      search: search,
+    );
   }
 }

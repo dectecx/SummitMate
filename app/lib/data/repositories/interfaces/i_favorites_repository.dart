@@ -15,7 +15,7 @@ abstract interface class IFavoritesRepository {
 
   /// 回傳最愛項目列表 (包含 ID 與 Type)
   Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({
-    String? cursor,
+    int? page,
     int? limit,
   });
 }

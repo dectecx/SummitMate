@@ -14,7 +14,7 @@ abstract class FavoritesApiService {
 
   @GET('/favorites')
   Future<FavoritePaginationResponse> listFavorites({
-    @Query('cursor') String? cursor,
+    @Query('page') int? page,
     @Query('limit') int? limit,
   });
 

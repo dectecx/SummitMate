@@ -23,11 +23,11 @@ class MessageApiMapper {
   }
 
   /// Message (domain model) → MessageCreateRequest
-  static MessageCreateRequest toCreateRequest(Message message) {
+  static MessageCreateRequest toCreateRequest(String content, [String? parentId, String? category]) {
     return MessageCreateRequest(
-      content: message.content,
-      category: message.category.isNotEmpty ? message.category : null,
-      parentId: message.parentId,
+      content: content,
+      category: category,
+      parentId: parentId,
     );
   }
 }

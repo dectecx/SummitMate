@@ -24,10 +24,10 @@ class MockSyncService implements ISyncService {
 
   @override
   Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({
-    String? cursor,
+    int? page,
     int? limit,
   }) async {
-    return Success(PaginatedList(items: [], nextCursor: null, hasMore: false));
+    return Success(PaginatedList(items: [], page: page ?? 1, total: 0, hasMore: false));
   }
 
   @override

@@ -79,7 +79,7 @@ abstract interface class ISyncService {
   Future<SyncResult> syncAll({bool isAuto = false});
 
   /// 取得雲端行程列表
-  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({String? cursor, int? limit});
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({int? page, int? limit});
 
   /// 取得最後同步時間
   DateTime? get lastItinerarySync;

@@ -186,7 +186,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       if (userId == null) return Failure(Exception('未登入'));
 
       final items = _repository.getAll(userId);
-      await _remoteDataSource.replaceAllLibraryItems(items);
+      final result = await _remoteDataSource.replaceAll(items);
+      if (result is Failure) return Failure(result.exception);
 
       LogService.info('Gear Library 上傳成功, 項目數: ${items.length}', source: 'GearLibraryCubit');
       return Success(items.length);
@@ -202,8 +203,11 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final userId = _authService.currentUserId;
       if (userId == null) return Failure(Exception('未登入'));
 
-      final cloudResult = await _remoteDataSource.getLibrary();
-      final cloudItems = cloudResult.items;
+      final cloudResult = await _remoteDataSource.listLibrary();
+      final cloudItems = switch (cloudResult) {
+        Success(value: final p) => p.items,
+        Failure(exception: final e) => throw e,
+      };
       await _repository.importAll(cloudItems);
 
       reload();

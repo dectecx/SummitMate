@@ -1,13 +1,12 @@
 import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/user_profile.dart';
 import '../../models/enums/sync_status.dart';
 import '../../models/trip.dart';
+import '../../models/user_profile.dart';
 import '../interfaces/i_trip_repository.dart';
 import 'mock_itinerary_repository.dart';
 
 /// 模擬行程清單資料庫
-/// 用於教學模式，返回單一假行程，所有寫入操作皆為空實作。
 class MockTripRepository implements ITripRepository {
   /// 模擬行程
   final Trip _mockTrip = Trip(
@@ -30,6 +29,8 @@ class MockTripRepository implements ITripRepository {
     return const Success(null);
   }
 
+  // ========== Data Operations ==========
+
   @override
   Future<Result<List<Trip>, Exception>> getAllTrips(String userId) async {
     return Success([_mockTrip]);
@@ -46,7 +47,7 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<void, Exception>> addTrip(Trip trip) async {
+  Future<Result<void, Exception>> saveTrip(Trip trip) async {
     return const Success(null);
   }
 
@@ -61,47 +62,48 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<void, Exception>> setActiveTrip(String tripId) async {
+  Future<Result<void, Exception>> setActiveTrip(String userId, String? tripId) async {
     return const Success(null);
   }
 
-  @override
-  Future<Result<DateTime?, Exception>> getLastSyncTime() async {
-    return Success(DateTime.now());
-  }
-
-  @override
-  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
-    return const Success(null);
-  }
+  // ========== Remote Operations ==========
 
   @override
   Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
-    String? cursor,
+    int? page,
     int? limit,
     String? search,
   }) async {
-    return Success(PaginatedList(items: [_mockTrip], nextCursor: null, hasMore: false));
+    return Success(PaginatedList(items: [_mockTrip], page: page ?? 1, total: 1, hasMore: false));
   }
 
   @override
-  Future<Result<String, Exception>> uploadTripToRemote(Trip trip) async {
+  Future<Result<String, Exception>> uploadToCloud(Trip trip) async {
     return Success(trip.id);
   }
 
   @override
-  Future<Result<void, Exception>> deleteRemoteTrip(String id) async {
+  Future<Result<void, Exception>> removeFromCloud(String tripId) async {
     return const Success(null);
   }
 
   @override
-  Future<Result<void, Exception>> clearAll() async {
-    return const Success(null);
+  Future<Result<Trip, Exception>> syncTripDetails(String tripId) async {
+    return Success(_mockTrip);
   }
+
+  // ========== Member Management (Remote Mock) ==========
 
   @override
   Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
-    return const Success([]);
+    return Success([
+      {
+        'id': 'mock-user-1',
+        'displayName': '測試帳號',
+        'email': 'test@example.com',
+        'role': 'owner',
+      }
+    ]);
   }
 
   @override
@@ -126,11 +128,21 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<Result<UserProfile, Exception>> searchUserByEmail(String email) async {
-    return Success(UserProfile(id: 'mock-user-2', email: email, displayName: 'Mock User'));
+    return Success(UserProfile(
+      id: 'mock-user-2',
+      email: email,
+      displayName: '搜尋到的用戶',
+      avatar: '🐻',
+    ));
   }
 
   @override
   Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
-    return Success(UserProfile(id: userId, email: 'mock@example.com', displayName: 'Mock User'));
+    return Success(UserProfile(
+      id: userId,
+      email: 'user@example.com',
+      displayName: '搜尋到的用戶',
+      avatar: '🐻',
+    ));
   }
 }

@@ -75,8 +75,8 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _tripRepository.uploadTripToRemote(trip);
-      if (result case Failure(exception: final e)) throw e;
+      final result = await _tripRepository.uploadToCloud(trip);
+      if (result case Failure(:final exception)) throw exception;
 
       setState(() => _isLoading = false);
       ToastService.success('已上傳: ${trip.name}');
@@ -145,8 +145,8 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _tripRepository.deleteRemoteTrip(trip.id);
-      if (result case Failure(exception: final e)) throw e;
+      final result = await _tripRepository.removeFromCloud(trip.id);
+      if (result case Failure(:final exception)) throw exception;
 
       setState(() => _isLoading = false);
       ToastService.success('已從雲端刪除: ${trip.name}');

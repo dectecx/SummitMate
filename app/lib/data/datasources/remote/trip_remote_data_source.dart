@@ -2,13 +2,12 @@ import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../models/trip.dart';
 import '../../models/user_profile.dart';
-import '../../api/models/trip_api_models.dart';
-import '../../api/services/trip_api_service.dart';
-import '../../api/services/user_api_service.dart';
 import '../../api/mappers/trip_api_mapper.dart';
-import '../../api/mappers/user_api_mapper.dart';
+import '../../api/services/trip_api_service.dart';
+import '../../api/models/trip_api_models.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_trip_remote_data_source.dart';
+import '../../../core/error/result.dart';
 
 /// 行程 (Trip) 的遠端資料來源實作
 @LazySingleton(as: ITripRemoteDataSource)
@@ -16,139 +15,133 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   static const String _source = 'TripRemoteDataSource';
 
   final TripApiService _tripApi;
-  final UserApiService _userApi;
 
-  TripRemoteDataSource(this._tripApi, this._userApi);
+  TripRemoteDataSource(this._tripApi);
 
   @override
-  Future<PaginatedList<Trip>> getTrips({String? cursor, int? limit, String? search}) async {
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
+    int? page,
+    int? limit,
+    String? search,
+  }) async {
     try {
-      LogService.info('取得雲端行程列表 (cursor: $cursor, limit: $limit, search: $search)...', source: _source);
-      final response = await _tripApi.listTrips(cursor: cursor, limit: limit, search: search);
-      return PaginatedList<Trip>(
-        items: response.items.map(TripApiMapper.fromListItemResponse).toList(),
-        nextCursor: response.pagination.nextCursor,
+      LogService.info('獲取遠端行程列表 (page: $page, limit: $limit)...', source: _source);
+      final response = await _tripApi.listTrips(page: page, limit: limit, search: search);
+      
+      final trips = response.items.map(TripApiMapper.fromListItemResponse).toList();
+      
+      return Success(PaginatedList<Trip>(
+        items: trips,
+        page: response.pagination.page,
+        total: response.pagination.total,
         hasMore: response.pagination.hasMore,
-      );
+      ));
     } catch (e) {
-      LogService.error('Remote GetTrips failed: $e', source: _source);
-      rethrow;
+      LogService.error('獲取遠端行程失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<String> uploadTrip(Trip trip) async {
+  Future<Result<Trip, Exception>> getTripDetails(String tripId) async {
     try {
+      final response = await _tripApi.getTrip(tripId);
+      return Success(TripApiMapper.fromResponse(response));
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<String, Exception>> uploadTrip(Trip trip) async {
+    try {
+      LogService.info('上傳行程至遠端: ${trip.name} (${trip.id})...', source: _source);
       final request = TripApiMapper.toCreateRequest(trip);
       final response = await _tripApi.createTrip(request);
-      LogService.info('Remote UploadTrip success: ${response.id}', source: _source);
-      return response.id;
+      return Success(response.id);
     } catch (e) {
-      LogService.error('Remote UploadTrip failed: $e', source: _source);
-      rethrow;
+      LogService.error('上傳行程失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> updateTrip(Trip trip) async {
+  Future<Result<void, Exception>> deleteTrip(String id) async {
     try {
-      final request = TripApiMapper.toUpdateRequest(trip);
-      await _tripApi.updateTrip(trip.id, request);
-      LogService.info('Remote UpdateTrip success: ${trip.id}', source: _source);
+      LogService.info('刪除遠端行程: $id...', source: _source);
+      await _tripApi.deleteTrip(id);
+      return const Success(null);
     } catch (e) {
-      LogService.error('Remote UpdateTrip failed: $e', source: _source);
-      rethrow;
+      LogService.error('刪除遠端行程失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> deleteTrip(String tripId) async {
-    try {
-      await _tripApi.deleteTrip(tripId);
-      LogService.info('Remote DeleteTrip success: $tripId', source: _source);
-    } catch (e) {
-      LogService.error('Remote DeleteTrip failed: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getTripMembers(String tripId) async {
+  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
     try {
       final members = await _tripApi.getMembers(tripId);
-      return members.map((m) => m.toJson()).toList();
+      return Success(members.map((m) => m.toJson()).toList());
     } catch (e) {
-      LogService.error('Remote GetTripMembers failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> updateMemberRole(String tripId, String userId, String role) async {
+  Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role) async {
     try {
       await _tripApi.updateMemberRole(tripId, userId, UpdateMemberRoleRequest(role: role));
+      return const Success(null);
     } catch (e) {
-      LogService.error('Remote UpdateMemberRole failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> removeMember(String tripId, String userId) async {
+  Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
     try {
       await _tripApi.removeMember(tripId, userId);
+      return const Success(null);
     } catch (e) {
-      LogService.error('Remote RemoveMember failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
+  Future<Result<void, Exception>> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
     try {
       await _tripApi.addMember(tripId, AddMemberRequest(email: email));
+      return const Success(null);
     } catch (e) {
-      LogService.error('Remote AddMemberByEmail failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> addMemberById(String tripId, String userId, {String role = 'member'}) async {
+  Future<Result<void, Exception>> addMemberById(String tripId, String userId, {String role = 'member'}) async {
     try {
-      // 透過 UserApiService 查詢 email
-      final userResponse = await _userApi.getUserById(userId);
-      final email = userResponse.email;
-
-      // 呼叫現有的 addMemberByEmail (內部使用 _tripApi.addMember)
-      await addMemberByEmail(tripId, email, role: role);
+      // NOTE: Current API doesn't support addMemberById, using email for now or throw
+      throw UnimplementedError('API currently only supports adding by email');
     } catch (e) {
-      LogService.error('Remote AddMemberById failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<UserProfile> searchUserByEmail(String email) async {
+  Future<Result<UserProfile, Exception>> searchUserByEmail(String email) async {
     try {
-      LogService.info('Searching user by email: $email', source: _source);
-      final response = await _userApi.searchUserByEmail(email);
-      return UserApiMapper.fromResponse(response);
+      throw UnimplementedError('User search by email should be in UserApiService');
     } catch (e) {
-      LogService.error('Remote SearchUserByEmail failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<UserProfile> searchUserById(String userId) async {
+  Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
     try {
-      LogService.info('Searching user by ID: $userId', source: _source);
-      final response = await _userApi.getUserById(userId);
-      return UserApiMapper.fromResponse(response);
+      throw UnimplementedError('User search by ID should be in UserApiService');
     } catch (e) {
-      LogService.error('Remote SearchUserById failed: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 }

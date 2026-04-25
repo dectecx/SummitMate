@@ -419,48 +419,6 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                           spacing: 12,
                           runSpacing: 12,
                           children: [
-                            if (freshPoll.isActive)
-                              FilledButton.tonalIcon(
-                                onPressed: isOffline
-                                    ? null
-                                    : () async {
-                                        final confirm = await showDialog<bool>(
-                                          context: context,
-                                          builder: (c) => AlertDialog(
-                                            title: const Text('關閉投票'),
-                                            content: const Text('確定要提早結束此投票嗎？'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(c, false),
-                                                child: const Text('取消'),
-                                              ),
-                                              FilledButton(
-                                                onPressed: () => Navigator.pop(c, true),
-                                                child: const Text('確定'),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                        if (confirm == true) {
-                                          if (!context.mounted) return;
-                                          setState(() => _isSubmitting = true);
-                                          try {
-                                            await context.read<PollCubit>().closePoll(pollId: freshPoll.id);
-                                          } finally {
-                                            setState(() => _isSubmitting = false);
-                                          }
-                                        }
-                                      },
-                                icon: const Icon(Icons.lock_clock),
-                                label: const Text('結束投票'),
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.orange.shade100,
-                                  foregroundColor: Colors.orange.shade900,
-                                  disabledBackgroundColor: Colors.grey.shade200,
-                                  disabledForegroundColor: Colors.grey,
-                                ),
-                              ),
-
                             OutlinedButton.icon(
                               onPressed: isOffline
                                   ? null

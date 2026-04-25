@@ -5,6 +5,7 @@ import '../../api/mappers/gear_library_api_mapper.dart';
 import '../../api/services/gear_library_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_gear_library_remote_data_source.dart';
+import '../../../core/error/result.dart';
 
 /// 個人裝備庫 (Gear Library) 的遠端資料來源實作
 @LazySingleton(as: IGearLibraryRemoteDataSource)
@@ -16,75 +17,80 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   GearLibraryRemoteDataSource(this._apiService);
 
   @override
-  Future<PaginatedList<GearLibraryItem>> getLibrary({
-    bool? includeArchived,
-    String? cursor,
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> listLibrary({
+    int? page,
     int? limit,
+    String? category,
     String? search,
   }) async {
     try {
-      LogService.info('取得個人裝備庫列表 (cursor: $cursor, limit: $limit, search: $search)...', source: _source);
+      LogService.info('獲取裝備庫列表 (page: $page, limit: $limit, search: $search)...', source: _source);
       final response = await _apiService.listItems(
-        includeArchived: includeArchived,
-        cursor: cursor,
+        page: page,
         limit: limit,
         search: search,
       );
-      return PaginatedList<GearLibraryItem>(
-        items: response.items.map(GearLibraryApiMapper.fromResponse).toList(),
-        nextCursor: response.pagination.nextCursor,
+      final items = response.items.map(GearLibraryApiMapper.fromResponse).toList();
+      return Success(PaginatedList<GearLibraryItem>(
+        items: items,
+        page: response.pagination.page,
+        total: response.pagination.total,
         hasMore: response.pagination.hasMore,
-      );
+      ));
     } catch (e) {
-      LogService.error('getLibrary 失敗: $e', source: _source);
-      rethrow;
+      LogService.error('獲取裝備庫失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<GearLibraryItem> addLibraryItem(GearLibraryItem item) async {
+  Future<Result<String, Exception>> create(GearLibraryItem item) async {
     try {
-      LogService.info('新增裝備至雲端庫: ${item.name}', source: _source);
+      LogService.info('建立裝備庫項目: ${item.name}', source: _source);
       final request = GearLibraryApiMapper.toRequest(item);
       final response = await _apiService.addItem(request);
-      return GearLibraryApiMapper.fromResponse(response);
+      return Success(response.id);
     } catch (e) {
-      LogService.error('addLibraryItem 失敗: $e', source: _source);
-      rethrow;
+      LogService.error('建立裝備庫項目失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> updateLibraryItem(GearLibraryItem item) async {
+  Future<Result<void, Exception>> update(GearLibraryItem item) async {
     try {
-      LogService.info('更新雲端裝備項目: ${item.id}', source: _source);
+      LogService.info('更新裝備庫項目: ${item.id}', source: _source);
       final request = GearLibraryApiMapper.toRequest(item);
       await _apiService.updateItem(item.id, request);
+      return const Success(null);
     } catch (e) {
-      LogService.error('updateLibraryItem 失敗: $e', source: _source);
-      rethrow;
+      LogService.error('更新裝備庫項目失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> deleteLibraryItem(String itemId) async {
+  Future<Result<void, Exception>> delete(String itemId) async {
     try {
-      LogService.info('刪除雲端裝備項目: $itemId', source: _source);
+      LogService.info('刪除裝備庫項目: $itemId', source: _source);
       await _apiService.deleteItem(itemId);
+      return const Success(null);
     } catch (e) {
-      LogService.error('deleteLibraryItem 失敗: $e', source: _source);
-      rethrow;
+      LogService.error('刪除裝備庫項目失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> replaceAllLibraryItems(List<GearLibraryItem> items) async {
+  Future<Result<void, Exception>> replaceAll(List<GearLibraryItem> items) async {
     try {
-      LogService.info('批量替換雲端裝備庫: 數量 ${items.length}', source: _source);
-      await _apiService.replaceAll(items.map(GearLibraryApiMapper.toRequest).toList());
+      LogService.info('替換所有裝備庫項目, 數量: ${items.length}', source: _source);
+      final requests = items.map(GearLibraryApiMapper.toRequest).toList();
+      await _apiService.replaceAll(requests);
+      return const Success(null);
     } catch (e) {
-      LogService.error('replaceAllLibraryItems 失敗: $e', source: _source);
-      rethrow;
+      LogService.error('替換裝備庫項目失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 }

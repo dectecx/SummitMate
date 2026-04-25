@@ -16,7 +16,7 @@ abstract class TripApiService {
 
   @GET('/trips')
   Future<TripListPaginationResponse> listTrips({
-    @Query('cursor') String? cursor,
+    @Query('page') int? page,
     @Query('limit') int? limit,
     @Query('search') String? search,
   });
