@@ -122,6 +122,8 @@ import '../../infrastructure/clients/api_client.dart' as _i1019;
 import '../../infrastructure/clients/network_aware_client.dart' as _i7;
 import '../../infrastructure/infrastructure.dart' as _i342;
 import '../../infrastructure/interceptors/auth_interceptor.dart' as _i27;
+import '../../infrastructure/interceptors/connectivity_interceptor.dart'
+    as _i254;
 import '../../infrastructure/mock/mock_poll_service.dart' as _i133;
 import '../../infrastructure/services/ad_service.dart' as _i702;
 import '../../infrastructure/services/auth_service.dart' as _i227;
@@ -362,6 +364,9 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i614.IAuthService>(),
       ),
     );
+    gh.lazySingleton<_i254.ConnectivityInterceptor>(
+      () => _i254.ConnectivityInterceptor(gh<_i751.IConnectivityService>()),
+    );
     gh.factory<_i33.AuthCubit>(
       () => _i33.AuthCubit(
         gh<_i614.IAuthService>(),
@@ -474,7 +479,11 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingleton<_i361.Dio>(
-      () => registerModule.dio(gh<_i342.AuthInterceptor>()),
+      () => registerModule.dio(
+        gh<String>(instanceName: 'baseUrl'),
+        gh<_i342.AuthInterceptor>(),
+        gh<_i254.ConnectivityInterceptor>(),
+      ),
     );
     return this;
   }

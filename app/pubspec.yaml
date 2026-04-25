@@ -24,6 +24,8 @@ dependencies:
 
   # API 請求
   http: ^1.2.0
+  retrofit: ^4.4.1
+  freezed_annotation: ^3.0.0
 
   # 狀態管理與依賴注入
   provider: ^6.1.0
@@ -68,6 +70,8 @@ dev_dependencies:
   hive_ce_generator: ^1.11.1
   build_runner: ^2.13.1
   json_serializable: ^6.13.0
+  freezed: ^3.0.6
+  retrofit_generator: ^10.2.3
 
   # 視覺配置
   flutter_launcher_icons: ^0.14.3

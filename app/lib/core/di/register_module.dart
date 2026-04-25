@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../env_config.dart';
 import '../../infrastructure/infrastructure.dart';
+import '../../infrastructure/interceptors/connectivity_interceptor.dart';
 
 @module
 abstract class RegisterModule {
@@ -27,9 +28,16 @@ abstract class RegisterModule {
   String get baseUrl => EnvConfig.apiBaseUrl;
 
   @lazySingleton
-  Dio dio(AuthInterceptor authInterceptor) {
-    final dio = Dio();
-    dio.interceptors.add(authInterceptor);
+  Dio dio(
+    @Named('baseUrl') String baseUrl,
+    AuthInterceptor authInterceptor,
+    ConnectivityInterceptor connectivityInterceptor,
+  ) {
+    final dio = Dio(BaseOptions(baseUrl: baseUrl));
+    dio.interceptors.addAll([
+      connectivityInterceptor,
+      authInterceptor,
+    ]);
     return dio;
   }
 
