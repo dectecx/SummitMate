@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"regexp"
 	"time"
+	"unicode"
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth/tokens"

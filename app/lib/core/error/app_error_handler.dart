@@ -97,6 +97,10 @@ class AppErrorHandler {
         return '內容已被更新，請重新整理後再操作';
       case AppErrorCodes.passwordTooShort:
         return '密碼長度太短，至少需要 8 個字元';
+      case AppErrorCodes.passwordTooWeak:
+        return '密碼強度不足，請包含英文字母與數字';
+      case AppErrorCodes.invalidEmail:
+        return 'Email 格式不正確';
       case AppErrorCodes.eventNotFound:
         return '活動已不存在';
       default:

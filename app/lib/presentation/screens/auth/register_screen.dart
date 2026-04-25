@@ -26,19 +26,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  double _passwordStrength = 0; // 0.0 to 1.0
 
   // Avatar selection
   final List<String> _avatarOptions = ['🐻', '🦊', '🐼', '🐨', '🦁', '🐸', '🐢', '🐙'];
   String _selectedAvatar = '🐻';
 
   @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  @override
   void dispose() {
+    _passwordController.removeListener(_onPasswordChanged);
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _displayNameController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onPasswordChanged() {
+    final password = _passwordController.text;
+    setState(() {
+      _passwordStrength = _calculatePasswordStrength(password);
+    });
+  }
+
+  double _calculatePasswordStrength(String password) {
+    if (password.isEmpty) return 0;
+    if (password.length < 8) return 0.2;
+
+    bool hasLetters = password.contains(RegExp(r'[a-zA-Z]'));
+    bool hasNumbers = password.contains(RegExp(r'[0-9]'));
+    bool hasSpecial = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+
+    if (!hasLetters || !hasNumbers) return 0.4; // 弱 (雖然長度夠但種類不足)
+    if (password.length < 10) return 0.7; // 中 (長度 8-9)
+    if (hasSpecial) return 1.0; // 強 (長度 10+ 且有特殊字元)
+    return 0.85; // 強 (長度 10+)
   }
 
   void _handleRegister() {
@@ -189,8 +218,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (value == null || value.isEmpty) {
                           return '請輸入 Email';
                         }
-                        if (!value.contains('@') || !value.contains('.')) {
-                          return '請輸入有效的 Email';
+                        // 強化 Email 正則表達式
+                        final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                        if (!emailRegex.hasMatch(value)) {
+                          return '請輸入有效的 Email 格式';
                         }
                         return null;
                       },
@@ -218,10 +249,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (value.length < 8) {
                           return '密碼至少需要 8 個字元';
                         }
+                        if (!value.contains(RegExp(r'[a-zA-Z]')) || !value.contains(RegExp(r'[0-9]'))) {
+                          return '密碼需包含英文字母與數字';
+                        }
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+
+                    // Password Strength Indicator
+                    if (_passwordController.text.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: _passwordStrength,
+                                backgroundColor: Colors.grey.shade200,
+                                color: _passwordStrength <= 0.2
+                                    ? Colors.red
+                                    : _passwordStrength <= 0.4
+                                    ? Colors.orange
+                                    : _passwordStrength <= 0.7
+                                    ? Colors.yellow.shade700
+                                    : Colors.green,
+                                minHeight: 6,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _passwordStrength <= 0.2
+                                ? '太短'
+                                : _passwordStrength <= 0.4
+                                ? '弱'
+                                : _passwordStrength <= 0.7
+                                ? '中'
+                                : '強',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: _passwordStrength <= 0.2
+                                  ? Colors.red
+                                  : _passwordStrength <= 0.4
+                                  ? Colors.orange
+                                  : _passwordStrength <= 0.7
+                                  ? Colors.yellow.shade800
+                                  : Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ] else
+                      const SizedBox(height: 16),
 
                     // Confirm Password Field
                     TextFormField(

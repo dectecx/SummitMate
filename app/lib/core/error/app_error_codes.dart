@@ -26,6 +26,8 @@ class AppErrorCodes {
 
   // --- Validation ---
   static const String passwordTooShort = 'password_too_short';
+  static const String passwordTooWeak = 'password_too_weak';
+  static const String invalidEmail = 'invalid_email';
 
   // --- Client Side Specific ---
   static const String networkTimeout = 'network_timeout';
