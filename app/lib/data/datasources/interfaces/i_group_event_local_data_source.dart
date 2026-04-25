@@ -3,7 +3,7 @@ import '../../models/group_event.dart';
 /// 揪團 (GroupEvent) 的本地資料來源介面
 ///
 /// 負責定義對本地資料庫 (Hive) 的 CRUD 操作。
-abstract class IGroupEventLocalDataSource {
+abstract interface class IGroupEventLocalDataSource {
   /// 取得所有揪團活動
   List<GroupEvent> getAllEvents();
 

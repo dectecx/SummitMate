@@ -4,7 +4,7 @@ import '../../models/user_profile.dart';
 /// 行程 (Trip) 的遠端資料來源介面
 ///
 /// 負責定義與後端 API 進行行程資料交換的操作。
-abstract class ITripRemoteDataSource {
+abstract interface class ITripRemoteDataSource {
   /// 取得所有雲端行程列表
   Future<List<Trip>> getTrips();
 

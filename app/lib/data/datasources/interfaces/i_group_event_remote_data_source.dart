@@ -4,7 +4,7 @@ import '../../models/group_event_comment.dart';
 /// 揪團 (GroupEvent) 的遠端資料來源介面
 ///
 /// 負責定義與後端 API 進行揪團資料交換的操作。
-abstract class IGroupEventRemoteDataSource {
+abstract interface class IGroupEventRemoteDataSource {
   /// 取得揪團列表
   ///
   /// [userId] 目前登入使用者 ID (用於計算 my_application_status)

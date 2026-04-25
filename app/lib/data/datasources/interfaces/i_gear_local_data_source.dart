@@ -4,7 +4,7 @@ import '../../models/gear_item.dart';
 /// 裝備項目 (GearItem) 的本地資料來源介面
 ///
 /// 負責定義對本地裝備資料庫的 CRUD 操作。
-abstract class IGearLocalDataSource {
+abstract interface class IGearLocalDataSource {
   /// 取得所有裝備項目
   List<GearItem> getAll();
 
