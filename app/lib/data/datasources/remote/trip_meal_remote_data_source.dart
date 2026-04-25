@@ -1,108 +1,97 @@
-import '../../../core/di/injection.dart';
-import '../interfaces/i_trip_meal_remote_data_source.dart';
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:meta/meta.dart';
 import '../../models/meal_item.dart';
-import '../../../infrastructure/clients/network_aware_client.dart';
+import '../../api/mappers/trip_meal_api_mapper.dart';
+import '../../api/services/trip_meal_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
+import '../interfaces/i_trip_meal_remote_data_source.dart';
 
 /// 行程餐飲 (Trip Meal) 的遠端資料來源實作
+@LazySingleton(as: ITripMealRemoteDataSource)
 class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   static const String _source = 'TripMealRemoteDataSource';
-  final NetworkAwareClient _apiClient;
 
-  TripMealRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
+  final TripMealApiService _tripMealApi;
 
-  /// 取得行程餐點清單
-  ///
-  /// [tripId] 行程 ID
+  TripMealRemoteDataSource(Dio dio) : _tripMealApi = TripMealApiService(dio);
+
+  /// 僅供測試使用：注入預建立的 ApiService
+  @visibleForTesting
+  TripMealRemoteDataSource.testable(this._tripMealApi);
+
   @override
   Future<List<MealItem>> getTripMeals(String tripId) async {
     try {
       LogService.info('取得行程餐點清單: $tripId', source: _source);
-      final response = await _apiClient.get('/trips/$tripId/meals');
-
-      if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
-        return data.map((e) => MealItem.fromJson(e as Map<String, dynamic>)).toList();
-      }
-      throw Exception('HTTP ${response.statusCode}');
+      final responses = await _tripMealApi.listMeals(tripId);
+      return responses.map(TripMealApiMapper.fromResponse).toList();
     } catch (e) {
       LogService.error('getTripMeals 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 新增餐點
-  ///
-  /// [tripId] 行程 ID
-  /// [item] 餐點資料模型
   @override
-  Future<MealItem> addTripMeal(String tripId, MealItem item) async {
+  Future<MealItem> addTripMeal(
+    String tripId,
+    MealItem item, {
+    required String day,
+    required String mealType,
+  }) async {
     try {
       LogService.info('新增餐點至行程: $tripId', source: _source);
-      final response = await _apiClient.post('/trips/$tripId/meals', data: item.toJson());
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return MealItem.fromJson(response.data as Map<String, dynamic>);
-      }
-      throw Exception('HTTP ${response.statusCode}');
+      final request = TripMealApiMapper.toRequest(item, day: day, mealType: mealType);
+      final response = await _tripMealApi.addMeal(tripId, request);
+      return TripMealApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('addTripMeal 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 更新餐點
-  ///
-  /// [tripId] 行程 ID
-  /// [item] 餐點資料模型 (含 id)
   @override
-  Future<void> updateTripMeal(String tripId, MealItem item) async {
+  Future<MealItem> updateTripMeal(
+    String tripId,
+    MealItem item, {
+    required String day,
+    required String mealType,
+  }) async {
     try {
       LogService.info('更新餐點: $tripId, 項目: ${item.id}', source: _source);
-      final response = await _apiClient.put('/trips/$tripId/meals/${item.id}', data: item.toJson());
-
-      if (response.statusCode != 200) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      final request = TripMealApiMapper.toRequest(item, day: day, mealType: mealType);
+      final response = await _tripMealApi.updateMeal(tripId, item.id, request);
+      return TripMealApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('updateTripMeal 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 刪除餐點
-  ///
-  /// [tripId] 行程 ID
-  /// [itemId] 餐點 ID
   @override
   Future<void> deleteTripMeal(String tripId, String itemId) async {
     try {
       LogService.info('刪除餐點: $tripId, 項目: $itemId', source: _source);
-      final response = await _apiClient.delete('/trips/$tripId/meals/$itemId');
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      await _tripMealApi.deleteMeal(tripId, itemId);
     } catch (e) {
       LogService.error('deleteTripMeal 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 批量替換清單
-  ///
-  /// [tripId] 行程 ID
-  /// [items] 新清單
   @override
-  Future<void> replaceAllTripMeals(String tripId, List<MealItem> items) async {
+  Future<void> replaceAllTripMeals(
+    String tripId,
+    List<({MealItem item, String day, String mealType})> requests,
+  ) async {
     try {
-      LogService.info('批量替換行程餐飲: $tripId', source: _source);
-
-      final response = await _apiClient.put('/trips/$tripId/meals', data: items.map((e) => e.toJson()).toList());
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      LogService.info('批量替換行程餐飲: $tripId, 數量: ${requests.length}', source: _source);
+      await _tripMealApi.replaceAllMeals(
+        tripId,
+        requests
+            .map((r) => TripMealApiMapper.toRequest(r.item, day: r.day, mealType: r.mealType))
+            .toList(),
+      );
     } catch (e) {
       LogService.error('replaceAllTripMeals 失敗: $e', source: _source);
       rethrow;

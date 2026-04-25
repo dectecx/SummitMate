@@ -1,108 +1,82 @@
-import '../../../core/di/injection.dart';
-import '../interfaces/i_trip_gear_remote_data_source.dart';
+import 'package:dio/dio.dart';
+import 'package:injectable/injectable.dart';
+import 'package:meta/meta.dart';
 import '../../models/gear_item.dart';
-import '../../../infrastructure/clients/network_aware_client.dart';
+import '../../api/mappers/trip_gear_api_mapper.dart';
+import '../../api/services/trip_gear_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
+import '../interfaces/i_trip_gear_remote_data_source.dart';
 
 /// 行程裝備 (Trip Gear) 的遠端資料來源實作
+@LazySingleton(as: ITripGearRemoteDataSource)
 class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   static const String _source = 'TripGearRemoteDataSource';
-  final NetworkAwareClient _apiClient;
 
-  TripGearRemoteDataSource({NetworkAwareClient? apiClient}) : _apiClient = apiClient ?? getIt<NetworkAwareClient>();
+  final TripGearApiService _tripGearApi;
 
-  /// 取得行程裝備清單
-  ///
-  /// [tripId] 行程 ID
+  TripGearRemoteDataSource(Dio dio) : _tripGearApi = TripGearApiService(dio);
+
+  /// 僅供測試使用：注入預建立的 ApiService
+  @visibleForTesting
+  TripGearRemoteDataSource.testable(this._tripGearApi);
+
   @override
   Future<List<GearItem>> getTripGear(String tripId) async {
     try {
       LogService.info('取得行程裝備清單: $tripId', source: _source);
-      final response = await _apiClient.get('/trips/$tripId/gear');
-
-      if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
-        return data.map((e) => GearItem.fromJson(e as Map<String, dynamic>)).toList();
-      }
-      throw Exception('HTTP ${response.statusCode}');
+      final responses = await _tripGearApi.listGear(tripId);
+      return responses.map(TripGearApiMapper.fromResponse).toList();
     } catch (e) {
       LogService.error('getTripGear 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 新增單項裝備至行程
-  ///
-  /// [tripId] 行程 ID
-  /// [item] 裝備項
   @override
   Future<GearItem> addTripGear(String tripId, GearItem item) async {
     try {
       LogService.info('新增裝備至行程: $tripId, 名稱: ${item.name}', source: _source);
-      final response = await _apiClient.post('/trips/$tripId/gear', data: item.toJson());
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        return GearItem.fromJson(response.data as Map<String, dynamic>);
-      }
-      throw Exception('HTTP ${response.statusCode}');
+      final request = TripGearApiMapper.toRequest(item);
+      final response = await _tripGearApi.addGear(tripId, request);
+      return TripGearApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('addTripGear 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 更新行程中的單項裝備
-  ///
-  /// [tripId] 行程 ID
-  /// [item] 欲更新的裝備項 (需含 id)
   @override
-  Future<void> updateTripGear(String tripId, GearItem item) async {
+  Future<GearItem> updateTripGear(String tripId, GearItem item) async {
     try {
       LogService.info('更新裝備: $tripId, 項目: ${item.id}', source: _source);
-      final response = await _apiClient.put('/trips/$tripId/gear/${item.id}', data: item.toJson());
-
-      if (response.statusCode != 200) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      final request = TripGearApiMapper.toRequest(item);
+      final response = await _tripGearApi.updateGear(tripId, item.id, request);
+      return TripGearApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('updateTripGear 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 刪除行程中的裝備
-  ///
-  /// [tripId] 行程 ID
-  /// [itemId] 裝備 ID (id)
   @override
   Future<void> deleteTripGear(String tripId, String itemId) async {
     try {
       LogService.info('刪除裝備: $tripId, 項目: $itemId', source: _source);
-      final response = await _apiClient.delete('/trips/$tripId/gear/$itemId');
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      await _tripGearApi.deleteGear(tripId, itemId);
     } catch (e) {
       LogService.error('deleteTripGear 失敗: $e', source: _source);
       rethrow;
     }
   }
 
-  /// 批量替換行程所有裝備
-  ///
-  /// [tripId] 行程 ID
-  /// [items] 新的裝備清單
   @override
   Future<void> replaceAllTripGear(String tripId, List<GearItem> items) async {
     try {
       LogService.info('批量替換行程裝備: $tripId, 數量: ${items.length}', source: _source);
-
-      final response = await _apiClient.put('/trips/$tripId/gear', data: items.map((e) => e.toJson()).toList());
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('HTTP ${response.statusCode}');
-      }
+      await _tripGearApi.replaceAllGear(
+        tripId,
+        items.map(TripGearApiMapper.toRequest).toList(),
+      );
     } catch (e) {
       LogService.error('replaceAllTripGear 失敗: $e', source: _source);
       rethrow;

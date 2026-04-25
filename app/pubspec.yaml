@@ -61,7 +61,8 @@ dependencies:
   collection: ^1.19.1
   cached_network_image: ^3.4.1
   injectable: ^2.7.1+4
-  seo_renderer: ^0.8.2
+  seo_renderer: ^0.6.0
+  meta: ^1.17.0
   url_strategy: ^0.2.0
 dev_dependencies:
   flutter_test:

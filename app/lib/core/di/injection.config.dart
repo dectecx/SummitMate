@@ -51,8 +51,12 @@ import '../../data/datasources/interfaces/i_poll_remote_data_source.dart'
     as _i644;
 import '../../data/datasources/interfaces/i_settings_local_data_source.dart'
     as _i393;
+import '../../data/datasources/interfaces/i_trip_gear_remote_data_source.dart'
+    as _i725;
 import '../../data/datasources/interfaces/i_trip_local_data_source.dart'
     as _i774;
+import '../../data/datasources/interfaces/i_trip_meal_remote_data_source.dart'
+    as _i999;
 import '../../data/datasources/interfaces/i_trip_remote_data_source.dart'
     as _i941;
 import '../../data/datasources/local/auth_session_local_data_source.dart'
@@ -81,6 +85,10 @@ import '../../data/datasources/remote/itinerary_remote_data_source.dart'
 import '../../data/datasources/remote/message_remote_data_source.dart'
     as _i1017;
 import '../../data/datasources/remote/poll_remote_data_source.dart' as _i621;
+import '../../data/datasources/remote/trip_gear_remote_data_source.dart'
+    as _i391;
+import '../../data/datasources/remote/trip_meal_remote_data_source.dart'
+    as _i829;
 import '../../data/datasources/remote/trip_remote_data_source.dart' as _i989;
 import '../../data/repositories/auth_session_repository.dart' as _i395;
 import '../../data/repositories/favorites_repository.dart' as _i803;
@@ -372,6 +380,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i25.IGroupEventRemoteDataSource>(
       () => _i959.GroupEventRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i999.ITripMealRemoteDataSource>(
+      () => _i829.TripMealRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i725.ITripGearRemoteDataSource>(
+      () => _i391.TripGearRemoteDataSource(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i361.Dio>()),
