@@ -92,7 +92,7 @@ class TripCubit extends Cubit<TripState> {
         endDate: endDate,
         description: description,
         coverImage: coverImage,
-        isActive: false, // 將透過 setActiveTrip 設定
+        isActive: false, 
         syncStatus: SyncStatus.pendingCreate,
         createdAt: DateTime.now(),
         createdBy: currentUserId,
@@ -100,10 +100,10 @@ class TripCubit extends Cubit<TripState> {
         updatedBy: currentUserId,
       );
 
-      final result = await _tripRepository.addTrip(trip);
+      final result = await _tripRepository.saveTrip(trip);
       switch (result) {
         case Success():
-          break; // Success
+          break;
         case Failure(exception: final e):
           throw e;
       }
@@ -118,18 +118,14 @@ class TripCubit extends Cubit<TripState> {
     } catch (e) {
       LogService.error('Error adding trip: $e', source: _source);
       emit(TripError(AppErrorHandler.getUserMessage(e)));
-      // 重新載入以確保狀態一致
       await loadTrips();
     }
   }
 
-  /// 匯入行程 (例如從雲端)
-  /// 注意：此方法不會直接觸發 SyncCubit，應由 UI 處理副作用
-  ///
-  /// [trip] 欲匯入的行程物件
+  /// 匯入行程
   Future<void> importTrip(Trip trip) async {
     try {
-      final result = await _tripRepository.addTrip(trip);
+      final result = await _tripRepository.saveTrip(trip);
       switch (result) {
         case Success():
           break;
@@ -159,7 +155,8 @@ class TripCubit extends Cubit<TripState> {
   }
 
   Future<void> _setActiveTripInternal(String tripId) async {
-    final result = await _tripRepository.setActiveTrip(tripId);
+    final userId = _authService.currentUserId ?? 'guest';
+    final result = await _tripRepository.setActiveTrip(userId, tripId);
     switch (result) {
       case Success():
         return;
@@ -219,34 +216,26 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// 上傳完整行程至雲端 (包含行程表與裝備)
-  ///
-  /// [trip] 欲上傳的行程物件
+  /// 上傳完整行程至雲端
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
-      // 1. 蒐集資料
       final gearRepo = getIt<IGearRepository>();
       final itineraryRepo = getIt<IItineraryRepository>();
       final allGear = gearRepo.getAllItems();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
-      // 2. 依次上傳 Trip Meta, Itinerary, Gear
-      // 先上傳 Trip 本身
-      final uploadTripResult = await _tripRepository.uploadTripToRemote(trip);
+      final uploadTripResult = await _tripRepository.uploadToCloud(trip);
       if (uploadTripResult is Failure) {
         LogService.error('Trip metadata upload failed: ${(uploadTripResult as Failure).exception}', source: _source);
         return false;
       }
 
-      // 直接使用 ItineraryRepository 進行同步，不再透過 SyncService 包裝
       try {
         await itineraryRepo.sync(trip.id);
       } catch (e) {
         LogService.warning('Trip Itinerary sync had issues: $e', source: _source);
-        // 不中斷，繼續處理 Gear
       }
 
-      // 上傳裝備 (Trip Gear)
       try {
         final gearRemote = getIt<ITripGearRemoteDataSource>();
         await gearRemote.replaceAllTripGear(trip.id, tripGear);
@@ -264,11 +253,11 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 透過 SyncService 取得雲端行程列表
-  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({String? cursor, int? limit}) {
-    return _syncService.getCloudTrips(cursor: cursor, limit: limit);
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({int? page, int? limit}) {
+    return _syncService.getCloudTrips(page: page, limit: limit);
   }
 
-  /// 根據 ID 取得行程 (優先從 State 讀取，若無則查 Repo)
+  /// 根據 ID 取得行程
   Future<Trip?> getTripById(String id) async {
     if (state is TripLoaded) {
       final loadedParams = state as TripLoaded;
@@ -280,12 +269,12 @@ class TripCubit extends Cubit<TripState> {
     return result is Success ? (result as Success<Trip?, Exception>).value : null;
   }
 
-  // 建立預設行程 (相容 Provider 邏輯)
+  // 建立預設行程
   Future<void> createDefaultTrip() async {
     await addTrip(name: '我的登山行程', startDate: DateTime.now());
   }
 
-  /// 重置狀態 (例如登出時)
+  /// 重置狀態
   void reset() {
     emit(const TripInitial());
   }

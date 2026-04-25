@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PaginationMetadata {
 
-@JsonKey(name: 'next_cursor') String? get nextCursor;@JsonKey(name: 'has_more') bool get hasMore;@JsonKey(name: 'page') int get page;@JsonKey(name: 'limit') int get limit;@JsonKey(name: 'total') int get total;
+@JsonKey(name: 'has_more') bool get hasMore;@JsonKey(name: 'page') int get page;@JsonKey(name: 'limit') int get limit;@JsonKey(name: 'total') int get total;
 /// Create a copy of PaginationMetadata
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $PaginationMetadataCopyWith<PaginationMetadata> get copyWith => _$PaginationMeta
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginationMetadata&&(identical(other.nextCursor, nextCursor) || other.nextCursor == nextCursor)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.total, total) || other.total == total));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginationMetadata&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.total, total) || other.total == total));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nextCursor,hasMore,page,limit,total);
+int get hashCode => Object.hash(runtimeType,hasMore,page,limit,total);
 
 @override
 String toString() {
-  return 'PaginationMetadata(nextCursor: $nextCursor, hasMore: $hasMore, page: $page, limit: $limit, total: $total)';
+  return 'PaginationMetadata(hasMore: $hasMore, page: $page, limit: $limit, total: $total)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $PaginationMetadataCopyWith<$Res>  {
   factory $PaginationMetadataCopyWith(PaginationMetadata value, $Res Function(PaginationMetadata) _then) = _$PaginationMetadataCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'next_cursor') String? nextCursor,@JsonKey(name: 'has_more') bool hasMore,@JsonKey(name: 'page') int page,@JsonKey(name: 'limit') int limit,@JsonKey(name: 'total') int total
+@JsonKey(name: 'has_more') bool hasMore,@JsonKey(name: 'page') int page,@JsonKey(name: 'limit') int limit,@JsonKey(name: 'total') int total
 });
 
 
@@ -65,10 +65,9 @@ class _$PaginationMetadataCopyWithImpl<$Res>
 
 /// Create a copy of PaginationMetadata
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? nextCursor = freezed,Object? hasMore = null,Object? page = null,Object? limit = null,Object? total = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? hasMore = null,Object? page = null,Object? limit = null,Object? total = null,}) {
   return _then(_self.copyWith(
-nextCursor: freezed == nextCursor ? _self.nextCursor : nextCursor // ignore: cast_nullable_to_non_nullable
-as String?,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
+hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
 as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
 as int,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
@@ -157,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'next_cursor')  String? nextCursor, @JsonKey(name: 'has_more')  bool hasMore, @JsonKey(name: 'page')  int page, @JsonKey(name: 'limit')  int limit, @JsonKey(name: 'total')  int total)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'has_more')  bool hasMore, @JsonKey(name: 'page')  int page, @JsonKey(name: 'limit')  int limit, @JsonKey(name: 'total')  int total)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PaginationMetadata() when $default != null:
-return $default(_that.nextCursor,_that.hasMore,_that.page,_that.limit,_that.total);case _:
+return $default(_that.hasMore,_that.page,_that.limit,_that.total);case _:
   return orElse();
 
 }
@@ -178,10 +177,10 @@ return $default(_that.nextCursor,_that.hasMore,_that.page,_that.limit,_that.tota
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'next_cursor')  String? nextCursor, @JsonKey(name: 'has_more')  bool hasMore, @JsonKey(name: 'page')  int page, @JsonKey(name: 'limit')  int limit, @JsonKey(name: 'total')  int total)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'has_more')  bool hasMore, @JsonKey(name: 'page')  int page, @JsonKey(name: 'limit')  int limit, @JsonKey(name: 'total')  int total)  $default,) {final _that = this;
 switch (_that) {
 case _PaginationMetadata():
-return $default(_that.nextCursor,_that.hasMore,_that.page,_that.limit,_that.total);case _:
+return $default(_that.hasMore,_that.page,_that.limit,_that.total);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +197,10 @@ return $default(_that.nextCursor,_that.hasMore,_that.page,_that.limit,_that.tota
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'next_cursor')  String? nextCursor, @JsonKey(name: 'has_more')  bool hasMore, @JsonKey(name: 'page')  int page, @JsonKey(name: 'limit')  int limit, @JsonKey(name: 'total')  int total)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'has_more')  bool hasMore, @JsonKey(name: 'page')  int page, @JsonKey(name: 'limit')  int limit, @JsonKey(name: 'total')  int total)?  $default,) {final _that = this;
 switch (_that) {
 case _PaginationMetadata() when $default != null:
-return $default(_that.nextCursor,_that.hasMore,_that.page,_that.limit,_that.total);case _:
+return $default(_that.hasMore,_that.page,_that.limit,_that.total);case _:
   return null;
 
 }
@@ -213,10 +212,9 @@ return $default(_that.nextCursor,_that.hasMore,_that.page,_that.limit,_that.tota
 @JsonSerializable()
 
 class _PaginationMetadata implements PaginationMetadata {
-  const _PaginationMetadata({@JsonKey(name: 'next_cursor') this.nextCursor, @JsonKey(name: 'has_more') required this.hasMore, @JsonKey(name: 'page') required this.page, @JsonKey(name: 'limit') required this.limit, @JsonKey(name: 'total') required this.total});
+  const _PaginationMetadata({@JsonKey(name: 'has_more') required this.hasMore, @JsonKey(name: 'page') required this.page, @JsonKey(name: 'limit') required this.limit, @JsonKey(name: 'total') required this.total});
   factory _PaginationMetadata.fromJson(Map<String, dynamic> json) => _$PaginationMetadataFromJson(json);
 
-@override@JsonKey(name: 'next_cursor') final  String? nextCursor;
 @override@JsonKey(name: 'has_more') final  bool hasMore;
 @override@JsonKey(name: 'page') final  int page;
 @override@JsonKey(name: 'limit') final  int limit;
@@ -235,16 +233,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginationMetadata&&(identical(other.nextCursor, nextCursor) || other.nextCursor == nextCursor)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.total, total) || other.total == total));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginationMetadata&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.page, page) || other.page == page)&&(identical(other.limit, limit) || other.limit == limit)&&(identical(other.total, total) || other.total == total));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,nextCursor,hasMore,page,limit,total);
+int get hashCode => Object.hash(runtimeType,hasMore,page,limit,total);
 
 @override
 String toString() {
-  return 'PaginationMetadata(nextCursor: $nextCursor, hasMore: $hasMore, page: $page, limit: $limit, total: $total)';
+  return 'PaginationMetadata(hasMore: $hasMore, page: $page, limit: $limit, total: $total)';
 }
 
 
@@ -255,7 +253,7 @@ abstract mixin class _$PaginationMetadataCopyWith<$Res> implements $PaginationMe
   factory _$PaginationMetadataCopyWith(_PaginationMetadata value, $Res Function(_PaginationMetadata) _then) = __$PaginationMetadataCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'next_cursor') String? nextCursor,@JsonKey(name: 'has_more') bool hasMore,@JsonKey(name: 'page') int page,@JsonKey(name: 'limit') int limit,@JsonKey(name: 'total') int total
+@JsonKey(name: 'has_more') bool hasMore,@JsonKey(name: 'page') int page,@JsonKey(name: 'limit') int limit,@JsonKey(name: 'total') int total
 });
 
 
@@ -272,10 +270,9 @@ class __$PaginationMetadataCopyWithImpl<$Res>
 
 /// Create a copy of PaginationMetadata
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? nextCursor = freezed,Object? hasMore = null,Object? page = null,Object? limit = null,Object? total = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? hasMore = null,Object? page = null,Object? limit = null,Object? total = null,}) {
   return _then(_PaginationMetadata(
-nextCursor: freezed == nextCursor ? _self.nextCursor : nextCursor // ignore: cast_nullable_to_non_nullable
-as String?,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
+hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
 as int,limit: null == limit ? _self.limit : limit // ignore: cast_nullable_to_non_nullable
 as int,total: null == total ? _self.total : total // ignore: cast_nullable_to_non_nullable

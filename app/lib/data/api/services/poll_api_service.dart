@@ -15,7 +15,7 @@ abstract class PollApiService {
   @GET('/trips/{tripId}/polls')
   Future<PollPaginationResponse> listTripPolls(
     @Path('tripId') String tripId, {
-    @Query('cursor') String? cursor,
+    @Query('page') int? page,
     @Query('limit') int? limit,
   });
 

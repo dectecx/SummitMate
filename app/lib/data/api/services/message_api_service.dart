@@ -15,7 +15,7 @@ abstract class MessageApiService {
   @GET('/trips/{tripId}/messages')
   Future<MessagePaginationResponse> listTripMessages(
     @Path('tripId') String tripId, {
-    @Query('cursor') String? cursor,
+    @Query('page') int? page,
     @Query('limit') int? limit,
   });
 

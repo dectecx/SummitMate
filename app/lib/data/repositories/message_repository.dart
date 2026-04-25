@@ -1,264 +1,94 @@
 import 'package:injectable/injectable.dart';
-import '../../core/di/injection.dart';
+import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
-import '../../domain/interfaces/i_connectivity_service.dart';
-import '../../infrastructure/tools/log_service.dart';
-import '../models/message.dart';
-import 'interfaces/i_message_repository.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';
 import '../datasources/interfaces/i_message_remote_data_source.dart';
-import 'package:hive_ce/hive.dart';
+import '../models/message.dart';
+import 'interfaces/i_message_repository.dart';
+import '../../../infrastructure/tools/log_service.dart';
 
-/// 留言 Repository
-///
-/// 協調本地資料庫 (Hive) 與遠端資料來源 (API)，負責留言資料的 CRUD 與同步。
+/// 行程留言板 Repository (支援 Offline-First)
 @LazySingleton(as: IMessageRepository)
 class MessageRepository implements IMessageRepository {
   static const String _source = 'MessageRepository';
 
   final IMessageLocalDataSource _localDataSource;
   final IMessageRemoteDataSource _remoteDataSource;
-  final IConnectivityService _connectivity;
 
-  MessageRepository({
-    IMessageLocalDataSource? localDataSource,
-    IMessageRemoteDataSource? remoteDataSource,
-    IConnectivityService? connectivity,
-  }) : _localDataSource = localDataSource ?? getIt<IMessageLocalDataSource>(),
-       _remoteDataSource = remoteDataSource ?? getIt<IMessageRemoteDataSource>(),
-       _connectivity = connectivity ?? getIt<IConnectivityService>();
+  MessageRepository(this._localDataSource, this._remoteDataSource);
 
-  /// 初始化 Repository (主要是遠端資料庫或其他資源，本地已同步)
   @override
   Future<Result<void, Exception>> init() async {
     return const Success(null);
   }
 
-  /// 取得所有留言 (依時間倒序)
   @override
-  Future<Result<List<Message>, Exception>> getAllMessages() async {
-    try {
-      final messages = _localDataSource.getAll();
-      messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      return Success(messages);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+  List<Message> getByTripId(String tripId) {
+    return _localDataSource.getAll().where((m) => m.tripId == tripId).toList();
   }
 
-  /// 依分類取得留言
-  ///
-  /// [category] 留言分類 (e.g., "Gear")
   @override
-  Future<Result<List<Message>, Exception>> getMessagesByCategory(String category) async {
-    try {
-      final messages = _localDataSource.getAll().where((m) => m.category == category).toList();
-      messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      return Success(messages);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 取得主留言 (非回覆)
-  ///
-  /// [category] 選擇性篩選分類
-  @override
-  Future<Result<List<Message>, Exception>> getMainMessages({String? category}) async {
-    try {
-      var messages = _localDataSource.getAll().where((m) => m.parentId == null);
-
-      if (category != null) {
-        messages = messages.where((m) => m.category == category);
-      }
-
-      final result = messages.toList();
-      result.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      return Success(result);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 取得指定留言的回覆列表
-  ///
-  /// [parentId] 父留言的 ID
-  @override
-  Future<Result<List<Message>, Exception>> getReplies(String parentId) async {
-    try {
-      final messages = _localDataSource.getAll().where((m) => m.parentId == parentId).toList();
-      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-      return Success(messages);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 依 ID 取得留言
-  ///
-  /// [id] 留言 ID
-  @override
-  Future<Result<Message?, Exception>> getById(String id) async {
-    try {
-      return Success(_localDataSource.getById(id));
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 新增留言
-  ///
-  /// [message] 欲新增的留言物件
-  @override
-  Future<Result<void, Exception>> addMessage(Message message) async {
-    if (_connectivity.isOffline) {
-      return Failure(GeneralException('目前為離線模式，無法新增留言'));
-    }
-
-    try {
-      // 1. Save Local
-      await _localDataSource.add(message);
-
-      // 2. Best Effort Sync
-      try {
-        await _remoteDataSource.addMessage(message);
-        LogService.info('Auto-sync message success: ${message.id}', source: _source);
-      } catch (syncError) {
-        LogService.warning('Auto-sync message failed: $syncError', source: _source);
-        // Don't fail the operation, just log. SyncService will catch up later.
-      }
-
-      return const Success(null);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 刪除留言 (依 ID)
-  ///
-  /// [id] 欲刪除的留言 ID
-  @override
-  Future<Result<void, Exception>> deleteById(String id) async {
-    if (_connectivity.isOffline) {
-      return Failure(GeneralException('目前為離線模式，無法刪除留言'));
-    }
-
-    try {
-      // 1. Delete Local
-      final item = _localDataSource.getById(id);
-      String? tripId;
-      if (item != null) {
-        tripId = item.tripId;
-        if (item.isInBox) {
-          await item.delete();
-        } else {
-          await _localDataSource.delete(item.key);
-        }
-      }
-
-      // 2. Best Effort Sync
-      if (tripId != null) {
-        try {
-          await _remoteDataSource.deleteMessage(tripId, id);
-          LogService.info('Auto-sync delete message success: $id', source: _source);
-        } catch (syncError) {
-          LogService.warning('Auto-sync delete message failed: $syncError', source: _source);
-        }
-      }
-
-      return const Success(null);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 批次同步留言 (從雲端) - 完全覆蓋模式 (Legacy/Optimization)
-  ///
-  /// [cloudMessages] 雲端下載的留言列表
-  @override
-  Future<Result<void, Exception>> syncFromCloud(List<Message> cloudMessages) async {
-    try {
-      await _localDataSource.clear();
-      for (final msg in cloudMessages) {
+  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(String tripId, {int? page, int? limit}) async {
+    final result = await _remoteDataSource.getMessages(tripId, page: page, limit: limit);
+    if (result is Success<PaginatedList<Message>, Exception>) {
+      // 緩存到本地
+      for (final msg in result.value.items) {
         await _localDataSource.add(msg);
       }
-      await saveLastSyncTime(DateTime.now());
+    }
+    return result;
+  }
+
+  @override
+  Future<Result<void, Exception>> saveLocally(Message message) async {
+    await _localDataSource.add(message);
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<String, Exception>> addMessage({
+    required String tripId,
+    required String content,
+    String? replyToId,
+  }) async {
+    // 遠端新增
+    final result = await _remoteDataSource.addMessage(
+      tripId: tripId,
+      content: content,
+      replyToId: replyToId,
+    );
+
+    if (result is Success<String, Exception>) {
+      // 如果成功，觸發重新獲取最新留言以同步本地資料
+      await getRemoteMessages(tripId);
+    }
+
+    return result;
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteById(String tripId, String messageId) async {
+    // 1. 本地先刪除
+    await _localDataSource.delete(messageId);
+
+    // 2. 嘗試同步到遠端
+    try {
+      await _remoteDataSource.deleteMessage(tripId, messageId);
+      LogService.info('Auto-sync delete message success: $messageId', source: _source);
       return const Success(null);
     } catch (e) {
+      LogService.warning('Auto-sync message failed: $e', source: _source);
       return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
-  /// 自動同步 (自主判斷連線狀態)
-  ///
-  /// [tripId] 當前行程 ID
   @override
-  Future<Result<void, Exception>> sync(String tripId) async {
-    if (_connectivity.isOffline) {
-      LogService.warning('Offline mode, skipping message sync', source: _source);
-      return const Success(null);
+  Future<Result<void, Exception>> clearByTripId(String tripId) async {
+    // Note: This is inefficient but without a specialized local method, we filter
+    final itemsToDelete = _localDataSource.getAll().where((m) => m.tripId == tripId);
+    for (final item in itemsToDelete) {
+      await _localDataSource.delete(item.id);
     }
-
-    try {
-      LogService.info('Syncing messages for trip: $tripId', source: _source);
-      final cloudMessagesList = await _remoteDataSource.getMessages(tripId);
-      final result = await syncFromCloud(cloudMessagesList.items);
-      if (result is Failure) throw result.exception;
-      LogService.info('Sync messages complete', source: _source);
-      return const Success(null);
-    } catch (e) {
-      LogService.error('Sync messages failed: $e', source: _source);
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 取得待上傳的本地留言 (尚未在雲端)
-  ///
-  /// [cloudIds] 已存在於雲端的 ID 集合
-  @override
-  Future<Result<List<Message>, Exception>> getPendingMessages(Set<String> cloudIds) async {
-    try {
-      return Success(_localDataSource.getAll().where((m) => !cloudIds.contains(m.id)).toList());
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 監聽留言變更
-  @override
-  Stream<BoxEvent> watchAllMessages() {
-    return _localDataSource.watch();
-  }
-
-  /// 儲存最後同步時間
-  @override
-  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
-    try {
-      await _localDataSource.saveLastSyncTime(time);
-      return const Success(null);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 取得最後同步時間
-  @override
-  Future<Result<DateTime?, Exception>> getLastSyncTime() async {
-    try {
-      return Success(_localDataSource.getLastSyncTime());
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  /// 清除所有留言 (Debug 用途)
-  @override
-  Future<Result<void, Exception>> clearAll() async {
-    try {
-      await _localDataSource.clear();
-      return const Success(null);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
+    return const Success(null);
   }
 }

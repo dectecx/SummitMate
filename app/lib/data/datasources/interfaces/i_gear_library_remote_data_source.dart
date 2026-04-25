@@ -1,33 +1,26 @@
 import '../../../core/models/paginated_list.dart';
 import '../../models/gear_library_item.dart';
+import '../../../core/error/result.dart';
 
 /// 個人裝備庫 (Gear Library) 的遠端資料來源介面
 abstract interface class IGearLibraryRemoteDataSource {
-  /// 取得雲端裝備庫項目 (支援分頁與搜尋)
-  Future<PaginatedList<GearLibraryItem>> getLibrary({
-    bool? includeArchived,
-    String? cursor,
+  /// 獲取個人裝備清單
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> listLibrary({
+    int? page,
     int? limit,
+    String? category,
     String? search,
   });
 
-  /// 新增裝備至雲端庫
-  ///
-  /// [item] 欲新增的裝備項目
-  Future<GearLibraryItem> addLibraryItem(GearLibraryItem item);
+  /// 建立個人裝備
+  Future<Result<String, Exception>> create(GearLibraryItem item);
 
-  /// 更新雲端裝備庫項目
-  ///
-  /// [item] 欲更新的裝備項目
-  Future<void> updateLibraryItem(GearLibraryItem item);
+  /// 更新個人裝備
+  Future<Result<void, Exception>> update(GearLibraryItem item);
 
-  /// 從雲端庫刪除裝備
-  ///
-  /// [itemId] 欲刪除的裝備項目 ID
-  Future<void> deleteLibraryItem(String itemId);
+  /// 刪除個人裝備
+  Future<Result<void, Exception>> delete(String itemId);
 
-  /// 批量替換雲端所有裝備
-  ///
-  /// [items] 欲替換的裝備項目列表
-  Future<void> replaceAllLibraryItems(List<GearLibraryItem> items);
+  /// 替換所有個人裝備 (同步用)
+  Future<Result<void, Exception>> replaceAll(List<GearLibraryItem> items);
 }

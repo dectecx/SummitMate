@@ -26,20 +26,20 @@ class FavoritesRepository implements IFavoritesRepository {
        _authService = authService;
 
   @override
-  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({String? cursor, int? limit}) async {
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({int? page, int? limit}) async {
     try {
       // 1. 如果是第一頁且沒有搜尋條件，優先從本地 Hive 取得 (快速)
-      if (cursor == null) {
+      if (page == null || page <= 1) {
         final localFavorites = await _localDataSource.getFavorites();
 
         // 觸發背景同步 (Fire and forget)
         _syncFromRemote();
 
-        return Success(PaginatedList(items: localFavorites, nextCursor: null, hasMore: false));
+        return Success(PaginatedList(items: localFavorites, page: 1, total: localFavorites.length, hasMore: false));
       }
 
       // 2. 從遠端獲取分頁資料
-      final remoteResult = await _remoteDataSource.getFavorites(cursor: cursor, limit: limit);
+      final remoteResult = await _remoteDataSource.getFavorites(page: page, limit: limit);
 
       return remoteResult;
     } catch (e) {

@@ -121,28 +121,6 @@ class _PollListScreenState extends State<PollListScreen> {
     );
   }
 
-  Future<void> _confirmAndClose(BuildContext context, PollCubit cubit, Poll poll) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('結束投票'),
-        content: Text('確定要結束 "${poll.title}" 嗎？\n結束後將無法再進行投票。'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            child: const Text('結束'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && context.mounted) {
-      await cubit.closePoll(pollId: poll.id);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PollCubit, PollState>(
@@ -329,21 +307,6 @@ class _PollListScreenState extends State<PollListScreen> {
                             final actions = <Widget>[];
                             final settingsState = context.read<SettingsCubit>().state;
                             final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-
-                            if (!isOffline && poll.isActive) {
-                              actions.add(
-                                SlidableAction(
-                                  onPressed: (context) async {
-                                    await _confirmAndClose(context, context.read<PollCubit>(), poll);
-                                  },
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.lock_clock, // More appropriate for "Ending"
-                                  label: '結束',
-                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                                ),
-                              );
-                            }
 
                             if (!isOffline) {
                               actions.add(

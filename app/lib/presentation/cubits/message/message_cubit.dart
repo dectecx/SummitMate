@@ -1,7 +1,5 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uuid/uuid.dart';
-import '../../../data/models/message.dart';
 import '../../../data/repositories/interfaces/i_message_repository.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -15,13 +13,11 @@ class MessageCubit extends Cubit<MessageState> {
   final IMessageRepository _repository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
-  final Uuid _uuid = const Uuid();
 
   static const String _source = 'MessageCubit';
 
   MessageCubit(this._repository, this._tripRepository, this._authService) : super(const MessageInitial());
 
-  /// 取得當前活動行程 ID
   /// 取得當前活動行程 ID
   Future<String?> get _currentTripId async {
     final result = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
@@ -42,30 +38,18 @@ class MessageCubit extends Cubit<MessageState> {
   }
 
   Future<void> _refreshLocalMessages() async {
-    final result = await _repository.getAllMessages();
-
-    final List<Message> allMessages = switch (result) {
-      Success(value: final m) => m,
-      Failure(exception: final e) => throw e,
-    };
-
-    // 過濾邏輯：匹配 tripId 或全域 (tripId == null)
-    // 且若 _currentTripId 已設定，則顯示該行程的留言
     final currentTripId = await _currentTripId;
-
-    List<Message> filtered;
-    if (currentTripId != null) {
-      filtered = allMessages.where((msg) => msg.tripId == null || msg.tripId == currentTripId).toList();
-    } else {
-      // 若無活動行程 (例如首頁)，顯示全部或僅顯示全域？
-      // 目前邏輯為顯示全部
-      filtered = allMessages;
+    if (currentTripId == null) {
+      emit(const MessageError('尚未選擇行程'));
+      return;
     }
 
+    final messages = _repository.getByTripId(currentTripId);
+
     if (state is MessageLoaded) {
-      emit((state as MessageLoaded).copyWith(allMessages: filtered));
+      emit((state as MessageLoaded).copyWith(allMessages: messages));
     } else {
-      emit(MessageLoaded(allMessages: filtered));
+      emit(MessageLoaded(allMessages: messages));
     }
   }
 
@@ -94,39 +78,22 @@ class MessageCubit extends Cubit<MessageState> {
     String? parentId,
   }) async {
     if (state is! MessageLoaded) return;
-    final currentState = state as MessageLoaded;
 
     try {
-      // 樂觀更新 (Optimistic Update)
-      // 理想情況：建立物件 -> 儲存本地 Repo -> 觸發同步
+      final tripId = await _currentTripId;
+      if (tripId == null) throw Exception('找不到活動行程');
 
-      final message = Message(
-        id: _uuid.v4(),
-        parentId: parentId,
-        user: user,
-        category: currentState.selectedCategory,
-        content: content,
-        avatar: avatar,
-        tripId: await _currentTripId,
-        userId: _authService.currentUserId ?? '',
-        timestamp: DateTime.now(),
-        createdAt: DateTime.now(),
-        createdBy: _authService.currentUserId ?? '',
-        updatedAt: DateTime.now(),
-        updatedBy: _authService.currentUserId ?? '',
-      );
+      final result = await _repository.addMessage(tripId: tripId, content: content, replyToId: parentId);
 
-      final result = await _repository.addMessage(message);
-      if (result is Failure) {
-        throw result.exception;
+      if (result case Failure(:final exception)) {
+        throw exception;
       }
 
-      // 刷新列表
-      await _refreshLocalMessages();
+      // 刷新列表 (同步會由 Repository 處理或手動觸發)
+      await syncMessages(isAuto: true);
     } catch (e) {
       LogService.error('Add message failed: $e', source: _source);
       emit(MessageError(AppErrorHandler.getUserMessage(e)));
-      // 若需要，可恢復狀態
       await _refreshLocalMessages();
     }
   }
@@ -136,9 +103,12 @@ class MessageCubit extends Cubit<MessageState> {
   /// [id] 留言 ID
   Future<void> deleteMessage(String id) async {
     try {
-      final result = await _repository.deleteById(id);
-      if (result is Failure) {
-        throw result.exception;
+      final tripId = await _currentTripId;
+      if (tripId == null) throw Exception('找不到活動行程');
+
+      final result = await _repository.deleteById(tripId, id);
+      if (result case Failure(:final exception)) {
+        throw exception;
       }
       await _refreshLocalMessages();
     } catch (e) {
@@ -150,7 +120,7 @@ class MessageCubit extends Cubit<MessageState> {
 
   /// 同步留言
   Future<void> syncMessages({bool isAuto = false}) async {
-    if (state is MessageLoaded) {
+    if (!isAuto && state is MessageLoaded) {
       emit((state as MessageLoaded).copyWith(isSyncing: true));
     }
 
@@ -161,10 +131,10 @@ class MessageCubit extends Cubit<MessageState> {
         return;
       }
 
-      final result = await _repository.sync(tripId);
+      final result = await _repository.getRemoteMessages(tripId);
 
-      if (result is Failure && !isAuto) {
-        emit(MessageError(AppErrorHandler.getUserMessage(result.exception)));
+      if (result case Failure(:final exception) when !isAuto) {
+        emit(MessageError(AppErrorHandler.getUserMessage(exception)));
       }
 
       await _refreshLocalMessages();

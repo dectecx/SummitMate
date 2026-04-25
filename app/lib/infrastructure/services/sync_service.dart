@@ -31,17 +31,7 @@ class SyncService implements ISyncService {
        _itineraryRepo = itineraryRepo,
        _messageRepo = messageRepo,
        _connectivity = connectivity,
-       _authService = authService {
-    _loadLastSyncTimes();
-  }
-
-  Future<void> _loadLastSyncTimes() async {
-    _lastItinerarySyncTime = _itineraryRepo.getLastSyncTime();
-    final result = await _messageRepo.getLastSyncTime();
-    if (result is Success<DateTime?, Exception>) {
-      _lastMessagesSyncTime = result.value;
-    }
-  }
+       _authService = authService;
 
   bool get _isOffline => _connectivity.isOffline;
 
@@ -54,7 +44,7 @@ class SyncService implements ISyncService {
     };
   }
 
-  /// 上次同步行程的時間
+  /// 上次同步行程的時間 (這裡改為內部管理或交由 Repository 存取)
   DateTime? _lastItinerarySyncTime;
 
   /// 上次同步留言的時間
@@ -66,7 +56,6 @@ class SyncService implements ISyncService {
   DateTime? get lastMessagesSync => _lastMessagesSyncTime;
 
   /// 完整同步 (下載 + 上傳)
-  /// 智慧選擇：若兩者皆需更新則使用 fetchAll，否則個別更新
   @override
   Future<SyncResult> syncAll({bool isAuto = false}) async {
     if (_isOffline) {
@@ -118,7 +107,7 @@ class SyncService implements ISyncService {
     // 處理留言
     if (msgNeeded) {
       try {
-        final result = await _messageRepo.sync(tripId);
+        final result = await _messageRepo.getRemoteMessages(tripId);
         if (result is Success) {
           _lastMessagesSyncTime = DateTime.now();
           msgSuccess = true;
@@ -140,14 +129,14 @@ class SyncService implements ISyncService {
   }
 
   @override
-  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({String? cursor, int? limit}) async {
+  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({int? page, int? limit}) async {
     if (_isOffline) {
-      return Failure(GeneralException('離線模式無法取得行程列表'));
+      return Failure(Exception('離線模式無法取得行程列表'));
     }
     try {
-      return await _tripRepo.getRemoteTrips(cursor: cursor, limit: limit);
+      return await _tripRepo.getRemoteTrips(page: page, limit: limit);
     } catch (e) {
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 

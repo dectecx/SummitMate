@@ -3,10 +3,11 @@ import '../../../core/models/paginated_list.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
 import '../../api/mappers/group_event_api_mapper.dart';
-import '../../api/models/group_event_api_models.dart';
 import '../../api/services/group_event_api_service.dart';
+import '../../api/models/group_event_api_models.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_group_event_remote_data_source.dart';
+import '../../../core/error/result.dart';
 
 /// 揪團 (Group Event) 的遠端資料來源實作
 @LazySingleton(as: IGroupEventRemoteDataSource)
@@ -18,235 +19,204 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   GroupEventRemoteDataSource(this._groupEventApi);
 
   @override
-  Future<PaginatedList<GroupEvent>> getEvents({
-    required String userId,
-    String? status,
-    String? creatorId,
-    String? cursor,
+  Future<Result<PaginatedList<GroupEvent>, Exception>> getEvents({
+    int? page,
     int? limit,
-    String? search,
+    String? status,
+    String? category,
   }) async {
     try {
-      LogService.info('獲取揪團列表: $userId (status: $status, cursor: $cursor, limit: $limit, search: $search)',
-          source: _source);
+      LogService.info('獲取揪團列表 (page: $page, limit: $limit, category: $category)...', source: _source);
       final response = await _groupEventApi.listEvents(
-        status: status ?? 'open',
-        creatorId: creatorId,
-        cursor: cursor,
+        page: page,
         limit: limit,
-        search: search,
+        status: status,
+        category: category,
       );
-      final events = response.items.map(GroupEventApiMapper.fromResponse).toList();
-      LogService.info('已獲取 ${events.length} 個揪團', source: _source);
-      return PaginatedList<GroupEvent>(
-        items: events,
-        nextCursor: response.pagination.nextCursor,
+      
+      final items = response.items.map(GroupEventApiMapper.fromResponse).toList();
+      
+      return Success(PaginatedList<GroupEvent>(
+        items: items,
+        page: response.pagination.page,
+        total: response.pagination.total,
         hasMore: response.pagination.hasMore,
-      );
+      ));
     } catch (e) {
-      LogService.error('getEvents 失敗: $e', source: _source);
-      rethrow;
+      LogService.error('獲取揪團失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<GroupEvent> getEvent({required String eventId, required String userId}) async {
+  Future<Result<GroupEvent, Exception>> getEventById(String eventId) async {
     try {
-      LogService.info('獲取揪團詳情: $eventId', source: _source);
       final response = await _groupEventApi.getEvent(eventId);
-      return GroupEventApiMapper.fromResponse(response);
+      return Success(GroupEventApiMapper.fromResponse(response));
     } catch (e) {
-      LogService.error('getEvent 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<String> createEvent(GroupEvent event) async {
+  Future<Result<String, Exception>> createEvent({
+    required String title,
+    required String description,
+    required String category,
+    required DateTime eventDate,
+    required String eventLocation,
+    required int maxParticipants,
+    required DateTime deadline,
+  }) async {
     try {
-      LogService.info('建立新揪團: ${event.title}', source: _source);
       final request = GroupEventCreateRequest(
-        title: event.title,
-        description: event.description,
-        location: event.location,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        maxMembers: event.maxMembers,
-        approvalRequired: event.approvalRequired,
-        privateMessage: event.privateMessage.isNotEmpty ? event.privateMessage : null,
-        linkedTripId: event.linkedTripId,
+        title: title,
+        description: description,
+        location: eventLocation,
+        startDate: eventDate,
+        maxMembers: maxParticipants,
+        approvalRequired: true, // Default to true if not specified
       );
       final response = await _groupEventApi.createEvent(request);
-      return response.id;
+      return Success(response.id);
     } catch (e) {
-      LogService.error('createEvent 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> updateEvent(GroupEvent event, String userId) async {
+  Future<Result<void, Exception>> deleteEvent(String eventId) async {
     try {
-      LogService.info('更新揪團: ${event.id}', source: _source);
-      final request = GroupEventUpdateRequest(
-        title: event.title,
-        description: event.description,
-        location: event.location,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        maxMembers: event.maxMembers,
-        approvalRequired: event.approvalRequired,
-        privateMessage: event.privateMessage,
-      );
-      await _groupEventApi.updateEvent(event.id, request);
-    } catch (e) {
-      LogService.error('updateEvent 失敗: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> closeEvent({required String eventId, required String userId, String action = 'close'}) async {
-    try {
-      LogService.info('結束揪團: $eventId', source: _source);
-      await _groupEventApi.updateEventStatus(eventId, GroupEventStatusRequest(status: 'closed', action: action));
-    } catch (e) {
-      LogService.error('closeEvent 失敗: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> deleteEvent({required String eventId, required String userId}) async {
-    try {
-      LogService.info('刪除揪團: $eventId', source: _source);
       await _groupEventApi.deleteEvent(eventId);
+      return const Success(null);
     } catch (e) {
-      LogService.error('deleteEvent 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<String> applyEvent({required String eventId, required String userId, String? message}) async {
-    try {
-      LogService.info('申請參加揪團: $eventId', source: _source);
-      final response = await _groupEventApi.applyEvent(eventId, GroupEventApplyRequest(message: message));
-      return response.id;
-    } catch (e) {
-      LogService.error('applyEvent 失敗: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> cancelApplication({required String applicationId, required String userId}) async {
-    try {
-      LogService.info('取消報名申請: $applicationId', source: _source);
-      await _groupEventApi.cancelApplication(applicationId);
-    } catch (e) {
-      LogService.error('cancelApplication 失敗: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> reviewApplication({
-    required String applicationId,
-    required String action,
-    required String userId,
+  Future<Result<String, Exception>> applyEvent({
+    required String eventId,
+    String? note,
   }) async {
     try {
-      LogService.info('審核申請: $applicationId ($action)', source: _source);
-      await _groupEventApi.reviewApplication(applicationId, GroupEventReviewRequest(action: action));
+      final response = await _groupEventApi.applyEvent(eventId, GroupEventApplyRequest(message: note));
+      return Success(response.id);
     } catch (e) {
-      LogService.error('reviewApplication 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<List<GroupEventApplication>> getApplications({required String eventId, required String userId}) async {
+  Future<Result<void, Exception>> cancelApplication(String applicationId) async {
     try {
-      LogService.info('獲取揪團申請列表: $eventId', source: _source);
-      final responses = await _groupEventApi.listApplications(eventId);
-      return responses.map(GroupEventApiMapper.fromApplicationResponse).toList();
+      await _groupEventApi.cancelApplication(applicationId);
+      return const Success(null);
     } catch (e) {
-      LogService.error('getApplications 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<List<GroupEvent>> getMyEvents({required String userId, required String type}) async {
+  Future<Result<List<GroupEventApplication>, Exception>> getMyApplications() async {
     try {
-      LogService.info('獲取我的揪團: $userId, 類型: $type', source: _source);
-      final responses = await _groupEventApi.listMyEvents(type);
-      return responses.map(GroupEventApiMapper.fromResponse).toList();
+      await _groupEventApi.listMyEvents('applied');
+      // The API returns List<GroupEventResponse> for listMyEvents.
+      // But the interface expects List<GroupEventApplication>.
+      // This is a conceptual mismatch in the interface vs API.
+      // For now, return empty or throw if not possible.
+      throw UnimplementedError('getMyApplications concept mismatch in API (returns events, not applications)');
     } catch (e) {
-      LogService.error('getMyEvents 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> likeEvent({required String eventId, required String userId}) async {
+  Future<Result<List<GroupEventApplication>, Exception>> getEventApplications(String eventId) async {
     try {
-      LogService.info('點讚揪團: $eventId', source: _source);
-      await _groupEventApi.likeEvent(eventId);
+      final response = await _groupEventApi.listApplications(eventId);
+      return Success(response.map(GroupEventApiMapper.fromApplicationResponse).toList());
     } catch (e) {
-      LogService.error('likeEvent 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<void> unlikeEvent({required String eventId, required String userId}) async {
-    try {
-      LogService.info('取消點讚揪團: $eventId', source: _source);
-      await _groupEventApi.unlikeEvent(eventId);
-    } catch (e) {
-      LogService.error('unlikeEvent 失敗: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<GroupEventComment> addComment({
+  Future<Result<void, Exception>> reviewApplication({
     required String eventId,
-    required String userId,
+    required String applicantUserId,
+    required String action,
+    String? note,
+  }) async {
+    try {
+      // action maps to 'approve', 'reject', etc.
+      await _groupEventApi.reviewApplication(applicantUserId, GroupEventReviewRequest(action: action));
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> closeEvent(String eventId) async {
+    try {
+      await _groupEventApi.updateEventStatus(eventId, const GroupEventStatusRequest(status: 'closed', action: 'close'));
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> likeEvent(String eventId) async {
+    try {
+      await _groupEventApi.likeEvent(eventId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> unlikeEvent(String eventId) async {
+    try {
+      await _groupEventApi.unlikeEvent(eventId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<List<GroupEventComment>, Exception>> getComments(String eventId) async {
+    try {
+      final response = await _groupEventApi.listComments(eventId);
+      return Success(response.map(GroupEventApiMapper.fromCommentResponse).toList());
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<GroupEventComment, Exception>> addComment({
+    required String eventId,
     required String content,
   }) async {
     try {
-      LogService.info('新增揪團留言: $eventId', source: _source);
       final response = await _groupEventApi.addComment(eventId, GroupEventCommentRequest(content: content));
-      return GroupEventApiMapper.fromCommentResponse(response);
+      return Success(GroupEventApiMapper.fromCommentResponse(response));
     } catch (e) {
-      LogService.error('addComment 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 
   @override
-  Future<List<GroupEventComment>> getComments({required String eventId}) async {
+  Future<Result<void, Exception>> deleteComment(String commentId) async {
     try {
-      LogService.info('獲取揪團留言: $eventId', source: _source);
-      final responses = await _groupEventApi.listComments(eventId);
-      return responses.map(GroupEventApiMapper.fromCommentResponse).toList();
-    } catch (e) {
-      LogService.error('getComments 失敗: $e', source: _source);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> deleteComment({required String commentId, required String userId}) async {
-    try {
-      LogService.info('刪除留言: $commentId', source: _source);
       await _groupEventApi.deleteComment(commentId);
+      return const Success(null);
     } catch (e) {
-      LogService.error('deleteComment 失敗: $e', source: _source);
-      rethrow;
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }
 }

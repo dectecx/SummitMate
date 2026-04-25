@@ -1,116 +1,70 @@
 import '../../../core/models/paginated_list.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
+import '../../../core/error/result.dart';
 
-/// 揪團 (GroupEvent) 的遠端資料來源介面
-///
-/// 負責定義與後端 API 進行揪團資料交換的操作。
+/// 揪團 (Group Event) 的遠端資料來源介面
 abstract interface class IGroupEventRemoteDataSource {
-  /// 取得揪團列表 (支援分頁與搜尋)
-  ///
-  /// [userId] 目前登入使用者 ID (用於計算 my_application_status)
-  /// [status] 篩選條件 (open, closed, all)
-  /// [creatorId] 建立者 ID
-  Future<PaginatedList<GroupEvent>> getEvents({
-    required String userId,
-    String? status,
-    String? creatorId,
-    String? cursor,
+  /// 獲取揪團列表 (支援分頁與過濾)
+  Future<Result<PaginatedList<GroupEvent>, Exception>> getEvents({
+    int? page,
     int? limit,
-    String? search,
+    String? status,
+    String? category,
   });
 
-  /// 取得揪團詳情
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 目前登入使用者 ID
-  Future<GroupEvent> getEvent({required String eventId, required String userId});
+  /// 獲取單一揪團詳情
+  Future<Result<GroupEvent, Exception>> getEventById(String eventId);
 
   /// 建立揪團
-  ///
-  /// [event] 揪團資料
-  /// 回傳: 新揪團 ID
-  Future<String> createEvent(GroupEvent event);
-
-  /// 更新揪團
-  ///
-  /// [event] 更新後的揪團資料
-  Future<void> updateEvent(GroupEvent event, String userId);
-
-  /// 關閉/取消揪團
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 操作者 ID
-  /// [action] close 或 cancel
-  Future<void> closeEvent({required String eventId, required String userId, String action = 'close'});
+  Future<Result<String, Exception>> createEvent({
+    required String title,
+    required String description,
+    required String category,
+    required DateTime eventDate,
+    required String eventLocation,
+    required int maxParticipants,
+    required DateTime deadline,
+  });
 
   /// 刪除揪團
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 操作者 ID
-  Future<void> deleteEvent({required String eventId, required String userId});
+  Future<Result<void, Exception>> deleteEvent(String eventId);
 
-  /// 報名揪團
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 報名者 ID
-  /// [message] 報名訊息
-  /// 回傳: 報名紀錄 ID
-  Future<String> applyEvent({required String eventId, required String userId, String? message});
+  /// 申請參加揪團
+  Future<Result<String, Exception>> applyEvent({
+    required String eventId,
+    String? note,
+  });
 
-  /// 取消報名
-  ///
-  /// [applicationId] 報名紀錄 ID
-  /// [userId] 操作者 ID
-  Future<void> cancelApplication({required String applicationId, required String userId});
+  /// 取消申請
+  Future<Result<void, Exception>> cancelApplication(String eventId);
 
-  /// 審核報名
-  ///
-  /// [applicationId] 報名紀錄 ID
-  /// [action] approve 或 reject
-  /// [userId] 審核者 ID
-  /// 回傳: void
-  Future<void> reviewApplication({required String applicationId, required String action, required String userId});
+  /// 獲取我申請的揪團清單
+  Future<Result<List<GroupEventApplication>, Exception>> getMyApplications();
 
-  /// 取得報名列表 (團主用)
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 團主 ID
-  Future<List<GroupEventApplication>> getApplications({required String eventId, required String userId});
+  /// 獲取揪團的所有申請 (僅限建立者)
+  Future<Result<List<GroupEventApplication>, Exception>> getEventApplications(String eventId);
 
-  /// 取得我的揪團
-  ///
-  /// [userId] 使用者 ID
-  /// [type] created, applied, liked
-  Future<List<GroupEvent>> getMyEvents({required String userId, required String type});
+  /// 審核申請 (僅限建立者)
+  Future<Result<void, Exception>> reviewApplication({
+    required String eventId,
+    required String applicantUserId,
+    required String action,
+    String? note,
+  });
 
-  /// 喜歡揪團
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 使用者 ID
-  Future<void> likeEvent({required String eventId, required String userId});
+  /// 結案/關閉揪團 (僅限建立者)
+  Future<Result<void, Exception>> closeEvent(String eventId);
 
-  /// 取消喜歡
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 使用者 ID
-  Future<void> unlikeEvent({required String eventId, required String userId});
+  /// 點讚/取消點讚
+  Future<Result<void, Exception>> likeEvent(String eventId);
+  Future<Result<void, Exception>> unlikeEvent(String eventId);
 
-  /// 新增留言
-  ///
-  /// [eventId] 揪團 ID
-  /// [userId] 使用者 ID
-  /// [content] 留言內容
-  Future<GroupEventComment> addComment({required String eventId, required String userId, required String content});
-
-  /// 取得留言列表
-  ///
-  /// [eventId] 揪團 ID
-  Future<List<GroupEventComment>> getComments({required String eventId});
-
-  /// 刪除留言
-  ///
-  /// [commentId] 留言 ID
-  /// [userId] 使用者 ID
-  Future<void> deleteComment({required String commentId, required String userId});
+  /// 留言相關
+  Future<Result<List<GroupEventComment>, Exception>> getComments(String eventId);
+  Future<Result<GroupEventComment, Exception>> addComment({
+    required String eventId,
+    required String content,
+  });
+  Future<Result<void, Exception>> deleteComment(String commentId);
 }

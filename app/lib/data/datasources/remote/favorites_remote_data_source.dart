@@ -19,13 +19,14 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
   FavoritesRemoteDataSource(this._favoritesApi);
 
   @override
-  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({String? cursor, int? limit}) async {
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({int? page, int? limit}) async {
     try {
-      LogService.info('獲取雲端最愛列表 (cursor: $cursor, limit: $limit)...', source: _source);
-      final response = await _favoritesApi.listFavorites(cursor: cursor, limit: limit);
+      LogService.info('獲取雲端最愛列表 (page: $page, limit: $limit)...', source: _source);
+      final response = await _favoritesApi.listFavorites(page: page, limit: limit);
       final list = PaginatedList<Favorite>(
         items: response.items.map(FavoritesApiMapper.fromResponse).toList(),
-        nextCursor: response.pagination.nextCursor,
+        page: response.pagination.page,
+        total: response.pagination.total,
         hasMore: response.pagination.hasMore,
       );
       return Success(list);

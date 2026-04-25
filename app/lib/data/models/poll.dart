@@ -10,85 +10,91 @@ class Poll {
   @HiveField(0)
   final String id;
 
-  /// 標題
+  /// 關聯的行程 ID
   @HiveField(1)
+  @JsonKey(defaultValue: '')
+  final String tripId;
+
+  /// 標題
+  @HiveField(2)
   final String title;
 
   /// 描述
-  @HiveField(2)
+  @HiveField(3)
   @JsonKey(defaultValue: '', fromJson: _parseString)
   final String description;
 
   /// 建立者 ID
-  @HiveField(3)
+  @HiveField(4)
   final String creatorId;
 
   /// 截止時間
-  @HiveField(4)
+  @HiveField(5)
   final DateTime? deadline;
 
   /// 是否允許新增選項
-  @HiveField(5)
+  @HiveField(6)
   @JsonKey(defaultValue: false)
   final bool isAllowAddOption;
 
   /// 選項上限
-  @HiveField(6)
+  @HiveField(7)
   @JsonKey(defaultValue: 20, fromJson: _parseInt)
   final int maxOptionLimit;
 
   /// 是否允許複選
-  @HiveField(7)
+  @HiveField(8)
   @JsonKey(defaultValue: false)
   final bool allowMultipleVotes;
 
   /// 結果顯示方式 ('realtime' 或 'blind')
-  @HiveField(8)
+  @HiveField(9)
   @JsonKey(defaultValue: 'realtime')
   final String resultDisplayType;
 
   /// 狀態 ('active' 或 'ended')
-  @HiveField(9)
+  @HiveField(10)
   @JsonKey(defaultValue: 'active')
   final String status;
 
   /// 投票選項列表
-  @HiveField(10)
+  @HiveField(11)
   @JsonKey(defaultValue: [])
   final List<PollOption> options;
 
   /// 我的投票紀錄 (選項 ID 列表)
-  @HiveField(11)
+  @HiveField(12)
   @JsonKey(defaultValue: [], fromJson: _parseStringList)
   final List<String> myVotes;
 
   /// 總票數
-  @HiveField(12)
+  @HiveField(13)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int totalVotes;
 
   /// 建立時間
-  @HiveField(13)
+  @HiveField(14)
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   /// 建立者 ID
-  @HiveField(14)
+  @HiveField(15)
   @JsonKey(name: 'created_by')
   final String createdBy;
 
   /// 更新時間
-  @HiveField(15)
+  @HiveField(16)
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   /// 更新者 ID
-  @HiveField(16)
+  @HiveField(17)
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
   Poll({
     required this.id,
+    this.tripId = '',
     required this.title,
     this.description = '',
     required this.creatorId,
@@ -134,6 +140,48 @@ class Poll {
 
   factory Poll.fromJson(Map<String, dynamic> json) => _$PollFromJson(json);
   Map<String, dynamic> toJson() => _$PollToJson(this);
+
+  Poll copyWith({
+    String? id,
+    String? tripId,
+    String? title,
+    String? description,
+    String? creatorId,
+    DateTime? deadline,
+    bool? isAllowAddOption,
+    int? maxOptionLimit,
+    bool? allowMultipleVotes,
+    String? resultDisplayType,
+    String? status,
+    List<PollOption>? options,
+    List<String>? myVotes,
+    int? totalVotes,
+    DateTime? createdAt,
+    String? createdBy,
+    DateTime? updatedAt,
+    String? updatedBy,
+  }) {
+    return Poll(
+      id: id ?? this.id,
+      tripId: tripId ?? this.tripId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      creatorId: creatorId ?? this.creatorId,
+      deadline: deadline ?? this.deadline,
+      isAllowAddOption: isAllowAddOption ?? this.isAllowAddOption,
+      maxOptionLimit: maxOptionLimit ?? this.maxOptionLimit,
+      allowMultipleVotes: allowMultipleVotes ?? this.allowMultipleVotes,
+      resultDisplayType: resultDisplayType ?? this.resultDisplayType,
+      status: status ?? this.status,
+      options: options ?? this.options,
+      myVotes: myVotes ?? this.myVotes,
+      totalVotes: totalVotes ?? this.totalVotes,
+      createdAt: createdAt ?? this.createdAt,
+      createdBy: createdBy ?? this.createdBy,
+      updatedAt: updatedAt ?? this.updatedAt,
+      updatedBy: updatedBy ?? this.updatedBy,
+    );
+  }
 }
 
 @HiveType(typeId: 7)

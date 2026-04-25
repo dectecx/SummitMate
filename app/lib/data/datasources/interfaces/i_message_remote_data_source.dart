@@ -1,27 +1,34 @@
 import '../../../core/models/paginated_list.dart';
 import '../../models/message.dart';
+import '../../../core/error/result.dart';
 
-/// 留言訊息 (Message) 的遠端資料來源介面
-///
-/// 負責定義與後端 API 進行訊息資料交換的操作。
+/// 行程留言板 (Trip Messages) 的遠端資料來源介面
 abstract interface class IMessageRemoteDataSource {
-  /// 取得雲端留言列表 (支援分頁)
+  /// 獲取行程留言列表 (支援分頁)
   ///
-  /// [tripId] 指定的行程 ID
-  Future<PaginatedList<Message>> getMessages(
+  /// [tripId] 行程 ID
+  /// [page] 頁碼
+  /// [limit] 每頁數量
+  Future<Result<PaginatedList<Message>, Exception>> getMessages(
     String tripId, {
-    String? cursor,
+    int? page,
     int? limit,
   });
 
   /// 新增留言
   ///
-  /// [message] 欲新增的留言物件
-  Future<void> addMessage(Message message);
+  /// [tripId] 行程 ID
+  /// [content] 留言內容
+  /// [replyToId] 回覆的留言 ID (可選)
+  Future<Result<String, Exception>> addMessage({
+    required String tripId,
+    required String content,
+    String? replyToId,
+  });
 
   /// 刪除留言
   ///
   /// [tripId] 行程 ID
   /// [id] 留言 ID
-  Future<void> deleteMessage(String tripId, String id);
+  Future<Result<void, Exception>> deleteMessage(String tripId, String id);
 }

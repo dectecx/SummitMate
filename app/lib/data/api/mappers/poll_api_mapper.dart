@@ -4,9 +4,10 @@ import '../models/poll_api_models.dart';
 /// Poll API Model ↔ Domain Model 轉換
 class PollApiMapper {
   /// PollResponse → Poll (domain model)
-  static Poll fromResponse(PollResponse response) {
+  static Poll fromResponse(PollResponse response, {String tripId = ''}) {
     return Poll(
       id: response.id,
+      tripId: tripId,
       title: response.title,
       description: response.description,
       creatorId: response.creatorId,
@@ -40,5 +41,33 @@ class PollApiMapper {
       updatedAt: response.updatedAt.toLocal(),
       updatedBy: response.updatedBy,
     );
+  }
+
+  /// Parameters to CreateRequest
+  static PollCreateRequest toCreateRequest({
+    required String title,
+    required List<String> options,
+    bool allowMultiple = false,
+    String description = '',
+    DateTime? deadline,
+    bool isAllowAddOption = false,
+    int maxOptionLimit = 20,
+    String resultDisplayType = 'realtime',
+  }) {
+    return PollCreateRequest(
+      title: title,
+      initialOptions: options,
+      allowMultipleVotes: allowMultiple,
+      description: description,
+      deadline: deadline,
+      isAllowAddOption: isAllowAddOption,
+      maxOptionLimit: maxOptionLimit,
+      resultDisplayType: resultDisplayType,
+    );
+  }
+
+  /// Option text to Request
+  static PollOptionRequest toOptionRequest(String text) {
+    return PollOptionRequest(text: text);
   }
 }

@@ -6,7 +6,7 @@ import '../../../core/error/result.dart';
 /// 最愛 (Favorites) 的遠端資料來源介面
 abstract interface class IFavoritesRemoteDataSource {
   /// 從後端獲取最愛列表 (支援分頁)
-  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({String? cursor, int? limit});
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({int? page, int? limit});
 
   /// 在後端切換最愛狀態
   ///
