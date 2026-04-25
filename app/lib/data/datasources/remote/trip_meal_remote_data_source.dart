@@ -1,25 +1,8 @@
 import '../../../core/di/injection.dart';
+import '../interfaces/i_trip_meal_remote_data_source.dart';
 import '../../models/meal_item.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
-
-/// 行程餐飲 (Trip Meal) 的遠端資料來源介面
-abstract class ITripMealRemoteDataSource {
-  /// 取得行程所有餐點
-  Future<List<MealItem>> getTripMeals(String tripId);
-
-  /// 新增餐點至行程
-  Future<MealItem> addTripMeal(String tripId, MealItem item);
-
-  /// 更新行程餐點內容
-  Future<void> updateTripMeal(String tripId, MealItem item);
-
-  /// 從行程中刪除餐點
-  Future<void> deleteTripMeal(String tripId, String itemId);
-
-  /// 批量替換行程所有餐點
-  Future<void> replaceAllTripMeals(String tripId, List<MealItem> items);
-}
 
 /// 行程餐飲 (Trip Meal) 的遠端資料來源實作
 class TripMealRemoteDataSource implements ITripMealRemoteDataSource {

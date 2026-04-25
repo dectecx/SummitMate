@@ -1,25 +1,8 @@
 import '../../../core/di/injection.dart';
+import '../interfaces/i_trip_gear_remote_data_source.dart';
 import '../../models/gear_item.dart';
 import '../../../infrastructure/clients/network_aware_client.dart';
 import '../../../infrastructure/tools/log_service.dart';
-
-/// 行程裝備 (Trip Gear) 的遠端資料來源介面
-abstract class ITripGearRemoteDataSource {
-  /// 取得行程裝備清單
-  Future<List<GearItem>> getTripGear(String tripId);
-
-  /// 新增裝備至行程
-  Future<GearItem> addTripGear(String tripId, GearItem item);
-
-  /// 更新行程裝備內容
-  Future<void> updateTripGear(String tripId, GearItem item);
-
-  /// 從行程中刪除裝備
-  Future<void> deleteTripGear(String tripId, String itemId);
-
-  /// 批量替換行程所有裝備
-  Future<void> replaceAllTripGear(String tripId, List<GearItem> items);
-}
 
 /// 行程裝備 (Trip Gear) 的遠端資料來源實作
 class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
