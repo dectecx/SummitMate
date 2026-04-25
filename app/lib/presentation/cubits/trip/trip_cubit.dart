@@ -7,7 +7,7 @@ import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import '../../../data/repositories/interfaces/i_gear_repository.dart';
 import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../../../data/datasources/remote/trip_gear_remote_data_source.dart';
+import '../../../data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';

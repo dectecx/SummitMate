@@ -14,7 +14,7 @@ import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:get_it/get_it.dart';
 import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
-import 'package:summitmate/data/datasources/remote/trip_gear_remote_data_source.dart';
+import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
