@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:seo_renderer/seo_renderer.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/di/injection.dart';
@@ -217,12 +218,14 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                               children: [
                                 const Icon(Icons.hiking, size: 80, color: Colors.grey),
                                 const SizedBox(height: 16),
-                                const Text(
-                                  '歡迎使用 SummitMate',
-                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                const TextRenderer(
+                                  child: Text(
+                                    '歡迎使用 SummitMate',
+                                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
-                                const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
+                                const TextRenderer(child: Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey))),
                                 const SizedBox(height: 32),
                                 FilledButton.icon(
                                   onPressed: () => TripSelectionDialog.show(context),

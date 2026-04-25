@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_strategy/url_strategy.dart';
 import 'app.dart';
 import 'core/di/injection.dart';
 import 'infrastructure/observers/global_bloc_observer.dart';
 import 'infrastructure/tools/log_service.dart';
 
 void main() async {
+  if (kIsWeb) {
+    setPathUrlStrategy();
+  }
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Locale Data

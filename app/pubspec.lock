@@ -1264,6 +1264,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  seo_renderer:
+    dependency: "direct main"
+    description:
+      name: seo_renderer
+      sha256: "2f687b566467387625404963ed0a58060d6d06639ff100611df3668dab14d3dc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   share_plus:
     dependency: "direct main"
     description:
@@ -1621,6 +1629,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.5"
+  url_strategy:
+    dependency: "direct main"
+    description:
+      name: url_strategy
+      sha256: "42b68b42a9864c4d710401add17ad06e28f1c1d5500c93b98c431f6b0ea4ab87"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   uuid:
     dependency: "direct main"
     description:
