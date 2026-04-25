@@ -19,7 +19,7 @@ void main() {
 
   setUp(() {
     mockApiService = MockTripMealApiService();
-    dataSource = TripMealRemoteDataSource.testable(mockApiService);
+    dataSource = TripMealRemoteDataSource(mockApiService);
   });
 
   final testResponse = TripMealItemResponse(

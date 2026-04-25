@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
@@ -15,8 +14,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
 
   final GroupEventApiService _groupEventApi;
 
-  GroupEventRemoteDataSource(Dio dio)
-      : _groupEventApi = GroupEventApiService(dio);
+  GroupEventRemoteDataSource(this._groupEventApi);
 
   @override
   Future<List<GroupEvent>> getEvents({required String userId, String? status}) async {

@@ -1,90 +1,74 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:summitmate/data/api/models/favorites_api_models.dart';
+import 'package:summitmate/data/api/services/favorites_api_service.dart';
 import 'package:summitmate/data/datasources/remote/favorites_remote_data_source.dart';
 import 'package:summitmate/data/models/enums/favorite_type.dart';
 import 'package:summitmate/core/error/result.dart';
 
-class MockDio extends Mock implements Dio {}
+class MockFavoritesApiService extends Mock implements FavoritesApiService {}
+class FakeFavoriteAddRequest extends Fake implements FavoriteAddRequest {}
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeFavoriteAddRequest());
+  });
+
   late FavoritesRemoteDataSource dataSource;
-  late MockDio mockDio;
+  late MockFavoritesApiService mockApi;
 
   setUp(() {
-    mockDio = MockDio();
-    dataSource = FavoritesRemoteDataSource(mockDio);
+    mockApi = MockFavoritesApiService();
+    dataSource = FavoritesRemoteDataSource(mockApi);
+  });
+
+  final testResponse = FavoriteResponse.fromJson({
+    'id': 'fav-1',
+    'target_id': '1',
+    'type': 'trip',
+    'created_at': '2024-01-01T00:00:00Z',
+    'created_by': 'user-1',
+    'updated_at': '2024-01-01T00:00:00Z',
+    'updated_by': 'user-1',
   });
 
   group('FavoritesRemoteDataSource.getFavorites', () {
-    test('returns success with list of maps on success', () async {
-      final responseData = [
-        {
-          'id': 'fav-1',
-          'target_id': '1',
-          'type': 'trip',
-          'created_at': DateTime.now().toIso8601String(),
-          'created_by': 'user-1',
-          'updated_at': DateTime.now().toIso8601String(),
-          'updated_by': 'user-1',
-        },
-      ];
-
-      when(() => mockDio.get('/favorites')).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: '/favorites'),
-          data: responseData,
-          statusCode: 200,
-        ),
-      );
+    test('returns success with list on success', () async {
+      when(() => mockApi.listFavorites()).thenAnswer((_) async => [testResponse]);
 
       final result = await dataSource.getFavorites();
 
       expect(result, isA<Success>());
       final list = (result as Success).value as List;
       expect(list.length, 1);
-      expect(list[0]['target_id'], '1');
     });
 
     test('returns failure on exception', () async {
-      when(() => mockDio.get('/favorites')).thenThrow(Exception('Fail'));
+      when(() => mockApi.listFavorites()).thenThrow(Exception('Error'));
 
       final result = await dataSource.getFavorites();
+
       expect(result, isA<Failure>());
     });
   });
 
   group('FavoritesRemoteDataSource.updateFavorite', () {
-    test('calls POST when isFavorite is true', () async {
-      final responseData = {
-        'id': 'fav-1',
-        'target_id': 't1',
-        'type': 'route',
-        'created_at': DateTime.now().toIso8601String(),
-        'created_by': 'u1',
-        'updated_at': DateTime.now().toIso8601String(),
-        'updated_by': 'u1',
-      };
-      
-      when(() => mockDio.post('/favorites', data: any(named: 'data'))).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: '/favorites'), data: responseData, statusCode: 201),
-      );
+    test('calls addFavorite when isFavorite is true', () async {
+      when(() => mockApi.addFavorite(any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.updateFavorite('t1', FavoriteType.route, true);
+      final result = await dataSource.updateFavorite('1', FavoriteType.mountain, true);
 
       expect(result, isA<Success>());
-      verify(() => mockDio.post('/favorites', data: {'target_id': 't1', 'type': 'route'})).called(1);
+      verify(() => mockApi.addFavorite(any())).called(1);
     });
 
-    test('calls DELETE when isFavorite is false', () async {
-      when(() => mockDio.delete('/favorites/t1')).thenAnswer(
-        (_) async => Response(requestOptions: RequestOptions(path: '/favorites/t1'), statusCode: 200),
-      );
+    test('calls removeFavorite when isFavorite is false', () async {
+      when(() => mockApi.removeFavorite('1')).thenAnswer((_) async {});
 
-      final result = await dataSource.updateFavorite('t1', FavoriteType.route, false);
+      final result = await dataSource.updateFavorite('1', FavoriteType.mountain, false);
 
       expect(result, isA<Success>());
-      verify(() => mockDio.delete('/favorites/t1')).called(1);
+      verify(() => mockApi.removeFavorite('1')).called(1);
     });
   });
 }

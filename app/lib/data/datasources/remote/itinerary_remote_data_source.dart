@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/itinerary_item.dart';
 import '../../api/services/itinerary_api_service.dart';
@@ -13,7 +12,7 @@ class ItineraryRemoteDataSource implements IItineraryRemoteDataSource {
 
   final ItineraryApiService _itineraryApi;
 
-  ItineraryRemoteDataSource(Dio dio) : _itineraryApi = ItineraryApiService(dio);
+  ItineraryRemoteDataSource(this._itineraryApi);
 
   @override
   Future<List<ItineraryItem>> getItinerary(String tripId) async {

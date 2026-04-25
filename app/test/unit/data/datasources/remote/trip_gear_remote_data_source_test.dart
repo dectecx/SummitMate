@@ -20,7 +20,7 @@ void main() {
   setUp(() {
     mockApiService = MockTripGearApiService();
     // 注入測試用 Dio（不會被真正使用，因為 ApiService 已 mock）
-    dataSource = TripGearRemoteDataSource.testable(mockApiService);
+    dataSource = TripGearRemoteDataSource(mockApiService);
   });
 
   final testResponse = TripGearItemResponse(

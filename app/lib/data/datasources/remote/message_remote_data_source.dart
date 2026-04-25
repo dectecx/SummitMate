@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../models/message.dart';
 import '../../api/services/message_api_service.dart';
@@ -13,7 +12,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
 
   final MessageApiService _messageApi;
 
-  MessageRemoteDataSource(Dio dio) : _messageApi = MessageApiService(dio);
+  MessageRemoteDataSource(this._messageApi);
 
   @override
   Future<List<Message>> getMessages(String tripId) async {
