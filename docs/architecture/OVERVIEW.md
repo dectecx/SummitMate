@@ -70,7 +70,9 @@ graph LR
 | Platforms          | iOS, Android, Web (CanvasKit)                     |
 | Local DB           | Hive (NoSQL)                                      |
 | State Management   | flutter_bloc (Cubit) + Provider                   |
-| Backend (Primary)  | Go 1.25 + Chi v5 + PostgreSQL                     |
+| API Layer (FE)    | Retrofit + Dio + Freezed (Code-Gen)               |
+| DI / Service Loc. | Injectable + GetIt                                |
+| Backend (Primary)  | Go 1.26 + Chi v5 + PostgreSQL                     |
 | Backend (Legacy)   | Google Apps Script + Google Sheets                |
 | API Style          | OpenAPI 3.0 (Code-Gen via oapi-codegen)           |
 | Authentication     | JWT (Access + Refresh Token)                      |

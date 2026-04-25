@@ -22,15 +22,12 @@ graph TB
     end
 
     subgraph Infrastructure["基礎設施層 (Infrastructure)"]
-        AuthSvc["GasAuthService"]
+        AuthSvc["AuthService"]
         SyncSvc["SyncService"]
-        DataSvc["GoogleSheetsService"]
-        PollSvc["PollService"]
         WeatherSvc["WeatherService"]
-        GearSvc["GearCloudService"]
         ConnSvc["ConnectivityService"]
 
-        GasClient["GasApiClient"]
+        ApiClient["ApiClient"]
         NetClient["NetworkAwareClient"]
     end
 
@@ -62,15 +59,14 @@ graph TB
     ConnSvc -.->|implements| IConn
 
     %% Infrastructure -> Clients
-    AuthSvc --> GasClient
-    SyncSvc --> GasClient
-    DataSvc --> GasClient
-    GasClient --> NetClient
+    AuthSvc --> ApiClient
+    SyncSvc --> ApiClient
+    ApiClient --> NetClient
 
     %% Data flow
     Repos --> LocalDS & RemoteDS
     LocalDS --> Hive
-    RemoteDS --> GasClient
+    RemoteDS --> ApiClient
 
     %% Core provides
     DI --> AuthSvc & SyncSvc & Repos
@@ -154,7 +150,7 @@ sequenceDiagram
     participant R as Repository
     participant L as LocalDS
     participant R2 as RemoteDS
-    participant API as GAS API
+    participant API as Go API (Retrofit)
 
     UI->>C: action()
     C->>R: getData()
@@ -167,8 +163,8 @@ sequenceDiagram
     end
 
     R->>R2: fetchRemote()
-    R2->>API: HTTP POST
-    API-->>R2: response
+    R2->>API: HTTP (Retrofit/Dio)
+    API-->>R2: JSON Response
     R2-->>R: freshData
     R->>L: cache(freshData)
     R-->>C: freshData
