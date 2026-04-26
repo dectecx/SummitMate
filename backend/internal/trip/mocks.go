@@ -109,6 +109,11 @@ func (m *MockTripMemberRepository) IsMember(ctx context.Context, tripID, userID 
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockTripMemberRepository) GetRole(ctx context.Context, tripID, userID string) (string, error) {
+	args := m.Called(ctx, tripID, userID)
+	return args.String(0), args.Error(1)
+}
+
 func (m *MockTripMemberRepository) ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error) {
 	args := m.Called(ctx, tripID)
 	if args.Get(0) == nil {

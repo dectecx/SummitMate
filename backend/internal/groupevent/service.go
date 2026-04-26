@@ -6,6 +6,8 @@ import (
 	"log/slog"
 
 	"summitmate/internal/apperror"
+	"summitmate/internal/database"
+	"summitmate/internal/trip"
 )
 
 type GroupEventService interface {
@@ -24,17 +26,23 @@ type GroupEventService interface {
 	DeleteComment(ctx context.Context, commentID string, userID string) error
 
 	ToggleLike(ctx context.Context, eventID, userID string) (bool, error)
+	UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error
+	UpdateTripSnapshot(ctx context.Context, eventID string, userID string) error
 }
 
 type groupEventService struct {
-	logger *slog.Logger
-	repo   GroupEventRepository
+	logger   *slog.Logger
+	db       database.Beginner
+	repo     GroupEventRepository
+	tripServ trip.TripService
 }
 
-func NewGroupEventService(logger *slog.Logger, repo GroupEventRepository) GroupEventService {
+func NewGroupEventService(logger *slog.Logger, db database.Beginner, repo GroupEventRepository, tripServ trip.TripService) GroupEventService {
 	return &groupEventService{
-		logger: logger.With("component", "group_event"),
-		repo:   repo,
+		logger:   logger.With("component", "group_event"),
+		db:       db,
+		repo:     repo,
+		tripServ: tripServ,
 	}
 }
 
@@ -162,6 +170,18 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 		return err
 	}
 
+	// 如果審核通過且活動有連結行程，自動將該成員加入行程 (Role: member)
+	if status == ApplicationStatusApproved && event.LinkedTripID != nil {
+		// 防呆：這裡 AddMember 內部已經有權限檢查與重複加入檢查，直接呼叫即可
+		_, err := s.tripServ.AddMember(ctx, *event.LinkedTripID, executorID, userID)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "自動加入行程成員失敗", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID, "error", err)
+			// 這裡不回傳錯誤給前端，因為報名狀態已經更新成功了。
+		} else {
+			s.logger.InfoContext(ctx, "自動加入行程成員完成", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID)
+		}
+	}
+
 	s.logger.InfoContext(ctx, "活動報名狀態更新成功", "event_id", eventID, "target_user_id", userID, "status", status, "executor_id", executorID)
 	return nil
 }
@@ -185,4 +205,65 @@ func (s *groupEventService) DeleteComment(ctx context.Context, commentID string,
 
 func (s *groupEventService) ToggleLike(ctx context.Context, eventID, userID string) (bool, error) {
 	return s.repo.ToggleLike(ctx, eventID, userID)
+}
+
+func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error {
+	event, err := s.repo.GetEventByID(ctx, eventID)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return apperror.ErrEventNotFound
+	}
+	if event.CreatedBy != userID {
+		return apperror.ErrEventAccessDenied
+	}
+
+	if tripID != nil {
+		trip, err := s.tripServ.GetTrip(ctx, *tripID, userID)
+		if err != nil {
+			return err
+		}
+		if trip == nil {
+			return apperror.ErrTripNotFound
+		}
+	}
+
+	return s.repo.UpdateTripLink(ctx, eventID, tripID, userID)
+}
+
+func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) error {
+	event, err := s.repo.GetEventByID(ctx, eventID)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return apperror.ErrEventNotFound
+	}
+	if event.CreatedBy != userID {
+		return apperror.ErrEventAccessDenied
+	}
+	if event.LinkedTripID == nil {
+		return apperror.ErrBadRequest.WithMessage("活動尚未連結行程")
+	}
+
+	tripObj, err := s.tripServ.GetTrip(ctx, *event.LinkedTripID, userID)
+	if err != nil {
+		return err
+	}
+	itinerary, err := s.tripServ.ListItinerary(ctx, *event.LinkedTripID, userID)
+	if err != nil {
+		return err
+	}
+
+	snapshot := &TripSnapshot{
+		Name:      tripObj.Name,
+		StartDate: tripObj.StartDate,
+		EndDate:   tripObj.EndDate,
+	}
+	for _, item := range itinerary {
+		snapshot.Itinerary = append(snapshot.Itinerary, item.Name)
+	}
+
+	return s.repo.UpdateTripSnapshot(ctx, eventID, snapshot, userID)
 }

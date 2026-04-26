@@ -55,8 +55,16 @@ func (m *MockTripService) ListMembers(ctx context.Context, tripID, userID string
 	return args.Get(0).([]*TripMember), args.Error(1)
 }
 
-func (m *MockTripService) AddMember(ctx context.Context, tripID, userID, email string) (*TripMember, error) {
+func (m *MockTripService) InviteMemberByEmail(ctx context.Context, tripID, userID, email string) (*TripMember, error) {
 	args := m.Called(ctx, tripID, userID, email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*TripMember), args.Error(1)
+}
+
+func (m *MockTripService) AddMember(ctx context.Context, tripID, userID, targetUserID string) (*TripMember, error) {
+	args := m.Called(ctx, tripID, userID, targetUserID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

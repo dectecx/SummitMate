@@ -7,15 +7,31 @@ import (
 	"testing"
 
 	"summitmate/internal/apperror"
+	"summitmate/internal/trip"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+type MockBeginner struct {
+	mock.Mock
+}
+
+func (m *MockBeginner) Begin(ctx context.Context) (pgx.Tx, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(pgx.Tx), args.Error(1)
+}
+
 func TestGroupEventService_CreateEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
-	svc := NewGroupEventService(logger, mockRepo)
+	mockTrip := new(trip.MockTripService)
+	mockDB := new(MockBeginner)
+	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip)
 
 	t.Run("Success", func(t *testing.T) {
 		event := &GroupEvent{
@@ -43,7 +59,9 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 func TestGroupEventService_UpdateEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
-	svc := NewGroupEventService(logger, mockRepo)
+	mockTrip := new(trip.MockTripService)
+	mockDB := new(MockBeginner)
+	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip)
 
 	t.Run("Success", func(t *testing.T) {
 		eventID := "event-1"
@@ -78,7 +96,9 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 func TestGroupEventService_ApplyToEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
-	svc := NewGroupEventService(logger, mockRepo)
+	mockTrip := new(trip.MockTripService)
+	mockDB := new(MockBeginner)
+	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip)
 
 	t.Run("Success", func(t *testing.T) {
 		eventID := "event-1"

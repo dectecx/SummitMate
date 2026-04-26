@@ -26,25 +26,37 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 		privateMsg = &e.PrivateMessage
 	}
 
+	var snapshot *api.TripSnapshot
+	if e.TripSnapshot != nil {
+		snapshot = &api.TripSnapshot{
+			Name:      e.TripSnapshot.Name,
+			StartDate: e.TripSnapshot.StartDate,
+			EndDate:   e.TripSnapshot.EndDate,
+			Itinerary: e.TripSnapshot.Itinerary,
+		}
+	}
+
 	return api.GroupEvent{
-		Id:               uuid.MustParse(e.ID),
-		Title:            e.Title,
-		Description:      e.Description,
-		Category:         string(e.Category),
-		Location:         e.Location,
-		StartDate:        openapi_types.Date{Time: e.StartDate},
-		EndDate:          endDate,
-		Status:           api.GroupEventStatus(e.Status),
-		MaxMembers:       e.MaxMembers,
-		ApprovalRequired: e.ApprovalRequired,
-		PrivateMessage:   privateMsg,
-		LinkedTripId:     linkedTripID,
-		LikeCount:        e.LikeCount,
-		CommentCount:     e.CommentCount,
-		CreatedAt:        e.CreatedAt,
-		CreatedBy:        uuid.MustParse(e.CreatedBy),
-		UpdatedAt:        e.UpdatedAt,
-		UpdatedBy:        uuid.MustParse(e.UpdatedBy),
+		Id:                uuid.MustParse(e.ID),
+		Title:             e.Title,
+		Description:       e.Description,
+		Category:          string(e.Category),
+		Location:          e.Location,
+		StartDate:         openapi_types.Date{Time: e.StartDate},
+		EndDate:           endDate,
+		Status:            api.GroupEventStatus(e.Status),
+		MaxMembers:        e.MaxMembers,
+		ApprovalRequired:  e.ApprovalRequired,
+		PrivateMessage:    privateMsg,
+		LinkedTripId:      linkedTripID,
+		TripSnapshot:      snapshot,
+		SnapshotUpdatedAt: e.SnapshotUpdatedAt,
+		LikeCount:         e.LikeCount,
+		CommentCount:      e.CommentCount,
+		CreatedAt:         e.CreatedAt,
+		CreatedBy:         uuid.MustParse(e.CreatedBy),
+		UpdatedAt:         e.UpdatedAt,
+		UpdatedBy:         uuid.MustParse(e.UpdatedBy),
 	}
 }
 
