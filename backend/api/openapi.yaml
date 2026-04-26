@@ -2006,6 +2006,59 @@ paths:
         "400":
           description: 已申請過或活動已關閉
 
+  /group-events/{id}/trip-link:
+    patch:
+      tags: [Community]
+      summary: 連結或取消連結行程 (僅團長)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                linked_trip_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        "200":
+          description: 成功變更連結
+        "403":
+          description: 權限不足
+
+  /group-events/{id}/trip-snapshot:
+    post:
+      tags: [Community]
+      summary: 更新行程快照 (僅團長)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 快照更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEvent"
+        "403":
+          description: 權限不足
+
   /group-events/{id}/applications:
     get:
       tags: [Community]
@@ -3154,6 +3207,27 @@ components:
         is_favorite:
           type: boolean
 
+    TripSnapshot:
+      type: object
+      required:
+        - name
+        - start_date
+        - itinerary
+      properties:
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+        itinerary:
+          type: array
+          items:
+            type: string
+
     GroupEvent:
       type: object
       required:
@@ -3204,6 +3278,13 @@ components:
         linked_trip_id:
           type: string
           format: uuid
+          nullable: true
+        trip_snapshot:
+          $ref: "#/components/schemas/TripSnapshot"
+          nullable: true
+        snapshot_updated_at:
+          type: string
+          format: date-time
           nullable: true
         like_count:
           type: integer
