@@ -12,6 +12,7 @@ import 'gear/gear_search_bar.dart';
 import 'gear/gear_summary_cards.dart';
 import 'gear/gear_category_section.dart';
 import 'gear/dialogs/add_gear_dialog.dart';
+import 'responsive_layout.dart';
 
 /// 裝備管理頁籤
 ///
@@ -109,64 +110,109 @@ class _GearTabState extends State<GearTab> {
           }
 
           return Scaffold(
-            body: Column(
-              children: [
-                // 搜尋欄
-                GearSearchBar(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    context.read<GearCubit>().setSearchQuery(value);
-                    setState(() {});
-                  },
-                  onClear: () {
-                    _searchController.clear();
-                    context.read<GearCubit>().setSearchQuery('');
-                    setState(() {});
-                  },
-                ),
-
-                // 模式切換器
-                GearModeSelector(selectedMode: _mode, onModeChanged: (newMode) => setState(() => _mode = newMode)),
-                const SizedBox(height: 8),
-
-                // 列表內容
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    children: [
-                      // 快速連結 (官方/雲端/個人庫)
-                      const GearQuickLinks(),
-                      const SizedBox(height: 8),
-                      // 總重量
-                      GearTotalWeightCard(totalWeight: totalWeight),
-                      const SizedBox(height: 8),
-                      // 糧食計畫
-                      GearMealCard(mealWeight: mealWeight),
-                      const SizedBox(height: 16),
-
-                      // 分類清單
-                      if (state.items.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 32),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Icon(Icons.backpack_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
-                                const SizedBox(height: 8),
-                                Text('目前沒有自定義裝備', style: TextStyle(color: Theme.of(context).colorScheme.outline)),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        ...state.itemsByCategory.entries.map(
-                          (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
-                        ),
-                      const SizedBox(height: 80),
-                    ],
+            body: ResponsiveLayout(
+              mobile: Column(
+                children: [
+                  // 搜尋欄
+                  GearSearchBar(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      context.read<GearCubit>().setSearchQuery(value);
+                      setState(() {});
+                    },
+                    onClear: () {
+                      _searchController.clear();
+                      context.read<GearCubit>().setSearchQuery('');
+                      setState(() {});
+                    },
                   ),
-                ),
-              ],
+
+                  // 模式切換器
+                  GearModeSelector(selectedMode: _mode, onModeChanged: (newMode) => setState(() => _mode = newMode)),
+                  const SizedBox(height: 8),
+
+                  // 列表內容
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      children: [
+                        const GearQuickLinks(),
+                        const SizedBox(height: 8),
+                        GearTotalWeightCard(totalWeight: totalWeight),
+                        const SizedBox(height: 8),
+                        GearMealCard(mealWeight: mealWeight),
+                        const SizedBox(height: 16),
+                        if (state.items.isEmpty)
+                          _buildEmptyState(context)
+                        else
+                          ...state.itemsByCategory.entries.map(
+                            (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                          ),
+                        const SizedBox(height: 80),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              desktop: Column(
+                children: [
+                  // 搜尋欄 (置頂)
+                  GearSearchBar(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      context.read<GearCubit>().setSearchQuery(value);
+                      setState(() {});
+                    },
+                    onClear: () {
+                      _searchController.clear();
+                      context.read<GearCubit>().setSearchQuery('');
+                      setState(() {});
+                    },
+                  ),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 左側資訊面板
+                        SizedBox(
+                          width: 300,
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [
+                              GearModeSelector(
+                                selectedMode: _mode,
+                                onModeChanged: (newMode) => setState(() => _mode = newMode),
+                              ),
+                              const SizedBox(height: 16),
+                              const GearQuickLinks(),
+                              const SizedBox(height: 16),
+                              GearTotalWeightCard(totalWeight: totalWeight),
+                              const SizedBox(height: 8),
+                              GearMealCard(mealWeight: mealWeight),
+                            ],
+                          ),
+                        ),
+                        const VerticalDivider(width: 1),
+                        // 右側裝備列表
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [
+                              if (state.items.isEmpty)
+                                _buildEmptyState(context)
+                              else
+                                ...state.itemsByCategory.entries.map(
+                                  (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                                ),
+                              const SizedBox(height: 80),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () => AddGearDialog.show(context),
@@ -174,6 +220,21 @@ class _GearTabState extends State<GearTab> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(Icons.backpack_outlined, size: 48, color: Theme.of(context).colorScheme.outline),
+            const SizedBox(height: 8),
+            Text('目前沒有自定義裝備', style: TextStyle(color: Theme.of(context).colorScheme.outline)),
+          ],
+        ),
       ),
     );
   }
