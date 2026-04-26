@@ -28,7 +28,18 @@ class AuthInterceptor extends Interceptor {
         LogService.debug('[AuthInterceptor] Injected Authorization Header', source: _source);
       } else if (options.extra['requiresAuth'] == true) {
         LogService.warning('[AuthInterceptor] Auth required but no token available', source: _source);
-        // TODO: 伺服器端會回傳 401，此處暫不做阻斷以便測試
+        // 主動阻斷請求，避免無謂的網路呼叫並觸發 401 流程 (refresh/logout)
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: options,
+              statusCode: 401,
+              statusMessage: 'Unauthorized: No token available',
+            ),
+          ),
+        );
       }
     } catch (e) {
       LogService.error('[AuthInterceptor] Failed to inject token: $e', source: _source);
