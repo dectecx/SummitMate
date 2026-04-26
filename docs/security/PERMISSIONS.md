@@ -119,3 +119,30 @@ bool canDeleteTripSync(UserProfile? user, Trip trip) {
 - **權限群組 (Permission Groups)**: 針對單一行程設定 Admin/Editor/Viewer (目前暫不實作)
 - **公開行程 (Public Trips)**: 開放非成員檢視 (目前預設均為 Private)
 - **行程轉移 (Transfer)**: 允許團長將 Leader 角色轉移給他人
+
+---
+
+## 揪團與共享行程
+
+當行程連結至揪團時，權限邏輯將會動態連動：
+
+### 1. 行程預覽 (Snapshot)
+
+- **非成員**：透過 `group_events.trip_snapshot` 檢視行程概況 (名稱、日期、路線摘要)，無法存取實體行程 ID 的詳細內容 (如聊天、投票)。
+- **目的**：保護隱私並避免過期揪團洩漏即時資訊。
+
+### 2. 成員權限獲取
+
+- **流程**：使用者報名揪團 -> 團長批准 -> 後端自動在 `trip_members` 新增該使用者 (Role: `member`)。
+- **存取範圍**：一旦成為成員，使用者可透過 `trip_id` 存取：
+  - 行程詳細節點 (Itinerary Items) - **唯讀**。
+  - 聊天室 (Messages) - 可讀寫。
+  - 投票 (Polls) - 可參與。
+- **排除範圍**：
+  - 個人裝備 (Gear Items) 與糧食 (Meal Items) 屬於個人隱私，不進行共享。
+
+### 3. 權限取消與清理
+
+- **觸發點**：取消揪團連結、刪除揪團、或成員退出揪團。
+- **動作**：後端移除對應的 `trip_members` 記錄。
+- **客戶端響應**：前端 Sync 時若回傳 403 Forbidden，應立即刪除本地對應的行程緩存及共享資訊 (聊天/投票)。
