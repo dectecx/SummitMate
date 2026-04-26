@@ -34,6 +34,13 @@ type Config struct {
 
 // Load reads configuration from environment variables with defaults.
 func Load() *Config {
+	env := getEnv("ENV", "development")
+	defaultOrigins := []string{"https://summitmate-tw.netlify.app"}
+	if env == "development" {
+		// 開發模式允許所有 localhost 變體與模擬器 (由中間件進行 Prefix 匹配)
+		defaultOrigins = append(defaultOrigins, "http://localhost", "http://127.0.0.1", "http://10.0.2.2")
+	}
+
 	cfg := &Config{
 		Port:           getEnv("PORT", "8080"),
 		DBHost:         getEnv("DB_HOST", "localhost"),
@@ -44,8 +51,8 @@ func Load() *Config {
 		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:      getEnv("JWT_SECRET", ""),
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
-		Env:            getEnv("ENV", "development"),
-		AllowedOrigins: getEnvAsSlice("ALLOWED_ORIGINS", []string{"http://localhost:8083"}),
+		Env:            env,
+		AllowedOrigins: getEnvAsSlice("ALLOWED_ORIGINS", defaultOrigins),
 		SMTPHost:       getEnv("SMTP_HOST", "smtp.gmail.com"),
 		SMTPPort:       getEnv("SMTP_PORT", "587"),
 		SMTPUser:       getEnv("SMTP_USER", ""),
