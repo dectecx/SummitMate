@@ -15,6 +15,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
 import '../widgets/common/summit_app_bar.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 揪團列表畫面
 ///
@@ -45,7 +46,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
     final statusText = _getStatusText(event.status);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.all(8),
       child: InkWell(
         onTap: () {
           if (isGuest) {
@@ -475,7 +476,6 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                       ),
                     ),
 
-                  // Event List
                   Expanded(
                     child: filteredEvents.isEmpty
                         ? Center(
@@ -493,14 +493,31 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                           )
                         : RefreshIndicator(
                             onRefresh: () => context.read<GroupEventCubit>().fetchEvents(category: _selectedCategory),
-                            child: ListView.builder(
-                              itemCount: filteredEvents.length,
-                              padding: const EdgeInsets.only(bottom: 80),
-                              itemBuilder: (context, index) {
-                                final event = filteredEvents[index];
-                                final isFavorite = favoritesCubit.isFavorite(event.id);
-                                return _buildEventCard(context, event, currentUserId, isGuest, isFavorite);
-                              },
+                            child: ResponsiveLayout(
+                              mobile: ListView.builder(
+                                itemCount: filteredEvents.length,
+                                padding: const EdgeInsets.fromLTRB(8, 0, 8, 80),
+                                itemBuilder: (context, index) {
+                                  final event = filteredEvents[index];
+                                  final isFavorite = favoritesCubit.isFavorite(event.id);
+                                  return _buildEventCard(context, event, currentUserId, isGuest, isFavorite);
+                                },
+                              ),
+                              desktop: GridView.builder(
+                                itemCount: filteredEvents.length,
+                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 500,
+                                  mainAxisExtent: 200, // 固定高度避免佈局混亂
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final event = filteredEvents[index];
+                                  final isFavorite = favoritesCubit.isFavorite(event.id);
+                                  return _buildEventCard(context, event, currentUserId, isGuest, isFavorite);
+                                },
+                              ),
                             ),
                           ),
                   ),
