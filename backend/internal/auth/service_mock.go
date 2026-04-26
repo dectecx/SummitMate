@@ -10,20 +10,20 @@ type MockAuthService struct {
 	mock.Mock
 }
 
-func (m *MockAuthService) Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, error) {
+func (m *MockAuthService) Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, string, error) {
 	args := m.Called(ctx, email, password, displayName, avatar)
 	if args.Get(0) == nil {
-		return nil, "", args.Error(2)
+		return nil, "", "", args.Error(3)
 	}
-	return args.Get(0).(*User), args.String(1), args.Error(2)
+	return args.Get(0).(*User), args.String(1), args.String(2), args.Error(3)
 }
 
-func (m *MockAuthService) Login(ctx context.Context, email, password string) (*User, string, error) {
+func (m *MockAuthService) Login(ctx context.Context, email, password string) (*User, string, string, error) {
 	args := m.Called(ctx, email, password)
 	if args.Get(0) == nil {
-		return nil, "", args.Error(2)
+		return nil, "", "", args.Error(3)
 	}
-	return args.Get(0).(*User), args.String(1), args.Error(2)
+	return args.Get(0).(*User), args.String(1), args.String(2), args.Error(3)
 }
 
 func (m *MockAuthService) GetUserByID(ctx context.Context, id string) (*User, error) {
@@ -47,12 +47,12 @@ func (m *MockAuthService) DeleteAccount(ctx context.Context, userID string) erro
 	return args.Error(0)
 }
 
-func (m *MockAuthService) RefreshToken(ctx context.Context, token string) (*User, string, error) {
+func (m *MockAuthService) RefreshToken(ctx context.Context, token string) (*User, string, string, error) {
 	args := m.Called(ctx, token)
 	if args.Get(0) == nil {
-		return nil, "", args.Error(2)
+		return nil, "", "", args.Error(3)
 	}
-	return args.Get(0).(*User), args.String(1), args.Error(2)
+	return args.Get(0).(*User), args.String(1), args.String(2), args.Error(3)
 }
 
 func (m *MockAuthService) VerifyEmail(ctx context.Context, email, code string) error {

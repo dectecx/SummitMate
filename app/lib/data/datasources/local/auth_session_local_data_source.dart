@@ -6,6 +6,7 @@ import '../interfaces/i_auth_session_local_data_source.dart';
 @LazySingleton(as: IAuthSessionLocalDataSource)
 class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   static const String _keyToken = 'session_token';
+  static const String _keyRefreshToken = 'session_refresh_token';
   static const String _keyUserId = 'user_id';
   static const String _keyEmail = 'user_email';
   static const String _keyUsername = 'username';
@@ -24,6 +25,16 @@ class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   @override
   Future<String?> getToken() async {
     return await _secureStorage.read(key: _keyToken);
+  }
+
+  @override
+  Future<void> saveRefreshToken(String token) async {
+    await _secureStorage.write(key: _keyRefreshToken, value: token);
+  }
+
+  @override
+  Future<String?> getRefreshToken() async {
+    return await _secureStorage.read(key: _keyRefreshToken);
   }
 
   @override
@@ -69,6 +80,7 @@ class AuthSessionLocalDataSource implements IAuthSessionLocalDataSource {
   @override
   Future<void> clearAll() async {
     await _secureStorage.delete(key: _keyToken);
+    await _secureStorage.delete(key: _keyRefreshToken);
     await _secureStorage.delete(key: _keyUserId);
     await _secureStorage.delete(key: _keyEmail);
     await _secureStorage.delete(key: _keyUsername);

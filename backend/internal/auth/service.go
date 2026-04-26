@@ -17,12 +17,12 @@ import (
 
 // AuthService 定義認證相關的業務邏輯介面。
 type AuthService interface {
-	Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, error)
-	Login(ctx context.Context, email, password string) (*User, string, error)
+	Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, string, error)
+	Login(ctx context.Context, email, password string) (*User, string, string, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	UpdateProfile(ctx context.Context, id string, displayName, avatar *string) (*User, error)
 	DeleteAccount(ctx context.Context, id string) error
-	RefreshToken(ctx context.Context, oldToken string) (*User, string, error)
+	RefreshToken(ctx context.Context, oldToken string) (*User, string, string, error)
 	VerifyEmail(ctx context.Context, email, code string) error
 	ResendVerificationCode(ctx context.Context, email string) error
 	SearchUserByEmail(ctx context.Context, email string) (*User, error)
@@ -65,51 +65,51 @@ func NewAuthService(
 //  4. 簽發 JWT Token
 //
 // 回傳新建的 User、JWT Token、或錯誤。
-func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string, avatar *string) (*User, string, error) {
+func (svc *authService) Register(ctx context.Context, emailAddr, password, displayName string, avatar *string) (*User, string, string, error) {
 	// 驗證 Email 格式
 	if !isValidEmail(emailAddr) {
-		return nil, "", apperror.ErrInvalidEmail
+		return nil, "", "", apperror.ErrInvalidEmail
 	}
 
 	// 驗證密碼強度
 	if err := validatePasswordStrength(password); err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// 檢查 Email 是否已存在
 	_, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err == nil {
 		svc.logger.WarnContext(ctx, "註冊失敗: Email 已存在", "email", emailAddr)
-		return nil, "", apperror.ErrEmailExists
+		return nil, "", "", apperror.ErrEmailExists
 	}
 	if !errors.Is(err, ErrNotFound) {
 		svc.logger.ErrorContext(ctx, "註冊時資料庫查詢失敗", "email", emailAddr, "error", err)
-		return nil, "", err // 資料庫錯誤
+		return nil, "", "", err // 資料庫錯誤
 	}
 
 	// 產生驗證碼
 	code, err := GenerateVerificationCode()
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// 存入快取 (10 分鐘)
 	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, 10*time.Minute); err != nil {
 		svc.logger.ErrorContext(ctx, "快取寫入失敗", "email", emailAddr, "error", err)
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// 雜湊密碼
 	hash, err := HashPassword(password)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// 取得預設 MEMBER 角色
 	roleID, err := svc.userRepo.GetRoleIDByCode(ctx, "MEMBER")
 	if err != nil {
 		svc.logger.ErrorContext(ctx, "無法取得預設角色", "error", err)
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// 寫入資料庫
@@ -126,7 +126,7 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	createdUser, err := svc.userRepo.Create(ctx, newUser)
 	if err != nil {
 		svc.logger.ErrorContext(ctx, "註冊時寫入資料庫失敗", "email", emailAddr, "error", err)
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	svc.logger.InfoContext(ctx, "使用者註冊成功", "user_id", createdUser.ID, "email", emailAddr)
@@ -142,13 +142,17 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 		svc.logger.Info("發送驗證信已停用 (旗標控制)", "email", createdUser.Email, "code", code)
 	}
 
-	// 簽發 JWT Token (有效期 24 小時)
-	token, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, 24*time.Hour)
+	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
+	accessToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "access", 1*time.Hour)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
+	}
+	refreshToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "refresh", 14*24*time.Hour)
+	if err != nil {
+		return nil, "", "", err
 	}
 
-	return createdUser, token, nil
+	return createdUser, accessToken, refreshToken, nil
 }
 
 // Login 處理使用者登入流程：
@@ -157,33 +161,37 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 //  3. 簽發 JWT Token
 //
 // 回傳 User、JWT Token、或錯誤。
-func (svc *authService) Login(ctx context.Context, email, password string) (*User, string, error) {
+func (svc *authService) Login(ctx context.Context, email, password string) (*User, string, string, error) {
 	// 查詢使用者
 	user, err := svc.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			svc.logger.WarnContext(ctx, "登入失敗: 找不到使用者", "email", email)
-			return nil, "", apperror.ErrInvalidCredentials
+			return nil, "", "", apperror.ErrInvalidCredentials
 		}
 		svc.logger.ErrorContext(ctx, "登入時資料庫查詢失敗", "email", email, "error", err)
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	// 驗證密碼
 	if !CheckPasswordHash(password, user.PasswordHash) {
 		svc.logger.WarnContext(ctx, "登入失敗: 密碼不正確", "user_id", user.ID, "email", email)
-		return nil, "", apperror.ErrInvalidCredentials
+		return nil, "", "", apperror.ErrInvalidCredentials
 	}
 
 	svc.logger.InfoContext(ctx, "使用者登入成功", "user_id", user.ID, "email", email)
 
-	// 簽發 JWT Token (有效期 24 小時)
-	token, err := svc.tokenManager.GenerateToken(user.ID, user.Email, 24*time.Hour)
+	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
+	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
+	}
+	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
+	if err != nil {
+		return nil, "", "", err
 	}
 
-	return user, token, nil
+	return user, accessToken, refreshToken, nil
 }
 
 // GetUserByID 依 ID 取得使用者資料。
@@ -215,32 +223,39 @@ func (svc *authService) DeleteAccount(ctx context.Context, userID string) error 
 	return nil
 }
 
-// RefreshToken 解析現有 Token 並簽發新的 JWT Token。
-// 即使 Token 已過期，只要格式正確且簽名有效，仍會簽發新 Token。
-func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*User, string, error) {
+// RefreshToken 解析現有的 Refresh Token 並簽發新的 JWT Tokens。
+func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*User, string, string, error) {
 	claims, err := svc.tokenManager.ParseToken(tokenString)
 	if err != nil {
-		return nil, "", apperror.ErrTokenExpired
+		return nil, "", "", apperror.ErrTokenExpired
+	}
+
+	if claims.TokenType != "refresh" {
+		return nil, "", "", apperror.ErrUnauthorized.WithMessage("無效的 Token 類型")
 	}
 
 	user, err := svc.userRepo.GetByID(ctx, claims.UserID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return nil, "", apperror.ErrUserNotFound
+			return nil, "", "", apperror.ErrUserNotFound
 		}
-		return nil, "", err
+		return nil, "", "", err
 	}
 
 	if !user.IsActive {
-		return nil, "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
+		return nil, "", "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
 	}
 
-	newToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, 24*time.Hour)
+	newAccessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
 	if err != nil {
-		return nil, "", err
+		return nil, "", "", err
+	}
+	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
+	if err != nil {
+		return nil, "", "", err
 	}
 
-	return user, newToken, nil
+	return user, newAccessToken, newRefreshToken, nil
 }
 
 // VerifyEmail 驗證使用者的 Email。

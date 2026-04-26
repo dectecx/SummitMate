@@ -28,13 +28,13 @@ func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName, req.Avatar)
+	user, accessToken, refreshToken, err := h.authService.Register(r.Context(), string(req.Email), req.Password, req.DisplayName, req.Avatar)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	h.writeAuthResponse(w, http.StatusCreated, user, token)
+	h.writeAuthResponse(w, http.StatusCreated, user, accessToken, refreshToken)
 }
 
 // LoginUser 處理 POST /auth/login 請求。
@@ -45,13 +45,13 @@ func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := h.authService.Login(r.Context(), string(req.Email), req.Password)
+	user, accessToken, refreshToken, err := h.authService.Login(r.Context(), string(req.Email), req.Password)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	h.writeAuthResponse(w, http.StatusOK, user, token)
+	h.writeAuthResponse(w, http.StatusOK, user, accessToken, refreshToken)
 }
 
 // GetCurrentUser 處理 GET /auth/me 請求。
@@ -118,13 +118,13 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := h.authService.RefreshToken(r.Context(), req.Token)
+	user, accessToken, newRefreshToken, err := h.authService.RefreshToken(r.Context(), req.RefreshToken)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	h.writeAuthResponse(w, http.StatusOK, user, token)
+	h.writeAuthResponse(w, http.StatusOK, user, accessToken, newRefreshToken)
 }
 
 // VerifyEmail 處理 POST /auth/verify-email 請求。
@@ -188,7 +188,7 @@ func (h *AuthHandler) GetUserByID(w http.ResponseWriter, r *http.Request, userID
 
 // --- 回應輔助函式 ---
 
-func (h *AuthHandler) writeAuthResponse(w http.ResponseWriter, statusCode int, user *User, token string) {
-	response := ToAuthResponse(user, token)
+func (h *AuthHandler) writeAuthResponse(w http.ResponseWriter, statusCode int, user *User, token, refreshToken string) {
+	response := ToAuthResponse(user, token, refreshToken)
 	apiutil.SendJSON(w, statusCode, response)
 }

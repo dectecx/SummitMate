@@ -40,10 +40,11 @@ func ToUserResponse(user *User) api.User {
 	}
 }
 
-// ToAuthResponse converts model.User + token to api.AuthResponse
-func ToAuthResponse(user *User, token string) api.AuthResponse {
+// ToAuthResponse converts model.User + tokens to api.AuthResponse
+func ToAuthResponse(user *User, token, refreshToken string) api.AuthResponse {
 	return api.AuthResponse{
-		Token: token,
-		User:  ToUserResponse(user),
+		Token:        token,
+		RefreshToken: refreshToken,
+		User:         ToUserResponse(user),
 	}
 }

@@ -20,7 +20,7 @@ func TestGenerateAndParseToken_Success(t *testing.T) {
 	email := "test@example.com"
 
 	// 產生 Token
-	token, err := manager.GenerateToken(userID, email, time.Hour)
+	token, err := manager.GenerateToken(userID, email, "access", time.Hour)
 	require.NoError(t, err, "產生 Token 不應有錯誤")
 	assert.NotEmpty(t, token, "Token 不應為空")
 
@@ -44,7 +44,7 @@ func TestParseToken_ExpiredToken(t *testing.T) {
 	manager := tokens.NewTokenManager(testSecret)
 
 	// 產生一個「已過期」的 Token (有效期設為 -1 小時)
-	token, err := manager.GenerateToken("user-123", "test@example.com", -time.Hour)
+	token, err := manager.GenerateToken("user-123", "test@example.com", "access", -time.Hour)
 	require.NoError(t, err)
 
 	_, err = manager.ParseToken(token)
@@ -57,7 +57,7 @@ func TestParseToken_InvalidSecret(t *testing.T) {
 	manager2 := tokens.NewTokenManager("secret-two")
 
 	// 用密鑰 1 產生 Token
-	token, err := manager1.GenerateToken("user-123", "test@example.com", time.Hour)
+	token, err := manager1.GenerateToken("user-123", "test@example.com", "access", time.Hour)
 	require.NoError(t, err)
 
 	// 用密鑰 2 嘗試解析 → 應失敗
