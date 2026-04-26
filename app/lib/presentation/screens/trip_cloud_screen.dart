@@ -12,6 +12,7 @@ import '../cubits/trip/trip_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../widgets/ads/banner_ad_widget.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 雲端行程同步畫面
 class TripCloudScreen extends StatefulWidget {
@@ -228,19 +229,35 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     return BlocBuilder<TripCubit, TripState>(
       builder: (context, state) {
         final localTrips = state is TripLoaded ? state.trips : <Trip>[];
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // 上傳本地行程區塊
-            _buildUploadSection(localTrips),
-            const SizedBox(height: 24),
-            // 雲端行程列表
-            _buildCloudTripsSection(),
-            const SizedBox(height: 24),
-            // 廣告區塊
-            const Center(child: BannerAdWidget(location: 'trip_cloud')),
-            const SizedBox(height: 16),
-          ],
+        return ResponsiveLayout(
+          mobile: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _buildUploadSection(localTrips),
+              const SizedBox(height: 24),
+              _buildCloudTripsSection(isDesktop: false),
+              const SizedBox(height: 24),
+              const Center(child: BannerAdWidget(location: 'trip_cloud')),
+            ],
+          ),
+          desktop: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildUploadSection(localTrips),
+                    const SizedBox(height: 32),
+                    _buildCloudTripsSection(isDesktop: true),
+                    const SizedBox(height: 32),
+                    const Center(child: BannerAdWidget(location: 'trip_cloud')),
+                  ],
+                ),
+              ),
+            ),
+          ),
         );
       },
     );
@@ -287,7 +304,15 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     );
   }
 
-  Widget _buildCloudTripsSection() {
+  Widget _buildCloudTripsSection({required bool isDesktop}) {
+    final cardList = _cloudTrips.map(
+      (trip) => _TripCard(
+        trip: trip,
+        onDownload: () => _downloadTrip(trip),
+        onDelete: () => _deleteCloudTrip(trip),
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -314,11 +339,14 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
               ),
             ),
           )
+        else if (isDesktop)
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: cardList.map((card) => SizedBox(width: 360, child: card)).toList(),
+          )
         else
-          ...(_cloudTrips.map(
-            (trip) =>
-                _TripCard(trip: trip, onDownload: () => _downloadTrip(trip), onDelete: () => _deleteCloudTrip(trip)),
-          )),
+          ...cardList,
       ],
     );
   }

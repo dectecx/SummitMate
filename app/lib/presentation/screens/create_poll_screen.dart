@@ -124,110 +124,124 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: SummitAppBar(title: const Text('發起投票')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Title
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: '投票標題', border: OutlineInputBorder()),
-              validator: (v) => v == null || v.trim().isEmpty ? '請輸入標題' : null,
-              enabled: !_isSubmitting,
-            ),
-            const SizedBox(height: 16),
-
-            // Description
-            TextFormField(
-              controller: _descController,
-              decoration: const InputDecoration(labelText: '描述 (選填)', border: OutlineInputBorder()),
-              maxLines: 3,
-              enabled: !_isSubmitting,
-            ),
-            const SizedBox(height: 16),
-
-            // Deadline
-            ListTile(
-              title: const Text('截止時間'),
-              subtitle: Text(
-                _deadline == null
-                    ? '點擊設定'
-                    : '${_deadline!.year}/${_deadline!.month}/${_deadline!.day} ${_deadline!.hour.toString().padLeft(2, '0')}:${_deadline!.minute.toString().padLeft(2, '0')}',
-              ),
-              leading: const Icon(Icons.event),
-              tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              onTap: _isSubmitting ? null : _pickDate,
-            ),
-            const SizedBox(height: 16),
-
-            SwitchListTile(
-              title: const Text('允許新增'),
-              subtitle: const Text('允許其他成員新增選項'),
-              value: _allowAddOption,
-              onChanged: _isSubmitting ? null : (val) => setState(() => _allowAddOption = val),
-            ),
-            SwitchListTile(
-              title: const Text('多選'),
-              subtitle: const Text('允許成員選擇多個選項'),
-              value: _allowMultipleVotes,
-              onChanged: _isSubmitting ? null : (val) => setState(() => _allowMultipleVotes = val),
-            ),
-            const Divider(),
-
-            // Options
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               children: [
-                Text('選項 (${_optionControllers.length})', style: Theme.of(context).textTheme.titleMedium),
-                IconButton(
-                  onPressed: _isSubmitting ? null : _addOption,
-                  icon: const Icon(Icons.add_circle_outline),
-                  tooltip: '新增選項',
+                // Title
+                TextFormField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(labelText: '投票標題', border: OutlineInputBorder()),
+                  validator: (v) => v == null || v.trim().isEmpty ? '請輸入標題' : null,
+                  enabled: !_isSubmitting,
                 ),
-              ],
-            ),
-            ...List.generate(_optionControllers.length, (index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
+                const SizedBox(height: 24),
+
+                // Description
+                TextFormField(
+                  controller: _descController,
+                  decoration: const InputDecoration(labelText: '描述 (選填)', border: OutlineInputBorder()),
+                  maxLines: 3,
+                  enabled: !_isSubmitting,
+                ),
+                const SizedBox(height: 24),
+
+                // Deadline
+                ListTile(
+                  title: const Text('截止時間'),
+                  subtitle: Text(
+                    _deadline == null
+                        ? '點擊設定'
+                        : '${_deadline!.year}/${_deadline!.month}/${_deadline!.day} ${_deadline!.hour.toString().padLeft(2, '0')}:${_deadline!.minute.toString().padLeft(2, '0')}',
+                  ),
+                  leading: const Icon(Icons.event),
+                  tileColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  onTap: _isSubmitting ? null : _pickDate,
+                ),
+                const SizedBox(height: 16),
+
+                SwitchListTile(
+                  title: const Text('允許新增'),
+                  subtitle: const Text('允許其他成員新增選項'),
+                  value: _allowAddOption,
+                  onChanged: _isSubmitting ? null : (val) => setState(() => _allowAddOption = val),
+                ),
+                SwitchListTile(
+                  title: const Text('多選'),
+                  subtitle: const Text('允許成員選擇多個選項'),
+                  value: _allowMultipleVotes,
+                  onChanged: _isSubmitting ? null : (val) => setState(() => _allowMultipleVotes = val),
+                ),
+                const Divider(height: 48),
+
+                // Options
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _optionControllers[index],
-                        decoration: InputDecoration(
-                          labelText: '選項 ${index + 1}',
-                          prefixIcon: const Icon(Icons.circle_outlined, size: 16),
-                        ),
-                        validator: (v) => v == null || v.trim().isEmpty ? '請輸入選項內容' : null,
-                        enabled: !_isSubmitting,
-                      ),
+                    Text(
+                      '選項 (${_optionControllers.length})',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle, color: Colors.red),
-                      onPressed: _isSubmitting ? null : () => _removeOption(index),
+                      onPressed: _isSubmitting ? null : _addOption,
+                      icon: const Icon(Icons.add_circle_outline),
+                      tooltip: '新增選項',
                     ),
                   ],
                 ),
-              );
-            }),
-            const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                ...List.generate(_optionControllers.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _optionControllers[index],
+                            decoration: InputDecoration(
+                              labelText: '選項 ${index + 1}',
+                              prefixIcon: const Icon(Icons.circle_outlined, size: 16),
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: (v) => v == null || v.trim().isEmpty ? '請輸入選項內容' : null,
+                            enabled: !_isSubmitting,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                          onPressed: _isSubmitting ? null : () => _removeOption(index),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 48),
 
-            // Submit
-            FilledButton.icon(
-              onPressed: _isSubmitting ? null : _submit,
-              icon: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.check),
-              label: const Text('發佈投票'),
-              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                // Submit
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _isSubmitting ? null : _submit,
+                    icon: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.check),
+                    label: const Text('發佈投票'),
+                    style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

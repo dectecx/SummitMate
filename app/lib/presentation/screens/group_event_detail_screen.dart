@@ -118,269 +118,84 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                   borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 100),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title & Status
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: _ExpandableTitle(title: _event.title)),
-                          const SizedBox(width: 12),
-                          _buildStatusChip(_event.status),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isDesktop = constraints.maxWidth > 800;
 
-                      // Info Grid
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: theme.cardTheme.color,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.primary.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          if (isDesktop) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildInfoItem(
-                                  Icons.calendar_today_rounded,
-                                  DateFormat('MM/dd').format(_event.startDate),
-                                  '日期',
-                                ),
-                                _buildVerticalDivider(),
-                                _buildInfoItem(
-                                  Icons.location_on_rounded,
-                                  _event.location.isNotEmpty ? _event.location : '未指定',
-                                  '地點',
-                                ),
-                                _buildVerticalDivider(),
-                                _buildInfoItem(Icons.people_rounded, '${_event.maxMembers}', '預計人數'),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '※ 預計人數僅供參考，實際可報名人數無上限',
-                              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Organizer Section
-                      Text('主辦人', style: _sectionTitleStyle),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.cardTheme.color,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(color: colorScheme.primaryContainer, shape: BoxShape.circle),
-                              child: Text(_event.creatorAvatar, style: const TextStyle(fontSize: 24)),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _event.creatorName,
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '發起人',
-                                    style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (isCreator)
-                              Chip(
-                                label: const Text('我', style: TextStyle(color: Colors.white, fontSize: 12)),
-                                backgroundColor: colorScheme.primary,
-                                padding: EdgeInsets.zero,
-                                visualDensity: VisualDensity.compact,
-                                side: BorderSide.none,
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Application Status (if applied)
-                      if (_event.myApplicationStatus != null) ...[
-                        _buildStatusCard(_event.myApplicationStatus!),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Success Message
-                      if ((_event.myApplicationStatus != null || isCreator) && _event.privateMessage.isNotEmpty) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.3)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.check_circle_outline, color: colorScheme.primary),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '報名成功訊息',
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              (isCreator || _event.myApplicationStatus == GroupEventApplicationStatus.approved)
-                                  ? Text(_event.privateMessage, style: TextStyle(color: colorScheme.onSurface))
-                                  : ClipRect(
-                                      child: ImageFiltered(
-                                        imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                                        child: Text(
-                                          _event.privateMessage,
-                                          style: TextStyle(color: colorScheme.onSurface),
-                                        ),
-                                      ),
-                                    ),
-                              if (!isCreator && _event.myApplicationStatus != GroupEventApplicationStatus.approved)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    '※ 此訊息將於審核通過後顯示',
-                                    style: TextStyle(fontSize: 12, color: colorScheme.primary.withValues(alpha: 0.8)),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Description
-                      Text('活動詳情', style: _sectionTitleStyle),
-                      const SizedBox(height: 12),
-                      Text(
-                        _event.description.isNotEmpty ? _event.description : '無詳細說明',
-                        style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Comments Preview
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('留言板 (${_event.commentCount})', style: _sectionTitleStyle),
-                          TextButton(
-                            onPressed: () => GroupEventCommentSheet.show(context, _event.id),
-                            child: Text('查看全部', style: TextStyle(color: colorScheme.primary)),
-                          ),
-                        ],
-                      ),
-
-                      // Comment List or CTA
-                      if (_event.latestComments.isNotEmpty)
-                        Column(
-                          children: _event.latestComments
-                              .map(
-                                (comment) => Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: theme.cardTheme.color,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
+                                // Main Content (Left)
+                                Expanded(
+                                  flex: 2,
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      CircleAvatar(
-                                        radius: 16,
-                                        backgroundColor: colorScheme.secondaryContainer,
-                                        child: Text(comment.userAvatar, style: const TextStyle(fontSize: 14)),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  comment.userName,
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                                ),
-                                                Text(
-                                                  DateFormat('MM/dd HH:mm').format(comment.createdAt),
-                                                  style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              comment.content,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: colorScheme.onSurface.withValues(alpha: 0.8),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      _buildTitleSection(),
+                                      const SizedBox(height: 24),
+                                      _buildInfoGrid(theme, colorScheme),
+                                      const SizedBox(height: 32),
+                                      _buildDescriptionSection(theme),
+                                      const SizedBox(height: 32),
+                                      _buildCommentsSection(theme, colorScheme),
+                                      const SizedBox(height: 100),
                                     ],
                                   ),
                                 ),
-                              )
-                              .toList(),
-                        ),
+                                const SizedBox(width: 40),
+                                // Sidebar Content (Right)
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildOrganizerSection(theme, colorScheme, isCreator),
+                                      const SizedBox(height: 24),
+                                      if (_event.myApplicationStatus != null) ...[
+                                        _buildStatusCard(_event.myApplicationStatus!),
+                                        const SizedBox(height: 24),
+                                      ],
+                                      _buildPrivateMessageSection(colorScheme, isCreator),
+                                      const SizedBox(height: 32),
+                                      _buildDesktopActionButton(context, colorScheme, isCreator, isSyncing),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
 
-                      InkWell(
-                        onTap: () => GroupEventCommentSheet.show(context, _event.id),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              _event.latestComments.isEmpty ? '尚無留言，成為第一個留言者！' : '查看更多留言...',
-                              style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
+                          // Mobile View
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTitleSection(),
+                              const SizedBox(height: 24),
+                              _buildInfoGrid(theme, colorScheme),
+                              const SizedBox(height: 24),
+                              _buildOrganizerSection(theme, colorScheme, isCreator),
+                              const SizedBox(height: 24),
+                              if (_event.myApplicationStatus != null) ...[
+                                _buildStatusCard(_event.myApplicationStatus!),
+                                const SizedBox(height: 24),
+                              ],
+                              _buildPrivateMessageSection(colorScheme, isCreator),
+                              const SizedBox(height: 24),
+                              _buildDescriptionSection(theme),
+                              const SizedBox(height: 24),
+                              _buildCommentsSection(theme, colorScheme),
+                              const SizedBox(height: 100),
+                            ],
+                          );
+                        },
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -388,72 +203,329 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        decoration: BoxDecoration(
-          color: theme.cardTheme.color,
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
-        ),
-        child: SafeArea(
-          child: BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, settingsState) {
-              final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+      bottomNavigationBar: LayoutBuilder(
+        builder: (context, constraints) {
+          if (MediaQuery.of(context).size.width > 800) return const SizedBox.shrink();
 
-              if (isCreator) {
-                return FilledButton.icon(
-                  onPressed: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => GroupEventReviewScreen(
-                          eventId: _event.id,
-                          currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
-                        ),
+          return Container(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+            decoration: BoxDecoration(
+              color: theme.cardTheme.color,
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
+            ),
+            child: SafeArea(child: _buildActionContent(context, colorScheme, isCreator, isSyncing)),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTitleSection() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _ExpandableTitle(title: _event.title)),
+        const SizedBox(width: 12),
+        _buildStatusChip(_event.status),
+      ],
+    );
+  }
+
+  Widget _buildInfoGrid(ThemeData theme, ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: colorScheme.primary.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildInfoItem(Icons.calendar_today_rounded, DateFormat('MM/dd').format(_event.startDate), '日期'),
+              _buildVerticalDivider(),
+              _buildInfoItem(Icons.location_on_rounded, _event.location.isNotEmpty ? _event.location : '未指定', '地點'),
+              _buildVerticalDivider(),
+              _buildInfoItem(Icons.people_rounded, '${_event.maxMembers}', '預計人數'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '※ 預計人數僅供參考，實際可報名人數無上限',
+            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrganizerSection(ThemeData theme, ColorScheme colorScheme, bool isCreator) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('主辦人', style: _sectionTitleStyle),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: theme.cardTheme.color, borderRadius: BorderRadius.circular(16)),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: colorScheme.primaryContainer, shape: BoxShape.circle),
+                child: Text(_event.creatorAvatar, style: const TextStyle(fontSize: 24)),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _event.creatorName,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
-                    );
-                    if (context.mounted) {
-                      context.read<GroupEventCubit>().fetchEvents(isAuto: false);
-                    }
-                  },
-                  icon: const Icon(Icons.rate_review_rounded),
-                  label: const Text('審核報名'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                );
-              }
-
-              if (_event.myApplicationStatus != null) {
-                return FilledButton(
-                  onPressed: null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
-                    foregroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: const Text('已報名'),
-                );
-              }
-
-              return FilledButton(
-                onPressed: isOffline || !_event.canApply || isSyncing ? null : _handleApply,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    const SizedBox(height: 2),
+                    Text('發起人', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+                  ],
                 ),
-                child: isSyncing
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text(_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入')),
-              );
-            },
+              ),
+              if (isCreator)
+                Chip(
+                  label: const Text('我', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  backgroundColor: colorScheme.primary,
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  side: BorderSide.none,
+                ),
+            ],
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildPrivateMessageSection(ColorScheme colorScheme, bool isCreator) {
+    if (!((_event.myApplicationStatus != null || isCreator) && _event.privateMessage.isNotEmpty)) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.3)),
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                '報名成功訊息',
+                style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          (isCreator || _event.myApplicationStatus == GroupEventApplicationStatus.approved)
+              ? Text(_event.privateMessage, style: TextStyle(color: colorScheme.onSurface))
+              : ClipRect(
+                  child: ImageFiltered(
+                    imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: Text(_event.privateMessage, style: TextStyle(color: colorScheme.onSurface)),
+                  ),
+                ),
+          if (!isCreator && _event.myApplicationStatus != GroupEventApplicationStatus.approved)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                '※ 此訊息將於審核通過後顯示',
+                style: TextStyle(fontSize: 12, color: colorScheme.primary.withValues(alpha: 0.8)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescriptionSection(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('活動詳情', style: _sectionTitleStyle),
+        const SizedBox(height: 12),
+        Text(
+          _event.description.isNotEmpty ? _event.description : '無詳細說明',
+          style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommentsSection(ThemeData theme, ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('留言板 (${_event.commentCount})', style: _sectionTitleStyle),
+            TextButton(
+              onPressed: () => GroupEventCommentSheet.show(context, _event.id),
+              child: Text('查看全部', style: TextStyle(color: colorScheme.primary)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_event.latestComments.isNotEmpty)
+          Column(
+            children: _event.latestComments
+                .map(
+                  (comment) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: theme.cardTheme.color, borderRadius: BorderRadius.circular(12)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: colorScheme.secondaryContainer,
+                          child: Text(comment.userAvatar, style: const TextStyle(fontSize: 14)),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    comment.userName,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                  Text(
+                                    DateFormat('MM/dd HH:mm').format(comment.createdAt),
+                                    style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                comment.content,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.8)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        InkWell(
+          onTap: () => GroupEventCommentSheet.show(context, _event.id),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                _event.latestComments.isEmpty ? '尚無留言，成為第一個留言者！' : '查看更多留言...',
+                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopActionButton(BuildContext context, ColorScheme colorScheme, bool isCreator, bool isSyncing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [_buildActionContent(context, colorScheme, isCreator, isSyncing)],
+    );
+  }
+
+  Widget _buildActionContent(BuildContext context, ColorScheme colorScheme, bool isCreator, bool isSyncing) {
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settingsState) {
+        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+        final cubitState = context.watch<GroupEventCubit>().state;
+
+        if (isCreator) {
+          return FilledButton.icon(
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => GroupEventReviewScreen(
+                    eventId: _event.id,
+                    currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
+                  ),
+                ),
+              );
+              if (context.mounted) {
+                context.read<GroupEventCubit>().fetchEvents(isAuto: false);
+              }
+            },
+            icon: const Icon(Icons.rate_review_rounded),
+            label: const Text('審核報名'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          );
+        }
+
+        if (_event.myApplicationStatus != null) {
+          return FilledButton(
+            onPressed: null,
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
+              foregroundColor: colorScheme.onSurface.withValues(alpha: 0.38),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: const Text('已報名'),
+          );
+        }
+
+        return FilledButton(
+          onPressed: isOffline || !_event.canApply || isSyncing ? null : _handleApply,
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          child: isSyncing
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : Text(_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入')),
+        );
+      },
     );
   }
 

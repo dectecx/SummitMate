@@ -12,6 +12,7 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../widgets/ads/banner_ad_widget.dart';
 import '../widgets/common/summit_app_bar.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 我的裝備庫畫面
 ///
@@ -69,19 +70,24 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
           final totalWeightKg =
               state.items.where((i) => !i.isArchived).fold<double>(0, (sum, i) => sum + i.weight) / 1000.0;
 
-          return Column(
-            children: [
-              _buildStatsCard(itemCount, totalWeightKg),
-              _buildSearchBar(context, state),
-              Expanded(
-                child: state.filteredItems.isEmpty
-                    ? _buildEmptyState(state.items.isEmpty)
-                    : _buildGearList(context, state),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                children: [
+                  _buildStatsCard(itemCount, totalWeightKg),
+                  _buildSearchBar(context, state),
+                  Expanded(
+                    child: state.filteredItems.isEmpty
+                        ? _buildEmptyState(state.items.isEmpty)
+                        : _buildGearList(context, state),
+                  ),
+                  const SizedBox(height: 8),
+                  const BannerAdWidget(location: 'gear_library'),
+                  const SizedBox(height: 8),
+                ],
               ),
-              const SizedBox(height: 8),
-              const BannerAdWidget(location: 'gear_library'),
-              const SizedBox(height: 8),
-            ],
+            ),
           );
         },
       ),
@@ -157,35 +163,65 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   Widget _buildGearList(BuildContext context, GearLibraryLoaded state) {
     final itemsByCategory = state.itemsByCategory;
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: itemsByCategory.length,
-      itemBuilder: (context, index) {
-        final category = itemsByCategory.keys.elementAt(index);
-        final items = itemsByCategory[category]!;
+    return ResponsiveLayout(
+      mobile: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: itemsByCategory.length,
+        itemBuilder: (context, index) {
+          final category = itemsByCategory.keys.elementAt(index);
+          final items = itemsByCategory[category]!;
 
-        return Column(
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCategoryHeader(category, items.length),
+              ...items.map((item) => _buildGearCard(context, item)),
+            ],
+          );
+        },
+      ),
+      desktop: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Icon(_getCategoryIcon(category), size: 20, color: Colors.grey.shade600),
-                  const SizedBox(width: 8),
-                  Text(
-                    GearCategoryHelper.getName(category),
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('(${items.length})', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-                ],
-              ),
-            ),
-            ...items.map((item) => _buildGearCard(context, item)),
-          ],
-        );
-      },
+          children: itemsByCategory.entries.map((entry) {
+            final category = entry.key;
+            final items = entry.value;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildCategoryHeader(category, items.length),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: items.map((item) => SizedBox(width: 360, child: _buildGearCard(context, item))).toList(),
+                ),
+                const SizedBox(height: 24),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryHeader(String category, int count) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(_getCategoryIcon(category), size: 20, color: Colors.grey.shade600),
+          const SizedBox(width: 8),
+          Text(
+            GearCategoryHelper.getName(category),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+          ),
+          const SizedBox(width: 8),
+          Text('($count)', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+        ],
+      ),
     );
   }
 

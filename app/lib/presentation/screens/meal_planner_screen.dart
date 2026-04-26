@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart'; // optional
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/meal_item.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
-// import '../providers/meal_provider.dart'; // Removed
 import 'food_reference_screen.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 糧食計畫畫面
 ///
@@ -51,14 +50,43 @@ class MealPlannerScreen extends StatelessWidget {
             ),
             body: TabBarView(
               children: dailyPlans.map((plan) {
-                return ListView(
-                  padding: const EdgeInsets.only(bottom: 80),
-                  children: [
-                    _buildSummaryCard(context, plan),
-                    ...MealType.values.map(
-                      (type) => _buildMealSection(context, cubit, plan.day, type, plan.meals[type] ?? []),
+                return ResponsiveLayout(
+                  mobile: ListView(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    children: [
+                      _buildSummaryCard(context, plan),
+                      ...MealType.values.map(
+                        (type) => _buildMealSection(context, cubit, plan.day, type, plan.meals[type] ?? []),
+                      ),
+                    ],
+                  ),
+                  desktop: SingleChildScrollView(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    child: Column(
+                      children: [
+                        _buildSummaryCard(context, plan),
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 1400),
+                              child: Wrap(
+                                spacing: 24,
+                                runSpacing: 24,
+                                children: MealType.values.map((type) {
+                                  final items = plan.meals[type] ?? [];
+                                  return SizedBox(
+                                    width: 420,
+                                    child: _buildMealSection(context, cubit, plan.day, type, items),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 );
               }).toList(),
             ),

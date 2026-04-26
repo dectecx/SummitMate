@@ -11,6 +11,7 @@ import '../cubits/poll/poll_state.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 投票列表畫面
 ///
@@ -188,176 +189,137 @@ class _PollListScreenState extends State<PollListScreen> {
             filteredPolls = polls.where((p) => p.isActive).toList();
         }
 
-        // Sort: Active/Ended usually by date desc?
-        // provider used getters which sorted. "Newest first"
         filteredPolls.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         return Scaffold(
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: SegmentedButton<int>(
-                        showSelectedIcon: false,
-                        segments: const [
-                          ButtonSegment(value: 0, label: Text('🔥 進行中')),
-                          ButtonSegment(value: 1, label: Text('✔️ 已結束')),
-                          ButtonSegment(value: 2, label: Text('⭐ 我的')),
-                        ],
-                        selected: {_selectedFilter},
-                        onSelectionChanged: (Set<int> newSelection) {
-                          setState(() => _selectedFilter = newSelection.first);
-                        },
-                        style: ButtonStyle(
-                          visualDensity: VisualDensity.compact,
-                          textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
-                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Sync time + refresh button
-                    BlocBuilder<SettingsCubit, SettingsState>(
-                      builder: (context, settingsState) {
-                        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-                        return Material(
-                          color: isOffline ? Colors.grey.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          child: InkWell(
-                            onTap: () {
-                              if (isOffline) {
-                                ToastService.warning('離線模式無法同步');
-                                return;
-                              }
-                              context.read<PollCubit>().fetchPolls();
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: SegmentedButton<int>(
+                            showSelectedIcon: false,
+                            segments: const [
+                              ButtonSegment(value: 0, label: Text('🔥 進行中')),
+                              ButtonSegment(value: 1, label: Text('✔️ 已結束')),
+                              ButtonSegment(value: 2, label: Text('⭐ 我的')),
+                            ],
+                            selected: {_selectedFilter},
+                            onSelectionChanged: (Set<int> newSelection) {
+                              setState(() => _selectedFilter = newSelection.first);
                             },
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    isOffline
-                                        ? '離線模式'
-                                        : (lastSyncTime != null
-                                              ? DateFormat('MM/dd HH:mm').format(lastSyncTime.toLocal())
-                                              : '未同步'),
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  if (isSyncing)
-                                    const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  else
-                                    Icon(Icons.sync, size: 16, color: isOffline ? Colors.grey : Colors.grey),
-                                ],
-                              ),
+                            style: ButtonStyle(
+                              visualDensity: VisualDensity.compact,
+                              textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 12)),
+                              padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              side: WidgetStateProperty.all(const BorderSide(color: Colors.grey, width: 0.5)),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              // List
-              Expanded(
-                child: filteredPolls.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.how_to_vote_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
-                            const SizedBox(height: 16),
-                            Text(
-                              _selectedFilter == 0 ? '沒有進行中的投票' : '沒有相關投票',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
-                            ),
-                          ],
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () => context.read<PollCubit>().fetchPolls(),
-                        child: ListView.builder(
-                          itemCount: filteredPolls.length,
-                          padding: const EdgeInsets.only(bottom: 80), // Fab space
-                          itemBuilder: (context, index) {
-                            final poll = filteredPolls[index];
-                            final isCreator = poll.creatorId == currentUserId;
-
-                            if (!isCreator) {
-                              return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: _buildListTile(context, poll, currentUserId),
-                              );
-                            }
-
-                            // Define actions based on poll status
-                            final actions = <Widget>[];
-                            final settingsState = context.read<SettingsCubit>().state;
+                        const SizedBox(width: 8),
+                        // Sync time + refresh button
+                        BlocBuilder<SettingsCubit, SettingsState>(
+                          builder: (context, settingsState) {
                             final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-
-                            if (!isOffline) {
-                              actions.add(
-                                SlidableAction(
-                                  onPressed: (context) async {
-                                    await _confirmAndDelete(context, context.read<PollCubit>(), poll);
-                                  },
-                                  backgroundColor: const Color(0xFFFE4A49),
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.delete,
-                                  label: '刪除',
-                                  // Adjust border radius based on position
-                                  borderRadius:
-                                      (poll.isActive && !isOffline) // Re-check if previous button exists
-                                      ? const BorderRadius.horizontal(right: Radius.circular(12))
-                                      : BorderRadius.circular(12),
-                                ),
-                              );
-                            }
-
-                            if (isOffline) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: Card(
-                                  margin: EdgeInsets.zero,
-                                  child: _buildListTile(context, poll, currentUserId),
-                                ),
-                              );
-                            }
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Slidable(
-                                key: Key(poll.id),
-                                endActionPane: ActionPane(
-                                  motion: const ScrollMotion(),
-                                  // 0.25 per action
-                                  extentRatio: actions.length * 0.25,
-                                  children: actions,
-                                ),
-                                child: Card(
-                                  margin: EdgeInsets.zero,
-                                  child: _buildListTile(context, poll, currentUserId),
+                            return Material(
+                              color: isOffline
+                                  ? Colors.grey.withValues(alpha: 0.2)
+                                  : Colors.grey.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              child: InkWell(
+                                onTap: () {
+                                  if (isOffline) {
+                                    ToastService.warning('離線模式無法同步');
+                                    return;
+                                  }
+                                  context.read<PollCubit>().fetchPolls();
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        isOffline
+                                            ? '離線模式'
+                                            : (lastSyncTime != null
+                                                  ? DateFormat('MM/dd HH:mm').format(lastSyncTime.toLocal())
+                                                  : '未同步'),
+                                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      if (isSyncing)
+                                        const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      else
+                                        Icon(Icons.sync, size: 16, color: isOffline ? Colors.grey : Colors.grey),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
                           },
                         ),
-                      ),
+                      ],
+                    ),
+                  ),
+
+                  // List
+                  Expanded(
+                    child: filteredPolls.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.how_to_vote_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _selectedFilter == 0 ? '沒有進行中的投票' : '沒有相關投票',
+                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () => context.read<PollCubit>().fetchPolls(),
+                            child: ResponsiveLayout(
+                              mobile: ListView.builder(
+                                itemCount: filteredPolls.length,
+                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                                itemBuilder: (context, index) {
+                                  return _buildPollItem(context, filteredPolls[index], currentUserId);
+                                },
+                              ),
+                              desktop: GridView.builder(
+                                padding: const EdgeInsets.fromLTRB(24, 16, 24, 80),
+                                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 500,
+                                  mainAxisExtent: 110,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                ),
+                                itemCount: filteredPolls.length,
+                                itemBuilder: (context, index) {
+                                  return _buildPollItem(context, filteredPolls[index], currentUserId, isGrid: true);
+                                },
+                              ),
+                            ),
+                          ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
             builder: (context, settingsState) {
@@ -378,6 +340,42 @@ class _PollListScreenState extends State<PollListScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPollItem(BuildContext context, Poll poll, String currentUserId, {bool isGrid = false}) {
+    final isCreator = poll.creatorId == currentUserId;
+    final settingsState = context.read<SettingsCubit>().state;
+    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+
+    if (!isCreator || isOffline || isGrid) {
+      return Card(
+        margin: isGrid ? EdgeInsets.zero : const EdgeInsets.only(bottom: 8),
+        child: _buildListTile(context, poll, currentUserId),
+      );
+    }
+
+    // Define actions based on poll status
+    final actions = <Widget>[
+      SlidableAction(
+        onPressed: (context) async {
+          await _confirmAndDelete(context, context.read<PollCubit>(), poll);
+        },
+        backgroundColor: const Color(0xFFFE4A49),
+        foregroundColor: Colors.white,
+        icon: Icons.delete,
+        label: '刪除',
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Slidable(
+        key: Key(poll.id),
+        endActionPane: ActionPane(motion: const ScrollMotion(), extentRatio: actions.length * 0.25, children: actions),
+        child: Card(margin: EdgeInsets.zero, child: _buildListTile(context, poll, currentUserId)),
+      ),
     );
   }
 }
