@@ -13,6 +13,8 @@ import '../cubits/settings/settings_state.dart';
 import 'itinerary_edit_dialog.dart';
 import 'itinerary/itinerary_day_selector.dart';
 import 'itinerary/itinerary_list_view.dart';
+import 'itinerary/itinerary_day_side_selector.dart';
+import 'responsive_layout.dart';
 
 /// Tab 1: 行程頁
 class ItineraryTab extends StatefulWidget {
@@ -97,26 +99,47 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
             final dayNames = state is ItineraryLoaded ? state.dayNames : <String>[];
 
-            Widget content = Column(
-              children: [
-                if (dayNames.isNotEmpty)
-                  ItineraryDaySelector(
-                    dayNames: dayNames,
-                    selectedDay: selectedDay,
-                    onManualSync: () => _manualSync(context),
+            Widget content = ResponsiveLayout(
+              mobile: Column(
+                children: [
+                  if (dayNames.isNotEmpty)
+                    ItineraryDaySelector(
+                      dayNames: dayNames,
+                      selectedDay: selectedDay,
+                      onManualSync: () => _manualSync(context),
+                    ),
+                  Expanded(
+                    child: ItineraryListView(
+                      items: items,
+                      selectedDay: selectedDay,
+                      isEditMode: isEditMode,
+                      onConfirmDelete: _confirmDelete,
+                      onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
+                      onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
+                    ),
                   ),
-
-                Expanded(
-                  child: ItineraryListView(
-                    items: items,
-                    selectedDay: selectedDay,
-                    isEditMode: isEditMode,
-                    onConfirmDelete: _confirmDelete,
-                    onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
-                    onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
+                ],
+              ),
+              desktop: Row(
+                children: [
+                  if (dayNames.isNotEmpty)
+                    SizedBox(
+                      width: 200,
+                      child: ItineraryDaySideSelector(dayNames: dayNames, selectedDay: selectedDay),
+                    ),
+                  const VerticalDivider(width: 1),
+                  Expanded(
+                    child: ItineraryListView(
+                      items: items,
+                      selectedDay: selectedDay,
+                      isEditMode: isEditMode,
+                      onConfirmDelete: _confirmDelete,
+                      onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
+                      onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
 
             return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);

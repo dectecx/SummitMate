@@ -258,6 +258,50 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           ),
                           desktop: Row(
                             children: [
+                              NavigationRail(
+                                selectedIndex: _currentIndex,
+                                onDestinationSelected: (index) {
+                                  setState(() => _currentIndex = index);
+                                  if (isEditMode) {
+                                    context.read<ItineraryCubit>().toggleEditMode();
+                                  }
+                                },
+                                labelType: NavigationRailLabelType.all,
+                                leading: Column(
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.menu),
+                                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                                      tooltip: '選單',
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
+                                ),
+                                destinations: const [
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.hiking),
+                                    selectedIcon: Icon(Icons.hiking),
+                                    label: Text('行程'),
+                                  ),
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.backpack_outlined),
+                                    selectedIcon: Icon(Icons.backpack),
+                                    label: Text('裝備'),
+                                  ),
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.groups_outlined),
+                                    selectedIcon: Icon(Icons.groups),
+                                    label: Text('揪團/訊息'),
+                                  ),
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.info_outline),
+                                    selectedIcon: Icon(Icons.info),
+                                    label: Text('資訊'),
+                                  ),
+                                ],
+                              ),
+                              const VerticalDivider(thickness: 1, width: 1),
                               Expanded(
                                 child: Column(
                                   children: [
