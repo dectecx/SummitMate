@@ -24,6 +24,7 @@ import '../widgets/gear_key_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
 import '../widgets/gear_preview_dialog.dart';
 import '../widgets/common/summit_app_bar.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 雲端裝備庫畫面
 class GearCloudScreen extends StatefulWidget {
@@ -369,38 +370,65 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
     return RefreshIndicator(
       onRefresh: _fetchGearSets,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _filteredGearSets.length + 2, // +1 toolbar, +1 search bar
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildToolbarCard(isOffline);
-          }
-          if (index == 1) {
-            return _buildSearchBar();
-          }
-
-          if (_filteredGearSets.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.only(top: 40),
-              child: Center(
-                child: Text('找不到相關結果', style: TextStyle(color: Colors.grey)),
-              ),
-            );
-          }
-
-          final gearSet = _filteredGearSets[index - 2];
-          final isBusy = _busyGearSetId == gearSet.id;
-          return _GearSetCard(
-            gearSet: gearSet,
-            isLoading: isBusy,
-            onDownload: isBusy || isOffline ? null : () => _onDownloadPressed(gearSet),
-            onDelete: gearSet.visibility == GearSetVisibility.public && !isBusy
-                ? () => _confirmDeletePublicGearSet(gearSet)
-                : null,
-          );
-        },
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildToolbarCard(isOffline),
+                _buildSearchBar(),
+                if (_filteredGearSets.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 40),
+                    child: Center(
+                      child: Text('找不到相關結果', style: TextStyle(color: Colors.grey)),
+                    ),
+                  ),
+              ]),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: ResponsiveLayout.isDesktop(context)
+                ? SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 500,
+                      mainAxisExtent: 140,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildGearSetCard(index, isOffline),
+                      childCount: _filteredGearSets.length,
+                    ),
+                  )
+                : SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildGearSetCard(index, isOffline),
+                      ),
+                      childCount: _filteredGearSets.length,
+                    ),
+                  ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        ],
       ),
+    );
+  }
+
+  Widget _buildGearSetCard(int index, bool isOffline) {
+    final gearSet = _filteredGearSets[index];
+    final isBusy = _busyGearSetId == gearSet.id;
+    return _GearSetCard(
+      gearSet: gearSet,
+      isLoading: isBusy,
+      onDownload: isBusy || isOffline ? null : () => _onDownloadPressed(gearSet),
+      onDelete: gearSet.visibility == GearSetVisibility.public && !isBusy
+          ? () => _confirmDeletePublicGearSet(gearSet)
+          : null,
     );
   }
 

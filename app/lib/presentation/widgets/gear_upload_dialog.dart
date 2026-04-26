@@ -58,7 +58,9 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Row(children: [Text('⬆️ '), Text('上傳裝備組合')]),
-      content: SingleChildScrollView(
+      content: SizedBox(
+        width: 500,
+        child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,6 +130,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
           ],
         ),
       ),
+    ),
       actions: [
         TextButton(onPressed: _isUploading ? null : () => Navigator.pop(context), child: const Text('取消')),
         FilledButton(

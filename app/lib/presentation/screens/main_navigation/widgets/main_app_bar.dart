@@ -7,6 +7,7 @@ import '../../../cubits/auth/auth_cubit.dart';
 import '../../../cubits/auth/auth_state.dart';
 import '../../../../data/models/trip.dart';
 import '../../../utils/tutorial_keys.dart';
+import '../../../../presentation/widgets/responsive_layout.dart';
 
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Trip? activeTrip;
@@ -14,6 +15,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isLoading;
   final int currentIndex;
   final bool isEditMode;
+  final bool showLeading;
   final VoidCallback onMenuPressed;
   final VoidCallback onEditToggle;
   final VoidCallback onUpload;
@@ -27,6 +29,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.isLoading,
     required this.currentIndex,
     required this.isEditMode,
+    this.showLeading = true,
     required this.onMenuPressed,
     required this.onEditToggle,
     required this.onUpload,
@@ -51,16 +54,31 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
           gradient: AppTheme.getStrategy(themeType).appBarGradient,
         ),
       ),
-      leading: IconButton(
-        key: TutorialKeys.mainDrawerMenu,
-        icon: const Icon(Icons.menu),
-        onPressed: onMenuPressed,
-        tooltip: '選單',
-      ),
+      leading: showLeading
+          ? IconButton(
+              key: TutorialKeys.mainDrawerMenu,
+              icon: const Icon(Icons.menu),
+              onPressed: onMenuPressed,
+              tooltip: '選單',
+            )
+          : null,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Flexible(child: Text(activeTrip?.name ?? 'SummitMate 山友', overflow: TextOverflow.ellipsis)),
+          Flexible(
+            child: Text(
+              ResponsiveLayout.isDesktop(context)
+                  ? (currentIndex == 0
+                      ? '行程內容'
+                      : currentIndex == 1
+                          ? '裝備清單'
+                          : currentIndex == 2
+                              ? '協作交流'
+                              : '相關資訊')
+                  : (activeTrip?.name ?? 'SummitMate 山友'),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           if (activeTrip != null) ...[
             const SizedBox(width: 8),
             Builder(

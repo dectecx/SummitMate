@@ -26,10 +26,11 @@ import '../../cubits/settings/settings_state.dart';
 
 import '../map/map_screen.dart';
 
+import '../../widgets/info_tab.dart';
 import '../../widgets/app_drawer.dart';
+import '../../widgets/app_drawer_content.dart';
 import '../../widgets/itinerary_tab.dart';
 import '../../widgets/gear_tab.dart';
-import '../../widgets/info_tab.dart';
 import '../../widgets/itinerary_edit_dialog.dart';
 import '../../widgets/settings_dialog.dart';
 import '../../widgets/ads/banner_ad_widget.dart';
@@ -228,19 +229,21 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
                       return Scaffold(
                         key: _scaffoldKey,
+                        drawer: ResponsiveLayout.isDesktop(context) ? null : const AppDrawer(),
+                        drawerEnableOpenDragGesture: !ResponsiveLayout.isDesktop(context),
                         appBar: MainAppBar(
                           activeTrip: activeTrip,
                           isOffline: isOffline,
                           isLoading: isLoading,
                           currentIndex: _currentIndex,
                           isEditMode: isEditMode,
+                          showLeading: !ResponsiveLayout.isDesktop(context),
                           onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                           onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
                           onUpload: () => CloudUploadHelper.handleCloudUpload(context),
                           onMap: () => _handleMapNavigation(context),
                           onSettings: () => _showSettingsDialog(context),
                         ),
-                        drawer: const AppDrawer(),
                         body: ResponsiveLayout(
                           mobile: Column(
                             children: [
@@ -257,6 +260,29 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             ],
                           ),
                           desktop: Row(
+                            children: [
+                              AppDrawerContent(
+                                isSidebar: true,
+                                currentIndex: _currentIndex,
+                                onTabSelected: (index) {
+                                  setState(() => _currentIndex = index);
+                                  if (isEditMode) {
+                                    context.read<ItineraryCubit>().toggleEditMode();
+                                  }
+                                },
+                              ),
+                              const VerticalDivider(thickness: 1, width: 1),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Expanded(child: _buildTabContent(_currentIndex)),
+                                    const BannerAdWidget(location: 'navigation_bottom'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          tablet: Row(
                             children: [
                               NavigationRail(
                                 selectedIndex: _currentIndex,
