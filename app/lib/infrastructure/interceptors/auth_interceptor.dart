@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import '../../core/di/injection.dart';
+import 'package:summitmate/core/di/injection.dart';
 import '../../domain/interfaces/i_auth_service.dart';
 import '../../data/repositories/interfaces/i_auth_session_repository.dart';
 import '../tools/log_service.dart';
