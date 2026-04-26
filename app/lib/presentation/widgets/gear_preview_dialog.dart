@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:summitmate/core/core.dart';
+import 'responsive_layout.dart';
 
 import '../../data/models/gear_set.dart';
 import '../../data/models/gear_item.dart';
@@ -59,8 +60,11 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
     final totalWeight = items.fold<double>(0, (sum, item) => sum + item.weight);
 
     return Dialog(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: ResponsiveLayout.isMobile(context) ? 500 : 1000,
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

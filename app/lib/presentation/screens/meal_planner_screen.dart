@@ -27,45 +27,40 @@ class MealPlannerScreen extends StatelessWidget {
 
         return DefaultTabController(
           length: dailyPlans.length,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Scaffold(
-                appBar: AppBar(
-                  title: const Text('糧食計畫'),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.info_outline),
-                      tooltip: '參考資訊',
-                      onPressed: () => FoodReferenceScreen.show(context),
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('糧食計畫'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  tooltip: '參考資訊',
+                  onPressed: () => FoodReferenceScreen.show(context),
+                ),
+              ],
+              bottom: TabBar(
+                isScrollable: true,
+                indicatorColor: Colors.white,
+                indicatorWeight: 4.0,
+                indicatorSize: TabBarIndicatorSize.label,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white60,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
+                tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
+              ),
+            ),
+            body: TabBarView(
+              children: dailyPlans.map((plan) {
+                return ListView(
+                  padding: const EdgeInsets.only(bottom: 80),
+                  children: [
+                    _buildSummaryCard(context, plan),
+                    ...MealType.values.map(
+                      (type) => _buildMealSection(context, cubit, plan.day, type, plan.meals[type] ?? []),
                     ),
                   ],
-                  bottom: TabBar(
-                    isScrollable: true,
-                    indicatorColor: Colors.white,
-                    indicatorWeight: 4.0,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white60,
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
-                    tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
-                  ),
-                ),
-                body: TabBarView(
-                  children: dailyPlans.map((plan) {
-                    return ListView(
-                      padding: const EdgeInsets.only(bottom: 80),
-                      children: [
-                        _buildSummaryCard(context, plan),
-                        ...MealType.values.map(
-                          (type) => _buildMealSection(context, cubit, plan.day, type, plan.meals[type] ?? []),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
+                );
+              }).toList(),
             ),
           ),
         );
