@@ -156,59 +156,69 @@ class _GearTabState extends State<GearTab> {
               ),
               desktop: Column(
                 children: [
-                  // 搜尋欄 (置頂)
-                  GearSearchBar(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      context.read<GearCubit>().setSearchQuery(value);
-                      setState(() {});
-                    },
-                    onClear: () {
-                      _searchController.clear();
-                      context.read<GearCubit>().setSearchQuery('');
-                      setState(() {});
-                    },
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: GearSearchBar(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          context.read<GearCubit>().setSearchQuery(value);
+                          setState(() {});
+                        },
+                        onClear: () {
+                          _searchController.clear();
+                          context.read<GearCubit>().setSearchQuery('');
+                          setState(() {});
+                        },
+                      ),
+                    ),
                   ),
                   Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 左側資訊面板
-                        SizedBox(
-                          width: 360,
-                          child: ListView(
-                            padding: const EdgeInsets.all(16),
-                            children: [
-                              GearModeSelector(
-                                selectedMode: _mode,
-                                onModeChanged: (newMode) => setState(() => _mode = newMode),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 左側資訊面板
+                            SizedBox(
+                              width: 360,
+                              child: ListView(
+                                padding: const EdgeInsets.all(16),
+                                children: [
+                                  GearModeSelector(
+                                    selectedMode: _mode,
+                                    onModeChanged: (newMode) => setState(() => _mode = newMode),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const GearQuickLinks(),
+                                  const SizedBox(height: 16),
+                                  GearTotalWeightCard(totalWeight: totalWeight),
+                                  const SizedBox(height: 8),
+                                  GearMealCard(mealWeight: mealWeight),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              const GearQuickLinks(),
-                              const SizedBox(height: 16),
-                              GearTotalWeightCard(totalWeight: totalWeight),
-                              const SizedBox(height: 8),
-                              GearMealCard(mealWeight: mealWeight),
-                            ],
-                          ),
+                            ),
+                            const VerticalDivider(width: 1),
+                            // 右側裝備列表
+                            Expanded(
+                              child: ListView(
+                                padding: const EdgeInsets.all(16),
+                                children: [
+                                  if (state.items.isEmpty)
+                                    _buildEmptyState(context)
+                                  else
+                                    ...state.itemsByCategory.entries.map(
+                                      (entry) =>
+                                          GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                                    ),
+                                  const SizedBox(height: 80),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const VerticalDivider(width: 1),
-                        // 右側裝備列表
-                        Expanded(
-                          child: ListView(
-                            padding: const EdgeInsets.all(16),
-                            children: [
-                              if (state.items.isEmpty)
-                                _buildEmptyState(context)
-                              else
-                                ...state.itemsByCategory.entries.map(
-                                  (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
-                                ),
-                              const SizedBox(height: 80),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ],

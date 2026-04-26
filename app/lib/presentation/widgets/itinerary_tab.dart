@@ -129,13 +129,18 @@ class _ItineraryTabState extends State<ItineraryTab> {
                     ),
                   const VerticalDivider(width: 1),
                   Expanded(
-                    child: ItineraryListView(
-                      items: items,
-                      selectedDay: selectedDay,
-                      isEditMode: isEditMode,
-                      onConfirmDelete: _confirmDelete,
-                      onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
-                      onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: ItineraryListView(
+                          items: items,
+                          selectedDay: selectedDay,
+                          isEditMode: isEditMode,
+                          onConfirmDelete: _confirmDelete,
+                          onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
+                          onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
+                        ),
+                      ),
                     ),
                   ),
                 ],

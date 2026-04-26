@@ -86,44 +86,50 @@ class _MessageListScreenState extends State<MessageListScreen> {
                   final isListEmpty = !isLoading && currentMessages.isEmpty;
 
                   return Scaffold(
-                    body: Column(
-                      children: [
-                        // 分類切換 & Sync Status (Unchanged logic, just inside new builder)
-                        _buildHeader(context, selectedCategory),
+                    body: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 800),
+                        child: Column(
+                          children: [
+                            // 分類切換 & Sync Status (Unchanged logic, just inside new builder)
+                            _buildHeader(context, selectedCategory),
 
-                        // 留言列表
-                        Expanded(
-                          child: isLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : isListEmpty
-                              ? const Center(child: Text('尚無留言，點擊右下角新增'))
-                              : RefreshIndicator(
-                                  onRefresh: () async => context.read<SyncCubit>().syncAll(force: true),
-                                  child: ListView.builder(
-                                    physics: const AlwaysScrollableScrollPhysics(),
-                                    itemCount: currentMessages.length,
-                                    itemBuilder: (context, index) {
-                                      final msg = (messageState as MessageLoaded).currentCategoryMessages[index];
-                                      final replies = messageState.getReplies(msg.id);
-                                      final canDelete = permissionService.canDeleteMessageSync(currentUser, msg);
+                            // 留言列表
+                            Expanded(
+                              child: isLoading
+                                  ? const Center(child: CircularProgressIndicator())
+                                  : isListEmpty
+                                  ? const Center(child: Text('尚無留言，點擊右下角新增'))
+                                  : RefreshIndicator(
+                                      onRefresh: () async => context.read<SyncCubit>().syncAll(force: true),
+                                      child: ListView.builder(
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        itemCount: currentMessages.length,
+                                        itemBuilder: (context, index) {
+                                          final msg = (messageState as MessageLoaded).currentCategoryMessages[index];
+                                          final replies = messageState.getReplies(msg.id);
+                                          final canDelete = permissionService.canDeleteMessageSync(currentUser, msg);
 
-                                      return _buildMessageCard(
-                                        context,
-                                        msg,
-                                        replies,
-                                        canDelete,
-                                        isOfflineMode,
-                                        selectedCategory,
-                                        username,
-                                        avatar,
-                                        currentUser,
-                                        permissionService,
-                                      );
-                                    },
-                                  ),
-                                ),
+                                          return _buildMessageCard(
+                                            context,
+                                            msg,
+                                            replies,
+                                            canDelete,
+                                            isOfflineMode,
+                                            selectedCategory,
+                                            username,
+                                            avatar,
+                                            currentUser,
+                                            permissionService,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                     floatingActionButton: FloatingActionButton(
                       backgroundColor: isOfflineMode ? Colors.grey : null,
