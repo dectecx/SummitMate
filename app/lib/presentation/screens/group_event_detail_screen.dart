@@ -45,6 +45,62 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     }
   }
 
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('刪除揪團'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('確定要刪除「${_event.title}」嗎？'),
+            if (_event.linkedTripId != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.red),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '注意：刪除揪團後，所有成員將失去對關聯行程的存取權限。',
+                        style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            const Text('此操作無法復原。', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await context.read<GroupEventCubit>().deleteEvent(eventId: _event.id);
+              if (success && context.mounted) {
+                ToastService.success('已刪除揪團活動');
+                Navigator.pop(context);
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('刪除'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -73,6 +129,13 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             backgroundColor: colorScheme.primary,
             leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
             actions: [
+              if (isCreator) ...[
+                _buildGlassIconButton(
+                  icon: Icons.delete_outline,
+                  onTap: () => _confirmDelete(context),
+                ),
+                const SizedBox(width: 8),
+              ],
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: BlocBuilder<GroupEventFavoritesCubit, GroupEventFavoritesState>(

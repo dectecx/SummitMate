@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
+import '../cubits/group_event/group_event_cubit.dart';
+import '../cubits/group_event/group_event_state.dart';
 import 'member_management_screen.dart';
 import 'package:summitmate/core/core.dart';
 import '../cubits/auth/auth_cubit.dart';
@@ -273,18 +275,60 @@ class TripListScreen extends StatelessWidget {
 
   /// 確認刪除行程
   void _confirmDelete(BuildContext context, Trip trip) {
+    final groupEventCubit = context.read<GroupEventCubit>();
+    String? linkedEventTitle;
+
+    if (trip.linkedEventId != null && groupEventCubit.state is GroupEventLoaded) {
+      final state = groupEventCubit.state as GroupEventLoaded;
+      final event = state.events.where((e) => e.id == trip.linkedEventId).firstOrNull;
+      linkedEventTitle = event?.title;
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('刪除行程'),
-        content: Text('確定要刪除「${trip.name}」嗎？\n此操作無法復原。'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('確定要刪除「${trip.name}」嗎？'),
+            if (linkedEventTitle != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '此行程目前連結至揪團：\n「$linkedEventTitle」',
+                        style: const TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            const Text('此操作無法復原。', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await context.read<TripCubit>().deleteTrip(trip.id);
-              ToastService.success('已刪除「${trip.name}」');
+              if (context.mounted) {
+                ToastService.success('已刪除「${trip.name}」');
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('刪除'),
