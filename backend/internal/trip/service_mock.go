@@ -76,6 +76,16 @@ func (m *MockTripService) RemoveMember(ctx context.Context, tripID, actionUserID
 	return args.Error(0)
 }
 
+func (m *MockTripService) BatchAddMembers(ctx context.Context, tripID, actionUserID string, targetUserIDs []string) error {
+	args := m.Called(ctx, tripID, actionUserID, targetUserIDs)
+	return args.Error(0)
+}
+
+func (m *MockTripService) BatchRemoveMembers(ctx context.Context, tripID, actionUserID string, targetUserIDs []string) error {
+	args := m.Called(ctx, tripID, actionUserID, targetUserIDs)
+	return args.Error(0)
+}
+
 func (m *MockTripService) ListItinerary(ctx context.Context, tripID, userID string) ([]*ItineraryItem, error) {
 	args := m.Called(ctx, tripID, userID)
 	if args.Get(0) == nil {

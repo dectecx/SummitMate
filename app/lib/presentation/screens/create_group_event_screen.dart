@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../cubits/group_event/group_event_cubit.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../../data/models/enums/group_event_category.dart';
@@ -28,6 +30,18 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
   GroupEventCategory _selectedCategory = GroupEventCategory.other;
   bool _approvalRequired = false;
   bool _isSubmitting = false;
+  String? _selectedTripId;
+
+  @override
+  void initState() {
+    super.initState();
+    // 預先載入使用者的行程列表供選擇
+    Future.microtask(() {
+      if (mounted) {
+        context.read<TripCubit>().loadTrips();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -81,6 +95,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
       maxMembers: int.tryParse(_maxMembersController.text) ?? 6,
       approvalRequired: _approvalRequired,
       privateMessage: _privateMessageController.text.trim(),
+      linkedTripId: _selectedTripId,
     );
 
     if (mounted) {
@@ -256,6 +271,53 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                             ],
                           ],
                         ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 連結行程
+                      Text(
+                        '分享行程',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text('連結後，團員審核通過即可同步此行程表內容'),
+                      const SizedBox(height: 12),
+                      BlocBuilder<TripCubit, TripState>(
+                        builder: (context, state) {
+                          if (state is TripLoading) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (state is TripLoaded) {
+                            if (state.trips.isEmpty) {
+                              return const Card(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Text('目前沒有可連結的行程，請先至行程頁面建立。'),
+                                ),
+                              );
+                            }
+                            return DropdownButtonFormField<String>(
+                              value: _selectedTripId,
+                              decoration: const InputDecoration(
+                                labelText: '選擇連結行程',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.map_outlined),
+                              ),
+                              items: [
+                                const DropdownMenuItem(value: null, child: Text('不連結行程')),
+                                ...state.trips.map((trip) {
+                                  return DropdownMenuItem(value: trip.id, child: Text(trip.name));
+                                }),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedTripId = value;
+                                });
+                              },
+                            );
+                          }
+                          return const Text('載入行程列表失敗');
+                        },
                       ),
                       const SizedBox(height: 48),
                     ],

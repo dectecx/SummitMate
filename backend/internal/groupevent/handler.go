@@ -306,6 +306,21 @@ func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWri
 	w.WriteHeader(http.StatusOK)
 }
 
+func (h *GroupEventHandler) DeleteGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
+	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.service.CancelApplication(r.Context(), appId.String(), userID); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	comments, err := h.service.ListComments(r.Context(), id.String())
 	if err != nil {

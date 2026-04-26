@@ -40,6 +40,12 @@ abstract class GroupEventApiService {
   @DELETE('/group-events/{eventId}')
   Future<void> deleteEvent(@Path('eventId') String eventId);
 
+  @PATCH('/group-events/{eventId}/trip-link')
+  Future<void> updateTripLink(@Path('eventId') String eventId, @Body() GroupEventTripLinkRequest request);
+
+  @POST('/group-events/{eventId}/trip-snapshot')
+  Future<GroupEventResponse> updateTripSnapshot(@Path('eventId') String eventId);
+
   // ── Applications ──
 
   @GET('/group-events/{eventId}/applications')

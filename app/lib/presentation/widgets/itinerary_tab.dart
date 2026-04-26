@@ -10,10 +10,14 @@ import '../cubits/itinerary/itinerary_cubit.dart';
 import '../cubits/itinerary/itinerary_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import 'itinerary_edit_dialog.dart';
 import 'itinerary/itinerary_day_selector.dart';
 import 'itinerary/itinerary_list_view.dart';
 import 'itinerary/itinerary_day_side_selector.dart';
+import '../screens/group_event_detail_screen.dart';
+import '../cubits/group_event/group_event_cubit.dart';
 import 'responsive_layout.dart';
 
 /// Tab 1: 行程頁
@@ -99,39 +103,67 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
             final dayNames = state is ItineraryLoaded ? state.dayNames : <String>[];
 
-            Widget content = ResponsiveLayout(
-              mobile: Column(
-                children: [
-                  if (dayNames.isNotEmpty)
-                    ItineraryDaySelector(
-                      dayNames: dayNames,
-                      selectedDay: selectedDay,
-                      onManualSync: () => _manualSync(context),
+            Widget content = BlocBuilder<TripCubit, TripState>(
+              builder: (context, tripState) {
+                final activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
+                final linkedEventId = activeTrip?.linkedEventId;
+
+                Widget buildSharedBanner() {
+                  if (linkedEventId == null) return const SizedBox.shrink();
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+                    child: Row(
+                      children: [
+                        Icon(Icons.share, size: 16, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '此行程已分享至揪團活動',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () async {
+                            final eventId = linkedEventId;
+                            final groupEventCubit = context.read<GroupEventCubit>();
+
+                            // Show loading if needed, or just fetch
+                            final event = await groupEventCubit.getEventById(eventId);
+                            if (event != null && context.mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => GroupEventDetailScreen(event: event)),
+                              );
+                            } else if (context.mounted) {
+                              ToastService.error('無法取得揪團活動資訊');
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_forward, size: 14),
+                          label: const Text('查看活動', style: TextStyle(fontSize: 12)),
+                          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                        ),
+                      ],
                     ),
-                  Expanded(
-                    child: ItineraryListView(
-                      items: items,
-                      selectedDay: selectedDay,
-                      isEditMode: isEditMode,
-                      onConfirmDelete: _confirmDelete,
-                      onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
-                      onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
-                    ),
-                  ),
-                ],
-              ),
-              desktop: Row(
-                children: [
-                  if (dayNames.isNotEmpty)
-                    SizedBox(
-                      width: 280,
-                      child: ItineraryDaySideSelector(dayNames: dayNames, selectedDay: selectedDay),
-                    ),
-                  const VerticalDivider(width: 1),
-                  Expanded(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 800),
+                  );
+                }
+
+                return ResponsiveLayout(
+                  mobile: Column(
+                    children: [
+                      buildSharedBanner(),
+                      if (dayNames.isNotEmpty)
+                        ItineraryDaySelector(
+                          dayNames: dayNames,
+                          selectedDay: selectedDay,
+                          onManualSync: () => _manualSync(context),
+                        ),
+                      Expanded(
                         child: ItineraryListView(
                           items: items,
                           selectedDay: selectedDay,
@@ -141,10 +173,42 @@ class _ItineraryTabState extends State<ItineraryTab> {
                           onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                  desktop: Row(
+                    children: [
+                      if (dayNames.isNotEmpty)
+                        SizedBox(
+                          width: 280,
+                          child: ItineraryDaySideSelector(dayNames: dayNames, selectedDay: selectedDay),
+                        ),
+                      const VerticalDivider(width: 1),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            buildSharedBanner(),
+                            Expanded(
+                              child: Center(
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 800),
+                                  child: ItineraryListView(
+                                    items: items,
+                                    selectedDay: selectedDay,
+                                    isEditMode: isEditMode,
+                                    onConfirmDelete: _confirmDelete,
+                                    onShowEditDialog: (ctx, item, day) => _showEditDialog(ctx, item, day),
+                                    onShowCheckInDialog: (ctx, item) => _showCheckInDialog(ctx, item),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             );
 
             return RefreshIndicator(onRefresh: () => _manualSync(context), child: content);

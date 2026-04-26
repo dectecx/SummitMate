@@ -2,6 +2,8 @@ import '../../models/group_event.dart';
 import '../../models/group_event_comment.dart';
 import '../../models/enums/group_event_status.dart';
 import '../../models/enums/group_event_application_status.dart';
+import '../../models/trip_snapshot.dart';
+import 'itinerary_api_mapper.dart';
 import '../models/group_event_api_models.dart';
 
 /// GroupEvent API Model ↔ Domain Model 轉換
@@ -24,6 +26,8 @@ class GroupEventApiMapper {
       approvalRequired: response.approvalRequired,
       privateMessage: response.privateMessage,
       linkedTripId: response.linkedTripId,
+      tripSnapshot: response.tripSnapshot != null ? fromSnapshotResponse(response.tripSnapshot!) : null,
+      snapshotUpdatedAt: response.snapshotUpdatedAt?.toLocal(),
       likeCount: response.likeCount,
       commentCount: response.commentCount,
       isLiked: response.isLiked,
@@ -67,6 +71,16 @@ class GroupEventApiMapper {
       userAvatar: response.userAvatar,
       createdAt: response.createdAt.toLocal(),
       updatedAt: response.updatedAt.toLocal(),
+    );
+  }
+
+  /// TripSnapshotResponse → TripSnapshot (domain model)
+  static TripSnapshot fromSnapshotResponse(TripSnapshotResponse response) {
+    return TripSnapshot(
+      name: response.name,
+      startDate: response.startDate.toLocal(),
+      endDate: response.endDate?.toLocal(),
+      itinerary: response.itinerary.map(ItineraryApiMapper.fromResponse).toList(),
     );
   }
 

@@ -94,6 +94,7 @@ class FakeGroupEventRepository implements IGroupEventRepository {
     required int maxParticipants,
     required DateTime deadline,
     required String creatorId,
+    String? linkedTripId,
   }) async => const Success('new_id');
   @override
   Future<Result<void, Exception>> update(GroupEvent event) async => const Success(null);
@@ -147,6 +148,16 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> deleteComment({required String commentId, required String userId}) async =>
       const Success(null);
+
+  @override
+  Future<Result<void, Exception>> updateLinkedTrip({required String eventId, String? linkedTripId}) async =>
+      const Success(null);
+
+  @override
+  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId) async {
+    final event = _events.firstWhere((e) => e.id == eventId);
+    return Success(event);
+  }
 }
 
 class FakeConnectivityService implements IConnectivityService {

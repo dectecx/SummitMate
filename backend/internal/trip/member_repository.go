@@ -17,6 +17,8 @@ type TripMemberRepository interface {
 	ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error)
 	IsMember(ctx context.Context, tripID string, userID string) (bool, error)
 	GetRole(ctx context.Context, tripID string, userID string) (string, error)
+	BatchAddMembers(ctx context.Context, tripID string, userIDs []string) error
+	BatchRemoveMembers(ctx context.Context, tripID string, userIDs []string) error
 }
 
 type tripMemberRepository struct {
@@ -52,6 +54,41 @@ func (repo *tripMemberRepository) RemoveMember(ctx context.Context, tripID strin
 	_, err := db.Exec(ctx, query, tripID, userID)
 	if err != nil {
 		return fmt.Errorf("remove member %s from trip %s: %w", userID, tripID, err)
+	}
+	return nil
+}
+
+// BatchAddMembers 批次新增多位成員。
+func (repo *tripMemberRepository) BatchAddMembers(ctx context.Context, tripID string, userIDs []string) error {
+	if len(userIDs) == 0 {
+		return nil
+	}
+	query := `
+		INSERT INTO trip_members (trip_id, user_id)
+		SELECT $1, unnest($2::uuid[])
+		ON CONFLICT (trip_id, user_id) DO NOTHING
+	`
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, query, tripID, userIDs)
+	if err != nil {
+		return fmt.Errorf("batch add members to trip %s: %w", tripID, err)
+	}
+	return nil
+}
+
+// BatchRemoveMembers 批次移除多位成員。
+func (repo *tripMemberRepository) BatchRemoveMembers(ctx context.Context, tripID string, userIDs []string) error {
+	if len(userIDs) == 0 {
+		return nil
+	}
+	query := `
+		DELETE FROM trip_members
+		WHERE trip_id = $1 AND user_id = ANY($2::uuid[])
+	`
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, query, tripID, userIDs)
+	if err != nil {
+		return fmt.Errorf("batch remove members from trip %s: %w", tripID, err)
 	}
 	return nil
 }

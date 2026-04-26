@@ -5,6 +5,7 @@ import 'enums/group_event_application_status.dart';
 import 'enums/group_event_category.dart';
 
 import 'group_event_comment.dart';
+import 'trip_snapshot.dart';
 
 part 'group_event.g.dart';
 
@@ -79,60 +80,69 @@ class GroupEvent {
   @JsonKey(defaultValue: '')
   final String privateMessage;
 
-  /// 關聯的行程 ID (TODO: 整合行程)
+  /// 關聯的行程 ID
   @HiveField(14)
   final String? linkedTripId;
 
-  /// 喜歡數量 (快取)
+  /// 行程快照 (唯讀)
   @HiveField(15)
+  final TripSnapshot? tripSnapshot;
+
+  /// 快照更新時間
+  @HiveField(16)
+  @JsonKey(name: 'snapshot_updated_at')
+  final DateTime? snapshotUpdatedAt;
+
+  /// 喜歡數量 (快取)
+  @HiveField(17)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int likeCount;
 
   /// 留言數量 (快取)
-  @HiveField(16)
+  @HiveField(18)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int commentCount;
 
   /// 當前使用者是否已喜歡
-  @HiveField(17)
+  @HiveField(19)
   @JsonKey(defaultValue: false)
   final bool isLiked;
 
   /// 當前使用者報名狀態 (null=未報名)
-  @HiveField(18)
+  @HiveField(20)
   final GroupEventApplicationStatus? myApplicationStatus;
 
   /// 建立者資訊 (快照)
-  @HiveField(19)
+  @HiveField(21)
   @JsonKey(defaultValue: '')
   final String creatorName;
 
-  @HiveField(20)
+  @HiveField(22)
   @JsonKey(defaultValue: '🐻')
   final String creatorAvatar;
 
   /// 建立時間
-  @HiveField(21)
+  @HiveField(23)
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
   /// 建立者 ID
-  @HiveField(22)
+  @HiveField(24)
   @JsonKey(name: 'created_by')
   final String createdBy;
 
   /// 更新時間
-  @HiveField(23)
+  @HiveField(25)
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   /// 更新者 ID
-  @HiveField(24)
+  @HiveField(26)
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
   /// 最新留言 (Preview)
-  @HiveField(25)
+  @HiveField(27)
   @JsonKey(defaultValue: [])
   final List<GroupEventComment> latestComments;
 
@@ -152,6 +162,8 @@ class GroupEvent {
     this.approvalRequired = false,
     this.privateMessage = '',
     this.linkedTripId,
+    this.tripSnapshot,
+    this.snapshotUpdatedAt,
     this.likeCount = 0,
     this.commentCount = 0,
     this.isLiked = false,
@@ -209,6 +221,8 @@ class GroupEvent {
     bool? approvalRequired,
     String? privateMessage,
     String? linkedTripId,
+    TripSnapshot? tripSnapshot,
+    DateTime? snapshotUpdatedAt,
     int? likeCount,
     int? commentCount,
     bool? isLiked,
@@ -237,6 +251,8 @@ class GroupEvent {
       approvalRequired: approvalRequired ?? this.approvalRequired,
       privateMessage: privateMessage ?? this.privateMessage,
       linkedTripId: linkedTripId ?? this.linkedTripId,
+      tripSnapshot: tripSnapshot ?? this.tripSnapshot,
+      snapshotUpdatedAt: snapshotUpdatedAt ?? this.snapshotUpdatedAt,
       likeCount: likeCount ?? this.likeCount,
       commentCount: commentCount ?? this.commentCount,
       isLiked: isLiked ?? this.isLiked,

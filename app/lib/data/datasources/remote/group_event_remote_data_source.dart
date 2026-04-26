@@ -70,6 +70,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     required String eventLocation,
     required int maxParticipants,
     required DateTime deadline,
+    String? linkedTripId,
   }) async {
     try {
       final request = GroupEventCreateRequest(
@@ -80,6 +81,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
         startDate: eventDate,
         maxMembers: maxParticipants,
         approvalRequired: true, // Default to true if not specified
+        linkedTripId: linkedTripId,
       );
       final response = await _groupEventApi.createEvent(request);
       return Success(response.id);
@@ -213,6 +215,26 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     try {
       await _groupEventApi.deleteComment(commentId);
       return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> updateLinkedTrip({required String eventId, String? linkedTripId}) async {
+    try {
+      await _groupEventApi.updateTripLink(eventId, GroupEventTripLinkRequest(linkedTripId: linkedTripId));
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId) async {
+    try {
+      final response = await _groupEventApi.updateTripSnapshot(eventId);
+      return Success(GroupEventApiMapper.fromResponse(response));
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }

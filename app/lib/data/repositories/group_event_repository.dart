@@ -74,6 +74,7 @@ class GroupEventRepository implements IGroupEventRepository {
     required int maxParticipants,
     required DateTime deadline,
     required String creatorId,
+    String? linkedTripId,
   }) async {
     return _remoteDataSource.createEvent(
       title: title,
@@ -83,6 +84,7 @@ class GroupEventRepository implements IGroupEventRepository {
       eventLocation: eventLocation,
       maxParticipants: maxParticipants,
       deadline: deadline,
+      linkedTripId: linkedTripId,
     );
   }
 
@@ -201,5 +203,23 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> deleteComment({required String commentId, required String userId}) async {
     return _remoteDataSource.deleteComment(commentId);
+  }
+
+  @override
+  Future<Result<void, Exception>> updateLinkedTrip({required String eventId, String? linkedTripId}) async {
+    final result = await _remoteDataSource.updateLinkedTrip(eventId: eventId, linkedTripId: linkedTripId);
+    if (result is Success) {
+      await syncEventById(eventId);
+    }
+    return result;
+  }
+
+  @override
+  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId) async {
+    final result = await _remoteDataSource.updateTripSnapshot(eventId);
+    if (result is Success<GroupEvent, Exception>) {
+      await _localDataSource.saveEvent(result.value);
+    }
+    return result;
   }
 }

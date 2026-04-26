@@ -18,6 +18,7 @@ var (
 var (
 	ErrTripNotFound      = New(http.StatusNotFound, TypeInvalidReq, "trip_not_found", "找不到行程")
 	ErrCannotRemoveOwner = New(http.StatusBadRequest, TypeBusinessLogic, "cannot_remove_owner", "無法移除行程建立者")
+	ErrTripAccessDenied  = New(http.StatusForbidden, TypeAuth, "trip_permission_denied", "無權限操作此行程")
 	ErrUpdateConflict    = New(http.StatusConflict, TypeBusinessLogic, "update_conflict", "資料已被他人修改，請重新載入後再試一次")
 )
 

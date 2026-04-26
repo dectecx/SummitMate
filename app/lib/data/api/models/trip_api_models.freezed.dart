@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$TripResponse {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String get name; String? get description;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> get dayNames;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'user_id') String get userId; String get name; String? get description;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'linked_event_id') String? get linkedEventId;@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> get dayNames;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of TripResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -318,16 +318,16 @@ $TripResponseCopyWith<TripResponse> get copyWith => _$TripResponseCopyWithImpl<T
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&const DeepCollectionEquality().equals(other.dayNames, dayNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&const DeepCollectionEquality().equals(other.dayNames, dayNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,const DeepCollectionEquality().hash(dayNames),createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,linkedEventId,const DeepCollectionEquality().hash(dayNames),createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'TripResponse(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, dayNames: $dayNames, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'TripResponse(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, linkedEventId: $linkedEventId, dayNames: $dayNames, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -338,7 +338,7 @@ abstract mixin class $TripResponseCopyWith<$Res>  {
   factory $TripResponseCopyWith(TripResponse value, $Res Function(TripResponse) _then) = _$TripResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -355,7 +355,7 @@ class _$TripResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? dayNames = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? dayNames = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -365,7 +365,8 @@ as String?,startDate: null == startDate ? _self.startDate : startDate // ignore:
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,coverImage: freezed == coverImage ? _self.coverImage : coverImage // ignore: cast_nullable_to_non_nullable
 as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,dayNames: null == dayNames ? _self.dayNames : dayNames // ignore: cast_nullable_to_non_nullable
+as bool,linkedEventId: freezed == linkedEventId ? _self.linkedEventId : linkedEventId // ignore: cast_nullable_to_non_nullable
+as String?,dayNames: null == dayNames ? _self.dayNames : dayNames // ignore: cast_nullable_to_non_nullable
 as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -455,10 +456,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripResponse() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -476,10 +477,10 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _TripResponse():
-return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -496,10 +497,10 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _TripResponse() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -511,7 +512,7 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 @JsonSerializable()
 
 class _TripResponse implements TripResponse {
-  const _TripResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, this.description, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'day_names', defaultValue: <String>[]) required final  List<String> dayNames, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _dayNames = dayNames;
+  const _TripResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, this.description, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'linked_event_id') this.linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[]) required final  List<String> dayNames, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _dayNames = dayNames;
   factory _TripResponse.fromJson(Map<String, dynamic> json) => _$TripResponseFromJson(json);
 
 @override final  String id;
@@ -522,6 +523,7 @@ class _TripResponse implements TripResponse {
 @override@JsonKey(name: 'end_date') final  DateTime? endDate;
 @override@JsonKey(name: 'cover_image') final  String? coverImage;
 @override@JsonKey(name: 'is_active') final  bool isActive;
+@override@JsonKey(name: 'linked_event_id') final  String? linkedEventId;
  final  List<String> _dayNames;
 @override@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> get dayNames {
   if (_dayNames is EqualUnmodifiableListView) return _dayNames;
@@ -547,16 +549,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&const DeepCollectionEquality().equals(other._dayNames, _dayNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&const DeepCollectionEquality().equals(other._dayNames, _dayNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,const DeepCollectionEquality().hash(_dayNames),createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,linkedEventId,const DeepCollectionEquality().hash(_dayNames),createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'TripResponse(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, dayNames: $dayNames, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'TripResponse(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, linkedEventId: $linkedEventId, dayNames: $dayNames, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -567,7 +569,7 @@ abstract mixin class _$TripResponseCopyWith<$Res> implements $TripResponseCopyWi
   factory _$TripResponseCopyWith(_TripResponse value, $Res Function(_TripResponse) _then) = __$TripResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -584,7 +586,7 @@ class __$TripResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? dayNames = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? dayNames = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_TripResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -594,7 +596,8 @@ as String?,startDate: null == startDate ? _self.startDate : startDate // ignore:
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,coverImage: freezed == coverImage ? _self.coverImage : coverImage // ignore: cast_nullable_to_non_nullable
 as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,dayNames: null == dayNames ? _self._dayNames : dayNames // ignore: cast_nullable_to_non_nullable
+as bool,linkedEventId: freezed == linkedEventId ? _self.linkedEventId : linkedEventId // ignore: cast_nullable_to_non_nullable
+as String?,dayNames: null == dayNames ? _self._dayNames : dayNames // ignore: cast_nullable_to_non_nullable
 as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -610,7 +613,7 @@ as String,
 /// @nodoc
 mixin _$TripListItemResponse {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String get name;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'user_id') String get userId; String get name;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'linked_event_id') String? get linkedEventId;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of TripListItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -623,16 +626,16 @@ $TripListItemResponseCopyWith<TripListItemResponse> get copyWith => _$TripListIt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripListItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripListItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,coverImage,startDate,endDate,isActive,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,userId,name,coverImage,startDate,endDate,isActive,linkedEventId,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'TripListItemResponse(id: $id, userId: $userId, name: $name, coverImage: $coverImage, startDate: $startDate, endDate: $endDate, isActive: $isActive, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'TripListItemResponse(id: $id, userId: $userId, name: $name, coverImage: $coverImage, startDate: $startDate, endDate: $endDate, isActive: $isActive, linkedEventId: $linkedEventId, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -643,7 +646,7 @@ abstract mixin class $TripListItemResponseCopyWith<$Res>  {
   factory $TripListItemResponseCopyWith(TripListItemResponse value, $Res Function(TripListItemResponse) _then) = _$TripListItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -660,7 +663,7 @@ class _$TripListItemResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripListItemResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? coverImage = freezed,Object? startDate = null,Object? endDate = freezed,Object? isActive = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? coverImage = freezed,Object? startDate = null,Object? endDate = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -669,7 +672,8 @@ as String,coverImage: freezed == coverImage ? _self.coverImage : coverImage // i
 as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as bool,linkedEventId: freezed == linkedEventId ? _self.linkedEventId : linkedEventId // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -758,10 +762,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripListItemResponse() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.linkedEventId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -779,10 +783,10 @@ return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _TripListItemResponse():
-return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.linkedEventId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -799,10 +803,10 @@ return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _TripListItemResponse() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.linkedEventId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -814,7 +818,7 @@ return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDat
 @JsonSerializable()
 
 class _TripListItemResponse implements TripListItemResponse {
-  const _TripListItemResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
+  const _TripListItemResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'linked_event_id') this.linkedEventId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
   factory _TripListItemResponse.fromJson(Map<String, dynamic> json) => _$TripListItemResponseFromJson(json);
 
 @override final  String id;
@@ -824,6 +828,7 @@ class _TripListItemResponse implements TripListItemResponse {
 @override@JsonKey(name: 'start_date') final  DateTime startDate;
 @override@JsonKey(name: 'end_date') final  DateTime? endDate;
 @override@JsonKey(name: 'is_active') final  bool isActive;
+@override@JsonKey(name: 'linked_event_id') final  String? linkedEventId;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
@@ -842,16 +847,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripListItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripListItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,coverImage,startDate,endDate,isActive,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,userId,name,coverImage,startDate,endDate,isActive,linkedEventId,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'TripListItemResponse(id: $id, userId: $userId, name: $name, coverImage: $coverImage, startDate: $startDate, endDate: $endDate, isActive: $isActive, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'TripListItemResponse(id: $id, userId: $userId, name: $name, coverImage: $coverImage, startDate: $startDate, endDate: $endDate, isActive: $isActive, linkedEventId: $linkedEventId, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -862,7 +867,7 @@ abstract mixin class _$TripListItemResponseCopyWith<$Res> implements $TripListIt
   factory _$TripListItemResponseCopyWith(_TripListItemResponse value, $Res Function(_TripListItemResponse) _then) = __$TripListItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -879,7 +884,7 @@ class __$TripListItemResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripListItemResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? coverImage = freezed,Object? startDate = null,Object? endDate = freezed,Object? isActive = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? coverImage = freezed,Object? startDate = null,Object? endDate = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_TripListItemResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -888,7 +893,8 @@ as String,coverImage: freezed == coverImage ? _self.coverImage : coverImage // i
 as String?,startDate: null == startDate ? _self.startDate : startDate // ignore: cast_nullable_to_non_nullable
 as DateTime,endDate: freezed == endDate ? _self.endDate : endDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
-as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as bool,linkedEventId: freezed == linkedEventId ? _self.linkedEventId : linkedEventId // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

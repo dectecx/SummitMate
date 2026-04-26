@@ -34,6 +34,10 @@ func (s *Server) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *htt
 	s.GroupHandler.PatchGroupEventsApplicationsAppId(w, r, appId)
 }
 
+func (s *Server) DeleteGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
+	s.GroupHandler.DeleteGroupEventsApplicationsAppId(w, r, appId)
+}
+
 func (s *Server) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	s.GroupHandler.GetGroupEventsIdComments(w, r, id)
 }

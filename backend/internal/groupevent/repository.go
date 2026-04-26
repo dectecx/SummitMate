@@ -17,8 +17,10 @@ type GroupEventRepository interface {
 	DeleteEvent(ctx context.Context, id string) error
 
 	ApplyToEvent(ctx context.Context, app *GroupEventApplication) error
+	GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error)
 	ListApplications(ctx context.Context, eventID string) ([]*GroupEventApplication, error)
 	UpdateApplicationStatus(ctx context.Context, eventID, userID, status, updatedBy string) error
+	DeleteApplication(ctx context.Context, id string) error
 
 	AddComment(ctx context.Context, comment *GroupEventComment) error
 	ListComments(ctx context.Context, eventID string) ([]*GroupEventComment, error)
@@ -249,6 +251,37 @@ func (r *groupEventRepository) UpdateApplicationStatus(ctx context.Context, even
 	_, err := db.Exec(ctx, query, status, updatedBy, eventID, userID)
 	if err != nil {
 		return fmt.Errorf("update application status for event %s, user %s: %w", eventID, userID, err)
+	}
+	return nil
+}
+
+func (r *groupEventRepository) GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error) {
+	query := `
+		SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
+		FROM group_event_applications
+		WHERE id = $1
+	`
+	app := &GroupEventApplication{}
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, id).Scan(
+		&app.ID, &app.EventID, &app.UserID, &app.Status, &app.Message,
+		&app.CreatedAt, &app.CreatedBy, &app.UpdatedAt, &app.UpdatedBy,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get application %s: %w", id, err)
+	}
+	return app, nil
+}
+
+func (r *groupEventRepository) DeleteApplication(ctx context.Context, id string) error {
+	query := `DELETE FROM group_event_applications WHERE id = $1`
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete application %s: %w", id, err)
 	}
 	return nil
 }

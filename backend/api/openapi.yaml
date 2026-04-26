@@ -2112,6 +2112,26 @@ paths:
         "403":
           description: 權限不足
 
+    delete:
+      tags: [Community]
+      summary: 取消報名申請
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: app_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功取消
+        "403":
+          description: 權限不足
+        "404":
+          description: 找不到申請
+
   /group-events/{id}/comments:
     get:
       tags: [Community]
@@ -2478,6 +2498,7 @@ components:
         cover_image: { type: string, nullable: true }
         is_active: { type: boolean }
         day_names: { type: array, items: { type: string } }
+        linked_event_id: { type: string, format: uuid, nullable: true }
         created_at: { type: string, format: date-time }
         created_by: { type: string, format: uuid }
         updated_at: { type: string, format: date-time }
