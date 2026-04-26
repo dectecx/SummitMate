@@ -2,33 +2,54 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 )
 
-// CORS 會返回一個中間件，該中間件會根據 allowedOrigins 檢查請求的來源。
+// CORS returns a middleware that checks the request origin against allowedOrigins.
 func CORS(allowedOrigins []string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
-			if origin != "" {
-				allowed := false
-				for _, ao := range allowedOrigins {
-					if ao == "*" || ao == origin {
-						allowed = true
-						break
-					}
+			if origin == "" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			allowed := false
+			for _, ao := range allowedOrigins {
+				if ao == origin {
+					allowed = true
+					break
 				}
 
-				if allowed {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-					w.Header().Set("Access-Control-Allow-Credentials", "true")
+				// Rigorous check: Allow prefix matching for localhost and emulator origins
+				// to support dynamic ports while avoiding the use of a global wildcard "*".
+				if (ao == "http://localhost" || ao == "http://127.0.0.1" || ao == "http://10.0.2.2") &&
+					strings.HasPrefix(origin, ao) {
+					allowed = true
+					break
 				}
 			}
 
-			// 處理 Preflight 請求
+			if !allowed {
+				if r.Method == "OPTIONS" {
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Set CORS headers
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Max-Age", "3600")
+
+			// Handle Preflight request
 			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusOK)
+				w.WriteHeader(http.StatusNoContent)
 				return
 			}
 
