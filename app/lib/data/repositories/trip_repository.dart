@@ -1,4 +1,6 @@
 import 'package:injectable/injectable.dart';
+import 'package:dio/dio.dart';
+import '../../infrastructure/tools/log_service.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
@@ -131,6 +133,14 @@ class TripRepository implements ITripRepository {
       final result = await _remoteDataSource.getTripDetails(tripId);
       if (result is Success<Trip, Exception>) {
         await _localDataSource.updateTrip(result.value);
+      } else if (result is Failure<Trip, Exception>) {
+        final error = result.exception;
+        // If 403 Forbidden, it means user lost access (e.g., kicked from group event)
+        // We should delete the local trip data to avoid showing outdated/restricted info.
+        if (error is DioException && error.response?.statusCode == 403) {
+          LogService.warning('Trip $tripId access denied (403), deleting local data...', source: 'TripRepository');
+          await _localDataSource.deleteTrip(tripId);
+        }
       }
       return result;
     } catch (e) {
