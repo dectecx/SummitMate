@@ -25,12 +25,7 @@ class AppDrawerContent extends StatelessWidget {
   final int? currentIndex;
   final ValueChanged<int>? onTabSelected;
 
-  const AppDrawerContent({
-    super.key,
-    this.isSidebar = false,
-    this.currentIndex,
-    this.onTabSelected,
-  });
+  const AppDrawerContent({super.key, this.isSidebar = false, this.currentIndex, this.onTabSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -171,10 +166,7 @@ class AppDrawerContent extends StatelessWidget {
                     ),
                     ...archivedTrips.map((trip) => _buildTripTile(context, trip, activeTrip?.id)),
                   ],
-                  if (!isSidebar) ...[
-                    const Divider(),
-                    _buildAuthSection(context),
-                  ],
+                  if (!isSidebar) ...[const Divider(), _buildAuthSection(context)],
                 ],
               );
 
@@ -252,7 +244,11 @@ class AppDrawerContent extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Row(
-              children: [Icon(Icons.warning_amber, color: Colors.orange), SizedBox(width: 8), Text('離線模式')],
+              children: [
+                Icon(Icons.warning_amber, color: Colors.orange),
+                SizedBox(width: 8),
+                Text('離線模式'),
+              ],
             ),
             content: const Text('您目前處於離線狀態。\n\n如果現在登出，在恢復網路連線前，您將無法重新登入。\n\n確定要登出嗎？'),
             actions: [

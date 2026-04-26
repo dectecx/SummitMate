@@ -175,7 +175,7 @@ class _GearTabState extends State<GearTab> {
                       children: [
                         // 左側資訊面板
                         SizedBox(
-                          width: 300,
+                          width: 360,
                           child: ListView(
                             padding: const EdgeInsets.all(16),
                             children: [
