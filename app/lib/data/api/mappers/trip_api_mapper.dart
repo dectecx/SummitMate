@@ -15,6 +15,7 @@ class TripApiMapper {
       endDate: response.endDate?.toLocal(),
       coverImage: response.coverImage,
       isActive: response.isActive,
+      linkedEventId: response.linkedEventId,
       dayNames: response.dayNames,
       syncStatus: SyncStatus.synced,
       createdAt: response.createdAt.toLocal(),
@@ -35,6 +36,7 @@ class TripApiMapper {
       endDate: response.endDate?.toLocal(),
       coverImage: response.coverImage,
       isActive: response.isActive,
+      linkedEventId: response.linkedEventId,
       dayNames: const [], // 列表不含天數名稱
       syncStatus: SyncStatus.synced,
       createdAt: response.createdAt.toLocal(),

@@ -22,6 +22,8 @@ type TripService interface {
 	InviteMemberByEmail(ctx context.Context, tripID, userID, email string) (*TripMember, error)
 	AddMember(ctx context.Context, tripID, userID, targetUserID string) (*TripMember, error)
 	RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error
+	BatchAddMembers(ctx context.Context, tripID, actionUserID string, targetUserIDs []string) error
+	BatchRemoveMembers(ctx context.Context, tripID, actionUserID string, targetUserIDs []string) error
 	ListItinerary(ctx context.Context, tripID, userID string) ([]*ItineraryItem, error)
 	AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*ItineraryItem, error)
 	UpdateItineraryItem(ctx context.Context, tripID, itemID, userID string, req *ItineraryItemRequest) (*ItineraryItem, error)
@@ -289,6 +291,42 @@ func (s *tripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 	}
 
 	return s.memberRepo.RemoveMember(ctx, tripID, targetUserID)
+}
+
+// BatchAddMembers 批次新增多位成員。
+func (s *tripService) BatchAddMembers(ctx context.Context, tripID, actionUserID string, targetUserIDs []string) error {
+	if len(targetUserIDs) == 0 {
+		return nil
+	}
+
+	// 檢查權限 (只有 Owner 可以批次新增成員)
+	role, err := s.memberRepo.GetRole(ctx, tripID, actionUserID)
+	if err != nil {
+		return err
+	}
+	if role != RoleOwner {
+		return apperror.ErrTripAccessDenied
+	}
+
+	return s.memberRepo.BatchAddMembers(ctx, tripID, targetUserIDs)
+}
+
+// BatchRemoveMembers 批次移除多位成員。
+func (s *tripService) BatchRemoveMembers(ctx context.Context, tripID, actionUserID string, targetUserIDs []string) error {
+	if len(targetUserIDs) == 0 {
+		return nil
+	}
+
+	// 檢查權限 (只有 Owner 可以批次移除成員)
+	role, err := s.memberRepo.GetRole(ctx, tripID, actionUserID)
+	if err != nil {
+		return err
+	}
+	if role != RoleOwner {
+		return apperror.ErrTripAccessDenied
+	}
+
+	return s.memberRepo.BatchRemoveMembers(ctx, tripID, targetUserIDs)
 }
 
 // --- Itinerary ---

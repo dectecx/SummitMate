@@ -143,6 +143,8 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                       const SizedBox(height: 32),
                                       _buildDescriptionSection(theme),
                                       const SizedBox(height: 32),
+                                      _buildTripSection(theme, colorScheme, isCreator, isSyncing),
+                                      const SizedBox(height: 32),
                                       _buildCommentsSection(theme, colorScheme),
                                       const SizedBox(height: 100),
                                     ],
@@ -188,6 +190,8 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                               _buildPrivateMessageSection(colorScheme, isCreator),
                               const SizedBox(height: 24),
                               _buildDescriptionSection(theme),
+                              const SizedBox(height: 24),
+                              _buildTripSection(theme, colorScheme, isCreator, isSyncing),
                               const SizedBox(height: 24),
                               _buildCommentsSection(theme, colorScheme),
                               const SizedBox(height: 100),
@@ -371,6 +375,130 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           _event.description.isNotEmpty ? _event.description : '無詳細說明',
           style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
         ),
+      ],
+    );
+  }
+
+  Widget _buildTripSection(ThemeData theme, ColorScheme colorScheme, bool isCreator, bool isSyncing) {
+    if (_event.linkedTripId == null && _event.tripSnapshot == null) {
+      return const SizedBox.shrink();
+    }
+
+    final snapshot = _event.tripSnapshot;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('行程預覽', style: _sectionTitleStyle),
+            if (isCreator && _event.linkedTripId != null)
+              TextButton.icon(
+                onPressed: isSyncing
+                    ? null
+                    : () async {
+                        final success = await context.read<GroupEventCubit>().updateSnapshot(_event.id);
+                        if (success && context.mounted) {
+                          ToastService.success('行程快照已更新');
+                        }
+                      },
+                icon: isSyncing
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.sync, size: 18),
+                label: const Text('更新快照'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (snapshot != null)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.cardTheme.color,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.map_outlined, color: colorScheme.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        snapshot.name,
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${DateFormat('yyyy/MM/dd').format(snapshot.startDate)}${snapshot.endDate != null ? ' - ${DateFormat('yyyy/MM/dd').format(snapshot.endDate!)}' : ''}',
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+                if (_event.snapshotUpdatedAt != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      '快照更新於: ${DateFormat('yyyy/MM/dd HH:mm').format(_event.snapshotUpdatedAt!)}',
+                      style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                if (snapshot.itinerary.isNotEmpty) ...[
+                  ...snapshot.itinerary.take(3).map((item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(item.name, style: theme.textTheme.bodyMedium)),
+                          ],
+                        ),
+                      )),
+                  if (snapshot.itinerary.length > 3)
+                    Text(
+                      '...還有 ${snapshot.itinerary.length - 3} 個行程點',
+                      style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                    ),
+                ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      // TODO: Navigate to read-only Trip detail or linked master trip if creator
+                      ToastService.info('完整行程檢視功能開發中');
+                    },
+                    child: const Text('查看完整行程'),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: const Center(
+              child: Text('行程連結中，尚未建立快照'),
+            ),
+          ),
       ],
     );
   }

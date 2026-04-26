@@ -4,6 +4,13 @@ import (
 	"time"
 )
 
+const (
+	RoleOwner  = "owner"
+	RoleLeader = "leader"
+	RoleGuide  = "guide"
+	RoleMember = "member"
+)
+
 // Trip 對應資料庫 trips 表的實體
 type Trip struct {
 	ID          string     `json:"id" db:"id"`
@@ -14,6 +21,8 @@ type Trip struct {
 	EndDate     *time.Time `json:"end_date" db:"end_date"`     // YYYY-MM-DD
 	CoverImage  *string    `json:"cover_image" db:"cover_image"`
 	IsActive    bool       `json:"is_active" db:"is_active"`
+	// LinkedEventID 關聯的揪團活動 ID (非資料庫欄位，透過查詢獲得)
+	LinkedEventID *string `json:"linked_event_id" db:"linked_event_id"`
 	DayNames    []string   `json:"day_names" db:"day_names"`
 	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
 	CreatedBy   string     `json:"created_by" db:"created_by"`

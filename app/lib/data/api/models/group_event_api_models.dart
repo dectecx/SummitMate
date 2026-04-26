@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'pagination_api_models.dart';
 import '../../models/enums/group_event_category.dart';
+import 'itinerary_api_models.dart';
 
 part 'group_event_api_models.freezed.dart';
 part 'group_event_api_models.g.dart';
@@ -37,6 +38,8 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'approval_required', defaultValue: false) required bool approvalRequired,
     @JsonKey(name: 'private_message', defaultValue: '') required String privateMessage,
     @JsonKey(name: 'linked_trip_id') String? linkedTripId,
+    @JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,
+    @JsonKey(name: 'snapshot_updated_at') DateTime? snapshotUpdatedAt,
     @JsonKey(name: 'like_count', defaultValue: 0) required int likeCount,
     @JsonKey(name: 'comment_count', defaultValue: 0) required int commentCount,
     @JsonKey(name: 'is_liked', defaultValue: false) required bool isLiked,
@@ -90,6 +93,19 @@ abstract class GroupEventCommentResponse with _$GroupEventCommentResponse {
   factory GroupEventCommentResponse.fromJson(Map<String, dynamic> json) => _$GroupEventCommentResponseFromJson(json);
 }
 
+/// 行程快照回應
+@freezed
+abstract class TripSnapshotResponse with _$TripSnapshotResponse {
+  const factory TripSnapshotResponse({
+    required String name,
+    @JsonKey(name: 'start_date') required DateTime startDate,
+    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(defaultValue: []) required List<ItineraryItemResponse> itinerary,
+  }) = _TripSnapshotResponse;
+
+  factory TripSnapshotResponse.fromJson(Map<String, dynamic> json) => _$TripSnapshotResponseFromJson(json);
+}
+
 // ── Requests ──
 
 /// 建立揪團請求
@@ -124,6 +140,7 @@ abstract class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
     @JsonKey(name: 'max_members') int? maxMembers,
     @JsonKey(name: 'approval_required') bool? approvalRequired,
     @JsonKey(name: 'private_message') String? privateMessage,
+    @JsonKey(name: 'linked_trip_id') String? linkedTripId,
   }) = _GroupEventUpdateRequest;
 
   factory GroupEventUpdateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventUpdateRequestFromJson(json);
@@ -159,4 +176,14 @@ abstract class GroupEventCommentRequest with _$GroupEventCommentRequest {
   const factory GroupEventCommentRequest({required String content}) = _GroupEventCommentRequest;
 
   factory GroupEventCommentRequest.fromJson(Map<String, dynamic> json) => _$GroupEventCommentRequestFromJson(json);
+}
+
+/// 連結行程請求
+@freezed
+abstract class GroupEventTripLinkRequest with _$GroupEventTripLinkRequest {
+  const factory GroupEventTripLinkRequest({
+    @JsonKey(name: 'linked_trip_id') String? linkedTripId,
+  }) = _GroupEventTripLinkRequest;
+
+  factory GroupEventTripLinkRequest.fromJson(Map<String, dynamic> json) => _$GroupEventTripLinkRequestFromJson(json);
 }

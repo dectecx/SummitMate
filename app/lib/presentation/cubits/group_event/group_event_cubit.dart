@@ -5,6 +5,7 @@ import '../../../domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../../../data/models/enums/group_event_category.dart';
+import '../../../data/models/group_event.dart';
 import '../../../data/repositories/interfaces/i_group_event_repository.dart';
 import 'group_event_state.dart';
 
@@ -102,9 +103,27 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     }
   }
 
+  /// Get a single event by ID (local or remote)
+  Future<GroupEvent?> getEventById(String eventId) async {
+    // Try local cache first
+    final localEvent = _groupEventRepository.getById(eventId);
+    if (localEvent != null) return localEvent;
+
+    if (_isOffline) return null;
+
+    try {
+      final result = await _groupEventRepository.syncEventById(eventId);
+      return switch (result) {
+        Success(value: final e) => e,
+        Failure() => null,
+      };
+    } catch (e) {
+      LogService.error('Fetch group event $eventId failed: $e', source: _source);
+      return null;
+    }
+  }
+
   /// 執行需要認證的遠端操作
-  ///
-  /// 統一處理訪客檢查、離線檢查、同步狀態管理和錯誤處理。
   Future<bool> _executeRemoteAction(
     Future<Result<dynamic, Exception>> Function() action,
     String offlineMessage,
@@ -139,15 +158,6 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   }
 
   /// 建立新揪團
-  ///
-  /// [title] 活動標題
-  /// [description] 活動描述
-  /// [location] 活動地點
-  /// [startDate] 開始日期
-  /// [endDate] 結束日期 (可選)
-  /// [maxMembers] 招募人數上限
-  /// [approvalRequired] 是否需審核報名
-  /// [privateMessage] 審核通過後顯示的私訊
   Future<bool> createEvent({
     required String title,
     String description = '',
@@ -158,6 +168,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     required int maxMembers,
     bool approvalRequired = false,
     String privateMessage = '',
+    String? linkedTripId,
   }) async {
     return await _executeRemoteAction(
       () => _groupEventRepository.create(
@@ -169,6 +180,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
         maxParticipants: maxMembers,
         deadline: endDate ?? startDate,
         creatorId: _currentUserId,
+        linkedTripId: linkedTripId,
       ),
       '離線模式無法建立揪團',
       '請登入以建立揪團',
@@ -216,10 +228,16 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     );
   }
 
+  /// 更新行程快照
+  Future<bool> updateSnapshot(String eventId) async {
+    return await _executeRemoteAction(
+      () => _groupEventRepository.updateTripSnapshot(eventId),
+      '離線模式無法更新快照',
+      '請登入以更新快照',
+    );
+  }
+
   /// 喜歡/取消喜歡揪團
-  ///
-  /// 委派呼叫 [IGroupEventRepository.likeEvent] 或 [unlikeEvent]，
-  /// Repository 負責本地持久化和遠端 API 呼叫。
   Future<bool> likeEvent({required String eventId}) async {
     if (_isGuest) {
       ToastService.warning('請登入以收藏揪團');
@@ -230,12 +248,10 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       return false;
     }
 
-    // Debounce/Throttle (300ms) to prevent rapid clicks
     final now = DateTime.now();
     if (_likeDebounceMap.containsKey(eventId)) {
       final lastClick = _likeDebounceMap[eventId]!;
       if (now.difference(lastClick) < const Duration(milliseconds: 300)) {
-        LogService.debug('Like event throttled for $eventId', source: _source);
         return false;
       }
     }
@@ -244,11 +260,9 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     final currentState = state;
     if (currentState is! GroupEventLoaded) return false;
 
-    // 找到目前的 event
     final event = currentState.events.firstWhere((e) => e.id == eventId, orElse: () => currentState.events.first);
     final wasLiked = event.isLiked;
 
-    // Optimistic UI Update
     final updatedEvents = currentState.events.map((e) {
       if (e.id == eventId) {
         return e.copyWith(isLiked: !wasLiked, likeCount: wasLiked ? e.likeCount - 1 : e.likeCount + 1);
@@ -257,7 +271,6 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     }).toList();
     emit(currentState.copyWith(events: updatedEvents));
 
-    // 委派給 Repository (含本地持久化 + API 呼叫)
     final result = wasLiked
         ? await _groupEventRepository.unlikeEvent(eventId: eventId, userId: _currentUserId)
         : await _groupEventRepository.likeEvent(eventId: eventId, userId: _currentUserId);
@@ -266,7 +279,6 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       LogService.error('Like event failed: ${result.exception}', source: _source);
       ToastService.error('操作失敗');
 
-      // Repository 已處理 rollback，重新載入本地資料以同步 UI
       final freshEvents = _groupEventRepository.getAll();
       emit(currentState.copyWith(events: freshEvents));
       return false;

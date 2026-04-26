@@ -18,6 +18,7 @@ type GroupEventService interface {
 	DeleteEvent(ctx context.Context, id string, userID string) error
 
 	ApplyToEvent(ctx context.Context, app *GroupEventApplication) error
+	CancelApplication(ctx context.Context, appID string, userID string) error
 	ListApplications(ctx context.Context, id string, userID string) ([]*GroupEventApplication, error)
 	ProcessApplication(ctx context.Context, eventID, userID, status, executorID string) error
 
@@ -102,6 +103,22 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 		return apperror.ErrEventAccessDenied
 	}
 
+	// 如果活動有連結行程，移除所有已加入成員的權限 (批次處理優化)
+	if existing.LinkedTripID != nil {
+		apps, err := s.repo.ListApplications(ctx, id)
+		if err == nil {
+			var memberIDs []string
+			for _, app := range apps {
+				if app.Status == ApplicationStatusApproved {
+					memberIDs = append(memberIDs, app.UserID)
+				}
+			}
+			if len(memberIDs) > 0 {
+				_ = s.tripServ.BatchRemoveMembers(ctx, *existing.LinkedTripID, userID, memberIDs)
+			}
+		}
+	}
+
 	if err := s.repo.DeleteEvent(ctx, id); err != nil {
 		s.logger.ErrorContext(ctx, "刪除活動失敗", "event_id", id, "user_id", userID, "error", err)
 		return err
@@ -134,6 +151,36 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApp
 	}
 
 	s.logger.InfoContext(ctx, "活動報名成功", "event_id", app.EventID, "user_id", app.UserID)
+	return nil
+}
+
+func (s *groupEventService) CancelApplication(ctx context.Context, appID string, userID string) error {
+	app, err := s.repo.GetApplicationByID(ctx, appID)
+	if err != nil {
+		return err
+	}
+	if app == nil {
+		return apperror.ErrResourceNotFound.WithMessage("找不到報名資料")
+	}
+
+	if app.UserID != userID {
+		return apperror.ErrAccessDenied.WithMessage("無權取消他人報名")
+	}
+
+	// 如果報名已被核准且活動有連結行程，移除行程權限
+	if app.Status == ApplicationStatusApproved {
+		event, err := s.repo.GetEventByID(ctx, app.EventID)
+		if err == nil && event != nil && event.LinkedTripID != nil {
+			_ = s.tripServ.RemoveMember(ctx, *event.LinkedTripID, event.CreatedBy, userID)
+		}
+	}
+
+	if err := s.repo.DeleteApplication(ctx, appID); err != nil {
+		s.logger.ErrorContext(ctx, "取消報名失敗", "app_id", appID, "user_id", userID, "error", err)
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "取消報名成功", "app_id", appID, "user_id", userID)
 	return nil
 }
 
@@ -176,9 +223,14 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 		_, err := s.tripServ.AddMember(ctx, *event.LinkedTripID, executorID, userID)
 		if err != nil {
 			s.logger.ErrorContext(ctx, "自動加入行程成員失敗", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID, "error", err)
-			// 這裡不回傳錯誤給前端，因為報名狀態已經更新成功了。
 		} else {
 			s.logger.InfoContext(ctx, "自動加入行程成員完成", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID)
+		}
+	} else if (status == ApplicationStatusRejected) && event.LinkedTripID != nil {
+		// 如果從 Approved 變為 Rejected，需移除行程權限
+		err := s.tripServ.RemoveMember(ctx, *event.LinkedTripID, executorID, userID)
+		if err != nil {
+			s.logger.WarnContext(ctx, "移除行程成員失敗 (可能本就不是成員)", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID, "error", err)
 		}
 	}
 
@@ -226,6 +278,28 @@ func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, 
 		}
 		if trip == nil {
 			return apperror.ErrTripNotFound
+		}
+	}
+
+	// 權限搬遷邏輯：如果原本有連結行程，現在更換或取消，應移除團員權限
+	if event.LinkedTripID != nil && (tripID == nil || *tripID != *event.LinkedTripID) {
+		apps, err := s.repo.ListApplications(ctx, eventID)
+		if err == nil {
+			var memberIDs []string
+			for _, app := range apps {
+				if app.Status == ApplicationStatusApproved {
+					memberIDs = append(memberIDs, app.UserID)
+				}
+			}
+
+			if len(memberIDs) > 0 {
+				// 移除舊行程權限
+				_ = s.tripServ.BatchRemoveMembers(ctx, *event.LinkedTripID, userID, memberIDs)
+				// 如果有新行程，加入新行程權限
+				if tripID != nil {
+					_ = s.tripServ.BatchAddMembers(ctx, *tripID, userID, memberIDs)
+				}
+			}
 		}
 	}
 

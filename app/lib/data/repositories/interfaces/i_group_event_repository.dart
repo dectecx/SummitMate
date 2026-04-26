@@ -65,6 +65,7 @@ abstract interface class IGroupEventRepository {
     required int maxParticipants,
     required DateTime deadline,
     required String creatorId,
+    String? linkedTripId,
   });
 
   /// 更新揪團 (雲端)
@@ -110,6 +111,17 @@ abstract interface class IGroupEventRepository {
   /// [eventId] 揪團 ID
   /// [userId] 操作者 ID
   Future<Result<void, Exception>> closeEvent({required String eventId, required String userId});
+
+  /// 連結或取消連結行程 (雲端)
+  ///
+  /// [eventId] 揪團 ID
+  /// [linkedTripId] 行程 ID (null 為取消連結)
+  Future<Result<void, Exception>> updateLinkedTrip({required String eventId, String? linkedTripId});
+
+  /// 更新行程快照 (雲端)
+  ///
+  /// [eventId] 揪團 ID
+  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId);
 
   // ========== Comment Operations ==========
 

@@ -44,6 +44,11 @@ class Trip extends HiveObject {
   @JsonKey(name: 'is_active', defaultValue: false, fromJson: _parseBool)
   bool isActive;
 
+  /// 關聯的揪團活動 ID
+  @HiveField(8)
+  @JsonKey(name: 'linked_event_id')
+  String? linkedEventId;
+
   /// 每天的名稱 (自定義)
   @HiveField(9)
   @JsonKey(defaultValue: <String>[])
@@ -80,6 +85,7 @@ class Trip extends HiveObject {
     this.endDate,
     this.coverImage,
     this.isActive = false,
+    this.linkedEventId,
     List<String>? dayNames,
     this.syncStatus = SyncStatus.pendingCreate,
     required this.createdAt,

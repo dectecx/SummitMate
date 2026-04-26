@@ -36,7 +36,9 @@ func (repo *tripRepository) Create(ctx context.Context, trip *Trip) (*Trip, erro
 	query := `
 		INSERT INTO trips (user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by
+		RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active,
+			NULL as linked_event_id,
+			day_names, created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query,
@@ -54,7 +56,9 @@ func (repo *tripRepository) Create(ctx context.Context, trip *Trip) (*Trip, erro
 // GetByID 以 UUID 查詢行程。若不存在回傳 ErrNotFound。
 func (repo *tripRepository) GetByID(ctx context.Context, id string) (*Trip, error) {
 	query := `
-		SELECT id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by
+		SELECT id, user_id, name, description, start_date, end_date, cover_image, is_active,
+			(SELECT id FROM group_events WHERE linked_trip_id = trips.id LIMIT 1) as linked_event_id,
+			day_names, created_at, created_by, updated_at, updated_by
 		FROM trips
 		WHERE id = $1
 	`
@@ -117,8 +121,9 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string, pag
 			LIMIT $%d OFFSET $%d
 		)
 		SELECT t.id, t.user_id, t.name, t.description, t.start_date, t.end_date,
-			t.cover_image, t.is_active, t.day_names,
-			t.created_at, t.created_by, t.updated_at, t.updated_by
+			t.cover_image, t.is_active,
+			(SELECT id FROM group_events WHERE linked_trip_id = t.id LIMIT 1) as linked_event_id,
+			t.day_names, t.created_at, t.created_by, t.updated_at, t.updated_by
 		FROM trips t
 		INNER JOIN TargetPageIDs target ON t.id = target.id
 		ORDER BY t.created_at DESC, t.id ASC
@@ -132,16 +137,11 @@ func (repo *tripRepository) ListByUserID(ctx context.Context, userID string, pag
 
 	var trips []*Trip
 	for rows.Next() {
-		var t Trip
-		err := rows.Scan(
-			&t.ID, &t.UserID, &t.Name, &t.Description, &t.StartDate, &t.EndDate,
-			&t.CoverImage, &t.IsActive, &t.DayNames,
-			&t.CreatedAt, &t.CreatedBy, &t.UpdatedAt, &t.UpdatedBy,
-		)
+		t, err := repo.scanTrip(rows)
 		if err != nil {
 			return nil, 0, false, fmt.Errorf("scan trip row: %w", err)
 		}
-		trips = append(trips, &t)
+		trips = append(trips, t)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -171,7 +171,10 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedA
 		args = append(args, *lastUpdatedAt)
 	}
 
-	query += " RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, day_names, created_at, created_by, updated_at, updated_by"
+	query += " RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, " +
+		"(SELECT id FROM group_events WHERE linked_trip_id = trips.id LIMIT 1) as linked_event_id, " +
+		"day_names, created_at, created_by, updated_at, updated_by"
+	// Note: We use a subquery in RETURNING to fetch the linked_event_id.
 
 	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query, args...)
@@ -198,13 +201,15 @@ func (repo *tripRepository) scanTrip(row pgx.Row) (*Trip, error) {
 	var t Trip
 	err := row.Scan(
 		&t.ID, &t.UserID, &t.Name, &t.Description, &t.StartDate, &t.EndDate,
-		&t.CoverImage, &t.IsActive, &t.DayNames,
+		&t.CoverImage, &t.IsActive, &t.LinkedEventID, &t.DayNames,
 		&t.CreatedAt, &t.CreatedBy, &t.UpdatedAt, &t.UpdatedBy,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
+		// TODO: If error is because of missing LinkedEventID column (e.g. from RETURNING in Update)
+		// We might need to handle it (e.g. by providing a default value or a different scan function).
 		return nil, fmt.Errorf("scan trip: %w", err)
 	}
 	return &t, nil

@@ -26,6 +26,7 @@ abstract interface class IGroupEventRemoteDataSource {
     required String eventLocation,
     required int maxParticipants,
     required DateTime deadline,
+    String? linkedTripId,
   });
 
   /// 刪除揪團
@@ -57,6 +58,13 @@ abstract interface class IGroupEventRemoteDataSource {
   /// 點讚/取消點讚
   Future<Result<void, Exception>> likeEvent(String eventId);
   Future<Result<void, Exception>> unlikeEvent(String eventId);
+
+  /// 行程快照與連結相關
+  /// 連結或取消連結行程 (僅限建立者)
+  Future<Result<void, Exception>> updateLinkedTrip({required String eventId, String? linkedTripId});
+
+  /// 更新行程快照 (僅限建立者)
+  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId);
 
   /// 留言相關
   Future<Result<List<GroupEventComment>, Exception>> getComments(String eventId);

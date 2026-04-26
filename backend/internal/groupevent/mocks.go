@@ -59,6 +59,19 @@ func (m *MockGroupEventRepository) UpdateApplicationStatus(ctx context.Context, 
 	return args.Error(0)
 }
 
+func (m *MockGroupEventRepository) GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*GroupEventApplication), args.Error(1)
+}
+
+func (m *MockGroupEventRepository) DeleteApplication(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
 func (m *MockGroupEventRepository) AddComment(ctx context.Context, comment *GroupEventComment) error {
 	args := m.Called(ctx, comment)
 	return args.Error(0)
