@@ -5,6 +5,7 @@ import '../../data/api/services/favorites_api_service.dart';
 import '../../data/api/services/gear_library_api_service.dart';
 import '../../data/api/services/group_event_api_service.dart';
 import '../../data/api/services/itinerary_api_service.dart';
+import '../../data/api/services/meal_library_api_service.dart';
 import '../../data/api/services/message_api_service.dart';
 import '../../data/api/services/poll_api_service.dart';
 import '../../data/api/services/trip_api_service.dart';
@@ -25,6 +26,9 @@ abstract class ApiModule {
 
   @lazySingleton
   ItineraryApiService getItineraryApi(Dio dio) => ItineraryApiService(dio);
+
+  @lazySingleton
+  MealLibraryApiService getMealLibraryApi(Dio dio) => MealLibraryApiService(dio);
 
   @lazySingleton
   MessageApiService getMessageApi(Dio dio) => MessageApiService(dio);

@@ -22,6 +22,7 @@ import '../../data/api/services/favorites_api_service.dart' as _i1035;
 import '../../data/api/services/gear_library_api_service.dart' as _i83;
 import '../../data/api/services/group_event_api_service.dart' as _i912;
 import '../../data/api/services/itinerary_api_service.dart' as _i100;
+import '../../data/api/services/meal_library_api_service.dart' as _i458;
 import '../../data/api/services/message_api_service.dart' as _i367;
 import '../../data/api/services/poll_api_service.dart' as _i245;
 import '../../data/api/services/trip_api_service.dart' as _i1030;
@@ -182,6 +183,7 @@ import '../../presentation/cubits/trip/trip_cubit.dart' as _i32;
 import '../location/i_location_resolver.dart' as _i887;
 import '../location/township_location_resolver.dart' as _i351;
 import '../services/permission_service.dart' as _i165;
+import '../services/platform_service.dart' as _i1007;
 import 'api_module.dart' as _i804;
 import 'register_module.dart' as _i291;
 
@@ -215,6 +217,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i973.InternetConnectionChecker>(
       () => registerModule.internetConnectionChecker,
     );
+    gh.lazySingleton<_i1007.PlatformService>(() => _i1007.PlatformService());
     gh.lazySingleton<_i455.CwaWeatherSource>(() => _i455.CwaWeatherSource());
     gh.lazySingleton<_i1042.IGearCloudService>(
       () => _i699.FakeGearCloudService(),
@@ -377,6 +380,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i100.ItineraryApiService>(
       () => apiModule.getItineraryApi(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i458.MealLibraryApiService>(
+      () => apiModule.getMealLibraryApi(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i367.MessageApiService>(
       () => apiModule.getMessageApi(gh<_i361.Dio>()),

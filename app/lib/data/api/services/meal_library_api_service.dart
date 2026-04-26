@@ -15,7 +15,7 @@ abstract class MealLibraryApiService {
   @GET('/meal-library')
   Future<MealLibraryPaginationResponse> listItems({
     @Query('include_archived') bool? includeArchived,
-    @Query('cursor') String? cursor,
+    @Query('page') int? page,
     @Query('limit') int? limit,
     @Query('search') String? search,
   });
