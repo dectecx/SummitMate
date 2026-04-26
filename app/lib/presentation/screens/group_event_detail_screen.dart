@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../data/models/group_event.dart';
 import '../cubits/group_event/group_event_state.dart';
-import '../../data/models/enums/group_event_status.dart';
-import '../../data/models/enums/group_event_application_status.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../widgets/group_event/group_event_comment_sheet.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import '../cubits/favorites/group_event/group_event_favorites_state.dart';
 import 'group_event_review_screen.dart';
+
+import '../widgets/group_event/detail/description_section.dart';
+import '../widgets/group_event/detail/trip_section.dart';
+import '../widgets/group_event/detail/comments_section.dart';
+import '../widgets/group_event/detail/info_grid.dart';
+import '../widgets/group_event/detail/organizer_section.dart';
+import '../widgets/group_event/detail/private_message_section.dart';
+import '../widgets/group_event/detail/status_widgets.dart';
 
 class GroupEventDetailScreen extends StatefulWidget {
   final GroupEvent event;
@@ -139,13 +142,21 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                     children: [
                                       _buildTitleSection(),
                                       const SizedBox(height: 24),
-                                      _buildInfoGrid(theme, colorScheme),
+                                      InfoGrid(
+                                        startDate: _event.startDate,
+                                        location: _event.location,
+                                        maxMembers: _event.maxMembers,
+                                      ),
                                       const SizedBox(height: 32),
-                                      _buildDescriptionSection(theme),
+                                      DescriptionSection(description: _event.description),
                                       const SizedBox(height: 32),
-                                      _buildTripSection(theme, colorScheme, isCreator, isSyncing),
+                                      TripSection(
+                                        event: _event,
+                                        isCreator: isCreator,
+                                        isSyncing: isSyncing,
+                                      ),
                                       const SizedBox(height: 32),
-                                      _buildCommentsSection(theme, colorScheme),
+                                      CommentsSection(event: _event),
                                       const SizedBox(height: 100),
                                     ],
                                   ),
@@ -157,13 +168,21 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      _buildOrganizerSection(theme, colorScheme, isCreator),
+                                      OrganizerSection(
+                                        creatorName: _event.creatorName,
+                                        creatorAvatar: _event.creatorAvatar,
+                                        isCreator: isCreator,
+                                      ),
                                       const SizedBox(height: 24),
                                       if (_event.myApplicationStatus != null) ...[
-                                        _buildStatusCard(_event.myApplicationStatus!),
+                                        StatusCard(status: _event.myApplicationStatus!),
                                         const SizedBox(height: 24),
                                       ],
-                                      _buildPrivateMessageSection(colorScheme, isCreator),
+                                      PrivateMessageSection(
+                                        privateMessage: _event.privateMessage,
+                                        myApplicationStatus: _event.myApplicationStatus,
+                                        isCreator: isCreator,
+                                      ),
                                       const SizedBox(height: 32),
                                       _buildDesktopActionButton(context, colorScheme, isCreator, isSyncing),
                                     ],
@@ -179,21 +198,37 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                             children: [
                               _buildTitleSection(),
                               const SizedBox(height: 24),
-                              _buildInfoGrid(theme, colorScheme),
+                              InfoGrid(
+                                startDate: _event.startDate,
+                                location: _event.location,
+                                maxMembers: _event.maxMembers,
+                              ),
                               const SizedBox(height: 24),
-                              _buildOrganizerSection(theme, colorScheme, isCreator),
+                              OrganizerSection(
+                                creatorName: _event.creatorName,
+                                creatorAvatar: _event.creatorAvatar,
+                                isCreator: isCreator,
+                              ),
                               const SizedBox(height: 24),
                               if (_event.myApplicationStatus != null) ...[
-                                _buildStatusCard(_event.myApplicationStatus!),
+                                StatusCard(status: _event.myApplicationStatus!),
                                 const SizedBox(height: 24),
                               ],
-                              _buildPrivateMessageSection(colorScheme, isCreator),
+                              PrivateMessageSection(
+                                privateMessage: _event.privateMessage,
+                                myApplicationStatus: _event.myApplicationStatus,
+                                isCreator: isCreator,
+                              ),
                               const SizedBox(height: 24),
-                              _buildDescriptionSection(theme),
+                              DescriptionSection(description: _event.description),
                               const SizedBox(height: 24),
-                              _buildTripSection(theme, colorScheme, isCreator, isSyncing),
+                              TripSection(
+                                event: _event,
+                                isCreator: isCreator,
+                                isSyncing: isSyncing,
+                              ),
                               const SizedBox(height: 24),
-                              _buildCommentsSection(theme, colorScheme),
+                              CommentsSection(event: _event),
                               const SizedBox(height: 100),
                             ],
                           );
@@ -230,361 +265,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
       children: [
         Expanded(child: _ExpandableTitle(title: _event.title)),
         const SizedBox(width: 12),
-        _buildStatusChip(_event.status),
-      ],
-    );
-  }
-
-  Widget _buildInfoGrid(ThemeData theme, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: colorScheme.primary.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildInfoItem(Icons.calendar_today_rounded, DateFormat('MM/dd').format(_event.startDate), '日期'),
-              _buildVerticalDivider(),
-              _buildInfoItem(Icons.location_on_rounded, _event.location.isNotEmpty ? _event.location : '未指定', '地點'),
-              _buildVerticalDivider(),
-              _buildInfoItem(Icons.people_rounded, '${_event.maxMembers}', '預計人數'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '※ 預計人數僅供參考，實際可報名人數無上限',
-            style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrganizerSection(ThemeData theme, ColorScheme colorScheme, bool isCreator) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('主辦人', style: _sectionTitleStyle),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: theme.cardTheme.color, borderRadius: BorderRadius.circular(16)),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: colorScheme.primaryContainer, shape: BoxShape.circle),
-                child: Text(_event.creatorAvatar, style: const TextStyle(fontSize: 24)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _event.creatorName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text('發起人', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-                  ],
-                ),
-              ),
-              if (isCreator)
-                Chip(
-                  label: const Text('我', style: TextStyle(color: Colors.white, fontSize: 12)),
-                  backgroundColor: colorScheme.primary,
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  side: BorderSide.none,
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPrivateMessageSection(ColorScheme colorScheme, bool isCreator) {
-    if (!((_event.myApplicationStatus != null || isCreator) && _event.privateMessage.isNotEmpty)) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.secondary.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.check_circle_outline, color: colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                '報名成功訊息',
-                style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          (isCreator || _event.myApplicationStatus == GroupEventApplicationStatus.approved)
-              ? Text(_event.privateMessage, style: TextStyle(color: colorScheme.onSurface))
-              : ClipRect(
-                  child: ImageFiltered(
-                    imageFilter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                    child: Text(_event.privateMessage, style: TextStyle(color: colorScheme.onSurface)),
-                  ),
-                ),
-          if (!isCreator && _event.myApplicationStatus != GroupEventApplicationStatus.approved)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                '※ 此訊息將於審核通過後顯示',
-                style: TextStyle(fontSize: 12, color: colorScheme.primary.withValues(alpha: 0.8)),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDescriptionSection(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('活動詳情', style: _sectionTitleStyle),
-        const SizedBox(height: 12),
-        Text(
-          _event.description.isNotEmpty ? _event.description : '無詳細說明',
-          style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTripSection(ThemeData theme, ColorScheme colorScheme, bool isCreator, bool isSyncing) {
-    if (_event.linkedTripId == null && _event.tripSnapshot == null) {
-      return const SizedBox.shrink();
-    }
-
-    final snapshot = _event.tripSnapshot;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('行程預覽', style: _sectionTitleStyle),
-            if (isCreator && _event.linkedTripId != null)
-              TextButton.icon(
-                onPressed: isSyncing
-                    ? null
-                    : () async {
-                        final success = await context.read<GroupEventCubit>().updateSnapshot(_event.id);
-                        if (success && context.mounted) {
-                          ToastService.success('行程快照已更新');
-                        }
-                      },
-                icon: isSyncing
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.sync, size: 18),
-                label: const Text('更新快照'),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (snapshot != null)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.cardTheme.color,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.outlineVariant),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.map_outlined, color: colorScheme.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        snapshot.name,
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${DateFormat('yyyy/MM/dd').format(snapshot.startDate)}${snapshot.endDate != null ? ' - ${DateFormat('yyyy/MM/dd').format(snapshot.endDate!)}' : ''}',
-                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                ),
-                if (_event.snapshotUpdatedAt != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      '快照更新於: ${DateFormat('yyyy/MM/dd HH:mm').format(_event.snapshotUpdatedAt!)}',
-                      style: theme.textTheme.bodySmall?.copyWith(fontSize: 10, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
-                    ),
-                  ),
-                const SizedBox(height: 16),
-                if (snapshot.itinerary.isNotEmpty) ...[
-                  ...snapshot.itinerary.take(3).map((item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(item.name, style: theme.textTheme.bodyMedium)),
-                          ],
-                        ),
-                      )),
-                  if (snapshot.itinerary.length > 3)
-                    Text(
-                      '...還有 ${snapshot.itinerary.length - 3} 個行程點',
-                      style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
-                    ),
-                ],
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // TODO: Navigate to read-only Trip detail or linked master trip if creator
-                      ToastService.info('完整行程檢視功能開發中');
-                    },
-                    child: const Text('查看完整行程'),
-                  ),
-                ),
-              ],
-            ),
-          )
-        else
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.outlineVariant),
-            ),
-            child: const Center(
-              child: Text('行程連結中，尚未建立快照'),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCommentsSection(ThemeData theme, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('留言板 (${_event.commentCount})', style: _sectionTitleStyle),
-            TextButton(
-              onPressed: () => GroupEventCommentSheet.show(context, _event.id),
-              child: Text('查看全部', style: TextStyle(color: colorScheme.primary)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        if (_event.latestComments.isNotEmpty)
-          Column(
-            children: _event.latestComments
-                .map(
-                  (comment) => Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: theme.cardTheme.color, borderRadius: BorderRadius.circular(12)),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: colorScheme.secondaryContainer,
-                          child: Text(comment.userAvatar, style: const TextStyle(fontSize: 14)),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    comment.userName,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                  ),
-                                  Text(
-                                    DateFormat('MM/dd HH:mm').format(comment.createdAt),
-                                    style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                comment.content,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.8)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        InkWell(
-          onTap: () => GroupEventCommentSheet.show(context, _event.id),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                _event.latestComments.isEmpty ? '尚無留言，成為第一個留言者！' : '查看更多留言...',
-                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ),
+        StatusChip(status: _event.status),
       ],
     );
   }
@@ -657,15 +338,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     );
   }
 
-  // Styles
-  TextStyle get _sectionTitleStyle =>
-      const TextStyle(fontSize: 18, fontWeight: FontWeight.bold); // Let Theme handle color
-
   // Helper Widgets
-  Widget _buildVerticalDivider() {
-    return Container(height: 30, width: 1, color: Theme.of(context).colorScheme.outlineVariant);
-  }
-
   Widget _buildGlassIconButton({required IconData icon, required VoidCallback onTap, Color color = Colors.white}) {
     return Container(
       decoration: BoxDecoration(
@@ -678,101 +351,6 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
         onPressed: onTap,
         constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(IconData icon, String value, String label) {
-    final theme = Theme.of(context);
-    return Column(
-      children: [
-        Icon(icon, color: theme.colorScheme.primary, size: 24),
-        const SizedBox(height: 8),
-        Text(value, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-      ],
-    );
-  }
-
-  Widget _buildStatusChip(GroupEventStatus status) {
-    final theme = Theme.of(context);
-    Color bg;
-    Color text;
-    String label;
-
-    switch (status) {
-      case GroupEventStatus.open:
-        bg = theme.colorScheme.primary;
-        text = theme.colorScheme.onPrimary;
-        label = '招募中';
-        break;
-      case GroupEventStatus.closed:
-        bg = theme.colorScheme.onSurfaceVariant;
-        text = theme.colorScheme.surface;
-        label = '已截止';
-        break;
-      case GroupEventStatus.cancelled:
-        bg = theme.colorScheme.error;
-        text = theme.colorScheme.onError;
-        label = '已取消';
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(
-        label,
-        style: TextStyle(color: text, fontSize: 12, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildStatusCard(GroupEventApplicationStatus status) {
-    final theme = Theme.of(context);
-    Color color;
-    IconData icon;
-    String text;
-
-    switch (status) {
-      case GroupEventApplicationStatus.pending:
-        color = Colors.orange;
-        icon = Icons.hourglass_empty;
-        text = '審核中';
-        break;
-      case GroupEventApplicationStatus.approved:
-        color = theme.colorScheme.primary;
-        icon = Icons.check_circle;
-        text = '已通過';
-        break;
-      case GroupEventApplicationStatus.rejected:
-        color = theme.colorScheme.error;
-        icon = Icons.cancel;
-        text = '未通過';
-        break;
-      default:
-        color = theme.colorScheme.outline;
-        icon = Icons.info;
-        text = '未知';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
-        ],
       ),
     );
   }
