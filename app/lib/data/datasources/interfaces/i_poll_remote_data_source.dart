@@ -5,11 +5,7 @@ import '../../../core/error/result.dart';
 /// 投票 (Polls) 的遠端資料來源介面
 abstract interface class IPollRemoteDataSource {
   /// 獲取行程投票列表 (支援分頁)
-  Future<Result<PaginatedList<Poll>, Exception>> getPolls(
-    String tripId, {
-    int? page,
-    int? limit,
-  });
+  Future<Result<PaginatedList<Poll>, Exception>> getPolls(String tripId, {int? page, int? limit});
 
   /// 建立新投票
   ///

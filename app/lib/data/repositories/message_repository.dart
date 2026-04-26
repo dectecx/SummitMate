@@ -52,11 +52,7 @@ class MessageRepository implements IMessageRepository {
     String? replyToId,
   }) async {
     // 遠端新增
-    final result = await _remoteDataSource.addMessage(
-      tripId: tripId,
-      content: content,
-      replyToId: replyToId,
-    );
+    final result = await _remoteDataSource.addMessage(tripId: tripId, content: content, replyToId: replyToId);
 
     if (result is Success<String, Exception>) {
       // 如果成功，觸發重新獲取最新留言以同步本地資料

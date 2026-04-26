@@ -166,10 +166,7 @@ class GroupEventRepository implements IGroupEventRepository {
     if (result is Success) {
       final event = _localDataSource.getEventById(eventId);
       if (event != null) {
-        await _localDataSource.saveEvent(event.copyWith(
-          isLiked: true,
-          likeCount: event.likeCount + 1,
-        ));
+        await _localDataSource.saveEvent(event.copyWith(isLiked: true, likeCount: event.likeCount + 1));
       }
     }
     return result;
@@ -181,10 +178,7 @@ class GroupEventRepository implements IGroupEventRepository {
     if (result is Success) {
       final event = _localDataSource.getEventById(eventId);
       if (event != null) {
-        await _localDataSource.saveEvent(event.copyWith(
-          isLiked: false,
-          likeCount: event.likeCount - 1,
-        ));
+        await _localDataSource.saveEvent(event.copyWith(isLiked: false, likeCount: event.likeCount - 1));
       }
     }
     return result;

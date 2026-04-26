@@ -21,11 +21,7 @@ abstract class IGearLibraryRepository {
   List<GearLibraryItem> getAll(String userId);
 
   /// 取得雲端裝備庫項目
-  Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
-    int? page,
-    int? limit,
-    String? search,
-  });
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({int? page, int? limit, String? search});
 
   /// 依 ID 取得裝備項目
   ///

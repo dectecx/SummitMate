@@ -12,7 +12,8 @@ abstract class GroupEventPaginationResponse with _$GroupEventPaginationResponse 
     required PaginationMetadata pagination,
   }) = _GroupEventPaginationResponse;
 
-  factory GroupEventPaginationResponse.fromJson(Map<String, dynamic> json) => _$GroupEventPaginationResponseFromJson(json);
+  factory GroupEventPaginationResponse.fromJson(Map<String, dynamic> json) =>
+      _$GroupEventPaginationResponseFromJson(json);
 }
 
 // ── Response ──

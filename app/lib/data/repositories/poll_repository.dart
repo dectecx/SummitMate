@@ -23,11 +23,7 @@ class PollRepository implements IPollRepository {
   List<Poll> getByTripId(String tripId) => _localDataSource.getAllPolls().where((p) => p.tripId == tripId).toList();
 
   @override
-  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(
-    String tripId, {
-    int? page,
-    int? limit,
-  }) async {
+  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit}) async {
     try {
       final result = await _remoteDataSource.getPolls(tripId, page: page, limit: limit);
       if (result is Success<PaginatedList<Poll>, Exception>) {

@@ -92,7 +92,7 @@ class TripCubit extends Cubit<TripState> {
         endDate: endDate,
         description: description,
         coverImage: coverImage,
-        isActive: false, 
+        isActive: false,
         syncStatus: SyncStatus.pendingCreate,
         createdAt: DateTime.now(),
         createdBy: currentUserId,

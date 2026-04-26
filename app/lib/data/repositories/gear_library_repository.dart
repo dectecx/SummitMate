@@ -91,11 +91,6 @@ class GearLibraryRepository implements IGearLibraryRepository {
     String? category,
     String? search,
   }) async {
-    return _remoteDataSource.listLibrary(
-      page: page,
-      limit: limit,
-      category: category,
-      search: search,
-    );
+    return _remoteDataSource.listLibrary(page: page, limit: limit, category: category, search: search);
   }
 }

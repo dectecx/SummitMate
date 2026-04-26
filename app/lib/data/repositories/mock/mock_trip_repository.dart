@@ -69,11 +69,7 @@ class MockTripRepository implements ITripRepository {
   // ========== Remote Operations ==========
 
   @override
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
-    int? page,
-    int? limit,
-    String? search,
-  }) async {
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search}) async {
     return Success(PaginatedList(items: [_mockTrip], page: page ?? 1, total: 1, hasMore: false));
   }
 
@@ -97,12 +93,7 @@ class MockTripRepository implements ITripRepository {
   @override
   Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
     return Success([
-      {
-        'id': 'mock-user-1',
-        'displayName': '測試帳號',
-        'email': 'test@example.com',
-        'role': 'owner',
-      }
+      {'id': 'mock-user-1', 'displayName': '測試帳號', 'email': 'test@example.com', 'role': 'owner'},
     ]);
   }
 
@@ -128,21 +119,11 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<Result<UserProfile, Exception>> searchUserByEmail(String email) async {
-    return Success(UserProfile(
-      id: 'mock-user-2',
-      email: email,
-      displayName: '搜尋到的用戶',
-      avatar: '🐻',
-    ));
+    return Success(UserProfile(id: 'mock-user-2', email: email, displayName: '搜尋到的用戶', avatar: '🐻'));
   }
 
   @override
   Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
-    return Success(UserProfile(
-      id: userId,
-      email: 'user@example.com',
-      displayName: '搜尋到的用戶',
-      avatar: '🐻',
-    ));
+    return Success(UserProfile(id: userId, email: 'user@example.com', displayName: '搜尋到的用戶', avatar: '🐻'));
   }
 }

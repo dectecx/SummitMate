@@ -72,11 +72,13 @@ void main() {
 
     test('Positive: getRemoteTrips fetches from remote and returns PaginatedList', () async {
       const paginated = PaginatedList<Trip>(items: [], page: 1, total: 0, hasMore: false);
-      when(() => mockRemoteDataSource.getRemoteTrips(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-            search: any(named: 'search'),
-          )).thenAnswer((_) async => const Success(paginated));
+      when(
+        () => mockRemoteDataSource.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+          search: any(named: 'search'),
+        ),
+      ).thenAnswer((_) async => const Success(paginated));
 
       final result = await repository.getRemoteTrips();
 
@@ -84,11 +86,13 @@ void main() {
       final value = (result as Success<PaginatedList<Trip>, Exception>).value;
       expect(value.items, isEmpty);
       expect(value.hasMore, false);
-      verify(() => mockRemoteDataSource.getRemoteTrips(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-            search: any(named: 'search'),
-          )).called(1);
+      verify(
+        () => mockRemoteDataSource.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+          search: any(named: 'search'),
+        ),
+      ).called(1);
     });
 
     test('Extreme: getAllTrips handles large number of trips', () async {

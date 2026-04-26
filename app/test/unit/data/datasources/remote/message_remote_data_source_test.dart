@@ -48,21 +48,17 @@ void main() {
             'content': 'Hello world',
             'timestamp': '2024-01-01T00:00:00Z',
             'created_at': '2024-01-01T00:00:00Z',
-          }
+          },
         ],
-        'pagination': {
-          'next_cursor': null,
-          'has_more': false,
-          'page': 1,
-          'limit': 20,
-          'total': 1,
-        },
+        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
       });
-      when(() => mockApiService.listTripMessages(
-            any(),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => paginationResponse);
+      when(
+        () => mockApiService.listTripMessages(
+          any(),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getMessages('trip-1');
 
@@ -74,11 +70,13 @@ void main() {
     });
 
     test('returns failure on error', () async {
-      when(() => mockApiService.listTripMessages(
-            any(),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenThrow(Exception('Error'));
+      when(
+        () => mockApiService.listTripMessages(
+          any(),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenThrow(Exception('Error'));
 
       final result = await dataSource.getMessages('fail');
 

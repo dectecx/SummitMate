@@ -66,9 +66,9 @@ void main() {
     when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
 
     // Default: Message sync behavior
-    when(() => mockMessageRepo.getRemoteMessages(any())).thenAnswer(
-      (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
-    );
+    when(
+      () => mockMessageRepo.getRemoteMessages(any()),
+    ).thenAnswer((_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)));
 
     syncService = SyncService(
       tripRepo: mockTripRepo,
@@ -110,9 +110,9 @@ void main() {
     test('syncAll should coordinate full sync successfully', () async {
       // Arrange
       when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockMessageRepo.getRemoteMessages(any())).thenAnswer(
-        (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
-      );
+      when(
+        () => mockMessageRepo.getRemoteMessages(any()),
+      ).thenAnswer((_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)));
 
       // Act
       final result = await syncService.syncAll();
@@ -126,9 +126,9 @@ void main() {
     test('syncAll failure handles error', () async {
       // Arrange
       when(() => mockItineraryRepo.sync(any())).thenThrow(Exception('Network Error'));
-      when(() => mockMessageRepo.getRemoteMessages(any())).thenAnswer(
-        (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
-      );
+      when(
+        () => mockMessageRepo.getRemoteMessages(any()),
+      ).thenAnswer((_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)));
 
       // Act
       final result = await syncService.syncAll(isAuto: false);
@@ -151,11 +151,13 @@ void main() {
         updatedBy: 'u1',
       );
       final paginated = PaginatedList<Trip>(items: [trip], page: 1, total: 1, hasMore: false);
-      when(() => mockTripRepo.getRemoteTrips(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-            search: any(named: 'search'),
-          )).thenAnswer((_) async => Success(paginated));
+      when(
+        () => mockTripRepo.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+          search: any(named: 'search'),
+        ),
+      ).thenAnswer((_) async => Success(paginated));
 
       // Act
       final result = await syncService.getCloudTrips();
@@ -164,10 +166,12 @@ void main() {
       expect(result is Success, true);
       final value = (result as Success<PaginatedList<Trip>, Exception>).value;
       expect(value.items, [trip]);
-      verify(() => mockTripRepo.getRemoteTrips(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).called(1);
+      verify(
+        () => mockTripRepo.getRemoteTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).called(1);
     });
   });
 }

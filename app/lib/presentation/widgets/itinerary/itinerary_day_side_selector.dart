@@ -8,11 +8,7 @@ class ItineraryDaySideSelector extends StatelessWidget {
   final List<String> dayNames;
   final String selectedDay;
 
-  const ItineraryDaySideSelector({
-    super.key,
-    required this.dayNames,
-    required this.selectedDay,
-  });
+  const ItineraryDaySideSelector({super.key, required this.dayNames, required this.selectedDay});
 
   @override
   Widget build(BuildContext context) {

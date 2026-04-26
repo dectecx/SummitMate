@@ -32,10 +32,7 @@ abstract interface class IGroupEventRemoteDataSource {
   Future<Result<void, Exception>> deleteEvent(String eventId);
 
   /// 申請參加揪團
-  Future<Result<String, Exception>> applyEvent({
-    required String eventId,
-    String? note,
-  });
+  Future<Result<String, Exception>> applyEvent({required String eventId, String? note});
 
   /// 取消申請
   Future<Result<void, Exception>> cancelApplication(String eventId);
@@ -63,9 +60,6 @@ abstract interface class IGroupEventRemoteDataSource {
 
   /// 留言相關
   Future<Result<List<GroupEventComment>, Exception>> getComments(String eventId);
-  Future<Result<GroupEventComment, Exception>> addComment({
-    required String eventId,
-    required String content,
-  });
+  Future<Result<GroupEventComment, Exception>> addComment({required String eventId, required String content});
   Future<Result<void, Exception>> deleteComment(String commentId);
 }

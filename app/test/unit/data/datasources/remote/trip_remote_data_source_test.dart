@@ -55,20 +55,16 @@ void main() {
             'created_by': 'user-456',
             'updated_at': '2024-01-01T00:00:00Z',
             'updated_by': 'user-456',
-          }
+          },
         ],
-        'pagination': {
-          'next_cursor': null,
-          'has_more': false,
-          'page': 1,
-          'limit': 20,
-          'total': 1,
-        },
+        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
       });
-      when(() => mockTripApi.listTrips(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => paginationResponse);
+      when(
+        () => mockTripApi.listTrips(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getRemoteTrips();
 

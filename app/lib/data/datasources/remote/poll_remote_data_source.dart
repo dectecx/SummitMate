@@ -22,12 +22,14 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
       LogService.info('獲取行程投票列表: $tripId (page: $page, limit: $limit)...', source: _source);
       final response = await _pollApi.listTripPolls(tripId, page: page, limit: limit);
       final polls = response.items.map((p) => PollApiMapper.fromResponse(p, tripId: tripId)).toList();
-      return Success(PaginatedList<Poll>(
-        items: polls,
-        page: response.pagination.page,
-        total: response.pagination.total,
-        hasMore: response.pagination.hasMore,
-      ));
+      return Success(
+        PaginatedList<Poll>(
+          items: polls,
+          page: response.pagination.page,
+          total: response.pagination.total,
+          hasMore: response.pagination.hasMore,
+        ),
+      );
     } catch (e) {
       LogService.error('獲取投票失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
@@ -43,11 +45,7 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   }) async {
     try {
       LogService.info('建立行程投票: $tripId - $title', source: _source);
-      final request = PollApiMapper.toCreateRequest(
-        title: title,
-        options: options,
-        allowMultiple: allowMultiple,
-      );
+      final request = PollApiMapper.toCreateRequest(title: title, options: options, allowMultiple: allowMultiple);
       final response = await _pollApi.createPoll(tripId, request);
       return Success(response.id);
     } catch (e) {

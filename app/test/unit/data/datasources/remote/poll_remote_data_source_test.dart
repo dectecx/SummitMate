@@ -67,21 +67,17 @@ void main() {
             'created_by': 'user-1',
             'updated_at': '2024-01-01T00:00:00Z',
             'updated_by': 'user-1',
-          }
+          },
         ],
-        'pagination': {
-          'next_cursor': null,
-          'has_more': false,
-          'page': 1,
-          'limit': 20,
-          'total': 1,
-        },
+        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
       });
-      when(() => mockApiService.listTripPolls(
-            any(),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => paginationResponse);
+      when(
+        () => mockApiService.listTripPolls(
+          any(),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getPolls('trip-1');
 
@@ -97,11 +93,7 @@ void main() {
     test('returns new poll ID on success', () async {
       when(() => mockApiService.createPoll('trip-1', any())).thenAnswer((_) async => testPollResponse);
 
-      final result = await dataSource.createPoll(
-        tripId: 'trip-1',
-        title: 'Test Poll',
-        options: ['Op 1', 'Op 2'],
-      );
+      final result = await dataSource.createPoll(tripId: 'trip-1', title: 'Test Poll', options: ['Op 1', 'Op 2']);
 
       expect(result, isA<Success>());
       expect((result as Success).value, 'poll-1');

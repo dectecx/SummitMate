@@ -55,14 +55,25 @@ void main() {
     group('getRemoteMessages', () {
       test('fetches from remote and saves to local', () async {
         final paginated = PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false);
-        when(() => mockRemoteDataSource.getMessages(any(), page: any(named: 'page'), limit: any(named: 'limit')))
-            .thenAnswer((_) async => Success(paginated));
+        when(
+          () => mockRemoteDataSource.getMessages(
+            any(),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => Success(paginated));
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
 
         final result = await repository.getRemoteMessages('trip_1');
 
         expect(result, isA<Success>());
-        verify(() => mockRemoteDataSource.getMessages('trip_1', page: any(named: 'page'), limit: any(named: 'limit'))).called(1);
+        verify(
+          () => mockRemoteDataSource.getMessages(
+            'trip_1',
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).called(1);
         verify(() => mockLocalDataSource.add(any())).called(1);
       });
     });
@@ -70,15 +81,22 @@ void main() {
     group('addMessage', () {
       test('adds to remote and triggers sync', () async {
         // Arrange
-        when(() => mockRemoteDataSource.addMessage(
-              tripId: any(named: 'tripId'),
-              content: any(named: 'content'),
-              replyToId: any(named: 'replyToId'),
-            )).thenAnswer((_) async => const Success('msg_1'));
-        
+        when(
+          () => mockRemoteDataSource.addMessage(
+            tripId: any(named: 'tripId'),
+            content: any(named: 'content'),
+            replyToId: any(named: 'replyToId'),
+          ),
+        ).thenAnswer((_) async => const Success('msg_1'));
+
         // Mock the sync call that happens inside addMessage
-        when(() => mockRemoteDataSource.getMessages(any(), page: any(named: 'page'), limit: any(named: 'limit')))
-            .thenAnswer((_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)));
+        when(
+          () => mockRemoteDataSource.getMessages(
+            any(),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)));
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
 
         // Act
@@ -86,7 +104,13 @@ void main() {
 
         // Assert
         expect(result, isA<Success>());
-        verify(() => mockRemoteDataSource.addMessage(tripId: 'trip_1', content: 'Hello', replyToId: any(named: 'replyToId'))).called(1);
+        verify(
+          () => mockRemoteDataSource.addMessage(
+            tripId: 'trip_1',
+            content: 'Hello',
+            replyToId: any(named: 'replyToId'),
+          ),
+        ).called(1);
         verify(() => mockLocalDataSource.add(any())).called(greaterThanOrEqualTo(1));
       });
     });

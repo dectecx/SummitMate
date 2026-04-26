@@ -18,12 +18,8 @@ class PollCubit extends Cubit<PollState> {
 
   static const String _source = 'PollCubit';
 
-  PollCubit(
-    this._pollRepository,
-    this._tripRepository,
-    this._connectivity,
-    this._authService,
-  ) : super(const PollInitial());
+  PollCubit(this._pollRepository, this._tripRepository, this._connectivity, this._authService)
+    : super(const PollInitial());
 
   String get _currentUserId {
     return _authService.currentUserId ?? 'guest';
@@ -154,11 +150,7 @@ class PollCubit extends Cubit<PollState> {
     if (tripId == null) return false;
 
     return await _performAction(
-      () => _pollRepository.vote(
-        tripId: tripId,
-        pollId: pollId,
-        optionIds: optionIds,
-      ),
+      () => _pollRepository.vote(tripId: tripId, pollId: pollId, optionIds: optionIds),
       '離線模式無法投票',
     );
   }
@@ -169,11 +161,7 @@ class PollCubit extends Cubit<PollState> {
     if (tripId == null) return false;
 
     return await _performAction(
-      () => _pollRepository.addOption(
-        tripId: tripId,
-        pollId: pollId,
-        optionText: text,
-      ),
+      () => _pollRepository.addOption(tripId: tripId, pollId: pollId, optionText: text),
       '離線模式無法新增選項',
     );
   }
@@ -183,10 +171,7 @@ class PollCubit extends Cubit<PollState> {
     final tripId = await _currentTripId;
     if (tripId == null) return false;
 
-    return await _performAction(
-      () => _pollRepository.delete(tripId, pollId),
-      '離線模式無法刪除投票',
-    );
+    return await _performAction(() => _pollRepository.delete(tripId, pollId), '離線模式無法刪除投票');
   }
 
   /// 關閉投票 (Mock / Not fully implemented in backend yet, using delete or skipping)

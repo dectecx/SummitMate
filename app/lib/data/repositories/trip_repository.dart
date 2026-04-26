@@ -101,11 +101,7 @@ class TripRepository implements ITripRepository {
   // ========== Remote Operations ==========
 
   @override
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
-    int? page,
-    int? limit,
-    String? search,
-  }) async {
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search}) async {
     try {
       final result = await _remoteDataSource.getRemoteTrips(page: page, limit: limit, search: search);
       if (result is Success<PaginatedList<Trip>, Exception>) {

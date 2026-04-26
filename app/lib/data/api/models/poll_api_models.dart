@@ -6,10 +6,8 @@ part 'poll_api_models.g.dart';
 
 @freezed
 abstract class PollPaginationResponse with _$PollPaginationResponse {
-  const factory PollPaginationResponse({
-    required List<PollResponse> items,
-    required PaginationMetadata pagination,
-  }) = _PollPaginationResponse;
+  const factory PollPaginationResponse({required List<PollResponse> items, required PaginationMetadata pagination}) =
+      _PollPaginationResponse;
 
   factory PollPaginationResponse.fromJson(Map<String, dynamic> json) => _$PollPaginationResponseFromJson(json);
 }

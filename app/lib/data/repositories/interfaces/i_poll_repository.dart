@@ -11,11 +11,7 @@ abstract interface class IPollRepository {
   List<Poll> getByTripId(String tripId);
 
   /// 同步: 從雲端拉取分頁資料並更新本地
-  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(
-    String tripId, {
-    int? page,
-    int? limit,
-  });
+  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit});
 
   /// 建立新投票 (雲端)
   Future<Result<String, Exception>> create({

@@ -159,7 +159,6 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     bool approvalRequired = false,
     String privateMessage = '',
   }) async {
-
     return await _executeRemoteAction(
       () => _groupEventRepository.create(
         title: title,

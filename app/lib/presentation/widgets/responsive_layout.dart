@@ -8,12 +8,7 @@ class ResponsiveLayout extends StatelessWidget {
   final Widget? tablet;
   final Widget desktop;
 
-  const ResponsiveLayout({
-    super.key,
-    required this.mobile,
-    this.tablet,
-    required this.desktop,
-  });
+  const ResponsiveLayout({super.key, required this.mobile, this.tablet, required this.desktop});
 
   /// 靜態方法用於在 build 中判斷目前裝置類型
   static bool isMobile(BuildContext context) => MediaQuery.of(context).size.width < AppBreakpoints.mobile;

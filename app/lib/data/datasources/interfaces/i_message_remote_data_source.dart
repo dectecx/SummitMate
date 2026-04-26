@@ -9,22 +9,14 @@ abstract interface class IMessageRemoteDataSource {
   /// [tripId] 行程 ID
   /// [page] 頁碼
   /// [limit] 每頁數量
-  Future<Result<PaginatedList<Message>, Exception>> getMessages(
-    String tripId, {
-    int? page,
-    int? limit,
-  });
+  Future<Result<PaginatedList<Message>, Exception>> getMessages(String tripId, {int? page, int? limit});
 
   /// 新增留言
   ///
   /// [tripId] 行程 ID
   /// [content] 留言內容
   /// [replyToId] 回覆的留言 ID (可選)
-  Future<Result<String, Exception>> addMessage({
-    required String tripId,
-    required String content,
-    String? replyToId,
-  });
+  Future<Result<String, Exception>> addMessage({required String tripId, required String content, String? replyToId});
 
   /// 刪除留言
   ///

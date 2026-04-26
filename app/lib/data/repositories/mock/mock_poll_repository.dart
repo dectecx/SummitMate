@@ -16,11 +16,7 @@ class MockPollRepository implements IPollRepository {
   }
 
   @override
-  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(
-    String tripId, {
-    int? page,
-    int? limit,
-  }) async {
+  Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit}) async {
     return Success(PaginatedList(items: [], page: 1, total: 0, hasMore: false));
   }
 

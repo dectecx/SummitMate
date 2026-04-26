@@ -24,10 +24,6 @@ class MessageApiMapper {
 
   /// Message (domain model) → MessageCreateRequest
   static MessageCreateRequest toCreateRequest(String content, [String? parentId, String? category]) {
-    return MessageCreateRequest(
-      content: content,
-      category: category,
-      parentId: parentId,
-    );
+    return MessageCreateRequest(content: content, category: category, parentId: parentId);
   }
 }

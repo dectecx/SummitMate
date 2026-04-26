@@ -6,11 +6,7 @@ import '../../../core/error/result.dart';
 /// 行程 (Trip) 的遠端資料來源介面
 abstract interface class ITripRemoteDataSource {
   /// 從後端獲取使用者的行程列表 (支援分頁)
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
-    int? page,
-    int? limit,
-    String? search,
-  });
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search});
 
   /// 上傳行程至後端
   Future<Result<String, Exception>> uploadTrip(Trip trip);

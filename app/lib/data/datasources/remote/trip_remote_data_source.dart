@@ -19,23 +19,21 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   TripRemoteDataSource(this._tripApi);
 
   @override
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({
-    int? page,
-    int? limit,
-    String? search,
-  }) async {
+  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search}) async {
     try {
       LogService.info('獲取遠端行程列表 (page: $page, limit: $limit)...', source: _source);
       final response = await _tripApi.listTrips(page: page, limit: limit, search: search);
-      
+
       final trips = response.items.map(TripApiMapper.fromListItemResponse).toList();
-      
-      return Success(PaginatedList<Trip>(
-        items: trips,
-        page: response.pagination.page,
-        total: response.pagination.total,
-        hasMore: response.pagination.hasMore,
-      ));
+
+      return Success(
+        PaginatedList<Trip>(
+          items: trips,
+          page: response.pagination.page,
+          total: response.pagination.total,
+          hasMore: response.pagination.hasMore,
+        ),
+      );
     } catch (e) {
       LogService.error('獲取遠端行程失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
