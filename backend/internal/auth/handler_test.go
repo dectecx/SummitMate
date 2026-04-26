@@ -110,3 +110,50 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		assert.Equal(t, "password_too_short", errResp.Error.Code)
 	})
 }
+
+func TestAuthHandler_RefreshToken(t *testing.T) {
+	mockService := new(MockAuthService)
+	handler := NewAuthHandler(mockService)
+
+	t.Run("Success", func(t *testing.T) {
+		reqBody := api.RefreshTokenRequest{
+			RefreshToken: "old-refresh-token",
+		}
+		jsonBody, _ := json.Marshal(reqBody)
+
+		user := &User{ID: "00000000-0000-0000-0000-000000000001", Email: "test@example.com"}
+		newAccessToken := "new-access-token"
+		newRefreshToken := "new-refresh-token"
+
+		mockService.On("RefreshToken", mock.Anything, "old-refresh-token").Return(user, newAccessToken, newRefreshToken, nil).Once()
+
+		req := httptest.NewRequest("POST", "/auth/refresh", bytes.NewBuffer(jsonBody))
+		w := httptest.NewRecorder()
+
+		handler.RefreshToken(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var resp api.AuthResponse
+		json.NewDecoder(w.Body).Decode(&resp)
+		assert.Equal(t, newAccessToken, resp.Token)
+		assert.Equal(t, newRefreshToken, resp.RefreshToken)
+		mockService.AssertExpectations(t)
+	})
+
+	t.Run("InvalidToken", func(t *testing.T) {
+		reqBody := api.RefreshTokenRequest{
+			RefreshToken: "invalid-token",
+		}
+		jsonBody, _ := json.Marshal(reqBody)
+
+		mockService.On("RefreshToken", mock.Anything, "invalid-token").Return((*User)(nil), "", "", apperror.ErrUnauthorized).Once()
+
+		req := httptest.NewRequest("POST", "/auth/refresh", bytes.NewBuffer(jsonBody))
+		w := httptest.NewRecorder()
+
+		handler.RefreshToken(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+}

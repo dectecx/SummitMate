@@ -222,3 +222,55 @@ func (s *APITestSuite) TestGetMe_NoToken() {
 	s.Equal(http.StatusUnauthorized, resp.StatusCode, "無 Token 應回傳 401")
 	s.T().Log("✅ 無 Token 呼叫 /auth/me 已被擋")
 }
+
+// ============================================================
+// Refresh Token (/auth/refresh)
+// ============================================================
+
+func (s *APITestSuite) TestRefreshToken_Success() {
+	email := randomEmail()
+	password := "RefreshTest123!"
+
+	// 1. 註冊取得初始 Tokens
+	regPayload, _ := json.Marshal(api.RegisterRequest{
+		Email: openapi_types.Email(email), Password: password, DisplayName: "Refresh 測試者",
+	})
+	regResp, err := http.Post(s.baseURL+"/auth/register", "application/json", bytes.NewReader(regPayload))
+	s.Require().NoError(err)
+	var authResp api.AuthResponse
+	json.NewDecoder(regResp.Body).Decode(&authResp)
+	regResp.Body.Close()
+
+	s.NotEmpty(authResp.RefreshToken, "註冊後應取得 Refresh Token")
+	oldToken := authResp.Token
+
+	// 稍等一下確保時間戳不同 (如果 Token 有包含過期時間)
+	time.Sleep(1 * time.Second)
+
+	// 2. 使用 Refresh Token 換發新 Token
+	refreshPayload, _ := json.Marshal(api.RefreshTokenRequest{
+		RefreshToken: authResp.RefreshToken,
+	})
+	refreshResp, err := http.Post(s.baseURL+"/auth/refresh", "application/json", bytes.NewReader(refreshPayload))
+	s.Require().NoError(err)
+	defer refreshResp.Body.Close()
+
+	s.Require().Equal(http.StatusOK, refreshResp.StatusCode, "Refresh 應回傳 200")
+
+	var newAuthResp api.AuthResponse
+	json.NewDecoder(refreshResp.Body).Decode(&newAuthResp)
+
+	s.NotEmpty(newAuthResp.Token, "應取得新的 Access Token")
+	s.NotEmpty(newAuthResp.RefreshToken, "應取得新的 Refresh Token")
+	s.NotEqual(oldToken, newAuthResp.Token, "新舊 Access Token 應不同")
+
+	// 3. 驗證新 Token 可用性
+	req, _ := http.NewRequest("GET", s.baseURL+"/auth/me", nil)
+	req.Header.Set("Authorization", "Bearer "+newAuthResp.Token)
+	resp, err := http.DefaultClient.Do(req)
+	s.Require().NoError(err)
+	defer resp.Body.Close()
+
+	s.Equal(http.StatusOK, resp.StatusCode, "新 Token 呼叫 /auth/me 應成功")
+	s.T().Log("✅ Refresh Token 流程驗證成功")
+}
