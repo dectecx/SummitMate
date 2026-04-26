@@ -13,8 +13,9 @@ var ErrInvalidToken = errors.New("invalid token")
 
 // Claims 定義 JWT Token 的自訂 Payload。
 type Claims struct {
-	UserID string `json:"user_id"` // 使用者 UUID
-	Email  string `json:"email"`   // 使用者 Email
+	UserID    string `json:"user_id"` // 使用者 UUID
+	Email     string `json:"email"`   // 使用者 Email
+	TokenType string `json:"token_type,omitempty"` // "access" or "refresh"
 	jwt.RegisteredClaims
 }
 
@@ -30,10 +31,11 @@ func NewTokenManager(secret string) *TokenManager {
 
 // GenerateToken 為指定使用者產生一個新的 JWT Token。
 // duration 為 Token 的有效時間 (例如 24*time.Hour)。
-func (manager *TokenManager) GenerateToken(userID, email string, duration time.Duration) (string, error) {
+func (manager *TokenManager) GenerateToken(userID, email, tokenType string, duration time.Duration) (string, error) {
 	claims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:    userID,
+		Email:     email,
+		TokenType: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

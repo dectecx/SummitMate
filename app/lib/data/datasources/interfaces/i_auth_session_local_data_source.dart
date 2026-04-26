@@ -13,6 +13,16 @@ abstract interface class IAuthSessionLocalDataSource {
   /// 回傳: Token 字串，若不存在則回傳 null
   Future<String?> getToken();
 
+  /// 儲存 Refresh Token
+  ///
+  /// [token] 更新權杖
+  Future<void> saveRefreshToken(String token);
+
+  /// 取得 Refresh Token
+  ///
+  /// 回傳: Refresh Token 字串，若不存在則回傳 null
+  Future<String?> getRefreshToken();
+
   /// 儲存 User ID
   ///
   /// [userId] 使用者唯一識別碼

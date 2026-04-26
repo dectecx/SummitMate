@@ -108,9 +108,10 @@ class AuthService implements IAuthService {
             avatar: userData['avatar'] ?? avatar ?? '',
           );
           final accessToken = data['token'] as String?;
+          final refreshToken = data['refresh_token'] as String?;
 
           if (accessToken != null) {
-            await _sessionRepo.saveSession(accessToken, user);
+            await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
             _notifyAuthState(user);
             return AuthResult.success(user: user, accessToken: accessToken);
           }
@@ -158,8 +159,9 @@ class AuthService implements IAuthService {
           avatar: userData['avatar'] ?? '',
         );
         final accessToken = data['token'] as String;
+        final refreshToken = data['refresh_token'] as String?;
 
-        await _sessionRepo.saveSession(accessToken, user);
+        await _sessionRepo.saveSession(accessToken, user, refreshToken: refreshToken);
         _notifyAuthState(user);
 
         LogService.info('登入成功: ${user.email}', source: _source);
@@ -309,17 +311,18 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> refreshToken() async {
-    final currentToken = await getAccessToken();
-    if (currentToken == null) {
-      return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '無 Token');
+    final currentRefreshToken = await getRefreshToken();
+    if (currentRefreshToken == null) {
+      return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '無 Refresh Token');
     }
 
     try {
-      final response = await _apiClient.post('/auth/refresh', data: {'token': currentToken});
+      final response = await _apiClient.post('/auth/refresh', data: {'refresh_token': currentRefreshToken});
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
         final newAccessToken = data['token'] as String?;
+        final newRefreshToken = data['refresh_token'] as String?;
         final userData = data['user'] as Map<String, dynamic>?;
 
         if (newAccessToken != null && userData != null) {
@@ -329,7 +332,7 @@ class AuthService implements IAuthService {
             displayName: userData['display_name'] ?? '',
             avatar: userData['avatar'] ?? '',
           );
-          await _sessionRepo.saveSession(newAccessToken, user);
+          await _sessionRepo.saveSession(newAccessToken, user, refreshToken: newRefreshToken);
           _notifyAuthState(user);
           return AuthResult.success(user: user, accessToken: newAccessToken);
         }

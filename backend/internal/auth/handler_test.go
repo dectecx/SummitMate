@@ -29,7 +29,7 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 		user := &User{ID: "00000000-0000-0000-0000-000000000001", Email: "test@example.com", DisplayName: "Tester"}
 		token := "jwt-token"
 
-		mockService.On("Login", mock.Anything, "test@example.com", "password123").Return(user, token, nil).Once()
+		mockService.On("Login", mock.Anything, "test@example.com", "password123").Return(user, token, "refresh-token", nil).Once()
 
 		req := httptest.NewRequest("POST", "/auth/login", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
@@ -52,7 +52,7 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		mockService.On("Login", mock.Anything, "test@example.com", "wrong").Return(nil, "", apperror.ErrInvalidCredentials).Once()
+		mockService.On("Login", mock.Anything, "test@example.com", "wrong").Return((*User)(nil), "", "", apperror.ErrInvalidCredentials).Once()
 
 		req := httptest.NewRequest("POST", "/auth/login", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
@@ -78,7 +78,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		user := &User{ID: "00000000-0000-0000-0000-000000000002", Email: "new@example.com", DisplayName: "New User"}
 		token := "jwt-token"
 
-		mockService.On("Register", mock.Anything, "new@example.com", "password123", "New User", (*string)(nil)).Return(user, token, nil).Once()
+		mockService.On("Register", mock.Anything, "new@example.com", "password123", "New User", (*string)(nil)).Return(user, token, "refresh-token", nil).Once()
 
 		req := httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
@@ -96,7 +96,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return(nil, "", apperror.ErrPasswordTooShort).Once()
+		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return((*User)(nil), "", "", apperror.ErrPasswordTooShort).Once()
 
 		req := httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()

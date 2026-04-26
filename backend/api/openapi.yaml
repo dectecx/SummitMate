@@ -2388,11 +2388,15 @@ components:
       type: object
       required:
         - token
+        - refresh_token
         - user
       properties:
         token:
           type: string
           description: JWT Access Token
+        refresh_token:
+          type: string
+          description: JWT Refresh Token
         user:
           $ref: "#/components/schemas/User"
 
@@ -3371,11 +3375,11 @@ components:
     RefreshTokenRequest:
       type: object
       required:
-        - token
+        - refresh_token
       properties:
-        token:
+        refresh_token:
           type: string
-          description: 現有的 JWT Token
+          description: JWT Refresh Token
 
     VerifyEmailRequest:
       type: object

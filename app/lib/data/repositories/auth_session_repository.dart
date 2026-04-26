@@ -26,7 +26,9 @@ class AuthSessionRepository implements IAuthSessionRepository {
       await _localDataSource.saveEmail(user.email);
       await _localDataSource.saveUsername(user.displayName);
       await _localDataSource.saveAvatar(user.avatar);
-      // Note: refreshToken is stored via token if needed, or use a separate method
+      if (refreshToken != null) {
+        await _localDataSource.saveRefreshToken(refreshToken);
+      }
       LogService.debug('Session saved for user: ${user.email}', source: _source);
     } catch (e) {
       LogService.error('Failed to save session: $e', source: _source);
@@ -59,9 +61,12 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<String?> getRefreshToken() async {
-    // RefreshToken is not stored separately in this implementation
-    // If needed, add a separate key to IAuthSessionLocalDataSource
-    return null;
+    try {
+      return await _localDataSource.getRefreshToken();
+    } catch (e) {
+      LogService.error('Failed to read refresh token: $e', source: _source);
+      return null;
+    }
   }
 
   // ========== User Profile Operations ==========
