@@ -228,6 +228,15 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     );
   }
 
+  /// 刪除揪團
+  Future<bool> deleteEvent({required String eventId}) async {
+    return await _executeRemoteAction(
+      () => _groupEventRepository.remove(eventId: eventId, userId: _currentUserId),
+      '離線模式無法刪除揪團',
+      '請登入以刪除揪團',
+    );
+  }
+
   /// 更新行程快照
   Future<bool> updateSnapshot(String eventId) async {
     return await _executeRemoteAction(
