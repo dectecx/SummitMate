@@ -11,7 +11,8 @@ abstract class GearLibraryPaginationResponse with _$GearLibraryPaginationRespons
     required PaginationMetadata pagination,
   }) = _GearLibraryPaginationResponse;
 
-  factory GearLibraryPaginationResponse.fromJson(Map<String, dynamic> json) => _$GearLibraryPaginationResponseFromJson(json);
+  factory GearLibraryPaginationResponse.fromJson(Map<String, dynamic> json) =>
+      _$GearLibraryPaginationResponseFromJson(json);
 }
 
 // ── Response ──

@@ -16,6 +16,7 @@ import 'info/signal_info_card.dart';
 import 'info/beginner_peaks_card.dart';
 import 'info/trail_overview_card.dart';
 import 'info/adventure_encyclopedia_card.dart';
+import 'responsive_layout.dart';
 
 /// Tab 4: 資訊整合頁 (步道概況 + 工具 + 外部連結)
 ///
@@ -72,71 +73,95 @@ class InfoTabState extends State<InfoTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 頂部視覺圖 (嘉明湖)
-        _buildHeroImage(context),
-
-        // 內容列表
-        Expanded(
-          child: ListView(
+    return ResponsiveLayout(
+      mobile: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _buildHeroImage(context),
+          Padding(
             padding: const EdgeInsets.all(16),
-            children: [
-              // 目前位置天氣警報
-              const WeatherAlertCard(),
-              const SizedBox(height: 16),
-
-              // 台灣山岳百科入口
-              const AdventureEncyclopediaCard(),
-              const SizedBox(height: 8),
-
-              // 新手百岳推薦入口
-              const BeginnerPeaksCard(),
-              const SizedBox(height: 8),
-
-              // 步道概況
-              TrailOverviewCard(
-                expandedElevationKey: widget.expandedElevationKey,
-                expandedTimeMapKey: widget.expandedTimeMapKey,
-              ),
-              const SizedBox(height: 8),
-
-              // 天氣預報
-              Card(
-                child: ExpansionTile(
-                  leading: Icon(Icons.cloud, color: Theme.of(context).colorScheme.primary),
-                  title: const Text('天氣預報', style: TextStyle(fontWeight: FontWeight.bold)),
-                  initiallyExpanded: true,
-                  children: [
-                    WeatherForecastContent(
-                      weather: _weather,
-                      isLoading: _loadingWeather,
-                      selectedLocation: _selectedLocation,
-                      onRefresh: () => _refreshWeather(force: true),
-                      onLocationChanged: (location) {
-                        setState(() {
-                          _selectedLocation = location;
-                          _weather = null;
-                        });
-                        _refreshWeather();
-                      },
-                    ),
-                  ],
+            child: Column(children: _buildContentList(context)),
+          ),
+        ],
+      ),
+      desktop: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeroImage(context),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1400),
+                  child: Wrap(
+                    spacing: 24,
+                    runSpacing: 24,
+                    children: _buildContentList(context).map((w) {
+                      return SizedBox(width: 440, child: w);
+                    }).toList(),
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-
-              // 外部連結
-              const ExternalLinksCard(),
-              const SizedBox(height: 8),
-
-              // 電話訊號資訊
-              const SignalInfoCard(),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
+  }
+
+  List<Widget> _buildContentList(BuildContext context) {
+    return [
+      // 目前位置天氣警報
+      const WeatherAlertCard(),
+      const SizedBox(height: 8),
+
+      // 台灣山岳百科入口
+      const AdventureEncyclopediaCard(),
+      const SizedBox(height: 8),
+
+      // 新手百岳推薦入口
+      const BeginnerPeaksCard(),
+      const SizedBox(height: 8),
+
+      // 步道概況
+      TrailOverviewCard(
+        expandedElevationKey: widget.expandedElevationKey,
+        expandedTimeMapKey: widget.expandedTimeMapKey,
+      ),
+      const SizedBox(height: 8),
+
+      // 天氣預報
+      Card(
+        child: ExpansionTile(
+          leading: Icon(Icons.cloud, color: Theme.of(context).colorScheme.primary),
+          title: const Text('天氣預報', style: TextStyle(fontWeight: FontWeight.bold)),
+          initiallyExpanded: true,
+          children: [
+            WeatherForecastContent(
+              weather: _weather,
+              isLoading: _loadingWeather,
+              selectedLocation: _selectedLocation,
+              onRefresh: () => _refreshWeather(force: true),
+              onLocationChanged: (location) {
+                setState(() {
+                  _selectedLocation = location;
+                  _weather = null;
+                });
+                _refreshWeather();
+              },
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 8),
+
+      // 外部連結
+      const ExternalLinksCard(),
+      const SizedBox(height: 8),
+
+      // 電話訊號資訊
+      const SignalInfoCard(),
+    ].where((w) => w is! SizedBox).toList();
   }
 
   /// 頂部視覺圖

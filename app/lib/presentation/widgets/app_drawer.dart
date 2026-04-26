@@ -7,9 +7,6 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Drawer(
-      backgroundColor: Colors.transparent,
-      child: AppDrawerContent(isSidebar: false),
-    );
+    return const Drawer(backgroundColor: Colors.transparent, child: AppDrawerContent(isSidebar: false));
   }
 }

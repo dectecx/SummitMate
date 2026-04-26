@@ -12,21 +12,13 @@ abstract interface class IMessageRepository {
   List<Message> getByTripId(String tripId);
 
   /// 從雲端取得分頁留言
-  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(
-    String tripId, {
-    int? page,
-    int? limit,
-  });
+  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(String tripId, {int? page, int? limit});
 
   /// 儲存留言到本地
   Future<Result<void, Exception>> saveLocally(Message message);
 
   /// 新增留言
-  Future<Result<String, Exception>> addMessage({
-    required String tripId,
-    required String content,
-    String? replyToId,
-  });
+  Future<Result<String, Exception>> addMessage({required String tripId, required String content, String? replyToId});
 
   /// 刪除留言
   Future<Result<void, Exception>> deleteById(String tripId, String messageId);

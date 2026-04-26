@@ -14,8 +14,5 @@ abstract interface class IFavoritesRepository {
   Future<Result<void, Exception>> toggleFavorite(String id, FavoriteType type, bool isFavorite);
 
   /// 回傳最愛項目列表 (包含 ID 與 Type)
-  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({
-    int? page,
-    int? limit,
-  });
+  Future<Result<PaginatedList<Favorite>, Exception>> getFavorites({int? page, int? limit});
 }

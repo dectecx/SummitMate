@@ -25,18 +25,16 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   }) async {
     try {
       LogService.info('獲取裝備庫列表 (page: $page, limit: $limit, search: $search)...', source: _source);
-      final response = await _apiService.listItems(
-        page: page,
-        limit: limit,
-        search: search,
-      );
+      final response = await _apiService.listItems(page: page, limit: limit, search: search);
       final items = response.items.map(GearLibraryApiMapper.fromResponse).toList();
-      return Success(PaginatedList<GearLibraryItem>(
-        items: items,
-        page: response.pagination.page,
-        total: response.pagination.total,
-        hasMore: response.pagination.hasMore,
-      ));
+      return Success(
+        PaginatedList<GearLibraryItem>(
+          items: items,
+          page: response.pagination.page,
+          total: response.pagination.total,
+          hasMore: response.pagination.hasMore,
+        ),
+      );
     } catch (e) {
       LogService.error('獲取裝備庫失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));

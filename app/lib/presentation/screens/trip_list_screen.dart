@@ -19,6 +19,7 @@ import '../widgets/trip/trip_card.dart';
 import '../widgets/trip/create_trip_dialog.dart';
 import '../widgets/trip/cloud_sync_bar.dart';
 import '../utils/tutorial_keys.dart';
+import '../widgets/responsive_layout.dart';
 
 /// 行程列表畫面
 /// 管理多個登山計畫
@@ -107,85 +108,45 @@ class TripListScreen extends StatelessWidget {
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.hiking, size: 80, color: theme.disabledColor),
-                            const SizedBox(height: 16),
-                            Text(
-                              '尚無行程',
-                              style: TextStyle(fontSize: 18, color: theme.disabledColor, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('開始規劃你的下一次冒險吧！', style: TextStyle(color: theme.disabledColor)),
-                            const SizedBox(height: 24),
-                            FilledButton.icon(
-                              onPressed: () => _showCreateTripDialog(context),
-                              icon: const Icon(Icons.add),
-                              label: const Text('新增行程'),
-                            ),
-                          ],
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.hiking, size: 80, color: theme.disabledColor),
+                              const SizedBox(height: 16),
+                              Text(
+                                '尚無行程',
+                                style: TextStyle(fontSize: 18, color: theme.disabledColor, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '開始規劃你的下一次冒險吧！',
+                                style: TextStyle(color: theme.disabledColor),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              FilledButton.icon(
+                                onPressed: () => _showCreateTripDialog(context),
+                                icon: const Icon(Icons.add),
+                                label: const Text('新增行程'),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     )
                   else ...[
                     // Ongoing / Future
                     if (ongoingTrips.isNotEmpty) ...[
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                        sliver: SliverToBoxAdapter(
-                          child: Row(
-                            children: [
-                              Icon(Icons.directions_walk, size: 20, color: colorScheme.primary),
-                              const SizedBox(width: 8),
-                              Text(
-                                '進行中 / 未來行程',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate((context, index) {
-                            final trip = ongoingTrips[index];
-                            return _buildTripItem(context, trip, currentUser, activeTripId, permissionService);
-                          }, childCount: ongoingTrips.length),
-                        ),
-                      ),
+                      _buildHeaderSliver(context, Icons.directions_walk, '進行中 / 未來行程', colorScheme.primary),
+                      _buildItemsSliver(context, ongoingTrips, currentUser, activeTripId, permissionService),
                     ],
 
                     // Archived
                     if (archivedTrips.isNotEmpty) ...[
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                        sliver: SliverToBoxAdapter(
-                          child: Row(
-                            children: [
-                              Icon(Icons.history, size: 20, color: theme.disabledColor),
-                              const SizedBox(width: 8),
-                              Text(
-                                '已封存 / 結束行程',
-                                style: TextStyle(fontSize: 14, color: theme.disabledColor, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate((context, index) {
-                            final trip = archivedTrips[index];
-                            return _buildTripItem(context, trip, currentUser, activeTripId, permissionService);
-                          }, childCount: archivedTrips.length),
-                        ),
-                      ),
+                      _buildHeaderSliver(context, Icons.history, '已封存 / 結束行程', theme.disabledColor, topPadding: 32),
+                      _buildItemsSliver(context, archivedTrips, currentUser, activeTripId, permissionService),
                     ],
                   ],
 
@@ -196,6 +157,60 @@ class TripListScreen extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildHeaderSliver(BuildContext context, IconData icon, String title, Color color, {double topPadding = 0}) {
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(16, topPadding, 16, 8),
+      sliver: SliverToBoxAdapter(
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: color, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemsSliver(
+    BuildContext context,
+    List<Trip> trips,
+    UserProfile? currentUser,
+    String? activeTripId,
+    PermissionService permissionService,
+  ) {
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+
+    if (isDesktop) {
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisExtent: 180,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            return _buildTripItem(context, trips[index], currentUser, activeTripId, permissionService);
+          }, childCount: trips.length),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          return _buildTripItem(context, trips[index], currentUser, activeTripId, permissionService);
+        }, childCount: trips.length),
       ),
     );
   }

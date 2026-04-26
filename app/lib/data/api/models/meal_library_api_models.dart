@@ -11,7 +11,8 @@ abstract class MealLibraryPaginationResponse with _$MealLibraryPaginationRespons
     required PaginationMetadata pagination,
   }) = _MealLibraryPaginationResponse;
 
-  factory MealLibraryPaginationResponse.fromJson(Map<String, dynamic> json) => _$MealLibraryPaginationResponseFromJson(json);
+  factory MealLibraryPaginationResponse.fromJson(Map<String, dynamic> json) =>
+      _$MealLibraryPaginationResponseFromJson(json);
 }
 
 @freezed

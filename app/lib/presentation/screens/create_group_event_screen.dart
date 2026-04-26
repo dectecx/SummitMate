@@ -134,15 +134,9 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                   // 活動分類
                   DropdownButtonFormField<GroupEventCategory>(
                     value: _selectedCategory,
-                    decoration: const InputDecoration(
-                      labelText: '活動分類 *',
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(labelText: '活動分類 *', border: OutlineInputBorder()),
                     items: GroupEventCategory.values.map((cat) {
-                      return DropdownMenuItem(
-                        value: cat,
-                        child: Text(cat.displayName),
-                      );
+                      return DropdownMenuItem(value: cat, child: Text(cat.displayName));
                     }).toList(),
                     onChanged: (value) {
                       if (value != null) {

@@ -45,20 +45,16 @@ void main() {
             'created_by': 'user-1',
             'updated_at': '2024-01-01T00:00:00Z',
             'updated_by': 'user-1',
-          }
+          },
         ],
-        'pagination': {
-          'next_cursor': null,
-          'has_more': false,
-          'page': 1,
-          'limit': 20,
-          'total': 1,
-        },
+        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
       });
-      when(() => mockApi.listFavorites(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => paginationResponse);
+      when(
+        () => mockApi.listFavorites(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => paginationResponse);
 
       final result = await dataSource.getFavorites();
 
@@ -70,10 +66,12 @@ void main() {
     });
 
     test('returns failure on exception', () async {
-      when(() => mockApi.listFavorites(
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenThrow(Exception('Error'));
+      when(
+        () => mockApi.listFavorites(
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenThrow(Exception('Error'));
 
       final result = await dataSource.getFavorites();
 

@@ -12,7 +12,6 @@ import 'package:summitmate/presentation/cubits/message/message_state.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/core/models/paginated_list.dart';
 
-
 class MockMessageRepository extends Mock implements IMessageRepository {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
@@ -102,10 +101,7 @@ void main() {
       },
       build: () => cubit,
       act: (cubit) => cubit.loadMessages(),
-      expect: () => [
-        const MessageLoading(),
-        isA<MessageLoaded>().having((s) => s.allMessages.length, 'length', 2),
-      ],
+      expect: () => [const MessageLoading(), isA<MessageLoaded>().having((s) => s.allMessages.length, 'length', 2)],
     );
   });
 
@@ -114,24 +110,22 @@ void main() {
       'calls repo.addMessage and reloads',
       setUp: () {
         when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1]);
-        when(() => mockRepo.addMessage(
-              tripId: any(named: 'tripId'),
-              content: any(named: 'content'),
-              replyToId: any(named: 'replyToId'),
-            )).thenAnswer((_) async => const Success('m_new'));
-        when(() => mockRepo.getRemoteMessages(any())).thenAnswer(
-          (_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)),
-        );
+        when(
+          () => mockRepo.addMessage(
+            tripId: any(named: 'tripId'),
+            content: any(named: 'content'),
+            replyToId: any(named: 'replyToId'),
+          ),
+        ).thenAnswer((_) async => const Success('m_new'));
+        when(
+          () => mockRepo.getRemoteMessages(any()),
+        ).thenAnswer((_) async => Success(PaginatedList<Message>(items: [], page: 1, total: 0, hasMore: false)));
       },
       build: () => cubit,
       seed: () => MessageLoaded(allMessages: [testMessage1]),
       act: (cubit) => cubit.addMessage(user: 'User', avatar: 'A', content: 'New Msg'),
       verify: (_) {
-        verify(() => mockRepo.addMessage(
-              tripId: 't1',
-              content: 'New Msg',
-              replyToId: null,
-            )).called(1);
+        verify(() => mockRepo.addMessage(tripId: 't1', content: 'New Msg', replyToId: null)).called(1);
         verify(() => mockRepo.getByTripId('t1')).called(greaterThanOrEqualTo(1));
       },
     );
@@ -160,9 +154,9 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'emits error on sync failure (manual)',
       setUp: () {
-        when(() => mockRepo.getRemoteMessages(any())).thenAnswer(
-          (_) async => Failure(GeneralException('Network error')),
-        );
+        when(
+          () => mockRepo.getRemoteMessages(any()),
+        ).thenAnswer((_) async => Failure(GeneralException('Network error')));
         when(() => mockRepo.getByTripId(any())).thenReturn([]);
       },
       build: () => cubit,

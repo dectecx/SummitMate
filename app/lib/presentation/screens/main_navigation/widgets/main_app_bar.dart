@@ -69,12 +69,12 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Text(
               ResponsiveLayout.isDesktop(context)
                   ? (currentIndex == 0
-                      ? '行程內容'
-                      : currentIndex == 1
-                          ? '裝備清單'
-                          : currentIndex == 2
-                              ? '協作交流'
-                              : '相關資訊')
+                        ? '行程內容'
+                        : currentIndex == 1
+                        ? '裝備清單'
+                        : currentIndex == 2
+                        ? '協作交流'
+                        : '相關資訊')
                   : (activeTrip?.name ?? 'SummitMate 山友'),
               overflow: TextOverflow.ellipsis,
             ),

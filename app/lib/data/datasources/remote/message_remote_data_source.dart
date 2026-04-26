@@ -22,12 +22,14 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
       LogService.info('獲取行程留言列表: $tripId (page: $page, limit: $limit)...', source: _source);
       final response = await _messageApi.listTripMessages(tripId, page: page, limit: limit);
       final messages = response.items.map(MessageApiMapper.fromResponse).toList();
-      return Success(PaginatedList<Message>(
-        items: messages,
-        page: response.pagination.page,
-        total: response.pagination.total,
-        hasMore: response.pagination.hasMore,
-      ));
+      return Success(
+        PaginatedList<Message>(
+          items: messages,
+          page: response.pagination.page,
+          total: response.pagination.total,
+          hasMore: response.pagination.hasMore,
+        ),
+      );
     } catch (e) {
       LogService.error('獲取留言失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));

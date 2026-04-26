@@ -61,76 +61,80 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
       content: SizedBox(
         width: 500,
         child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 組合名稱
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: '組合名稱', hintText: '例如：輕裝三日行程', border: OutlineInputBorder()),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 20),
-
-            // 可見性選擇
-            const Text('可見性', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _RadioGroup(
-              value: _visibility,
-              onChanged: (v) => setState(() => _visibility = v),
-              child: Column(
-                children: [
-                  _VisibilityOption(icon: '🌐', title: '公開', subtitle: '任何人可下載', value: GearSetVisibility.public),
-                  _VisibilityOption(
-                    icon: '🔒',
-                    title: '保護',
-                    subtitle: '需輸入 Key 下載',
-                    value: GearSetVisibility.protected,
-                  ),
-                  _VisibilityOption(icon: '👤', title: '私有', subtitle: '僅限自己使用', value: GearSetVisibility.private),
-                ],
-              ),
-            ),
-
-            // Key 輸入
-            if (_needsKey) ...[
-              const SizedBox(height: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 組合名稱
               TextField(
-                controller: _keyController,
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, letterSpacing: 8),
+                controller: _titleController,
                 decoration: const InputDecoration(
-                  labelText: '4 位數 Key',
-                  hintText: '____',
-                  counterText: '',
+                  labelText: '組合名稱',
+                  hintText: '例如：輕裝三日行程',
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (_) => setState(() {}),
               ),
-            ],
+              const SizedBox(height: 20),
 
-            const SizedBox(height: 16),
-            const Divider(),
-
-            // 預覽資訊
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.backpack, size: 16, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  Text('即將上傳 ${widget.items.length} 項裝備', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                ],
+              // 可見性選擇
+              const Text('可見性', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              _RadioGroup(
+                value: _visibility,
+                onChanged: (v) => setState(() => _visibility = v),
+                child: Column(
+                  children: [
+                    _VisibilityOption(icon: '🌐', title: '公開', subtitle: '任何人可下載', value: GearSetVisibility.public),
+                    _VisibilityOption(
+                      icon: '🔒',
+                      title: '保護',
+                      subtitle: '需輸入 Key 下載',
+                      value: GearSetVisibility.protected,
+                    ),
+                    _VisibilityOption(icon: '👤', title: '私有', subtitle: '僅限自己使用', value: GearSetVisibility.private),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // Key 輸入
+              if (_needsKey) ...[
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _keyController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 24, letterSpacing: 8),
+                  decoration: const InputDecoration(
+                    labelText: '4 位數 Key',
+                    hintText: '____',
+                    counterText: '',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ],
+
+              const SizedBox(height: 16),
+              const Divider(),
+
+              // 預覽資訊
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.backpack, size: 16, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text('即將上傳 ${widget.items.length} 項裝備', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
       actions: [
         TextButton(onPressed: _isUploading ? null : () => Navigator.pop(context), child: const Text('取消')),
         FilledButton(

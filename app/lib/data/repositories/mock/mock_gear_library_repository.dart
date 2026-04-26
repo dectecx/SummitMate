@@ -88,6 +88,7 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
     }
     return map;
   }
+
   @override
   Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
     int? page,

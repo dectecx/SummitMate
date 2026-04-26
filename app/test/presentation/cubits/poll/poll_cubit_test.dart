@@ -114,12 +114,14 @@ void main() {
     blocTest<PollCubit, PollState>(
       'calls repo to create poll',
       setUp: () {
-        when(() => mockRepo.create(
-              tripId: any(named: 'tripId'),
-              title: any(named: 'title'),
-              options: any(named: 'options'),
-              allowMultiple: any(named: 'allowMultiple'),
-            )).thenAnswer((_) async => const Success('p1'));
+        when(
+          () => mockRepo.create(
+            tripId: any(named: 'tripId'),
+            title: any(named: 'title'),
+            options: any(named: 'options'),
+            allowMultiple: any(named: 'allowMultiple'),
+          ),
+        ).thenAnswer((_) async => const Success('p1'));
 
         final paginated = PaginatedList<Poll>(items: [testPoll], page: 1, total: 1, hasMore: false);
         when(() => mockRepo.syncPolls('trip1')).thenAnswer((_) async => Success(paginated));
@@ -128,16 +130,15 @@ void main() {
       seed: () => const PollLoaded(polls: [], currentUserId: 'u1'),
       act: (cubit) => cubit.createPoll(title: 'New Poll'),
       verify: (_) {
-        verify(() => mockRepo.create(
-              tripId: 'trip1',
-              title: 'New Poll',
-              options: const [],
-              allowMultiple: false,
-            )).called(1);
+        verify(
+          () => mockRepo.create(tripId: 'trip1', title: 'New Poll', options: const [], allowMultiple: false),
+        ).called(1);
       },
       expect: () => [
         isA<PollLoaded>().having((s) => s.isSyncing, 'syncing start', true),
-        isA<PollLoaded>().having((s) => s.isSyncing, 'syncing end', false).having((s) => s.polls, 'polls populated', [testPoll]),
+        isA<PollLoaded>().having((s) => s.isSyncing, 'syncing end', false).having((s) => s.polls, 'polls populated', [
+          testPoll,
+        ]),
       ],
     );
   });
