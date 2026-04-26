@@ -26,12 +26,7 @@ class TripSnapshot {
   @JsonKey(defaultValue: [])
   final List<ItineraryItem> itinerary;
 
-  TripSnapshot({
-    required this.name,
-    required this.startDate,
-    this.endDate,
-    this.itinerary = const [],
-  });
+  TripSnapshot({required this.name, required this.startDate, this.endDate, this.itinerary = const []});
 
   factory TripSnapshot.fromJson(Map<String, dynamic> json) => _$TripSnapshotFromJson(json);
   Map<String, dynamic> toJson() => _$TripSnapshotToJson(this);

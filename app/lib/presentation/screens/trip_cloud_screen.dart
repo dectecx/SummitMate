@@ -306,11 +306,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
 
   Widget _buildCloudTripsSection({required bool isDesktop}) {
     final cardList = _cloudTrips.map(
-      (trip) => _TripCard(
-        trip: trip,
-        onDownload: () => _downloadTrip(trip),
-        onDelete: () => _deleteCloudTrip(trip),
-      ),
+      (trip) => _TripCard(trip: trip, onDownload: () => _downloadTrip(trip), onDelete: () => _deleteCloudTrip(trip)),
     );
 
     return Column(

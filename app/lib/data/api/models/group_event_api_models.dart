@@ -181,9 +181,8 @@ abstract class GroupEventCommentRequest with _$GroupEventCommentRequest {
 /// 連結行程請求
 @freezed
 abstract class GroupEventTripLinkRequest with _$GroupEventTripLinkRequest {
-  const factory GroupEventTripLinkRequest({
-    @JsonKey(name: 'linked_trip_id') String? linkedTripId,
-  }) = _GroupEventTripLinkRequest;
+  const factory GroupEventTripLinkRequest({@JsonKey(name: 'linked_trip_id') String? linkedTripId}) =
+      _GroupEventTripLinkRequest;
 
   factory GroupEventTripLinkRequest.fromJson(Map<String, dynamic> json) => _$GroupEventTripLinkRequestFromJson(json);
 }

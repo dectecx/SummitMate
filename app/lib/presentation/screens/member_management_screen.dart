@@ -348,38 +348,42 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _members.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.group_off, size: 64, color: Colors.grey),
-                          const SizedBox(height: 16),
-                          Text('無成員', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                          const SizedBox(height: 8),
-                          TextButton.icon(onPressed: _loadMembers, icon: const Icon(Icons.refresh), label: const Text('重新載入')),
-                        ],
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.group_off, size: 64, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      Text('無成員', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: _loadMembers,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('重新載入'),
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      itemCount: _members.length,
-                      itemBuilder: (context, index) {
-                        final member = _members[index];
-                        final isSelf = member['id'] == _currentUserId;
-                        final isRowOwner = member['id'] == widget.trip.userId;
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  itemCount: _members.length,
+                  itemBuilder: (context, index) {
+                    final member = _members[index];
+                    final isSelf = member['id'] == _currentUserId;
+                    final isRowOwner = member['id'] == widget.trip.userId;
 
-                        // Can edit this row?
-                        final canEditRow = canManage && !isSelf && !isRowOwner;
+                    // Can edit this row?
+                    final canEditRow = canManage && !isSelf && !isRowOwner;
 
-                        return MemberListTile(
-                          member: member,
-                          isSelf: isSelf,
-                          isOwner: isRowOwner,
-                          canEdit: canEditRow,
-                          onSettingsTap: () => _showRoleDialog(member),
-                        );
-                      },
-                    ),
+                    return MemberListTile(
+                      member: member,
+                      isSelf: isSelf,
+                      isOwner: isRowOwner,
+                      canEdit: canEditRow,
+                      onSettingsTap: () => _showRoleDialog(member),
+                    );
+                  },
+                ),
         ),
       ),
     );
