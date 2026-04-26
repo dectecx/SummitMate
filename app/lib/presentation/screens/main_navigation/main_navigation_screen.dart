@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../../../core/di/injection.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../../../data/models/itinerary_item.dart';
+import '../../../data/models/trip.dart';
 import '../../../data/repositories/interfaces/i_auth_session_repository.dart';
 
 import '../../cubits/message/message_cubit.dart';
@@ -22,7 +24,6 @@ import '../../cubits/itinerary/itinerary_state.dart';
 import '../../cubits/settings/settings_cubit.dart';
 import '../../cubits/settings/settings_state.dart';
 
-import '../../../data/models/trip.dart';
 import '../map/map_screen.dart';
 
 import '../../widgets/app_drawer.dart';
@@ -32,6 +33,7 @@ import '../../widgets/info_tab.dart';
 import '../../widgets/itinerary_edit_dialog.dart';
 import '../../widgets/settings_dialog.dart';
 import '../../widgets/ads/banner_ad_widget.dart';
+import '../../widgets/responsive_layout.dart';
 
 import '../collaboration_tab.dart';
 
@@ -64,8 +66,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       if (!mounted) return;
       final settingsCubit = context.read<SettingsCubit>();
 
-      // 初次啟動顯示歡迎畫面 (選擇是否進入教學)
-      // Check state safely
+      // 初次啟動顯示歡迎畫面
       final state = settingsCubit.state;
       bool hasSeenOnboarding = false;
       String currentUsername = '';
@@ -86,13 +87,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
       // 啟動使用狀態追蹤 (Web only)
       _usageTrackingService = getIt<UsageTrackingService>();
-      // Async fetch user profile
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
         if (context.mounted && profile != null) {
           _usageTrackingService!.start(currentUsername, userId: profile.id);
 
-          // Sync SettingsCubit if valid profile found on launch
-          // This ensures AppDrawer shows correct info if local settings verify from cloud session
           bool needUpdate = false;
           if (profile.displayName.isNotEmpty && currentUsername != profile.displayName) {
             needUpdate = true;
@@ -102,14 +100,11 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
           }
 
           if (needUpdate) {
-            // If local settings differ from cloud session, update local
-            // Assuming session is truth (or at least we want to sync them)
             settingsCubit.updateProfile(profile.displayName, profile.avatar);
           }
         }
       });
 
-      // Reload Trips on mount (ensures correct data after re-login)
       if (context.mounted) {
         context.read<TripCubit>().loadTrips();
       }
@@ -135,16 +130,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 監聽 SyncCubit 狀態以更新 UI 與重載資料
     return MultiBlocListener(
       listeners: [
         BlocListener<SyncCubit, SyncState>(
           listener: (context, state) {
             if (state is SyncSuccess) {
-              // 同步成功，重載資料
               context.read<ItineraryCubit>().loadItinerary();
               context.read<MessageCubit>().loadMessages();
-              // context.read<PollCubit>().fetchPolls(); // Optional: trigger poll sync if needed
               context.read<SettingsCubit>().updateLastSyncTime(state.timestamp);
               ToastService.success(state.message);
             } else if (state is SyncFailure) {
@@ -155,7 +147,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         BlocListener<TripCubit, TripState>(
           listener: (context, state) {
             if (state is TripLoaded) {
-              // 當行程切換或載入完成，重載 Itinerary
               context.read<ItineraryCubit>().loadItinerary();
             }
           },
@@ -169,28 +160,21 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 builder: (context, pollState) {
                   return BlocBuilder<TripCubit, TripState>(
                     builder: (context, tripState) {
-                      // final tripProvider = context.watch<TripProvider>(); // Removed
-
                       final bool isTripLoading = tripState is TripLoading;
                       final bool hasTrips = tripState is TripLoaded && tripState.trips.isNotEmpty;
                       final Trip? activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
 
                       final bool isMessageSyncing = messageState is MessageLoaded && messageState.isSyncing;
                       final bool isPollSyncing = pollState is PollLoaded && pollState.isSyncing;
-
                       final isLoading = isMessageSyncing || isPollSyncing || isTripLoading;
 
-                      // Use SettingsCubit for offline mode
                       final settingsState = context.watch<SettingsCubit>().state;
                       final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-
-                      // Extract Itinerary State
                       final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
 
-                      // 如果沒有行程，顯示空狀態 (Import / Create)
                       if (!hasTrips && !isTripLoading) {
                         return Scaffold(
-                          key: _scaffoldKey, // Use key to control drawer
+                          key: _scaffoldKey,
                           appBar: AppBar(
                             leading: IconButton(
                               icon: const Icon(Icons.menu),
@@ -211,7 +195,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                               ),
                             ],
                           ),
-                          drawer: const AppDrawer(), // 允許在空狀態使用側邊欄
+                          drawer: const AppDrawer(),
                           body: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -242,7 +226,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                         );
                       }
 
-                      final scaffold = Scaffold(
+                      return Scaffold(
                         key: _scaffoldKey,
                         appBar: MainAppBar(
                           activeTrip: activeTrip,
@@ -253,33 +237,49 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                           onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
                           onUpload: () => CloudUploadHelper.handleCloudUpload(context),
-                          onMap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
+                          onMap: () => _handleMapNavigation(context),
                           onSettings: () => _showSettingsDialog(context),
                         ),
-                        drawer: const AppDrawer(), // 使用獨立的 AppDrawer Widget
-                        body: Column(
-                          children: [
-                            Expanded(
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 250),
-                                transitionBuilder: (child, animation) {
-                                  return FadeTransition(opacity: animation, child: child);
-                                },
-                                child: _buildTabContent(_currentIndex),
+                        drawer: const AppDrawer(),
+                        body: ResponsiveLayout(
+                          mobile: Column(
+                            children: [
+                              Expanded(
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  transitionBuilder: (child, animation) {
+                                    return FadeTransition(opacity: animation, child: child);
+                                  },
+                                  child: _buildTabContent(_currentIndex),
+                                ),
                               ),
-                            ),
-                            const BannerAdWidget(location: 'navigation_bottom'),
-                          ],
+                              const BannerAdWidget(location: 'navigation_bottom'),
+                            ],
+                          ),
+                          desktop: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Expanded(child: _buildTabContent(_currentIndex)),
+                                    const BannerAdWidget(location: 'navigation_bottom'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        bottomNavigationBar: MainBottomNavigationBar(
-                          currentIndex: _currentIndex,
-                          onDestinationSelected: (index) {
-                            setState(() => _currentIndex = index);
-                            // 切換分頁時關閉編輯模式
-                            if (isEditMode) {
-                              context.read<ItineraryCubit>().toggleEditMode();
-                            }
-                          },
+                        bottomNavigationBar: ResponsiveLayout(
+                          mobile: MainBottomNavigationBar(
+                            currentIndex: _currentIndex,
+                            onDestinationSelected: (index) {
+                              setState(() => _currentIndex = index);
+                              if (isEditMode) {
+                                context.read<ItineraryCubit>().toggleEditMode();
+                              }
+                            },
+                          ),
+                          desktop: const SizedBox.shrink(),
                         ),
                         floatingActionButton: (_currentIndex == 0 && isEditMode)
                             ? FloatingActionButton(
@@ -288,24 +288,17 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                               )
                             : null,
                       );
-
-                      // [Web Support] Responsive Wrapper
-                      // 在寬螢幕上限制最大寬度，置中顯示，維持手機版面比例
-                      return Center(
-                        child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: scaffold),
-                      );
                     },
                   );
                 },
               );
             },
-          ); // Message
+          );
         },
-      ), // Itinerary
+      ),
     );
   }
 
-  /// 建立對應頁籤內容 (帶 key 以支援 AnimatedSwitcher)
   Widget _buildTabContent(int index) {
     switch (index) {
       case 0:
@@ -324,8 +317,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  /// 顯示新增行程項目對話框
-  /// 預設使用目前選擇的天數 (Selected Day)
   void _showAddItineraryDialog(BuildContext context) async {
     final itineraryCubit = context.read<ItineraryCubit>();
     String selectedDay = 'D1';
@@ -367,6 +358,46 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       topic: topic,
       onTabSwitch: (index) => setState(() => _currentIndex = index),
       scaffoldKey: _scaffoldKey,
+    );
+  }
+
+  void _handleMapNavigation(BuildContext context) {
+    if (kIsWeb) {
+      _showWebMapOptions(context);
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+    }
+  }
+
+  void _showWebMapOptions(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.map_outlined, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('網頁版地圖提示'),
+          ],
+        ),
+        content: const Text(
+          '目前網頁版尚未支援內建地圖與 GPX 檢視功能。\n\n'
+          '建議您下載 Android / iOS App 獲得完整地圖體驗，\n'
+          '或是在 Google Maps 中查看位置。',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('知道了')),
+          FilledButton.icon(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              const url = 'https://www.google.com/maps/search/?api=1&query=23.29,121.03';
+              await url_launcher.launchUrl(Uri.parse(url));
+            },
+            icon: const Icon(Icons.open_in_new),
+            label: const Text('在 Google Maps 開啟'),
+          ),
+        ],
+      ),
     );
   }
 }

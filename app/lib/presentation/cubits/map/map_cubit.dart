@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';
@@ -102,11 +102,34 @@ class MapCubit extends Cubit<MapState> {
         emit((state as MapLoaded).copyWith(isLoading: true));
       }
 
-      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['gpx']);
+      // Web 必須使用 withData: true
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['gpx'],
+        withData: true,
+      );
 
-      if (result != null && result.files.single.path != null) {
-        final file = File(result.files.single.path!);
-        final xmlString = await file.readAsString();
+      if (result != null && (result.files.single.bytes != null || result.files.single.path != null)) {
+        final Uint8List? bytes = result.files.single.bytes;
+        String xmlString = '';
+
+        if (bytes != null) {
+          xmlString = utf8.decode(bytes);
+        } else if (!kIsWeb && result.files.single.path != null) {
+          // 備案: 若 Mobile 未取得 bytes (雖然 withData: true 應該要有)，則從路徑讀取
+          // 但為了完全避免 dart:io，我們應該優先信任 bytes。
+          // 這裡我們假設 withData: true 運作正常。
+          // 如果真的需要讀取路徑，必須封裝到 PlatformService。
+          LogService.warning(
+            'GPX bytes are null, but path is available. withData: true might be failing.',
+            source: 'MapCubit',
+          );
+          // xmlString = await File(result.files.single.path!).readAsString(); // <-- Still problematic if we want to remove dart:io import
+        }
+
+        if (xmlString.isEmpty) {
+          throw Exception('無法讀取檔案內容 (Empty content)');
+        }
 
         // 解析 GPX
         final gpx = GpxReader().fromString(xmlString);
@@ -130,7 +153,6 @@ class MapCubit extends Cubit<MapState> {
       if (state is MapLoaded) {
         emit((state as MapLoaded).copyWith(isLoading: false));
       }
-      // Consider emitting MapError temporarily or handling via listener
     }
   }
 
