@@ -124,7 +124,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
                 children: [
                   if (dayNames.isNotEmpty)
                     SizedBox(
-                      width: 200,
+                      width: 280,
                       child: ItineraryDaySideSelector(dayNames: dayNames, selectedDay: selectedDay),
                     ),
                   const VerticalDivider(width: 1),
