@@ -130,10 +130,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
             actions: [
               if (isCreator) ...[
-                _buildGlassIconButton(
-                  icon: Icons.delete_outline,
-                  onTap: () => _confirmDelete(context),
-                ),
+                _buildGlassIconButton(icon: Icons.delete_outline, onTap: () => _confirmDelete(context)),
                 const SizedBox(width: 8),
               ],
               Padding(
@@ -213,11 +210,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                       const SizedBox(height: 32),
                                       DescriptionSection(description: _event.description),
                                       const SizedBox(height: 32),
-                                      TripSection(
-                                        event: _event,
-                                        isCreator: isCreator,
-                                        isSyncing: isSyncing,
-                                      ),
+                                      TripSection(event: _event, isCreator: isCreator, isSyncing: isSyncing),
                                       const SizedBox(height: 32),
                                       CommentsSection(event: _event),
                                       const SizedBox(height: 100),
@@ -285,11 +278,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                               const SizedBox(height: 24),
                               DescriptionSection(description: _event.description),
                               const SizedBox(height: 24),
-                              TripSection(
-                                event: _event,
-                                isCreator: isCreator,
-                                isSyncing: isSyncing,
-                              ),
+                              TripSection(event: _event, isCreator: isCreator, isSyncing: isSyncing),
                               const SizedBox(height: 24),
                               CommentsSection(event: _event),
                               const SizedBox(height: 100),

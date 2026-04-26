@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../data/models/group_event.dart';
 import '../../../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../../../cubits/trip/trip_cubit.dart';
+import '../../../screens/trip_snapshot_detail_screen.dart';
 
 class TripSection extends StatelessWidget {
   final GroupEvent event;
@@ -116,9 +118,19 @@ class TripSection extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () {
-                      // TODO: Navigate to read-only Trip detail or linked master trip if creator
-                      ToastService.info('完整行程檢視功能開發中');
+                    onPressed: () async {
+                      if (isCreator && event.linkedTripId != null) {
+                        await context.read<TripCubit>().setActiveTrip(event.linkedTripId!);
+                        if (context.mounted) {
+                          ToastService.success('已切換至該行程');
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                        }
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => TripSnapshotDetailScreen(snapshot: snapshot)),
+                        );
+                      }
                     },
                     child: const Text('查看完整行程'),
                   ),

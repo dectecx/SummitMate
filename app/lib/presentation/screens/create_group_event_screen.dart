@@ -290,10 +290,7 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                           if (state is TripLoaded) {
                             if (state.trips.isEmpty) {
                               return const Card(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: Text('目前沒有可連結的行程，請先至行程頁面建立。'),
-                                ),
+                                child: Padding(padding: EdgeInsets.all(16), child: Text('目前沒有可連結的行程，請先至行程頁面建立。')),
                               );
                             }
                             return DropdownButtonFormField<String>(
