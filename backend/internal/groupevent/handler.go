@@ -11,6 +11,7 @@ import (
 	appMiddleware "summitmate/internal/middleware"
 
 	"github.com/google/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type GroupEventHandler struct {
@@ -139,7 +140,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 	apiutil.SendJSON(w, http.StatusCreated, ToGroupEventResponse(event))
 }
 
-func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	event, err := h.service.GetEvent(r.Context(), id.String())
 	if err != nil {
 		apiutil.SendError(w, r, err)
@@ -153,7 +154,7 @@ func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Requ
 	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event))
 }
 
-func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -217,7 +218,7 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event))
 }
 
-func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -232,7 +233,7 @@ func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -259,7 +260,7 @@ func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *htt
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -280,7 +281,7 @@ func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, 
 	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
-func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId uuid.UUID) {
+func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWriter, r *http.Request, appId openapi_types.UUID) {
 	executorID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -305,7 +306,7 @@ func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWri
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	comments, err := h.service.ListComments(r.Context(), id.String())
 	if err != nil {
 		apiutil.SendError(w, r, err)
@@ -320,7 +321,7 @@ func (h *GroupEventHandler) GetGroupEventsIdComments(w http.ResponseWriter, r *h
 	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
-func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -347,7 +348,7 @@ func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *
 	apiutil.SendJSON(w, http.StatusCreated, ToGroupEventCommentResponse(comment))
 }
 
-func (h *GroupEventHandler) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId uuid.UUID) {
+func (h *GroupEventHandler) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -362,7 +363,7 @@ func (h *GroupEventHandler) DeleteGroupEventsCommentsCommentId(w http.ResponseWr
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *GroupEventHandler) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+func (h *GroupEventHandler) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
@@ -376,4 +377,48 @@ func (h *GroupEventHandler) PostGroupEventsIdLike(w http.ResponseWriter, r *http
 	}
 
 	apiutil.SendJSON(w, http.StatusOK, map[string]bool{"is_liked": isLiked})
+}
+
+func (h *GroupEventHandler) PatchGroupEventsIdTripLink(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req struct {
+		LinkedTripId *uuid.UUID `json:"linked_trip_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		apiutil.SendError(w, r, apperror.ErrBadRequest)
+		return
+	}
+
+	var tripID *string
+	if req.LinkedTripId != nil {
+		s := req.LinkedTripId.String()
+		tripID = &s
+	}
+
+	if err := h.service.UpdateTripLink(r.Context(), id.String(), tripID, userID); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *GroupEventHandler) PostGroupEventsIdTripSnapshot(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.service.UpdateTripSnapshot(r.Context(), id.String(), userID); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

@@ -2,9 +2,12 @@ package trip
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"summitmate/internal/database"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // TripMemberRepository 定義行程成員資料存取介面。
@@ -13,6 +16,7 @@ type TripMemberRepository interface {
 	RemoveMember(ctx context.Context, tripID string, userID string) error
 	ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error)
 	IsMember(ctx context.Context, tripID string, userID string) (bool, error)
+	GetRole(ctx context.Context, tripID string, userID string) (string, error)
 }
 
 type tripMemberRepository struct {
@@ -97,4 +101,18 @@ func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID strin
 		return nil, fmt.Errorf("iterate trip member rows: %w", err)
 	}
 	return members, nil
+}
+
+func (repo *tripMemberRepository) GetRole(ctx context.Context, tripID string, userID string) (string, error) {
+	query := `SELECT role_code FROM trip_members WHERE trip_id = $1 AND user_id = $2`
+	db := database.GetQuerier(ctx, repo.db)
+	var role string
+	err := db.QueryRow(ctx, query, tripID, userID).Scan(&role)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", fmt.Errorf("get member role for user %s in trip %s: %w", userID, tripID, err)
+	}
+	return role, nil
 }

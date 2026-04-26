@@ -219,7 +219,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	tripGearService := trip.NewTripGearService(logger, tripGearRepo, tripRepo, tripMemberRepo)
 	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
 	favoriteService := favorite.NewFavoriteService(logger, favoriteRepo)
-	groupService := groupevent.NewGroupEventService(logger, groupRepo)
+	groupService := groupevent.NewGroupEventService(logger, pool, groupRepo, tripService)
 	weatherService := weather.NewWeatherService(logger, weatherRepo, cfg.CWAApiKey, nil)
 	logService := log.NewLogService(logger, logRepo)
 	heartbeatService := heartbeat.NewHeartbeatService(logger, heartbeatRepo)

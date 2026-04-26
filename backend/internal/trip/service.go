@@ -19,7 +19,8 @@ type TripService interface {
 	UpdateTrip(ctx context.Context, tripID, userID string, req *TripUpdateRequest) (*Trip, error)
 	DeleteTrip(ctx context.Context, tripID, userID string) error
 	ListMembers(ctx context.Context, tripID, userID string) ([]*TripMember, error)
-	AddMember(ctx context.Context, tripID, userID, targetEmail string) (*TripMember, error)
+	InviteMemberByEmail(ctx context.Context, tripID, userID, email string) (*TripMember, error)
+	AddMember(ctx context.Context, tripID, userID, targetUserID string) (*TripMember, error)
 	RemoveMember(ctx context.Context, tripID, actionUserID, targetUserID string) error
 	ListItinerary(ctx context.Context, tripID, userID string) ([]*ItineraryItem, error)
 	AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*ItineraryItem, error)
@@ -205,12 +206,13 @@ func (s *tripService) ListMembers(ctx context.Context, tripID, userID string) ([
 	return s.memberRepo.ListByTripID(ctx, tripID)
 }
 
-func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetEmail string) (*TripMember, error) {
+func (s *tripService) InviteMemberByEmail(ctx context.Context, tripID, userID, targetEmail string) (*TripMember, error) {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
+	// 只有團長可邀請
+	if trip.UserID != userID {
 		return nil, apperror.ErrAccessDenied
 	}
 
@@ -233,6 +235,38 @@ func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetEmail
 	}
 	for _, m := range members {
 		if m.UserID == targetUser.ID {
+			return m, nil
+		}
+	}
+	return nil, apperror.InternalError("新增成員後查詢失敗")
+}
+
+func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetUserID string) (*TripMember, error) {
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	// 只有團長可加人
+	if trip.UserID != userID {
+		return nil, apperror.ErrAccessDenied
+	}
+
+	// 防呆：先檢查是否已是成員
+	isMember, err := s.memberRepo.IsMember(ctx, tripID, targetUserID)
+	if err == nil && isMember {
+		s.logger.DebugContext(ctx, "使用者已在行程中", "trip_id", tripID, "user_id", targetUserID)
+	} else {
+		if err := s.memberRepo.AddMember(ctx, tripID, targetUserID); err != nil {
+			return nil, err
+		}
+	}
+
+	members, err := s.memberRepo.ListByTripID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range members {
+		if m.UserID == targetUserID {
 			return m, nil
 		}
 	}
@@ -330,8 +364,11 @@ func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 	if err != nil {
 		return err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return apperror.ErrAccessDenied
+	if trip.UserID != userID {
+		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
+		if err != nil || (role != "leader" && role != "guide") {
+			return apperror.ErrAccessDenied
+		}
 	}
 
 	existingItem, err := s.itineraryRepo.GetByID(ctx, itemID)

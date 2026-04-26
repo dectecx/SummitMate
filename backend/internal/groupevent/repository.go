@@ -25,6 +25,8 @@ type GroupEventRepository interface {
 	DeleteComment(ctx context.Context, commentID string, userID string) error
 
 	ToggleLike(ctx context.Context, eventID, userID string) (bool, error)
+	UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error
+	UpdateTripSnapshot(ctx context.Context, eventID string, snapshot *TripSnapshot, userID string) error
 }
 
 type groupEventRepository struct {
@@ -61,6 +63,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 	query := `
 		SELECT id, title, description, category, location, start_date, end_date,
             status, max_members, approval_required, private_message, linked_trip_id,
+            trip_snapshot, snapshot_updated_at,
             like_count, comment_count, created_at, created_by, updated_at, updated_by
 		FROM group_events
 		WHERE id = $1
@@ -70,6 +73,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 	err := db.QueryRow(ctx, query, id).Scan(
 		&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
+		&event.TripSnapshot, &event.SnapshotUpdatedAt,
 		&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 	)
 	if err != nil {
@@ -120,6 +124,7 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 	mainQuery := fmt.Sprintf(`
 		SELECT id, title, description, category, location, start_date, end_date,
 			status, max_members, approval_required, private_message, linked_trip_id,
+			trip_snapshot, snapshot_updated_at,
 			like_count, comment_count, created_at, created_by, updated_at, updated_by
 		FROM group_events
 		%s
@@ -139,6 +144,7 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 		err := rows.Scan(
 			&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
+			&event.TripSnapshot, &event.SnapshotUpdatedAt,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
 		)
 		if err != nil {
@@ -385,4 +391,32 @@ func (r *groupEventRepository) ToggleLike(ctx context.Context, eventID, userID s
 	}
 
 	return isLiked, nil
+}
+
+func (r *groupEventRepository) UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error {
+	query := `
+		UPDATE group_events
+		SET linked_trip_id = $1, updated_at = NOW(), updated_by = $2
+		WHERE id = $3
+	`
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, query, tripID, userID, eventID)
+	if err != nil {
+		return fmt.Errorf("update group event trip link %s: %w", eventID, err)
+	}
+	return nil
+}
+
+func (r *groupEventRepository) UpdateTripSnapshot(ctx context.Context, eventID string, snapshot *TripSnapshot, userID string) error {
+	query := `
+		UPDATE group_events
+		SET trip_snapshot = $1, snapshot_updated_at = NOW(), updated_at = NOW(), updated_by = $2
+		WHERE id = $3
+	`
+	db := database.GetQuerier(ctx, r.db)
+	_, err := db.Exec(ctx, query, snapshot, userID, eventID)
+	if err != nil {
+		return fmt.Errorf("update group event trip snapshot %s: %w", eventID, err)
+	}
+	return nil
 }

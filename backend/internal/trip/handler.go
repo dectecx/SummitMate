@@ -179,7 +179,7 @@ func (h *TripHandler) AddTripMember(w http.ResponseWriter, r *http.Request, trip
 		return
 	}
 
-	member, err := h.svc.AddMember(r.Context(), tripID.String(), userID, req.Email)
+	member, err := h.svc.InviteMemberByEmail(r.Context(), tripID.String(), userID, req.Email)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return

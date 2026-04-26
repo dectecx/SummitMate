@@ -53,3 +53,11 @@ func (s *Server) PostGroupEventsIdLike(w http.ResponseWriter, r *http.Request, i
 func (s *Server) DeleteGroupEventsCommentsCommentId(w http.ResponseWriter, r *http.Request, commentId openapi_types.UUID) {
 	s.GroupHandler.DeleteGroupEventsCommentsCommentId(w, r, commentId)
 }
+
+func (s *Server) PatchGroupEventsIdTripLink(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	s.GroupHandler.PatchGroupEventsIdTripLink(w, r, id)
+}
+
+func (s *Server) PostGroupEventsIdTripSnapshot(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	s.GroupHandler.PostGroupEventsIdTripSnapshot(w, r, id)
+}

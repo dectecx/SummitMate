@@ -81,3 +81,13 @@ func (m *MockGroupEventRepository) ToggleLike(ctx context.Context, eventID, user
 	args := m.Called(ctx, eventID, userID)
 	return args.Bool(0), args.Error(1)
 }
+
+func (m *MockGroupEventRepository) UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error {
+	args := m.Called(ctx, eventID, tripID, userID)
+	return args.Error(0)
+}
+
+func (m *MockGroupEventRepository) UpdateTripSnapshot(ctx context.Context, eventID string, snapshot *TripSnapshot, userID string) error {
+	args := m.Called(ctx, eventID, snapshot, userID)
+	return args.Error(0)
+}

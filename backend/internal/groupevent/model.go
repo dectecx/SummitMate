@@ -16,6 +16,12 @@ const (
 	CategoryOther      Category = "Other"
 )
 
+const (
+	ApplicationStatusPending  = "pending"
+	ApplicationStatusApproved = "approved"
+	ApplicationStatusRejected = "rejected"
+)
+
 type TripSnapshot struct {
 	Name      string     `json:"name"`
 	StartDate time.Time  `json:"start_date"`
