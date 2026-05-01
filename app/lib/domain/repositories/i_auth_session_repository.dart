@@ -1,4 +1,4 @@
-import '../../../data/models/user_profile.dart';
+import '../domain.dart';
 
 /// 身份驗證 Session 管理的 Repository 介面
 ///

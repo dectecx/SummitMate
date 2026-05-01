@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/core/core.dart';
 
-import '../../data/models/gear_library_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../cubits/gear_library/gear_library_cubit.dart';
@@ -323,11 +323,13 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
       builder: (dialogContext) => _GearLibraryItemDialog(
         item: item,
         onSave: (name, weight, category, notes) async {
-          item.name = name;
-          item.weight = weight;
-          item.category = category;
-          item.notes = notes;
-          await context.read<GearLibraryCubit>().updateItem(item);
+          final updatedItem = item.copyWith(
+            name: name,
+            weight: weight,
+            category: category,
+            notes: notes,
+          );
+          await context.read<GearLibraryCubit>().updateItem(updatedItem);
           if (dialogContext.mounted) Navigator.pop(dialogContext);
         },
       ),

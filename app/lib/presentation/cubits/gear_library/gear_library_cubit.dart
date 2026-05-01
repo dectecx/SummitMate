@@ -2,8 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/enums/sync_status.dart';
-import '../../domain/entities/gear_library_item.dart';
-import '../../domain/entities/gear_item.dart';
+import '../../../data/models/gear_library_item_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -108,6 +107,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   /// [item] 更新後的項目
   Future<void> updateItem(GearLibraryItem item) async {
     try {
+      final userId = _authService.currentUserId ?? 'guest';
       final updatedItem = item.copyWith(updatedBy: userId, updatedAt: DateTime.now());
       await _repository.update(updatedItem);
       // 同步更新已連結的裝備項目 (邏輯遷移自 Provider)
@@ -182,7 +182,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       if (userId == null) return Failure(Exception('未登入'));
 
       final items = _repository.getAll(userId);
-      final result = await _remoteDataSource.replaceAll(items);
+      final models = items.map((e) => GearLibraryItemModel.fromDomain(e)).toList();
+      final result = await _remoteDataSource.replaceAll(models);
       if (result is Failure) return Failure(result.exception);
 
       LogService.info('Gear Library 上傳成功, 項目數: ${items.length}', source: 'GearLibraryCubit');
@@ -204,7 +205,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
         Success(value: final p) => p.items,
         Failure(exception: final e) => throw e,
       };
-      await _repository.importAll(cloudItems);
+      final entities = cloudItems.map((m) => m.toDomain()).toList();
+      await _repository.importAll(entities);
 
       reload();
       LogService.info('Gear Library 下載成功, 項目數: ${cloudItems.length}', source: 'GearLibraryCubit');

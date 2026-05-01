@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
-import '../../models/favorite.dart';
+import '../../../domain/entities/favorite.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../api/models/favorites_api_models.dart';
 import '../../api/mappers/favorites_api_mapper.dart';

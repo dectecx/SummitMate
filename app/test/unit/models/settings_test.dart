@@ -1,35 +1,30 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('Settings Model Tests', () {
     test('should create with default values', () {
-      final settings = Settings();
+      const settings = Settings();
 
       expect(settings.username, isEmpty);
       expect(settings.lastSyncTime, isNull);
     });
 
-    test('should create with withDefaults factory', () {
-      final settings = Settings.withDefaults();
+    test('should update username via copyWith', () {
+      const settings = Settings();
+      final updated = settings.copyWith(username: 'TestUser');
 
+      expect(updated.username, equals('TestUser'));
       expect(settings.username, isEmpty);
-      expect(settings.lastSyncTime, isNull);
     });
 
-    test('should update username', () {
-      final settings = Settings();
-      settings.username = 'TestUser';
-
-      expect(settings.username, equals('TestUser'));
-    });
-
-    test('should update lastSyncTime', () {
-      final settings = Settings();
+    test('should update lastSyncTime via copyWith', () {
+      const settings = Settings();
       final now = DateTime.now();
-      settings.lastSyncTime = now;
+      final updated = settings.copyWith(lastSyncTime: now);
 
-      expect(settings.lastSyncTime, equals(now));
+      expect(updated.lastSyncTime, equals(now));
+      expect(settings.lastSyncTime, isNull);
     });
   });
 }

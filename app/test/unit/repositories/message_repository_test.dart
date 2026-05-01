@@ -4,7 +4,7 @@ import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_message_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_message_remote_data_source.dart';
-import 'package:summitmate/data/models/message.dart';
+import 'package:summitmate/data/models/message_model.dart';
 import 'package:summitmate/data/repositories/message_repository.dart';
 
 // Mocks
@@ -17,10 +17,10 @@ void main() {
   late MockMessageLocalDataSource mockLocalDataSource;
   late MockMessageRemoteDataSource mockRemoteDataSource;
 
-  late Message testMessage;
+  late MessageModel testMessageModel;
 
   setUpAll(() {
-    testMessage = Message(
+    testMessageModel = MessageModel(
       id: 'msg_1',
       tripId: 'trip_1',
       userId: 'user_1',
@@ -35,7 +35,8 @@ void main() {
       avatar: '🐻',
     );
 
-    registerFallbackValue(testMessage);
+    registerFallbackValue(testMessageModel);
+    registerFallbackValue(testMessageModel.toDomain());
   });
 
   setUp(() {
@@ -46,15 +47,15 @@ void main() {
 
   group('MessageRepository', () {
     test('getByTripId delegates to localDataSource getAll and filters', () {
-      when(() => mockLocalDataSource.getAll()).thenReturn([testMessage]);
+      when(() => mockLocalDataSource.getAll()).thenReturn([testMessageModel]);
       final result = repository.getByTripId('trip_1');
-      expect(result, [testMessage]);
+      expect(result, [testMessageModel.toDomain()]);
       verify(() => mockLocalDataSource.getAll()).called(1);
     });
 
     group('getRemoteMessages', () {
       test('fetches from remote and saves to local', () async {
-        final paginated = PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false);
+        final paginated = PaginatedList(items: [testMessageModel.toDomain()], page: 1, total: 1, hasMore: false);
         when(
           () => mockRemoteDataSource.getMessages(
             any(),
@@ -96,7 +97,7 @@ void main() {
             page: any(named: 'page'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer((_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)));
+        ).thenAnswer((_) async => Success(PaginatedList(items: [testMessageModel.toDomain()], page: 1, total: 1, hasMore: false)));
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
 
         // Act

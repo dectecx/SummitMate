@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../domain/interfaces/i_poll_service.dart';
-import '../../data/models/poll.dart';
+import '../../domain/entities/poll.dart';
 import '../../core/error/result.dart';
 
 @LazySingleton(as: IPollService)

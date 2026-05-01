@@ -1,8 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/trip.dart';
-import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/domain/interfaces/i_sync_service.dart';
 
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';

@@ -1,8 +1,7 @@
 import '../../core/models/paginated_list.dart';
 import '../../data/models/enums/favorite_type.dart';
 import '../../core/error/result.dart';
-// TODO: Phase 2 完成後將 Favorite 改為 domain/entities/favorite.dart
-import '../../data/models/favorite.dart';
+import '../entities/favorite.dart';
 
 /// 最愛 (Favorites) 的 Repository 介面
 ///

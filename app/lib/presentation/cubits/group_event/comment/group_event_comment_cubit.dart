@@ -1,7 +1,6 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
-import '../../../../data/models/group_event_comment.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'group_event_comment_state.dart';
 

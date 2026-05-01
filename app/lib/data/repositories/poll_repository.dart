@@ -21,29 +21,18 @@ class PollRepository implements IPollRepository {
 
   @override
   List<Poll> getByTripId(String tripId) {
-    return _localDataSource
-        .getAllPolls()
-        .where((p) => p.tripId == tripId)
-        .map((p) => p.toDomain())
-        .toList();
+    return _localDataSource.getAllPolls().where((p) => p.tripId == tripId).map((p) => p.toDomain()).toList();
   }
 
   @override
   Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit}) async {
     try {
       final result = await _remoteDataSource.getPolls(tripId, page: page, limit: limit);
-      if (result is Success<PaginatedList<PollModel>, Exception>) {
-        await _localDataSource.savePolls(result.value.items);
-        
-        final domainItems = result.value.items.map((p) => p.toDomain()).toList();
-        return Success(
-          PaginatedList<Poll>(
-            items: domainItems,
-            page: result.value.page,
-            total: result.value.total,
-            hasMore: result.value.hasMore,
-          ),
-        );
+      if (result is Success<PaginatedList<Poll>, Exception>) {
+        final models = result.value.items.map((p) => PollModel.fromDomain(p)).toList();
+        await _localDataSource.savePolls(models);
+
+        return Success(result.value);
       }
       return Failure((result as Failure).exception);
     } catch (e) {

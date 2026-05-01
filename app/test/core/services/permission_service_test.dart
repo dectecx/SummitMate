@@ -2,8 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/services/permission_service.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
-import 'package:summitmate/data/models/user_profile.dart';
-import 'package:summitmate/data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/constants/role_constants.dart';
 
 class MockAuthService extends Mock implements IAuthService {}

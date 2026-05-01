@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/trip_api_models.dart';
 import 'package:summitmate/data/api/services/trip_api_service.dart';
 import 'package:summitmate/data/datasources/remote/trip_remote_data_source.dart';
-import 'package:summitmate/data/models/trip.dart';
+import 'package:summitmate/domain/entities/trip.dart';
 import 'package:summitmate/core/error/result.dart';
 
 class MockTripApiService extends Mock implements TripApiService {}

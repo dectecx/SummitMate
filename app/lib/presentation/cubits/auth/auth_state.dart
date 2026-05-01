@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 
 /// 認證狀態基類

@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/di/injection.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
-import 'package:summitmate/data/repositories/interfaces/i_auth_session_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/interceptors/auth_interceptor.dart';
 
 class MockAuthSessionRepository extends Mock implements IAuthSessionRepository {}

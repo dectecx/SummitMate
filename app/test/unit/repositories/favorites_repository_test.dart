@@ -5,7 +5,8 @@ import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_remote_data_source.dart';
 import 'package:summitmate/data/models/enums/favorite_type.dart';
-import 'package:summitmate/data/models/favorite.dart';
+import 'package:summitmate/data/models/favorite_model.dart';
+import 'package:summitmate/domain/entities/favorite.dart';
 import 'package:summitmate/data/repositories/favorites_repository.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
@@ -24,7 +25,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(FavoriteType.mountain);
     registerFallbackValue(
-      Favorite(
+      FavoriteModel(
         id: 'dummy',
         targetId: 'dummy',
         type: FavoriteType.mountain,
@@ -57,12 +58,13 @@ void main() {
       updatedAt: DateTime.now(),
       updatedBy: 'user1',
     );
+    final tFavoriteModel = FavoriteModel.fromDomain(tFavorite);
     final tException = Exception('Test Error');
 
     group('getFavorites', () {
       test('should return local favorites immediately and trigger remote sync', () async {
         // Arrange
-        when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
+        when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavoriteModel]);
         when(
           () => mockRemoteDataSource.getFavorites(
             page: any(named: 'page'),

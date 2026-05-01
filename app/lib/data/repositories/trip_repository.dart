@@ -7,8 +7,7 @@ import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
 import '../models/trip_model.dart';
 import '../../domain/entities/trip.dart';
-import '../models/user_profile.dart';
-import '../../domain/repositories/i_trip_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 行程 Repository (支援 Offline-First)
 ///

@@ -1,8 +1,6 @@
-﻿import '../../core/models/paginated_list.dart';
+import '../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
-import '../../data/models/user_profile.dart';
-// TODO: Phase 2 完成後將 Trip 改為 domain/entities/trip.dart
-import '../entities/trip.dart';
+import '../domain.dart';
 
 /// 行程資料倉庫介面（支援 Offline-First）
 ///

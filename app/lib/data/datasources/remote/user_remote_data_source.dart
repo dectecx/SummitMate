@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import '../../models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../api/services/user_api_service.dart';
 import '../../api/mappers/user_api_mapper.dart';
 import '../../../infrastructure/tools/log_service.dart';

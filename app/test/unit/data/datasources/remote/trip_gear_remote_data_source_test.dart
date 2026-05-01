@@ -3,8 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/trip_gear_api_models.dart';
 import 'package:summitmate/data/api/services/trip_gear_api_service.dart';
 import 'package:summitmate/data/datasources/remote/trip_gear_remote_data_source.dart';
-import 'package:summitmate/data/models/gear_item.dart';
-import 'package:summitmate/domain/entities/gear_item.dart';
+import 'package:summitmate/domain/domain.dart';
 
 class MockTripGearApiService extends Mock implements TripGearApiService {}
 
@@ -36,7 +35,7 @@ void main() {
     updatedAt: DateTime(2026),
   );
 
-  final testItem = GearItem(id: 'gear-1', name: 'Tent', category: 'Sleep', weight: 2000);
+  final testItem = GearItem(id: 'gear-1', tripId: 'trip-1', name: 'Tent', category: 'Sleep', weight: 2000);
 
   group('TripGearRemoteDataSource.getTripGear', () {
     test('returns list of gear items on success', () async {

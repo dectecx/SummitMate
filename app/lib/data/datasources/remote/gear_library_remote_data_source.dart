@@ -45,7 +45,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<Result<String, Exception>> create(GearLibraryItemModel item) async {
     try {
       LogService.info('建立裝備庫項目: ${item.name}', source: _source);
-      final request = GearLibraryApiMapper.toRequest(item);
+      final request = GearLibraryApiMapper.toRequestFromModel(item);
       final response = await _apiService.addItem(request);
       return Success(response.id);
     } catch (e) {
@@ -58,7 +58,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<Result<void, Exception>> update(GearLibraryItemModel item) async {
     try {
       LogService.info('更新裝備庫項目: ${item.id}', source: _source);
-      final request = GearLibraryApiMapper.toRequest(item);
+      final request = GearLibraryApiMapper.toRequestFromModel(item);
       await _apiService.updateItem(item.id, request);
       return const Success(null);
     } catch (e) {
@@ -83,7 +83,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   Future<Result<void, Exception>> replaceAll(List<GearLibraryItemModel> items) async {
     try {
       LogService.info('替換所有裝備庫項目, 數量: ${items.length}', source: _source);
-      final requests = items.map(GearLibraryApiMapper.toRequest).toList();
+      final requests = items.map(GearLibraryApiMapper.toRequestFromModel).toList();
       await _apiService.replaceAll(requests);
       return const Success(null);
     } catch (e) {

@@ -2,7 +2,7 @@ import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/gear_item.dart';
 import '../../domain/repositories/i_gear_repository.dart';
-import '../models/gear_item.dart'; // Contains GearItemModel
+import '../models/gear_item_model.dart';
 import '../datasources/interfaces/i_gear_local_data_source.dart';
 
 /// Gear Repository 實作

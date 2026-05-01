@@ -2,7 +2,7 @@ import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/itinerary_item.dart';
 
-part 'itinerary_item.g.dart';
+part 'itinerary_item_model.g.dart';
 
 /// 行程節點模型 (Persistence Model)
 @HiveType(typeId: 1)

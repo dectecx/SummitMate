@@ -2,7 +2,7 @@ import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/repositories/i_itinerary_repository.dart';
-import '../models/itinerary_item.dart';
+import '../models/itinerary_item_model.dart';
 import '../datasources/interfaces/i_itinerary_local_data_source.dart';
 import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
 

@@ -1,8 +1,6 @@
-﻿import '../../core/error/result.dart';
+import '../../core/error/result.dart';
 // TODO: Phase 2 完成後將以下改為 domain/entities/ 路徑
-import '../entities/group_event.dart';
-import '../../data/models/group_event_comment.dart';
-import '../../data/models/enums/group_event_category.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 揪團 Repository 抽象介面
 ///

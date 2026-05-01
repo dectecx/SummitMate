@@ -1,4 +1,4 @@
-import '../../models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 使用者遠端資料來源介面
 abstract class IUserRemoteDataSource {

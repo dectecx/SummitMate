@@ -1,5 +1,5 @@
 import 'package:hive_ce/hive.dart';
-import '../../models/itinerary_item.dart';
+import '../../models/itinerary_item_model.dart';
 
 /// 行程項目 (ItineraryItemModel) 的本地資料來源介面
 abstract interface class IItineraryLocalDataSource {

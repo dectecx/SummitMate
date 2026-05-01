@@ -1,11 +1,12 @@
-import '../../models/poll_model.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../models/poll_api_models.dart';
+import '../../models/poll_model.dart';
 
 /// Poll API Model ↔ Persistence Model 轉換
 class PollApiMapper {
-  /// PollResponse → PollModel
-  static PollModel fromResponse(PollResponse response, {String tripId = ''}) {
-    return PollModel(
+  /// PollResponse → Poll (domain entity)
+  static Poll fromResponse(PollResponse response, {String tripId = ''}) {
+    return Poll(
       id: response.id,
       tripId: tripId,
       title: response.title,
@@ -27,9 +28,9 @@ class PollApiMapper {
     );
   }
 
-  /// PollOptionResponse → PollOptionModel
-  static PollOptionModel fromOptionResponse(PollOptionResponse response) {
-    return PollOptionModel(
+  /// PollOptionResponse → PollOption (domain entity)
+  static PollOption fromOptionResponse(PollOptionResponse response) {
+    return PollOption(
       id: response.id,
       pollId: response.pollId,
       text: response.text,

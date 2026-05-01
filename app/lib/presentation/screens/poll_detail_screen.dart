@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import '../../data/models/poll.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
 import '../cubits/settings/settings_cubit.dart';

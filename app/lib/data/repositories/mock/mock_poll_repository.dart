@@ -1,6 +1,6 @@
-﻿import '../../../core/error/result.dart';
+import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/poll.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../domain/repositories/i_poll_repository.dart';
 
 /// 模擬投票資料倉庫

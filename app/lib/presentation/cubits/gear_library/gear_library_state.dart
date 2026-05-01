@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/gear_library_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 
 abstract class GearLibraryState extends Equatable {

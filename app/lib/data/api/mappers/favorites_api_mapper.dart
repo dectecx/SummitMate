@@ -1,4 +1,4 @@
-import '../../models/favorite.dart';
+import '../../../domain/entities/favorite.dart';
 import '../../models/enums/favorite_type.dart';
 import '../models/favorites_api_models.dart';
 

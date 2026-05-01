@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/constants/role_constants.dart';
 
 void main() {

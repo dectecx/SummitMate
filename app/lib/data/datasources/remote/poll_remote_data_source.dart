@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/poll_model.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../api/mappers/poll_api_mapper.dart';
 import '../../api/services/poll_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -17,13 +17,13 @@ class PollRemoteDataSource implements IPollRemoteDataSource {
   PollRemoteDataSource(this._pollApi);
 
   @override
-  Future<Result<PaginatedList<PollModel>, Exception>> getPolls(String tripId, {int? page, int? limit}) async {
+  Future<Result<PaginatedList<Poll>, Exception>> getPolls(String tripId, {int? page, int? limit}) async {
     try {
       LogService.info('獲取行程投票列表: $tripId (page: $page, limit: $limit)...', source: _source);
       final response = await _pollApi.listTripPolls(tripId, page: page, limit: limit);
       final polls = response.items.map((p) => PollApiMapper.fromResponse(p, tripId: tripId)).toList();
       return Success(
-        PaginatedList<PollModel>(
+        PaginatedList<Poll>(
           items: polls,
           page: response.pagination.page,
           total: response.pagination.total,

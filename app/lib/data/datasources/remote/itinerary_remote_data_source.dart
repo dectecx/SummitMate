@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../domain/entities/itinerary_item.dart';
-import '../../models/itinerary_item.dart';
+import '../../models/itinerary_item_model.dart';
 import '../../api/services/itinerary_api_service.dart';
 import '../../api/mappers/itinerary_api_mapper.dart';
 import '../../../infrastructure/tools/log_service.dart';

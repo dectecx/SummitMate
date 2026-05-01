@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/core/core.dart';
 
-import '../../../../data/models/gear_library_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../cubits/gear/gear_cubit.dart';
 import '../../../cubits/gear_library/gear_library_cubit.dart';

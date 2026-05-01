@@ -9,7 +9,7 @@ import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/presentation/widgets/settings_dialog.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
-import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/domain/domain.dart';
 
 // Mocks
 class MockAuthCubit extends MockCubit<AuthState> implements AuthCubit {}
