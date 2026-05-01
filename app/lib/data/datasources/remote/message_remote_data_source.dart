@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/message.dart';
+import '../../models/message_model.dart';
 import '../../api/mappers/message_api_mapper.dart';
 import '../../api/services/message_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -17,13 +17,15 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
   MessageRemoteDataSource(this._messageApi);
 
   @override
-  Future<Result<PaginatedList<Message>, Exception>> getMessages(String tripId, {int? page, int? limit}) async {
+  Future<Result<PaginatedList<MessageModel>, Exception>> getMessages(String tripId, {int? page, int? limit}) async {
     try {
       LogService.info('獲取行程留言列表: $tripId (page: $page, limit: $limit)...', source: _source);
       final response = await _messageApi.listTripMessages(tripId, page: page, limit: limit);
-      final messages = response.items.map(MessageApiMapper.fromResponse).toList();
+      final messages = response.items
+          .map((r) => MessageModel.fromDomain(MessageApiMapper.fromResponse(r)))
+          .toList();
       return Success(
-        PaginatedList<Message>(
+        PaginatedList<MessageModel>(
           items: messages,
           page: response.pagination.page,
           total: response.pagination.total,

@@ -1,11 +1,11 @@
-import '../../models/poll.dart';
+import '../../models/poll_model.dart';
 import '../models/poll_api_models.dart';
 
-/// Poll API Model ↔ Domain Model 轉換
+/// Poll API Model ↔ Persistence Model 轉換
 class PollApiMapper {
-  /// PollResponse → Poll (domain model)
-  static Poll fromResponse(PollResponse response, {String tripId = ''}) {
-    return Poll(
+  /// PollResponse → PollModel
+  static PollModel fromResponse(PollResponse response, {String tripId = ''}) {
+    return PollModel(
       id: response.id,
       tripId: tripId,
       title: response.title,
@@ -27,9 +27,9 @@ class PollApiMapper {
     );
   }
 
-  /// PollOptionResponse → PollOption (domain model)
-  static PollOption fromOptionResponse(PollOptionResponse response) {
-    return PollOption(
+  /// PollOptionResponse → PollOptionModel
+  static PollOptionModel fromOptionResponse(PollOptionResponse response) {
+    return PollOptionModel(
       id: response.id,
       pollId: response.pollId,
       text: response.text,

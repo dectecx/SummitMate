@@ -3,11 +3,9 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/gear_item.dart';
 
-part 'gear_item.g.dart';
+part 'gear_item_model.g.dart';
 
 /// 裝備項目模型 (Persistence Model)
-///
-/// 用於 Hive 儲存，繼承 HiveObject 以支援本地持久化。
 @HiveType(typeId: 3)
 @JsonSerializable(fieldRename: FieldRename.snake)
 class GearItemModel extends HiveObject {

@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -6,13 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/infrastructure/adapters/app_theme_type_adapter.dart';
 import '../../core/constants.dart';
 import 'log_service.dart';
-import '../../data/models/settings.dart';
+import '../../data/models/settings_model.dart';
 import '../../data/models/itinerary_item.dart';
-import '../../data/models/message.dart';
-import '../../data/models/gear_item.dart';
-import '../../data/models/gear_library_item.dart';
+import '../../data/models/message_model.dart';
+import '../../data/models/gear_item_model.dart';
+import '../../data/models/gear_library_item_model.dart';
 import '../../data/models/weather_data.dart';
-import '../../data/models/poll.dart';
+import '../../data/models/poll_model.dart';
 import '../../data/models/trip_model.dart';
 import '../../data/models/group_event_model.dart';
 
@@ -54,13 +54,13 @@ class HiveService {
 
     // 註冊 Adapters (由 build_runner 生成)
     if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(SettingsAdapter());
+      Hive.registerAdapter(SettingsModelAdapter());
     }
     if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(ItineraryItemModelAdapter());
     }
     if (!Hive.isAdapterRegistered(2)) {
-      Hive.registerAdapter(MessageAdapter());
+      Hive.registerAdapter(MessageModelAdapter());
     }
     if (!Hive.isAdapterRegistered(3)) {
       Hive.registerAdapter(GearItemModelAdapter());
@@ -72,16 +72,16 @@ class HiveService {
       Hive.registerAdapter(DailyForecastAdapter());
     }
     if (!Hive.isAdapterRegistered(6)) {
-      Hive.registerAdapter(PollAdapter());
+      Hive.registerAdapter(PollModelAdapter());
     }
     if (!Hive.isAdapterRegistered(7)) {
-      Hive.registerAdapter(PollOptionAdapter());
+      Hive.registerAdapter(PollOptionModelAdapter());
     }
     if (!Hive.isAdapterRegistered(8)) {
       Hive.registerAdapter(TripModelAdapter());
     }
     if (!Hive.isAdapterRegistered(11)) {
-      Hive.registerAdapter(GearLibraryItemAdapter());
+      Hive.registerAdapter(GearLibraryItemModelAdapter());
     }
     if (!Hive.isAdapterRegistered(12)) {
       Hive.registerAdapter(GroupEventModelAdapter());
@@ -111,15 +111,15 @@ class HiveService {
     _isInitialized = true;
 
     // 預熱所有必要的 Box 以支援同步操作
-    await openBox<Settings>(HiveBoxNames.settings);
+    await openBox<SettingsModel>(HiveBoxNames.settings);
     await openBox<TripModel>(HiveBoxNames.trips);
     await openBox<ItineraryItemModel>(HiveBoxNames.itinerary);
-    await openBox<Message>(HiveBoxNames.messages);
+    await openBox<MessageModel>(HiveBoxNames.messages);
     await openBox<GearItemModel>(HiveBoxNames.gear);
-    await openBox<GearLibraryItem>(HiveBoxNames.gearLibrary);
-    await openBox<Poll>(HiveBoxNames.polls);
-    await openBox<GroupEvent>(HiveBoxNames.groupEvents);
-    await openBox<GroupEventApplication>(HiveBoxNames.groupEventApplications);
+    await openBox<GearLibraryItemModel>(HiveBoxNames.gearLibrary);
+    await openBox<PollModel>(HiveBoxNames.polls);
+    await openBox<GroupEventModel>(HiveBoxNames.groupEvents);
+    await openBox<GroupEventApplicationModel>(HiveBoxNames.groupEventApplications);
     await openBox<WeatherData>(HiveBoxNames.weather);
     await openBox<Favorite>(HiveBoxNames.mountainFavorites);
     await openBox<Favorite>(HiveBoxNames.groupEventFavorites);

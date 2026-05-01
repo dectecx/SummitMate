@@ -1,7 +1,6 @@
 import '../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
-// TODO: Phase 2 完成後將 GearLibraryItem 改為 domain/entities/gear_library_item.dart
-import '../../data/models/gear_library_item.dart';
+import '../entities/gear_library_item.dart';
 
 /// 裝備庫資料倉庫介面（支援 Offline-First）
 ///
@@ -69,6 +68,6 @@ abstract class IGearLibraryRepository {
   /// 依類別統計重量
   ///
   /// [userId] 使用者 ID
-  /// 回傳：\{類別名稱: 重量(g)\} 的對應表
+  /// 回傳：{類別名稱: 重量(g)} 的對應表
   Map<String, double> getWeightByCategory(String userId);
 }

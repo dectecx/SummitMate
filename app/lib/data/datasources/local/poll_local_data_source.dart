@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
-import '../../models/poll.dart';
+import '../../models/poll_model.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 import '../interfaces/i_poll_local_data_source.dart';
@@ -8,15 +8,15 @@ import '../interfaces/i_poll_local_data_source.dart';
 /// 投票本地資料來源實作 (Hive)
 @LazySingleton(as: IPollLocalDataSource)
 class PollLocalDataSource implements IPollLocalDataSource {
-  final Box<Poll> _polls;
+  final Box<PollModel> _polls;
 
-  PollLocalDataSource({required HiveService hiveService}) : _polls = hiveService.getBox<Poll>(HiveBoxNames.polls);
-
-  @override
-  List<Poll> getAllPolls() => _polls.values.toList();
+  PollLocalDataSource({required HiveService hiveService}) : _polls = hiveService.getBox<PollModel>(HiveBoxNames.polls);
 
   @override
-  Poll? getPollById(String id) {
+  List<PollModel> getAllPolls() => _polls.values.toList();
+
+  @override
+  PollModel? getPollById(String id) {
     try {
       return _polls.values.firstWhere((p) => p.id == id);
     } catch (_) {
@@ -25,14 +25,14 @@ class PollLocalDataSource implements IPollLocalDataSource {
   }
 
   @override
-  Future<void> savePolls(List<Poll> polls) async {
+  Future<void> savePolls(List<PollModel> polls) async {
     await _polls.clear();
-    final Map<String, Poll> entries = {for (var poll in polls) poll.id: poll};
+    final Map<String, PollModel> entries = {for (var poll in polls) poll.id: poll};
     await _polls.putAll(entries);
   }
 
   @override
-  Future<void> savePoll(Poll poll) async {
+  Future<void> savePoll(PollModel poll) async {
     await _polls.put(poll.id, poll);
   }
 

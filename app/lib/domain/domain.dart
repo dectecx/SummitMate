@@ -1,4 +1,4 @@
-﻿/// Domain Layer Exports
+/// Domain Layer Exports
 ///
 /// 匯出所有 Domain 層的元件：實體、Repository 介面、Service 介面。
 /// 使用方式：import 'package:summitmate/domain/domain.dart';
@@ -11,6 +11,7 @@ export 'failures/failure.dart' hide Failure;
 export 'entities/gear_item.dart';
 export 'entities/itinerary_item.dart';
 export 'entities/trip.dart';
+export 'entities/message.dart';
 
 // Repository Interfaces（完整清單）
 export 'repositories/i_gear_repository.dart';
@@ -38,4 +39,7 @@ export 'interfaces/i_sync_service.dart';
 export 'interfaces/i_token_validator.dart';
 export 'interfaces/i_weather_service.dart';
 
+export 'entities/settings.dart';
+export 'entities/poll.dart';
+export 'entities/gear_library_item.dart';
 export 'entities/group_event.dart';

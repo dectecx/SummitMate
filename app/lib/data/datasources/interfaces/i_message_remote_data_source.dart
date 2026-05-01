@@ -1,5 +1,5 @@
 import '../../../core/models/paginated_list.dart';
-import '../../models/message.dart';
+import '../../models/message_model.dart';
 import '../../../core/error/result.dart';
 
 /// 行程留言板 (Trip Messages) 的遠端資料來源介面
@@ -9,7 +9,7 @@ abstract interface class IMessageRemoteDataSource {
   /// [tripId] 行程 ID
   /// [page] 頁碼
   /// [limit] 每頁數量
-  Future<Result<PaginatedList<Message>, Exception>> getMessages(String tripId, {int? page, int? limit});
+  Future<Result<PaginatedList<MessageModel>, Exception>> getMessages(String tripId, {int? page, int? limit});
 
   /// 新增留言
   ///

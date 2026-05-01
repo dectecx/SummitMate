@@ -1,22 +1,22 @@
 import 'package:hive_ce/hive.dart';
-import '../../models/message.dart';
+import '../../models/message_model.dart';
 
 /// 留言訊息 (Message) 的本地資料來源介面
 ///
 /// 負責定義對本地訊息資料庫 (如 Hive) 的 CRUD 操作。
 abstract interface class IMessageLocalDataSource {
   /// 取得所有訊息
-  List<Message> getAll();
+  List<MessageModel> getAll();
 
   /// 透過 ID 取得單一訊息
   ///
   /// [id] 訊息 ID
-  Message? getById(String id);
+  MessageModel? getById(String id);
 
   /// 新增訊息
   ///
   /// [message] 欲新增的訊息物件
-  Future<void> add(Message message);
+  Future<void> add(MessageModel message);
 
   /// 刪除訊息 (依 Key)
   ///

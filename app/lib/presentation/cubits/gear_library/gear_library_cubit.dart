@@ -1,8 +1,9 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import '../../../data/models/gear_library_item.dart';
 import '../../../data/models/enums/sync_status.dart';
+import '../../domain/entities/gear_library_item.dart';
+import '../../domain/entities/gear_item.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -107,12 +108,10 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   /// [item] 更新後的項目
   Future<void> updateItem(GearLibraryItem item) async {
     try {
-      final userId = _authService.currentUserId ?? 'guest';
-      item.updatedBy = userId;
-
-      await _repository.update(item);
+      final updatedItem = item.copyWith(updatedBy: userId, updatedAt: DateTime.now());
+      await _repository.update(updatedItem);
       // 同步更新已連結的裝備項目 (邏輯遷移自 Provider)
-      await _syncLinkedGear(item);
+      await _syncLinkedGear(updatedItem);
       reload();
     } catch (e) {
       LogService.error('Failed to update library item: $e', source: 'GearLibraryCubit');
@@ -149,8 +148,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     try {
       final item = _repository.getById(id);
       if (item != null) {
-        item.isArchived = !item.isArchived;
-        await _repository.update(item);
+        final updatedItem = item.copyWith(isArchived: !item.isArchived, updatedAt: DateTime.now());
+        await _repository.update(updatedItem);
         reload();
       }
     } catch (e) {

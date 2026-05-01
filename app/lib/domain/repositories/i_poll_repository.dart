@@ -1,7 +1,6 @@
 import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
-// TODO: Phase 2 完成後將 Poll 改為 domain/entities/poll.dart
-import '../../data/models/poll.dart';
+import '../entities/poll.dart';
 
 /// 投票資料倉庫介面（支援 Offline-First）
 ///

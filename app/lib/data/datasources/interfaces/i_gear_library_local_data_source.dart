@@ -1,4 +1,4 @@
-import '../../models/gear_library_item.dart';
+import '../../models/gear_library_item_model.dart';
 
 /// 裝備庫本地資料來源介面
 ///
@@ -8,23 +8,23 @@ abstract interface class IGearLibraryLocalDataSource {
   /// 取得所有裝備庫項目
   ///
   /// 回傳: 裝備庫項目列表
-  List<GearLibraryItem> getAllItems();
+  List<GearLibraryItemModel> getAllItems();
 
   /// 透過 ID 取得單一裝備項目
   ///
   /// [id] 裝備項目 UUID
   /// 回傳: 裝備項目，若不存在則回傳 null
-  GearLibraryItem? getById(String id);
+  GearLibraryItemModel? getById(String id);
 
   /// 儲存裝備項目
   ///
   /// [item] 欲儲存的裝備項目 (新增或更新)
-  Future<void> saveItem(GearLibraryItem item);
+  Future<void> saveItem(GearLibraryItemModel item);
 
   /// 儲存多個裝備項目 (覆寫模式)
   ///
   /// [items] 欲儲存的裝備項目列表，會清除現有資料後寫入
-  Future<void> saveItems(List<GearLibraryItem> items);
+  Future<void> saveItems(List<GearLibraryItemModel> items);
 
   /// 刪除裝備項目
   ///

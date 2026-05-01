@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/message.dart';
+import 'package:summitmate/domain/domain.dart';
 
 abstract class MessageState extends Equatable {
   const MessageState();
