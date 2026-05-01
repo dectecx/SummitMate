@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -13,7 +13,7 @@ import '../../data/models/gear_item.dart';
 import '../../data/models/gear_library_item.dart';
 import '../../data/models/weather_data.dart';
 import '../../data/models/poll.dart';
-import '../../data/models/trip.dart';
+import '../../data/models/trip_model.dart';
 import '../../data/models/group_event.dart';
 import '../../data/models/enums/group_event_status.dart';
 import '../../data/models/enums/group_event_application_status.dart';
@@ -55,13 +55,13 @@ class HiveService {
       Hive.registerAdapter(SettingsAdapter());
     }
     if (!Hive.isAdapterRegistered(1)) {
-      Hive.registerAdapter(ItineraryItemAdapter());
+      Hive.registerAdapter(ItineraryItemModelAdapter());
     }
     if (!Hive.isAdapterRegistered(2)) {
       Hive.registerAdapter(MessageAdapter());
     }
     if (!Hive.isAdapterRegistered(3)) {
-      Hive.registerAdapter(GearItemAdapter());
+      Hive.registerAdapter(GearItemModelAdapter());
     }
     if (!Hive.isAdapterRegistered(4)) {
       Hive.registerAdapter(WeatherDataAdapter());
@@ -110,10 +110,10 @@ class HiveService {
 
     // 預熱所有必要的 Box 以支援同步操作
     await openBox<Settings>(HiveBoxNames.settings);
-    await openBox<Trip>(HiveBoxNames.trips);
-    await openBox<ItineraryItem>(HiveBoxNames.itinerary);
+    await openBox<TripModel>(HiveBoxNames.trips);
+    await openBox<ItineraryItemModel>(HiveBoxNames.itinerary);
     await openBox<Message>(HiveBoxNames.messages);
-    await openBox<GearItem>(HiveBoxNames.gear);
+    await openBox<GearItemModel>(HiveBoxNames.gear);
     await openBox<GearLibraryItem>(HiveBoxNames.gearLibrary);
     await openBox<Poll>(HiveBoxNames.polls);
     await openBox<GroupEvent>(HiveBoxNames.groupEvents);
@@ -157,19 +157,11 @@ class HiveService {
     }
 
     // 2. 加密環境：直接開啟加密 Box
-    // 由於 openBox 是 idempotent (冪等) 的，Hive 會自動檢查是否已開啟。
-    // 如果已開啟，它會直接回傳 instance，不會重複 IO 操作。
-    // 因此不需要寫 if (!Hive.isBoxOpen) ...
     try {
       return await Hive.openBox<T>(boxName, encryptionCipher: HiveAesCipher(_encryptionKey!));
     } catch (e) {
-      // 若因為金鑰不匹配或檔案損壞導致無法開啟，這裡選擇拋出異常，
-      // 而不是自動刪除 (為了避免意外資料遺失)。
-      // 若確定是全新開發環境，遇到錯誤建議手動解除安裝 App 重裝。
       LogService.error('無法開啟加密 Box ($boxName): $e', source: 'HiveService');
 
-      // 除錯用：若是開發階段遇到 Key 不合，可以考慮在這裡清空重建，
-      // 但正式版不建議。
       if (kDebugMode) {
         debugPrint('Debug: Box開啟失敗，嘗試刪除重建...');
         await Hive.deleteBoxFromDisk(boxName);
@@ -182,7 +174,6 @@ class HiveService {
   /// 取得已開啟的 Box (同步)
   ///
   /// [boxName] Box 名稱
-  /// 注意：必須確保 Box 已經被 openBox 呼叫過且完成
   Box<T> getBox<T>(String boxName) {
     if (!_isInitialized) throw StateError('HiveService not initialized');
     return Hive.box<T>(boxName);
@@ -200,7 +191,6 @@ class HiveService {
   }
 
   /// 清除使用者資料 (登出時使用)
-  /// 保留 logs 以便除錯，清除其他所有使用者資料
   Future<void> clearUserData() async {
     await clearSelectedData(
       clearTrips: true,
@@ -212,12 +202,11 @@ class HiveService {
       clearGroupEvents: true,
       clearWeather: true,
       clearSettings: true,
-      clearLogs: false, // 保留 logs
+      clearLogs: false,
     );
   }
 
   /// 選擇性清除資料
-  /// 使用 deleteBoxFromDisk 避免 type conflict
   Future<void> clearSelectedData({
     bool clearTrips = false,
     bool clearItinerary = false,
@@ -230,10 +219,8 @@ class HiveService {
     bool clearSettings = false,
     bool clearLogs = false,
   }) async {
-    // 先關閉所有 box 以避免 type conflict，並重置初始化狀態
     await close();
 
-    // 1. Core Data (最重要)
     if (clearTrips) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.trips);
     }
@@ -244,7 +231,6 @@ class HiveService {
       await Hive.deleteBoxFromDisk(HiveBoxNames.messages);
     }
 
-    // 2. Feature Data (功能性資料)
     if (clearGear) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.gear);
     }
@@ -262,7 +248,6 @@ class HiveService {
       await Hive.deleteBoxFromDisk(HiveBoxNames.weather);
     }
 
-    // 3. System & Logs (系統與日誌)
     if (clearSettings) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.settings);
       final prefs = await SharedPreferences.getInstance();
@@ -271,8 +256,5 @@ class HiveService {
     if (clearLogs) {
       await Hive.deleteBoxFromDisk(HiveBoxNames.logs);
     }
-
-    // 如果清除了任何資料，建議重新初始化以確保 Encryption Key 狀態正確 (雖然 Key 是 persistent 的)
-    // 但因為 close() 了，下次使用前會自動 init()
   }
 }

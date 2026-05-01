@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 
 /// 行程卡片 Widget

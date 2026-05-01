@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/gear_item.dart';
+import '../../../domain/entities/gear_item.dart';
 import 'package:summitmate/core/core.dart';
 
 /// 裝備清單狀態
@@ -31,24 +31,17 @@ class GearLoaded extends GearState {
   final bool showUncheckedOnly;
 
   /// 建構子
-  ///
-  /// [items] 裝備列表
-  /// [selectedCategory] 目前篩選分類
-  /// [searchQuery] 搜尋關鍵字
-  /// [showUncheckedOnly] 是否僅顯示未打包項目
-  const GearLoaded({required this.items, this.selectedCategory, this.searchQuery = '', this.showUncheckedOnly = false});
+  const GearLoaded({
+    required this.items,
+    this.selectedCategory,
+    this.searchQuery = '',
+    this.showUncheckedOnly = false,
+  });
 
   /// CopyWith method for updating state
-  ///
-  /// [items] 更新裝備列表
-  /// [selectedCategory] 更新分類
-  /// [clearCategory] 是否清除分類
-  /// [searchQuery] 更新搜尋關鍵字
-  /// [showUncheckedOnly] 更新過濾狀態
   GearLoaded copyWith({
     List<GearItem>? items,
     String? selectedCategory,
-    // Allow passing null to clear category
     bool clearCategory = false,
     String? searchQuery,
     bool? showUncheckedOnly,
@@ -94,20 +87,20 @@ class GearLoaded extends GearState {
   }
 
   /// 總重量 (克)
-  double get totalWeight => items.fold(0, (sum, item) => sum + item.totalWeight);
+  double get totalWeight => items.fold(0.0, (sum, item) => sum + item.totalWeight);
 
   /// 總重量 (公斤)
   double get totalWeightKg => totalWeight / 1000;
 
   /// 已打包重量 (克)
-  double get checkedWeight => items.where((i) => i.isChecked).fold(0, (sum, item) => sum + item.totalWeight);
+  double get checkedWeight => items.where((i) => i.isChecked).fold(0.0, (sum, item) => sum + item.totalWeight);
 
   /// 已打包重量 (公斤)
   double get checkedWeightKg => checkedWeight / 1000;
 
   /// 打包進度
   double get packingProgress {
-    if (items.isEmpty) return 0;
+    if (items.isEmpty) return 0.0;
     final checked = items.where((item) => item.isChecked).length;
     return checked / items.length;
   }

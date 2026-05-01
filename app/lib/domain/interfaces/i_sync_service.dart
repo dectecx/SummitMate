@@ -1,6 +1,6 @@
-import '../../core/error/result.dart';
+﻿import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
-import '../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 同步結果
 class SyncResult {

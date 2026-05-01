@@ -1,8 +1,8 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../core/di/injection.dart';
-import '../../data/repositories/interfaces/i_settings_repository.dart';
+import '../../domain/repositories/i_settings_repository.dart';
 import '../../domain/interfaces/i_connectivity_service.dart';
 import '../tools/log_service.dart';
 

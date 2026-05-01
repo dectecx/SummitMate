@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/widgets/gear/gear_item_tile.dart';
 import 'package:summitmate/presentation/widgets/gear/gear_mode_selector.dart';
 
@@ -8,6 +8,7 @@ void main() {
   group('GearItemTile Widget Test', () {
     final gearItem = GearItem(
       id: '1',
+      tripId: 'trip-1',
       name: 'Test Gear',
       weight: 100,
       category: 'Other',

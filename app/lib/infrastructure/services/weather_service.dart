@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -10,7 +10,7 @@ import '../tools/hive_service.dart';
 import '../../core/env_config.dart';
 import '../../core/constants.dart';
 import '../../core/di/injection.dart';
-import '../../data/repositories/interfaces/i_settings_repository.dart';
+import '../../domain/repositories/i_settings_repository.dart';
 
 import '../../domain/interfaces/i_weather_service.dart';
 import '../../core/location/i_location_resolver.dart';

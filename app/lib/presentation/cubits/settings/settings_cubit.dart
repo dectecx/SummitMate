@@ -1,8 +1,8 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/core/core.dart';
-import '../../../data/repositories/interfaces/i_settings_repository.dart';
+import '../../../domain/repositories/i_settings_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'settings_state.dart';
 

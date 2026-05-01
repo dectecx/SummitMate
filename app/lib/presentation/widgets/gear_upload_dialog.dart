@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/gear_set.dart';
-import '../../data/models/gear_item.dart';
+import '../../domain/entities/gear_item.dart';
 
 class GearUploadDialog extends StatefulWidget {
   final List<GearItem> items;
@@ -188,12 +188,9 @@ class _VisibilityOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ignore: deprecated_member_use
             Radio<GearSetVisibility>(
               value: value,
-              // ignore: deprecated_member_use
               groupValue: group.value,
-              // ignore: deprecated_member_use
               onChanged: (v) => v != null ? group.onChanged(v) : null,
             ),
             Text(icon, style: const TextStyle(fontSize: 18)),

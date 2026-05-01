@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
 import '../../core/theme.dart';
@@ -17,7 +17,7 @@ import '../cubits/itinerary/itinerary_cubit.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../screens/group_events_list_screen.dart';
-import '../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 應用程式側邊欄內容 (抽離出來以便在 Drawer 與 Sidebar 共用)
 class AppDrawerContent extends StatelessWidget {

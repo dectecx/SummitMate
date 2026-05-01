@@ -1,7 +1,7 @@
-import '../../../core/error/result.dart';
+﻿import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../models/message.dart';
-import '../interfaces/i_message_repository.dart';
+import '../../../domain/repositories/i_message_repository.dart';
 
 /// 模擬行程留言板 Repository
 class MockMessageRepository implements IMessageRepository {

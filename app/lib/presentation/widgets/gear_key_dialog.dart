@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../core/error/result.dart';
 import '../../data/models/gear_set.dart';
 
-import '../../data/repositories/interfaces/i_gear_set_repository.dart';
+import '../../domain/repositories/i_gear_set_repository.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// Key 輸入對話框

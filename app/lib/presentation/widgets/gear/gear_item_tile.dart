@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/gear_item.dart';
+import '../../../domain/entities/gear_item.dart';
 import 'gear_mode_selector.dart';
 
 /// 單項裝備列表 Tile

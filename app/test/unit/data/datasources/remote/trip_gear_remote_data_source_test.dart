@@ -4,6 +4,7 @@ import 'package:summitmate/data/api/models/trip_gear_api_models.dart';
 import 'package:summitmate/data/api/services/trip_gear_api_service.dart';
 import 'package:summitmate/data/datasources/remote/trip_gear_remote_data_source.dart';
 import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/domain/entities/gear_item.dart';
 
 class MockTripGearApiService extends Mock implements TripGearApiService {}
 

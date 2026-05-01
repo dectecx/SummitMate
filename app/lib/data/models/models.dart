@@ -1,4 +1,4 @@
-export 'download_task.dart';
+﻿export 'download_task.dart';
 export 'gear_item.dart';
 export 'gear_key_record.dart';
 export 'gear_library_item.dart';
@@ -10,7 +10,7 @@ export 'meal_item.dart';
 export 'message.dart';
 export 'poll.dart';
 export 'settings.dart';
-export 'trip.dart';
+export 'trip_model.dart';
 export 'user_profile.dart';
 export 'weather_data.dart';
 export 'enums/group_event_status.dart';

@@ -1,5 +1,5 @@
-import '../../../core/models/paginated_list.dart';
-import '../../models/trip.dart';
+﻿import '../../../core/models/paginated_list.dart';
+import '../../../domain/entities/trip.dart';
 import '../../models/user_profile.dart';
 import '../../../core/error/result.dart';
 

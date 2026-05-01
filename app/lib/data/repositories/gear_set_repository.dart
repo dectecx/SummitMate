@@ -1,11 +1,10 @@
-import 'package:injectable/injectable.dart';
-import '../../core/di/injection.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../models/gear_set.dart';
 import '../models/gear_key_record.dart';
-import '../models/gear_item.dart';
 import '../models/meal_item.dart';
-import 'interfaces/i_gear_set_repository.dart';
+import '../../domain/repositories/i_gear_set_repository.dart';
+import '../../domain/entities/gear_item.dart';
 import '../../domain/interfaces/i_gear_cloud_service.dart';
 import '../datasources/interfaces/i_gear_key_local_data_source.dart';
 
@@ -17,9 +16,7 @@ class GearSetRepository implements IGearSetRepository {
   final IGearCloudService _remoteDataSource;
   final IGearKeyLocalDataSource _localDataSource;
 
-  GearSetRepository({IGearCloudService? remoteDataSource, IGearKeyLocalDataSource? localDataSource})
-    : _remoteDataSource = remoteDataSource ?? getIt<IGearCloudService>(),
-      _localDataSource = localDataSource ?? getIt<IGearKeyLocalDataSource>();
+  GearSetRepository(this._remoteDataSource, this._localDataSource);
 
   // --- Remote (雲端操作) ---
 

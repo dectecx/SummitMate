@@ -1,11 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/error/result.dart';
-import '../../../data/models/trip.dart';
-import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../../../data/repositories/interfaces/i_trip_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/domain/domain.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';

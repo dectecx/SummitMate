@@ -1,11 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/domain/entities/gear_item.dart';
 import 'package:summitmate/data/models/gear_library_item.dart';
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/data/repositories/interfaces/i_gear_library_repository.dart';
-import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
+import 'package:summitmate/domain/repositories/i_gear_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
@@ -123,7 +123,7 @@ void main() {
         when(() => mockRepo.getAll(any())).thenReturn([libItem1]);
 
         // Mock sync logic
-        final linkedGear = GearItem(id: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1');
+        const linkedGear = GearItem(id: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1', weight: 1000, category: 'Sleep');
         when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
         when(() => mockTripRepo.getTripById('t1')).thenAnswer(
           (_) async => Success(
@@ -140,7 +140,7 @@ void main() {
             ),
           ),
         );
-        when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async {});
+        when(() => mockGearRepo.updateItem(any())).thenAnswer((_) async => const Success(null));
       },
       build: () => cubit,
       act: (cubit) => cubit.updateItem(libItem1),

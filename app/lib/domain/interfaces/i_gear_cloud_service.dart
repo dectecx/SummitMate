@@ -1,6 +1,6 @@
 import '../../core/error/result.dart';
 import '../../data/models/gear_set.dart';
-import '../../data/models/gear_item.dart';
+import '../entities/gear_item.dart';
 import '../../data/models/meal_item.dart';
 
 /// 雲端裝備庫服務介面

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/itinerary_item.dart';
+import '../../domain/entities/itinerary_item.dart';
 
 class ItineraryEditDialog extends StatefulWidget {
   final ItineraryItem? item; // Null for Add, non-null for Edit

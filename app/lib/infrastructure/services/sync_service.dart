@@ -1,15 +1,10 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../core/models/paginated_list.dart';
 import '../../core/offline_config.dart';
-import '../../data/models/trip.dart';
-import '../../data/repositories/interfaces/i_itinerary_repository.dart';
-import '../../data/repositories/interfaces/i_message_repository.dart';
-import '../../data/repositories/interfaces/i_trip_repository.dart';
-import '../tools/log_service.dart';
-import '../../domain/interfaces/i_connectivity_service.dart';
-import '../../domain/interfaces/i_sync_service.dart';
-import '../../domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/domain/domain.dart';
+import '../../domain/domain.dart';
 import '../../core/error/result.dart';
+import '../tools/log_service.dart';
 
 /// 同步服務
 /// 管理本地資料與雲端資料的雙向同步

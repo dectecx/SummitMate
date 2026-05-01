@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../cubits/trip/trip_cubit.dart';
 
 /// 新增/編輯行程對話框

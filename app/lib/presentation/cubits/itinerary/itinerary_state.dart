@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/itinerary_item.dart';
+import '../../../domain/entities/itinerary_item.dart';
 
 abstract class ItineraryState extends Equatable {
   const ItineraryState();

@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/itinerary_item.dart';
+import 'package:summitmate/domain/entities/itinerary_item.dart';
 import 'package:summitmate/data/models/trip.dart';
-import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
+import 'package:summitmate/domain/repositories/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_cubit.dart';
@@ -48,7 +48,7 @@ void main() {
       updatedBy: 'user_1',
     );
 
-    testItem = ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Start Point', estTime: '08:00');
+    testItem = const ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Start Point', estTime: '08:00');
 
     mockItineraryRepository = MockItineraryRepository();
     mockTripRepository = MockTripRepository();
@@ -75,7 +75,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'loadItinerary emits [ItineraryLoading, ItineraryLoaded] with filtered items',
       setUp: () {
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([testItem]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([testItem]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItinerary(),
@@ -100,7 +100,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'loadItinerary emits ItineraryError on failure',
       setUp: () {
-        when(() => mockItineraryRepository.getAllItems()).thenThrow(Exception('DB Error'));
+        when(() => mockItineraryRepository.getByTripId(any())).thenThrow(Exception('DB Error'));
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItinerary(),
@@ -113,7 +113,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'selectDay updates selectedDay',
       setUp: () {
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([]);
       },
       build: () => cubit,
       seed: () => const ItineraryLoaded(items: [], selectedDay: 'D1'),
@@ -132,40 +132,40 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'addItem calls repository and reloads',
       setUp: () {
-        when(() => mockItineraryRepository.addItem(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([testItem]);
+        when(() => mockItineraryRepository.add(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([testItem]);
       },
       build: () => cubit,
       act: (cubit) => cubit.addItem(testItem),
       verify: (_) {
-        verify(() => mockItineraryRepository.addItem(any())).called(1);
-        verify(() => mockItineraryRepository.getAllItems()).called(1);
+        verify(() => mockItineraryRepository.add(any())).called(1);
+        verify(() => mockItineraryRepository.getByTripId(any())).called(1);
       },
     );
 
     blocTest<ItineraryCubit, ItineraryState>(
       'checkIn calls repository and reloads',
       setUp: () {
-        when(() => mockItineraryRepository.checkIn(any(), any())).thenAnswer((_) async => const Success(null));
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([testItem]);
+        when(() => mockItineraryRepository.toggleCheckIn(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([testItem]);
       },
       build: () => cubit,
       act: (cubit) => cubit.checkIn('item_1'),
       verify: (_) {
-        verify(() => mockItineraryRepository.checkIn('item_1', any())).called(1);
+        verify(() => mockItineraryRepository.toggleCheckIn('item_1')).called(1);
       },
     );
 
     blocTest<ItineraryCubit, ItineraryState>(
       'deleteItem calls repository and reloads',
       setUp: () {
-        when(() => mockItineraryRepository.deleteItem(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
+        when(() => mockItineraryRepository.delete(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([]);
       },
       build: () => cubit,
       act: (cubit) => cubit.deleteItem('item_1'),
       verify: (_) {
-        verify(() => mockItineraryRepository.deleteItem('item_1')).called(1);
+        verify(() => mockItineraryRepository.delete('item_1')).called(1);
       },
     );
 
@@ -193,8 +193,8 @@ void main() {
         ).thenAnswer((_) async => Success(testTrip)); // For loadItinerary
         when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async => const Success(null));
 
-        // Also stub getAllItems for loadItinerary which is called after addDay
-        when(() => mockItineraryRepository.getAllItems()).thenReturn([]);
+        // Also stub getByTripId for loadItinerary which is called after addDay
+        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([]);
 
         // Re-initialize cubit with reset mocks
         cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);

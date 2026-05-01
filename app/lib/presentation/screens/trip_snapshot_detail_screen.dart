@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/trip_snapshot.dart';
-
 import '../widgets/itinerary/itinerary_list_view.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
@@ -37,7 +36,11 @@ class _TripSnapshotDetailScreenState extends State<TripSnapshotDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final items = widget.snapshot.itinerary.where((e) => e.day == _selectedDay).toList();
+    // 將 ItineraryItemModel 轉換為 Domain ItineraryItem
+    final items = widget.snapshot.itinerary
+        .where((e) => e.day == _selectedDay)
+        .map((e) => e.toDomain())
+        .toList();
 
     return Scaffold(
       appBar: AppBar(title: Text('${widget.snapshot.name} - 行程預覽')),
@@ -103,7 +106,7 @@ class _TripSnapshotDetailScreenState extends State<TripSnapshotDetailScreen> {
               items: items,
               selectedDay: _selectedDay,
               isEditMode: false,
-              onConfirmDelete: (ctx, key) {},
+              onConfirmDelete: (ctx, id) {},
               onShowEditDialog: (ctx, item, day) {},
               onShowCheckInDialog: (ctx, item) {
                 ToastService.info('預覽模式無法打卡');
