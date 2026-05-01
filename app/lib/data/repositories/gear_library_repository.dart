@@ -1,11 +1,12 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../../domain/repositories/i_gear_library_repository.dart';
 import '../datasources/interfaces/i_gear_library_local_data_source.dart';
 import '../datasources/interfaces/i_gear_library_remote_data_source.dart';
-import '../models/gear_library_item.dart';
+import '../models/gear_library_item_model.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 裝備庫 Repository (支援 Offline-First)
 ///
@@ -31,13 +32,13 @@ class GearLibraryRepository implements IGearLibraryRepository {
 
   @override
   List<GearLibraryItem> getAll(String userId) {
-    final items = _localDataSource.getAllItems().where((i) => i.userId == userId).toList();
-    items.sort((a, b) => a.name.compareTo(b.name));
-    return items;
+    final models = _localDataSource.getAllItems().where((i) => i.userId == userId).toList();
+    models.sort((a, b) => a.name.compareTo(b.name));
+    return models.map((m) => m.toDomain()).toList();
   }
 
   @override
-  GearLibraryItem? getById(String id) => _localDataSource.getById(id);
+  GearLibraryItem? getById(String id) => _localDataSource.getById(id)?.toDomain();
 
   @override
   List<GearLibraryItem> getByCategory(String userId, String category) {
@@ -45,16 +46,17 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }
 
   @override
-  Future<void> add(GearLibraryItem item) => _localDataSource.saveItem(item);
+  Future<void> add(GearLibraryItem item) => _localDataSource.saveItem(GearLibraryItemModel.fromDomain(item));
 
   @override
-  Future<void> update(GearLibraryItem item) => _localDataSource.saveItem(item);
+  Future<void> update(GearLibraryItem item) => _localDataSource.saveItem(GearLibraryItemModel.fromDomain(item));
 
   @override
   Future<void> delete(String id) => _localDataSource.deleteItem(id);
 
   @override
-  Future<void> importAll(List<GearLibraryItem> items) => _localDataSource.saveItems(items);
+  Future<void> importAll(List<GearLibraryItem> items) => 
+      _localDataSource.saveItems(items.map((i) => GearLibraryItemModel.fromDomain(i)).toList());
 
   @override
   Future<Result<void, Exception>> clearAll() async {
@@ -91,6 +93,18 @@ class GearLibraryRepository implements IGearLibraryRepository {
     String? category,
     String? search,
   }) async {
-    return _remoteDataSource.listLibrary(page: page, limit: limit, category: category, search: search);
+    final result = await _remoteDataSource.listLibrary(page: page, limit: limit, category: category, search: search);
+    if (result is Success<PaginatedList<GearLibraryItemModel>, Exception>) {
+      final domainItems = result.value.items.map((m) => m.toDomain()).toList();
+      return Success(
+        PaginatedList<GearLibraryItem>(
+          items: domainItems,
+          page: result.value.page,
+          total: result.value.total,
+          hasMore: result.value.hasMore,
+        ),
+      );
+    }
+    return Failure((result as Failure).exception);
   }
 }

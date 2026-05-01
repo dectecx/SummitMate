@@ -1,10 +1,10 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_poll_local_data_source.dart';
 import '../datasources/interfaces/i_poll_remote_data_source.dart';
-import '../models/poll.dart';
-import '../../domain/repositories/i_poll_repository.dart';
+import '../models/poll_model.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 投票 Repository
 @LazySingleton(as: IPollRepository)
@@ -20,16 +20,32 @@ class PollRepository implements IPollRepository {
   }
 
   @override
-  List<Poll> getByTripId(String tripId) => _localDataSource.getAllPolls().where((p) => p.tripId == tripId).toList();
+  List<Poll> getByTripId(String tripId) {
+    return _localDataSource
+        .getAllPolls()
+        .where((p) => p.tripId == tripId)
+        .map((p) => p.toDomain())
+        .toList();
+  }
 
   @override
   Future<Result<PaginatedList<Poll>, Exception>> syncPolls(String tripId, {int? page, int? limit}) async {
     try {
       final result = await _remoteDataSource.getPolls(tripId, page: page, limit: limit);
-      if (result is Success<PaginatedList<Poll>, Exception>) {
+      if (result is Success<PaginatedList<PollModel>, Exception>) {
         await _localDataSource.savePolls(result.value.items);
+        
+        final domainItems = result.value.items.map((p) => p.toDomain()).toList();
+        return Success(
+          PaginatedList<Poll>(
+            items: domainItems,
+            page: result.value.page,
+            total: result.value.total,
+            hasMore: result.value.hasMore,
+          ),
+        );
       }
-      return result;
+      return Failure((result as Failure).exception);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
     }

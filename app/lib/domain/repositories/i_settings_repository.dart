@@ -1,7 +1,5 @@
-import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
-// TODO: Phase 2 完成後將 Settings 改為 domain/entities/settings.dart
-import '../../data/models/settings.dart';
+import '../entities/settings.dart';
 
 /// 設定資料存取的 Repository 介面
 ///
@@ -43,5 +41,5 @@ abstract interface class ISettingsRepository {
   // ========== Watch ==========
 
   /// 監聽設定變更的串流
-  Stream<BoxEvent> watchSettings();
+  Stream<void> watchSettings();
 }

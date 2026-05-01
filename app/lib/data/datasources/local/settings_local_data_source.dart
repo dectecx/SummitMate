@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
-import '../../models/settings.dart';
+import '../../models/settings_model.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 import '../interfaces/i_settings_local_data_source.dart';
@@ -10,12 +10,12 @@ import '../interfaces/i_settings_local_data_source.dart';
 class SettingsLocalDataSource implements ISettingsLocalDataSource {
   static const String _settingsKey = 'app_settings';
 
-  final Box<Settings> _box;
+  final Box<SettingsModel> _box;
 
   SettingsLocalDataSource({required HiveService hiveService})
-    : _box = hiveService.getBox<Settings>(HiveBoxNames.settings);
+    : _box = hiveService.getBox<SettingsModel>(HiveBoxNames.settings);
 
-  Box<Settings> get _settings {
+  Box<SettingsModel> get _settings {
     if (!_box.isOpen) {
       throw StateError('SettingsLocalDataSource not initialized. Call init() first.');
     }
@@ -23,10 +23,10 @@ class SettingsLocalDataSource implements ISettingsLocalDataSource {
   }
 
   @override
-  Settings? getSettings() => _settings.get(_settingsKey);
+  SettingsModel? getSettings() => _settings.get(_settingsKey);
 
   @override
-  Future<void> saveSettings(Settings settings) async {
+  Future<void> saveSettings(SettingsModel settings) async {
     await _settings.put(_settingsKey, settings);
   }
 

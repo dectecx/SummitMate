@@ -1,98 +1,81 @@
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
+import '../../domain/entities/poll.dart';
 
-part 'poll.g.dart';
+part 'poll_model.g.dart';
 
 @HiveType(typeId: 6)
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
-class Poll {
-  /// 投票 ID (PK)
+class PollModel extends HiveObject {
   @HiveField(0)
   final String id;
 
-  /// 關聯的行程 ID
   @HiveField(1)
   @JsonKey(defaultValue: '')
   final String tripId;
 
-  /// 標題
   @HiveField(2)
   final String title;
 
-  /// 描述
   @HiveField(3)
   @JsonKey(defaultValue: '', fromJson: _parseString)
   final String description;
 
-  /// 建立者 ID
   @HiveField(4)
   final String creatorId;
 
-  /// 截止時間
   @HiveField(5)
   final DateTime? deadline;
 
-  /// 是否允許新增選項
   @HiveField(6)
   @JsonKey(defaultValue: false)
   final bool isAllowAddOption;
 
-  /// 選項上限
   @HiveField(7)
   @JsonKey(defaultValue: 20, fromJson: _parseInt)
   final int maxOptionLimit;
 
-  /// 是否允許複選
   @HiveField(8)
   @JsonKey(defaultValue: false)
   final bool allowMultipleVotes;
 
-  /// 結果顯示方式 ('realtime' 或 'blind')
   @HiveField(9)
   @JsonKey(defaultValue: 'realtime')
   final String resultDisplayType;
 
-  /// 狀態 ('active' 或 'ended')
   @HiveField(10)
   @JsonKey(defaultValue: 'active')
   final String status;
 
-  /// 投票選項列表
   @HiveField(11)
   @JsonKey(defaultValue: [])
-  final List<PollOption> options;
+  final List<PollOptionModel> options;
 
-  /// 我的投票紀錄 (選項 ID 列表)
   @HiveField(12)
   @JsonKey(defaultValue: [], fromJson: _parseStringList)
   final List<String> myVotes;
 
-  /// 總票數
   @HiveField(13)
   @JsonKey(defaultValue: 0, fromJson: _parseInt)
   final int totalVotes;
 
-  /// 建立時間
   @HiveField(14)
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
-  /// 建立者 ID
   @HiveField(15)
   @JsonKey(name: 'created_by')
   final String createdBy;
 
-  /// 更新時間
   @HiveField(16)
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  /// 更新者 ID
   @HiveField(17)
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
-  Poll({
+  PollModel({
     required this.id,
     this.tripId = '',
     required this.title,
@@ -113,15 +96,6 @@ class Poll {
     required this.updatedBy,
   });
 
-  /// 是否已過期
-  bool get isExpired {
-    if (deadline == null) return false;
-    return DateTime.now().isAfter(deadline!);
-  }
-
-  /// 是否活動中 (未結束且未過期)
-  bool get isActive => status == 'active' && !isExpired;
-
   static int _parseInt(dynamic value) {
     if (value is int) return value;
     return int.tryParse(value?.toString() ?? '') ?? 0;
@@ -138,102 +112,98 @@ class Poll {
     return [];
   }
 
-  factory Poll.fromJson(Map<String, dynamic> json) => _$PollFromJson(json);
-  Map<String, dynamic> toJson() => _$PollToJson(this);
-
-  Poll copyWith({
-    String? id,
-    String? tripId,
-    String? title,
-    String? description,
-    String? creatorId,
-    DateTime? deadline,
-    bool? isAllowAddOption,
-    int? maxOptionLimit,
-    bool? allowMultipleVotes,
-    String? resultDisplayType,
-    String? status,
-    List<PollOption>? options,
-    List<String>? myVotes,
-    int? totalVotes,
-    DateTime? createdAt,
-    String? createdBy,
-    DateTime? updatedAt,
-    String? updatedBy,
-  }) {
+  /// 轉換為 Domain Entity
+  Poll toDomain() {
     return Poll(
-      id: id ?? this.id,
-      tripId: tripId ?? this.tripId,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      creatorId: creatorId ?? this.creatorId,
-      deadline: deadline ?? this.deadline,
-      isAllowAddOption: isAllowAddOption ?? this.isAllowAddOption,
-      maxOptionLimit: maxOptionLimit ?? this.maxOptionLimit,
-      allowMultipleVotes: allowMultipleVotes ?? this.allowMultipleVotes,
-      resultDisplayType: resultDisplayType ?? this.resultDisplayType,
-      status: status ?? this.status,
-      options: options ?? this.options,
-      myVotes: myVotes ?? this.myVotes,
-      totalVotes: totalVotes ?? this.totalVotes,
-      createdAt: createdAt ?? this.createdAt,
-      createdBy: createdBy ?? this.createdBy,
-      updatedAt: updatedAt ?? this.updatedAt,
-      updatedBy: updatedBy ?? this.updatedBy,
+      id: id,
+      tripId: tripId,
+      title: title,
+      description: description,
+      creatorId: creatorId,
+      deadline: deadline,
+      isAllowAddOption: isAllowAddOption,
+      maxOptionLimit: maxOptionLimit,
+      allowMultipleVotes: allowMultipleVotes,
+      resultDisplayType: resultDisplayType,
+      status: status,
+      options: options.map((o) => o.toDomain()).toList(),
+      myVotes: myVotes,
+      totalVotes: totalVotes,
+      createdAt: createdAt,
+      createdBy: createdBy,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
     );
   }
+
+  /// 從 Domain Entity 建立 Persistence Model
+  factory PollModel.fromDomain(Poll entity) {
+    return PollModel(
+      id: entity.id,
+      tripId: entity.tripId,
+      title: entity.title,
+      description: entity.description,
+      creatorId: entity.creatorId,
+      deadline: entity.deadline,
+      isAllowAddOption: entity.isAllowAddOption,
+      maxOptionLimit: entity.maxOptionLimit,
+      allowMultipleVotes: entity.allowMultipleVotes,
+      resultDisplayType: entity.resultDisplayType,
+      status: entity.status,
+      options: entity.options.map((o) => PollOptionModel.fromDomain(o)).toList(),
+      myVotes: entity.myVotes,
+      totalVotes: entity.totalVotes,
+      createdAt: entity.createdAt,
+      createdBy: entity.createdBy,
+      updatedAt: entity.updatedAt,
+      updatedBy: entity.updatedBy,
+    );
+  }
+
+  factory PollModel.fromJson(Map<String, dynamic> json) => _$PollModelFromJson(json);
+  Map<String, dynamic> toJson() => _$PollModelToJson(this);
 }
 
 @HiveType(typeId: 7)
 @JsonSerializable(fieldRename: FieldRename.snake)
-class PollOption {
-  /// 選項 ID (PK)
+class PollOptionModel extends HiveObject {
   @HiveField(0)
   final String id;
 
-  /// 關聯的投票 ID (FK)
   @HiveField(1)
   final String pollId;
 
-  /// 選項文字
   @HiveField(2)
   final String text;
 
-  /// 選項建立者
   @HiveField(3)
   final String creatorId;
 
-  /// 得票數
   @HiveField(4)
-  @JsonKey(defaultValue: 0, fromJson: Poll._parseInt)
+  @JsonKey(defaultValue: 0, fromJson: PollModel._parseInt)
   final int voteCount;
 
-  /// 投票者列表 (List of Maps, containing voter info)
   @HiveField(5)
   @JsonKey(defaultValue: [], fromJson: _parseVoters)
   final List<Map<String, dynamic>> voters;
 
-  /// 建立時間
   @HiveField(6)
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
 
-  /// 建立者 ID
   @HiveField(7)
   @JsonKey(name: 'created_by')
   final String createdBy;
 
-  /// 更新時間
   @HiveField(8)
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  /// 更新者 ID
   @HiveField(9)
   @JsonKey(name: 'updated_by')
   final String updatedBy;
 
-  PollOption({
+  PollOptionModel({
     required this.id,
     required this.pollId,
     required this.text,
@@ -253,6 +223,38 @@ class PollOption {
     return [];
   }
 
-  factory PollOption.fromJson(Map<String, dynamic> json) => _$PollOptionFromJson(json);
-  Map<String, dynamic> toJson() => _$PollOptionToJson(this);
+  /// 轉換為 Domain Entity
+  PollOption toDomain() {
+    return PollOption(
+      id: id,
+      pollId: pollId,
+      text: text,
+      creatorId: creatorId,
+      voteCount: voteCount,
+      voters: voters,
+      createdAt: createdAt,
+      createdBy: createdBy,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
+    );
+  }
+
+  /// 從 Domain Entity 建立 Persistence Model
+  factory PollOptionModel.fromDomain(PollOption entity) {
+    return PollOptionModel(
+      id: entity.id,
+      pollId: entity.pollId,
+      text: entity.text,
+      creatorId: entity.creatorId,
+      voteCount: entity.voteCount,
+      voters: entity.voters,
+      createdAt: entity.createdAt,
+      createdBy: entity.createdBy,
+      updatedAt: entity.updatedAt,
+      updatedBy: entity.updatedBy,
+    );
+  }
+
+  factory PollOptionModel.fromJson(Map<String, dynamic> json) => _$PollOptionModelFromJson(json);
+  Map<String, dynamic> toJson() => _$PollOptionModelToJson(this);
 }

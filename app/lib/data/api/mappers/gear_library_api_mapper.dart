@@ -1,12 +1,12 @@
-import '../../models/gear_library_item.dart';
+import '../../models/gear_library_item_model.dart';
 import '../../models/enums/sync_status.dart';
 import '../models/gear_library_api_models.dart';
 
-/// GearLibraryItem API Model ↔ Domain Model 轉換
+/// GearLibraryItem API Model ↔ Persistence Model 轉換
 class GearLibraryApiMapper {
-  /// GearLibraryItemResponse → GearLibraryItem (domain model)
-  static GearLibraryItem fromResponse(GearLibraryItemResponse response) {
-    return GearLibraryItem(
+  /// GearLibraryItemResponse → GearLibraryItemModel
+  static GearLibraryItemModel fromResponse(GearLibraryItemResponse response) {
+    return GearLibraryItemModel(
       id: response.id,
       userId: response.userId,
       name: response.name,
@@ -22,8 +22,8 @@ class GearLibraryApiMapper {
     );
   }
 
-  /// GearLibraryItem (domain model) → GearLibraryItemRequest
-  static GearLibraryItemRequest toRequest(GearLibraryItem item) {
+  /// GearLibraryItemModel → GearLibraryItemRequest
+  static GearLibraryItemRequest toRequest(GearLibraryItemModel item) {
     return GearLibraryItemRequest(
       name: item.name,
       weight: item.weight,

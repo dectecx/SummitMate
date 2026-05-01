@@ -1,4 +1,4 @@
-import '../../models/message.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../models/message_api_models.dart';
 
 /// Message API Model ↔ Domain Model 轉換

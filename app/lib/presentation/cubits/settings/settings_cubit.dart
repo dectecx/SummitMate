@@ -1,4 +1,4 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/core/core.dart';
@@ -24,8 +24,10 @@ class SettingsCubit extends Cubit<SettingsState> {
         final savedUsername = _prefs.getString(PrefKeys.username);
         if (savedUsername != null && savedUsername.isNotEmpty) {
           await _repository.updateUsername(savedUsername);
-          // 重新整理物件或手動更新
-          settings.username = savedUsername;
+          // 重新載入設定
+          final updatedSettings = _repository.getSettings();
+          emit(SettingsLoaded(settings: updatedSettings, hasSeenOnboarding: _prefs.getBool('has_seen_onboarding') ?? false));
+          return;
         }
       }
 

@@ -132,8 +132,6 @@ import '../../domain/repositories/i_gear_repository.dart' as _i684;
 import '../../domain/repositories/i_gear_set_repository.dart' as _i138;
 import '../../domain/repositories/i_group_event_repository.dart' as _i868;
 import '../../domain/repositories/i_itinerary_repository.dart' as _i750;
-import '../../domain/repositories/i_message_repository.dart' as _i572;
-import '../../domain/repositories/i_poll_repository.dart' as _i893;
 import '../../domain/repositories/i_settings_repository.dart' as _i868;
 import '../../domain/repositories/i_trip_repository.dart' as _i634;
 import '../../infrastructure/clients/api_client.dart' as _i1019;
@@ -282,11 +280,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i55.GearCubit>(
       () => _i55.GearCubit(gh<_i684.IGearRepository>()),
     );
-    gh.lazySingleton<_i868.ISettingsRepository>(
-      () => _i373.SettingsRepository(
-        localDataSource: gh<_i393.ISettingsLocalDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i751.IConnectivityService>(
       () => _i315.ConnectivityService(
         checker: gh<_i973.InternetConnectionChecker>(),
@@ -296,6 +289,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i26.IAuthSessionLocalDataSource>(
       () => _i4.AuthSessionLocalDataSource(
         secureStorage: gh<_i558.FlutterSecureStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i614.ISettingsRepository>(
+      () => _i373.SettingsRepository(
+        localDataSource: gh<_i393.ISettingsLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i755.UsageTrackingService>(
@@ -402,12 +400,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i307.IItineraryRemoteDataSource>(
       () => _i636.ItineraryRemoteDataSource(gh<_i100.ItineraryApiService>()),
     );
-    gh.lazySingleton<_i893.IPollRepository>(
-      () => _i222.PollRepository(
-        gh<_i930.IPollLocalDataSource>(),
-        gh<_i644.IPollRemoteDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i367.MessageApiService>()),
     );
@@ -419,6 +411,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i31.IGearLibraryRemoteDataSource>(
       () => _i781.GearLibraryRemoteDataSource(gh<_i83.GearLibraryApiService>()),
+    );
+    gh.lazySingleton<_i614.IPollRepository>(
+      () => _i222.PollRepository(
+        gh<_i930.IPollLocalDataSource>(),
+        gh<_i644.IPollRemoteDataSource>(),
+      ),
     );
     gh.lazySingleton<_i25.IGroupEventRemoteDataSource>(
       () => _i959.GroupEventRemoteDataSource(gh<_i912.GroupEventApiService>()),
@@ -462,7 +460,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IAuthService>(),
       ),
     );
-    gh.lazySingleton<_i572.IMessageRepository>(
+    gh.lazySingleton<_i614.IMessageRepository>(
       () => _i1040.MessageRepository(
         gh<_i21.IMessageLocalDataSource>(),
         gh<_i880.IMessageRemoteDataSource>(),

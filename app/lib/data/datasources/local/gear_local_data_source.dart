@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
 import '../../../core/constants.dart';
-import '../../models/gear_item.dart';
+import '../../models/gear_item_model.dart';
 import '../interfaces/i_gear_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 

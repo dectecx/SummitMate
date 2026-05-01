@@ -3,7 +3,7 @@ import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants.dart';
 import '../../../core/di/injection.dart';
-import '../../models/message.dart';
+import '../../models/message_model.dart';
 import '../interfaces/i_message_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 
@@ -13,13 +13,13 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   static const String _boxName = HiveBoxNames.messages;
   static const String _prefKeyLastSync = 'msg_last_sync_time';
 
-  final Box<Message> box;
+  final Box<MessageModel> box;
 
-  MessageLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<Message>(_boxName);
+  MessageLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<MessageModel>(_boxName);
 
   /// 取得所有訊息
   @override
-  List<Message> getAll() {
+  List<MessageModel> getAll() {
     return box.values.toList();
   }
 
@@ -27,7 +27,7 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   ///
   /// [id] 訊息 ID
   @override
-  Message? getById(String id) {
+  MessageModel? getById(String id) {
     try {
       return box.values.firstWhere((m) => m.id == id);
     } catch (e) {
@@ -39,8 +39,14 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   ///
   /// [message] 欲新增的訊息物件
   @override
-  Future<void> add(Message message) async {
-    await box.add(message);
+  Future<void> add(MessageModel message) async {
+    // 檢查是否已存在，若存在則更新 (基於 id)
+    final existingIndex = box.values.toList().indexWhere((m) => m.id == message.id);
+    if (existingIndex != -1) {
+      await box.putAt(existingIndex, message);
+    } else {
+      await box.add(message);
+    }
   }
 
   /// 刪除訊息
@@ -48,7 +54,15 @@ class MessageLocalDataSource implements IMessageLocalDataSource {
   /// [key] 訊息的本地鍵值 (Hive Key)
   @override
   Future<void> delete(dynamic key) async {
-    await box.delete(key);
+    // 如果 key 是 String (id)，我們需要找到對應的 Hive Key
+    if (key is String) {
+      final existingIndex = box.values.toList().indexWhere((m) => m.id == key);
+      if (existingIndex != -1) {
+        await box.deleteAt(existingIndex);
+      }
+    } else {
+      await box.delete(key);
+    }
   }
 
   /// 清除所有訊息

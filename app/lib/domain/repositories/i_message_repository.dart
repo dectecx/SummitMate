@@ -1,7 +1,6 @@
 import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
-// TODO: Phase 2 完成後將 Message 改為 domain/entities/message.dart
-import '../../data/models/message.dart';
+import '../entities/message.dart';
 
 /// 留言資料倉庫介面（支援 Offline-First）
 ///

@@ -1,10 +1,10 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';
 import '../datasources/interfaces/i_message_remote_data_source.dart';
-import '../models/message.dart';
-import '../../domain/repositories/i_message_repository.dart';
+import '../models/message_model.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../infrastructure/tools/log_service.dart';
 
 /// 行程留言板 Repository (支援 Offline-First)
@@ -24,24 +24,43 @@ class MessageRepository implements IMessageRepository {
 
   @override
   List<Message> getByTripId(String tripId) {
-    return _localDataSource.getAll().where((m) => m.tripId == tripId).toList();
+    return _localDataSource
+        .getAll()
+        .where((m) => m.tripId == tripId)
+        .map((m) => m.toDomain())
+        .toList();
   }
 
   @override
-  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(String tripId, {int? page, int? limit}) async {
+  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(
+    String tripId, {
+    int? page,
+    int? limit,
+  }) async {
     final result = await _remoteDataSource.getMessages(tripId, page: page, limit: limit);
-    if (result is Success<PaginatedList<Message>, Exception>) {
+    if (result is Success<PaginatedList<MessageModel>, Exception>) {
       // 緩存到本地
-      for (final msg in result.value.items) {
-        await _localDataSource.add(msg);
+      for (final model in result.value.items) {
+        await _localDataSource.add(model);
       }
+      
+      // 轉換為 Domain Entity
+      final domainItems = result.value.items.map((m) => m.toDomain()).toList();
+      return Success(
+        PaginatedList<Message>(
+          items: domainItems,
+          page: result.value.page,
+          total: result.value.total,
+          hasMore: result.value.hasMore,
+        ),
+      );
     }
-    return result;
+    return Failure((result as Failure).exception);
   }
 
   @override
   Future<Result<void, Exception>> saveLocally(Message message) async {
-    await _localDataSource.add(message);
+    await _localDataSource.add(MessageModel.fromDomain(message));
     return const Success(null);
   }
 
@@ -80,7 +99,6 @@ class MessageRepository implements IMessageRepository {
 
   @override
   Future<Result<void, Exception>> clearByTripId(String tripId) async {
-    // Note: This is inefficient but without a specialized local method, we filter
     final itemsToDelete = _localDataSource.getAll().where((m) => m.tripId == tripId);
     for (final item in itemsToDelete) {
       await _localDataSource.delete(item.id);

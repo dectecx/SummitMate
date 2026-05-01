@@ -1,73 +1,62 @@
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'enums/sync_status.dart';
+import '../../domain/entities/gear_library_item.dart';
 
-part 'gear_library_item.g.dart';
+part 'gear_library_item_model.g.dart';
 
-/// 個人裝備庫項目 (Master Data)
+/// 個人裝備庫項目 (Persistence Model)
 @HiveType(typeId: 11)
 @JsonSerializable(fieldRename: FieldRename.snake)
-class GearLibraryItem extends HiveObject {
-  /// 唯一識別碼 (PK)
+class GearLibraryItemModel extends HiveObject {
   @HiveField(0)
   @JsonKey(name: 'id', required: true, disallowNullValue: true)
   String id;
 
-  /// 所屬使用者 ID (Ownership)
   @HiveField(9)
   @JsonKey(name: 'user_id', required: true, disallowNullValue: true)
   String userId;
 
-  /// 裝備名稱
   @HiveField(1)
   @JsonKey(defaultValue: '')
   String name;
 
-  /// 重量 (公克)
   @HiveField(2)
   @JsonKey(defaultValue: 0.0)
   double weight;
 
-  /// 類別: Sleep, Cook, Wear, Other
   @HiveField(3)
   @JsonKey(defaultValue: 'Other')
   String category;
 
-  /// 備註
   @HiveField(4)
   String? notes;
 
-  /// 是否封存 (Soft Delete)
   @HiveField(7)
   @JsonKey(name: 'is_archived', defaultValue: false)
   bool isArchived;
 
-  /// 同步狀態
   @HiveField(10)
   @JsonKey(name: 'sync_status', defaultValue: SyncStatus.pendingCreate)
   SyncStatus syncStatus;
 
-  /// 建立時間
   @HiveField(5)
   @JsonKey(name: 'created_at', fromJson: _parseDateTime, required: true, disallowNullValue: true)
   DateTime createdAt;
 
-  /// 建立者
   @HiveField(8)
   @JsonKey(name: 'created_by', required: true, disallowNullValue: true)
   String createdBy;
 
-  /// 更新時間
   @HiveField(6)
   @JsonKey(name: 'updated_at', required: true, disallowNullValue: true)
   DateTime updatedAt;
 
-  /// 更新者
   @HiveField(11)
   @JsonKey(name: 'updated_by', required: true, disallowNullValue: true)
   String updatedBy;
 
-  GearLibraryItem({
+  GearLibraryItemModel({
     required this.id,
     required this.userId,
     required this.name,
@@ -87,16 +76,42 @@ class GearLibraryItem extends HiveObject {
     return DateTime.parse(value.toString()).toLocal();
   }
 
-  /// 重量轉換為公斤
-  double get weightInKg => weight / 1000;
+  /// 轉換為 Domain Entity
+  GearLibraryItem toDomain() {
+    return GearLibraryItem(
+      id: id,
+      userId: userId,
+      name: name,
+      weight: weight,
+      category: category,
+      notes: notes,
+      isArchived: isArchived,
+      syncStatus: syncStatus,
+      createdAt: createdAt,
+      createdBy: createdBy,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
+    );
+  }
 
-  /// 從 JSON 建立
-  factory GearLibraryItem.fromJson(Map<String, dynamic> json) => _$GearLibraryItemFromJson(json);
+  /// 從 Domain Entity 建立 Persistence Model
+  factory GearLibraryItemModel.fromDomain(GearLibraryItem entity) {
+    return GearLibraryItemModel(
+      id: entity.id,
+      userId: entity.userId,
+      name: entity.name,
+      weight: entity.weight,
+      category: entity.category,
+      notes: entity.notes,
+      isArchived: entity.isArchived,
+      syncStatus: entity.syncStatus,
+      createdAt: entity.createdAt,
+      createdBy: entity.createdBy,
+      updatedAt: entity.updatedAt,
+      updatedBy: entity.updatedBy,
+    );
+  }
 
-  /// 轉換為 JSON
-  Map<String, dynamic> toJson() => _$GearLibraryItemToJson(this);
-
-  @override
-  String toString() =>
-      'GearLibraryItem(id: $id, name: $name, weight: ${weight}g, category: $category, user: $userId, sync: $syncStatus)';
+  factory GearLibraryItemModel.fromJson(Map<String, dynamic> json) => _$GearLibraryItemModelFromJson(json);
+  Map<String, dynamic> toJson() => _$GearLibraryItemModelToJson(this);
 }
