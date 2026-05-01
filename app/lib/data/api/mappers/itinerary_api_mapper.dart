@@ -1,12 +1,11 @@
 import '../../../domain/entities/itinerary_item.dart';
-import '../../models/itinerary_item_model.dart';
 import '../models/itinerary_api_models.dart';
 
 /// ItineraryItem API Model ↔ Persistence Model 轉換
 class ItineraryApiMapper {
-  /// ItineraryItemResponse → ItineraryItemModel
-  static ItineraryItemModel fromResponse(ItineraryItemResponse response) {
-    return ItineraryItemModel(
+  /// ItineraryItemResponse → ItineraryItem (domain entity)
+  static ItineraryItem fromResponse(ItineraryItemResponse response) {
+    return ItineraryItem(
       id: response.id,
       tripId: response.tripId,
       day: response.day,
@@ -25,8 +24,9 @@ class ItineraryApiMapper {
   }
 
   /// ItineraryItemResponse → ItineraryItem (domain entity)
+  @Deprecated('Use fromResponse instead')
   static ItineraryItem fromResponseToDomain(ItineraryItemResponse response) {
-    return fromResponse(response).toDomain();
+    return fromResponse(response);
   }
 
   /// ItineraryItem (domain entity) → ItineraryItemRequest

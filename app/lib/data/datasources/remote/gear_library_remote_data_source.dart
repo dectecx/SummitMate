@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/gear_library_item_model.dart';
 import '../../api/mappers/gear_library_api_mapper.dart';
 import '../../api/services/gear_library_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -17,7 +17,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   GearLibraryRemoteDataSource(this._apiService);
 
   @override
-  Future<Result<PaginatedList<GearLibraryItemModel>, Exception>> listLibrary({
+  Future<Result<PaginatedList<GearLibraryItem>, Exception>> listLibrary({
     int? page,
     int? limit,
     String? category,
@@ -28,7 +28,7 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
       final response = await _apiService.listItems(page: page, limit: limit, search: search);
       final items = response.items.map(GearLibraryApiMapper.fromResponse).toList();
       return Success(
-        PaginatedList<GearLibraryItemModel>(
+        PaginatedList<GearLibraryItem>(
           items: items,
           page: response.pagination.page,
           total: response.pagination.total,
@@ -42,10 +42,10 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   }
 
   @override
-  Future<Result<String, Exception>> create(GearLibraryItemModel item) async {
+  Future<Result<String, Exception>> create(GearLibraryItem item) async {
     try {
       LogService.info('建立裝備庫項目: ${item.name}', source: _source);
-      final request = GearLibraryApiMapper.toRequestFromModel(item);
+      final request = GearLibraryApiMapper.toRequest(item);
       final response = await _apiService.addItem(request);
       return Success(response.id);
     } catch (e) {
@@ -55,10 +55,10 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   }
 
   @override
-  Future<Result<void, Exception>> update(GearLibraryItemModel item) async {
+  Future<Result<void, Exception>> update(GearLibraryItem item) async {
     try {
       LogService.info('更新裝備庫項目: ${item.id}', source: _source);
-      final request = GearLibraryApiMapper.toRequestFromModel(item);
+      final request = GearLibraryApiMapper.toRequest(item);
       await _apiService.updateItem(item.id, request);
       return const Success(null);
     } catch (e) {
@@ -80,10 +80,10 @@ class GearLibraryRemoteDataSource implements IGearLibraryRemoteDataSource {
   }
 
   @override
-  Future<Result<void, Exception>> replaceAll(List<GearLibraryItemModel> items) async {
+  Future<Result<void, Exception>> replaceAll(List<GearLibraryItem> items) async {
     try {
       LogService.info('替換所有裝備庫項目, 數量: ${items.length}', source: _source);
-      final requests = items.map(GearLibraryApiMapper.toRequestFromModel).toList();
+      final requests = items.map(GearLibraryApiMapper.toRequest).toList();
       await _apiService.replaceAll(requests);
       return const Success(null);
     } catch (e) {

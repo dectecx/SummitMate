@@ -5,9 +5,9 @@ import '../models/gear_library_api_models.dart';
 
 /// GearLibraryItem API Model ↔ Domain Model 轉換
 class GearLibraryApiMapper {
-  /// GearLibraryItemResponse → GearLibraryItemModel
-  static GearLibraryItemModel fromResponse(GearLibraryItemResponse response) {
-    return GearLibraryItemModel(
+  /// GearLibraryItemResponse → GearLibraryItem
+  static GearLibraryItem fromResponse(GearLibraryItemResponse response) {
+    return GearLibraryItem(
       id: response.id,
       userId: response.userId,
       name: response.name,
