@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
 import 'package:summitmate/infrastructure/tools/usage_tracking_service.dart';
 

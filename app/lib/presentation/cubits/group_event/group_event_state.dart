@@ -1,6 +1,5 @@
-﻿import 'package:equatable/equatable.dart';
+import 'package:equatable/equatable.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../../data/models/enums/group_event_status.dart';
 
 abstract class GroupEventState extends Equatable {
   const GroupEventState();

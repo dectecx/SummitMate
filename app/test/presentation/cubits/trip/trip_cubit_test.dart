@@ -2,17 +2,11 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/interfaces/i_sync_service.dart';
-
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 import 'package:summitmate/core/error/result.dart';
 
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
-
 import 'package:get_it/get_it.dart';
-import 'package:summitmate/domain/repositories/i_itinerary_repository.dart';
-import 'package:summitmate/domain/repositories/i_gear_repository.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}

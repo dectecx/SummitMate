@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/core/core.dart';
+import '../utils/gear_utils.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';

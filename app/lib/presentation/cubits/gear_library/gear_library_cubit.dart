@@ -1,7 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import '../../../data/models/enums/sync_status.dart';
 import '../../../data/models/gear_library_item_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';

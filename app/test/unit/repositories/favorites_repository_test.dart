@@ -4,11 +4,11 @@ import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_remote_data_source.dart';
-import 'package:summitmate/data/models/enums/favorite_type.dart';
+
 import 'package:summitmate/data/models/favorite_model.dart';
-import 'package:summitmate/domain/entities/favorite.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/favorites_repository.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
+
 
 class MockFavoritesLocalDataSource extends Mock implements IFavoritesLocalDataSource {}
 

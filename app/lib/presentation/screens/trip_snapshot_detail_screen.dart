@@ -48,7 +48,7 @@ class _TripSnapshotDetailScreenState extends State<TripSnapshotDetailScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             width: double.infinity,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

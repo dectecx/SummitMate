@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/domain/entities/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('Trip Model Tests', () {

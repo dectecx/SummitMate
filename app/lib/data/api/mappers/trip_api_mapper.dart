@@ -1,4 +1,3 @@
-import '../../models/enums/sync_status.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../models/trip_api_models.dart';
 

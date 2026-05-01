@@ -23,12 +23,10 @@ dependencies:
   path_provider: ^2.1.5
 
   # API 請求
-  http: ^1.2.0
   retrofit: ^4.4.1
   freezed_annotation: ^3.0.0
 
   # 狀態管理與依賴注入
-  provider: ^6.1.0
   get_it: ^8.0.0
 
   # 工具套件
@@ -80,7 +78,6 @@ dev_dependencies:
   flutter_native_splash: ^2.4.7
 
   # 測試工具
-  mockito: ^5.4.4
   mocktail: ^1.0.4
   bloc_test: ^10.0.0
 

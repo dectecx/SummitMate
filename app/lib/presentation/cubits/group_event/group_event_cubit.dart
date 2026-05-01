@@ -1,10 +1,8 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-
-import '../../../data/models/enums/group_event_category.dart';
 import 'group_event_state.dart';
 
 @injectable

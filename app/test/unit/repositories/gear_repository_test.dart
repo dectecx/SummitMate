@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_local_data_source.dart';
 import 'package:summitmate/data/models/gear_item_model.dart';
-import 'package:summitmate/domain/entities/gear_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_repository.dart';
 
 // Mocks

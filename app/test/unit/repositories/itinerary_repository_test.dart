@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/interfaces/i_itinerary_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_itinerary_remote_data_source.dart';
 import 'package:summitmate/data/models/itinerary_item_model.dart';
-import 'package:summitmate/domain/entities/itinerary_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/itinerary_repository.dart';
 
 // Mocks

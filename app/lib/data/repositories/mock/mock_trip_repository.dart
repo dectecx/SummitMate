@@ -1,6 +1,5 @@
 import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/enums/sync_status.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'mock_itinerary_repository.dart';
 

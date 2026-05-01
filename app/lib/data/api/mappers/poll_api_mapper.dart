@@ -1,6 +1,5 @@
 import 'package:summitmate/domain/domain.dart';
 import '../models/poll_api_models.dart';
-import '../../models/poll_model.dart';
 
 /// Poll API Model ↔ Persistence Model 轉換
 class PollApiMapper {

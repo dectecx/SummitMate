@@ -8,9 +8,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:summitmate/data/models/weather_data.dart';
 import 'package:summitmate/presentation/widgets/weather/weather_alert_card.dart';
-import 'package:summitmate/domain/interfaces/i_weather_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:summitmate/domain/interfaces/i_geolocator_service.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/domain/domain.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'constants.dart';
+import '../../core/constants.dart';
 
 /// 裝備分類輔助工具
 /// 集中管理分類相關的 icon、名稱、顏色等，避免重複定義

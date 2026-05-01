@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/models/settings_model.dart';
 import 'package:summitmate/data/repositories/settings_repository.dart';
 import 'package:summitmate/data/datasources/interfaces/i_settings_local_data_source.dart';

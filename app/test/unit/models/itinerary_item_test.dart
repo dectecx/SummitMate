@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/domain/entities/itinerary_item.dart';
+import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('ItineraryItem Model Tests', () {
