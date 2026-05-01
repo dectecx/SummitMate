@@ -125,8 +125,10 @@ class ItineraryRepository implements IItineraryRepository {
     // Basic sync logic: Fetch from remote and save to local
     try {
       final remoteItems = await _remoteDataSource.getItinerary(tripId);
-      final domainItems = remoteItems.map((m) => m.toDomain()).toList();
-      return await saveAll(domainItems);
+      for (final item in remoteItems) {
+        await _localDataSource.add(ItineraryItemModel.fromDomain(item));
+      }
+      return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
     }

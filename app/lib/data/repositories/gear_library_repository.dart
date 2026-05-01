@@ -93,23 +93,17 @@ class GearLibraryRepository implements IGearLibraryRepository {
     String? search,
   }) async {
     final result = await _remoteDataSource.listLibrary(page: page, limit: limit, category: category, search: search);
-    if (result is Success<PaginatedList<GearLibraryItemModel>, Exception>) {
-      final domainItems = result.value.items.map((m) => m.toDomain()).toList();
-      return Success(
-        PaginatedList<GearLibraryItem>(
-          items: domainItems,
-          page: result.value.page,
-          total: result.value.total,
-          hasMore: result.value.hasMore,
-        ),
-      );
+    if (result is Success<PaginatedList<GearLibraryItem>, Exception>) {
+      for (final item in result.value.items) {
+        await _localDataSource.saveItem(GearLibraryItemModel.fromDomain(item));
+      }
+      return result;
     }
     return Failure((result as Failure).exception);
   }
 
   @override
   Future<Result<void, Exception>> syncRemoteItems(List<GearLibraryItem> items) async {
-    final models = items.map((e) => GearLibraryItemModel.fromDomain(e)).toList();
-    return _remoteDataSource.replaceAll(models);
+    return _remoteDataSource.replaceAll(items);
   }
 }

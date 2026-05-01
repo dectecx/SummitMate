@@ -19,7 +19,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
     try {
       LogService.info('取得行程裝備清單: $tripId', source: _source);
       final responses = await _tripGearApi.listGear(tripId);
-      return responses.map((r) => TripGearApiMapper.fromResponse(r).toDomain()).toList();
+      return responses.map(TripGearApiMapper.fromResponse).toList();
     } catch (e) {
       LogService.error('getTripGear 失敗: $e', source: _source);
       rethrow;
@@ -32,7 +32,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
       LogService.info('新增裝備至行程: $tripId, 名稱: ${item.name}', source: _source);
       final request = TripGearApiMapper.toRequest(item);
       final response = await _tripGearApi.addGear(tripId, request);
-      return TripGearApiMapper.fromResponse(response).toDomain();
+      return TripGearApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('addTripGear 失敗: $e', source: _source);
       rethrow;
@@ -45,7 +45,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
       LogService.info('更新裝備: $tripId, 項目: ${item.id}', source: _source);
       final request = TripGearApiMapper.toRequest(item);
       final response = await _tripGearApi.updateGear(tripId, item.id, request);
-      return TripGearApiMapper.fromResponse(response).toDomain();
+      return TripGearApiMapper.fromResponse(response);
     } catch (e) {
       LogService.error('updateTripGear 失敗: $e', source: _source);
       rethrow;
