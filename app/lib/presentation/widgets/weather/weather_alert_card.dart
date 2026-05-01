@@ -8,7 +8,6 @@ import '../../cubits/settings/settings_cubit.dart';
 import '../../cubits/settings/settings_state.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../../data/models/weather_data.dart';
 
 class WeatherAlertCard extends StatefulWidget {
   final bool animate;

@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/gear_set.dart';
-import 'package:summitmate/data/models/gear_item_model.dart';
-import 'package:summitmate/data/models/meal_item.dart';
+import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('GearSet', () {
@@ -32,6 +30,7 @@ void main() {
         'id': 'uuid-123',
         // title missing
       };
+      // Freezed generated fromJson will likely throw checked_yaml error or null check error
       expect(() => GearSet.fromJson(json), throwsA(anything));
     });
 
@@ -80,7 +79,7 @@ void main() {
         createdBy: 'User',
         updatedAt: DateTime.utc(2025, 1, 1, 10, 0, 0),
         updatedBy: 'User',
-        items: [GearItemModel(name: 'Item 1', weight: 100, category: 'Misc', tripId: 'trip1')],
+        items: [const GearItem(id: 'i1', name: 'Item 1', weight: 100, category: 'Misc', tripId: 'trip1')],
       );
 
       final json = gearSet.toJson();

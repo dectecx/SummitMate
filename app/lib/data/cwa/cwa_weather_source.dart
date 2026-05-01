@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import '../../core/env_config.dart';
 import '../../infrastructure/tools/log_service.dart';
-import '../models/weather_data.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../models/cwa/cwa_response_models.dart';
 import 'cwa_api_factory.dart';
 

@@ -1,5 +1,4 @@
 import '../../core/error/result.dart';
-// TODO: Phase 2 完成後將以下改為 domain/entities/ 路徑
 import 'package:summitmate/domain/domain.dart';
 
 /// 揪團 Repository 抽象介面

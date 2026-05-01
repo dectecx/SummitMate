@@ -1,4 +1,4 @@
-import '../../data/models/weather_data.dart';
+import '../entities/weather_data.dart';
 
 /// Weather Service 抽象介面
 /// 定義天氣資料服務的契約

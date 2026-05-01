@@ -153,7 +153,7 @@ class TripRepository implements ITripRepository {
   // ========== Member Management (Remote) ==========
 
   @override
-  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
+  Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId) async {
     return _remoteDataSource.getTripMembers(tripId);
   }
 

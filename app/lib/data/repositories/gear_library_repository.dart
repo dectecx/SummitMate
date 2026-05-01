@@ -106,4 +106,10 @@ class GearLibraryRepository implements IGearLibraryRepository {
     }
     return Failure((result as Failure).exception);
   }
+
+  @override
+  Future<Result<void, Exception>> syncRemoteItems(List<GearLibraryItem> items) async {
+    final models = items.map((e) => GearLibraryItemModel.fromDomain(e)).toList();
+    return _remoteDataSource.replaceAll(models);
+  }
 }

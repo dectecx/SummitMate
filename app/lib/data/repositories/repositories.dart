@@ -1,8 +1,4 @@
 /// Data Layer — Repository 實作匯出
-///
-/// TODO:
-/// 注意：Repository 介面（IXxxRepository）已統一移至 domain/repositories/，
-/// 請從 package:summitmate/domain/domain.dart 引入介面。
 library;
 
 // Repository 實作

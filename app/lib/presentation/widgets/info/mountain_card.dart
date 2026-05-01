@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:summitmate/data/models/mountain_location.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/widgets/common/summit_image.dart';
 
 class MountainCard extends StatelessWidget {

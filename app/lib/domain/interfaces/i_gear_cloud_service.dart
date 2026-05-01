@@ -1,7 +1,8 @@
 import '../../core/error/result.dart';
-import '../../data/models/gear_set.dart';
+import '../entities/gear_set.dart';
 import '../entities/gear_item.dart';
-import '../../data/models/meal_item.dart';
+import '../entities/daily_meal_plan.dart';
+import '../enums/gear_set_visibility.dart';
 
 /// 雲端裝備庫服務介面
 /// 負責裝備組合的上傳、下載、分享

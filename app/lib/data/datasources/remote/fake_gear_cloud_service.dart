@@ -1,9 +1,7 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/core.dart';
 import '../../../domain/domain.dart';
-import '../../models/gear_item_model.dart';
-import '../../models/gear_set.dart';
-import '../../models/meal_item.dart';
+
 /// 模擬雲端裝備庫服務 (與 IGearCloudService 介面一致)
 /// 用於在遠端實作尚未完成或環境限制時，確保系統不崩潰。
 @LazySingleton(as: IGearCloudService)
@@ -39,9 +37,6 @@ class FakeGearCloudService implements IGearCloudService {
     List<DailyMealPlan>? meals,
     String? key,
   }) async {
-    // 模擬上傳成功，將 Entity 轉換為 Model 以存入 GearSet
-    final itemModels = items.map((e) => GearItemModel.fromDomain(e)).toList();
-
     final mockSet = GearSet(
       id: 'fake-${DateTime.now().millisecondsSinceEpoch}',
       title: title,
@@ -49,7 +44,7 @@ class FakeGearCloudService implements IGearCloudService {
       totalWeight: items.fold(0.0, (sum, i) => sum + i.totalWeight),
       itemCount: items.length,
       visibility: visibility,
-      items: itemModels,
+      items: items,
       meals: meals,
       createdAt: DateTime.now(),
       createdBy: author,

@@ -1,14 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/di/injection.dart';
 import '../../core/error/result.dart';
-import '../../data/models/gear_set.dart';
-import '../../domain/entities/gear_item.dart';
-import '../../domain/repositories/i_gear_repository.dart';
-import '../../domain/repositories/i_gear_set_repository.dart';
-import '../../data/models/gear_key_record.dart';
-import '../../data/models/meal_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
@@ -119,15 +114,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     // If we look at GearCubit logic, it filters loadGear(tripId).
     // Let's rely on GearCubit state if it matches active trip, else manual fetch.
     final gearCubit = context.read<GearCubit>();
-    // List<GearItem> items; // Removed unused declaration
     List<GearItem> items = []; // Initialize to empty list to be safe or just use local var in branches
-    // Actually, items is used later in line 137 check and 151.
-    // So it logic must be accessible.
-    // The previous code had:
-    // List<GearItem> items;
-    // if (...) { ... items = ... } else { ... items = ... }
-    // If analyzer says 'Dead code' at 115, maybe it thinks initialization is guaranteed or not needed?
-    // Let's just initialize it.
     if (gearCubit.currentTripId == currentTripId && gearCubit.state is GearLoaded) {
       // Use loaded items
       try {
@@ -231,8 +218,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   }
 
   Future<void> _showDownloadConfirmDialog(GearSet gearSet) async {
-    final items = gearSet.items ?? [];
-
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => GearPreviewDialog(
@@ -244,8 +229,8 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     );
 
     if (confirmed == true) {
-      final domainItems = items.map((m) => m.toDomain()).toList();
-      await _importGearItems(domainItems);
+      final items = gearSet.items ?? [];
+      await _importGearItems(items);
       if (gearSet.meals != null && gearSet.meals!.isNotEmpty) {
         _importMeals(gearSet.meals!);
       }
@@ -271,7 +256,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           name: item.name,
           weight: item.weight,
           category: item.category,
-          // assuming library add item doesn't need ID, generates new one
         );
         added++;
       }

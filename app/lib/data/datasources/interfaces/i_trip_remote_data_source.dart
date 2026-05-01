@@ -19,7 +19,7 @@ abstract interface class ITripRemoteDataSource {
   // ========== Member Management ==========
 
   /// 取得行程成員
-  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId);
+  Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId);
 
   /// 更新成員角色
   Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role);

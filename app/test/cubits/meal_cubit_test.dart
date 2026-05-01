@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/meal_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_cubit.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_state.dart';
 
@@ -43,7 +43,8 @@ void main() {
         cubit.addMealItem('D1', MealType.lunch, 'Rice', 100, 350);
         await Future.delayed(Duration.zero);
         final state = cubit.state as MealLoaded;
-        final item = state.dailyPlans.firstWhere((p) => p.day == 'D1').meals[MealType.lunch]!.first;
+        final plan = state.dailyPlans.firstWhere((p) => p.day == 'D1');
+        final item = plan.meals[MealType.lunch]!.first;
         cubit.removeMealItem('D1', MealType.lunch, item.id);
       },
       expect: () => [

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../data/models/gear_set.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// Key 輸入下載對話框
 class GearKeyDownloadDialog extends StatefulWidget {

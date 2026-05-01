@@ -75,10 +75,10 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
+  Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId) async {
     try {
       final members = await _tripApi.getMembers(tripId);
-      return Success(members.map((m) => m.toJson()).toList());
+      return Success(members.map(TripApiMapper.fromMemberResponse).toList());
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
