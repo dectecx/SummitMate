@@ -1,6 +1,6 @@
 import '../../../core/models/paginated_list.dart';
 import '../../../domain/entities/favorite.dart';
-import '../../models/enums/favorite_type.dart';
+import '../../../domain/enums/favorite_type.dart';
 import '../../../core/error/result.dart';
 
 /// 最愛 (Favorites) 的遠端資料來源介面

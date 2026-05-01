@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../models/favorite_model.dart';
-import '../../models/enums/favorite_type.dart';
+import '../../../domain/enums/favorite_type.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 import '../../datasources/interfaces/i_favorites_local_data_source.dart';

@@ -2,7 +2,7 @@ import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
 import '../../../domain/entities/favorite.dart';
-import '../../models/enums/favorite_type.dart';
+import '../../../domain/enums/favorite_type.dart';
 import '../../api/models/favorites_api_models.dart';
 import '../../api/mappers/favorites_api_mapper.dart';
 import '../../api/services/favorites_api_service.dart';

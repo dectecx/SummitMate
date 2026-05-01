@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/favorites_api_models.dart';
 import 'package:summitmate/data/api/services/favorites_api_service.dart';
 import 'package:summitmate/data/datasources/remote/favorites_remote_data_source.dart';
-import 'package:summitmate/data/models/enums/favorite_type.dart';
+import 'package:summitmate/domain/enums/favorite_type.dart';
 import 'package:summitmate/core/error/result.dart';
 
 class MockFavoritesApiService extends Mock implements FavoritesApiService {}

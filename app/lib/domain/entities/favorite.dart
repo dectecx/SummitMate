@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../data/models/enums/favorite_type.dart';
+import '../enums/favorite_type.dart';
 
 part 'favorite.freezed.dart';
 part 'favorite.g.dart';

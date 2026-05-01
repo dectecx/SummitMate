@@ -5,11 +5,11 @@
 library;
 
 // Enums
-export '../data/models/enums/group_event_status.dart';
-export '../data/models/enums/group_event_application_status.dart';
-export '../data/models/enums/group_event_category.dart';
-export '../data/models/enums/sync_status.dart';
-export '../data/models/enums/favorite_type.dart';
+export 'enums/group_event_status.dart';
+export 'enums/group_event_application_status.dart';
+export 'enums/group_event_category.dart';
+export 'enums/sync_status.dart';
+export 'enums/favorite_type.dart';
 
 // Failures
 export 'failures/failure.dart' hide Failure;

@@ -1,5 +1,5 @@
 import '../../../domain/entities/favorite.dart';
-import '../../models/enums/favorite_type.dart';
+import '../../../domain/enums/favorite_type.dart';
 import '../models/favorites_api_models.dart';
 
 /// Favorites API Model ↔ Domain Model 轉換

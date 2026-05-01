@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../data/models/enums/group_event_status.dart';
-import '../../data/models/enums/group_event_application_status.dart';
-import '../../data/models/enums/group_event_category.dart';
+import '../enums/group_event_status.dart';
+import '../enums/group_event_application_status.dart';
+import '../enums/group_event_category.dart';
 import 'group_event_comment.dart';
 import 'trip_snapshot.dart';
 

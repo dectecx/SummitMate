@@ -19,5 +19,5 @@ enum GroupEventStatus {
   /// 已取消
   @HiveField(2)
   @JsonValue('cancelled')
-  cancelled,
+  cancelled;
 }

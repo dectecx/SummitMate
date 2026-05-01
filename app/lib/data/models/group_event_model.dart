@@ -1,9 +1,9 @@
 import '../../domain/entities/group_event.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'enums/group_event_status.dart';
-import 'enums/group_event_application_status.dart';
-import 'enums/group_event_category.dart';
+import '../../domain/enums/group_event_status.dart';
+import '../../domain/enums/group_event_application_status.dart';
+import '../../domain/enums/group_event_category.dart';
 
 import 'group_event_comment_model.dart';
 import 'trip_snapshot_model.dart';
