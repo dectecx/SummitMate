@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../data/models/weather_data.dart';
+import '../../../domain/domain.dart';
 
 /// 天氣預報詳細內容 Widget
 ///

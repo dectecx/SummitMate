@@ -1,10 +1,6 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
-import '../models/gear_set.dart';
-import '../models/gear_key_record.dart';
-import '../models/meal_item.dart';
-import '../../domain/repositories/i_gear_set_repository.dart';
-import '../../domain/entities/gear_item.dart';
+import '../../domain/domain.dart';
 import '../../domain/interfaces/i_gear_cloud_service.dart';
 import '../datasources/interfaces/i_gear_key_local_data_source.dart';
 
@@ -30,23 +26,17 @@ class GearSetRepository implements IGearSetRepository {
   @override
   Future<Result<GearSet, Exception>> getGearSetByKey(String key) => _remoteDataSource.getGearSetByKey(key);
 
-  /// 下載並匯入裝備組合至指定行程
-  ///
-  /// [id] 本地識別碼 (可選)
-  /// [key] 雲端識別碼
+  /// 下載特定裝備組合
   @override
   Future<Result<GearSet, Exception>> downloadGearSet(String id, {String? key}) =>
       _remoteDataSource.downloadGearSet(id, key: key);
 
-  /// 上傳/分享裝備組合
-  ///
-  /// [tripId] 關聯行程 ID
-  /// [title] 清單標題
-  /// [author] 作者名稱
-  /// [visibility] 可見度
-  /// [items] 裝備項目列表
-  /// [meals] 餐食計畫 (可選)
-  /// [key] 若為更新舊有清單，則提供此 Key
+  /// 刪除雲端裝備組合
+  @override
+  Future<Result<bool, Exception>> deleteGearSet(String id, String key) =>
+      _remoteDataSource.deleteGearSet(id, key);
+
+  /// 上傳裝備組合
   @override
   Future<Result<GearSet, Exception>> uploadGearSet({
     required String tripId,
@@ -56,41 +46,33 @@ class GearSetRepository implements IGearSetRepository {
     required List<GearItem> items,
     List<DailyMealPlan>? meals,
     String? key,
-  }) => _remoteDataSource.uploadGearSet(
-    tripId: tripId,
-    title: title,
-    author: author,
-    visibility: visibility,
-    items: items,
-    meals: meals,
-    key: key,
-  );
+  }) =>
+      _remoteDataSource.uploadGearSet(
+        tripId: tripId,
+        title: title,
+        author: author,
+        visibility: visibility,
+        items: items,
+        meals: meals,
+        key: key,
+      );
 
-  /// 刪除雲端裝備組合
-  ///
-  /// [id] 本地識別碼 (若有)
-  /// [key] 雲端識別碼
+  // --- Local (本地記錄) ---
+
+  /// 取得本地已上傳過的 Key 紀錄
   @override
-  Future<Result<bool, Exception>> deleteGearSet(String id, String key) => _remoteDataSource.deleteGearSet(id, key);
+  Future<List<GearKeyRecord>> getUploadedKeys() async {
+    final models = await _localDataSource.getUploadedKeys();
+    // 將 Model 轉換為 Domain Entity
+    return models.map((m) => m.toDomain()).toList();
+  }
 
-  // --- Local (本地紀錄) ---
-
-  /// 取得已上傳的組合 Key 紀錄
-  @override
-  Future<List<GearKeyRecord>> getUploadedKeys() => _localDataSource.getUploadedKeys();
-
-  /// 儲存上傳紀錄 (Key)
-  ///
-  /// [key] 雲端識別碼
-  /// [title] 標題
-  /// [visibility] 可見度
+  /// 儲存一條上傳紀錄
   @override
   Future<void> saveUploadedKey(String key, String title, String visibility) =>
       _localDataSource.saveUploadedKey(key, title, visibility);
 
-  /// 移除上傳紀錄
-  ///
-  /// [key] 雲端識別碼
+  /// 移除一條上傳紀錄
   @override
   Future<void> removeUploadedKey(String key) => _localDataSource.removeUploadedKey(key);
 }

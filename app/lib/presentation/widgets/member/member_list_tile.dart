@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:summitmate/core/core.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 成員列表項目 Widget
 ///
 /// 顯示單一成員的資訊，包含頭像、名稱、角色等。
 /// 可選的設定按鈕用於管理成員權限。
 class MemberListTile extends StatelessWidget {
-  /// 成員資料 Map
-  final Map<String, dynamic> member;
+  /// 成員實體
+  final TripMember member;
 
   /// 是否為當前使用者
   final bool isSelf;
@@ -37,7 +38,7 @@ class MemberListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final role = member['role'] ?? 'member';
+    final role = member.role;
 
     // Determine role style
     String roleText;
@@ -61,11 +62,13 @@ class MemberListTile extends StatelessWidget {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(member['avatar'] ?? ''),
+        backgroundImage: (member.avatar != null && member.avatar!.isNotEmpty) 
+            ? NetworkImage(member.avatar!) 
+            : null,
         onBackgroundImageError: (_, _) {},
-        child: (member['avatar'] == null || member['avatar'].isEmpty) ? Text(member['display_name']?[0] ?? '?') : null,
+        child: (member.avatar == null || member.avatar!.isEmpty) ? Text(member.name[0]) : null,
       ),
-      title: Text(member['display_name'] ?? 'Unknown'),
+      title: Text(member.name),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -79,7 +82,7 @@ class MemberListTile extends StatelessWidget {
               ),
             ],
           ),
-          Text('ID: ${member['id'] ?? ''}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          Text('ID: ${member.userId}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
         ],
       ),
       trailing: canEdit ? OutlinedButton(onPressed: onSettingsTap, child: const Text('設定')) : null,

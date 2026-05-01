@@ -10,6 +10,9 @@ export 'enums/group_event_application_status.dart';
 export 'enums/group_event_category.dart';
 export 'enums/sync_status.dart';
 export 'enums/favorite_type.dart';
+export 'enums/meal_type.dart';
+export 'enums/gear_set_visibility.dart';
+export 'enums/mountain_enums.dart';
 
 // Failures
 export 'failures/failure.dart' hide Failure;
@@ -20,8 +23,23 @@ export 'entities/itinerary_item.dart';
 export 'entities/trip.dart';
 export 'entities/message.dart';
 export 'entities/user_profile.dart';
+export 'entities/settings.dart';
+export 'entities/poll.dart';
+export 'entities/gear_library_item.dart';
+export 'entities/group_event.dart';
+export 'entities/favorite.dart';
+export 'entities/group_event_comment.dart';
+export 'entities/trip_snapshot.dart';
+export 'entities/meal_item.dart';
+export 'entities/daily_meal_plan.dart';
+export 'entities/gear_set.dart';
+export 'entities/gear_key_record.dart';
+export 'entities/weather_data.dart';
+export 'entities/mountain_location.dart';
+export 'entities/trip_member.dart';
+export 'entities/download_task.dart';
 
-// Repository Interfaces（完整清單）
+// Repository Interfaces
 export 'repositories/i_gear_repository.dart';
 export 'repositories/i_itinerary_repository.dart';
 export 'repositories/i_auth_session_repository.dart';
@@ -46,11 +64,3 @@ export 'interfaces/i_poll_service.dart';
 export 'interfaces/i_sync_service.dart';
 export 'interfaces/i_token_validator.dart';
 export 'interfaces/i_weather_service.dart';
-
-export 'entities/settings.dart';
-export 'entities/poll.dart';
-export 'entities/gear_library_item.dart';
-export 'entities/group_event.dart';
-export 'entities/favorite.dart';
-export 'entities/group_event_comment.dart';
-export 'entities/trip_snapshot.dart';

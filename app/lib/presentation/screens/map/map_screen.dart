@@ -599,7 +599,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         minZoom: 12,
         maxZoom: 20,
         name: '自訂區域 ${DateTime.now().hour}:${DateTime.now().minute}',
-        onProgress: null,
       );
 
       // 如果 mounted，顯示成功提示

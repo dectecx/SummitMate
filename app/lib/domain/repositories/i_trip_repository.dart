@@ -74,8 +74,7 @@ abstract interface class ITripRepository {
   /// 取得行程成員列表
   ///
   /// [tripId] 行程 ID
-  // TODO: 定義 TripMember domain entity，替換 Map<String, dynamic>
-  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId);
+  Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId);
 
   /// 更新成員角色
   ///

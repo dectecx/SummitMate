@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:summitmate/core/core.dart';
-import 'package:summitmate/data/models/mountain_location.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 外部資訊連結卡片
 ///

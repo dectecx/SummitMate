@@ -1,13 +1,13 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/meal/meal_state.dart';
-import '../../../data/models/meal_item.dart';
+import '../../../domain/domain.dart';
 
 @injectable
 class MealCubit extends Cubit<MealState> {
   MealCubit()
     : super(
-        MealLoaded(
+        const MealLoaded(
           dailyPlans: [
             DailyMealPlan(day: 'D0'),
             DailyMealPlan(day: 'D1'),
@@ -19,7 +19,7 @@ class MealCubit extends Cubit<MealState> {
   /// 初始化或重置
   void reset() {
     emit(
-      MealLoaded(
+      const MealLoaded(
         dailyPlans: [
           DailyMealPlan(day: 'D0'),
           DailyMealPlan(day: 'D1'),
@@ -58,7 +58,7 @@ class MealCubit extends Cubit<MealState> {
       itemList.add(newItem);
       newMeals[type] = itemList;
 
-      currentPlans[planIndex] = DailyMealPlan(day: day, meals: newMeals);
+      currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
       emit(loadedState.copyWith(dailyPlans: currentPlans));
     }
   }
@@ -82,7 +82,7 @@ class MealCubit extends Cubit<MealState> {
       itemList.removeWhere((item) => item.id == itemId);
       newMeals[type] = itemList;
 
-      currentPlans[planIndex] = DailyMealPlan(day: day, meals: newMeals);
+      currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
       emit(loadedState.copyWith(dailyPlans: currentPlans));
     }
   }
@@ -110,7 +110,7 @@ class MealCubit extends Cubit<MealState> {
       if (itemIndex != -1) {
         itemList[itemIndex] = itemList[itemIndex].copyWith(quantity: quantity);
         newMeals[type] = itemList;
-        currentPlans[planIndex] = DailyMealPlan(day: day, meals: newMeals);
+        currentPlans[planIndex] = oldPlan.copyWith(meals: newMeals);
         emit(loadedState.copyWith(dailyPlans: currentPlans));
       }
     }

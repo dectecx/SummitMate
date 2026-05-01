@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import '../../models/meal_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../api/mappers/trip_meal_api_mapper.dart';
 import '../../api/services/trip_meal_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';

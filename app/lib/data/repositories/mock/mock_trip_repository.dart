@@ -88,9 +88,15 @@ class MockTripRepository implements ITripRepository {
   // ========== Member Management (Remote Mock) ==========
 
   @override
-  Future<Result<List<Map<String, dynamic>>, Exception>> getTripMembers(String tripId) async {
+  Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId) async {
     return Success([
-      {'id': 'mock-user-1', 'displayName': '測試帳號', 'email': 'test@example.com', 'role': 'owner'},
+      TripMember(
+        userId: 'mock-user-1',
+        name: '測試帳號',
+        avatar: '',
+        role: 'owner',
+        joinedAt: DateTime.now(),
+      ),
     ]);
   }
 

@@ -11,7 +11,6 @@ import '../../data/models/itinerary_item_model.dart';
 import '../../data/models/message_model.dart';
 import '../../data/models/gear_item_model.dart';
 import '../../data/models/gear_library_item_model.dart';
-import '../../data/models/weather_data.dart';
 import '../../data/models/poll_model.dart';
 import '../../data/models/trip_model.dart';
 import '../../data/models/group_event_model.dart';
@@ -66,12 +65,7 @@ class HiveService {
     if (!Hive.isAdapterRegistered(3)) {
       Hive.registerAdapter(GearItemModelAdapter());
     }
-    if (!Hive.isAdapterRegistered(4)) {
-      Hive.registerAdapter(WeatherDataAdapter());
-    }
-    if (!Hive.isAdapterRegistered(5)) {
-      Hive.registerAdapter(DailyForecastAdapter());
-    }
+    // Weather adapters removed due to domain migration and upcoming Isar phase
     if (!Hive.isAdapterRegistered(6)) {
       Hive.registerAdapter(PollModelAdapter());
     }
@@ -127,7 +121,7 @@ class HiveService {
     await openBox<PollModel>(HiveBoxNames.polls);
     await openBox<GroupEventModel>(HiveBoxNames.groupEvents);
     await openBox<GroupEventApplicationModel>(HiveBoxNames.groupEventApplications);
-    await openBox<WeatherData>(HiveBoxNames.weather);
+    // Weather box removed due to domain migration
     await openBox<FavoriteModel>(HiveBoxNames.mountainFavorites);
     await openBox<FavoriteModel>(HiveBoxNames.groupEventFavorites);
   }

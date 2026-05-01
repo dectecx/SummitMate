@@ -7,14 +7,15 @@ import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../../data/models/download_task.dart';
 import 'offline_map_state.dart';
 
 @injectable
 class OfflineMapCubit extends Cubit<OfflineMapState> {
   final FMTCStore _store = FMTCStore('osm_store');
   bool _isQueueProcessing = false;
+  final Map<String, StreamSubscription> _subscriptions = {};
 
   OfflineMapCubit() : super(OfflineMapInitial()) {
     _init();
@@ -25,7 +26,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     try {
       packageName = GetIt.instance<PackageInfo>().packageName;
     } catch (e) {
-      // fallback or retry?
+      LogService.error('Failed to get package info: $e', source: 'OfflineMapCubit');
     }
     emit(OfflineMapLoaded(store: _store, packageName: packageName));
   }
@@ -52,33 +53,18 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
       } catch (_) {}
       emit(OfflineMapLoaded(store: _store, isStoreReady: true, packageName: packageName));
     }
-
-    LogService.info('State set to ready.', source: 'OfflineMapCubit');
   }
 
   /// 下載指定區域
-  ///
-  /// [bounds] 下載範圍 (經緯度邊界)
-  /// [minZoom] 最小縮放層級
-  /// [maxZoom] 最大縮放層級
-  /// [name] 任務名稱 (可選)
-  /// [onProgress] 下載進度 Callback (可選)
   Future<void> downloadRegion({
     required LatLngBounds bounds,
     required int minZoom,
     required int maxZoom,
     String? name,
-    Function(double progress)? onProgress, // 進度回調 (非必須，可透過狀態監聽)
   }) async {
     final hasConnection = await InternetConnectionChecker.createInstance().hasConnection;
-    LogService.info(
-      'Download requested. Connectivity: ${hasConnection ? "Online" : "Offline"}',
-      source: 'OfflineMapCubit',
-    );
 
     if (!kIsWeb && !hasConnection) {
-      LogService.warning('No internet connection. Task rejected.', source: 'OfflineMapCubit');
-      // 應發送錯誤狀態或拋出例外供 UI 處理
       throw Exception('無網路連線，無法下載地圖。');
     }
 
@@ -87,12 +73,20 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     final taskId = DateTime.now().millisecondsSinceEpoch.toString();
     final taskName = name ?? '區域下載 ${taskId.substring(taskId.length - 4)}';
 
-    final task = DownloadTask(id: taskId, name: taskName, bounds: bounds, minZoom: minZoom, maxZoom: maxZoom);
+    final task = DownloadTask(
+      id: taskId,
+      name: taskName,
+      bounds: bounds,
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      status: TaskStatus.pending,
+    );
 
     if (state is OfflineMapLoaded) {
-      final currentQueue = List<DownloadTask>.from((state as OfflineMapLoaded).downloadQueue);
+      final currentState = state as OfflineMapLoaded;
+      final currentQueue = List<DownloadTask>.from(currentState.downloadQueue);
       currentQueue.add(task);
-      emit((state as OfflineMapLoaded).copyWith(downloadQueue: currentQueue));
+      emit(currentState.copyWith(downloadQueue: currentQueue));
     }
 
     LogService.info('Task added to queue: ${task.name}', source: 'OfflineMapCubit');
@@ -106,7 +100,6 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     final currentState = state as OfflineMapLoaded;
     final currentQueue = currentState.downloadQueue;
 
-    // 尋找下一個待處理任務
     final nextTaskIndex = currentQueue.indexWhere((t) => t.status == TaskStatus.pending);
     if (nextTaskIndex == -1) {
       _isQueueProcessing = false;
@@ -115,12 +108,8 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
 
     _isQueueProcessing = true;
 
-    // 複製佇列以更新狀態
     var workingQueue = List<DownloadTask>.from(currentQueue);
-    var task = workingQueue[nextTaskIndex];
-
-    // 更新狀態為下載中
-    task.status = TaskStatus.downloading;
+    var task = workingQueue[nextTaskIndex].copyWith(status: TaskStatus.downloading);
     workingQueue[nextTaskIndex] = task;
     emit(currentState.copyWith(downloadQueue: workingQueue));
 
@@ -139,20 +128,16 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
 
       final downloadTask = _store.download.startForeground(region: downloadable);
 
-      // 重新取得狀態/佇列，防止因外部操作導致狀態變更
       if (state is! OfflineMapLoaded) return;
 
-      // 監聽下載進度
-      task.subscription = downloadTask.downloadProgress.listen(
+      _subscriptions[task.id] = downloadTask.downloadProgress.listen(
         (progress) {
           if (state is! OfflineMapLoaded) return;
           final loadedState = state as OfflineMapLoaded;
           final q = List<DownloadTask>.from(loadedState.downloadQueue);
           final idx = q.indexWhere((t) => t.id == task.id);
           if (idx != -1) {
-            final t = q[idx];
-            t.progress = progress.percentageProgress / 100.0;
-            // 更新佇列並發送新狀態
+            q[idx] = q[idx].copyWith(progress: progress.percentageProgress / 100.0);
             emit(loadedState.copyWith(downloadQueue: q));
           }
         },
@@ -163,11 +148,12 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
             final q = List<DownloadTask>.from(loadedState.downloadQueue);
             final idx = q.indexWhere((t) => t.id == task.id);
             if (idx != -1) {
-              q[idx].status = TaskStatus.failed;
+              q[idx] = q[idx].copyWith(status: TaskStatus.failed);
               emit(loadedState.copyWith(downloadQueue: q));
             }
           }
-          task.subscription?.cancel();
+          _subscriptions[task.id]?.cancel();
+          _subscriptions.remove(task.id);
           _isQueueProcessing = false;
           _processQueue();
         },
@@ -178,11 +164,11 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
             final q = List<DownloadTask>.from(loadedState.downloadQueue);
             final idx = q.indexWhere((t) => t.id == task.id);
             if (idx != -1) {
-              q[idx].status = TaskStatus.completed;
-              q[idx].progress = 1.0;
+              q[idx] = q[idx].copyWith(status: TaskStatus.completed, progress: 1.0);
               emit(loadedState.copyWith(downloadQueue: q));
             }
           }
+          _subscriptions.remove(task.id);
           _isQueueProcessing = false;
           _processQueue();
         },
@@ -195,7 +181,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
         final q = List<DownloadTask>.from(loadedState.downloadQueue);
         final idx = q.indexWhere((t) => t.id == task.id);
         if (idx != -1) {
-          q[idx].status = TaskStatus.failed;
+          q[idx] = q[idx].copyWith(status: TaskStatus.failed);
           emit(loadedState.copyWith(downloadQueue: q));
         }
       }
@@ -204,9 +190,6 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     }
   }
 
-  /// 取消下載任務
-  ///
-  /// [taskId] 任務 ID
   Future<void> cancelTask(String taskId) async {
     if (state is! OfflineMapLoaded) return;
     final loadedState = state as OfflineMapLoaded;
@@ -216,12 +199,13 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     if (idx != -1) {
       final task = q[idx];
       if (task.status == TaskStatus.downloading) {
-        await task.subscription?.cancel();
+        await _subscriptions[taskId]?.cancel();
+        _subscriptions.remove(taskId);
       }
-      task.status = TaskStatus.cancelled;
+      q[idx] = task.copyWith(status: TaskStatus.cancelled);
       emit(loadedState.copyWith(downloadQueue: q));
 
-      if (task.subscription != null) {
+      if (task.status == TaskStatus.downloading) {
         _isQueueProcessing = false;
         _processQueue();
       }
@@ -233,10 +217,12 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     final loadedState = state as OfflineMapLoaded;
     final q = List<DownloadTask>.from(loadedState.downloadQueue);
 
-    for (var task in q) {
+    for (var i = 0; i < q.length; i++) {
+      final task = q[i];
       if (task.status == TaskStatus.downloading || task.status == TaskStatus.pending) {
-        await task.subscription?.cancel();
-        task.status = TaskStatus.cancelled;
+        await _subscriptions[task.id]?.cancel();
+        _subscriptions.remove(task.id);
+        q[i] = task.copyWith(status: TaskStatus.cancelled);
       }
     }
     _isQueueProcessing = false;
@@ -266,17 +252,22 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
       await _store.manage.delete();
       await _store.manage.create();
       LogService.info('Store cleared and recreated.', source: 'OfflineMapCubit');
-      // 更新統計資訊
       getStoreStats();
     } catch (e) {
       LogService.error('Error clearing store: $e', source: 'OfflineMapCubit');
     }
   }
 
+  @override
+  Future<void> close() {
+    for (final sub in _subscriptions.values) {
+      sub.cancel();
+    }
+    return super.close();
+  }
+
   void reset() {
     cancelAllDownloads();
-    // Keep store ready but clear queue?
-    // MapProvider reset cleared queue.
     if (state is OfflineMapLoaded) {
       emit((state as OfflineMapLoaded).copyWith(downloadQueue: []));
     }

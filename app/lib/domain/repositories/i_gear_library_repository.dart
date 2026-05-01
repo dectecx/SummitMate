@@ -70,4 +70,7 @@ abstract class IGearLibraryRepository {
   /// [userId] 使用者 ID
   /// 回傳：{類別名稱: 重量(g)} 的對應表
   Map<String, double> getWeightByCategory(String userId);
+
+  /// 同步至雲端 (完全替換)
+  Future<Result<void, Exception>> syncRemoteItems(List<GearLibraryItem> items);
 }

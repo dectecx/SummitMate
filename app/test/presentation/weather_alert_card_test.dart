@@ -6,12 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:summitmate/data/models/weather_data.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/widgets/weather/weather_alert_card.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
-import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/theme/theme_types.dart';
 
 // Mocks

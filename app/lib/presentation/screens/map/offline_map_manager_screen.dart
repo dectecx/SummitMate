@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubits/map/offline_map_cubit.dart';
 import '../../cubits/map/offline_map_state.dart';
-import '../../../data/models/download_task.dart';
+import 'package:summitmate/domain/domain.dart';
 
 class OfflineMapManagerScreen extends StatefulWidget {
   const OfflineMapManagerScreen({super.key});
@@ -20,7 +20,6 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
   bool _isLoadingStats = true;
 
   // 預定義推薦區域 (約 10km x 10km)
-  // 經緯度約 0.1 度 ~ 11km
   final List<({String name, LatLngBounds bounds})> _presets = [
     (name: '玉山主峰 (Mt. Jade)', bounds: LatLngBounds(const LatLng(23.51, 120.91), const LatLng(23.43, 120.99))),
     (name: '雪山主東 (Snow Mtn)', bounds: LatLngBounds(const LatLng(24.42, 121.19), const LatLng(24.34, 121.27))),
@@ -40,7 +39,6 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
     final cubit = context.read<OfflineMapCubit>();
     await cubit.getStoreStats();
     if (mounted) {
-      // Need to check state to get updated stats
       final state = cubit.state;
       if (state is OfflineMapLoaded) {
         setState(() {
@@ -190,7 +188,6 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                             icon: const Icon(Icons.visibility, color: Colors.teal),
                             tooltip: '預覽範圍',
                             onPressed: () {
-                              // 返回 MapScreen 並傳遞 bounds 進行預覽
                               Navigator.pop(context, preset.bounds);
                             },
                           ),
@@ -278,9 +275,7 @@ class _OfflineMapManagerScreenState extends State<OfflineMapManagerScreen> {
                 minZoom: 12,
                 maxZoom: 20,
                 name: preset.name,
-                onProgress: null,
               );
-              // 下載加入佇列後 refresh stats (如果有立即變動) 但是通常要等下載
               if (mounted) _refreshStats();
             },
             child: const Text('加入下載'),

@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/presentation/utils/gear_utils.dart';
 import 'responsive_layout.dart';
-
-import '../../data/models/gear_set.dart';
-import '../../domain/entities/gear_item.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 裝備組合預覽對話框
 /// 使用 GearCategoryHelper 確保與主裝備頁一致
@@ -26,7 +24,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
   final Set<String> _expandedCategories = {};
   bool _initialized = false;
 
-  List<GearItem> get items => widget.gearSet.items?.map((m) => m.toDomain()).toList() ?? [];
+  List<GearItem> get items => widget.gearSet.items ?? [];
 
   @override
   void didChangeDependencies() {

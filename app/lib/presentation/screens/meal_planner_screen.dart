@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/meal_item.dart';
+import '../../domain/domain.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import 'food_reference_screen.dart';
@@ -130,11 +130,6 @@ class MealPlannerScreen extends StatelessWidget {
   }
 
   Widget _buildMealSection(BuildContext context, MealCubit cubit, String day, MealType type, List<MealItem> items) {
-    if (items.isEmpty && type != MealType.breakfast && type != MealType.lunch && type != MealType.dinner) {
-      // 隱藏非主要且空的餐別，這裡選擇顯示所有以方便規劃，或者只摺疊
-      // 策略：顯示 Header，若空則顯示 placeholder 鼓勵新增
-    }
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ExpansionTile(

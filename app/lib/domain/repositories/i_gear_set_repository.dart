@@ -1,9 +1,6 @@
 import '../../core/error/result.dart';
-// TODO: Phase 2 完成後將 GearSet 等改為 domain/entities/ 路徑
-import '../../data/models/gear_set.dart';
-import '../../data/models/gear_key_record.dart';
 import '../entities/gear_item.dart';
-import '../../data/models/meal_item.dart';
+import '../domain.dart';
 
 /// 裝備組合 (GearSet) Repository 介面
 ///
@@ -44,26 +41,20 @@ abstract class IGearSetRepository {
     String? key,
   });
 
-  /// 刪除雲端上的裝備組合
+  /// 刪除雲端裝備組合
   ///
-  /// [id] 本地識別碼（若有）
+  /// [id] 本地識別碼 (若有)
   /// [key] 雲端識別碼
   Future<Result<bool, Exception>> deleteGearSet(String id, String key);
 
-  // === 本地金鑰儲存 (Local Key Storage) ===
+  // === 本地紀錄 (Local Key Tracking) ===
 
-  /// 取得本地已儲存的上傳記錄（Key List）
+  /// 取得本地已上傳過的 Key 紀錄列表
   Future<List<GearKeyRecord>> getUploadedKeys();
 
-  /// 儲存一筆上傳記錄（Key）到本地
-  ///
-  /// [key] 雲端識別碼
-  /// [title] 標題
-  /// [visibility] 可見度
+  /// 儲存一條上傳紀錄
   Future<void> saveUploadedKey(String key, String title, String visibility);
 
-  /// 移除本地的上傳記錄
-  ///
-  /// [key] 雲端識別碼
+  /// 移除一條上傳紀錄
   Future<void> removeUploadedKey(String key);
 }

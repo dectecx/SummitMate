@@ -92,8 +92,14 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
   Future<Result<PaginatedList<GearLibraryItem>, Exception>> getRemoteItems({
     int? page,
     int? limit,
+    String? category,
     String? search,
   }) async {
     return Success(PaginatedList(items: [], page: page ?? 1, total: 0, hasMore: false));
+  }
+
+  @override
+  Future<Result<void, Exception>> syncRemoteItems(List<GearLibraryItem> items) async {
+    return const Success(null);
   }
 }

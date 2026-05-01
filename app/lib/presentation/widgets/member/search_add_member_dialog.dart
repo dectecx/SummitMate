@@ -51,7 +51,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
   bool _isLoading = false;
   String? _errorMsg;
-  Map<String, dynamic>? _searchResult;
+  UserProfile? _searchResult;
   SearchType _searchType = SearchType.email;
   String _selectedRole = RoleConstants.member;
 
@@ -86,7 +86,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
       if (mounted) {
         setState(() {
-          _searchResult = {'id': user.id, 'display_name': user.displayName, 'email': user.email, 'avatar': user.avatar};
+          _searchResult = user;
           _isLoading = false;
         });
       }
@@ -107,13 +107,13 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final userId = _searchResult!['id'];
+      final userId = _searchResult!.id;
       final result = await widget.tripRepository.addMemberById(widget.tripId, userId, role: _selectedRole);
       if (result is Failure) throw result.exception;
 
       if (mounted) {
         Navigator.pop(context);
-        ToastService.success('已新增成員: ${_searchResult!['display_name']}');
+        ToastService.success('已新增成員: ${_searchResult!.displayName}');
         widget.onMemberAdded();
       }
     } catch (e) {
@@ -142,8 +142,8 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isSelf = _searchResult != null && _searchResult!['id'] == widget.currentUserId;
-    final isAlreadyMember = _searchResult != null && widget.existingMemberIds.contains(_searchResult!['id']);
+    final isSelf = _searchResult != null && _searchResult!.id == widget.currentUserId;
+    final isAlreadyMember = _searchResult != null && widget.existingMemberIds.contains(_searchResult!.id);
     final canAdd = _searchResult != null && !isSelf && !isAlreadyMember;
 
     return AlertDialog(
@@ -223,9 +223,9 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundImage: NetworkImage(_searchResult!['avatar'] ?? ''),
+                backgroundImage: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty) ? NetworkImage(_searchResult!.avatar!) : null,
                 onBackgroundImageError: (_, _) {},
-                child: Text(_searchResult!['display_name']?[0] ?? '?'),
+                child: (_searchResult!.avatar == null || _searchResult!.avatar!.isEmpty) ? Text(_searchResult!.displayName[0]) : null,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -233,13 +233,13 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _searchResult!['display_name'] ?? '未知用戶',
+                      _searchResult!.displayName,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 2),
-                    Text(_searchResult!['email'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text(_searchResult!.email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 2),
-                    Text('ID: ${_searchResult!['id']}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text('ID: ${_searchResult!.id}', style: const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
                 ),
               ),

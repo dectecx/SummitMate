@@ -120,15 +120,12 @@ import '../../domain/interfaces/i_ad_service.dart' as _i730;
 import '../../domain/interfaces/i_api_client.dart' as _i418;
 import '../../domain/interfaces/i_auth_service.dart' as _i147;
 import '../../domain/interfaces/i_connectivity_service.dart' as _i751;
-import '../../domain/interfaces/i_gear_cloud_service.dart' as _i1042;
 import '../../domain/interfaces/i_geolocator_service.dart' as _i956;
 import '../../domain/interfaces/i_poll_service.dart' as _i304;
 import '../../domain/interfaces/i_token_validator.dart' as _i1012;
-import '../../domain/interfaces/i_weather_service.dart' as _i874;
 import '../../domain/repositories/i_auth_session_repository.dart' as _i43;
 import '../../domain/repositories/i_favorites_repository.dart' as _i571;
 import '../../domain/repositories/i_gear_repository.dart' as _i684;
-import '../../domain/repositories/i_gear_set_repository.dart' as _i138;
 import '../../domain/repositories/i_itinerary_repository.dart' as _i750;
 import '../../domain/repositories/i_settings_repository.dart' as _i868;
 import '../../infrastructure/clients/api_client.dart' as _i1019;
@@ -271,6 +268,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i55.GearCubit>(
       () => _i55.GearCubit(gh<_i684.IGearRepository>()),
     );
+    gh.lazySingleton<_i614.IWeatherService>(
+      () => _i27.WeatherService(
+        settingsRepo: gh<_i614.ISettingsRepository>(),
+        locationResolver: gh<_i887.ILocationResolver>(),
+        cwaSource: gh<_i455.CwaWeatherSource>(),
+      ),
+    );
     gh.lazySingleton<_i751.IConnectivityService>(
       () => _i315.ConnectivityService(
         checker: gh<_i973.InternetConnectionChecker>(),
@@ -290,13 +294,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i755.UsageTrackingService>(
       () => _i755.UsageTrackingService(gh<_i418.IApiClient>()),
     );
-    gh.lazySingleton<_i874.IWeatherService>(
-      () => _i27.WeatherService(
-        settingsRepo: gh<_i868.ISettingsRepository>(),
-        locationResolver: gh<_i887.ILocationResolver>(),
-        cwaSource: gh<_i455.CwaWeatherSource>(),
-      ),
-    );
     gh.lazySingleton<_i254.ConnectivityInterceptor>(
       () => _i254.ConnectivityInterceptor(gh<_i751.IConnectivityService>()),
     );
@@ -308,17 +305,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i27.AuthInterceptor>(
       () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
     );
+    gh.lazySingleton<_i614.IGearSetRepository>(
+      () => _i536.GearSetRepository(
+        gh<_i614.IGearCloudService>(),
+        gh<_i484.IGearKeyLocalDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i614.IAuthService>(
       () => _i227.AuthService(
         apiClient: gh<_i7.NetworkAwareClient>(),
         sessionRepository: gh<_i614.IAuthSessionRepository>(),
         tokenValidator: gh<_i614.ITokenValidator>(),
-      ),
-    );
-    gh.lazySingleton<_i138.IGearSetRepository>(
-      () => _i536.GearSetRepository(
-        gh<_i1042.IGearCloudService>(),
-        gh<_i484.IGearKeyLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i165.PermissionService>(
@@ -483,7 +480,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IGearRepository>(),
         gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
-        gh<_i31.IGearLibraryRemoteDataSource>(),
       ),
     );
     gh.factory<_i882.GroupEventCubit>(

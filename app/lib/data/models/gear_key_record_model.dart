@@ -1,39 +1,48 @@
 import 'package:json_annotation/json_annotation.dart';
+import '../../domain/entities/gear_key_record.dart';
 
-part 'gear_key_record.g.dart';
+part 'gear_key_record_model.g.dart';
 
-/// 裝備清單上傳記錄
-///
-/// 用於本地儲存已上傳至雲端的清單 Key，方便使用者管理與存取。
 @JsonSerializable(fieldRename: FieldRename.snake)
-class GearKeyRecord {
-  /// 雲端唯一識別碼 (Key)
+class GearKeyRecordModel {
   final String key;
-
-  /// 清單標題
   final String title;
-
-  /// 可見度 (public / private / unlisted)
   @JsonKey(defaultValue: 'private')
   final String visibility;
-
-  /// 上傳時間
   @JsonKey(fromJson: _parseDateTime, toJson: _dateTimeToJson)
   final DateTime uploadedAt;
 
-  GearKeyRecord({required this.key, required this.title, required this.visibility, required this.uploadedAt});
+  GearKeyRecordModel({
+    required this.key,
+    required this.title,
+    required this.visibility,
+    required this.uploadedAt,
+  });
 
-  factory GearKeyRecord.fromJson(Map<String, dynamic> json) => _$GearKeyRecordFromJson(json);
-  Map<String, dynamic> toJson() => _$GearKeyRecordToJson(this);
+  GearKeyRecord toDomain() => GearKeyRecord(
+        key: key,
+        title: title,
+        visibility: visibility,
+        uploadedAt: uploadedAt,
+      );
 
-  /// 序列化為儲存字串 (for SharedPreferences / simple storage)
+  factory GearKeyRecordModel.fromDomain(GearKeyRecord entity) => GearKeyRecordModel(
+        key: entity.key,
+        title: entity.title,
+        visibility: entity.visibility,
+        uploadedAt: entity.uploadedAt,
+      );
+
+  factory GearKeyRecordModel.fromJson(Map<String, dynamic> json) => _$GearKeyRecordModelFromJson(json);
+  Map<String, dynamic> toJson() => _$GearKeyRecordModelToJson(this);
+
   String toStorageString() {
     return '$key|$title|$visibility|${uploadedAt.toIso8601String()}';
   }
 
-  factory GearKeyRecord.fromStorageString(String str) {
+  factory GearKeyRecordModel.fromStorageString(String str) {
     final parts = str.split('|');
-    return GearKeyRecord(
+    return GearKeyRecordModel(
       key: parts.isNotEmpty ? parts[0] : '',
       title: parts.length > 1 ? parts[1] : '',
       visibility: parts.length > 2 ? parts[2] : 'private',
@@ -41,7 +50,6 @@ class GearKeyRecord {
     );
   }
 
-  // DateTime parsing helpers
   static DateTime _parseDateTime(dynamic value) {
     if (value == null) return DateTime.now();
     if (value is DateTime) return value;

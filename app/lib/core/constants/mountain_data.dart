@@ -1,4 +1,4 @@
-import '../../data/models/mountain_location.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 山岳資料
 class MountainData {

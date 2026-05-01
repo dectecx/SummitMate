@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/meal_item.dart';
+import '../../../domain/domain.dart';
 
 abstract class MealState extends Equatable {
   const MealState();

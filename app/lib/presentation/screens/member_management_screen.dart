@@ -29,7 +29,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   final _tripRepository = getIt<ITripRepository>();
 
   bool _isLoading = true;
-  List<Map<String, dynamic>> _members = [];
+  List<TripMember> _members = [];
   String? _currentUserId;
 
   @override
@@ -52,21 +52,21 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
         final user = authState.user;
         // Verify if current user is indeed the creator/owner (should be for pendingCreate)
         if (widget.trip.userId == user.id) {
-          final localMember = {
-            'id': user.id,
-            'display_name': user.displayName,
-            'email': user.email,
-            'avatar': user.avatar,
-            'role_code': RoleConstants.leader, // Creator is Leader
-          };
+        final localMember = TripMember(
+            userId: user.id,
+            name: user.displayName,
+            avatar: user.avatar,
+            role: RoleConstants.leader,
+            joinedAt: DateTime.now(),
+        );
 
-          setState(() {
-            _members = [localMember];
-            _isLoading = false;
-          });
-          return;
-        }
+        setState(() {
+          _members = [localMember];
+          _isLoading = false;
+        });
+        return;
       }
+    }
     }
 
     try {
@@ -123,8 +123,8 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// 顯示權限設定對話框
   ///
   /// [member] 成員資料 Map (包含 id, display_name, role_code 等)
-  void _showRoleDialog(Map<String, dynamic> member) {
-    String currentRole = member['role_code'] ?? RoleConstants.member;
+  void _showRoleDialog(TripMember member) {
+    String currentRole = member.role;
     String selectedRole = (currentRole == RoleConstants.guide) ? RoleConstants.guide : RoleConstants.member;
 
     final isTargetLeader = currentRole == RoleConstants.leader || currentRole == RoleConstants.admin;
@@ -136,7 +136,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text('設定 ${member['display_name']} 的權限'),
+              title: Text('設定 ${member.name} 的權限'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -198,7 +198,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                     onPressed: () {
                       if (selectedRole != currentRole) {
                         Navigator.pop(context);
-                        _updateRole(member['id'], selectedRole, member['display_name']);
+                        _updateRole(member.userId, selectedRole, member.name);
                       } else {
                         Navigator.pop(context);
                       }
@@ -214,12 +214,12 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   }
 
   /// 顯示移轉團長確認對話框
-  void _confirmTransferLeader(Map<String, dynamic> targetMember) {
+  void _confirmTransferLeader(TripMember targetMember) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('移轉團長身分'),
-        content: Text('確定要將團長身分移轉給 ${targetMember['display_name']} 嗎？\n\n移轉後，您將變更為「成員」，且無法再管理行程成員。此操作無法復原。'),
+        content: Text('確定要將團長身分移轉給 ${targetMember.name} 嗎？\n\n移轉後，您將變更為「成員」，且無法再管理行程成員。此操作無法復原。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           FilledButton(
@@ -231,7 +231,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                 // 1. Promote Target to Leader
                 final r1 = await _tripRepository.updateMemberRole(
                   widget.trip.id,
-                  targetMember['id'],
+                  targetMember.userId,
                   RoleConstants.leader,
                 );
                 if (r1 is Failure) throw r1.exception;
@@ -244,7 +244,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                 );
                 if (r2 is Failure) throw r2.exception;
 
-                ToastService.success('已移轉團長身分給 ${targetMember['display_name']}');
+                ToastService.success('已移轉團長身分給 ${targetMember.name}');
                 _loadMembers();
               } catch (e) {
                 setState(() => _isLoading = false);
@@ -260,19 +260,19 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
 
   /// 顯示移除成員確認對話框
   ///
-  /// [member] 成員資料 Map
-  void _confirmRemove(Map<String, dynamic> member) {
+  /// [member] 成員實體
+  void _confirmRemove(TripMember member) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('移除成員'),
-        content: Text('確定要將 ${member['display_name']} 移出此行程嗎？'),
+        content: Text('確定要將 ${member.name} 移出此行程嗎？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _removeMember(member['id'], member['display_name']);
+              _removeMember(member.userId, member.name);
             },
             child: const Text('移除', style: TextStyle(color: Colors.red)),
           ),
@@ -290,7 +290,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
         tripId: widget.trip.id,
         tripRepository: _tripRepository,
         currentUserId: _currentUserId!,
-        existingMemberIds: _members.map((m) => m['id'] as String).toList(),
+        existingMemberIds: _members.map((m) => m.userId).toList(),
         onMemberAdded: _loadMembers,
       ),
     );
@@ -316,8 +316,8 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     String myRole = RoleConstants.member;
     if (_members.isNotEmpty && _currentUserId != null) {
       try {
-        final me = _members.firstWhere((m) => m['id'] == _currentUserId);
-        myRole = me['role_code'] ?? RoleConstants.member;
+        final me = _members.firstWhere((m) => m.userId == _currentUserId);
+        myRole = me.role;
       } catch (_) {
         // Not in list
       }
@@ -366,8 +366,8 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                   itemCount: _members.length,
                   itemBuilder: (context, index) {
                     final member = _members[index];
-                    final isSelf = member['id'] == _currentUserId;
-                    final isRowOwner = member['id'] == widget.trip.userId;
+                    final isSelf = member.userId == _currentUserId;
+                    final isRowOwner = member.userId == widget.trip.userId;
 
                     // Can edit this row?
                     final canEditRow = canManage && !isSelf && !isRowOwner;

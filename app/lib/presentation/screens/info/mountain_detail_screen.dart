@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:summitmate/data/models/mountain_location.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/widgets/common/summit_image.dart';
 import 'package:summitmate/presentation/widgets/info/external_links_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

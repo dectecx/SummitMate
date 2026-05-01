@@ -5,7 +5,7 @@ import 'package:summitmate/core/core.dart';
 import '../../screens/gear_cloud_screen.dart';
 import '../../screens/gear_library_screen.dart';
 import '../../screens/meal_planner_screen.dart';
-import 'package:summitmate/data/models/mountain_location.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 快速連結按鈕列 (官方清單、雲端庫、我的庫)
 class GearQuickLinks extends StatelessWidget {
