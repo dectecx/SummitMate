@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:hive_ce/hive.dart';
-import 'enums/favorite_type.dart';
+import '../../domain/enums/favorite_type.dart';
 import '../../domain/entities/favorite.dart';
 
 part 'favorite_model.g.dart';

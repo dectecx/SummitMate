@@ -97,8 +97,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       return;
     }
 
-    trip.dayNames = List<String>.from(trip.dayNames)..add(name);
-    final updateResult = await _tripRepository.updateTrip(trip);
+    final updatedTrip = trip.copyWith(dayNames: List<String>.from(trip.dayNames)..add(name));
+    final updateResult = await _tripRepository.updateTrip(updatedTrip);
     if (updateResult is Failure) {
       emit(ItineraryError(updateResult.exception.toString()));
       return;
@@ -125,8 +125,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
     final newDays = List<String>.from(trip.dayNames);
     newDays[index] = newName;
-    trip.dayNames = newDays;
-    await _tripRepository.updateTrip(trip);
+    final updatedTrip = trip.copyWith(dayNames: newDays);
+    await _tripRepository.updateTrip(updatedTrip);
 
     // 2. 批次更新 Item 的 day 欄位
     final tripItems = _repository.getByTripId(trip.id).where((i) => i.day == oldName);
@@ -156,8 +156,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     }
 
     final newDays = List<String>.from(trip.dayNames)..remove(name);
-    trip.dayNames = newDays;
-    await _tripRepository.updateTrip(trip);
+    final updatedTrip = trip.copyWith(dayNames: newDays);
+    await _tripRepository.updateTrip(updatedTrip);
     await loadItinerary();
   }
 
@@ -167,8 +167,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
 
-    trip.dayNames = newOrder;
-    final updateResult = await _tripRepository.updateTrip(trip);
+    final updatedTrip = trip.copyWith(dayNames: newOrder);
+    final updateResult = await _tripRepository.updateTrip(updatedTrip);
     if (updateResult is Failure) {
       emit(ItineraryError(updateResult.exception.toString()));
       return;

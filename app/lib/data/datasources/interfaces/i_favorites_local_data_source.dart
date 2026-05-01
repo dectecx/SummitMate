@@ -1,4 +1,4 @@
-import '../../models/enums/favorite_type.dart';
+import '../../../domain/enums/favorite_type.dart';
 import '../../models/favorite_model.dart';
 
 /// 最愛 (Favorites) 的本地資料來源介面

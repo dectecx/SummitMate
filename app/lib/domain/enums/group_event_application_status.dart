@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'group_event_application_status.g.dart';
 
-/// 揪團報名狀態
+/// 揪團報名申請狀態
 @HiveType(typeId: 15)
 enum GroupEventApplicationStatus {
   /// 待審核
@@ -11,7 +11,7 @@ enum GroupEventApplicationStatus {
   @JsonValue('pending')
   pending,
 
-  /// 已通過
+  /// 已核准 (入團)
   @HiveField(1)
   @JsonValue('approved')
   approved,

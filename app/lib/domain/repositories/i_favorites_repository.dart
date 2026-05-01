@@ -1,5 +1,5 @@
 import '../../core/models/paginated_list.dart';
-import '../../data/models/enums/favorite_type.dart';
+import '../enums/favorite_type.dart';
 import '../../core/error/result.dart';
 import '../entities/favorite.dart';
 

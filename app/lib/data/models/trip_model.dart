@@ -1,7 +1,7 @@
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../domain/entities/trip.dart';
-import 'enums/sync_status.dart';
+import '../../domain/enums/sync_status.dart';
 
 part 'trip_model.g.dart';
 

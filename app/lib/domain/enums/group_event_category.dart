@@ -4,18 +4,15 @@ import 'package:json_annotation/json_annotation.dart';
 part 'group_event_category.g.dart';
 
 /// 揪團活動分類
-@HiveType(typeId: 14)
+@HiveType(typeId: 16)
 @JsonEnum(valueField: 'value')
 enum GroupEventCategory {
   @HiveField(0)
   hiking('Hiking', '登山健行'),
-
   @HiveField(1)
   camping('Camping', '露營'),
-
   @HiveField(2)
   bouldering('Bouldering', '攀岩抱石'),
-
   @HiveField(3)
   other('Other', '其他');
 

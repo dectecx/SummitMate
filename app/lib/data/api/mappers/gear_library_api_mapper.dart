@@ -1,5 +1,5 @@
 import '../../models/gear_library_item_model.dart';
-import '../../models/enums/sync_status.dart';
+import '../../../domain/enums/sync_status.dart';
 import '../../../domain/entities/gear_library_item.dart';
 import '../models/gear_library_api_models.dart';
 

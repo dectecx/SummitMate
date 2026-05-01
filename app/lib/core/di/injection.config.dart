@@ -127,7 +127,6 @@ import '../../domain/interfaces/i_token_validator.dart' as _i1012;
 import '../../domain/interfaces/i_weather_service.dart' as _i874;
 import '../../domain/repositories/i_auth_session_repository.dart' as _i43;
 import '../../domain/repositories/i_favorites_repository.dart' as _i571;
-import '../../domain/repositories/i_gear_library_repository.dart' as _i241;
 import '../../domain/repositories/i_gear_repository.dart' as _i684;
 import '../../domain/repositories/i_gear_set_repository.dart' as _i138;
 import '../../domain/repositories/i_itinerary_repository.dart' as _i750;
@@ -438,7 +437,7 @@ extension GetItInjectableX on _i174.GetIt {
         remoteDataSource: gh<_i307.IItineraryRemoteDataSource>(),
       ),
     );
-    gh.lazySingleton<_i241.IGearLibraryRepository>(
+    gh.lazySingleton<_i614.IGearLibraryRepository>(
       () => _i540.GearLibraryRepository(
         localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
         remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),

@@ -1,6 +1,6 @@
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'enums/sync_status.dart';
+import '../../domain/enums/sync_status.dart';
 import '../../domain/entities/gear_library_item.dart';
 
 part 'gear_library_item_model.g.dart';

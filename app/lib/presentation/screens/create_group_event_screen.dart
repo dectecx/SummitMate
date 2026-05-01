@@ -7,7 +7,7 @@ import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
-import '../../data/models/enums/group_event_category.dart';
+import '../../domain/enums/group_event_category.dart';
 
 /// 建立揪團畫面
 class CreateGroupEventScreen extends StatefulWidget {

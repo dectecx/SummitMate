@@ -19,10 +19,10 @@ import '../../data/models/group_event_comment_model.dart';
 import '../../data/models/trip_snapshot_model.dart';
 import '../../data/models/favorite_model.dart';
 
-import '../../data/models/enums/group_event_status.dart';
-import '../../data/models/enums/group_event_application_status.dart';
-import '../../data/models/enums/sync_status.dart';
-import '../../data/models/enums/favorite_type.dart';
+import '../../domain/enums/group_event_status.dart';
+import '../../domain/enums/group_event_application_status.dart';
+import '../../domain/enums/sync_status.dart';
+import '../../domain/enums/favorite_type.dart';
 
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期，以及加密邏輯

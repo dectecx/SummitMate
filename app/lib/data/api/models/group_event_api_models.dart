@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'pagination_api_models.dart';
-import '../../models/enums/group_event_category.dart';
+import '../../../domain/enums/group_event_category.dart';
 import 'itinerary_api_models.dart';
 
 part 'group_event_api_models.freezed.dart';

@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../data/models/enums/sync_status.dart'; // SyncStatus 暫留 data/models/enums/
+import '../enums/sync_status.dart';
 
 part 'trip.freezed.dart';
 part 'trip.g.dart';

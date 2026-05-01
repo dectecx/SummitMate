@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../data/models/enums/sync_status.dart';
+import '../enums/sync_status.dart';
 
 part 'gear_library_item.freezed.dart';
 part 'gear_library_item.g.dart';
