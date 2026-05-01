@@ -7,73 +7,107 @@ import '../../models/itinerary_item.dart';
 import '../interfaces/i_itinerary_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 
-/// 行程項目 (ItineraryItem) 的本地資料來源實作 (使用 Hive)
+/// 行程項目模型 (ItineraryItemModel) 的本地資料來源實作 (使用 Hive)
 @LazySingleton(as: IItineraryLocalDataSource)
 class ItineraryLocalDataSource implements IItineraryLocalDataSource {
   static const String _boxName = HiveBoxNames.itinerary;
   static const String _prefKeyLastSync = 'itin_last_sync_time';
 
-  final Box<ItineraryItem> box;
+  final Box<ItineraryItemModel> box;
 
-  ItineraryLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<ItineraryItem>(_boxName);
+  ItineraryLocalDataSource({required HiveService hiveService}) : box = hiveService.getBox<ItineraryItemModel>(_boxName);
 
-  /// 取得所有行程
   @override
-  List<ItineraryItem> getAll() {
+  List<ItineraryItemModel> getAll() {
     return box.values.toList();
   }
 
-  /// 透過 Key 取得行程
   @override
-  ItineraryItem? getByKey(key) {
+  List<ItineraryItemModel> getByTripId(String tripId) {
+    return box.values.where((item) => item.tripId == tripId).toList();
+  }
+
+  @override
+  ItineraryItemModel? getByKey(key) {
     return box.get(key);
   }
 
-  /// 新增行程
-  ///
-  /// [item] 欲新增的項目
   @override
-  Future<void> add(ItineraryItem item) async {
+  ItineraryItemModel? getById(String id) {
+    try {
+      return box.values.firstWhere((item) => item.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> add(ItineraryItemModel item) async {
     await box.add(item);
   }
 
-  /// 更新行程
-  ///
-  /// [key] 目標項目的鍵值
-  /// [item] 更新後的項目資料
   @override
-  Future<void> update(key, ItineraryItem item) async {
-    await box.put(key, item);
+  Future<void> update(ItineraryItemModel item) async {
+    if (item.isInBox) {
+      await item.save();
+    } else {
+      final original = getById(item.id);
+      if (original != null) {
+        original.day = item.day;
+        original.name = item.name;
+        original.estTime = item.estTime;
+        original.actualTime = item.actualTime;
+        original.altitude = item.altitude;
+        original.distance = item.distance;
+        original.note = item.note;
+        original.imageAsset = item.imageAsset;
+        original.isCheckedIn = item.isCheckedIn;
+        original.checkedInAt = item.checkedInAt;
+        original.updatedAt = DateTime.now();
+        await original.save();
+      } else {
+        await box.add(item);
+      }
+    }
   }
 
-  /// 刪除行程
-  ///
-  /// [key] 目標項目的鍵值
   @override
   Future<void> delete(key) async {
     await box.delete(key);
   }
 
-  /// 清除所有行程
+  @override
+  Future<void> deleteById(String id) async {
+    final item = getById(id);
+    if (item != null) {
+      await item.delete();
+    }
+  }
+
+  @override
+  Future<void> clearByTripId(String tripId) async {
+    final toDelete = box.values.where((item) => item.tripId == tripId).toList();
+    for (final item in toDelete) {
+      await item.delete();
+    }
+  }
+
   @override
   Future<void> clear() async {
     await box.clear();
   }
 
-  /// 監聽資料變更
   @override
   Stream<BoxEvent> watch() {
     return box.watch();
   }
 
-  /// 儲存最後同步時間
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
     final prefs = getIt<SharedPreferences>();
     await prefs.setString(_prefKeyLastSync, time.toIso8601String());
   }
 
-  /// 取得最後同步時間
   @override
   DateTime? getLastSyncTime() {
     final prefs = getIt<SharedPreferences>();

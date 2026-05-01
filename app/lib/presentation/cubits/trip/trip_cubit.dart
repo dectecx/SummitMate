@@ -1,227 +1,202 @@
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../core/di/injection.dart';
-import '../../../core/models/paginated_list.dart';
-import '../../../data/models/trip.dart';
-import '../../../data/repositories/interfaces/i_trip_repository.dart';
-import '../../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../../data/repositories/interfaces/i_itinerary_repository.dart';
+import '../../../core/core.dart';
 import '../../../data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
-import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/infrastructure/infrastructure.dart';
-
-import '../../../data/models/enums/sync_status.dart';
+import '../../../domain/domain.dart';
+import '../../../infrastructure/infrastructure.dart';
 import 'trip_state.dart';
 
 /// Manage Trip state and operations
 @injectable
 class TripCubit extends Cubit<TripState> {
+  final ITripRepository _tripRepository;
+  final IAuthService _authService;
+  final IGearRepository _gearRepository;
+  final IItineraryRepository _itineraryRepository;
+  final ITripGearRemoteDataSource _gearRemoteDataSource;
+
   static const String _source = 'TripCubit';
 
-  final ITripRepository _tripRepository;
-  final ISyncService _syncService;
-  final IAuthService _authService;
+  TripCubit(
+    this._tripRepository,
+    this._authService,
+    this._gearRepository,
+    this._itineraryRepository,
+    this._gearRemoteDataSource,
+  ) : super(const TripInitial());
 
-  final Uuid _uuid = const Uuid();
-
-  TripCubit(this._tripRepository, this._syncService, this._authService) : super(const TripInitial());
-
-  /// 載入所有行程並自動判定活動行程
+  /// 載入行程列表
   Future<void> loadTrips() async {
+    emit(const TripLoading());
     try {
-      emit(const TripLoading());
+      final result = await _tripRepository.getAllTrips(_authService.currentUserId ?? '');
 
-      final userId = _authService.currentUserId ?? 'guest';
-      final tripsResult = await _tripRepository.getAllTrips(userId);
+      if (result is Success<List<Trip>, Exception>) {
+        final trips = result.value;
+        final activeTripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? '');
 
-      final trips = switch (tripsResult) {
-        Success(value: final v) => v,
-        Failure(exception: final e) => throw e,
-      };
-      // 依建立時間排序 (最新的在前)
-      trips.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        Trip? activeTrip;
+        if (activeTripResult is Success<Trip?, Exception>) {
+          activeTrip = activeTripResult.value;
+        }
 
-      final activeTripResult = await _tripRepository.getActiveTrip(userId);
-      var activeTrip = (activeTripResult is Success<Trip?, Exception>) ? activeTripResult.value : null;
-
-      // 若無活動行程但有行程資料，強制設定第一筆為活動行程
-      if (activeTrip == null && trips.isNotEmpty) {
-        await _setActiveTripInternal(trips.first.id);
-        final newActiveResult = await _tripRepository.getActiveTrip(userId);
-        activeTrip = switch (newActiveResult) {
-          Success(value: final v) => v,
-          Failure() => null, // Ignore error when setting default
-        };
-      } else if (activeTrip == null && trips.isEmpty) {
-        // 若完全無行程，由 UI 決定是否引導建立
+        emit(TripLoaded(trips: trips, activeTrip: activeTrip));
+      } else {
+        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
-
-      emit(TripLoaded(trips: trips, activeTrip: activeTrip));
     } catch (e) {
-      LogService.error('Error loading trips: $e', source: _source);
+      LogService.error('載入行程失敗: $e', source: _source);
       emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
   /// 新增行程
-  ///
-  /// [name] 行程名稱
-  /// [startDate] 開始日期
-  /// [endDate] 結束日期 (可選)
-  /// [description] 描述
-  /// [coverImage] 封面圖片 URL
-  /// [setAsActive] 是否建立後立即設為活動行程
   Future<void> addTrip({
     required String name,
     required DateTime startDate,
     DateTime? endDate,
     String? description,
-    String? coverImage,
-    bool setAsActive = true,
   }) async {
+    emit(const TripLoading());
     try {
-      final currentUserId = _authService.currentUserId ?? 'guest';
-      final trip = Trip(
-        id: _uuid.v4(),
-        userId: currentUserId,
+      final newTrip = Trip(
+        id: const Uuid().v4(),
+        userId: _authService.currentUserId ?? '',
         name: name,
         startDate: startDate,
         endDate: endDate,
         description: description,
-        coverImage: coverImage,
-        isActive: false,
-        syncStatus: SyncStatus.pendingCreate,
         createdAt: DateTime.now(),
-        createdBy: currentUserId,
+        createdBy: _authService.currentUserId ?? '',
         updatedAt: DateTime.now(),
-        updatedBy: currentUserId,
+        updatedBy: _authService.currentUserId ?? '',
       );
 
-      final result = await _tripRepository.saveTrip(trip);
-      switch (result) {
-        case Success():
-          break;
-        case Failure(exception: final e):
-          throw e;
-      }
-
-      LogService.info('Added trip: ${trip.name}', source: _source);
-
-      if (setAsActive) {
-        await setActiveTrip(trip.id);
-      } else {
+      final result = await _tripRepository.saveTrip(newTrip);
+      if (result is Success) {
+        await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', newTrip.id);
         await loadTrips();
+      } else {
+        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
     } catch (e) {
-      LogService.error('Error adding trip: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
-      await loadTrips();
-    }
-  }
-
-  /// 匯入行程
-  Future<void> importTrip(Trip trip) async {
-    try {
-      final result = await _tripRepository.saveTrip(trip);
-      switch (result) {
-        case Success():
-          break;
-        case Failure(exception: final e):
-          throw e;
-      }
-      LogService.info('Imported trip: ${trip.name} (${trip.id})', source: _source);
-      await loadTrips();
-    } catch (e) {
-      LogService.error('Error importing trip: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
-    }
-  }
-
-  /// 設定活動行程
-  ///
-  /// [tripId] 行程 ID
-  Future<void> setActiveTrip(String tripId) async {
-    try {
-      await _setActiveTripInternal(tripId);
-      LogService.info('Set active trip: $tripId', source: _source);
-      await loadTrips();
-    } catch (e) {
-      LogService.error('Error setting active trip: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
-    }
-  }
-
-  Future<void> _setActiveTripInternal(String tripId) async {
-    final userId = _authService.currentUserId ?? 'guest';
-    final result = await _tripRepository.setActiveTrip(userId, tripId);
-    switch (result) {
-      case Success():
-        return;
-      case Failure(exception: final e):
-        throw e;
-    }
-  }
-
-  /// 刪除行程
-  ///
-  /// [tripId] 行程 ID
-  Future<void> deleteTrip(String tripId) async {
-    try {
-      final currentState = state;
-      if (currentState is TripLoaded) {
-        // 若刪除的是當前活動行程，先切換到其他行程
-        if (currentState.activeTrip?.id == tripId) {
-          final otherTrips = currentState.trips.where((t) => t.id != tripId);
-          if (otherTrips.isNotEmpty) {
-            await _setActiveTripInternal(otherTrips.first.id);
-          }
-        }
-      }
-
-      final result = await _tripRepository.deleteTrip(tripId);
-      switch (result) {
-        case Success():
-          break;
-        case Failure(exception: final e):
-          throw e;
-      }
-      LogService.info('Deleted trip: $tripId', source: _source);
-      await loadTrips();
-    } catch (e) {
-      LogService.error('Error deleting trip: $e', source: _source);
+      LogService.error('新增行程失敗: $e', source: _source);
       emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
   /// 更新行程
-  ///
-  /// [trip] 更新後的行程物件
   Future<void> updateTrip(Trip trip) async {
     try {
-      final result = await _tripRepository.updateTrip(trip);
-      switch (result) {
-        case Success():
-          break;
-        case Failure(exception: final e):
-          throw e;
+      final updatedTrip = trip.copyWith(updatedAt: DateTime.now(), updatedBy: _authService.currentUserId ?? '');
+      final result = await _tripRepository.saveTrip(updatedTrip);
+      if (result is Success) {
+        await loadTrips();
+      } else {
+        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
-      LogService.info('Updated trip: ${trip.name}', source: _source);
-      await loadTrips();
     } catch (e) {
-      LogService.error('Error updating trip: $e', source: _source);
+      LogService.error('更新行程失敗: $e', source: _source);
       emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
-  /// 上傳完整行程至雲端
+  /// 取得特定行程
+  Future<Trip?> getTripById(String id) async {
+    final result = await _tripRepository.getTripById(id);
+    if (result is Success<Trip?, Exception>) {
+      return result.value;
+    }
+    return null;
+  }
+
+  /// 設定目前活躍行程
+  Future<void> setActiveTrip(String tripId) async {
+    emit(const TripLoading());
+    try {
+      final result = await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', tripId);
+      if (result is Success) {
+        await loadTrips();
+      } else {
+        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      }
+    } catch (e) {
+      LogService.error('設定活躍行程失敗: $e', source: _source);
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
+    }
+  }
+
+  /// 建立預設行程
+  Future<void> createDefaultTrip() async {
+    await addTrip(name: '我的第一趟旅程', startDate: DateTime.now(), description: '自動建立的行程');
+  }
+
+  /// 重置狀態
+  void reset() {
+    emit(const TripInitial());
+  }
+
+  /// 匯入行程
+  Future<void> importTrip(Trip trip) async {
+    emit(const TripLoading());
+    try {
+      final newTrip = trip.copyWith(
+        id: const Uuid().v4(),
+        userId: _authService.currentUserId ?? '',
+        isActive: false,
+        syncStatus: SyncStatus.pendingCreate,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final result = await _tripRepository.saveTrip(newTrip);
+      if (result is Success) {
+        await loadTrips();
+      } else {
+        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      }
+    } catch (e) {
+      LogService.error('匯入行程失敗: $e', source: _source);
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
+    }
+  }
+
+  /// 取得雲端行程列表
+  Future<Result<List<Trip>, Exception>> getCloudTrips() async {
+    try {
+      final result = await _tripRepository.getRemoteTrips();
+      return switch (result) {
+        Success(value: final v) => Success(v.items),
+        Failure(exception: final e) => Failure(e),
+      };
+    } catch (e) {
+      LogService.error('取得雲端行程失敗: $e', source: _source);
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  /// 刪除行程
+  Future<void> deleteTrip(String id) async {
+    try {
+      final result = await _tripRepository.deleteTrip(id);
+      if (result is Success) {
+        await loadTrips();
+      } else {
+        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+      }
+    } catch (e) {
+      LogService.error('刪除行程失敗: $e', source: _source);
+      emit(TripError(AppErrorHandler.getUserMessage(e)));
+    }
+  }
+
+  /// 上傳整個行程的資料到雲端 (Metadata + Itinerary + Gear)
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
-      final gearRepo = getIt<IGearRepository>();
-      final itineraryRepo = getIt<IItineraryRepository>();
-      final allGear = gearRepo.getAllItems();
+      final allGear = _gearRepository.getAllItems();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
       final uploadTripResult = await _tripRepository.uploadToCloud(trip);
@@ -231,14 +206,13 @@ class TripCubit extends Cubit<TripState> {
       }
 
       try {
-        await itineraryRepo.sync(trip.id);
+        await _itineraryRepository.sync(trip.id);
       } catch (e) {
         LogService.warning('Trip Itinerary sync had issues: $e', source: _source);
       }
 
       try {
-        final gearRemote = getIt<ITripGearRemoteDataSource>();
-        await gearRemote.replaceAllTripGear(trip.id, tripGear);
+        await _gearRemoteDataSource.replaceAllTripGear(trip.id, tripGear);
       } catch (e) {
         LogService.error('Trip Gear upload failed: $e', source: _source);
         return false;
@@ -250,32 +224,5 @@ class TripCubit extends Cubit<TripState> {
       LogService.error('Full trip upload exception: $e', source: _source);
       return false;
     }
-  }
-
-  /// 透過 SyncService 取得雲端行程列表
-  Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({int? page, int? limit}) {
-    return _syncService.getCloudTrips(page: page, limit: limit);
-  }
-
-  /// 根據 ID 取得行程
-  Future<Trip?> getTripById(String id) async {
-    if (state is TripLoaded) {
-      final loadedParams = state as TripLoaded;
-      try {
-        return loadedParams.trips.firstWhere((t) => t.id == id);
-      } catch (_) {}
-    }
-    final result = await _tripRepository.getTripById(id);
-    return result is Success ? (result as Success<Trip?, Exception>).value : null;
-  }
-
-  // 建立預設行程
-  Future<void> createDefaultTrip() async {
-    await addTrip(name: '我的登山行程', startDate: DateTime.now());
-  }
-
-  /// 重置狀態
-  void reset() {
-    emit(const TripInitial());
   }
 }

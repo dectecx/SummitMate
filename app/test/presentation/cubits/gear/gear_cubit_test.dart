@@ -1,10 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/gear_item.dart';
-import 'package:summitmate/data/repositories/interfaces/i_gear_repository.dart';
+import 'package:summitmate/domain/entities/gear_item.dart';
+import 'package:summitmate/domain/repositories/i_gear_repository.dart';
 import 'package:summitmate/presentation/cubits/gear/gear_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear/gear_state.dart';
+import 'package:summitmate/core/error/result.dart';
 import 'package:get_it/get_it.dart';
 
 class MockGearRepository extends Mock implements IGearRepository {}
@@ -14,7 +15,7 @@ void main() {
 
   setUpAll(() {
     // Fallback registration
-    registerFallbackValue(GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback'));
+    registerFallbackValue(const GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback', weight: 0, category: 'Other'));
   });
 
   setUp(() {
@@ -50,19 +51,6 @@ void main() {
     blocTest<GearCubit, GearState>(
       'addItem calls repo and reloads',
       build: () {
-        // First call (loadGear) -> empty
-        // Second call (reload after add) -> [gearItem1]
-        when(() => mockGearRepository.getAllItems()).thenReturn([]);
-        // Note: mocktail returns last value for subsequent calls, so we need to be careful.
-        // Actually usually it's .thenReturn(A).thenReturn(B).
-        // However, blocTest build runs ONCE.
-        // Let's use a side effect if needed or just return the final state as loadGear also reads it.
-        // If loadGear reads [gearItem1], then state is already [gearItem1].
-        // Then addItem runs, reload reads [gearItem1], state is [gearItem1].
-        // The transition is: Loading -> Loaded([gearItem1]) -> Loaded([gearItem1]) (no change?)
-        // If state is distinct, strict equality might filter it out? Equatable props items are same list instance?
-        // Let's force a change.
-
         var callCount = 0;
         when(() => mockGearRepository.getAllItems()).thenAnswer((_) {
           if (callCount == 0) {
@@ -72,7 +60,7 @@ void main() {
           return [gearItem1];
         });
 
-        when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => 1);
+        when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => const Success(null));
         return GearCubit(mockGearRepository);
       },
       act: (cubit) async {
@@ -92,8 +80,6 @@ void main() {
     blocTest<GearCubit, GearState>(
       'deleteItem calls repo and reloads',
       build: () {
-        // 1. loadGear -> [gearItem1]
-        // 2. reload -> []
         var callCount = 0;
         when(() => mockGearRepository.getAllItems()).thenAnswer((_) {
           if (callCount == 0) {
@@ -102,7 +88,7 @@ void main() {
           }
           return [];
         });
-        when(() => mockGearRepository.deleteItem(any())).thenAnswer((_) async {});
+        when(() => mockGearRepository.deleteItem(any())).thenAnswer((_) async => const Success(null));
         return GearCubit(mockGearRepository);
       },
       act: (cubit) async {
@@ -122,8 +108,8 @@ void main() {
     blocTest<GearCubit, GearState>(
       'toggleChecked calls repo and reloads',
       build: () {
-        final uncheckedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: false);
-        final checkedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: true);
+        const uncheckedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: false, weight: 1000, category: 'Sleep');
+        const checkedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: true, weight: 1000, category: 'Sleep');
 
         var callCount = 0;
         when(() => mockGearRepository.getAllItems()).thenAnswer((_) {
@@ -133,7 +119,7 @@ void main() {
           }
           return [checkedItem];
         });
-        when(() => mockGearRepository.toggleChecked(any())).thenAnswer((_) async {});
+        when(() => mockGearRepository.toggleChecked(any())).thenAnswer((_) async => const Success(null));
         return GearCubit(mockGearRepository);
       },
       act: (cubit) async {
@@ -164,7 +150,7 @@ void main() {
     });
 
     test('addItem fails gracefully', () async {
-      when(() => mockGearRepository.addItem(any())).thenThrow(Exception('Add Failed'));
+      when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => Failure(Exception('Add Failed')));
       when(() => mockGearRepository.getAllItems()).thenReturn([]);
 
       final cubit = GearCubit(mockGearRepository);

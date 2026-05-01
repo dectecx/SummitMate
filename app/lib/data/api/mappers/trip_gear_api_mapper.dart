@@ -1,11 +1,12 @@
+import '../../../domain/entities/gear_item.dart';
 import '../../models/gear_item.dart';
 import '../models/trip_gear_api_models.dart';
 
-/// TripGearItem API Model ↔ Domain Model 轉換
+/// TripGearItem API Model ↔ Data Model (Persistence) 轉換
 class TripGearApiMapper {
-  /// TripGearItemResponse → GearItem (domain model)
-  static GearItem fromResponse(TripGearItemResponse response) {
-    return GearItem(
+  /// TripGearItemResponse → GearItemModel (data model)
+  static GearItemModel fromResponse(TripGearItemResponse response) {
+    return GearItemModel(
       id: response.id,
       tripId: response.tripId,
       libraryItemId: response.libraryItemId,
@@ -20,7 +21,7 @@ class TripGearApiMapper {
     );
   }
 
-  /// GearItem (domain model) → TripGearItemRequest
+  /// GearItem (domain entity) → TripGearItemRequest
   static TripGearItemRequest toRequest(GearItem item) {
     return TripGearItemRequest(
       libraryItemId: item.libraryItemId,

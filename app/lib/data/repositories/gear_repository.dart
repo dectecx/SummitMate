@@ -1,169 +1,156 @@
 import 'package:injectable/injectable.dart';
-import '../../core/di/injection.dart';
-import '../models/gear_item.dart';
-import 'interfaces/i_gear_repository.dart';
+import '../../core/error/result.dart';
+import '../../domain/entities/gear_item.dart';
+import '../../domain/repositories/i_gear_repository.dart';
+import '../models/gear_item.dart'; // Contains GearItemModel
 import '../datasources/interfaces/i_gear_local_data_source.dart';
-import 'package:hive_ce/hive.dart';
 
-/// Gear Repository
-/// 管理個人裝備的 CRUD 操作 (僅本地)
-/// Delegates to GearLocalDataSource
+/// Gear Repository 實作
+///
+/// 位於 Data 層，負責在 Domain Entity 與 Persistence Model 之間進行轉換。
 @LazySingleton(as: IGearRepository)
 class GearRepository implements IGearRepository {
   final IGearLocalDataSource _localDataSource;
 
-  GearRepository({IGearLocalDataSource? localDataSource})
-    : _localDataSource = localDataSource ?? getIt<IGearLocalDataSource>();
+  GearRepository(this._localDataSource);
 
   @override
-  Future<void> init() async {}
+  Future<Result<void, Exception>> init() async => const Success(null);
 
-  /// 取得所有裝備 (依 orderIndex 排序)
+  /// 取得所有裝備並轉換為 Entity (依 orderIndex 排序)
   @override
   List<GearItem> getAllItems() {
-    final items = _localDataSource.getAll();
-    items.sort((a, b) {
+    final models = _localDataSource.getAll();
+
+    // 排序邏輯
+    models.sort((a, b) {
       if (a.orderIndex != null && b.orderIndex != null) {
         return a.orderIndex!.compareTo(b.orderIndex!);
       }
-      // 如果沒有 orderIndex，將其視為無限大 (排在最後)
       if (a.orderIndex != null) return -1;
       if (b.orderIndex != null) return 1;
       return 0;
     });
-    return items;
+
+    return models.map((m) => m.toDomain()).toList();
   }
 
   /// 依分類取得裝備
-  ///
-  /// [category] 裝備分類
   @override
   List<GearItem> getItemsByCategory(String category) {
-    return _localDataSource.getByCategory(category);
-  }
-
-  /// 取得未打包的裝備
-  @override
-  List<GearItem> getUncheckedItems() {
-    return _localDataSource.getUnchecked();
+    return _localDataSource.getByCategory(category).map((m) => m.toDomain()).toList();
   }
 
   /// 新增裝備
-  ///
-  /// [item] 欲新增的裝備
-  /// 回傳: 新增項目的 Key
   @override
-  Future<int> addItem(GearItem item) async {
-    // 自動設定 orderIndex 為目前最大值 + 1
-    if (item.orderIndex == null) {
-      final items = _localDataSource.getAll();
-      if (items.isNotEmpty) {
-        final maxOrder = items
+  Future<Result<void, Exception>> addItem(GearItem item) async {
+    try {
+      final model = GearItemModel.fromDomain(item);
+
+      // 自動設定 orderIndex
+      final existingModels = _localDataSource.getAll();
+      if (existingModels.isNotEmpty) {
+        final maxOrder = existingModels
             .map((i) => i.orderIndex ?? 0)
             .fold<int>(0, (max, current) => current > max ? current : max);
-        item.orderIndex = maxOrder + 1;
+        model.orderIndex = maxOrder + 1;
       } else {
-        item.orderIndex = 0;
+        model.orderIndex = 0;
       }
-    }
 
-    return await _localDataSource.add(item);
+      await _localDataSource.add(model);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 更新裝備
-  ///
-  /// [item] 更新後的裝備
   @override
-  Future<void> updateItem(GearItem item) async {
-    await _localDataSource.update(item);
-  }
-
-  /// 刪除裝備
-  ///
-  /// [key] 裝備的本地鍵值
-  @override
-  Future<void> deleteItem(dynamic key) async {
-    await _localDataSource.delete(key);
-  }
-
-  /// 切換打包狀態
-  ///
-  /// [key] 裝備的本地鍵值
-  @override
-  Future<void> toggleChecked(dynamic key) async {
-    // 透過 LocalDataSource 直接取得 Item (Hive Key)
-    final item = _localDataSource.getByKey(key);
-    if (item != null) {
-      item.isChecked = !item.isChecked;
-      await _localDataSource.update(item);
+  Future<Result<void, Exception>> updateItem(GearItem item) async {
+    try {
+      final model = GearItemModel.fromDomain(item);
+      await _localDataSource.update(model);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
-  /// 計算總重量 (克) - 含數量乘積
+  /// 刪除裝備 (透過 ID)
   @override
-  double getTotalWeight() {
-    return _localDataSource.getAll().fold<double>(0.0, (sum, item) => sum + item.totalWeight);
-  }
-
-  /// 計算已打包重量 (克) - 含數量乘積
-  @override
-  double getCheckedWeight() {
-    return _localDataSource
-        .getAll()
-        .where((item) => item.isChecked)
-        .fold<double>(0.0, (sum, item) => sum + item.totalWeight);
-  }
-
-  /// 依分類統計重量
-  @override
-  Map<String, double> getWeightByCategory() {
-    final result = <String, double>{};
-    for (final item in _localDataSource.getAll()) {
-      result[item.category] = (result[item.category] ?? 0) + item.weight;
+  Future<Result<void, Exception>> deleteItem(String id) async {
+    try {
+      await _localDataSource.deleteById(id);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
-    return result;
   }
 
-  /// 監聯裝備變更
+  /// 切換打包狀態 (透過 ID)
   @override
-  Stream<BoxEvent> watchAllItems() {
-    return _localDataSource.watch();
+  Future<Result<void, Exception>> toggleChecked(String id) async {
+    try {
+      final model = _localDataSource.getById(id);
+      if (model != null) {
+        model.isChecked = !model.isChecked;
+        await _localDataSource.update(model);
+      }
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
   /// 重置所有打包狀態
   @override
-  Future<void> resetAllChecked() async {
-    for (final item in _localDataSource.getAll()) {
-      item.isChecked = false;
-      await _localDataSource.update(item);
+  Future<Result<void, Exception>> resetAllChecked() async {
+    try {
+      final models = _localDataSource.getAll();
+      for (final model in models) {
+        model.isChecked = false;
+        await _localDataSource.update(model);
+      }
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
   /// 批量更新裝備順序
-  ///
-  /// [items] 重新排序後的裝備列表
   @override
-  Future<void> updateItemsOrder(List<GearItem> items) async {
-    for (int i = 0; i < items.length; i++) {
-      final item = items[i];
-      if (item.orderIndex != i) {
-        item.orderIndex = i;
-        await _localDataSource.update(item);
+  Future<Result<void, Exception>> updateItemsOrder(List<GearItem> items) async {
+    try {
+      for (int i = 0; i < items.length; i++) {
+        final entity = items[i];
+        final model = _localDataSource.getById(entity.id);
+        if (model != null && model.orderIndex != i) {
+          model.orderIndex = i;
+          await _localDataSource.update(model);
+        }
       }
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
   /// 清除指定行程的所有裝備
-  ///
-  /// [tripId] 行程 ID
   @override
-  Future<void> clearByTripId(String tripId) async {
-    await _localDataSource.clearByTripId(tripId);
+  Future<Result<void, Exception>> clearByTripId(String tripId) async {
+    try {
+      await _localDataSource.clearByTripId(tripId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 
-  /// 清除所有裝備 (Debug 用途)
+  /// 從個人庫匯入預設裝備 (Stub實作，需與 GearLibraryRepository 配合)
   @override
-  Future<void> clearAll() async {
-    await _localDataSource.clearAll();
+  Future<Result<void, Exception>> importFromLibrary(String tripId, List<String> libraryItemIds) async {
+    // 這裡應呼叫 Library 相關 Service 獲取資料並轉入
+    return const Success(null);
   }
 }

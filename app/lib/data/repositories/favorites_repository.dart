@@ -1,9 +1,9 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../models/favorite.dart';
 import '../../data/models/enums/favorite_type.dart';
 import '../../core/error/result.dart';
-import 'interfaces/i_favorites_repository.dart';
+import '../../domain/repositories/i_favorites_repository.dart';
 import '../../domain/interfaces/i_auth_service.dart';
 import '../../data/datasources/interfaces/i_favorites_remote_data_source.dart';
 import '../../data/datasources/interfaces/i_favorites_local_data_source.dart';

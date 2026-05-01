@@ -110,22 +110,6 @@ import '../../data/repositories/gear_library_repository.dart' as _i540;
 import '../../data/repositories/gear_repository.dart' as _i867;
 import '../../data/repositories/gear_set_repository.dart' as _i536;
 import '../../data/repositories/group_event_repository.dart' as _i354;
-import '../../data/repositories/interfaces/i_auth_session_repository.dart'
-    as _i395;
-import '../../data/repositories/interfaces/i_favorites_repository.dart'
-    as _i721;
-import '../../data/repositories/interfaces/i_gear_library_repository.dart'
-    as _i365;
-import '../../data/repositories/interfaces/i_gear_repository.dart' as _i20;
-import '../../data/repositories/interfaces/i_gear_set_repository.dart' as _i563;
-import '../../data/repositories/interfaces/i_group_event_repository.dart'
-    as _i1055;
-import '../../data/repositories/interfaces/i_itinerary_repository.dart'
-    as _i860;
-import '../../data/repositories/interfaces/i_message_repository.dart' as _i1034;
-import '../../data/repositories/interfaces/i_poll_repository.dart' as _i577;
-import '../../data/repositories/interfaces/i_settings_repository.dart' as _i52;
-import '../../data/repositories/interfaces/i_trip_repository.dart' as _i106;
 import '../../data/repositories/itinerary_repository.dart' as _i790;
 import '../../data/repositories/message_repository.dart' as _i1040;
 import '../../data/repositories/poll_repository.dart' as _i222;
@@ -139,9 +123,19 @@ import '../../domain/interfaces/i_connectivity_service.dart' as _i751;
 import '../../domain/interfaces/i_gear_cloud_service.dart' as _i1042;
 import '../../domain/interfaces/i_geolocator_service.dart' as _i956;
 import '../../domain/interfaces/i_poll_service.dart' as _i304;
-import '../../domain/interfaces/i_sync_service.dart' as _i518;
 import '../../domain/interfaces/i_token_validator.dart' as _i1012;
 import '../../domain/interfaces/i_weather_service.dart' as _i874;
+import '../../domain/repositories/i_auth_session_repository.dart' as _i43;
+import '../../domain/repositories/i_favorites_repository.dart' as _i571;
+import '../../domain/repositories/i_gear_library_repository.dart' as _i241;
+import '../../domain/repositories/i_gear_repository.dart' as _i684;
+import '../../domain/repositories/i_gear_set_repository.dart' as _i138;
+import '../../domain/repositories/i_group_event_repository.dart' as _i868;
+import '../../domain/repositories/i_itinerary_repository.dart' as _i750;
+import '../../domain/repositories/i_message_repository.dart' as _i572;
+import '../../domain/repositories/i_poll_repository.dart' as _i893;
+import '../../domain/repositories/i_settings_repository.dart' as _i868;
+import '../../domain/repositories/i_trip_repository.dart' as _i634;
 import '../../infrastructure/clients/api_client.dart' as _i1019;
 import '../../infrastructure/clients/network_aware_client.dart' as _i7;
 import '../../infrastructure/infrastructure.dart' as _i342;
@@ -235,13 +229,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1012.ITokenValidator>(() => _i1065.JwtTokenValidator());
     gh.lazySingleton<_i730.IAdService>(() => _i702.AdService());
-    gh.lazySingleton<_i874.IWeatherService>(
-      () => _i27.WeatherService(
-        settingsRepo: gh<_i52.ISettingsRepository>(),
-        locationResolver: gh<_i887.ILocationResolver>(),
-        cwaSource: gh<_i455.CwaWeatherSource>(),
-      ),
-    );
     gh.lazySingleton<_i393.ISettingsLocalDataSource>(
       () => _i179.SettingsLocalDataSource(hiveService: gh<_i771.HiveService>()),
     );
@@ -253,11 +240,6 @@ extension GetItInjectableX on _i174.GetIt {
         hiveService: gh<_i771.HiveService>(),
       ),
     );
-    gh.lazySingleton<_i20.IGearRepository>(
-      () => _i867.GearRepository(
-        localDataSource: gh<_i691.IGearLocalDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i774.ITripLocalDataSource>(
       () => _i688.TripLocalDataSource(hiveService: gh<_i771.HiveService>()),
     );
@@ -266,13 +248,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i307.IFavoritesLocalDataSource>(
       () => _i19.FavoritesLocalDataSource(hiveService: gh<_i771.HiveService>()),
-    );
-    gh.lazySingleton<_i860.IItineraryRepository>(
-      () => _i790.ItineraryRepository(
-        localDataSource: gh<_i116.IItineraryLocalDataSource>(),
-        remoteDataSource: gh<_i307.IItineraryRemoteDataSource>(),
-        connectivity: gh<_i751.IConnectivityService>(),
-      ),
     );
     gh.lazySingleton<_i529.IGroupEventLocalDataSource>(
       () =>
@@ -288,10 +263,10 @@ extension GetItInjectableX on _i174.GetIt {
         baseUrl: gh<String>(instanceName: 'baseUrl'),
       ),
     );
-    gh.lazySingleton<_i751.IConnectivityService>(
-      () => _i315.ConnectivityService(
-        checker: gh<_i973.InternetConnectionChecker>(),
-        settingsRepo: gh<_i52.ISettingsRepository>(),
+    gh.lazySingleton<_i138.IGearSetRepository>(
+      () => _i536.GearSetRepository(
+        gh<_i1042.IGearCloudService>(),
+        gh<_i484.IGearKeyLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i956.IGeolocatorService>(() => _i548.GeolocatorService());
@@ -301,47 +276,44 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i21.IMessageLocalDataSource>(
       () => _i783.MessageLocalDataSource(hiveService: gh<_i771.HiveService>()),
     );
+    gh.lazySingleton<_i684.IGearRepository>(
+      () => _i867.GearRepository(gh<_i691.IGearLocalDataSource>()),
+    );
     gh.factory<_i55.GearCubit>(
-      () => _i55.GearCubit(gh<_i20.IGearRepository>()),
+      () => _i55.GearCubit(gh<_i684.IGearRepository>()),
+    );
+    gh.lazySingleton<_i868.ISettingsRepository>(
+      () => _i373.SettingsRepository(
+        localDataSource: gh<_i393.ISettingsLocalDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i751.IConnectivityService>(
+      () => _i315.ConnectivityService(
+        checker: gh<_i973.InternetConnectionChecker>(),
+        settingsRepo: gh<_i868.ISettingsRepository>(),
+      ),
     );
     gh.lazySingleton<_i26.IAuthSessionLocalDataSource>(
       () => _i4.AuthSessionLocalDataSource(
         secureStorage: gh<_i558.FlutterSecureStorage>(),
       ),
     );
-    gh.lazySingleton<_i52.ISettingsRepository>(
-      () => _i373.SettingsRepository(
-        localDataSource: gh<_i393.ISettingsLocalDataSource>(),
-      ),
-    );
-    gh.lazySingleton<_i563.IGearSetRepository>(
-      () => _i536.GearSetRepository(
-        remoteDataSource: gh<_i1042.IGearCloudService>(),
-        localDataSource: gh<_i484.IGearKeyLocalDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i755.UsageTrackingService>(
       () => _i755.UsageTrackingService(gh<_i418.IApiClient>()),
     );
-    gh.lazySingleton<_i395.IAuthSessionRepository>(
-      () => _i395.AuthSessionRepository(
-        localDataSource: gh<_i26.IAuthSessionLocalDataSource>(),
-      ),
-    );
-    gh.lazySingleton<_i147.IAuthService>(
-      () => _i227.AuthService(
-        apiClient: gh<_i7.NetworkAwareClient>(),
-        sessionRepository: gh<_i395.IAuthSessionRepository>(),
-        tokenValidator: gh<_i1012.ITokenValidator>(),
+    gh.lazySingleton<_i874.IWeatherService>(
+      () => _i27.WeatherService(
+        settingsRepo: gh<_i868.ISettingsRepository>(),
+        locationResolver: gh<_i887.ILocationResolver>(),
+        cwaSource: gh<_i455.CwaWeatherSource>(),
       ),
     );
     gh.lazySingleton<_i254.ConnectivityInterceptor>(
       () => _i254.ConnectivityInterceptor(gh<_i751.IConnectivityService>()),
     );
-    gh.factory<_i33.AuthCubit>(
-      () => _i33.AuthCubit(
-        gh<_i614.IAuthService>(),
-        gh<_i342.UsageTrackingService>(),
+    gh.lazySingleton<_i43.IAuthSessionRepository>(
+      () => _i395.AuthSessionRepository(
+        localDataSource: gh<_i26.IAuthSessionLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i7.NetworkAwareClient>(
@@ -350,17 +322,30 @@ extension GetItInjectableX on _i174.GetIt {
         connectivity: gh<_i751.IConnectivityService>(),
       ),
     );
-    gh.lazySingleton<_i165.PermissionService>(
-      () => _i165.PermissionService(gh<_i147.IAuthService>()),
-    );
     gh.factory<_i266.SettingsCubit>(
       () => _i266.SettingsCubit(
-        gh<_i52.ISettingsRepository>(),
+        gh<_i868.ISettingsRepository>(),
         gh<_i460.SharedPreferences>(),
       ),
     );
     gh.lazySingleton<_i27.AuthInterceptor>(
-      () => _i27.AuthInterceptor(gh<_i395.IAuthSessionRepository>()),
+      () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
+    );
+    gh.lazySingleton<_i147.IAuthService>(
+      () => _i227.AuthService(
+        apiClient: gh<_i7.NetworkAwareClient>(),
+        sessionRepository: gh<_i43.IAuthSessionRepository>(),
+        tokenValidator: gh<_i1012.ITokenValidator>(),
+      ),
+    );
+    gh.factory<_i33.AuthCubit>(
+      () => _i33.AuthCubit(
+        gh<_i614.IAuthService>(),
+        gh<_i342.UsageTrackingService>(),
+      ),
+    );
+    gh.lazySingleton<_i165.PermissionService>(
+      () => _i165.PermissionService(gh<_i147.IAuthService>()),
     );
     gh.lazySingleton<_i361.Dio>(
       () => registerModule.dio(
@@ -408,13 +393,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i725.ITripGearRemoteDataSource>(
       () => _i391.TripGearRemoteDataSource(gh<_i9.TripGearApiService>()),
     );
-    gh.lazySingleton<_i721.IFavoritesRepository>(
-      () => _i803.FavoritesRepository(
-        localDataSource: gh<_i307.IFavoritesLocalDataSource>(),
-        remoteDataSource: gh<_i342.IFavoritesRemoteDataSource>(),
-        authService: gh<_i147.IAuthService>(),
-      ),
-    );
     gh.lazySingleton<_i999.ITripMealRemoteDataSource>(
       () => _i829.TripMealRemoteDataSource(gh<_i579.TripMealApiService>()),
     );
@@ -423,6 +401,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i307.IItineraryRemoteDataSource>(
       () => _i636.ItineraryRemoteDataSource(gh<_i100.ItineraryApiService>()),
+    );
+    gh.lazySingleton<_i893.IPollRepository>(
+      () => _i222.PollRepository(
+        gh<_i930.IPollLocalDataSource>(),
+        gh<_i644.IPollRemoteDataSource>(),
+      ),
     );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i367.MessageApiService>()),
@@ -436,114 +420,123 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i31.IGearLibraryRemoteDataSource>(
       () => _i781.GearLibraryRemoteDataSource(gh<_i83.GearLibraryApiService>()),
     );
-    gh.lazySingleton<_i577.IPollRepository>(
-      () => _i222.PollRepository(
-        gh<_i930.IPollLocalDataSource>(),
-        gh<_i644.IPollRemoteDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i25.IGroupEventRemoteDataSource>(
       () => _i959.GroupEventRemoteDataSource(gh<_i912.GroupEventApiService>()),
     );
-    gh.lazySingleton<_i1034.IMessageRepository>(
-      () => _i1040.MessageRepository(
-        gh<_i21.IMessageLocalDataSource>(),
-        gh<_i880.IMessageRemoteDataSource>(),
+    gh.lazySingleton<_i571.IFavoritesRepository>(
+      () => _i803.FavoritesRepository(
+        localDataSource: gh<_i307.IFavoritesLocalDataSource>(),
+        remoteDataSource: gh<_i342.IFavoritesRemoteDataSource>(),
+        authService: gh<_i147.IAuthService>(),
       ),
     );
-    gh.lazySingleton<_i1055.IGroupEventRepository>(
-      () => _i354.GroupEventRepository(
-        gh<_i529.IGroupEventLocalDataSource>(),
-        gh<_i25.IGroupEventRemoteDataSource>(),
-      ),
-    );
-    gh.lazySingleton<_i365.IGearLibraryRepository>(
-      () => _i540.GearLibraryRepository(
-        localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
-        remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),
-      ),
-    );
-    gh.factoryParam<_i963.GroupEventReviewCubit, String?, String?>(
-      (eventId, userId) => _i963.GroupEventReviewCubit(
-        gh<_i1055.IGroupEventRepository>(),
-        eventId,
-        userId,
-      ),
-    );
-    gh.lazySingleton<_i106.ITripRepository>(
+    gh.lazySingleton<_i634.ITripRepository>(
       () => _i564.TripRepository(
         gh<_i774.ITripLocalDataSource>(),
         gh<_i941.ITripRemoteDataSource>(),
       ),
     );
-    gh.factory<_i882.GroupEventCubit>(
-      () => _i882.GroupEventCubit(
-        gh<_i1055.IGroupEventRepository>(),
-        gh<_i614.IConnectivityService>(),
-        gh<_i614.IAuthService>(),
+    gh.lazySingleton<_i750.IItineraryRepository>(
+      () => _i790.ItineraryRepository(
+        localDataSource: gh<_i116.IItineraryLocalDataSource>(),
+        remoteDataSource: gh<_i307.IItineraryRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i241.IGearLibraryRepository>(
+      () => _i540.GearLibraryRepository(
+        localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
+        remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i868.IGroupEventRepository>(
+      () => _i354.GroupEventRepository(
+        gh<_i529.IGroupEventLocalDataSource>(),
+        gh<_i25.IGroupEventRemoteDataSource>(),
       ),
     );
     gh.factory<_i1040.PollCubit>(
       () => _i1040.PollCubit(
-        gh<_i577.IPollRepository>(),
-        gh<_i106.ITripRepository>(),
+        gh<_i893.IPollRepository>(),
+        gh<_i634.ITripRepository>(),
         gh<_i614.IConnectivityService>(),
         gh<_i614.IAuthService>(),
       ),
     );
-    gh.factory<_i354.ItineraryCubit>(
-      () => _i354.ItineraryCubit(
-        gh<_i860.IItineraryRepository>(),
-        gh<_i106.ITripRepository>(),
-        gh<_i614.IAuthService>(),
+    gh.lazySingleton<_i572.IMessageRepository>(
+      () => _i1040.MessageRepository(
+        gh<_i21.IMessageLocalDataSource>(),
+        gh<_i880.IMessageRemoteDataSource>(),
       ),
     );
-    gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
-      (eventId, _) => _i10.GroupEventCommentCubit(
-        gh<_i1055.IGroupEventRepository>(),
+    gh.factory<_i675.MessageCubit>(
+      () => _i675.MessageCubit(
+        gh<_i572.IMessageRepository>(),
+        gh<_i634.ITripRepository>(),
         gh<_i614.IAuthService>(),
-        eventId,
-      ),
-    );
-    gh.lazySingleton<_i518.ISyncService>(
-      () => _i724.SyncService(
-        tripRepo: gh<_i106.ITripRepository>(),
-        itineraryRepo: gh<_i860.IItineraryRepository>(),
-        messageRepo: gh<_i1034.IMessageRepository>(),
-        connectivity: gh<_i751.IConnectivityService>(),
-        authService: gh<_i147.IAuthService>(),
       ),
     );
     gh.factory<_i757.GearLibraryCubit>(
       () => _i757.GearLibraryCubit(
-        gh<_i365.IGearLibraryRepository>(),
-        gh<_i20.IGearRepository>(),
-        gh<_i106.ITripRepository>(),
+        gh<_i241.IGearLibraryRepository>(),
+        gh<_i614.IGearRepository>(),
+        gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
         gh<_i31.IGearLibraryRemoteDataSource>(),
+      ),
+    );
+    gh.factory<_i882.GroupEventCubit>(
+      () => _i882.GroupEventCubit(
+        gh<_i614.IGroupEventRepository>(),
+        gh<_i614.IConnectivityService>(),
+        gh<_i614.IAuthService>(),
+      ),
+    );
+    gh.factory<_i32.TripCubit>(
+      () => _i32.TripCubit(
+        gh<_i634.ITripRepository>(),
+        gh<_i614.IAuthService>(),
+        gh<_i614.IGearRepository>(),
+        gh<_i614.IItineraryRepository>(),
+        gh<_i725.ITripGearRemoteDataSource>(),
+      ),
+    );
+    gh.factory<_i354.ItineraryCubit>(
+      () => _i354.ItineraryCubit(
+        gh<_i614.IItineraryRepository>(),
+        gh<_i614.ITripRepository>(),
+        gh<_i614.IAuthService>(),
+      ),
+    );
+    gh.lazySingleton<_i614.ISyncService>(
+      () => _i724.SyncService(
+        tripRepo: gh<_i614.ITripRepository>(),
+        itineraryRepo: gh<_i614.IItineraryRepository>(),
+        messageRepo: gh<_i614.IMessageRepository>(),
+        connectivity: gh<_i614.IConnectivityService>(),
+        authService: gh<_i614.IAuthService>(),
+      ),
+    );
+    gh.factoryParam<_i963.GroupEventReviewCubit, String?, String?>(
+      (eventId, userId) => _i963.GroupEventReviewCubit(
+        gh<_i868.IGroupEventRepository>(),
+        eventId,
+        userId,
+      ),
+    );
+    gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
+      (eventId, _) => _i10.GroupEventCommentCubit(
+        gh<_i868.IGroupEventRepository>(),
+        gh<_i614.IAuthService>(),
+        eventId,
       ),
     );
     gh.factory<_i846.SyncCubit>(
       () => _i846.SyncCubit(
         gh<_i614.ISyncService>(),
         gh<_i614.IConnectivityService>(),
-        gh<_i860.IItineraryRepository>(),
+        gh<_i614.IItineraryRepository>(),
         gh<_i614.IAuthService>(),
-        gh<_i106.ITripRepository>(),
-      ),
-    );
-    gh.factory<_i675.MessageCubit>(
-      () => _i675.MessageCubit(
-        gh<_i1034.IMessageRepository>(),
-        gh<_i106.ITripRepository>(),
-        gh<_i614.IAuthService>(),
-      ),
-    );
-    gh.factory<_i32.TripCubit>(
-      () => _i32.TripCubit(
-        gh<_i106.ITripRepository>(),
-        gh<_i614.ISyncService>(),
-        gh<_i614.IAuthService>(),
+        gh<_i634.ITripRepository>(),
       ),
     );
     return this;

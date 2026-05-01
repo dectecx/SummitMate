@@ -1,10 +1,10 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_poll_local_data_source.dart';
 import '../datasources/interfaces/i_poll_remote_data_source.dart';
 import '../models/poll.dart';
-import 'interfaces/i_poll_repository.dart';
+import '../../domain/repositories/i_poll_repository.dart';
 
 /// 投票 Repository
 @LazySingleton(as: IPollRepository)

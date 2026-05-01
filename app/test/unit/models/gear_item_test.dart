@@ -1,60 +1,73 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/domain/entities/gear_item.dart';
 
 void main() {
-  group('GearItem Model Tests', () {
-    test('should create with default values', () {
-      final item = GearItem();
+  group('GearItem Domain Entity Tests', () {
+    test('should create with required values', () {
+      const item = GearItem(
+        id: '1',
+        tripId: 't1',
+        name: 'Tent',
+        weight: 2000,
+        category: 'Sleep',
+      );
 
-      expect(item.name, isEmpty);
-      expect(item.weight, equals(0));
-      expect(item.category, equals('Other')); // Default category is 'Other'
-      expect(item.isChecked, isFalse);
-    });
-
-    test('should create with named parameters', () {
-      final item = GearItem(name: '睡袋', weight: 1200, category: 'Sleep', isChecked: false);
-
-      expect(item.name, equals('睡袋'));
-      expect(item.weight, equals(1200));
+      expect(item.name, equals('Tent'));
+      expect(item.weight, equals(2000));
       expect(item.category, equals('Sleep'));
-      expect(item.isChecked, isFalse);
+      expect(item.isChecked, isFalse); // Default value
     });
 
-    test('should toggle isChecked', () {
-      final item = GearItem(isChecked: false);
+    test('should handle copyWith', () {
+      const item = GearItem(
+        id: '1',
+        tripId: 't1',
+        name: 'Tent',
+        weight: 2000,
+        category: 'Sleep',
+      );
 
-      item.isChecked = true;
-      expect(item.isChecked, isTrue);
+      final updatedItem = item.copyWith(isChecked: true);
+      expect(updatedItem.isChecked, isTrue);
+      expect(updatedItem.name, equals('Tent'));
+    });
 
-      item.isChecked = false;
-      expect(item.isChecked, isFalse);
+    test('should calculate totalWeight correctly', () {
+      const item = GearItem(
+        id: '1',
+        tripId: 't1',
+        name: 'Tent',
+        weight: 2000,
+        category: 'Sleep',
+        quantity: 2,
+      );
+
+      expect(item.totalWeight, equals(4000));
     });
 
     test('should calculate weightInKg correctly', () {
-      final item = GearItem(weight: 1500);
+      const item = GearItem(
+        id: '1',
+        tripId: 't1',
+        name: 'Tent',
+        weight: 1500,
+        category: 'Sleep',
+      );
 
       expect(item.weightInKg, equals(1.5));
     });
 
-    test('should validate category values', () {
-      final validCategories = ['Sleep', 'Cook', 'Wear', 'Other'];
-
-      for (final cat in validCategories) {
-        final item = GearItem(category: cat);
-        expect(validCategories.contains(item.category), isTrue);
-      }
-    });
-
-    test('should calculate total weight for multiple items', () {
-      final items = [GearItem(weight: 1200), GearItem(weight: 800), GearItem(weight: 500)];
-
-      final total = items.fold<double>(0, (sum, item) => sum + item.weight);
-      expect(total, equals(2500));
-    });
-
     test('should convert to/from JSON', () {
-      final item = GearItem(name: '睡袋', weight: 1200, category: 'Sleep', isChecked: true);
+      // Note: This requires the generated code to be present
+      final item = GearItem(
+        id: '1',
+        tripId: 't1',
+        name: 'Tent',
+        weight: 1200,
+        category: 'Sleep',
+        isChecked: true,
+        createdAt: DateTime(2023, 1, 1),
+      );
 
       final json = item.toJson();
       final restored = GearItem.fromJson(json);

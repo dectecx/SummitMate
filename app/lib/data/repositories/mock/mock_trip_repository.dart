@@ -1,9 +1,9 @@
-import '../../../core/error/result.dart';
+﻿import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../models/enums/sync_status.dart';
-import '../../models/trip.dart';
+import '../../../domain/entities/trip.dart';
 import '../../models/user_profile.dart';
-import '../interfaces/i_trip_repository.dart';
+import '../../../domain/repositories/i_trip_repository.dart';
 import 'mock_itinerary_repository.dart';
 
 /// 模擬行程清單資料庫

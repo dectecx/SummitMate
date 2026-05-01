@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
-import '../../../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../cubits/sync/sync_cubit.dart';
 import '../../../cubits/trip/trip_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';

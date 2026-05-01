@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/core/core.dart';
-import '../../../data/models/gear_item.dart';
+import '../../../domain/entities/gear_item.dart';
 import '../../cubits/gear/gear_cubit.dart';
 import 'gear_mode_selector.dart';
 import 'gear_item_tile.dart';
@@ -78,10 +78,10 @@ class _GearCategorySectionState extends State<GearCategorySection> {
             onReorder: _onReorder,
             children: _localItems.map((item) {
               return GearItemTile(
-                key: ValueKey(item.key),
+                key: ValueKey(item.id),
                 item: item,
                 mode: widget.mode,
-                onToggle: () => context.read<GearCubit>().toggleChecked(item.key),
+                onToggle: () => context.read<GearCubit>().toggleChecked(item.id),
                 onTap: () {
                   if (widget.mode == GearListMode.view) {
                     EditGearDialog.show(context, item);

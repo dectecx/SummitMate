@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
 import '../../../cubits/settings/settings_cubit.dart';
 import '../../../cubits/settings/settings_state.dart';
 import '../../../cubits/auth/auth_cubit.dart';
 import '../../../cubits/auth/auth_state.dart';
-import '../../../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../utils/tutorial_keys.dart';
 import '../../../../presentation/widgets/responsive_layout.dart';
 

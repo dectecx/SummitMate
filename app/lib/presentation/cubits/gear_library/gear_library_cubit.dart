@@ -1,12 +1,9 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../../data/models/gear_library_item.dart';
 import '../../../data/models/enums/sync_status.dart';
-import '../../../data/repositories/interfaces/i_gear_library_repository.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../../data/repositories/interfaces/i_trip_repository.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_library_remote_data_source.dart';
@@ -133,8 +130,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final linkedItems = allGear.where((g) => g.libraryItemId == id).toList();
 
       for (final gear in linkedItems) {
-        gear.libraryItemId = null;
-        await _gearRepository.updateItem(gear); // 假設 updateItem 會處理 save
+        final updatedGear = gear.copyWith(libraryItemId: null);
+        await _gearRepository.updateItem(updatedGear);
       }
 
       await _repository.delete(id);
@@ -230,33 +227,33 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final today = DateTime(now.year, now.month, now.day);
 
       for (final gear in linkedItems) {
-        if (gear.tripId != null) {
-          final tripResult = await _tripRepository.getTripById(gear.tripId!);
-          if (tripResult is Success) {
-            final trip = (tripResult as Success).value;
-            if (trip != null) {
-              final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
-              if (isArchived) continue;
-            }
+        final tripResult = await _tripRepository.getTripById(gear.tripId);
+        if (tripResult is Success) {
+          final trip = (tripResult as Success).value;
+          if (trip != null) {
+            final isArchived = (trip.endDate != null && trip.endDate!.isBefore(today)) || !trip.isActive;
+            if (isArchived) continue;
           }
         }
 
         bool changed = false;
+        GearItem updatedGear = gear;
+
         if (gear.name != libItem.name) {
-          gear.name = libItem.name;
+          updatedGear = updatedGear.copyWith(name: libItem.name);
           changed = true;
         }
         if (gear.weight != libItem.weight) {
-          gear.weight = libItem.weight;
+          updatedGear = updatedGear.copyWith(weight: libItem.weight);
           changed = true;
         }
         if (gear.category != libItem.category) {
-          gear.category = libItem.category;
+          updatedGear = updatedGear.copyWith(category: libItem.category);
           changed = true;
         }
 
         if (changed) {
-          await _gearRepository.updateItem(gear);
+          await _gearRepository.updateItem(updatedGear);
         }
       }
     } catch (e) {

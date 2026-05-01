@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -7,9 +7,9 @@ import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import '../../../core/di/injection.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
-import '../../../data/models/itinerary_item.dart';
-import '../../../data/models/trip.dart';
-import '../../../data/repositories/interfaces/i_auth_session_repository.dart';
+import '../../../domain/entities/itinerary_item.dart';
+import 'package:summitmate/domain/domain.dart';
+import '../../../domain/repositories/i_auth_session_repository.dart';
 
 import '../../cubits/message/message_cubit.dart';
 import '../../cubits/message/message_state.dart';

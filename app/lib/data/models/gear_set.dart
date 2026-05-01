@@ -6,7 +6,7 @@ part 'gear_set.g.dart';
 
 /// 裝備組合可見性
 enum GearSetVisibility {
-  /// 公開 - 任何人可查看和下載
+  /// 公開 - 任何人可查看 and 下載
   @JsonValue('public')
   public,
 
@@ -62,7 +62,7 @@ class GearSet {
   final String updatedBy;
 
   /// 裝備列表 (下載時才有完整資料)
-  final List<GearItem>? items;
+  final List<GearItemModel>? items;
 
   /// 糧食計畫 (下載時才有完整資料)
   final List<DailyMealPlan>? meals;

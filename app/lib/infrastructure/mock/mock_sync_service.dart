@@ -1,7 +1,7 @@
-import 'package:summitmate/domain/interfaces/i_sync_service.dart';
+﻿import 'package:summitmate/domain/interfaces/i_sync_service.dart';
 import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
-import '../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// Mock 同步服務
 /// 用於測試和離線模式

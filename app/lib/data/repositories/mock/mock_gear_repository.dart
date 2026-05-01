@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:hive_ce/hive.dart';
-import '../../models/gear_item.dart';
-import '../interfaces/i_gear_repository.dart';
+import '../../../domain/entities/gear_item.dart';
+import '../../../domain/repositories/i_gear_repository.dart';
+import '../../../core/error/result.dart';
 import 'mock_itinerary_repository.dart';
 
 /// 模擬裝備資料庫
@@ -51,7 +51,7 @@ class MockGearRepository implements IGearRepository {
   ];
 
   @override
-  Future<void> init() async {}
+  Future<Result<void, Exception>> init() async => const Success(null);
 
   @override
   List<GearItem> getAllItems() => List.unmodifiable(_mockItems);
@@ -60,48 +60,27 @@ class MockGearRepository implements IGearRepository {
   List<GearItem> getItemsByCategory(String category) => _mockItems.where((item) => item.category == category).toList();
 
   @override
-  List<GearItem> getUncheckedItems() => _mockItems.where((item) => !item.isChecked).toList();
+  Future<Result<void, Exception>> addItem(GearItem item) async => const Success(null);
 
   @override
-  Future<int> addItem(GearItem item) async => 0;
+  Future<Result<void, Exception>> updateItem(GearItem item) async => const Success(null);
 
   @override
-  Future<void> updateItem(GearItem item) async {}
+  Future<Result<void, Exception>> deleteItem(String id) async => const Success(null);
 
   @override
-  Future<void> deleteItem(dynamic key) async {}
+  Future<Result<void, Exception>> toggleChecked(String id) async => const Success(null);
 
   @override
-  Future<void> toggleChecked(dynamic key) async {}
+  Future<Result<void, Exception>> resetAllChecked() async => const Success(null);
 
   @override
-  double getTotalWeight() => _mockItems.fold(0, (sum, item) => sum + item.weight * item.quantity);
+  Future<Result<void, Exception>> updateItemsOrder(List<GearItem> items) async => const Success(null);
 
   @override
-  double getCheckedWeight() =>
-      _mockItems.where((item) => item.isChecked).fold(0, (sum, item) => sum + item.weight * item.quantity);
+  Future<Result<void, Exception>> clearByTripId(String tripId) async => const Success(null);
 
   @override
-  Map<String, double> getWeightByCategory() {
-    final map = <String, double>{};
-    for (final item in _mockItems) {
-      map[item.category] = (map[item.category] ?? 0) + item.weight * item.quantity;
-    }
-    return map;
-  }
-
-  @override
-  Stream<BoxEvent> watchAllItems() => const Stream.empty();
-
-  @override
-  Future<void> resetAllChecked() async {}
-
-  @override
-  Future<void> updateItemsOrder(List<GearItem> items) async {}
-
-  @override
-  Future<void> clearByTripId(String tripId) async {}
-
-  @override
-  Future<void> clearAll() async {}
+  Future<Result<void, Exception>> importFromLibrary(String tripId, List<String> libraryItemIds) async =>
+      const Success(null);
 }

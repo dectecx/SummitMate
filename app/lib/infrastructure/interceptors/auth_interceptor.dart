@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/core/di/injection.dart';
 import '../../domain/interfaces/i_auth_service.dart';
-import '../../data/repositories/interfaces/i_auth_session_repository.dart';
+import '../../domain/repositories/i_auth_session_repository.dart';
 import '../tools/log_service.dart';
 
 /// 用於處理 API 認證邏輯的攔截器 (Interceptor)

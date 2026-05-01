@@ -1,5 +1,5 @@
-import 'package:equatable/equatable.dart';
-import '../../../data/models/trip.dart';
+﻿import 'package:equatable/equatable.dart';
+import 'package:summitmate/domain/domain.dart';
 
 /// 行程狀態基類
 abstract class TripState extends Equatable {
@@ -27,14 +27,30 @@ class TripLoaded extends TripState {
   /// 目前選中的行程
   final Trip? activeTrip;
 
+  /// 是否正在同步
+  final bool isSyncing;
+
   /// 建構子
-  ///
-  /// [trips] 行程列表
-  /// [activeTrip] 目前選中的行程
-  const TripLoaded({required this.trips, this.activeTrip});
+  const TripLoaded({
+    required this.trips,
+    this.activeTrip,
+    this.isSyncing = false,
+  });
+
+  TripLoaded copyWith({
+    List<Trip>? trips,
+    Trip? activeTrip,
+    bool? isSyncing,
+  }) {
+    return TripLoaded(
+      trips: trips ?? this.trips,
+      activeTrip: activeTrip ?? this.activeTrip,
+      isSyncing: isSyncing ?? this.isSyncing,
+    );
+  }
 
   @override
-  List<Object?> get props => [trips, activeTrip];
+  List<Object?> get props => [trips, activeTrip, isSyncing];
 }
 
 /// 行程錯誤

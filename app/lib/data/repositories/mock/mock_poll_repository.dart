@@ -1,7 +1,7 @@
-import '../../../core/error/result.dart';
+﻿import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../models/poll.dart';
-import '../interfaces/i_poll_repository.dart';
+import '../../../domain/repositories/i_poll_repository.dart';
 
 /// 模擬投票資料倉庫
 class MockPollRepository implements IPollRepository {

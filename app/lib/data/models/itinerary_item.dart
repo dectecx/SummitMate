@@ -1,90 +1,75 @@
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
+import '../../domain/entities/itinerary_item.dart';
 
 part 'itinerary_item.g.dart';
 
-/// 行程節點
+/// 行程節點模型 (Persistence Model)
 @HiveType(typeId: 1)
 @JsonSerializable(fieldRename: FieldRename.snake)
-class ItineraryItem extends HiveObject {
-  /// 節點唯一識別碼 (PK)
+class ItineraryItemModel extends HiveObject {
   @HiveField(0)
   String id;
 
-  /// 關聯的行程 ID (FK → Trip)
   @HiveField(1)
   String tripId;
 
-  /// 行程天數，e.g., "D0", "D1", "D2"
   @HiveField(2)
   @JsonKey(defaultValue: '')
   String day;
 
-  /// 地標名稱，e.g., "向陽山屋"
   @HiveField(3)
   @JsonKey(defaultValue: '')
   String name;
 
-  /// 預計時間 (HH:mm 格式)
   @HiveField(4)
   @JsonKey(fromJson: _parseEstTime, defaultValue: '')
   String estTime;
 
-  /// 實際打卡時間 (本地欄位)
   @HiveField(5)
   @JsonKey(fromJson: _dateTimeFromJson)
   DateTime? actualTime;
 
-  /// 海拔高度 (公尺)
   @HiveField(6)
   @JsonKey(defaultValue: 0)
   int altitude;
 
-  /// 里程 (公里)
   @HiveField(7)
   @JsonKey(defaultValue: 0.0)
   double distance;
 
-  /// 備註
   @HiveField(8)
   @JsonKey(defaultValue: '')
   String note;
 
-  /// 對應 assets 圖片檔名
   @HiveField(9)
   String? imageAsset;
 
-  /// 是否已打卡
   @HiveField(10)
   @JsonKey(defaultValue: false, name: 'is_checked_in')
   bool isCheckedIn;
 
-  /// 打卡時間
   @HiveField(11)
   @JsonKey(fromJson: _dateTimeFromJson)
   DateTime? checkedInAt;
 
-  /// 建立時間
   @HiveField(12)
   @JsonKey(name: 'created_at', fromJson: _dateTimeFromJson)
   DateTime? createdAt;
 
-  /// 建立者
   @HiveField(13)
   @JsonKey(name: 'created_by')
   String? createdBy;
 
-  /// 更新時間
   @HiveField(14)
   @JsonKey(name: 'updated_at', fromJson: _dateTimeFromJson)
   DateTime? updatedAt;
 
-  /// 更新者
   @HiveField(15)
   @JsonKey(name: 'updated_by')
   String? updatedBy;
 
-  ItineraryItem({
+  ItineraryItemModel({
     required this.id,
     this.tripId = '',
     this.day = '',
@@ -103,11 +88,53 @@ class ItineraryItem extends HiveObject {
     this.updatedBy,
   });
 
-  /// 解析 est_time：API 可能返回 ISO 格式，需轉為 HH:mm
+  /// 轉換為 Domain Entity
+  ItineraryItem toDomain() {
+    return ItineraryItem(
+      id: id,
+      tripId: tripId,
+      day: day,
+      name: name,
+      estTime: estTime,
+      actualTime: actualTime,
+      altitude: altitude,
+      distance: distance,
+      note: note,
+      imageAsset: imageAsset,
+      isCheckedIn: isCheckedIn,
+      checkedInAt: checkedInAt,
+      createdAt: createdAt,
+      createdBy: createdBy,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
+    );
+  }
+
+  /// 從 Domain Entity 建立 Model
+  factory ItineraryItemModel.fromDomain(ItineraryItem entity) {
+    return ItineraryItemModel(
+      id: entity.id,
+      tripId: entity.tripId,
+      day: entity.day,
+      name: entity.name,
+      estTime: entity.estTime,
+      actualTime: entity.actualTime,
+      altitude: entity.altitude,
+      distance: entity.distance,
+      note: entity.note,
+      imageAsset: entity.imageAsset,
+      isCheckedIn: entity.isCheckedIn,
+      checkedInAt: entity.checkedInAt,
+      createdAt: entity.createdAt,
+      createdBy: entity.createdBy,
+      updatedAt: entity.updatedAt,
+      updatedBy: entity.updatedBy,
+    );
+  }
+
   static String _parseEstTime(dynamic value) {
     if (value == null || value.toString().isEmpty) return '';
     final str = value.toString();
-    // 如果是 ISO 格式 (包含 T)，解析並提取時間
     if (str.contains('T')) {
       final dt = DateTime.parse(str).toLocal();
       return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
@@ -115,7 +142,6 @@ class ItineraryItem extends HiveObject {
     return str;
   }
 
-  /// DateTime 解析
   static DateTime? _dateTimeFromJson(dynamic value) {
     if (value == null) return null;
     final dt = DateTime.tryParse(value.toString());
@@ -123,9 +149,6 @@ class ItineraryItem extends HiveObject {
     return dt.toLocal();
   }
 
-  /// 從 JSON 建立
-  factory ItineraryItem.fromJson(Map<String, dynamic> json) => _$ItineraryItemFromJson(json);
-
-  /// 轉換為 JSON
-  Map<String, dynamic> toJson() => _$ItineraryItemToJson(this);
+  factory ItineraryItemModel.fromJson(Map<String, dynamic> json) => _$ItineraryItemModelFromJson(json);
+  Map<String, dynamic> toJson() => _$ItineraryItemModelToJson(this);
 }

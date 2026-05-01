@@ -24,7 +24,7 @@ class TripSnapshot {
   /// 行程項目列表
   @HiveField(3)
   @JsonKey(defaultValue: [])
-  final List<ItineraryItem> itinerary;
+  final List<ItineraryItemModel> itinerary;
 
   TripSnapshot({required this.name, required this.startDate, this.endDate, this.itinerary = const []});
 

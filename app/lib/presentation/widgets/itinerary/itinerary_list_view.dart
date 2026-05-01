@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:summitmate/data/data.dart';
+import '../../../domain/entities/itinerary_item.dart';
 
 /// 行程列表視圖
 ///
@@ -20,8 +20,8 @@ class ItineraryListView extends StatelessWidget {
   /// 顯示打卡對話框的回呼 (傳入 context, item)
   final Function(BuildContext, ItineraryItem) onShowCheckInDialog;
 
-  /// 確認刪除的回呼 (傳入 context, itemKey)
-  final Function(BuildContext, dynamic) onConfirmDelete; // Key might be string or dynamic
+  /// 確認刪除的回呼 (傳入 context, itemId)
+  final Function(BuildContext, String) onConfirmDelete;
 
   /// 建構子
   const ItineraryListView({
@@ -100,7 +100,7 @@ class ItineraryListView extends StatelessWidget {
             trailing: isEditMode
                 ? IconButton(
                     icon: Icon(Icons.remove_circle, color: Theme.of(context).colorScheme.error),
-                    onPressed: () => onConfirmDelete(context, item.key),
+                    onPressed: () => onConfirmDelete(context, item.id),
                   )
                 : (item.note.isNotEmpty
                       ? Icon(Icons.info_outline, size: 20, color: Theme.of(context).colorScheme.primary)

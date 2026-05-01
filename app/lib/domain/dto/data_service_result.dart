@@ -1,4 +1,4 @@
-import '../../data/models/itinerary_item.dart';
+import '../entities/itinerary_item.dart';
 import '../../data/models/message.dart';
 
 /// 資料服務回傳的聚合資料

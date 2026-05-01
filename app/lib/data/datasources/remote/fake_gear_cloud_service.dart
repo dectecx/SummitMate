@@ -3,6 +3,7 @@ import '../../../core/error/result.dart';
 import '../../models/gear_item.dart';
 import '../../models/gear_set.dart';
 import '../../models/meal_item.dart';
+import '../../../domain/entities/gear_item.dart';
 import '../../../domain/interfaces/i_gear_cloud_service.dart';
 
 /// 模擬雲端裝備庫服務 (與 IGearCloudService 介面一致)
@@ -40,15 +41,17 @@ class FakeGearCloudService implements IGearCloudService {
     List<DailyMealPlan>? meals,
     String? key,
   }) async {
-    // 模擬上傳成功
+    // 模擬上傳成功，將 Entity 轉換為 Model 以存入 GearSet
+    final itemModels = items.map((e) => GearItemModel.fromDomain(e)).toList();
+
     final mockSet = GearSet(
       id: 'fake-${DateTime.now().millisecondsSinceEpoch}',
       title: title,
       author: author,
-      totalWeight: items.fold(0, (sum, i) => sum + i.totalWeight.toInt()),
+      totalWeight: items.fold(0.0, (sum, i) => sum + i.totalWeight),
       itemCount: items.length,
       visibility: visibility,
-      items: items,
+      items: itemModels,
       meals: meals,
       createdAt: DateTime.now(),
       createdBy: author,

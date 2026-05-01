@@ -1,4 +1,4 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_group_event_local_data_source.dart';
@@ -6,7 +6,7 @@ import '../datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../models/group_event.dart';
 import '../models/group_event_comment.dart';
 import '../models/enums/group_event_category.dart';
-import 'interfaces/i_group_event_repository.dart';
+import '../../domain/repositories/i_group_event_repository.dart';
 
 /// 揪團 Repository
 @LazySingleton(as: IGroupEventRepository)

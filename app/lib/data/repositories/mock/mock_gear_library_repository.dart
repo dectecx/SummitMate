@@ -1,5 +1,5 @@
-import '../../models/gear_library_item.dart';
-import '../interfaces/i_gear_library_repository.dart';
+﻿import '../../models/gear_library_item.dart';
+import '../../../domain/repositories/i_gear_library_repository.dart';
 import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
 

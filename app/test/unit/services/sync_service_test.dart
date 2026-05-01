@@ -1,16 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/infrastructure/services/sync_service.dart';
-import 'package:summitmate/domain/interfaces/i_connectivity_service.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
-import 'package:summitmate/data/repositories/interfaces/i_itinerary_repository.dart';
-import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
+import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/domain/repositories/i_itinerary_repository.dart';
 import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
+import 'package:summitmate/data/repositories/interfaces/i_message_repository.dart';
 import 'package:summitmate/data/models/message.dart';
 import 'package:summitmate/data/models/trip.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/core/models/paginated_list.dart';
 
 // Mocks - use interfaces for better test isolation
 
@@ -62,7 +61,6 @@ void main() {
     );
 
     // Default: Itinerary sync behavior
-    when(() => mockItineraryRepo.getLastSyncTime()).thenReturn(null);
     when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
 
     // Default: Message sync behavior

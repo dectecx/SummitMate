@@ -1,7 +1,7 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../data/models/user_profile.dart';
 import '../../infrastructure/tools/log_service.dart';
-import 'interfaces/i_auth_session_repository.dart';
+import '../../domain/repositories/i_auth_session_repository.dart';
 import '../datasources/interfaces/i_auth_session_local_data_source.dart';
 
 /// 用於管理本地身份驗證工作階段的 Repository (支援 DataSource 模式)

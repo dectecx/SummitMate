@@ -1,6 +1,6 @@
-import '../../data/models/itinerary_item.dart';
+﻿import '../entities/itinerary_item.dart';
 import '../../data/models/message.dart';
-import '../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../../core/error/result.dart';
 import '../dto/data_service_result.dart';

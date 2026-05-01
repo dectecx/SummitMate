@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:hive_ce/hive.dart';
-import '../../models/itinerary_item.dart';
-import '../interfaces/i_itinerary_repository.dart';
+import '../../../domain/entities/itinerary_item.dart';
+import '../../../domain/repositories/i_itinerary_repository.dart';
 import '../../../core/error/result.dart';
 
 /// 模擬行程資料庫
@@ -10,11 +9,9 @@ class MockItineraryRepository implements IItineraryRepository {
   /// 模擬行程 ID（對應 MockTripRepository）
   static const String mockTripId = 'mock-trip-001';
 
-  DateTime? _lastSyncTime;
-
   /// 模擬行程資料
   final List<ItineraryItem> _mockItems = [
-    ItineraryItem(
+    const ItineraryItem(
       id: 'mock-itinerary-001',
       tripId: mockTripId,
       day: 'D1',
@@ -24,7 +21,7 @@ class MockItineraryRepository implements IItineraryRepository {
       distance: 0,
       note: '檢查哨整裝出發',
     ),
-    ItineraryItem(
+    const ItineraryItem(
       id: 'mock-itinerary-002',
       tripId: mockTripId,
       day: 'D1',
@@ -34,7 +31,7 @@ class MockItineraryRepository implements IItineraryRepository {
       distance: 4.3,
       note: '',
     ),
-    ItineraryItem(
+    const ItineraryItem(
       id: 'mock-itinerary-003',
       tripId: mockTripId,
       day: 'D1',
@@ -44,7 +41,7 @@ class MockItineraryRepository implements IItineraryRepository {
       distance: 7.4,
       note: '百岳 No.15',
     ),
-    ItineraryItem(
+    const ItineraryItem(
       id: 'mock-itinerary-004',
       tripId: mockTripId,
       day: 'D1',
@@ -54,7 +51,7 @@ class MockItineraryRepository implements IItineraryRepository {
       distance: 8.4,
       note: '抵達山屋休息',
     ),
-    ItineraryItem(
+    const ItineraryItem(
       id: 'mock-itinerary-005',
       tripId: mockTripId,
       day: 'D2',
@@ -70,53 +67,31 @@ class MockItineraryRepository implements IItineraryRepository {
   Future<Result<void, Exception>> init() async => const Success(null);
 
   @override
-  List<ItineraryItem> getAllItems() => List.unmodifiable(_mockItems);
+  List<ItineraryItem> getByTripId(String tripId) =>
+      _mockItems.where((item) => item.tripId == tripId).toList();
 
   @override
-  List<ItineraryItem> getItemsByDay(String day) => _mockItems.where((item) => item.day == day).toList();
+  ItineraryItem? getById(String id) =>
+      _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.id == id, orElse: () => null);
 
   @override
-  ItineraryItem? getItemByKey(dynamic key) =>
-      _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.id == key, orElse: () => null);
+  Future<Result<void, Exception>> add(ItineraryItem item) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> checkIn(dynamic key, DateTime time) async => const Success(null);
+  Future<Result<void, Exception>> update(ItineraryItem item) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> clearCheckIn(dynamic key) async => const Success(null);
+  Future<Result<void, Exception>> delete(String id) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> syncFromCloud(List<ItineraryItem> cloudItems) async => const Success(null);
+  Future<Result<void, Exception>> clearByTripId(String tripId) async => const Success(null);
 
   @override
-  Stream<BoxEvent> watchAllItems() => const Stream.empty();
+  Future<Result<void, Exception>> saveAll(List<ItineraryItem> items) async => const Success(null);
 
   @override
-  Future<Result<void, Exception>> resetAllCheckIns() async => const Success(null);
-
-  @override
-  Future<Result<void, Exception>> addItem(ItineraryItem item) async => const Success(null);
-
-  @override
-  Future<Result<void, Exception>> updateItem(dynamic key, ItineraryItem item) async => const Success(null);
-
-  @override
-  Future<Result<void, Exception>> saveLastSyncTime(DateTime time) async {
-    _lastSyncTime = time;
-    return const Success(null);
-  }
-
-  @override
-  DateTime? getLastSyncTime() {
-    return _lastSyncTime;
-  }
+  Future<Result<void, Exception>> toggleCheckIn(String id) async => const Success(null);
 
   @override
   Future<Result<void, Exception>> sync(String tripId) async => const Success(null);
-
-  @override
-  Future<Result<void, Exception>> deleteItem(dynamic key) async => const Success(null);
-
-  @override
-  Future<Result<void, Exception>> clearAll() async => const Success(null);
 }

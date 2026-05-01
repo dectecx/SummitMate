@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/di/injection.dart';
 import '../../core/error/result.dart';
 import '../../data/models/gear_set.dart';
-import '../../data/models/gear_item.dart';
-import '../../data/models/meal_item.dart';
-import '../../data/repositories/interfaces/i_gear_repository.dart';
-import '../../data/repositories/interfaces/i_gear_set_repository.dart';
+import '../../domain/entities/gear_item.dart';
+import '../../domain/repositories/i_gear_repository.dart';
+import '../../domain/repositories/i_gear_set_repository.dart';
 import '../../data/models/gear_key_record.dart';
+import '../../data/models/meal_item.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
@@ -244,7 +244,8 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     );
 
     if (confirmed == true) {
-      await _importGearItems(items);
+      final domainItems = items.map((m) => m.toDomain()).toList();
+      await _importGearItems(domainItems);
       if (gearSet.meals != null && gearSet.meals!.isNotEmpty) {
         _importMeals(gearSet.meals!);
       }

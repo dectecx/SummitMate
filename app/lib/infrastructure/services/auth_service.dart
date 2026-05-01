@@ -1,11 +1,11 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:injectable/injectable.dart';
 import '../../core/di/injection.dart';
 import '../../core/error/app_error_handler.dart';
 import '../../core/exceptions/offline_exception.dart';
 import '../../core/offline_config.dart';
 import '../../data/models/user_profile.dart';
-import '../../data/repositories/interfaces/i_auth_session_repository.dart';
+import '../../domain/repositories/i_auth_session_repository.dart';
 import '../clients/network_aware_client.dart';
 import '../../domain/interfaces/i_auth_service.dart';
 import '../../domain/interfaces/i_token_validator.dart';

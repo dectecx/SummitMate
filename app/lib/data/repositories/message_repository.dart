@@ -1,10 +1,10 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';
 import '../datasources/interfaces/i_message_remote_data_source.dart';
 import '../models/message.dart';
-import 'interfaces/i_message_repository.dart';
+import '../../domain/repositories/i_message_repository.dart';
 import '../../../infrastructure/tools/log_service.dart';
 
 /// 行程留言板 Repository (支援 Offline-First)

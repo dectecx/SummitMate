@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/itinerary_item.dart';
+import 'package:summitmate/domain/entities/itinerary_item.dart';
 
 void main() {
   group('ItineraryItem Model Tests', () {
     test('should create with default values', () {
-      final item = ItineraryItem(id: 'id-1');
+      const item = ItineraryItem(id: 'id-1', tripId: 'trip_1', day: 'D1', name: '', estTime: '');
 
-      expect(item.day, isEmpty);
+      expect(item.day, equals('D1'));
       expect(item.name, isEmpty);
       expect(item.estTime, isEmpty);
       expect(item.actualTime, isNull);
@@ -16,9 +16,24 @@ void main() {
       expect(item.imageAsset, isNull);
     });
 
+    test('should create an instance with provided values', () {
+      const item = ItineraryItem(
+        id: 'id-1',
+        tripId: 'trip_1',
+        day: 'D1',
+        name: '向陽登山口',
+        estTime: '08:00',
+      );
+
+      expect(item.day, equals('D1'));
+      expect(item.name, equals('向陽登山口'));
+      expect(item.estTime, equals('08:00'));
+    });
+
     test('should create with named parameters', () {
       final item = ItineraryItem(
         id: 'id-2',
+        tripId: 'trip_1',
         day: 'D1',
         name: '向陽山屋',
         estTime: '11:30',
@@ -36,28 +51,30 @@ void main() {
     });
 
     test('should report not checked in when actualTime is null', () {
-      final item = ItineraryItem(id: 'id-3');
+      const item = ItineraryItem(id: 'id-3', tripId: 'trip_1', day: 'D1', name: '', estTime: '');
 
       expect(item.isCheckedIn, isFalse);
     });
 
     test('should report checked in when isCheckedIn is true', () {
-      final item = ItineraryItem(id: 'id-4');
-      item.isCheckedIn = true;
-      item.checkedInAt = DateTime.now();
+      final item = const ItineraryItem(id: 'id-4', tripId: 'trip_1', day: 'D1', name: '', estTime: '').copyWith(
+        isCheckedIn: true,
+        checkedInAt: DateTime.now(),
+      );
 
       expect(item.isCheckedIn, isTrue);
     });
 
     test('should validate day format', () {
-      final item = ItineraryItem(id: 'id-5', day: 'D1');
+      const item = ItineraryItem(id: 'id-5', tripId: 'trip_1', day: 'D1', name: '', estTime: '');
 
       expect(item.day, matches(RegExp(r'^D\d$')));
     });
 
     test('should convert to/from JSON', () {
-      final item = ItineraryItem(
+      const item = ItineraryItem(
         id: 'id-6',
+        tripId: 'trip_1',
         day: 'D1',
         name: '向陽山屋',
         estTime: '11:30',

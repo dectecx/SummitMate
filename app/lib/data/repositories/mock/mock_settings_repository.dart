@@ -1,8 +1,8 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
 import 'package:summitmate/data/models/settings.dart';
-import '../interfaces/i_settings_repository.dart';
+import '../../../domain/repositories/i_settings_repository.dart';
 
 /// 模擬設定資料倉庫
 ///

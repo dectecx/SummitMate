@@ -80,7 +80,7 @@ void main() {
         createdBy: 'User',
         updatedAt: DateTime.utc(2025, 1, 1, 10, 0, 0),
         updatedBy: 'User',
-        items: [GearItem(name: 'Item 1', weight: 100, category: 'Misc', tripId: 'trip1')],
+        items: [GearItemModel(name: 'Item 1', weight: 100, category: 'Misc', tripId: 'trip1')],
       );
 
       final json = gearSet.toJson();

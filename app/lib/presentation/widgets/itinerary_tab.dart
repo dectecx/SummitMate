@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import 'package:summitmate/data/data.dart';
+import '../../domain/entities/itinerary_item.dart';
 import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
@@ -29,7 +28,6 @@ class ItineraryTab extends StatefulWidget {
 }
 
 class _ItineraryTabState extends State<ItineraryTab> {
-  // 加上自動同步冷卻檢查 (於 initState 觸發)
   @override
   void initState() {
     super.initState();
@@ -38,7 +36,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
     });
   }
 
-  /// 自動同步 (冷卻檢查由 Cubit 處理)
+  /// 自動同步
   Future<void> _autoSync() async {
     if (!mounted) return;
     final cubit = context.read<SyncCubit>();
@@ -50,27 +48,13 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
     if (!mounted) return;
 
-    // 首次載入 (尚未同步過) 時，不觸發自動同步
-    // Use SyncCubit state to check lastSyncTime
     final syncState = context.read<SyncCubit>().state;
-    // Assuming SyncInitial means never synced, or we check if we have data.
-    // If logic was 'lastSyncTime == null' don't sync... wait.
-    // If lastSyncTime is null, it usually MEANS we haven't synced.
-    // The original logic `if (settingsInfo.lastSyncTime == null) return;` suggests:
-    // "If we haven't synced before (or it's null), DON'T auto-sync." -> This sounds like avoiding overwriting local with empty remote on first launch?
-    // Or maybe it means "If we strictly have no record of sync, don't auto sync blindly".
-    // However, usually we WANT to sync on startup if we have a token.
-    // Let's replicate strict logic:
-    // If SyncCubit doesn't expose lastSyncTime easily in Initial state (it does via property often), use it.
-    // SyncInitial has lastSyncTime property.
     DateTime? lastSyncTime;
     if (syncState is SyncInitial) lastSyncTime = syncState.lastSyncTime;
     if (syncState is SyncSuccess) lastSyncTime = syncState.timestamp;
 
-    // If we can't find it, assume null.
     if (lastSyncTime == null) return;
 
-    // 使用 SyncCubit 進行自動同步
     cubit.syncAll();
   }
 
@@ -85,7 +69,6 @@ class _ItineraryTabState extends State<ItineraryTab> {
       builder: (context, state) {
         return BlocBuilder<SyncCubit, SyncState>(
           builder: (context, syncState) {
-            // Cubit Logic
             bool isLoading = state is ItineraryLoading;
             List<ItineraryItem> items = [];
             String selectedDay = 'D1';
@@ -133,7 +116,6 @@ class _ItineraryTabState extends State<ItineraryTab> {
                             final eventId = linkedEventId;
                             final groupEventCubit = context.read<GroupEventCubit>();
 
-                            // Show loading if needed, or just fetch
                             final event = await groupEventCubit.getEventById(eventId);
                             if (event != null && context.mounted) {
                               Navigator.push(
@@ -219,7 +201,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
   }
 
   /// 確認並刪除行程節點
-  void _confirmDelete(BuildContext context, dynamic key) {
+  void _confirmDelete(BuildContext context, String id) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -229,7 +211,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           TextButton(
             onPressed: () {
-              context.read<ItineraryCubit>().deleteItem(key);
+              context.read<ItineraryCubit>().deleteItem(id);
               Navigator.pop(context);
             },
             child: Text('刪除', style: TextStyle(color: Theme.of(context).colorScheme.error)),
@@ -240,7 +222,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
   }
 
   /// 顯示編輯行程節點對話框
-  void _showEditDialog(BuildContext context, dynamic item, String currentDay) async {
+  void _showEditDialog(BuildContext context, ItineraryItem item, String currentDay) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (_) => ItineraryEditDialog(item: item, defaultDay: currentDay),
@@ -253,14 +235,15 @@ class _ItineraryTabState extends State<ItineraryTab> {
         altitude: result['altitude'],
         distance: result['distance'],
         note: result['note'],
+        updatedAt: DateTime.now(),
       );
 
-      context.read<ItineraryCubit>().updateItem(item.key, updatedItem);
+      context.read<ItineraryCubit>().updateItem(updatedItem);
     }
   }
 
   /// 顯示打卡對話框
-  void _showCheckInDialog(BuildContext context, dynamic item) {
+  void _showCheckInDialog(BuildContext context, ItineraryItem item) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -302,39 +285,28 @@ class _ItineraryTabState extends State<ItineraryTab> {
             const Divider(height: 24),
             ListTile(
               leading: const Icon(Icons.access_time),
-              title: const Text('現在時間打卡'),
+              title: Text(item.isCheckedIn ? '取消打卡' : '現在時間打卡'),
               onTap: () {
-                context.read<ItineraryCubit>().checkIn(item.key);
-                ToastService.success('已打卡：${item.name}');
+                context.read<ItineraryCubit>().checkIn(item.id);
+                ToastService.success(item.isCheckedIn ? '已取消打卡' : '已打卡：${item.name}');
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.edit_calendar),
-              title: const Text('指定時間'),
-              onTap: () async {
-                Navigator.pop(context);
-                final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                if (time != null) {
-                  if (context.mounted) {
-                    final now = DateTime.now();
-                    context.read<ItineraryCubit>().checkIn(
-                      item.key,
-                      time: DateTime(now.year, now.month, now.day, time.hour, time.minute),
-                    );
-                    ToastService.success('已打卡：${item.name}');
-                  }
-                }
-              },
-            ),
-            if (item.isCheckedIn)
+            if (!item.isCheckedIn)
               ListTile(
-                leading: const Icon(Icons.clear),
-                title: const Text('清除打卡'),
-                onTap: () {
-                  context.read<ItineraryCubit>().clearCheckIn(item.key);
-                  ToastService.info('已清除打卡');
+                leading: const Icon(Icons.edit_calendar),
+                title: const Text('指定時間'),
+                onTap: () async {
                   Navigator.pop(context);
+                  final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                  if (time != null) {
+                    if (context.mounted) {
+                      final now = DateTime.now();
+                      final checkInTime = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+                      context.read<ItineraryCubit>().checkInWithTime(item.id, checkInTime);
+                      ToastService.success('已打卡：${item.name}');
+                    }
+                  }
                 },
               ),
             const SizedBox(height: 8),
@@ -345,14 +317,8 @@ class _ItineraryTabState extends State<ItineraryTab> {
   }
 }
 
-/// 資訊標籤元件
-///
-/// 顯示圖示和文字的小型標籤，用於展示行程節點詳細資訊。
 class _InfoChip extends StatelessWidget {
-  /// 標籤圖示
   final IconData icon;
-
-  /// 標籤文字
   final String label;
 
   const _InfoChip({required this.icon, required this.label});

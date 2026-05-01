@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import '../../../domain/entities/gear_item.dart';
 import '../../models/gear_item.dart';
 import '../../api/mappers/trip_gear_api_mapper.dart';
 import '../../api/services/trip_gear_api_service.dart';
@@ -15,7 +16,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   TripGearRemoteDataSource(this._tripGearApi);
 
   @override
-  Future<List<GearItem>> getTripGear(String tripId) async {
+  Future<List<GearItemModel>> getTripGear(String tripId) async {
     try {
       LogService.info('取得行程裝備清單: $tripId', source: _source);
       final responses = await _tripGearApi.listGear(tripId);
@@ -27,7 +28,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   }
 
   @override
-  Future<GearItem> addTripGear(String tripId, GearItem item) async {
+  Future<GearItemModel> addTripGear(String tripId, GearItem item) async {
     try {
       LogService.info('新增裝備至行程: $tripId, 名稱: ${item.name}', source: _source);
       final request = TripGearApiMapper.toRequest(item);
@@ -40,7 +41,7 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   }
 
   @override
-  Future<GearItem> updateTripGear(String tripId, GearItem item) async {
+  Future<GearItemModel> updateTripGear(String tripId, GearItem item) async {
     try {
       LogService.info('更新裝備: $tripId, 項目: ${item.id}', source: _source);
       final request = TripGearApiMapper.toRequest(item);

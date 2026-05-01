@@ -4,7 +4,7 @@ import 'package:summitmate/core/core.dart';
 import 'responsive_layout.dart';
 
 import '../../data/models/gear_set.dart';
-import '../../data/models/gear_item.dart';
+import '../../domain/entities/gear_item.dart';
 
 /// 裝備組合預覽對話框
 /// 使用 GearCategoryHelper 確保與主裝備頁一致
@@ -25,7 +25,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
   final Set<String> _expandedCategories = {};
   bool _initialized = false;
 
-  List<GearItem> get items => widget.gearSet.items ?? [];
+  List<GearItem> get items => widget.gearSet.items?.map((m) => m.toDomain()).toList() ?? [];
 
   @override
   void didChangeDependencies() {
@@ -57,7 +57,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final totalWeight = items.fold<double>(0, (sum, item) => sum + item.weight);
+    final totalWeight = items.fold<double>(0, (sum, item) => sum + item.totalWeight);
 
     return Dialog(
       child: ConstrainedBox(
@@ -185,7 +185,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
   Widget _buildCategoryHeader(String category) {
     final isExpanded = _expandedCategories.contains(category);
     final itemsInCategory = groupedItems[category] ?? [];
-    final categoryWeight = itemsInCategory.fold<double>(0, (sum, item) => sum + item.weight);
+    final categoryWeight = itemsInCategory.fold<double>(0, (sum, item) => sum + item.totalWeight);
 
     return InkWell(
       onTap: () {
@@ -252,7 +252,7 @@ class _GearItemTile extends StatelessWidget {
       leading: Icon(GearCategoryHelper.getIcon(item.category), size: 20, color: Colors.grey.shade600),
       title: Text(item.name, style: const TextStyle(fontSize: 14)),
       trailing: Text(
-        WeightFormatter.formatPrecise(item.weight),
+        WeightFormatter.formatPrecise(item.totalWeight),
         style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w500),
       ),
     );

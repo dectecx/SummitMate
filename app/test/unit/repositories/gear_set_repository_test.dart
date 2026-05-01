@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_key_local_data_source.dart';
 import 'package:summitmate/data/models/gear_set.dart';
-import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/domain/entities/gear_item.dart';
 import 'package:summitmate/data/models/gear_key_record.dart';
 import 'package:summitmate/data/repositories/gear_set_repository.dart';
 import 'package:summitmate/domain/interfaces/i_gear_cloud_service.dart';
@@ -20,7 +20,7 @@ void main() {
   setUp(() {
     mockRemoteDataSource = MockGearCloudService();
     mockLocalDataSource = MockGearKeyLocalDataSource();
-    repository = GearSetRepository(remoteDataSource: mockRemoteDataSource, localDataSource: mockLocalDataSource);
+    repository = GearSetRepository(mockRemoteDataSource, mockLocalDataSource);
   });
 
   group('GearSetRepository', () {
@@ -85,7 +85,7 @@ void main() {
     });
 
     group('uploadGearSet', () {
-      final tItems = [GearItem(name: 'Item', weight: 10, category: 'Cat')];
+      final tItems = [const GearItem(id: 'i1', tripId: 'trip1', name: 'Item', weight: 10, category: 'Cat')];
 
       test('should call remoteDataSource with correct parameters', () async {
         // Arrange

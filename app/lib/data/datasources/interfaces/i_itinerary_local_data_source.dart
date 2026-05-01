@@ -1,33 +1,34 @@
 import 'package:hive_ce/hive.dart';
 import '../../models/itinerary_item.dart';
 
-/// 行程項目 (ItineraryItem) 的本地資料來源介面
-///
-/// 負責定義對本地資料庫 (如 Hive) 的 CRUD 操作規範。
+/// 行程項目 (ItineraryItemModel) 的本地資料來源介面
 abstract interface class IItineraryLocalDataSource {
   /// 取得所有行程項目
-  List<ItineraryItem> getAll();
+  List<ItineraryItemModel> getAll();
+
+  /// 根據行程 ID 取得項目
+  List<ItineraryItemModel> getByTripId(String tripId);
 
   /// 透過 Key 取得單一行程項目
-  ///
-  /// [key] 通常為 Hive 的 auto-increment key 或 uuid
-  ItineraryItem? getByKey(dynamic key);
+  ItineraryItemModel? getByKey(dynamic key);
+
+  /// 透過 ID 取得單一行程項目 (UUID)
+  ItineraryItemModel? getById(String id);
 
   /// 新增行程項目
-  ///
-  /// [item] 欲新增的項目
-  Future<void> add(ItineraryItem item);
+  Future<void> add(ItineraryItemModel item);
 
   /// 更新行程項目
-  ///
-  /// [key] 目標項目的鍵值
-  /// [item] 更新後的項目資料
-  Future<void> update(dynamic key, ItineraryItem item);
+  Future<void> update(ItineraryItemModel item);
 
   /// 刪除行程項目
-  ///
-  /// [key] 目標項目的鍵值
   Future<void> delete(dynamic key);
+
+  /// 刪除行程項目 (透過 ID)
+  Future<void> deleteById(String id);
+
+  /// 清除指定行程的所有項目
+  Future<void> clearByTripId(String tripId);
 
   /// 清除所有行程項目
   Future<void> clear();

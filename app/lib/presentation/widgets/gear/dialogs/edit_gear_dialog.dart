@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../data/models/gear_item.dart';
+import '../../../../domain/entities/gear_item.dart';
 import '../../../cubits/gear/gear_cubit.dart';
 import '../../../cubits/gear_library/gear_library_cubit.dart';
 import '../../../cubits/gear_library/gear_library_state.dart';
@@ -21,12 +21,12 @@ class EditGearDialog extends StatefulWidget {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => BlocProvider.value(
-        value: context.read<GearLibraryCubit>(),
-        child: BlocProvider.value(
-          value: context.read<GearCubit>(),
-          child: EditGearDialog(item: item),
-        ),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<GearLibraryCubit>()),
+          BlocProvider.value(value: context.read<GearCubit>()),
+        ],
+        child: EditGearDialog(item: item),
       ),
     );
   }
@@ -91,16 +91,17 @@ class _EditGearDialogState extends State<EditGearDialog> {
 
     if (name.isEmpty || weight <= 0) return;
 
-    // 更新 item 屬性
-    widget.item.name = name;
-    if (!_isLinked) {
-      widget.item.weight = weight;
-      widget.item.category = _selectedCategory;
-    }
-    widget.item.quantity = _quantity;
-    widget.item.libraryItemId = _libraryItemId;
+    // 使用 copyWith 建立新的不可變實體
+    final updatedItem = widget.item.copyWith(
+      name: name,
+      weight: _isLinked ? widget.item.weight : weight,
+      category: _isLinked ? widget.item.category : _selectedCategory,
+      quantity: _quantity,
+      libraryItemId: _libraryItemId,
+      updatedAt: DateTime.now(),
+    );
 
-    context.read<GearCubit>().updateItem(widget.item);
+    context.read<GearCubit>().updateItem(updatedItem);
 
     if (mounted) Navigator.pop(context);
   }
