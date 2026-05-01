@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:provider/provider.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';

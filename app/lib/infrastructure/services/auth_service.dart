@@ -6,8 +6,6 @@ import '../../core/exceptions/offline_exception.dart';
 import '../../core/offline_config.dart';
 import '../clients/network_aware_client.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/interfaces/i_token_validator.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'jwt_token_validator.dart';
 import '../tools/log_service.dart';
 import 'package:dio/dio.dart';

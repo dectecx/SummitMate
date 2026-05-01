@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/di/injection.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/interceptors/auth_interceptor.dart';
 
@@ -101,7 +100,6 @@ void main() {
         completer.complete();
       });
 
-      print('Dio is registered: ${getIt.isRegistered<Dio>()}');
 
       interceptor.onError(error, handler);
 

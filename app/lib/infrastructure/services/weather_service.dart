@@ -1,8 +1,7 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:injectable/injectable.dart';
-import 'dart:convert';
 import 'dart:math';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../../data/models/weather_data.dart';
 import '../tools/log_service.dart';
@@ -137,13 +136,16 @@ class WeatherService implements IWeatherService {
     LogService.info('取得登山天氣: $locationName', source: 'WeatherService');
 
     try {
-      final response = await http.get(url);
+      final dio = getIt<Dio>();
+      final response = await dio.get(
+        url.toString(),
+        options: Options(extra: {'requiresAuth': false}),
+      );
 
       if (response.statusCode == 200) {
-        final bodyMsgs = utf8.decode(response.bodyBytes);
-        LogService.debug('天氣 API 回應 (長度: ${bodyMsgs.length})', source: 'WeatherService');
+        final decoded = response.data;
+        LogService.debug('天氣 API 回應成功', source: 'WeatherService');
 
-        final decoded = json.decode(bodyMsgs);
         if (decoded is! List) {
           throw Exception('API 回傳格式錯誤：預期為陣列，實際為 ${decoded.runtimeType}');
         }

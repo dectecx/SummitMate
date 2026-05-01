@@ -3,10 +3,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_key_local_data_source.dart';
 import 'package:summitmate/data/models/gear_set.dart';
-import 'package:summitmate/domain/entities/gear_item.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/models/gear_key_record.dart';
 import 'package:summitmate/data/repositories/gear_set_repository.dart';
-import 'package:summitmate/domain/interfaces/i_gear_cloud_service.dart';
+
 
 class MockGearCloudService extends Mock implements IGearCloudService {}
 

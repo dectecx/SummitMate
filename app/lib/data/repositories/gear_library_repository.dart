@@ -2,7 +2,6 @@ import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
-import '../../domain/repositories/i_gear_library_repository.dart';
 import '../datasources/interfaces/i_gear_library_local_data_source.dart';
 import '../datasources/interfaces/i_gear_library_remote_data_source.dart';
 import '../models/gear_library_item_model.dart';

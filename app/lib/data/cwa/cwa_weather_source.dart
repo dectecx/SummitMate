@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'dart:convert';
 import 'dart:math';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../core/env_config.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../models/weather_data.dart';
@@ -32,16 +32,16 @@ class CwaWeatherSource {
     LogService.debug('CWA API URL: $url', source: 'CwaWeatherSource');
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final dio = Dio();
+      final response = await dio.get(url);
 
       LogService.info('CWA API Status: ${response.statusCode}', source: 'CwaWeatherSource');
 
       if (response.statusCode == 200) {
-        final bodyStr = utf8.decode(response.bodyBytes);
-        LogService.debug('CWA API Response (Length: ${bodyStr.length})', source: 'CwaWeatherSource');
+        final decoded = response.data;
+        LogService.debug('CWA API Response received', source: 'CwaWeatherSource');
 
-        final decoded = jsonDecode(bodyStr);
-        final cwaResponse = CwaApiResponse.fromJson(decoded);
+        final cwaResponse = CwaApiResponse.fromJson(decoded is String ? jsonDecode(decoded) : decoded);
 
         if (cwaResponse.success == 'true') {
           final weather = _parseTownshipData(cwaResponse, locationName, queryName);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:summitmate/core/core.dart';
+import 'package:summitmate/presentation/utils/gear_utils.dart';
 import 'responsive_layout.dart';
 
 import '../../data/models/gear_set.dart';

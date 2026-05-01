@@ -1,9 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
-import '../../domain/repositories/i_trip_repository.dart';
 import 'package:summitmate/core/core.dart';
 import '../../core/di/injection.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';

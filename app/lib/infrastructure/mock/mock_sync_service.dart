@@ -1,4 +1,3 @@
-﻿import 'package:summitmate/domain/interfaces/i_sync_service.dart';
 import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
 import 'package:summitmate/domain/domain.dart';

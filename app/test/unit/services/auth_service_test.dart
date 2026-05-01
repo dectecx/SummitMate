@@ -4,8 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/services/auth_service.dart';
-import 'package:summitmate/domain/interfaces/i_token_validator.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 
 // ============================================================
 // === MOCKS ===

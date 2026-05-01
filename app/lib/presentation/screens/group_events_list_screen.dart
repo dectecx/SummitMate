@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -9,8 +9,6 @@ import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import '../cubits/favorites/group_event/group_event_favorites_state.dart';
-import '../../data/models/enums/group_event_status.dart';
-import '../../data/models/enums/group_event_category.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';

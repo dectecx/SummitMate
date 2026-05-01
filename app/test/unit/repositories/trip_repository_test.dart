@@ -4,7 +4,7 @@ import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/data/models/trip_model.dart';
-import 'package:summitmate/domain/entities/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/trip_repository.dart';
 import 'package:summitmate/core/error/result.dart';
 

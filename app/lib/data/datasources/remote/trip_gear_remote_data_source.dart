@@ -1,6 +1,5 @@
 import 'package:injectable/injectable.dart';
 import '../../../domain/entities/gear_item.dart';
-import '../../models/gear_item_model.dart';
 import '../../api/mappers/trip_gear_api_mapper.dart';
 import '../../api/services/trip_gear_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';

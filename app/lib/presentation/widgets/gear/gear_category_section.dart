@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:summitmate/core/core.dart';
+import '../../utils/gear_utils.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../cubits/gear/gear_cubit.dart';
 import 'gear_mode_selector.dart';

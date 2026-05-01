@@ -4,8 +4,6 @@ import '../../../domain/domain.dart';
 import '../../models/gear_item_model.dart';
 import '../../models/gear_set.dart';
 import '../../models/meal_item.dart';
-import '../../../domain/interfaces/i_gear_cloud_service.dart';
-
 /// 模擬雲端裝備庫服務 (與 IGearCloudService 介面一致)
 /// 用於在遠端實作尚未完成或環境限制時，確保系統不崩潰。
 @LazySingleton(as: IGearCloudService)

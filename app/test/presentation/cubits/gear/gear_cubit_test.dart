@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/domain/entities/gear_item.dart';
-import 'package:summitmate/domain/repositories/i_gear_repository.dart';
+import 'package:summitmate/domain/domain.dart';
+
 import 'package:summitmate/presentation/cubits/gear/gear_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear/gear_state.dart';
 import 'package:summitmate/core/error/result.dart';

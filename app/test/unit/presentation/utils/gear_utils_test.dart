@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/core/constants.dart';
-import 'package:summitmate/core/gear_helpers.dart';
+import 'package:summitmate/presentation/utils/gear_utils.dart';
 
 void main() {
   group('GearCategoryHelper Tests', () {

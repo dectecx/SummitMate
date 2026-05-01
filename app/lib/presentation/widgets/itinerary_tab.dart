@@ -96,7 +96,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
                     child: Row(
                       children: [
                         Icon(Icons.share, size: 16, color: Theme.of(context).colorScheme.primary),

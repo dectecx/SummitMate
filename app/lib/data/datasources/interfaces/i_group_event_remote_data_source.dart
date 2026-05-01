@@ -1,8 +1,6 @@
 import '../../../domain/domain.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
-import '../../models/enums/group_event_category.dart';
-
 /// 揪團 (Group Event) 的遠端資料來源介面
 abstract interface class IGroupEventRemoteDataSource {
   /// 獲取揪團列表 (支援分頁與過濾)

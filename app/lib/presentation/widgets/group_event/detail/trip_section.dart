@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -84,7 +84,7 @@ class TripSection extends StatelessWidget {
                       '快照更新於: ${DateFormat('yyyy/MM/dd HH:mm').format(event.snapshotUpdatedAt!)}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 10,
-                        color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -142,7 +142,7 @@ class TripSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: colorScheme.outlineVariant),
             ),
