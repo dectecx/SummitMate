@@ -1,8 +1,7 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../core/models/paginated_list.dart';
 import '../../core/offline_config.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../domain/domain.dart';
 import '../../core/error/result.dart';
 import '../tools/log_service.dart';
 

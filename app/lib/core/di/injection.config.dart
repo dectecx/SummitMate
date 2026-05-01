@@ -456,8 +456,8 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1040.PollCubit>(
       () => _i1040.PollCubit(
-        gh<_i893.IPollRepository>(),
-        gh<_i634.ITripRepository>(),
+        gh<_i614.IPollRepository>(),
+        gh<_i614.ITripRepository>(),
         gh<_i614.IConnectivityService>(),
         gh<_i614.IAuthService>(),
       ),
@@ -468,16 +468,23 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i880.IMessageRemoteDataSource>(),
       ),
     );
+    gh.factoryParam<_i963.GroupEventReviewCubit, String?, String?>(
+      (eventId, userId) => _i963.GroupEventReviewCubit(
+        gh<_i614.IGroupEventRepository>(),
+        eventId,
+        userId,
+      ),
+    );
     gh.factory<_i675.MessageCubit>(
       () => _i675.MessageCubit(
-        gh<_i572.IMessageRepository>(),
-        gh<_i634.ITripRepository>(),
+        gh<_i614.IMessageRepository>(),
+        gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
       ),
     );
     gh.factory<_i757.GearLibraryCubit>(
       () => _i757.GearLibraryCubit(
-        gh<_i241.IGearLibraryRepository>(),
+        gh<_i614.IGearLibraryRepository>(),
         gh<_i614.IGearRepository>(),
         gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
@@ -493,7 +500,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i32.TripCubit>(
       () => _i32.TripCubit(
-        gh<_i634.ITripRepository>(),
+        gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
         gh<_i614.IGearRepository>(),
         gh<_i614.IItineraryRepository>(),
@@ -516,16 +523,9 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i614.IAuthService>(),
       ),
     );
-    gh.factoryParam<_i963.GroupEventReviewCubit, String?, String?>(
-      (eventId, userId) => _i963.GroupEventReviewCubit(
-        gh<_i868.IGroupEventRepository>(),
-        eventId,
-        userId,
-      ),
-    );
     gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
       (eventId, _) => _i10.GroupEventCommentCubit(
-        gh<_i868.IGroupEventRepository>(),
+        gh<_i614.IGroupEventRepository>(),
         gh<_i614.IAuthService>(),
         eventId,
       ),
@@ -536,7 +536,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IConnectivityService>(),
         gh<_i614.IItineraryRepository>(),
         gh<_i614.IAuthService>(),
-        gh<_i634.ITripRepository>(),
+        gh<_i614.ITripRepository>(),
       ),
     );
     return this;

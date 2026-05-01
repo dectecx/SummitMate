@@ -1,4 +1,4 @@
-import '../../models/group_event.dart';
+﻿import '../../../domain/entities/group_event.dart';
 import '../../models/group_event_comment.dart';
 import '../../models/enums/group_event_status.dart';
 import '../../models/enums/group_event_application_status.dart';

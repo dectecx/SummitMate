@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../models/group_event.dart';
+import '../../models/group_event_model.dart';
 import '../../models/group_event_comment.dart';
 import '../../api/mappers/group_event_api_mapper.dart';
 import '../../api/services/group_event_api_service.dart';
@@ -20,7 +20,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   GroupEventRemoteDataSource(this._groupEventApi);
 
   @override
-  Future<Result<PaginatedList<GroupEvent>, Exception>> getEvents({
+  Future<Result<PaginatedList<GroupEventModel>, Exception>> getEvents({
     int? page,
     int? limit,
     String? status,
@@ -35,10 +35,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
         category: category?.value,
       );
 
-      final items = response.items.map(GroupEventApiMapper.fromResponse).toList();
+      final items = response.items.map((e) => GroupEventModel.fromDomain(GroupEventApiMapper.fromResponse(e))).toList();
 
       return Success(
-        PaginatedList<GroupEvent>(
+        PaginatedList<GroupEventModel>(
           items: items,
           page: response.pagination.page,
           total: response.pagination.total,
@@ -52,10 +52,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<GroupEvent, Exception>> getEventById(String eventId) async {
+  Future<Result<GroupEventModel, Exception>> getEventById(String eventId) async {
     try {
       final response = await _groupEventApi.getEvent(eventId);
-      return Success(GroupEventApiMapper.fromResponse(response));
+      return Success(GroupEventModel.fromDomain(GroupEventApiMapper.fromResponse(response)));
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
@@ -121,11 +121,11 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<List<GroupEventApplication>, Exception>> getMyApplications() async {
+  Future<Result<List<GroupEventApplicationModel>, Exception>> getMyApplications() async {
     try {
       await _groupEventApi.listMyEvents('applied');
       // The API returns List<GroupEventResponse> for listMyEvents.
-      // But the interface expects List<GroupEventApplication>.
+      // But the interface expects List<GroupEventApplicationModel>.
       // This is a conceptual mismatch in the interface vs API.
       // For now, return empty or throw if not possible.
       throw UnimplementedError('getMyApplications concept mismatch in API (returns events, not applications)');
@@ -135,10 +135,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<List<GroupEventApplication>, Exception>> getEventApplications(String eventId) async {
+  Future<Result<List<GroupEventApplicationModel>, Exception>> getEventApplications(String eventId) async {
     try {
       final response = await _groupEventApi.listApplications(eventId);
-      return Success(response.map(GroupEventApiMapper.fromApplicationResponse).toList());
+      return Success(response.map((a) => GroupEventApplicationModel.fromDomain(GroupEventApiMapper.fromApplicationResponse(a))).toList());
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
@@ -231,10 +231,10 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId) async {
+  Future<Result<GroupEventModel, Exception>> updateTripSnapshot(String eventId) async {
     try {
       final response = await _groupEventApi.updateTripSnapshot(eventId);
-      return Success(GroupEventApiMapper.fromResponse(response));
+      return Success(GroupEventModel.fromDomain(GroupEventApiMapper.fromResponse(response)));
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }

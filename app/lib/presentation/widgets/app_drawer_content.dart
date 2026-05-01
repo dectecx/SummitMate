@@ -17,7 +17,6 @@ import '../cubits/itinerary/itinerary_cubit.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../screens/group_events_list_screen.dart';
-import 'package:summitmate/domain/domain.dart';
 
 /// 應用程式側邊欄內容 (抽離出來以便在 Drawer 與 Sidebar 共用)
 class AppDrawerContent extends StatelessWidget {

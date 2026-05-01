@@ -1,5 +1,5 @@
-import '../../../core/models/paginated_list.dart';
-import '../../models/group_event.dart';
+﻿import '../../../core/models/paginated_list.dart';
+import '../../models/group_event_model.dart';
 import '../../models/group_event_comment.dart';
 import '../../../core/error/result.dart';
 import '../../models/enums/group_event_category.dart';
@@ -7,7 +7,7 @@ import '../../models/enums/group_event_category.dart';
 /// 揪團 (Group Event) 的遠端資料來源介面
 abstract interface class IGroupEventRemoteDataSource {
   /// 獲取揪團列表 (支援分頁與過濾)
-  Future<Result<PaginatedList<GroupEvent>, Exception>> getEvents({
+  Future<Result<PaginatedList<GroupEventModel>, Exception>> getEvents({
     int? page,
     int? limit,
     String? status,
@@ -15,7 +15,7 @@ abstract interface class IGroupEventRemoteDataSource {
   });
 
   /// 獲取單一揪團詳情
-  Future<Result<GroupEvent, Exception>> getEventById(String eventId);
+  Future<Result<GroupEventModel, Exception>> getEventById(String eventId);
 
   /// 建立揪團
   Future<Result<String, Exception>> createEvent({
@@ -39,10 +39,10 @@ abstract interface class IGroupEventRemoteDataSource {
   Future<Result<void, Exception>> cancelApplication(String eventId);
 
   /// 獲取我申請的揪團清單
-  Future<Result<List<GroupEventApplication>, Exception>> getMyApplications();
+  Future<Result<List<GroupEventApplicationModel>, Exception>> getMyApplications();
 
   /// 獲取揪團的所有申請 (僅限建立者)
-  Future<Result<List<GroupEventApplication>, Exception>> getEventApplications(String eventId);
+  Future<Result<List<GroupEventApplicationModel>, Exception>> getEventApplications(String eventId);
 
   /// 審核申請 (僅限建立者)
   Future<Result<void, Exception>> reviewApplication({
@@ -64,7 +64,7 @@ abstract interface class IGroupEventRemoteDataSource {
   Future<Result<void, Exception>> updateLinkedTrip({required String eventId, String? linkedTripId});
 
   /// 更新行程快照 (僅限建立者)
-  Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId);
+  Future<Result<GroupEventModel, Exception>> updateTripSnapshot(String eventId);
 
   /// 留言相關
   Future<Result<List<GroupEventComment>, Exception>> getComments(String eventId);
