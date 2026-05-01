@@ -1,7 +1,6 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
-import '../../../domain/entities/trip.dart';
-import '../../models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../api/mappers/trip_api_mapper.dart';
 import '../../api/services/trip_api_service.dart';
 import '../../api/models/trip_api_models.dart';

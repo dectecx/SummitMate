@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 import 'package:summitmate/presentation/widgets/trip/create_trip_dialog.dart';

@@ -7,7 +7,7 @@ import 'package:summitmate/presentation/cubits/auth/auth_cubit.dart';
 import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
-import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/domain/domain.dart';
 
 class MockAuthCubit extends Mock implements AuthCubit {}
 
@@ -25,7 +25,7 @@ void main() {
     when(() => mockAuthCubit.stream).thenAnswer((_) => Stream.fromIterable([AuthInitial()]));
 
     // Setup SettingsCubit state
-    final settings = Settings.withDefaults();
+    const settings = Settings();
     when(() => mockSettingsCubit.state).thenReturn(SettingsLoaded(settings: settings, hasSeenOnboarding: true));
     when(
       () => mockSettingsCubit.stream,

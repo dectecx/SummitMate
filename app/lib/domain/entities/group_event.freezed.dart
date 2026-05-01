@@ -49,7 +49,7 @@ $Res call({
 });
 
 
-
+$TripSnapshotCopyWith<$Res>? get tripSnapshot;
 
 }
 /// @nodoc
@@ -95,7 +95,19 @@ as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore
 as String,
   ));
 }
+/// Create a copy of GroupEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TripSnapshotCopyWith<$Res>? get tripSnapshot {
+    if (_self.tripSnapshot == null) {
+    return null;
+  }
 
+  return $TripSnapshotCopyWith<$Res>(_self.tripSnapshot!, (value) {
+    return _then(_self.copyWith(tripSnapshot: value));
+  });
+}
 }
 
 
@@ -305,7 +317,7 @@ $Res call({
 });
 
 
-
+@override $TripSnapshotCopyWith<$Res>? get tripSnapshot;
 
 }
 /// @nodoc
@@ -352,7 +364,19 @@ as String,
   ));
 }
 
+/// Create a copy of GroupEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TripSnapshotCopyWith<$Res>? get tripSnapshot {
+    if (_self.tripSnapshot == null) {
+    return null;
+  }
 
+  return $TripSnapshotCopyWith<$Res>(_self.tripSnapshot!, (value) {
+    return _then(_self.copyWith(tripSnapshot: value));
+  });
+}
 }
 
 /// @nodoc

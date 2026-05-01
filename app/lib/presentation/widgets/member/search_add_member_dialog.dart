@@ -1,8 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:summitmate/core/core.dart';
 
-import '../../../data/models/user_profile.dart';
-import '../../../domain/repositories/i_trip_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../utils/tutorial_keys.dart';
 

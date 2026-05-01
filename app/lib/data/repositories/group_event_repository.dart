@@ -4,10 +4,7 @@ import '../../core/error/result.dart';
 import '../datasources/interfaces/i_group_event_local_data_source.dart';
 import '../datasources/interfaces/i_group_event_remote_data_source.dart';
 import '../models/group_event_model.dart';
-import '../../domain/entities/group_event.dart';
-import '../models/group_event_comment.dart';
-import '../models/enums/group_event_category.dart';
-import '../../domain/repositories/i_group_event_repository.dart';
+import '../../domain/domain.dart';
 
 /// 揪團 Repository
 @LazySingleton(as: IGroupEventRepository)
@@ -49,9 +46,10 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<List<GroupEvent>, Exception>> syncEvents({GroupEventCategory? category}) async {
     final result = await _remoteDataSource.getEvents(category: category);
-    if (result is Success<PaginatedList<GroupEventModel>, Exception>) {
-      await _localDataSource.saveEvents(result.value.items);
-      return Success(result.value.items.map((e) => e.toDomain()).toList());
+    if (result is Success<PaginatedList<GroupEvent>, Exception>) {
+      final models = result.value.items.map((e) => GroupEventModel.fromDomain(e)).toList();
+      await _localDataSource.saveEvents(models);
+      return Success(result.value.items);
     }
     return Failure((result as Failure).exception);
   }
@@ -59,9 +57,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId) async {
     final result = await _remoteDataSource.getEventById(eventId);
-    if (result is Success<GroupEventModel, Exception>) {
-      await _localDataSource.saveEvent(result.value);
-      return Success(result.value.toDomain());
+    if (result is Success<GroupEvent, Exception>) {
+      await _localDataSource.saveEvent(GroupEventModel.fromDomain(result.value));
+      return Success(result.value);
     }
     return Failure((result as Failure).exception);
   }
@@ -132,9 +130,10 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<List<GroupEventApplication>, Exception>> syncMyApplications(String userId) async {
     final result = await _remoteDataSource.getMyApplications();
-    if (result is Success<List<GroupEventApplicationModel>, Exception>) {
-      await _localDataSource.saveApplications(result.value);
-      return Success(result.value.map((a) => a.toDomain()).toList());
+    if (result is Success<List<GroupEventApplication>, Exception>) {
+      final models = result.value.map((a) => GroupEventApplicationModel.fromDomain(a)).toList();
+      await _localDataSource.saveApplications(models);
+      return Success(result.value);
     }
     return Failure((result as Failure).exception);
   }
@@ -142,7 +141,7 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<List<GroupEventApplication>, Exception>> getApplications({required String eventId}) async {
     final result = await _remoteDataSource.getEventApplications(eventId);
-    return result is Success<List<GroupEventApplicationModel>, Exception> ? Success(result.value.map((a) => a.toDomain()).toList()) : Failure((result as Failure).exception);
+    return result;
   }
 
   @override
@@ -221,9 +220,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId) async {
     final result = await _remoteDataSource.updateTripSnapshot(eventId);
-    if (result is Success<GroupEventModel, Exception>) {
-      await _localDataSource.saveEvent(result.value);
-      return Success(result.value.toDomain());
+    if (result is Success<GroupEvent, Exception>) {
+      await _localDataSource.saveEvent(GroupEventModel.fromDomain(result.value));
+      return Success(result.value);
     }
     return Failure((result as Failure).exception);
   }

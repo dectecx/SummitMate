@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import '../../models/favorite.dart';
+import '../../models/favorite_model.dart';
 import '../../models/enums/favorite_type.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/hive_service.dart';
@@ -9,13 +9,13 @@ import '../../datasources/interfaces/i_favorites_local_data_source.dart';
 /// 最愛 (Favorites) 的本地資料來源實作 (使用 Hive)
 @LazySingleton(as: IFavoritesLocalDataSource)
 class FavoritesLocalDataSource implements IFavoritesLocalDataSource {
-  final Box<Favorite> box;
+  final Box<FavoriteModel> box;
 
   FavoritesLocalDataSource({required HiveService hiveService})
-    : box = hiveService.getBox<Favorite>(HiveBoxNames.mountainFavorites);
+    : box = hiveService.getBox<FavoriteModel>(HiveBoxNames.mountainFavorites);
 
   @override
-  Future<List<Favorite>> getFavorites() async {
+  Future<List<FavoriteModel>> getFavorites() async {
     return box.values.toList();
   }
 
@@ -26,7 +26,7 @@ class FavoritesLocalDataSource implements IFavoritesLocalDataSource {
     // 其實 compositeKey 就是 '${type.value}_$id'
 
     if (isFavorite) {
-      final newRow = Favorite(
+      final newRow = FavoriteModel(
         id: '', // 本地暫存 ID 為空，等待同步回寫
         targetId: id,
         type: type,
@@ -42,10 +42,10 @@ class FavoritesLocalDataSource implements IFavoritesLocalDataSource {
   }
 
   @override
-  Future<void> saveFavorites(List<Favorite> rows) async {
+  Future<void> saveFavorites(List<FavoriteModel> rows) async {
     await box.clear();
 
-    final Map<String, Favorite> entries = {};
+    final Map<String, FavoriteModel> entries = {};
     for (var row in rows) {
       entries[row.compositeKey] = row;
     }

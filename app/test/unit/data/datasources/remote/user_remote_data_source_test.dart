@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/api/models/user_api_models.dart';
 import 'package:summitmate/data/api/services/user_api_service.dart';
 import 'package:summitmate/data/datasources/remote/user_remote_data_source.dart';
-import 'package:summitmate/data/models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 
 class MockUserApiService extends Mock implements UserApiService {}
 

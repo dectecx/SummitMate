@@ -1,8 +1,9 @@
 import '../../models/gear_library_item_model.dart';
 import '../../models/enums/sync_status.dart';
+import '../../../domain/entities/gear_library_item.dart';
 import '../models/gear_library_api_models.dart';
 
-/// GearLibraryItem API Model ↔ Persistence Model 轉換
+/// GearLibraryItem API Model ↔ Domain Model 轉換
 class GearLibraryApiMapper {
   /// GearLibraryItemResponse → GearLibraryItemModel
   static GearLibraryItemModel fromResponse(GearLibraryItemResponse response) {
@@ -22,14 +23,25 @@ class GearLibraryApiMapper {
     );
   }
 
-  /// GearLibraryItemModel → GearLibraryItemRequest
-  static GearLibraryItemRequest toRequest(GearLibraryItemModel item) {
+  /// GearLibraryItem (domain entity) → GearLibraryItemRequest
+  static GearLibraryItemRequest toRequest(GearLibraryItem item) {
     return GearLibraryItemRequest(
       name: item.name,
       weight: item.weight,
       category: item.category,
       notes: item.notes,
       isArchived: item.isArchived,
+    );
+  }
+
+  /// GearLibraryItemModel → GearLibraryItemRequest
+  static GearLibraryItemRequest toRequestFromModel(GearLibraryItemModel model) {
+    return GearLibraryItemRequest(
+      name: model.name,
+      weight: model.weight,
+      category: model.category,
+      notes: model.notes,
+      isArchived: model.isArchived,
     );
   }
 }

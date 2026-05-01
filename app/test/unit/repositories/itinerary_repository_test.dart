@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/interfaces/i_itinerary_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_itinerary_remote_data_source.dart';
+import 'package:summitmate/data/models/itinerary_item_model.dart';
 import 'package:summitmate/domain/entities/itinerary_item.dart';
 import 'package:summitmate/data/repositories/itinerary_repository.dart';
 
@@ -15,6 +16,7 @@ void main() {
   late MockItineraryLocalDataSource mockLocalDataSource;
   late MockItineraryRemoteDataSource mockRemoteDataSource;
 
+  late ItineraryItemModel testItemModel;
   late ItineraryItem testItem;
 
   setUp(() {
@@ -27,8 +29,10 @@ void main() {
     );
 
     testItem = const ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point', estTime: '08:00');
+    testItemModel = ItineraryItemModel.fromDomain(testItem);
 
     registerFallbackValue(testItem);
+    registerFallbackValue(testItemModel);
   });
 
   group('ItineraryRepository', () {

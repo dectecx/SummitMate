@@ -1,6 +1,7 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
-import '../models/favorite.dart';
+import '../models/favorite_model.dart';
+import '../../domain/entities/favorite.dart';
 import '../../data/models/enums/favorite_type.dart';
 import '../../core/error/result.dart';
 import '../../domain/repositories/i_favorites_repository.dart';
@@ -31,11 +32,12 @@ class FavoritesRepository implements IFavoritesRepository {
       // 1. 如果是第一頁且沒有搜尋條件，優先從本地 Hive 取得 (快速)
       if (page == null || page <= 1) {
         final localFavorites = await _localDataSource.getFavorites();
+        final domainItems = localFavorites.map((f) => f.toDomain()).toList();
 
         // 觸發背景同步 (Fire and forget)
         _syncFromRemote();
 
-        return Success(PaginatedList(items: localFavorites, page: 1, total: localFavorites.length, hasMore: false));
+        return Success(PaginatedList(items: domainItems, page: 1, total: domainItems.length, hasMore: false));
       }
 
       // 2. 從遠端獲取分頁資料
@@ -50,7 +52,8 @@ class FavoritesRepository implements IFavoritesRepository {
   Future<void> _syncFromRemote() async {
     final result = await _remoteDataSource.getFavorites();
     if (result is Success<PaginatedList<Favorite>, Exception>) {
-      await _localDataSource.saveFavorites(result.value.items);
+      final models = result.value.items.map((f) => FavoriteModel.fromDomain(f)).toList();
+      await _localDataSource.saveFavorites(models);
       LogService.info('從遠端同步了最愛列表: ${result.value.items.length} 筆', source: 'FavoritesRepository');
     }
   }

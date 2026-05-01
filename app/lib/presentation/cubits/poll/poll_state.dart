@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/poll.dart';
+import 'package:summitmate/domain/domain.dart';
 
 abstract class PollState extends Equatable {
   const PollState();

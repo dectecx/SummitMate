@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/error/app_error_handler.dart';
 import 'package:summitmate/domain/domain.dart';
 
-import '../../../data/models/user_profile.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import 'auth_state.dart';

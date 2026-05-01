@@ -1,15 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/domain/entities/gear_item.dart';
-import 'package:summitmate/data/models/gear_library_item.dart';
-import 'package:summitmate/data/models/trip.dart';
-import 'package:summitmate/data/repositories/interfaces/i_gear_library_repository.dart';
-import 'package:summitmate/domain/repositories/i_gear_repository.dart';
-import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_cubit.dart';
 import 'package:summitmate/presentation/cubits/gear_library/gear_library_state.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_library_remote_data_source.dart';
 

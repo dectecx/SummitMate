@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/data/models/gear_set.dart';
-import 'package:summitmate/data/models/gear_item.dart';
+import 'package:summitmate/data/models/gear_item_model.dart';
 import 'package:summitmate/data/models/meal_item.dart';
 
 void main() {

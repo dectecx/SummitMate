@@ -1,6 +1,5 @@
-﻿import '../../../core/models/paginated_list.dart';
-import '../../../domain/entities/trip.dart';
-import '../../models/user_profile.dart';
+import '../../../core/models/paginated_list.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../core/error/result.dart';
 
 /// 行程 (Trip) 的遠端資料來源介面

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
@@ -9,7 +9,6 @@ import 'package:summitmate/core/core.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../data/models/user_profile.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../core/di/injection.dart';
 import '../../core/services/permission_service.dart';

@@ -2,8 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:summitmate/data/models/settings.dart';
-import 'package:summitmate/data/repositories/interfaces/i_settings_repository.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 

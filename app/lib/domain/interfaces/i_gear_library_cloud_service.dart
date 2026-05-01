@@ -1,4 +1,4 @@
-import '../../data/models/gear_library_item.dart';
+import '../entities/gear_library_item.dart';
 
 /// 裝備庫雲端操作結果
 class GearLibraryCloudResult<T> {

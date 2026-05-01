@@ -1,4 +1,4 @@
-import '../../../data/models/user_profile.dart';
+import '../entities/user_profile.dart';
 
 /// 認證結果
 /// 代表認證操作的結果

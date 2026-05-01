@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/trip.dart';
+import 'package:summitmate/domain/entities/trip.dart';
 import 'package:summitmate/presentation/widgets/trip/trip_card.dart';
 
 void main() {

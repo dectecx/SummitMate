@@ -4,6 +4,13 @@
 /// 使用方式：import 'package:summitmate/domain/domain.dart';
 library;
 
+// Enums
+export '../data/models/enums/group_event_status.dart';
+export '../data/models/enums/group_event_application_status.dart';
+export '../data/models/enums/group_event_category.dart';
+export '../data/models/enums/sync_status.dart';
+export '../data/models/enums/favorite_type.dart';
+
 // Failures
 export 'failures/failure.dart' hide Failure;
 
@@ -12,6 +19,7 @@ export 'entities/gear_item.dart';
 export 'entities/itinerary_item.dart';
 export 'entities/trip.dart';
 export 'entities/message.dart';
+export 'entities/user_profile.dart';
 
 // Repository Interfaces（完整清單）
 export 'repositories/i_gear_repository.dart';
@@ -43,3 +51,6 @@ export 'entities/settings.dart';
 export 'entities/poll.dart';
 export 'entities/gear_library_item.dart';
 export 'entities/group_event.dart';
+export 'entities/favorite.dart';
+export 'entities/group_event_comment.dart';
+export 'entities/trip_snapshot.dart';

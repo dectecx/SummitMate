@@ -1,5 +1,5 @@
 import '../../../domain/entities/itinerary_item.dart';
-import '../../models/itinerary_item.dart';
+import '../../models/itinerary_item_model.dart';
 
 /// 行程項目 (ItineraryItemModel) 的遠端資料來源介面
 ///

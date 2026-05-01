@@ -1,5 +1,5 @@
-﻿import '../../models/enums/sync_status.dart';
-import '../../../domain/entities/trip.dart';
+import '../../models/enums/sync_status.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../models/trip_api_models.dart';
 
 /// Trip API Model ↔ Domain Model 轉換

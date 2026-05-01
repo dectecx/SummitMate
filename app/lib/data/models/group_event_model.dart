@@ -5,8 +5,8 @@ import 'enums/group_event_status.dart';
 import 'enums/group_event_application_status.dart';
 import 'enums/group_event_category.dart';
 
-import 'group_event_comment.dart';
-import 'trip_snapshot.dart';
+import 'group_event_comment_model.dart';
+import 'trip_snapshot_model.dart';
 
 part 'group_event_model.g.dart';
 
@@ -87,7 +87,7 @@ class GroupEventModel {
 
   /// 行程快照 (唯讀)
   @HiveField(15)
-  final TripSnapshot? tripSnapshot;
+  final TripSnapshotModel? tripSnapshot;
 
   /// 快照更新時間
   @HiveField(16)
@@ -145,7 +145,7 @@ class GroupEventModel {
   /// 最新留言 (Preview)
   @HiveField(27)
   @JsonKey(defaultValue: [])
-  final List<GroupEventComment> latestComments;
+  final List<GroupEventCommentModel> latestComments;
 
   GroupEventModel({
     required this.id,
@@ -223,7 +223,7 @@ class GroupEventModel {
       approvalRequired: approvalRequired,
       privateMessage: privateMessage,
       linkedTripId: linkedTripId,
-      tripSnapshot: tripSnapshot,
+      tripSnapshot: tripSnapshot?.toDomain(),
       snapshotUpdatedAt: snapshotUpdatedAt,
       likeCount: likeCount,
       commentCount: commentCount,
@@ -231,7 +231,7 @@ class GroupEventModel {
       myApplicationStatus: myApplicationStatus,
       creatorName: creatorName,
       creatorAvatar: creatorAvatar,
-      latestComments: latestComments,
+      latestComments: latestComments.map((c) => c.toDomain()).toList(),
       createdAt: createdAt,
       createdBy: createdBy,
       updatedAt: updatedAt,
@@ -256,7 +256,7 @@ class GroupEventModel {
       approvalRequired: domain.approvalRequired,
       privateMessage: domain.privateMessage,
       linkedTripId: domain.linkedTripId,
-      tripSnapshot: domain.tripSnapshot,
+      tripSnapshot: domain.tripSnapshot != null ? TripSnapshotModel.fromDomain(domain.tripSnapshot!) : null,
       snapshotUpdatedAt: domain.snapshotUpdatedAt,
       likeCount: domain.likeCount,
       commentCount: domain.commentCount,
@@ -264,7 +264,7 @@ class GroupEventModel {
       myApplicationStatus: domain.myApplicationStatus,
       creatorName: domain.creatorName,
       creatorAvatar: domain.creatorAvatar,
-      latestComments: domain.latestComments,
+      latestComments: domain.latestComments.map((c) => GroupEventCommentModel.fromDomain(c)).toList(),
       createdAt: domain.createdAt,
       createdBy: domain.createdBy,
       updatedAt: domain.updatedAt,
@@ -288,7 +288,7 @@ class GroupEventModel {
     bool? approvalRequired,
     String? privateMessage,
     String? linkedTripId,
-    TripSnapshot? tripSnapshot,
+    TripSnapshotModel? tripSnapshot,
     DateTime? snapshotUpdatedAt,
     int? likeCount,
     int? commentCount,
@@ -300,7 +300,7 @@ class GroupEventModel {
     String? createdBy,
     DateTime? updatedAt,
     String? updatedBy,
-    List<GroupEventComment>? latestComments,
+    List<GroupEventCommentModel>? latestComments,
   }) {
     return GroupEventModel(
       id: id ?? this.id,

@@ -13,7 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:summitmate/domain/interfaces/i_geolocator_service.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
-import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/theme/theme_types.dart';
 
 // Mocks

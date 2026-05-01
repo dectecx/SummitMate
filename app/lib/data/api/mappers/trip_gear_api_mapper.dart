@@ -1,5 +1,5 @@
 import '../../../domain/entities/gear_item.dart';
-import '../../models/gear_item.dart';
+import '../../models/gear_item_model.dart';
 import '../models/trip_gear_api_models.dart';
 
 /// TripGearItem API Model ↔ Data Model (Persistence) 轉換

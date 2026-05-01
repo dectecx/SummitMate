@@ -24,36 +24,19 @@ class MessageRepository implements IMessageRepository {
 
   @override
   List<Message> getByTripId(String tripId) {
-    return _localDataSource
-        .getAll()
-        .where((m) => m.tripId == tripId)
-        .map((m) => m.toDomain())
-        .toList();
+    return _localDataSource.getAll().where((m) => m.tripId == tripId).map((m) => m.toDomain()).toList();
   }
 
   @override
-  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(
-    String tripId, {
-    int? page,
-    int? limit,
-  }) async {
+  Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(String tripId, {int? page, int? limit}) async {
     final result = await _remoteDataSource.getMessages(tripId, page: page, limit: limit);
-    if (result is Success<PaginatedList<MessageModel>, Exception>) {
+    if (result is Success<PaginatedList<Message>, Exception>) {
       // 緩存到本地
-      for (final model in result.value.items) {
-        await _localDataSource.add(model);
+      for (final entity in result.value.items) {
+        await _localDataSource.add(MessageModel.fromDomain(entity));
       }
-      
-      // 轉換為 Domain Entity
-      final domainItems = result.value.items.map((m) => m.toDomain()).toList();
-      return Success(
-        PaginatedList<Message>(
-          items: domainItems,
-          page: result.value.page,
-          total: result.value.total,
-          hasMore: result.value.hasMore,
-        ),
-      );
+
+      return result;
     }
     return Failure((result as Failure).exception);
   }

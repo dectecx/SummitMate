@@ -3,7 +3,7 @@ import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants.dart';
 import '../../../core/di/injection.dart';
-import '../../models/itinerary_item.dart';
+import '../../models/itinerary_item_model.dart';
 import '../interfaces/i_itinerary_local_data_source.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 

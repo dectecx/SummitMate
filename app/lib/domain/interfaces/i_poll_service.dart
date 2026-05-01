@@ -1,4 +1,4 @@
-import '../../data/models/poll.dart';
+import '../entities/poll.dart';
 import '../../core/error/result.dart';
 
 /// 投票服務介面

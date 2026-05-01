@@ -1,11 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/domain/entities/itinerary_item.dart';
-import 'package:summitmate/data/models/trip.dart';
-import 'package:summitmate/domain/repositories/i_itinerary_repository.dart';
-import 'package:summitmate/data/repositories/interfaces/i_trip_repository.dart';
-import 'package:summitmate/domain/interfaces/i_auth_service.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_cubit.dart';
 import 'package:summitmate/presentation/cubits/itinerary/itinerary_state.dart';
 import 'package:summitmate/core/error/result.dart';
@@ -231,7 +227,7 @@ void main() {
         build: () => cubit,
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1', 'D2'], selectedDay: 'D1'),
         setUp: () {
-          testTrip.dayNames = ['D1', 'D2']; // Setup for remove
+          testTrip = testTrip.copyWith(dayNames: ['D1', 'D2']); // Setup for remove
         },
         act: (cubit) => cubit.removeDay('D2'),
         verify: (_) {
@@ -247,7 +243,7 @@ void main() {
         build: () => cubit,
         seed: () => const ItineraryLoaded(items: [], dayNames: ['D1', 'D2'], selectedDay: 'D1'),
         setUp: () {
-          testTrip.dayNames = ['D1', 'D2']; // Setup for reorder
+          testTrip = testTrip.copyWith(dayNames: ['D1', 'D2']); // Setup for reorder
         },
         act: (cubit) => cubit.reorderDays(['D2', 'D1']),
         verify: (_) {

@@ -1,8 +1,4 @@
-﻿import '../../../domain/entities/group_event.dart';
-import '../../models/group_event_comment.dart';
-import '../../models/enums/group_event_status.dart';
-import '../../models/enums/group_event_application_status.dart';
-import '../../models/trip_snapshot.dart';
+import '../../../domain/domain.dart';
 import 'itinerary_api_mapper.dart';
 import '../models/group_event_api_models.dart';
 
@@ -80,7 +76,7 @@ class GroupEventApiMapper {
       name: response.name,
       startDate: response.startDate.toLocal(),
       endDate: response.endDate?.toLocal(),
-      itinerary: response.itinerary.map(ItineraryApiMapper.fromResponse).toList(),
+      itinerary: response.itinerary.map(ItineraryApiMapper.fromResponseToDomain).toList(),
     );
   }
 

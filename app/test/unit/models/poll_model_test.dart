@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/poll.dart';
+import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('Poll & PollOption Model Tests', () {

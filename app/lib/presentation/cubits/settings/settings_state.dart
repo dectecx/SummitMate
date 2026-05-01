@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/settings.dart';
+import 'package:summitmate/domain/domain.dart';
 
 abstract class SettingsState extends Equatable {
   const SettingsState();

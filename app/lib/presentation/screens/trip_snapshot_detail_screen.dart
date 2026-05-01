@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../data/models/trip_snapshot.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../widgets/itinerary/itinerary_list_view.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
@@ -39,7 +39,6 @@ class _TripSnapshotDetailScreenState extends State<TripSnapshotDetailScreen> {
     // 將 ItineraryItemModel 轉換為 Domain ItineraryItem
     final items = widget.snapshot.itinerary
         .where((e) => e.day == _selectedDay)
-        .map((e) => e.toDomain())
         .toList();
 
     return Scaffold(

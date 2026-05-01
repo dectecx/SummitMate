@@ -1,5 +1,5 @@
 import 'package:hive_ce/hive.dart';
-import '../../models/gear_item.dart';
+import '../../models/gear_item_model.dart';
 
 /// 裝備項目 (GearItemModel) 的本地資料來源介面
 ///

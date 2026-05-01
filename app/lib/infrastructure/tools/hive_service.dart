@@ -7,7 +7,7 @@ import 'package:summitmate/infrastructure/adapters/app_theme_type_adapter.dart';
 import '../../core/constants.dart';
 import 'log_service.dart';
 import '../../data/models/settings_model.dart';
-import '../../data/models/itinerary_item.dart';
+import '../../data/models/itinerary_item_model.dart';
 import '../../data/models/message_model.dart';
 import '../../data/models/gear_item_model.dart';
 import '../../data/models/gear_library_item_model.dart';
@@ -15,13 +15,14 @@ import '../../data/models/weather_data.dart';
 import '../../data/models/poll_model.dart';
 import '../../data/models/trip_model.dart';
 import '../../data/models/group_event_model.dart';
+import '../../data/models/group_event_comment_model.dart';
+import '../../data/models/trip_snapshot_model.dart';
+import '../../data/models/favorite_model.dart';
 
-import 'package:summitmate/domain/domain.dart';
 import '../../data/models/enums/group_event_status.dart';
 import '../../data/models/enums/group_event_application_status.dart';
 import '../../data/models/enums/sync_status.dart';
 import '../../data/models/enums/favorite_type.dart';
-import '../../data/models/favorite.dart';
 
 /// Hive 資料庫服務
 /// 管理資料庫的初始化與生命週期，以及加密邏輯
@@ -101,8 +102,14 @@ class HiveService {
     if (!Hive.isAdapterRegistered(30)) {
       Hive.registerAdapter(AppThemeTypeAdapter());
     }
+    if (!Hive.isAdapterRegistered(17)) {
+      Hive.registerAdapter(GroupEventCommentModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(18)) {
+      Hive.registerAdapter(TripSnapshotModelAdapter());
+    }
     if (!Hive.isAdapterRegistered(21)) {
-      Hive.registerAdapter(FavoriteAdapter());
+      Hive.registerAdapter(FavoriteModelAdapter());
     }
     if (!Hive.isAdapterRegistered(22)) {
       Hive.registerAdapter(FavoriteTypeAdapter());
@@ -121,8 +128,8 @@ class HiveService {
     await openBox<GroupEventModel>(HiveBoxNames.groupEvents);
     await openBox<GroupEventApplicationModel>(HiveBoxNames.groupEventApplications);
     await openBox<WeatherData>(HiveBoxNames.weather);
-    await openBox<Favorite>(HiveBoxNames.mountainFavorites);
-    await openBox<Favorite>(HiveBoxNames.groupEventFavorites);
+    await openBox<FavoriteModel>(HiveBoxNames.mountainFavorites);
+    await openBox<FavoriteModel>(HiveBoxNames.groupEventFavorites);
   }
 
   /// 取得或生成加密金鑰

@@ -130,10 +130,8 @@ import '../../domain/repositories/i_favorites_repository.dart' as _i571;
 import '../../domain/repositories/i_gear_library_repository.dart' as _i241;
 import '../../domain/repositories/i_gear_repository.dart' as _i684;
 import '../../domain/repositories/i_gear_set_repository.dart' as _i138;
-import '../../domain/repositories/i_group_event_repository.dart' as _i868;
 import '../../domain/repositories/i_itinerary_repository.dart' as _i750;
 import '../../domain/repositories/i_settings_repository.dart' as _i868;
-import '../../domain/repositories/i_trip_repository.dart' as _i634;
 import '../../infrastructure/clients/api_client.dart' as _i1019;
 import '../../infrastructure/clients/network_aware_client.dart' as _i7;
 import '../../infrastructure/infrastructure.dart' as _i342;
@@ -211,9 +209,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1007.PlatformService>(() => _i1007.PlatformService());
     gh.lazySingleton<_i455.CwaWeatherSource>(() => _i455.CwaWeatherSource());
-    gh.lazySingleton<_i1042.IGearCloudService>(
-      () => _i699.FakeGearCloudService(),
-    );
     gh.factory<_i115.GroupEventFavoritesCubit>(
       () => _i115.GroupEventFavoritesCubit(gh<_i771.HiveService>()),
     );
@@ -261,11 +256,8 @@ extension GetItInjectableX on _i174.GetIt {
         baseUrl: gh<String>(instanceName: 'baseUrl'),
       ),
     );
-    gh.lazySingleton<_i138.IGearSetRepository>(
-      () => _i536.GearSetRepository(
-        gh<_i1042.IGearCloudService>(),
-        gh<_i484.IGearKeyLocalDataSource>(),
-      ),
+    gh.lazySingleton<_i614.IGearCloudService>(
+      () => _i699.FakeGearCloudService(),
     );
     gh.lazySingleton<_i956.IGeolocatorService>(() => _i548.GeolocatorService());
     gh.lazySingleton<_i887.ILocationResolver>(
@@ -309,10 +301,29 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i254.ConnectivityInterceptor>(
       () => _i254.ConnectivityInterceptor(gh<_i751.IConnectivityService>()),
     );
-    gh.lazySingleton<_i43.IAuthSessionRepository>(
+    gh.lazySingleton<_i614.IAuthSessionRepository>(
       () => _i395.AuthSessionRepository(
         localDataSource: gh<_i26.IAuthSessionLocalDataSource>(),
       ),
+    );
+    gh.lazySingleton<_i27.AuthInterceptor>(
+      () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
+    );
+    gh.lazySingleton<_i614.IAuthService>(
+      () => _i227.AuthService(
+        apiClient: gh<_i7.NetworkAwareClient>(),
+        sessionRepository: gh<_i614.IAuthSessionRepository>(),
+        tokenValidator: gh<_i614.ITokenValidator>(),
+      ),
+    );
+    gh.lazySingleton<_i138.IGearSetRepository>(
+      () => _i536.GearSetRepository(
+        gh<_i1042.IGearCloudService>(),
+        gh<_i484.IGearKeyLocalDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i165.PermissionService>(
+      () => _i165.PermissionService(gh<_i614.IAuthService>()),
     );
     gh.lazySingleton<_i7.NetworkAwareClient>(
       () => _i7.NetworkAwareClient(
@@ -326,30 +337,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i460.SharedPreferences>(),
       ),
     );
-    gh.lazySingleton<_i27.AuthInterceptor>(
-      () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
-    );
-    gh.lazySingleton<_i147.IAuthService>(
-      () => _i227.AuthService(
-        apiClient: gh<_i7.NetworkAwareClient>(),
-        sessionRepository: gh<_i43.IAuthSessionRepository>(),
-        tokenValidator: gh<_i1012.ITokenValidator>(),
+    gh.lazySingleton<_i361.Dio>(
+      () => registerModule.dio(
+        gh<String>(instanceName: 'baseUrl'),
+        gh<_i342.AuthInterceptor>(),
+        gh<_i254.ConnectivityInterceptor>(),
       ),
     );
     gh.factory<_i33.AuthCubit>(
       () => _i33.AuthCubit(
         gh<_i614.IAuthService>(),
         gh<_i342.UsageTrackingService>(),
-      ),
-    );
-    gh.lazySingleton<_i165.PermissionService>(
-      () => _i165.PermissionService(gh<_i147.IAuthService>()),
-    );
-    gh.lazySingleton<_i361.Dio>(
-      () => registerModule.dio(
-        gh<String>(instanceName: 'baseUrl'),
-        gh<_i342.AuthInterceptor>(),
-        gh<_i254.ConnectivityInterceptor>(),
       ),
     );
     gh.lazySingleton<_i1035.FavoritesApiService>(
@@ -428,7 +426,7 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i147.IAuthService>(),
       ),
     );
-    gh.lazySingleton<_i634.ITripRepository>(
+    gh.lazySingleton<_i614.ITripRepository>(
       () => _i564.TripRepository(
         gh<_i774.ITripLocalDataSource>(),
         gh<_i941.ITripRemoteDataSource>(),
@@ -446,18 +444,18 @@ extension GetItInjectableX on _i174.GetIt {
         remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),
       ),
     );
-    gh.lazySingleton<_i868.IGroupEventRepository>(
-      () => _i354.GroupEventRepository(
-        gh<_i529.IGroupEventLocalDataSource>(),
-        gh<_i25.IGroupEventRemoteDataSource>(),
-      ),
-    );
     gh.factory<_i1040.PollCubit>(
       () => _i1040.PollCubit(
         gh<_i614.IPollRepository>(),
         gh<_i614.ITripRepository>(),
         gh<_i614.IConnectivityService>(),
         gh<_i614.IAuthService>(),
+      ),
+    );
+    gh.lazySingleton<_i614.IGroupEventRepository>(
+      () => _i354.GroupEventRepository(
+        gh<_i529.IGroupEventLocalDataSource>(),
+        gh<_i25.IGroupEventRemoteDataSource>(),
       ),
     );
     gh.lazySingleton<_i614.IMessageRepository>(

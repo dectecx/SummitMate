@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/settings.dart';
+import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/data/models/settings_model.dart';
 import 'package:summitmate/data/repositories/settings_repository.dart';
 import 'package:summitmate/data/datasources/interfaces/i_settings_local_data_source.dart';
 
@@ -13,7 +14,7 @@ void main() {
   late MockSettingsLocalDataSource mockDataSource;
 
   setUpAll(() {
-    registerFallbackValue(Settings());
+    registerFallbackValue(SettingsModel());
   });
 
   setUp(() {
@@ -35,14 +36,13 @@ void main() {
 
     test('getSettings() returns existing settings if present', () async {
       // Arrange
-      final settings = Settings(username: 'Test User');
-      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      final model = SettingsModel(username: 'Test User');
+      when(() => mockDataSource.getSettings()).thenReturn(model);
 
       // Act
       final result = repository.getSettings();
 
       // Assert
-      expect(result, equals(settings));
       expect(result.username, 'Test User');
     });
 
@@ -62,8 +62,8 @@ void main() {
 
     test('updateUsername() updates settings and saves', () async {
       // Arrange
-      final settings = Settings();
-      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      final model = SettingsModel();
+      when(() => mockDataSource.getSettings()).thenReturn(model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
@@ -71,14 +71,14 @@ void main() {
 
       // Assert
       verify(
-        () => mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.username, 'username', 'New Name'))),
+        () => mockDataSource.saveSettings(any(that: isA<SettingsModel>().having((s) => s.username, 'username', 'New Name'))),
       ).called(1);
     });
 
     test('updateOfflineMode() updates value and saves', () async {
       // Arrange
-      final settings = Settings();
-      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      final model = SettingsModel();
+      when(() => mockDataSource.getSettings()).thenReturn(model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
@@ -87,15 +87,15 @@ void main() {
       // Assert
       verify(
         () => mockDataSource.saveSettings(
-          any(that: isA<Settings>().having((s) => s.isOfflineMode, 'isOfflineMode', true)),
+          any(that: isA<SettingsModel>().having((s) => s.isOfflineMode, 'isOfflineMode', true)),
         ),
       ).called(1);
     });
 
     test('updateAvatar() updates avatar and saves', () async {
       // Arrange
-      final settings = Settings();
-      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      final model = SettingsModel();
+      when(() => mockDataSource.getSettings()).thenReturn(model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
@@ -103,14 +103,14 @@ void main() {
 
       // Assert
       verify(
-        () => mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.avatar, 'avatar', '🦊'))),
+        () => mockDataSource.saveSettings(any(that: isA<SettingsModel>().having((s) => s.avatar, 'avatar', '🦊'))),
       ).called(1);
     });
 
     test('updateLastSyncTime() updates time and saves', () async {
       // Arrange
-      final settings = Settings();
-      when(() => mockDataSource.getSettings()).thenReturn(settings);
+      final model = SettingsModel();
+      when(() => mockDataSource.getSettings()).thenReturn(model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
       final time = DateTime(2023, 1, 1);
 
@@ -120,7 +120,7 @@ void main() {
       // Assert
       verify(
         () =>
-            mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.lastSyncTime, 'lastSyncTime', time))),
+            mockDataSource.saveSettings(any(that: isA<SettingsModel>().having((s) => s.lastSyncTime, 'lastSyncTime', time))),
       ).called(1);
     });
 

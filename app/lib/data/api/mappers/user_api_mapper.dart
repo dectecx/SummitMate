@@ -1,4 +1,4 @@
-import '../../models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../models/user_api_models.dart';
 
 /// User API Model ↔ Domain Model 轉換

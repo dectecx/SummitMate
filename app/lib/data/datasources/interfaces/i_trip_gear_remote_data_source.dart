@@ -1,5 +1,4 @@
 import '../../../domain/entities/gear_item.dart';
-import '../../models/gear_item.dart';
 
 /// 行程裝備 (Trip Gear) 的遠端資料來源介面
 ///
@@ -8,19 +7,19 @@ abstract interface class ITripGearRemoteDataSource {
   /// 取得行程裝備清單
   ///
   /// [tripId] 行程 ID
-  Future<List<GearItemModel>> getTripGear(String tripId);
+  Future<List<GearItem>> getTripGear(String tripId);
 
   /// 新增裝備至行程
   ///
   /// [tripId] 行程 ID
   /// [item] 欲新增的裝備實體
-  Future<GearItemModel> addTripGear(String tripId, GearItem item);
+  Future<GearItem> addTripGear(String tripId, GearItem item);
 
   /// 更新行程裝備內容
   ///
   /// [tripId] 行程 ID
   /// [item] 欲更新的裝備實體（需含 id）
-  Future<GearItemModel> updateTripGear(String tripId, GearItem item);
+  Future<GearItem> updateTripGear(String tripId, GearItem item);
 
   /// 從行程中刪除裝備
   ///

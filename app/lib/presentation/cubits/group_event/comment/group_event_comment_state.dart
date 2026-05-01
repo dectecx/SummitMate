@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../../data/models/group_event_comment.dart';
+import 'package:summitmate/domain/domain.dart';
 
 sealed class GroupEventCommentState extends Equatable {
   const GroupEventCommentState();

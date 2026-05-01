@@ -1,5 +1,5 @@
 import '../../../domain/entities/itinerary_item.dart';
-import '../../models/itinerary_item.dart';
+import '../../models/itinerary_item_model.dart';
 import '../models/itinerary_api_models.dart';
 
 /// ItineraryItem API Model ↔ Persistence Model 轉換
@@ -22,6 +22,11 @@ class ItineraryApiMapper {
       createdAt: response.createdAt.toLocal(),
       updatedAt: response.updatedAt.toLocal(),
     );
+  }
+
+  /// ItineraryItemResponse → ItineraryItem (domain entity)
+  static ItineraryItem fromResponseToDomain(ItineraryItemResponse response) {
+    return fromResponse(response).toDomain();
   }
 
   /// ItineraryItem (domain entity) → ItineraryItemRequest

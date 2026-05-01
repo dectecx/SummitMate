@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
 import '../../../domain/entities/gear_item.dart';
-import '../../models/gear_item.dart';
+import '../../models/gear_item_model.dart';
 import '../../api/mappers/trip_gear_api_mapper.dart';
 import '../../api/services/trip_gear_api_service.dart';
 import '../../../infrastructure/tools/log_service.dart';
@@ -16,11 +16,11 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   TripGearRemoteDataSource(this._tripGearApi);
 
   @override
-  Future<List<GearItemModel>> getTripGear(String tripId) async {
+  Future<List<GearItem>> getTripGear(String tripId) async {
     try {
       LogService.info('取得行程裝備清單: $tripId', source: _source);
       final responses = await _tripGearApi.listGear(tripId);
-      return responses.map(TripGearApiMapper.fromResponse).toList();
+      return responses.map((r) => TripGearApiMapper.fromResponse(r).toDomain()).toList();
     } catch (e) {
       LogService.error('getTripGear 失敗: $e', source: _source);
       rethrow;
@@ -28,12 +28,12 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   }
 
   @override
-  Future<GearItemModel> addTripGear(String tripId, GearItem item) async {
+  Future<GearItem> addTripGear(String tripId, GearItem item) async {
     try {
       LogService.info('新增裝備至行程: $tripId, 名稱: ${item.name}', source: _source);
       final request = TripGearApiMapper.toRequest(item);
       final response = await _tripGearApi.addGear(tripId, request);
-      return TripGearApiMapper.fromResponse(response);
+      return TripGearApiMapper.fromResponse(response).toDomain();
     } catch (e) {
       LogService.error('addTripGear 失敗: $e', source: _source);
       rethrow;
@@ -41,12 +41,12 @@ class TripGearRemoteDataSource implements ITripGearRemoteDataSource {
   }
 
   @override
-  Future<GearItemModel> updateTripGear(String tripId, GearItem item) async {
+  Future<GearItem> updateTripGear(String tripId, GearItem item) async {
     try {
       LogService.info('更新裝備: $tripId, 項目: ${item.id}', source: _source);
       final request = TripGearApiMapper.toRequest(item);
       final response = await _tripGearApi.updateGear(tripId, item.id, request);
-      return TripGearApiMapper.fromResponse(response);
+      return TripGearApiMapper.fromResponse(response).toDomain();
     } catch (e) {
       LogService.error('updateTripGear 失敗: $e', source: _source);
       rethrow;

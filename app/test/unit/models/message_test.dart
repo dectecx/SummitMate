@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/data/models/message.dart';
+import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('Message Model Tests', () {
     test('should create with default values', () {
       final message = Message(
         id: 'default-id',
+        timestamp: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: '',
         updatedAt: DateTime.now(),
@@ -46,6 +47,7 @@ void main() {
     test('should report isReply false when parentId is null', () {
       final message = Message(
         id: 'no-reply-id',
+        timestamp: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: '',
         updatedAt: DateTime.now(),
@@ -59,6 +61,7 @@ void main() {
       final message = Message(
         id: 'test-id-3',
         parentId: 'parent-uuid',
+        timestamp: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: '',
         updatedAt: DateTime.now(),
@@ -94,6 +97,7 @@ void main() {
       final parent = Message(
         id: 'parent-uuid',
         content: '主留言',
+        timestamp: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: '',
         updatedAt: DateTime.now(),
@@ -103,6 +107,7 @@ void main() {
         id: 'reply-uuid',
         parentId: parent.id,
         content: '回覆',
+        timestamp: DateTime.now(),
         createdAt: DateTime.now(),
         createdBy: '',
         updatedAt: DateTime.now(),

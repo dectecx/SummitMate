@@ -2,8 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../data/models/enums/group_event_status.dart';
 import '../../data/models/enums/group_event_application_status.dart';
 import '../../data/models/enums/group_event_category.dart';
-import '../../data/models/group_event_comment.dart'; // TODO: Move to domain layer if needed
-import '../../data/models/trip_snapshot.dart'; // TODO: Move to domain layer if needed
+import 'group_event_comment.dart';
+import 'trip_snapshot.dart';
 
 part 'group_event.freezed.dart';
 

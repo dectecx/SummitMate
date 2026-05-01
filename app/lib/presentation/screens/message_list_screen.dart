@@ -10,7 +10,7 @@ import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
-import '../../data/models/user_profile.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../core/services/permission_service.dart';
 import '../../core/di/injection.dart';
 

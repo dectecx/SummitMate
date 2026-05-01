@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'gear_item.dart';
+import 'gear_item_model.dart';
 import 'meal_item.dart';
 
 part 'gear_set.g.dart';

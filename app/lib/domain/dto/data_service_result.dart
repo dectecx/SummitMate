@@ -1,5 +1,5 @@
 import '../entities/itinerary_item.dart';
-import '../../data/models/message.dart';
+import '../entities/message.dart';
 
 /// 資料服務回傳的聚合資料
 class DataServiceResult {
