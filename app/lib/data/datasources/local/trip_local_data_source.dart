@@ -31,7 +31,7 @@ class TripLocalDataSource implements ITripLocalDataSource {
   /// [TripModel] 欲新增的行程物件
   @override
   Future<void> addTrip(TripModel trip) async {
-    await box.put(TripModel.id, TripModel);
+    await box.put(trip.id, trip);
   }
 
   /// 更新行程
@@ -39,7 +39,7 @@ class TripLocalDataSource implements ITripLocalDataSource {
   /// [TripModel] 更新後的行程物件
   @override
   Future<void> updateTrip(TripModel trip) async {
-    await box.put(TripModel.id, TripModel);
+    await box.put(trip.id, trip);
   }
 
   /// 刪除行程
@@ -68,10 +68,10 @@ class TripLocalDataSource implements ITripLocalDataSource {
   Future<void> setActiveTrip(String tripId) async {
     final trips = getAllTrips();
     for (var trip in trips) {
-      bool isActive = (TripModel.id == tripId);
-      if (TripModel.isActive != isActive) {
-        TripModel.isActive = isActive;
-        await box.put(TripModel.id, TripModel);
+      bool isActive = (trip.id == tripId);
+      if (trip.isActive != isActive) {
+        trip.isActive = isActive;
+        await box.put(trip.id, trip);
       }
     }
   }

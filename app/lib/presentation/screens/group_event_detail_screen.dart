@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/models/group_event.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../cubits/group_event/group_event_state.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';

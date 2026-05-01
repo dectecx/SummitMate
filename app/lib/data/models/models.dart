@@ -3,7 +3,7 @@ export 'gear_item.dart';
 export 'gear_key_record.dart';
 export 'gear_library_item.dart';
 export 'gear_set.dart';
-export 'group_event.dart';
+export 'group_event_model.dart';
 export 'group_event_comment.dart';
 export 'itinerary_item.dart';
 export 'meal_item.dart';

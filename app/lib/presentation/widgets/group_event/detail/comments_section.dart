@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../data/models/group_event.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../group_event_comment_sheet.dart';
 
 class CommentsSection extends StatelessWidget {

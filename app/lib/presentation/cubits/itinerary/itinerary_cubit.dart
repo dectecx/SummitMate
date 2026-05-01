@@ -1,4 +1,4 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
@@ -51,8 +51,8 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         final daysCount = activeTrip.durationDays > 0 ? activeTrip.durationDays : 1;
         dayNames = List.generate(daysCount, (index) => 'D${index + 1}');
 
-        activeTrip.dayNames = dayNames;
-        final updateResult = await _tripRepository.updateTrip(activeTrip);
+        final updatedTrip = activeTrip.copyWith(dayNames: dayNames);
+        final updateResult = await _tripRepository.updateTrip(updatedTrip);
         if (updateResult is Failure) {
           LogService.error('Failed to update trip dayNames: ${updateResult.exception}', source: _source);
         }

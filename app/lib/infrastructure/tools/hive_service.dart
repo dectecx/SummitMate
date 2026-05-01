@@ -14,7 +14,9 @@ import '../../data/models/gear_library_item.dart';
 import '../../data/models/weather_data.dart';
 import '../../data/models/poll.dart';
 import '../../data/models/trip_model.dart';
-import '../../data/models/group_event.dart';
+import '../../data/models/group_event_model.dart';
+
+import 'package:summitmate/domain/domain.dart';
 import '../../data/models/enums/group_event_status.dart';
 import '../../data/models/enums/group_event_application_status.dart';
 import '../../data/models/enums/sync_status.dart';
@@ -76,16 +78,16 @@ class HiveService {
       Hive.registerAdapter(PollOptionAdapter());
     }
     if (!Hive.isAdapterRegistered(8)) {
-      Hive.registerAdapter(TripAdapter());
+      Hive.registerAdapter(TripModelAdapter());
     }
     if (!Hive.isAdapterRegistered(11)) {
       Hive.registerAdapter(GearLibraryItemAdapter());
     }
     if (!Hive.isAdapterRegistered(12)) {
-      Hive.registerAdapter(GroupEventAdapter());
+      Hive.registerAdapter(GroupEventModelAdapter());
     }
     if (!Hive.isAdapterRegistered(13)) {
-      Hive.registerAdapter(GroupEventApplicationAdapter());
+      Hive.registerAdapter(GroupEventApplicationModelAdapter());
     }
     if (!Hive.isAdapterRegistered(14)) {
       Hive.registerAdapter(GroupEventStatusAdapter());

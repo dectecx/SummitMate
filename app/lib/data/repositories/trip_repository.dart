@@ -5,9 +5,10 @@ import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
-import '../models/trip.dart';
+import '../models/trip_model.dart';
+import '../../domain/entities/trip.dart';
 import '../models/user_profile.dart';
-import 'interfaces/i_trip_repository.dart';
+import '../../domain/repositories/i_trip_repository.dart';
 
 /// 行程 Repository (支援 Offline-First)
 ///
@@ -30,7 +31,10 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<List<Trip>, Exception>> getAllTrips(String userId) async {
     try {
-      final trips = _localDataSource.getAllTrips().where((t) => t.userId == userId).toList();
+      final trips = _localDataSource.getAllTrips()
+          .where((t) => t.userId == userId)
+          .map((t) => t.toDomain())
+          .toList();
       trips.sort((a, b) => b.startDate.compareTo(a.startDate));
       return Success(trips);
     } catch (e) {
@@ -41,7 +45,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<Trip?, Exception>> getActiveTrip(String userId) async {
     try {
-      final trip = _localDataSource.getActiveTrip();
+      final trip = _localDataSource.getActiveTrip()?.toDomain();
       return Success(trip);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -51,7 +55,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<Trip?, Exception>> getTripById(String id) async {
     try {
-      final trip = _localDataSource.getTripById(id);
+      final trip = _localDataSource.getTripById(id)?.toDomain();
       return Success(trip);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -61,7 +65,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> saveTrip(Trip trip) async {
     try {
-      await _localDataSource.addTrip(trip);
+      await _localDataSource.addTrip(TripModel.fromDomain(trip));
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -71,7 +75,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> updateTrip(Trip trip) async {
     try {
-      await _localDataSource.updateTrip(trip);
+      await _localDataSource.updateTrip(TripModel.fromDomain(trip));
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -108,7 +112,7 @@ class TripRepository implements ITripRepository {
       final result = await _remoteDataSource.getRemoteTrips(page: page, limit: limit, search: search);
       if (result is Success<PaginatedList<Trip>, Exception>) {
         for (final trip in result.value.items) {
-          await _localDataSource.addTrip(trip);
+          await _localDataSource.addTrip(TripModel.fromDomain(trip));
         }
       }
       return result;
@@ -132,7 +136,7 @@ class TripRepository implements ITripRepository {
     try {
       final result = await _remoteDataSource.getTripDetails(tripId);
       if (result is Success<Trip, Exception>) {
-        await _localDataSource.updateTrip(result.value);
+        await _localDataSource.updateTrip(TripModel.fromDomain(result.value));
       } else if (result is Failure<Trip, Exception>) {
         final error = result.exception;
         // If 403 Forbidden, it means user lost access (e.g., kicked from group event)

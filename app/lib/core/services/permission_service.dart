@@ -1,7 +1,7 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import '../../domain/interfaces/i_auth_service.dart';
 import '../../data/models/user_profile.dart';
-import '../../data/models/trip.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../data/models/message.dart';
 import '../../core/constants/role_constants.dart';
 

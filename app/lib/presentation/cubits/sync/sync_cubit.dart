@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/error/result.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/domain.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'sync_state.dart';

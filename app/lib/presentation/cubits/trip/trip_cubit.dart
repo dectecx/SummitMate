@@ -1,11 +1,11 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import '../../../data/models/enums/sync_status.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/core.dart';
 import '../../../data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../../domain/domain.dart';
 import '../../../infrastructure/infrastructure.dart';
 import 'trip_state.dart';
 

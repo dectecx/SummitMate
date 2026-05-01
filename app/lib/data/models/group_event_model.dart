@@ -1,3 +1,4 @@
+import '../../domain/entities/group_event.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'enums/group_event_status.dart';
@@ -7,12 +8,12 @@ import 'enums/group_event_category.dart';
 import 'group_event_comment.dart';
 import 'trip_snapshot.dart';
 
-part 'group_event.g.dart';
+part 'group_event_model.g.dart';
 
 /// 揪團活動
 @HiveType(typeId: 12)
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
-class GroupEvent {
+class GroupEventModel {
   /// 揪團 ID (PK)
   @HiveField(0)
   final String id;
@@ -146,7 +147,7 @@ class GroupEvent {
   @JsonKey(defaultValue: [])
   final List<GroupEventComment> latestComments;
 
-  GroupEvent({
+  GroupEventModel({
     required this.id,
     required this.creatorId,
     required this.title,
@@ -202,10 +203,76 @@ class GroupEvent {
     return 0;
   }
 
-  factory GroupEvent.fromJson(Map<String, dynamic> json) => _$GroupEventFromJson(json);
-  Map<String, dynamic> toJson() => _$GroupEventToJson(this);
+  factory GroupEventModel.fromJson(Map<String, dynamic> json) => _$GroupEventModelFromJson(json);
+  Map<String, dynamic> toJson() => _$GroupEventModelToJson(this);
 
-  GroupEvent copyWith({
+  GroupEvent toDomain() {
+    return GroupEvent(
+      id: id,
+      creatorId: creatorId,
+      title: title,
+      description: description,
+      category: category,
+      location: location,
+      startDate: startDate,
+      endDate: endDate,
+      status: status,
+      maxMembers: maxMembers,
+      applicationCount: applicationCount,
+      totalApplicationCount: totalApplicationCount,
+      approvalRequired: approvalRequired,
+      privateMessage: privateMessage,
+      linkedTripId: linkedTripId,
+      tripSnapshot: tripSnapshot,
+      snapshotUpdatedAt: snapshotUpdatedAt,
+      likeCount: likeCount,
+      commentCount: commentCount,
+      isLiked: isLiked,
+      myApplicationStatus: myApplicationStatus,
+      creatorName: creatorName,
+      creatorAvatar: creatorAvatar,
+      latestComments: latestComments,
+      createdAt: createdAt,
+      createdBy: createdBy,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
+    );
+  }
+
+  factory GroupEventModel.fromDomain(GroupEvent domain) {
+    return GroupEventModel(
+      id: domain.id,
+      creatorId: domain.creatorId,
+      title: domain.title,
+      description: domain.description,
+      category: domain.category,
+      location: domain.location,
+      startDate: domain.startDate,
+      endDate: domain.endDate,
+      status: domain.status,
+      maxMembers: domain.maxMembers,
+      applicationCount: domain.applicationCount,
+      totalApplicationCount: domain.totalApplicationCount,
+      approvalRequired: domain.approvalRequired,
+      privateMessage: domain.privateMessage,
+      linkedTripId: domain.linkedTripId,
+      tripSnapshot: domain.tripSnapshot,
+      snapshotUpdatedAt: domain.snapshotUpdatedAt,
+      likeCount: domain.likeCount,
+      commentCount: domain.commentCount,
+      isLiked: domain.isLiked,
+      myApplicationStatus: domain.myApplicationStatus,
+      creatorName: domain.creatorName,
+      creatorAvatar: domain.creatorAvatar,
+      latestComments: domain.latestComments,
+      createdAt: domain.createdAt,
+      createdBy: domain.createdBy,
+      updatedAt: domain.updatedAt,
+      updatedBy: domain.updatedBy,
+    );
+  }
+
+  GroupEventModel copyWith({
     String? id,
     String? creatorId,
     String? title,
@@ -235,7 +302,7 @@ class GroupEvent {
     String? updatedBy,
     List<GroupEventComment>? latestComments,
   }) {
-    return GroupEvent(
+    return GroupEventModel(
       id: id ?? this.id,
       creatorId: creatorId ?? this.creatorId,
       title: title ?? this.title,
@@ -271,7 +338,7 @@ class GroupEvent {
 /// 揪團報名紀錄
 @HiveType(typeId: 13)
 @JsonSerializable(fieldRename: FieldRename.snake)
-class GroupEventApplication {
+class GroupEventApplicationModel {
   /// 報名 ID (PK)
   @HiveField(0)
   final String id;
@@ -318,7 +385,7 @@ class GroupEventApplication {
   @JsonKey(defaultValue: '🐻')
   final String userAvatar;
 
-  GroupEventApplication({
+  GroupEventApplicationModel({
     required this.id,
     required this.eventId,
     required this.userId,
@@ -340,6 +407,36 @@ class GroupEventApplication {
   /// 是否已拒絕
   bool get isRejected => status == GroupEventApplicationStatus.rejected;
 
-  factory GroupEventApplication.fromJson(Map<String, dynamic> json) => _$GroupEventApplicationFromJson(json);
-  Map<String, dynamic> toJson() => _$GroupEventApplicationToJson(this);
+  factory GroupEventApplicationModel.fromJson(Map<String, dynamic> json) => _$GroupEventApplicationModelFromJson(json);
+  Map<String, dynamic> toJson() => _$GroupEventApplicationModelToJson(this);
+
+  GroupEventApplication toDomain() {
+    return GroupEventApplication(
+      id: id,
+      eventId: eventId,
+      userId: userId,
+      status: status,
+      message: message,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
+      userName: userName,
+      userAvatar: userAvatar,
+    );
+  }
+
+  factory GroupEventApplicationModel.fromDomain(GroupEventApplication domain) {
+    return GroupEventApplicationModel(
+      id: domain.id,
+      eventId: domain.eventId,
+      userId: domain.userId,
+      status: domain.status,
+      message: domain.message,
+      createdAt: domain.createdAt,
+      updatedAt: domain.updatedAt,
+      updatedBy: domain.updatedBy,
+      userName: domain.userName,
+      userAvatar: domain.userAvatar,
+    );
+  }
 }

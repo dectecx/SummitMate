@@ -1,6 +1,6 @@
-import 'package:injectable/injectable.dart';
+﻿import 'package:injectable/injectable.dart';
 import 'package:hive_ce/hive.dart';
-import '../../models/group_event.dart';
+import '../../models/group_event_model.dart';
 import '../../../core/constants.dart';
 import '../../../infrastructure/tools/hive_service.dart';
 import '../interfaces/i_group_event_local_data_source.dart';
@@ -8,18 +8,18 @@ import '../interfaces/i_group_event_local_data_source.dart';
 /// 揪團本地資料來源實作 (Hive)
 @LazySingleton(as: IGroupEventLocalDataSource)
 class GroupEventLocalDataSource implements IGroupEventLocalDataSource {
-  final Box<GroupEvent> _events;
-  final Box<GroupEventApplication> _applications;
+  final Box<GroupEventModel> _events;
+  final Box<GroupEventApplicationModel> _applications;
 
   GroupEventLocalDataSource({required HiveService hiveService})
-    : _events = hiveService.getBox<GroupEvent>(HiveBoxNames.groupEvents),
-      _applications = hiveService.getBox<GroupEventApplication>(HiveBoxNames.groupEventApplications);
+    : _events = hiveService.getBox<GroupEventModel>(HiveBoxNames.groupEvents),
+      _applications = hiveService.getBox<GroupEventApplicationModel>(HiveBoxNames.groupEventApplications);
 
   @override
-  List<GroupEvent> getAllEvents() => _events.values.toList();
+  List<GroupEventModel> getAllEvents() => _events.values.toList();
 
   @override
-  GroupEvent? getEventById(String id) {
+  GroupEventModel? getEventById(String id) {
     try {
       return _events.values.firstWhere((e) => e.id == id);
     } catch (_) {
@@ -28,7 +28,7 @@ class GroupEventLocalDataSource implements IGroupEventLocalDataSource {
   }
 
   @override
-  Future<void> saveEvents(List<GroupEvent> events) async {
+  Future<void> saveEvents(List<GroupEventModel> events) async {
     await _events.clear();
     for (var event in events) {
       await _events.put(event.id, event);
@@ -36,7 +36,7 @@ class GroupEventLocalDataSource implements IGroupEventLocalDataSource {
   }
 
   @override
-  Future<void> saveEvent(GroupEvent event) async {
+  Future<void> saveEvent(GroupEventModel event) async {
     await _events.put(event.id, event);
   }
 
@@ -46,10 +46,10 @@ class GroupEventLocalDataSource implements IGroupEventLocalDataSource {
   }
 
   @override
-  List<GroupEventApplication> getAllApplications() => _applications.values.toList();
+  List<GroupEventApplicationModel> getAllApplications() => _applications.values.toList();
 
   @override
-  Future<void> saveApplications(List<GroupEventApplication> applications) async {
+  Future<void> saveApplications(List<GroupEventApplicationModel> applications) async {
     await _applications.clear();
     for (var app in applications) {
       await _applications.put(app.id, app);

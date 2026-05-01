@@ -1,16 +1,11 @@
-// Interfaces
-export 'interfaces/i_auth_session_repository.dart';
-export 'interfaces/i_gear_repository.dart';
-export 'interfaces/i_gear_library_repository.dart';
-export 'interfaces/i_gear_set_repository.dart';
-export 'interfaces/i_group_event_repository.dart';
-export 'interfaces/i_itinerary_repository.dart';
-export 'interfaces/i_message_repository.dart';
-export 'interfaces/i_poll_repository.dart';
-export 'interfaces/i_settings_repository.dart';
-export 'interfaces/i_trip_repository.dart';
+/// Data Layer — Repository 實作匯出
+///
+/// TODO:
+/// 注意：Repository 介面（IXxxRepository）已統一移至 domain/repositories/，
+/// 請從 package:summitmate/domain/domain.dart 引入介面。
+library;
 
-// Implementations
+// Repository 實作
 export 'auth_session_repository.dart';
 export 'gear_repository.dart';
 export 'gear_library_repository.dart';

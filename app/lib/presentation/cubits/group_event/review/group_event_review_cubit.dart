@@ -2,7 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/core.dart';
-import '../../../../data/models/group_event.dart';
+import 'package:summitmate/domain/domain.dart';
 import '../../../../domain/repositories/i_group_event_repository.dart';
 
 part 'group_event_review_state.dart';

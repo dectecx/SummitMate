@@ -1,9 +1,10 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_group_event_local_data_source.dart';
 import '../datasources/interfaces/i_group_event_remote_data_source.dart';
-import '../models/group_event.dart';
+import '../models/group_event_model.dart';
+import '../../domain/entities/group_event.dart';
 import '../models/group_event_comment.dart';
 import '../models/enums/group_event_category.dart';
 import '../../domain/repositories/i_group_event_repository.dart';
@@ -22,16 +23,16 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   @override
-  List<GroupEvent> getAll() => _localDataSource.getAllEvents();
+  List<GroupEvent> getAll() => _localDataSource.getAllEvents().map((e) => e.toDomain()).toList();
 
   @override
-  GroupEvent? getById(String eventId) => _localDataSource.getEventById(eventId);
+  GroupEvent? getById(String eventId) => _localDataSource.getEventById(eventId)?.toDomain();
 
   @override
-  Future<void> save(GroupEvent event) => _localDataSource.saveEvent(event);
+  Future<void> save(GroupEvent event) => _localDataSource.saveEvent(GroupEventModel.fromDomain(event));
 
   @override
-  Future<void> saveAll(List<GroupEvent> events) => _localDataSource.saveEvents(events);
+  Future<void> saveAll(List<GroupEvent> events) => _localDataSource.saveEvents(events.map((e) => GroupEventModel.fromDomain(e)).toList());
 
   @override
   Future<void> delete(String eventId) => _localDataSource.deleteEvent(eventId);
@@ -48,9 +49,9 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<List<GroupEvent>, Exception>> syncEvents({GroupEventCategory? category}) async {
     final result = await _remoteDataSource.getEvents(category: category);
-    if (result is Success<PaginatedList<GroupEvent>, Exception>) {
+    if (result is Success<PaginatedList<GroupEventModel>, Exception>) {
       await _localDataSource.saveEvents(result.value.items);
-      return Success(result.value.items);
+      return Success(result.value.items.map((e) => e.toDomain()).toList());
     }
     return Failure((result as Failure).exception);
   }
@@ -58,10 +59,11 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId) async {
     final result = await _remoteDataSource.getEventById(eventId);
-    if (result is Success<GroupEvent, Exception>) {
+    if (result is Success<GroupEventModel, Exception>) {
       await _localDataSource.saveEvent(result.value);
+      return Success(result.value.toDomain());
     }
-    return result;
+    return Failure((result as Failure).exception);
   }
 
   @override
@@ -121,24 +123,26 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   @override
-  List<GroupEventApplication> getAllApplications() => _localDataSource.getAllApplications();
+  List<GroupEventApplication> getAllApplications() => _localDataSource.getAllApplications().map((a) => a.toDomain()).toList();
 
   @override
   Future<void> saveApplications(List<GroupEventApplication> applications) =>
-      _localDataSource.saveApplications(applications);
+      _localDataSource.saveApplications(applications.map((a) => GroupEventApplicationModel.fromDomain(a)).toList());
 
   @override
   Future<Result<List<GroupEventApplication>, Exception>> syncMyApplications(String userId) async {
     final result = await _remoteDataSource.getMyApplications();
-    if (result is Success<List<GroupEventApplication>, Exception>) {
+    if (result is Success<List<GroupEventApplicationModel>, Exception>) {
       await _localDataSource.saveApplications(result.value);
+      return Success(result.value.map((a) => a.toDomain()).toList());
     }
-    return result;
+    return Failure((result as Failure).exception);
   }
 
   @override
   Future<Result<List<GroupEventApplication>, Exception>> getApplications({required String eventId}) async {
-    return _remoteDataSource.getEventApplications(eventId);
+    final result = await _remoteDataSource.getEventApplications(eventId);
+    return result is Success<List<GroupEventApplicationModel>, Exception> ? Success(result.value.map((a) => a.toDomain()).toList()) : Failure((result as Failure).exception);
   }
 
   @override
@@ -217,9 +221,10 @@ class GroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<GroupEvent, Exception>> updateTripSnapshot(String eventId) async {
     final result = await _remoteDataSource.updateTripSnapshot(eventId);
-    if (result is Success<GroupEvent, Exception>) {
+    if (result is Success<GroupEventModel, Exception>) {
       await _localDataSource.saveEvent(result.value);
+      return Success(result.value.toDomain());
     }
-    return result;
+    return Failure((result as Failure).exception);
   }
 }

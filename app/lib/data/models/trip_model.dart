@@ -1,82 +1,70 @@
 import 'package:hive_ce/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
+import '../../domain/entities/trip.dart';
 import 'enums/sync_status.dart';
 
-part 'trip.g.dart';
+part 'trip_model.g.dart';
 
-/// 行程資料模型
-/// 用於管理多個不同的登山計畫
+/// 行程持久化模型 (Persistence Model)
+///
+/// 用於 Hive/Isar 本地儲存。
+/// 業務邏輯與不可變操作請使用 [Trip]（domain/entities/trip.dart）。
 @JsonSerializable(fieldRename: FieldRename.snake)
 @HiveType(typeId: 8)
-class Trip extends HiveObject {
-  /// 行程 ID
+class TripModel extends HiveObject {
   @HiveField(0)
   final String id;
 
-  /// 所屬使用者 ID
   @HiveField(1)
   final String userId;
 
-  /// 行程名稱
   @HiveField(2)
   String name;
 
-  /// 行程描述
   @HiveField(3)
   String? description;
 
-  /// 開始日期
   @HiveField(4)
   @JsonKey(fromJson: _parseDate)
   DateTime startDate;
 
-  /// 結束日期
   @HiveField(5)
   @JsonKey(fromJson: _parseDateNullable)
   DateTime? endDate;
 
-  /// 封面圖片 URL
   @HiveField(6)
   String? coverImage;
 
-  /// 是否為當前作用中行程
   @HiveField(7)
   @JsonKey(name: 'is_active', defaultValue: false, fromJson: _parseBool)
   bool isActive;
 
-  /// 關聯的揪團活動 ID
   @HiveField(8)
   @JsonKey(name: 'linked_event_id')
   String? linkedEventId;
 
-  /// 每天的名稱 (自定義)
   @HiveField(9)
   @JsonKey(defaultValue: <String>[])
   List<String> dayNames;
 
-  /// 同步狀態
   @HiveField(10)
   @JsonKey(defaultValue: SyncStatus.pendingCreate)
   SyncStatus syncStatus;
 
-  /// 建立時間
   @HiveField(11)
   @JsonKey(fromJson: _parseDate)
   final DateTime createdAt;
 
-  /// 建立者
   @HiveField(12)
   final String createdBy;
 
-  /// 更新時間
   @HiveField(13)
   DateTime updatedAt;
 
-  /// 更新者
   @HiveField(14)
   String updatedBy;
 
-  Trip({
+  TripModel({
     required this.id,
     required this.userId,
     required this.name,
@@ -94,11 +82,46 @@ class Trip extends HiveObject {
     required this.updatedBy,
   }) : dayNames = dayNames ?? [];
 
-  /// 行程天數
-  int get durationDays {
-    if (endDate == null) return 1;
-    final diff = endDate!.difference(startDate).inDays;
-    return diff >= 0 ? diff + 1 : 1;
+  /// 轉換為 Domain Entity
+  Trip toDomain() {
+    return Trip(
+      id: id,
+      userId: userId,
+      name: name,
+      description: description,
+      startDate: startDate,
+      endDate: endDate,
+      coverImage: coverImage,
+      isActive: isActive,
+      linkedEventId: linkedEventId,
+      dayNames: dayNames,
+      syncStatus: syncStatus,
+      createdAt: createdAt,
+      createdBy: createdBy,
+      updatedAt: updatedAt,
+      updatedBy: updatedBy,
+    );
+  }
+
+  /// 從 Domain Entity 建立 Persistence Model
+  factory TripModel.fromDomain(Trip entity) {
+    return TripModel(
+      id: entity.id,
+      userId: entity.userId,
+      name: entity.name,
+      description: entity.description,
+      startDate: entity.startDate,
+      endDate: entity.endDate,
+      coverImage: entity.coverImage,
+      isActive: entity.isActive,
+      linkedEventId: entity.linkedEventId,
+      dayNames: List.from(entity.dayNames),
+      syncStatus: entity.syncStatus,
+      createdAt: entity.createdAt,
+      createdBy: entity.createdBy,
+      updatedAt: entity.updatedAt,
+      updatedBy: entity.updatedBy,
+    );
   }
 
   /// 解析布林值 (處理字串 "true"/"false")
@@ -122,14 +145,9 @@ class Trip extends HiveObject {
     return DateTime.tryParse(value.toString())?.toLocal();
   }
 
-  /// 從 JSON 建立 Trip 物件
-  factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
-
-  /// 轉換為 JSON 物件
-  Map<String, dynamic> toJson() => _$TripToJson(this);
+  factory TripModel.fromJson(Map<String, dynamic> json) => _$TripModelFromJson(json);
+  Map<String, dynamic> toJson() => _$TripModelToJson(this);
 
   @override
-  String toString() {
-    return 'Trip(id: $id, userId: $userId, name: $name, isActive: $isActive, syncStatus: $syncStatus)';
-  }
+  String toString() => 'TripModel(id: $id, name: $name, isActive: $isActive)';
 }
