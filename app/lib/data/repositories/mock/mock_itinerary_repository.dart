@@ -67,10 +67,10 @@ class MockItineraryRepository implements IItineraryRepository {
   Future<Result<void, Exception>> init() async => const Success(null);
 
   @override
-  List<ItineraryItem> getByTripId(String tripId) => _mockItems.where((item) => item.tripId == tripId).toList();
+  Future<List<ItineraryItem>> getByTripId(String tripId) async => _mockItems.where((item) => item.tripId == tripId).toList();
 
   @override
-  ItineraryItem? getById(String id) =>
+  Future<ItineraryItem?> getById(String id) async =>
       _mockItems.cast<ItineraryItem?>().firstWhere((item) => item?.id == id, orElse: () => null);
 
   @override

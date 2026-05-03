@@ -121,11 +121,11 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         items = (gearCubit.state as GearLoaded).items;
       } catch (e) {
         // Fallback
-        final all = gearRepo.getAllItems();
+        final all = await gearRepo.getAllItems();
         items = all.where((i) => i.tripId == currentTripId).toList();
       }
     } else {
-      final all = gearRepo.getAllItems();
+      final all = await gearRepo.getAllItems();
       items = all.where((i) => i.tripId == currentTripId).toList();
     }
 

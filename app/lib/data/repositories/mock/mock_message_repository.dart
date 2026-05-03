@@ -12,7 +12,7 @@ class MockMessageRepository implements IMessageRepository {
   }
 
   @override
-  List<Message> getByTripId(String tripId) {
+  Future<List<Message>> getByTripId(String tripId) async {
     return _mockMessages.where((m) => m.tripId == tripId).toList();
   }
 

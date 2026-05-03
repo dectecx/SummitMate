@@ -1,4 +1,4 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -43,7 +43,7 @@ class PollCubit extends Cubit<PollState> {
     }
 
     // 從本地 Repo 載入
-    final polls = _pollRepository.getByTripId(tripId);
+    final polls = await _pollRepository.getByTripId(tripId);
 
     // 初始載入
     emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null));
@@ -84,7 +84,7 @@ class PollCubit extends Cubit<PollState> {
       if (!isAuto) {
         emit(PollError(AppErrorHandler.getUserMessage(e)));
         // 若失敗，恢復為舊資料的 Loaded 狀態
-        final polls = _pollRepository.getByTripId(tripId);
+        final polls = await _pollRepository.getByTripId(tripId);
         emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
         ToastService.error(AppErrorHandler.getUserMessage(e));
       } else {
