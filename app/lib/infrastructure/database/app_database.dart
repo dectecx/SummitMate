@@ -17,6 +17,12 @@ import '../../data/models/sync_meta_data_table.dart';
 import '../../data/models/log_table.dart';
 import '../../data/models/weather_table.dart';
 
+// Enums (Needed for Drift TypeConverters in generated code)
+import '../../domain/enums/group_event_category.dart';
+import '../../domain/enums/group_event_status.dart';
+import '../../domain/enums/group_event_application_status.dart';
+import '../../data/models/converters/sync_status_converter.dart';
+
 part 'app_database.g.dart';
 
 @DriftDatabase(
