@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_local_data_source.dart';
-import 'package:summitmate/data/models/gear_item_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_repository.dart';
 
@@ -39,22 +38,21 @@ void main() {
     );
 
     registerFallbackValue(testItem1);
-    registerFallbackValue(GearItemModel.fromDomain(testItem1));
   });
 
   group('GearRepository', () {
     group('getAllItems', () {
-      test('returns sorted items', () {
+      test('returns sorted items', () async {
         // Arrange
         final item1 = testItem1.copyWith(orderIndex: 1);
         final item2 = testItem2.copyWith(orderIndex: 0);
 
         when(
           () => mockLocalDataSource.getAll(),
-        ).thenReturn([GearItemModel.fromDomain(item1), GearItemModel.fromDomain(item2)]);
+        ).thenAnswer((_) async => [item1, item2]);
 
         // Act
-        final result = repository.getAllItems();
+        final result = await repository.getAllItems();
 
         // Assert
         expect(result.length, 2);
@@ -62,15 +60,15 @@ void main() {
         expect(result[1].id, item1.id);
       });
 
-      test('handles fallback orderIndex sorting', () {
+      test('handles fallback orderIndex sorting', () async {
         final item1 = testItem1.copyWith(orderIndex: 999);
         final item2 = testItem2.copyWith(orderIndex: 0);
 
         when(
           () => mockLocalDataSource.getAll(),
-        ).thenReturn([GearItemModel.fromDomain(item1), GearItemModel.fromDomain(item2)]);
+        ).thenAnswer((_) async => [item1, item2]);
 
-        final result = repository.getAllItems();
+        final result = await repository.getAllItems();
 
         expect(result[0].id, item2.id);
         expect(result[1].id, item1.id);
@@ -79,31 +77,30 @@ void main() {
 
     group('addItem', () {
       test('calculates max orderIndex', () async {
-        when(() => mockLocalDataSource.getAll()).thenReturn([GearItemModel.fromDomain(testItem2)]); // item2 has index 1
-        when(() => mockLocalDataSource.add(any())).thenAnswer((_) async => 0); // returns key (int)
+        when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testItem2]); // item2 has index 1
+        when(() => mockLocalDataSource.addItem(any())).thenAnswer((_) async => 0);
 
         const newItem = GearItem(id: 'new', tripId: 'trip_1', name: 'New', category: 'Misc', weight: 100);
         await repository.addItem(newItem);
 
         verify(() => mockLocalDataSource.getAll()).called(1);
-        // Repository internally maps and increments orderIndex
-        verify(() => mockLocalDataSource.add(any())).called(1);
+        verify(() => mockLocalDataSource.addItem(any())).called(1);
       });
 
       test('delegates add call', () async {
-        when(() => mockLocalDataSource.getAll()).thenReturn([]);
-        when(() => mockLocalDataSource.add(any())).thenAnswer((_) async => 0);
+        when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => []);
+        when(() => mockLocalDataSource.addItem(any())).thenAnswer((_) async => 0);
 
         await repository.addItem(testItem1);
-        verify(() => mockLocalDataSource.add(any())).called(1);
+        verify(() => mockLocalDataSource.addItem(any())).called(1);
       });
     });
 
-    test('getTotalWeight calculates correctly', () {
+    test('getTotalWeight calculates correctly', () async {
       when(
         () => mockLocalDataSource.getAll(),
-      ).thenReturn([GearItemModel.fromDomain(testItem1), GearItemModel.fromDomain(testItem2)]); // 2000 + 1000
-      final result = repository.getAllItems();
+      ).thenAnswer((_) async => [testItem1, testItem2]); // 2000 + 1000
+      final result = await repository.getAllItems();
       final total = result.fold<double>(0, (sum, item) => sum + (item.weight * item.quantity));
       expect(total, 3000.0);
     });
@@ -114,12 +111,12 @@ void main() {
 
       when(
         () => mockLocalDataSource.getAll(),
-      ).thenReturn([GearItemModel.fromDomain(item1), GearItemModel.fromDomain(item2)]);
-      when(() => mockLocalDataSource.update(any())).thenAnswer((_) async {});
+      ).thenAnswer((_) async => [item1, item2]);
+      when(() => mockLocalDataSource.updateItem(any())).thenAnswer((_) async => {});
 
       await repository.resetAllChecked();
 
-      verify(() => mockLocalDataSource.update(any())).called(2);
+      verify(() => mockLocalDataSource.updateItem(any())).called(2);
     });
   });
 }

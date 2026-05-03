@@ -47,7 +47,7 @@ class GearRepository implements IGearRepository {
       }
 
       final itemToSave = item.copyWith(orderIndex: newOrderIndex);
-      await _localDataSource.add(itemToSave);
+      await _localDataSource.addItem(itemToSave);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -58,7 +58,7 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> updateItem(GearItem item) async {
     try {
-      await _localDataSource.update(item);
+      await _localDataSource.updateItem(item);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -83,7 +83,7 @@ class GearRepository implements IGearRepository {
       final item = await _localDataSource.getById(id);
       if (item != null) {
         final updatedItem = item.copyWith(isChecked: !item.isChecked);
-        await _localDataSource.update(updatedItem);
+        await _localDataSource.updateItem(updatedItem);
       }
       return const Success(null);
     } catch (e) {
@@ -98,7 +98,7 @@ class GearRepository implements IGearRepository {
       final items = await _localDataSource.getAll();
       for (final item in items) {
         if (item.isChecked) {
-          await _localDataSource.update(item.copyWith(isChecked: false));
+          await _localDataSource.updateItem(item.copyWith(isChecked: false));
         }
       }
       return const Success(null);
@@ -114,7 +114,7 @@ class GearRepository implements IGearRepository {
       for (int i = 0; i < items.length; i++) {
         final item = items[i];
         if (item.orderIndex != i) {
-          await _localDataSource.update(item.copyWith(orderIndex: i));
+          await _localDataSource.updateItem(item.copyWith(orderIndex: i));
         }
       }
       return const Success(null);

@@ -35,7 +35,7 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> add(ItineraryItem item) async {
     try {
-      await _localDataSource.add(item);
+      await _localDataSource.addItem(item);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -45,7 +45,7 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> update(ItineraryItem item) async {
     try {
-      await _localDataSource.update(item);
+      await _localDataSource.updateItem(item);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -87,11 +87,11 @@ class ItineraryRepository implements IItineraryRepository {
         if (localItem != null) {
           // 合併本地打卡狀態
           itemToSave = item.copyWith(
-            isCompleted: localItem.isCompleted,
+            isCheckedIn: localItem.isCheckedIn,
             // TODO: 若 ItineraryItem 有 actualTime 等屬性，在此合併
           );
         }
-        await _localDataSource.add(itemToSave);
+        await _localDataSource.addItem(itemToSave);
       }
       return const Success(null);
     } catch (e) {
@@ -104,8 +104,8 @@ class ItineraryRepository implements IItineraryRepository {
     try {
       final item = await _localDataSource.getById(id);
       if (item != null) {
-        final updatedItem = item.copyWith(isCompleted: !item.isCompleted);
-        await _localDataSource.update(updatedItem);
+        final updatedItem = item.copyWith(isCheckedIn: !item.isCheckedIn);
+        await _localDataSource.updateItem(updatedItem);
         return const Success(null);
       }
       return const Failure(GeneralException('Item not found'));

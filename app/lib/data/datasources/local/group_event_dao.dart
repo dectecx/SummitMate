@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
-import '../../infrastructure/database/app_database.dart';
-import '../datasources/interfaces/i_group_event_local_data_source.dart';
-import '../models/group_event_table.dart';
-import '../../domain/entities/group_event.dart';
+import '../../../infrastructure/database/app_database.dart';
+import '../interfaces/i_group_event_local_data_source.dart';
+import '../../models/group_event_table.dart';
+import '../../../domain/entities/group_event.dart';
 
 part 'group_event_dao.g.dart';
 
