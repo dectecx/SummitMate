@@ -4,10 +4,11 @@ import '../../../infrastructure/database/app_database.dart';
 import '../../../domain/entities/message.dart';
 import '../interfaces/i_message_local_data_source.dart';
 import '../../models/message_table.dart';
+import '../../models/sync_meta_data_table.dart';
 
 part 'message_dao.g.dart';
 
-@DriftAccessor(tables: [MessagesTable])
+@DriftAccessor(tables: [MessagesTable, SyncMetaDataTable])
 @LazySingleton(as: IMessageLocalDataSource)
 class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin implements IMessageLocalDataSource {
   MessageDao(AppDatabase db) : super(db);
@@ -47,12 +48,19 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin im
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    // TODO: Implement metadata storage
+    await into(syncMetaDataTable).insertOnConflictUpdate(
+      SyncMetaDataTableCompanion.insert(
+        key: 'messages',
+        lastSyncTime: Value(time),
+      ),
+    );
   }
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    return null;
+    final query = select(syncMetaDataTable)..where((t) => t.key.equals('messages'));
+    final row = await query.getSingleOrNull();
+    return row?.lastSyncTime;
   }
 
   Message _mapToDomain(MessagesTableData row) {

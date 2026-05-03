@@ -329,7 +329,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                                   const SizedBox(height: 4),
                                   Text('Auth State: ${context.read<AuthCubit>().state.runtimeType}'),
                                   Text('Sync State: ${context.read<SyncCubit>().state.runtimeType}'),
-                                  Text('Hive Initialized: ${HiveService().isInitialized}'),
+                                  const Text('Local DB: Drift (Active)'),
                                 ],
                               ),
                               actions: [

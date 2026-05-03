@@ -63,7 +63,7 @@ void main() {
     group('getFavorites', () {
       test('should return local favorites immediately and trigger remote sync', () async {
         // Arrange
-        when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavoriteModel]);
+        when(() => mockLocalDataSource.getFavorites()).thenAnswer((_) async => [tFavorite]);
         when(
           () => mockRemoteDataSource.getFavorites(
             page: any(named: 'page'),

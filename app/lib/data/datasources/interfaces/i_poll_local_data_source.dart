@@ -19,4 +19,10 @@ abstract interface class IPollLocalDataSource {
 
   /// 清除所有投票
   Future<void> clear();
+
+  /// 儲存最後同步時間
+  Future<void> saveLastSyncTime(DateTime time);
+
+  /// 取得最後同步時間
+  Future<DateTime?> getLastSyncTime();
 }

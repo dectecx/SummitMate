@@ -24,13 +24,14 @@ void main() {
       id: 'msg_1',
       tripId: 'trip_1',
       userId: 'user_1',
-      userName: 'User 1',
+      user: 'User 1',
       content: 'Hello',
+      timestamp: DateTime.now(),
       createdAt: DateTime.now(),
       createdBy: 'user_1',
       updatedAt: DateTime.now(),
       updatedBy: 'user_1',
-      userAvatar: '🐻',
+      avatar: '🐻',
     );
 
     registerFallbackValue(testMessage);

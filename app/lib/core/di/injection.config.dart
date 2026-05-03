@@ -80,6 +80,7 @@ import '../../data/datasources/local/gear_key_local_data_source.dart' as _i835;
 import '../../data/datasources/local/gear_library_dao.dart' as _i780;
 import '../../data/datasources/local/group_event_dao.dart' as _i619;
 import '../../data/datasources/local/itinerary_dao.dart' as _i744;
+import '../../data/datasources/local/log_dao.dart' as _i619;
 import '../../data/datasources/local/message_dao.dart' as _i287;
 import '../../data/datasources/local/poll_dao.dart' as _i183;
 import '../../data/datasources/local/settings_dao.dart' as _i837;
@@ -141,7 +142,6 @@ import '../../infrastructure/services/geolocator_service.dart' as _i548;
 import '../../infrastructure/services/jwt_token_validator.dart' as _i1065;
 import '../../infrastructure/services/sync_service.dart' as _i724;
 import '../../infrastructure/services/weather_service.dart' as _i27;
-import '../../infrastructure/tools/hive_service.dart' as _i771;
 import '../../infrastructure/tools/usage_tracking_service.dart' as _i755;
 import '../../presentation/cubits/auth/auth_cubit.dart' as _i33;
 import '../../presentation/cubits/favorites/group_event/group_event_favorites_cubit.dart'
@@ -204,12 +204,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1007.PlatformService>(() => _i1007.PlatformService());
     gh.lazySingleton<_i455.CwaWeatherSource>(() => _i455.CwaWeatherSource());
-    gh.factory<_i115.GroupEventFavoritesCubit>(
-      () => _i115.GroupEventFavoritesCubit(gh<_i771.HiveService>()),
-    );
-    gh.factory<_i748.MountainFavoritesCubit>(
-      () => _i748.MountainFavoritesCubit(gh<_i771.HiveService>()),
-    );
     gh.lazySingleton<_i304.IPollService>(() => _i133.MockPollService());
     gh.lazySingleton<_i1012.ITokenValidator>(() => _i1065.JwtTokenValidator());
     gh.lazySingleton<_i730.IAdService>(() => _i702.AdService());
@@ -233,6 +227,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i21.IMessageLocalDataSource>(
       () => _i287.MessageDao(gh<_i89.AppDatabase>()),
     );
+    gh.lazySingleton<_i619.LogDao>(() => _i619.LogDao(gh<_i89.AppDatabase>()));
     gh.lazySingleton<_i774.ITripLocalDataSource>(
       () => _i711.TripDao(gh<_i89.AppDatabase>()),
     );
@@ -256,13 +251,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i307.IFavoritesLocalDataSource>(
       () => _i1019.FavoriteDao(gh<_i89.AppDatabase>()),
-    );
-    gh.lazySingleton<_i614.IWeatherService>(
-      () => _i27.WeatherService(
-        settingsRepo: gh<_i614.ISettingsRepository>(),
-        locationResolver: gh<_i887.ILocationResolver>(),
-        cwaSource: gh<_i455.CwaWeatherSource>(),
-      ),
     );
     gh.lazySingleton<_i751.IConnectivityService>(
       () => _i315.ConnectivityService(
@@ -310,6 +298,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i165.PermissionService>(
       () => _i165.PermissionService(gh<_i614.IAuthService>()),
     );
+    gh.lazySingleton<_i614.IWeatherService>(
+      () => _i27.WeatherService(
+        settingsRepo: gh<_i614.ISettingsRepository>(),
+        locationResolver: gh<_i887.ILocationResolver>(),
+        cwaSource: gh<_i455.CwaWeatherSource>(),
+        db: gh<_i89.AppDatabase>(),
+      ),
+    );
     gh.lazySingleton<_i684.IGearRepository>(
       () => _i867.GearRepository(gh<_i691.IGearLocalDataSource>()),
     );
@@ -327,6 +323,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i868.ISettingsRepository>(),
         gh<_i460.SharedPreferences>(),
       ),
+    );
+    gh.factory<_i115.GroupEventFavoritesCubit>(
+      () =>
+          _i115.GroupEventFavoritesCubit(gh<_i307.IFavoritesLocalDataSource>()),
+    );
+    gh.factory<_i748.MountainFavoritesCubit>(
+      () => _i748.MountainFavoritesCubit(gh<_i307.IFavoritesLocalDataSource>()),
     );
     gh.lazySingleton<_i361.Dio>(
       () => registerModule.dio(
