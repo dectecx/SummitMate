@@ -10,7 +10,7 @@ class MockPollRepository implements IPollRepository {
   }
 
   @override
-  List<Poll> getByTripId(String tripId) {
+  Future<List<Poll>> getByTripId(String tripId) async {
     return [];
   }
 

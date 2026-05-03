@@ -1,4 +1,4 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -42,7 +42,7 @@ class MessageCubit extends Cubit<MessageState> {
       return;
     }
 
-    final messages = _repository.getByTripId(currentTripId);
+    final messages = await _repository.getByTripId(currentTripId);
 
     if (state is MessageLoaded) {
       emit((state as MessageLoaded).copyWith(allMessages: messages));

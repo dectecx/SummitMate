@@ -41,10 +41,10 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
   // ========== Data Operations ==========
 
   @override
-  List<GearLibraryItem> getAll(String userId) => List.unmodifiable(_mockItems);
+  Future<List<GearLibraryItem>> getAll(String userId) async => List.unmodifiable(_mockItems);
 
   @override
-  GearLibraryItem? getById(String id) {
+  Future<GearLibraryItem?> getById(String id) async {
     try {
       return _mockItems.firstWhere((item) => item.id == id);
     } catch (_) {
@@ -53,7 +53,7 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
   }
 
   @override
-  List<GearLibraryItem> getByCategory(String userId, String category) =>
+  Future<List<GearLibraryItem>> getByCategory(String userId, String category) async =>
       _mockItems.where((item) => item.category == category).toList();
 
   @override
@@ -74,13 +74,13 @@ class MockGearLibraryRepository implements IGearLibraryRepository {
   // ========== Statistics ==========
 
   @override
-  int getCount(String userId) => _mockItems.length;
+  Future<int> getCount(String userId) async => _mockItems.length;
 
   @override
-  double getTotalWeight(String userId) => _mockItems.fold(0, (sum, item) => sum + item.weight);
+  Future<double> getTotalWeight(String userId) async => _mockItems.fold<double>(0, (sum, item) => sum + item.weight);
 
   @override
-  Map<String, double> getWeightByCategory(String userId) {
+  Future<Map<String, double>> getWeightByCategory(String userId) async {
     final map = <String, double>{};
     for (final item in _mockItems) {
       map[item.category] = (map[item.category] ?? 0) + item.weight;
