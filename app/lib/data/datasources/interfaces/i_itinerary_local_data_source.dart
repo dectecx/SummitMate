@@ -1,27 +1,26 @@
-import 'package:hive_ce/hive.dart';
-import '../../models/itinerary_item_model.dart';
+import '../../../domain/entities/itinerary_item.dart';
 
-/// 行程項目 (ItineraryItemModel) 的本地資料來源介面
+/// 行程項目 (ItineraryItem) 的本地資料來源介面
 abstract interface class IItineraryLocalDataSource {
   /// 取得所有行程項目
-  List<ItineraryItemModel> getAll();
+  Future<List<ItineraryItem>> getAll();
 
   /// 根據行程 ID 取得項目
-  List<ItineraryItemModel> getByTripId(String tripId);
+  Future<List<ItineraryItem>> getByTripId(String tripId);
 
-  /// 透過 Key 取得單一行程項目
-  ItineraryItemModel? getByKey(dynamic key);
+  /// 透過 Key 取得單一行程項目 (已廢棄)
+  ItineraryItem? getByKey(dynamic key);
 
   /// 透過 ID 取得單一行程項目 (UUID)
-  ItineraryItemModel? getById(String id);
+  Future<ItineraryItem?> getById(String id);
 
   /// 新增行程項目
-  Future<void> add(ItineraryItemModel item);
+  Future<void> add(ItineraryItem item);
 
   /// 更新行程項目
-  Future<void> update(ItineraryItemModel item);
+  Future<void> update(ItineraryItem item);
 
-  /// 刪除行程項目
+  /// 刪除行程項目 (透過 Key，已廢棄)
   Future<void> delete(dynamic key);
 
   /// 刪除行程項目 (透過 ID)
@@ -34,11 +33,11 @@ abstract interface class IItineraryLocalDataSource {
   Future<void> clear();
 
   /// 監聽資料變更流
-  Stream<BoxEvent> watch();
+  Stream<List<ItineraryItem>> watch();
 
   /// 儲存最後同步時間
   Future<void> saveLastSyncTime(DateTime time);
 
   /// 取得最後同步時間
-  DateTime? getLastSyncTime();
+  Future<DateTime?> getLastSyncTime();
 }

@@ -7,7 +7,6 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_set_repository.dart';
 import 'package:summitmate/domain/interfaces/i_gear_cloud_service.dart';
 
-
 class MockGearCloudService extends Mock implements IGearCloudService {}
 
 class MockGearKeyLocalDataSource extends Mock implements IGearKeyLocalDataSource {}
@@ -128,11 +127,9 @@ void main() {
     group('Key Management (Local)', () {
       final tUploadedAt = DateTime.now();
       final tModelRecords = [
-        GearKeyRecordModel(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt)
+        GearKeyRecordModel(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt),
       ];
-      final tEntityRecords = [
-        GearKeyRecord(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt)
-      ];
+      final tEntityRecords = [GearKeyRecord(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt)];
 
       test('getUploadedKeys should delegates to localDataSource and map to domain', () async {
         when(() => mockLocalDataSource.getUploadedKeys()).thenAnswer((_) async => tModelRecords);

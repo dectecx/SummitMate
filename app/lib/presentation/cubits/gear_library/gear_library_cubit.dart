@@ -13,12 +13,8 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   final ITripRepository _tripRepository;
   final IAuthService _authService;
 
-  GearLibraryCubit(
-    this._repository,
-    this._gearRepository,
-    this._tripRepository,
-    this._authService,
-  ) : super(const GearLibraryInitial());
+  GearLibraryCubit(this._repository, this._gearRepository, this._tripRepository, this._authService)
+    : super(const GearLibraryInitial());
 
   Future<void> loadItems() async {
     emit(const GearLibraryLoading());

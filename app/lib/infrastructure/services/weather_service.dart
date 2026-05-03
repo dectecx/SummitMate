@@ -48,11 +48,12 @@ class WeatherService implements IWeatherService {
   Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
     // final dynamicCacheKey = 'weather_$locationName';
     // final cached = _box?.get(dynamicCacheKey);
-    final isOffline = _settingsRepo.getSettings().isOfflineMode;
+    final settings = await _settingsRepo.getSettings();
+    final isOffline = settings.isOfflineMode;
 
     if (isOffline) {
-      // TODO: 在 Phase 7 完成 Isar 遷移後恢復快取讀取
-      LogService.warning('離線模式: 目前暫時不支援快取讀取 (準備遷移至 Isar)', source: 'WeatherService');
+      // TODO: 在 Phase 7 完成 Drift 遷移後恢復快取讀取
+      LogService.warning('離線模式: 目前暫時不支援快取讀取 (準備遷移至 Drift)', source: 'WeatherService');
       return null;
     }
 
@@ -70,7 +71,8 @@ class WeatherService implements IWeatherService {
 
   /// 內部取得邏輯：根據地點類型選擇資料源
   Future<WeatherData> _fetchWeatherInternal({required String locationName}) async {
-    final isOffline = _settingsRepo.getSettings().isOfflineMode;
+    final settings = await _settingsRepo.getSettings();
+    final isOffline = settings.isOfflineMode;
     if (isOffline) {
       throw Exception('離線模式: 無法取得天氣');
     }
@@ -95,10 +97,7 @@ class WeatherService implements IWeatherService {
 
     try {
       final dio = getIt<Dio>();
-      final response = await dio.get(
-        url.toString(),
-        options: Options(extra: {'requiresAuth': false}),
-      );
+      final response = await dio.get(url.toString(), options: Options(extra: {'requiresAuth': false}));
 
       if (response.statusCode == 200) {
         final decoded = response.data;
@@ -309,13 +308,15 @@ class WeatherService implements IWeatherService {
       int min = ((h - hour) * 60).round();
       return DateTime(date.year, date.month, date.day, hour, min);
     }
+
     return {'sunrise': toTime(sunriseHour), 'sunset': toTime(sunsetHour)};
   }
 
   /// 透過座標取得地點資料並回傳天氣
   @override
   Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
-    final isOffline = _settingsRepo.getSettings().isOfflineMode;
+    final settings = await _settingsRepo.getSettings();
+    final isOffline = settings.isOfflineMode;
 
     final location = await _locationResolver.resolve(lat, lon);
     if (location == null) {

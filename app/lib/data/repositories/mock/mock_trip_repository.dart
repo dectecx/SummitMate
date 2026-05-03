@@ -90,13 +90,7 @@ class MockTripRepository implements ITripRepository {
   @override
   Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId) async {
     return Success([
-      TripMember(
-        userId: 'mock-user-1',
-        name: '測試帳號',
-        avatar: '',
-        role: 'owner',
-        joinedAt: DateTime.now(),
-      ),
+      TripMember(userId: 'mock-user-1', name: '測試帳號', avatar: '', role: 'owner', joinedAt: DateTime.now()),
     ]);
   }
 

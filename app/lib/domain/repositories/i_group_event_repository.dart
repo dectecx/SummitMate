@@ -11,26 +11,18 @@ abstract interface class IGroupEventRepository {
   // ========== Data Operations ==========
 
   /// 取得所有揪團（本地快取）
-  List<GroupEvent> getAll();
+  Future<List<GroupEvent>> getAll();
 
   /// 取得單一揪團（本地快取）
-  ///
-  /// [eventId] 揪團 ID
-  GroupEvent? getById(String eventId);
+  Future<GroupEvent?> getById(String eventId);
 
   /// 儲存揪團列表到本地
-  ///
-  /// [events] 揪團列表
   Future<void> saveAll(List<GroupEvent> events);
 
   /// 儲存單一揪團到本地
-  ///
-  /// [event] 揪團資料
   Future<void> save(GroupEvent event);
 
   /// 從本地刪除揪團
-  ///
-  /// [eventId] 揪團 ID
   Future<void> delete(String eventId);
 
   /// 清除所有本地資料（登出時使用）
@@ -39,11 +31,9 @@ abstract interface class IGroupEventRepository {
   // ========== Application Data Operations ==========
 
   /// 取得所有報名紀錄（本地快取）
-  List<GroupEventApplication> getAllApplications();
+  Future<List<GroupEventApplication>> getAllApplications();
 
   /// 儲存報名紀錄列表到本地
-  ///
-  /// [applications] 報名紀錄列表
   Future<void> saveApplications(List<GroupEventApplication> applications);
 
   // ========== Sync Operations ==========

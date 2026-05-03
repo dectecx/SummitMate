@@ -2,7 +2,7 @@ import '../../domain/entities/gear_item.dart';
 import '../../../core/error/result.dart';
 
 /// 裝備 Repository 抽象介面
-/// 
+///
 /// 位於 Domain 層，定義裝備資料存取的契約。
 abstract interface class IGearRepository {
   /// 初始化
@@ -11,10 +11,10 @@ abstract interface class IGearRepository {
   // ========== Data Operations ==========
 
   /// 取得行程的所有裝備
-  List<GearItem> getAllItems();
+  Future<List<GearItem>> getAllItems();
 
   /// 依分類取得裝備
-  List<GearItem> getItemsByCategory(String category);
+  Future<List<GearItem>> getItemsByCategory(String category);
 
   /// 新增裝備
   Future<Result<void, Exception>> addItem(GearItem item);

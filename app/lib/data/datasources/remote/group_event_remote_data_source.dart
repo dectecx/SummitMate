@@ -7,6 +7,7 @@ import '../../api/models/group_event_api_models.dart';
 import '../../../infrastructure/tools/log_service.dart';
 import '../interfaces/i_group_event_remote_data_source.dart';
 import '../../../core/error/result.dart';
+
 /// 揪團 (Group Event) 的遠端資料來源實作
 @LazySingleton(as: IGroupEventRemoteDataSource)
 class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {

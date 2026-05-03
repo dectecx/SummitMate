@@ -84,14 +84,24 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
                 onChanged: (v) => setState(() => _visibility = v),
                 child: Column(
                   children: [
-                    const _VisibilityOption(icon: '🌐', title: '公開', subtitle: '任何人可下載', value: GearSetVisibility.public),
+                    const _VisibilityOption(
+                      icon: '🌐',
+                      title: '公開',
+                      subtitle: '任何人可下載',
+                      value: GearSetVisibility.public,
+                    ),
                     const _VisibilityOption(
                       icon: '🔒',
                       title: '保護',
                       subtitle: '需輸入 Key 下載',
                       value: GearSetVisibility.protected,
                     ),
-                    const _VisibilityOption(icon: '👤', title: '私有', subtitle: '僅限自己使用', value: GearSetVisibility.private),
+                    const _VisibilityOption(
+                      icon: '👤',
+                      title: '私有',
+                      subtitle: '僅限自己使用',
+                      value: GearSetVisibility.private,
+                    ),
                   ],
                 ),
               ),

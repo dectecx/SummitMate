@@ -4,13 +4,9 @@ import '../../core/error/result.dart';
 import '../../infrastructure/tools/log_service.dart';
 import '../datasources/interfaces/i_gear_library_local_data_source.dart';
 import '../datasources/interfaces/i_gear_library_remote_data_source.dart';
-import '../models/gear_library_item_model.dart';
 import 'package:summitmate/domain/domain.dart';
 
-/// 裝備庫 Repository (支援 Offline-First)
-///
-/// 協調 LocalDataSource (Hive) 的資料存取。
-/// 雲端備份透過 GearLibraryCloudService 進行。
+/// 裝備庫 Repository 實作
 @LazySingleton(as: IGearLibraryRepository)
 class GearLibraryRepository implements IGearLibraryRepository {
   static const String _source = 'GearLibraryRepository';
@@ -30,32 +26,33 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }
 
   @override
-  List<GearLibraryItem> getAll(String userId) {
-    final models = _localDataSource.getAllItems().where((i) => i.userId == userId).toList();
-    models.sort((a, b) => a.name.compareTo(b.name));
-    return models.map((m) => m.toDomain()).toList();
+  Future<List<GearLibraryItem>> getAll(String userId) async {
+    final items = await _localDataSource.getAllItems();
+    final userItems = items.where((i) => i.userId == userId).toList();
+    userItems.sort((a, b) => a.name.compareTo(b.name));
+    return userItems;
   }
 
   @override
-  GearLibraryItem? getById(String id) => _localDataSource.getById(id)?.toDomain();
+  Future<GearLibraryItem?> getById(String id) => _localDataSource.getById(id);
 
   @override
-  List<GearLibraryItem> getByCategory(String userId, String category) {
-    return getAll(userId).where((i) => i.category == category).toList();
+  Future<List<GearLibraryItem>> getByCategory(String userId, String category) async {
+    final items = await getAll(userId);
+    return items.where((i) => i.category == category).toList();
   }
 
   @override
-  Future<void> add(GearLibraryItem item) => _localDataSource.saveItem(GearLibraryItemModel.fromDomain(item));
+  Future<void> add(GearLibraryItem item) => _localDataSource.saveItem(item);
 
   @override
-  Future<void> update(GearLibraryItem item) => _localDataSource.saveItem(GearLibraryItemModel.fromDomain(item));
+  Future<void> update(GearLibraryItem item) => _localDataSource.saveItem(item);
 
   @override
   Future<void> delete(String id) => _localDataSource.deleteItem(id);
 
   @override
-  Future<void> importAll(List<GearLibraryItem> items) => 
-      _localDataSource.saveItems(items.map((i) => GearLibraryItemModel.fromDomain(i)).toList());
+  Future<void> importAll(List<GearLibraryItem> items) => _localDataSource.saveItems(items);
 
   @override
   Future<Result<void, Exception>> clearAll() async {
@@ -64,22 +61,27 @@ class GearLibraryRepository implements IGearLibraryRepository {
       await _localDataSource.clear();
       return const Success(null);
     } catch (e) {
-      return Failure(e is Exception ? e : GeneralException(e.toString()));
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
 
   @override
-  int getCount(String userId) => getAll(userId).length;
-
-  @override
-  double getTotalWeight(String userId) {
-    return getAll(userId).fold<double>(0.0, (sum, item) => sum + item.weight);
+  Future<int> getCount(String userId) async {
+    final items = await getAll(userId);
+    return items.length;
   }
 
   @override
-  Map<String, double> getWeightByCategory(String userId) {
+  Future<double> getTotalWeight(String userId) async {
+    final items = await getAll(userId);
+    return items.fold<double>(0.0, (sum, item) => sum + item.weight);
+  }
+
+  @override
+  Future<Map<String, double>> getWeightByCategory(String userId) async {
+    final items = await getAll(userId);
     final result = <String, double>{};
-    for (final item in getAll(userId)) {
+    for (final item in items) {
       result[item.category] = (result[item.category] ?? 0) + item.weight;
     }
     return result;
@@ -94,9 +96,7 @@ class GearLibraryRepository implements IGearLibraryRepository {
   }) async {
     final result = await _remoteDataSource.listLibrary(page: page, limit: limit, category: category, search: search);
     if (result is Success<PaginatedList<GearLibraryItem>, Exception>) {
-      for (final item in result.value.items) {
-        await _localDataSource.saveItem(GearLibraryItemModel.fromDomain(item));
-      }
+      await _localDataSource.saveItems(result.value.items);
       return result;
     }
     return Failure((result as Failure).exception);

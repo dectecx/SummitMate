@@ -252,11 +252,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       final libraryCubit = context.read<GearLibraryCubit>();
       int added = 0;
       for (final item in items) {
-        await libraryCubit.addItem(
-          name: item.name,
-          weight: item.weight,
-          category: item.category,
-        );
+        await libraryCubit.addItem(name: item.name, weight: item.weight, category: item.category);
         added++;
       }
       ToastService.success('已加入 $added 件裝備到我的庫');

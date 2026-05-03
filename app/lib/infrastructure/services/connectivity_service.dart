@@ -1,4 +1,4 @@
-﻿import 'package:injectable/injectable.dart';
+import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../core/di/injection.dart';
@@ -39,16 +39,12 @@ class ConnectivityService implements IConnectivityService {
 
   /// 初始化：開始監聽
   void _init() {
-    // 1. 初始化當前設定
-    try {
-      _isOfflineMode = _settingsRepo.getSettings().isOfflineMode;
-    } catch (_) {
-      _isOfflineMode = false;
-    }
+    _initSettingsAsync();
 
     // 2. 監聽設定變更 (即時回應離線模式切換)
-    _settingsSubscription = _settingsRepo.watchSettings().listen((event) {
-      final newOfflineMode = _settingsRepo.getSettings().isOfflineMode;
+    _settingsSubscription = _settingsRepo.watchSettings().listen((event) async {
+      final settings = await _settingsRepo.getSettings();
+      final newOfflineMode = settings.isOfflineMode;
       if (_isOfflineMode != newOfflineMode) {
         _isOfflineMode = newOfflineMode;
         LogService.info('離線模式切換: ${_isOfflineMode ? "開啟" : "關閉"}', source: _source);
@@ -78,6 +74,15 @@ class ConnectivityService implements IConnectivityService {
     checkConnectivity();
   }
 
+  Future<void> _initSettingsAsync() async {
+    try {
+      final settings = await _settingsRepo.getSettings();
+      _isOfflineMode = settings.isOfflineMode;
+    } catch (_) {
+      _isOfflineMode = false;
+    }
+  }
+
   /// 發送最終狀態 (Online = 有網路 AND 未開啟離線模式)
   void _emitStatus() {
     _onlineController.add(isOnline);
@@ -104,7 +109,8 @@ class ConnectivityService implements IConnectivityService {
   Future<bool> checkConnectivity() async {
     // 同步更新設定狀態
     try {
-      _isOfflineMode = _settingsRepo.getSettings().isOfflineMode;
+      final settings = await _settingsRepo.getSettings();
+      _isOfflineMode = settings.isOfflineMode;
     } catch (_) {}
 
     // 檢查實際網路

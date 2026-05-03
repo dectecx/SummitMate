@@ -22,12 +22,7 @@ class TripSnapshotModel {
   @JsonKey(defaultValue: [])
   final List<ItineraryItemModel> itinerary;
 
-  TripSnapshotModel({
-    required this.name,
-    required this.startDate,
-    this.endDate,
-    this.itinerary = const [],
-  });
+  TripSnapshotModel({required this.name, required this.startDate, this.endDate, this.itinerary = const []});
 
   /// 轉換為 Domain Entity
   TripSnapshot toDomain() {

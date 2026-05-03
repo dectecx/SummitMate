@@ -3,10 +3,9 @@ import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_poll_local_data_source.dart';
 import '../datasources/interfaces/i_poll_remote_data_source.dart';
-import '../models/poll_model.dart';
 import 'package:summitmate/domain/domain.dart';
 
-/// 投票 Repository
+/// 投票 Repository 實作
 @LazySingleton(as: IPollRepository)
 class PollRepository implements IPollRepository {
   final IPollLocalDataSource _localDataSource;
@@ -20,8 +19,9 @@ class PollRepository implements IPollRepository {
   }
 
   @override
-  List<Poll> getByTripId(String tripId) {
-    return _localDataSource.getAllPolls().where((p) => p.tripId == tripId).map((p) => p.toDomain()).toList();
+  Future<List<Poll>> getByTripId(String tripId) async {
+    final polls = await _localDataSource.getAllPolls();
+    return polls.where((p) => p.tripId == tripId).toList();
   }
 
   @override
@@ -29,9 +29,7 @@ class PollRepository implements IPollRepository {
     try {
       final result = await _remoteDataSource.getPolls(tripId, page: page, limit: limit);
       if (result is Success<PaginatedList<Poll>, Exception>) {
-        final models = result.value.items.map((p) => PollModel.fromDomain(p)).toList();
-        await _localDataSource.savePolls(models);
-
+        await _localDataSource.savePolls(result.value.items);
         return Success(result.value);
       }
       return Failure((result as Failure).exception);

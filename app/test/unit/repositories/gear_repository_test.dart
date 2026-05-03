@@ -18,7 +18,15 @@ void main() {
     mockLocalDataSource = MockGearLocalDataSource();
     repository = GearRepository(mockLocalDataSource);
 
-    testItem1 = const GearItem(id: 'item_1', tripId: 'trip_1', name: 'Tent', category: 'Shelter', weight: 2000, quantity: 1, orderIndex: 0);
+    testItem1 = const GearItem(
+      id: 'item_1',
+      tripId: 'trip_1',
+      name: 'Tent',
+      category: 'Shelter',
+      weight: 2000,
+      quantity: 1,
+      orderIndex: 0,
+    );
 
     testItem2 = const GearItem(
       id: 'item_2',
@@ -40,11 +48,10 @@ void main() {
         // Arrange
         final item1 = testItem1.copyWith(orderIndex: 1);
         final item2 = testItem2.copyWith(orderIndex: 0);
-        
-        when(() => mockLocalDataSource.getAll()).thenReturn([
-          GearItemModel.fromDomain(item1),
-          GearItemModel.fromDomain(item2),
-        ]);
+
+        when(
+          () => mockLocalDataSource.getAll(),
+        ).thenReturn([GearItemModel.fromDomain(item1), GearItemModel.fromDomain(item2)]);
 
         // Act
         final result = repository.getAllItems();
@@ -58,11 +65,10 @@ void main() {
       test('handles fallback orderIndex sorting', () {
         final item1 = testItem1.copyWith(orderIndex: 999);
         final item2 = testItem2.copyWith(orderIndex: 0);
-        
-        when(() => mockLocalDataSource.getAll()).thenReturn([
-          GearItemModel.fromDomain(item1),
-          GearItemModel.fromDomain(item2),
-        ]);
+
+        when(
+          () => mockLocalDataSource.getAll(),
+        ).thenReturn([GearItemModel.fromDomain(item1), GearItemModel.fromDomain(item2)]);
 
         final result = repository.getAllItems();
 
@@ -94,10 +100,9 @@ void main() {
     });
 
     test('getTotalWeight calculates correctly', () {
-      when(() => mockLocalDataSource.getAll()).thenReturn([
-        GearItemModel.fromDomain(testItem1),
-        GearItemModel.fromDomain(testItem2),
-      ]); // 2000 + 1000
+      when(
+        () => mockLocalDataSource.getAll(),
+      ).thenReturn([GearItemModel.fromDomain(testItem1), GearItemModel.fromDomain(testItem2)]); // 2000 + 1000
       final result = repository.getAllItems();
       final total = result.fold<double>(0, (sum, item) => sum + (item.weight * item.quantity));
       expect(total, 3000.0);
@@ -106,11 +111,10 @@ void main() {
     test('resetAllChecked updates all items', () async {
       final item1 = testItem1.copyWith(isChecked: true);
       final item2 = testItem2.copyWith(isChecked: true);
-      
-      when(() => mockLocalDataSource.getAll()).thenReturn([
-        GearItemModel.fromDomain(item1),
-        GearItemModel.fromDomain(item2),
-      ]);
+
+      when(
+        () => mockLocalDataSource.getAll(),
+      ).thenReturn([GearItemModel.fromDomain(item1), GearItemModel.fromDomain(item2)]);
       when(() => mockLocalDataSource.update(any())).thenAnswer((_) async {});
 
       await repository.resetAllChecked();

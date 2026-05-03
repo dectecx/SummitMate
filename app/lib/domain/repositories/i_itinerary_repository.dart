@@ -7,10 +7,10 @@ abstract interface class IItineraryRepository {
   Future<Result<void, Exception>> init();
 
   /// 取得指定行程的所有節點
-  List<ItineraryItem> getByTripId(String tripId);
+  Future<List<ItineraryItem>> getByTripId(String tripId);
 
   /// 取得特定 ID 的節點
-  ItineraryItem? getById(String id);
+  Future<ItineraryItem?> getById(String id);
 
   /// 新增節點
   Future<Result<void, Exception>> add(ItineraryItem item);
