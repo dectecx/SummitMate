@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:hive_ce/hive.dart';
 import 'package:summitmate/core/theme.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -17,7 +16,7 @@ class MockSettingsRepository implements ISettingsRepository {
   // ========== Data Operations ==========
 
   @override
-  Settings getSettings() => _mockSettings;
+  Future<Settings> getSettings() async => _mockSettings;
 
   @override
   Future<void> updateUsername(String username) async {}
@@ -40,5 +39,5 @@ class MockSettingsRepository implements ISettingsRepository {
   // ========== Watch ==========
 
   @override
-  Stream<BoxEvent> watchSettings() => const Stream.empty();
+  Stream<void> watchSettings() => const Stream.empty();
 }

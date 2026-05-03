@@ -71,7 +71,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'loadItinerary emits [ItineraryLoading, ItineraryLoaded] with filtered items',
       setUp: () {
-        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([testItem]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => [testItem]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItinerary(),
@@ -109,7 +109,7 @@ void main() {
     blocTest<ItineraryCubit, ItineraryState>(
       'selectDay updates selectedDay',
       setUp: () {
-        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => []);
       },
       build: () => cubit,
       seed: () => const ItineraryLoaded(items: [], selectedDay: 'D1'),
@@ -129,7 +129,7 @@ void main() {
       'addItem calls repository and reloads',
       setUp: () {
         when(() => mockItineraryRepository.add(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([testItem]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => [testItem]);
       },
       build: () => cubit,
       act: (cubit) => cubit.addItem(testItem),
@@ -143,7 +143,7 @@ void main() {
       'checkIn calls repository and reloads',
       setUp: () {
         when(() => mockItineraryRepository.toggleCheckIn(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([testItem]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => [testItem]);
       },
       build: () => cubit,
       act: (cubit) => cubit.checkIn('item_1'),
@@ -156,7 +156,7 @@ void main() {
       'deleteItem calls repository and reloads',
       setUp: () {
         when(() => mockItineraryRepository.delete(any())).thenAnswer((_) async => const Success(null));
-        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => []);
       },
       build: () => cubit,
       act: (cubit) => cubit.deleteItem('item_1'),
@@ -190,7 +190,7 @@ void main() {
         when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async => const Success(null));
 
         // Also stub getByTripId for loadItinerary which is called after addDay
-        when(() => mockItineraryRepository.getByTripId(any())).thenReturn([]);
+        when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => []);
 
         // Re-initialize cubit with reset mocks
         cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);

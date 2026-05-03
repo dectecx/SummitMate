@@ -14,7 +14,7 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   void setShouldFail(bool fail) => _shouldFail = fail;
 
   @override
-  List<GroupEvent> getAll() => _events;
+  Future<List<GroupEvent>> getAll() async => _events;
 
   @override
   DateTime? getLastSyncTime() => null;
@@ -64,13 +64,13 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<void, Exception>> init() async => const Success(null);
   @override
-  GroupEvent? getById(String eventId) => null;
+  Future<GroupEvent?> getById(String eventId) async => null;
   @override
   Future<void> delete(String eventId) async {}
   @override
   Future<Result<void, Exception>> clearAll() async => const Success(null);
   @override
-  List<GroupEventApplication> getAllApplications() => [];
+  Future<List<GroupEventApplication>> getAllApplications() async => [];
   @override
   Future<void> saveApplications(List<GroupEventApplication> applications) async {}
   @override

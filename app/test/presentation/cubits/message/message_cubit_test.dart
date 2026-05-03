@@ -92,7 +92,7 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'emits [MessageLoading, MessageLoaded] with messages',
       setUp: () {
-        when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1, testMessage2]);
+        when(() => mockRepo.getByTripId(any())).thenAnswer((_) async => [testMessage1, testMessage2]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadMessages(),
@@ -104,7 +104,7 @@ void main() {
     blocTest<MessageCubit, MessageState>(
       'calls repo.addMessage and reloads',
       setUp: () {
-        when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1]);
+        when(() => mockRepo.getByTripId(any())).thenAnswer((_) async => [testMessage1]);
         when(
           () => mockRepo.addMessage(
             tripId: any(named: 'tripId'),
@@ -133,7 +133,7 @@ void main() {
         when(() => mockRepo.getRemoteMessages(any())).thenAnswer(
           (_) async => Success(PaginatedList<Message>(items: [testMessage1], page: 1, total: 1, hasMore: false)),
         );
-        when(() => mockRepo.getByTripId(any())).thenReturn([testMessage1]);
+        when(() => mockRepo.getByTripId(any())).thenAnswer((_) async => [testMessage1]);
       },
       build: () => cubit,
       seed: () => const MessageLoaded(allMessages: []),
@@ -152,7 +152,7 @@ void main() {
         when(
           () => mockRepo.getRemoteMessages(any()),
         ).thenAnswer((_) async => Failure(GeneralException('Network error')));
-        when(() => mockRepo.getByTripId(any())).thenReturn([]);
+        when(() => mockRepo.getByTripId(any())).thenAnswer((_) async => []);
       },
       build: () => cubit,
       seed: () => const MessageLoaded(allMessages: []),

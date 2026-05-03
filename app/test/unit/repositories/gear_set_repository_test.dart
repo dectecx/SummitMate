@@ -2,10 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_key_local_data_source.dart';
-import 'package:summitmate/data/models/gear_key_record_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_set_repository.dart';
-import 'package:summitmate/domain/interfaces/i_gear_cloud_service.dart';
 
 class MockGearCloudService extends Mock implements IGearCloudService {}
 
@@ -126,13 +124,10 @@ void main() {
 
     group('Key Management (Local)', () {
       final tUploadedAt = DateTime.now();
-      final tModelRecords = [
-        GearKeyRecordModel(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt),
-      ];
       final tEntityRecords = [GearKeyRecord(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt)];
 
       test('getUploadedKeys should delegates to localDataSource and map to domain', () async {
-        when(() => mockLocalDataSource.getUploadedKeys()).thenAnswer((_) async => tModelRecords);
+        when(() => mockLocalDataSource.getUploadedKeys()).thenAnswer((_) async => tEntityRecords);
 
         final result = await repository.getUploadedKeys();
 

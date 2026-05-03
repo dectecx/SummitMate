@@ -192,10 +192,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i77.MapCubit>(() => _i77.MapCubit());
     gh.factory<_i843.OfflineMapCubit>(() => _i843.OfflineMapCubit());
     gh.factory<_i694.MealCubit>(() => _i694.MealCubit());
-    await gh.singletonAsync<_i342.HiveService>(
-      () => registerModule.hiveService,
-      preResolve: true,
-    );
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );

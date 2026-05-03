@@ -12,7 +12,6 @@ export 'services/sync_service.dart';
 export 'services/weather_service.dart';
 
 // Tools
-export 'tools/hive_service.dart';
 export 'tools/log_service.dart';
 export 'tools/toast_service.dart';
 export 'tools/tutorial_service.dart';

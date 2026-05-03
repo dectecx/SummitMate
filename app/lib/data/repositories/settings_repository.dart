@@ -6,7 +6,7 @@ import '../datasources/interfaces/i_settings_local_data_source.dart';
 /// 設定 Repository (支援 DataSource 模式)
 ///
 /// 管理全域設定的 CRUD 操作。
-/// 設定資料為應用程式層級，儲存於本地 Hive。
+/// 設定資料為應用程式層級，儲存於本地 Drift。
 @LazySingleton(as: ISettingsRepository)
 class SettingsRepository implements ISettingsRepository {
   final ISettingsLocalDataSource _localDataSource;

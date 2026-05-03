@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../models/gear_key_record_model.dart';
+import '../../../domain/entities/gear_key_record.dart';
 import '../interfaces/i_gear_key_local_data_source.dart';
 
 /// 裝備清單 Key 的本地資料來源實作 (使用 Shared Preferences)
@@ -10,10 +11,10 @@ class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
 
   /// 取得本地儲存的所有上傳 Key
   @override
-  Future<List<GearKeyRecordModel>> getUploadedKeys() async {
+  Future<List<GearKeyRecord>> getUploadedKeys() async {
     final prefs = await SharedPreferences.getInstance();
     final keysJson = prefs.getStringList(_keyPrefix) ?? [];
-    return keysJson.map((json) => GearKeyRecordModel.fromStorageString(json)).toList();
+    return keysJson.map((jsonStr) => GearKeyRecord.fromJson(json.decode(jsonStr))).toList();
   }
 
   /// 儲存上傳 Key 紀錄
@@ -26,9 +27,14 @@ class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
     final prefs = await SharedPreferences.getInstance();
     final keysJson = prefs.getStringList(_keyPrefix) ?? [];
 
-    final record = GearKeyRecordModel(key: key, title: title, visibility: visibility, uploadedAt: DateTime.now());
+    final record = GearKeyRecord(
+      key: key,
+      title: title,
+      visibility: visibility,
+      uploadedAt: DateTime.now(),
+    );
 
-    keysJson.add(record.toStorageString());
+    keysJson.add(json.encode(record.toJson()));
     await prefs.setStringList(_keyPrefix, keysJson);
   }
 
@@ -41,8 +47,8 @@ class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
     final keysJson = prefs.getStringList(_keyPrefix) ?? [];
 
     // 過濾掉指定的 key
-    final filtered = keysJson.where((json) {
-      final record = GearKeyRecordModel.fromStorageString(json);
+    final filtered = keysJson.where((jsonStr) {
+      final record = GearKeyRecord.fromJson(json.decode(jsonStr));
       return record.key != key;
     }).toList();
 

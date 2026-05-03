@@ -5,7 +5,6 @@ import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_favorites_remote_data_source.dart';
 
-import 'package:summitmate/data/models/favorite_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/favorites_repository.dart';
 
@@ -15,6 +14,8 @@ class MockFavoritesRemoteDataSource extends Mock implements IFavoritesRemoteData
 
 class MockAuthService extends Mock implements IAuthService {}
 
+class FakeFavorite extends Fake implements Favorite {}
+
 void main() {
   late FavoritesRepository repository;
   late MockFavoritesLocalDataSource mockLocalDataSource;
@@ -23,17 +24,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FavoriteType.mountain);
-    registerFallbackValue(
-      FavoriteModel(
-        id: 'dummy',
-        targetId: 'dummy',
-        type: FavoriteType.mountain,
-        createdAt: DateTime.now(),
-        createdBy: 'dummy',
-        updatedAt: DateTime.now(),
-        updatedBy: 'dummy',
-      ),
-    );
+    registerFallbackValue(FakeFavorite());
   });
 
   setUp(() {
@@ -57,7 +48,6 @@ void main() {
       updatedAt: DateTime.now(),
       updatedBy: 'user1',
     );
-    final tFavoriteModel = FavoriteModel.fromDomain(tFavorite);
     final tException = Exception('Test Error');
 
     group('getFavorites', () {
