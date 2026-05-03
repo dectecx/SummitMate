@@ -57,7 +57,7 @@ void main() {
     when(() => mockAuthService.currentUserId).thenReturn('u1');
     when(() => mockConnectivity.isOffline).thenReturn(false);
     when(() => mockTripRepo.getActiveTrip(any())).thenAnswer((_) async => Success(testTrip));
-    when(() => mockRepo.getByTripId(any())).thenReturn([]);
+    when(() => mockRepo.getByTripId(any())).thenAnswer((_) async => []);
 
     cubit = PollCubit(mockRepo, mockTripRepo, mockConnectivity, mockAuthService);
   });
@@ -74,7 +74,7 @@ void main() {
     blocTest<PollCubit, PollState>(
       'loads polls from repository',
       setUp: () {
-        when(() => mockRepo.getByTripId('trip1')).thenReturn([testPoll]);
+        when(() => mockRepo.getByTripId('trip1')).thenAnswer((_) async => [testPoll]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadPolls(),

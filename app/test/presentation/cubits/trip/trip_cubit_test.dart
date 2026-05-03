@@ -203,7 +203,7 @@ void main() {
     );
 
     test('uploadFullTrip gathers data and calls repo', () async {
-      when(() => mockGearRepository.getAllItems()).thenReturn([]);
+      when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => []);
       when(() => mockTripRepository.uploadToCloud(any())).thenAnswer((_) async => const Success('mock-id'));
       when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => const Success(null));
       when(() => mockTripGearRemoteDataSource.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());

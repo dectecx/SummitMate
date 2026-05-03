@@ -16,13 +16,6 @@ abstract class RegisterModule {
   @preResolve
   Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
 
-  @preResolve
-  @singleton
-  Future<HiveService> get hiveService async {
-    final service = HiveService();
-    await service.init();
-    return service;
-  }
 
   @Named('baseUrl')
   String get baseUrl => EnvConfig.apiBaseUrl;

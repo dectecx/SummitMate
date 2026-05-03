@@ -1,11 +1,11 @@
-import '../../models/gear_key_record_model.dart';
+import '../../../domain/entities/gear_key_record.dart';
 
 /// 上傳裝備清單 Key 的本地資料來源介面
 ///
 /// 負責儲存與管理已上傳至雲端的裝備清單 Key 記錄，方便後續查詢或分享。
 abstract interface class IGearKeyLocalDataSource {
   /// 取得所有已上傳的 Key 記錄
-  Future<List<GearKeyRecordModel>> getUploadedKeys();
+  Future<List<GearKeyRecord>> getUploadedKeys();
 
   /// 儲存一筆上傳 Key 記錄
   ///

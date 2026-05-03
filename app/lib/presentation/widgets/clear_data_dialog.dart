@@ -108,21 +108,6 @@ void showClearDataDialog(BuildContext context) {
                 settings: clearSettings,
               );
 
-              // 同時也清除舊的 Hive 資料 (如果有殘留)
-              try {
-                await getIt<HiveService>().clearSelectedData(
-                  clearTrips: clearItinerary,
-                  clearItinerary: clearItinerary,
-                  clearMessages: clearMessages,
-                  clearGear: clearGear,
-                  clearGearLibrary: clearGearLibrary,
-                  clearWeather: clearWeather,
-                  clearSettings: clearSettings,
-                  clearLogs: clearLogs,
-                  clearPolls: clearPolls,
-                );
-              } catch (_) {}
-
               // 顯示重啟提示對話框 (不可取消)
               if (context.mounted) {
                 await showDialog(

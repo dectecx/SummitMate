@@ -1,24 +1,15 @@
-import 'package:hive_ce/hive.dart';
-
-part 'favorite_type.g.dart';
-
 /// 收藏類型
-@HiveType(typeId: 22)
 enum FavoriteType {
   /// 山岳
-  @HiveField(0)
   mountain,
 
   /// 揪團
-  @HiveField(1)
   groupEvent,
 
   /// 路線
-  @HiveField(2)
   route,
 
   /// 其他
-  @HiveField(3)
   other;
 
   /// 取得值
