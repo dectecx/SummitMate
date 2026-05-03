@@ -226,7 +226,9 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
                 backgroundImage: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty)
                     ? NetworkImage(_searchResult!.avatar!)
                     : null,
-                onBackgroundImageError: (_, _) {},
+                onBackgroundImageError: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty)
+                    ? (_, __) {}
+                    : null,
                 child: (_searchResult!.avatar == null || _searchResult!.avatar!.isEmpty)
                     ? Text(_searchResult!.displayName[0])
                     : null,

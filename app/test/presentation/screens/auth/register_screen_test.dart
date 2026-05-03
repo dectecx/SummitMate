@@ -48,10 +48,11 @@ void main() {
     testWidgets('should show error for invalid email', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      final emailField = find.byType(TextFormField).first;
+      final emailField = find.byType(TextFormField).at(1);
       await tester.enterText(emailField, 'invalid-email');
 
-      final registerButton = find.text('註冊');
+      final registerButton = find.widgetWithText(FilledButton, '建立帳號');
+      await tester.ensureVisible(registerButton);
       await tester.tap(registerButton);
       await tester.pump();
 
@@ -61,14 +62,12 @@ void main() {
     testWidgets('should show error for weak password', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      final passwordField = find.byType(TextFormField).at(1); // 0: Display Name, 1: Email, 2: Password
-      // Wait, let's check the order in RegisterScreen.
-      // Order: Display Name, Email, Password, Confirm Password.
-      // So Password is index 2.
+      final passwordField = find.byType(TextFormField).at(2);
 
       await tester.enterText(passwordField, 'short');
 
-      final registerButton = find.text('註冊');
+      final registerButton = find.widgetWithText(FilledButton, '建立帳號');
+      await tester.ensureVisible(registerButton);
       await tester.tap(registerButton);
       await tester.pump();
 
@@ -105,7 +104,8 @@ void main() {
       await tester.enterText(passwordField, 'Password123');
       await tester.enterText(confirmField, 'Different123');
 
-      final registerButton = find.text('註冊');
+      final registerButton = find.widgetWithText(FilledButton, '建立帳號');
+      await tester.ensureVisible(registerButton);
       await tester.tap(registerButton);
       await tester.pump();
 

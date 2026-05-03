@@ -5,6 +5,7 @@ part 'poll.g.dart';
 
 /// 投票領域實體 (Domain Entity)
 @freezed
+@JsonSerializable(explicitToJson: true)
 abstract class Poll with _$Poll {
   const Poll._();
 

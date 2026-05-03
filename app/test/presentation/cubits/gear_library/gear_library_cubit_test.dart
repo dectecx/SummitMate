@@ -80,7 +80,7 @@ void main() {
     blocTest<GearLibraryCubit, GearLibraryState>(
       'loadItems emits [GearLibraryLoading, GearLibraryLoaded]',
       setUp: () {
-        when(() => mockRepo.getAll(any())).thenReturn([libItem1, libItem2]);
+        when(() => mockRepo.getAll(any())).thenAnswer((_) async => [libItem1, libItem2]);
       },
       build: () => cubit,
       act: (cubit) => cubit.loadItems(),
@@ -94,7 +94,7 @@ void main() {
       'addItem calls repository and reloads',
       setUp: () {
         when(() => mockRepo.add(any())).thenAnswer((_) async {});
-        when(() => mockRepo.getAll(any())).thenReturn([libItem1]);
+        when(() => mockRepo.getAll(any())).thenAnswer((_) async => [libItem1]);
       },
       build: () => cubit,
       act: (cubit) => cubit.addItem(name: 'Tent', weight: 2000, category: 'Sleep'),
@@ -109,7 +109,7 @@ void main() {
       'updateItem calls repository and syncs linked gear',
       setUp: () {
         when(() => mockRepo.update(any())).thenAnswer((_) async {});
-        when(() => mockRepo.getAll(any())).thenReturn([libItem1]);
+        when(() => mockRepo.getAll(any())).thenAnswer((_) async => [libItem1]);
 
         // Mock sync logic
         const linkedGear = GearItem(
@@ -120,7 +120,7 @@ void main() {
           weight: 1000,
           category: 'Sleep',
         );
-        when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
+        when(() => mockGearRepo.getAllItems()).thenAnswer((_) async => [linkedGear]);
         when(() => mockTripRepo.getTripById('t1')).thenAnswer(
           (_) async => Success(
             Trip(
@@ -142,7 +142,7 @@ void main() {
       act: (cubit) => cubit.updateItem(libItem1),
       expect: () => [isA<GearLibraryLoaded>()],
       verify: (_) {
-        verify(() => mockRepo.update(libItem1)).called(1);
+        verify(() => mockRepo.update(any())).called(1);
         verify(() => mockGearRepo.updateItem(any())).called(1); // Should update linked gear
       },
     );

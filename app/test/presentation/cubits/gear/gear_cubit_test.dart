@@ -38,7 +38,7 @@ void main() {
     blocTest<GearCubit, GearState>(
       'loadGear emits [GearLoading, GearLoaded] with filtered items',
       build: () {
-        when(() => mockGearRepository.getAllItems()).thenReturn([gearItem1, gearItem2]);
+        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => [gearItem1, gearItem2]);
         return GearCubit(mockGearRepository);
       },
       act: (cubit) => cubit.loadGear('trip1'),
@@ -54,7 +54,7 @@ void main() {
       'addItem calls repo and reloads',
       build: () {
         var callCount = 0;
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) {
+        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async {
           if (callCount == 0) {
             callCount++;
             return [];
@@ -83,7 +83,7 @@ void main() {
       'deleteItem calls repo and reloads',
       build: () {
         var callCount = 0;
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) {
+        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async {
           if (callCount == 0) {
             callCount++;
             return [gearItem1];
@@ -128,7 +128,7 @@ void main() {
         );
 
         var callCount = 0;
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) {
+        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async {
           if (callCount == 0) {
             callCount++;
             return [uncheckedItem];
@@ -167,7 +167,7 @@ void main() {
 
     test('addItem fails gracefully', () async {
       when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => Failure(Exception('Add Failed')));
-      when(() => mockGearRepository.getAllItems()).thenReturn([]);
+      when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => []);
 
       final cubit = GearCubit(mockGearRepository);
       await cubit.loadGear('trip1'); // Prepare tripId

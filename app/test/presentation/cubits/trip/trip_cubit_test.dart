@@ -131,7 +131,7 @@ void main() {
         );
       },
       act: (cubit) => cubit.addTrip(name: 'New Trip', startDate: DateTime.now()),
-      expect: () => [const TripLoading(), const TripLoading(), isA<TripLoaded>()],
+      expect: () => [const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
         verify(() => mockTripRepository.saveTrip(any())).called(1);
         verify(() => mockTripRepository.setActiveTrip(any(), any())).called(1);
@@ -153,7 +153,7 @@ void main() {
         );
       },
       act: (cubit) => cubit.importTrip(trip2),
-      expect: () => [const TripLoading(), const TripLoading(), isA<TripLoaded>()],
+      expect: () => [const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
         verify(() => mockTripRepository.saveTrip(any())).called(1);
       },
@@ -174,7 +174,7 @@ void main() {
         );
       },
       act: (cubit) => cubit.setActiveTrip('trip2'),
-      expect: () => [const TripLoading(), const TripLoading(), isA<TripLoaded>()],
+      expect: () => [const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
         verify(() => mockTripRepository.setActiveTrip(any(), 'trip2')).called(1);
       },

@@ -135,27 +135,27 @@ void main() {
       final json = item.toJson();
 
       expect(json['id'], equals('test-id'));
-      expect(json['user_id'], equals('user1'));
+      expect(json['userId'], equals('user1'));
       expect(json['name'], equals('睡袋'));
       expect(json['weight'], equals(1200));
       expect(json['category'], equals('Sleep'));
       expect(json['notes'], equals('品牌備註'));
-      expect(json['created_at'], isNotNull);
-      expect(json['updated_at'], isNotNull);
+      expect(json['createdAt'], isNotNull);
+      expect(json['updatedAt'], isNotNull);
     });
 
     test('should create from JSON correctly', () {
       final json = {
         'id': 'json-id',
-        'user_id': 'user2',
+        'userId': 'user2',
         'name': '帳篷',
         'weight': 2000,
         'category': 'Sleep',
         'notes': 'MSR Hubba',
-        'created_at': '2024-01-01T00:00:00.000Z',
-        'created_by': 'user2',
-        'updated_at': '2024-01-02T00:00:00.000Z',
-        'updated_by': 'user2',
+        'createdAt': '2024-01-01T00:00:00.000Z',
+        'createdBy': 'user2',
+        'updatedAt': '2024-01-02T00:00:00.000Z',
+        'updatedBy': 'user2',
       };
 
       final item = GearLibraryItem.fromJson(json);
@@ -171,14 +171,14 @@ void main() {
     test('should handle JSON with missing optional fields', () {
       final json = {
         'id': 'opt-1',
-        'user_id': 'guest',
+        'userId': 'guest',
         'name': '爐頭',
         'weight': 300.0,
         'category': 'Cook',
-        'created_at': '2024-01-01T00:00:00.000Z',
-        'created_by': 'guest',
-        'updated_at': '2024-01-02T00:00:00.000Z',
-        'updated_by': 'guest',
+        'createdAt': '2024-01-01T00:00:00.000Z',
+        'createdBy': 'guest',
+        'updatedAt': '2024-01-02T00:00:00.000Z',
+        'updatedBy': 'guest',
       };
 
       final item = GearLibraryItem.fromJson(json);

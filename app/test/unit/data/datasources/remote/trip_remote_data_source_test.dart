@@ -79,14 +79,14 @@ void main() {
 
       final trip = Trip.fromJson({
         'id': 'new-id',
-        'user_id': 'u1',
+        'userId': 'u1',
         'name': 'New',
-        'start_date': '2024-01-01T00:00:00Z',
-        'end_date': '2024-01-05T00:00:00Z',
-        'created_at': '2024-01-01T00:00:00Z',
-        'created_by': 'u1',
-        'updated_at': '2024-01-01T00:00:00Z',
-        'updated_by': 'u1',
+        'startDate': '2024-01-01T00:00:00Z',
+        'endDate': '2024-01-05T00:00:00Z',
+        'createdAt': '2024-01-01T00:00:00Z',
+        'createdBy': 'u1',
+        'updatedAt': '2024-01-01T00:00:00Z',
+        'updatedBy': 'u1',
       });
 
       final result = await dataSource.uploadTrip(trip);
