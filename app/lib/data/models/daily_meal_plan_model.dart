@@ -15,15 +15,13 @@ class DailyMealPlanModel {
   DailyMealPlanModel({required this.day, Map<MealType, List<MealItemModel>>? meals})
     : meals = meals ?? {for (var type in MealType.values) type: []};
 
-  DailyMealPlan toDomain() => DailyMealPlan(
-        day: day,
-        meals: meals.map((key, value) => MapEntry(key, value.map((m) => m.toDomain()).toList())),
-      );
+  DailyMealPlan toDomain() =>
+      DailyMealPlan(day: day, meals: meals.map((key, value) => MapEntry(key, value.map((m) => m.toDomain()).toList())));
 
   factory DailyMealPlanModel.fromDomain(DailyMealPlan entity) => DailyMealPlanModel(
-        day: entity.day,
-        meals: entity.meals.map((key, value) => MapEntry(key, value.map((e) => MealItemModel.fromDomain(e)).toList())),
-      );
+    day: entity.day,
+    meals: entity.meals.map((key, value) => MapEntry(key, value.map((e) => MealItemModel.fromDomain(e)).toList())),
+  );
 
   factory DailyMealPlanModel.fromJson(Map<String, dynamic> json) => _$DailyMealPlanModelFromJson(json);
   Map<String, dynamic> toJson() => _$DailyMealPlanModelToJson(this);

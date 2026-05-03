@@ -57,34 +57,34 @@ class WeatherDataModel extends HiveObject {
   });
 
   WeatherData toDomain() => WeatherData(
-        temperature: temperature,
-        humidity: humidity,
-        rainProbability: rainProbability,
-        windSpeed: windSpeed,
-        condition: condition,
-        sunrise: sunrise,
-        sunset: sunset,
-        timestamp: timestamp,
-        locationName: locationName,
-        dailyForecasts: dailyForecasts.map((f) => f.toDomain()).toList(),
-        apparentTemperature: apparentTemperature,
-        issueTime: issueTime,
-      );
+    temperature: temperature,
+    humidity: humidity,
+    rainProbability: rainProbability,
+    windSpeed: windSpeed,
+    condition: condition,
+    sunrise: sunrise,
+    sunset: sunset,
+    timestamp: timestamp,
+    locationName: locationName,
+    dailyForecasts: dailyForecasts.map((f) => f.toDomain()).toList(),
+    apparentTemperature: apparentTemperature,
+    issueTime: issueTime,
+  );
 
   factory WeatherDataModel.fromDomain(WeatherData entity) => WeatherDataModel(
-        temperature: entity.temperature,
-        humidity: entity.humidity,
-        rainProbability: entity.rainProbability,
-        windSpeed: entity.windSpeed,
-        condition: entity.condition,
-        sunrise: entity.sunrise,
-        sunset: entity.sunset,
-        timestamp: entity.timestamp,
-        locationName: entity.locationName,
-        dailyForecasts: entity.dailyForecasts.map((f) => DailyForecastModel.fromDomain(f)).toList(),
-        apparentTemperature: entity.apparentTemperature,
-        issueTime: entity.issueTime,
-      );
+    temperature: entity.temperature,
+    humidity: entity.humidity,
+    rainProbability: entity.rainProbability,
+    windSpeed: entity.windSpeed,
+    condition: entity.condition,
+    sunrise: entity.sunrise,
+    sunset: entity.sunset,
+    timestamp: entity.timestamp,
+    locationName: entity.locationName,
+    dailyForecasts: entity.dailyForecasts.map((f) => DailyForecastModel.fromDomain(f)).toList(),
+    apparentTemperature: entity.apparentTemperature,
+    issueTime: entity.issueTime,
+  );
 }
 
 @HiveType(typeId: 5)
@@ -125,24 +125,24 @@ class DailyForecastModel extends HiveObject {
   });
 
   DailyForecast toDomain() => DailyForecast(
-        date: date,
-        dayCondition: dayCondition,
-        nightCondition: nightCondition,
-        maxTemp: maxTemp,
-        minTemp: minTemp,
-        rainProbability: rainProbability,
-        maxApparentTemp: maxApparentTemp,
-        minApparentTemp: minApparentTemp,
-      );
+    date: date,
+    dayCondition: dayCondition,
+    nightCondition: nightCondition,
+    maxTemp: maxTemp,
+    minTemp: minTemp,
+    rainProbability: rainProbability,
+    maxApparentTemp: maxApparentTemp,
+    minApparentTemp: minApparentTemp,
+  );
 
   factory DailyForecastModel.fromDomain(DailyForecast entity) => DailyForecastModel(
-        date: entity.date,
-        dayCondition: entity.dayCondition,
-        nightCondition: entity.nightCondition,
-        maxTemp: entity.maxTemp,
-        minTemp: entity.minTemp,
-        rainProbability: entity.rainProbability,
-        maxApparentTemp: entity.maxApparentTemp,
-        minApparentTemp: entity.minApparentTemp,
-      );
+    date: entity.date,
+    dayCondition: entity.dayCondition,
+    nightCondition: entity.nightCondition,
+    maxTemp: entity.maxTemp,
+    minTemp: entity.minTemp,
+    rainProbability: entity.rainProbability,
+    maxApparentTemp: entity.maxApparentTemp,
+    minApparentTemp: entity.minApparentTemp,
+  );
 }

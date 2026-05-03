@@ -62,9 +62,7 @@ class MemberListTile extends StatelessWidget {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: (member.avatar != null && member.avatar!.isNotEmpty) 
-            ? NetworkImage(member.avatar!) 
-            : null,
+        backgroundImage: (member.avatar != null && member.avatar!.isNotEmpty) ? NetworkImage(member.avatar!) : null,
         onBackgroundImageError: (_, _) {},
         child: (member.avatar == null || member.avatar!.isEmpty) ? Text(member.name[0]) : null,
       ),

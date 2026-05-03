@@ -4,13 +4,7 @@ import 'package:summitmate/domain/domain.dart';
 void main() {
   group('GearItem Domain Entity Tests', () {
     test('should create with required values', () {
-      const item = GearItem(
-        id: '1',
-        tripId: 't1',
-        name: 'Tent',
-        weight: 2000,
-        category: 'Sleep',
-      );
+      const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 2000, category: 'Sleep');
 
       expect(item.name, equals('Tent'));
       expect(item.weight, equals(2000));
@@ -19,13 +13,7 @@ void main() {
     });
 
     test('should handle copyWith', () {
-      const item = GearItem(
-        id: '1',
-        tripId: 't1',
-        name: 'Tent',
-        weight: 2000,
-        category: 'Sleep',
-      );
+      const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 2000, category: 'Sleep');
 
       final updatedItem = item.copyWith(isChecked: true);
       expect(updatedItem.isChecked, isTrue);
@@ -33,26 +21,13 @@ void main() {
     });
 
     test('should calculate totalWeight correctly', () {
-      const item = GearItem(
-        id: '1',
-        tripId: 't1',
-        name: 'Tent',
-        weight: 2000,
-        category: 'Sleep',
-        quantity: 2,
-      );
+      const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 2000, category: 'Sleep', quantity: 2);
 
       expect(item.totalWeight, equals(4000));
     });
 
     test('should calculate weightInKg correctly', () {
-      const item = GearItem(
-        id: '1',
-        tripId: 't1',
-        name: 'Tent',
-        weight: 1500,
-        category: 'Sleep',
-      );
+      const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 1500, category: 'Sleep');
 
       expect(item.weightInKg, equals(1.5));
     });

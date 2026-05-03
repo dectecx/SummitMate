@@ -2,12 +2,11 @@ import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/gear_item.dart';
 import '../../domain/repositories/i_gear_repository.dart';
-import '../models/gear_item_model.dart';
 import '../datasources/interfaces/i_gear_local_data_source.dart';
 
 /// Gear Repository 實作
 ///
-/// 位於 Data 層，負責在 Domain Entity 與 Persistence Model 之間進行轉換。
+/// 負責協調本地 Drift 資料來源，處理排序與順序自動計算邏輯。
 @LazySingleton(as: IGearRepository)
 class GearRepository implements IGearRepository {
   final IGearLocalDataSource _localDataSource;
@@ -17,48 +16,38 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> init() async => const Success(null);
 
-  /// 取得所有裝備並轉換為 Entity (依 orderIndex 排序)
+  /// 取得所有裝備 (依 orderIndex 排序)
   @override
-  List<GearItem> getAllItems() {
-    final models = _localDataSource.getAll();
+  Future<List<GearItem>> getAllItems() async {
+    final items = await _localDataSource.getAll();
 
     // 排序邏輯
-    models.sort((a, b) {
-      if (a.orderIndex != null && b.orderIndex != null) {
-        return a.orderIndex!.compareTo(b.orderIndex!);
-      }
-      if (a.orderIndex != null) return -1;
-      if (b.orderIndex != null) return 1;
-      return 0;
-    });
-
-    return models.map((m) => m.toDomain()).toList();
+    items.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
+    return items;
   }
 
   /// 依分類取得裝備
   @override
-  List<GearItem> getItemsByCategory(String category) {
-    return _localDataSource.getByCategory(category).map((m) => m.toDomain()).toList();
+  Future<List<GearItem>> getItemsByCategory(String category) async {
+    return await _localDataSource.getByCategory(category);
   }
 
   /// 新增裝備
   @override
   Future<Result<void, Exception>> addItem(GearItem item) async {
     try {
-      final model = GearItemModel.fromDomain(item);
-
       // 自動設定 orderIndex
-      final existingModels = _localDataSource.getAll();
-      if (existingModels.isNotEmpty) {
-        final maxOrder = existingModels
-            .map((i) => i.orderIndex ?? 0)
+      final existingItems = await _localDataSource.getAll();
+      int newOrderIndex = 0;
+      if (existingItems.isNotEmpty) {
+        final maxOrder = existingItems
+            .map((i) => i.orderIndex)
             .fold<int>(0, (max, current) => current > max ? current : max);
-        model.orderIndex = maxOrder + 1;
-      } else {
-        model.orderIndex = 0;
+        newOrderIndex = maxOrder + 1;
       }
 
-      await _localDataSource.add(model);
+      final itemToSave = item.copyWith(orderIndex: newOrderIndex);
+      await _localDataSource.add(itemToSave);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -69,8 +58,7 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> updateItem(GearItem item) async {
     try {
-      final model = GearItemModel.fromDomain(item);
-      await _localDataSource.update(model);
+      await _localDataSource.update(item);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -92,10 +80,10 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> toggleChecked(String id) async {
     try {
-      final model = _localDataSource.getById(id);
-      if (model != null) {
-        model.isChecked = !model.isChecked;
-        await _localDataSource.update(model);
+      final item = await _localDataSource.getById(id);
+      if (item != null) {
+        final updatedItem = item.copyWith(isChecked: !item.isChecked);
+        await _localDataSource.update(updatedItem);
       }
       return const Success(null);
     } catch (e) {
@@ -107,10 +95,11 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> resetAllChecked() async {
     try {
-      final models = _localDataSource.getAll();
-      for (final model in models) {
-        model.isChecked = false;
-        await _localDataSource.update(model);
+      final items = await _localDataSource.getAll();
+      for (final item in items) {
+        if (item.isChecked) {
+          await _localDataSource.update(item.copyWith(isChecked: false));
+        }
       }
       return const Success(null);
     } catch (e) {
@@ -123,11 +112,9 @@ class GearRepository implements IGearRepository {
   Future<Result<void, Exception>> updateItemsOrder(List<GearItem> items) async {
     try {
       for (int i = 0; i < items.length; i++) {
-        final entity = items[i];
-        final model = _localDataSource.getById(entity.id);
-        if (model != null && model.orderIndex != i) {
-          model.orderIndex = i;
-          await _localDataSource.update(model);
+        final item = items[i];
+        if (item.orderIndex != i) {
+          await _localDataSource.update(item.copyWith(orderIndex: i));
         }
       }
       return const Success(null);
@@ -147,10 +134,10 @@ class GearRepository implements IGearRepository {
     }
   }
 
-  /// 從個人庫匯入預設裝備 (Stub實作，需與 GearLibraryRepository 配合)
+  /// 從個人庫匯入預設裝備 (TODO: 與 GearLibraryRepository 配合)
   @override
   Future<Result<void, Exception>> importFromLibrary(String tripId, List<String> libraryItemIds) async {
-    // 這裡應呼叫 Library 相關 Service 獲取資料並轉入
+    // TODO: 這裡應呼叫 Library 相關 Service 獲取資料並轉入
     return const Success(null);
   }
 }

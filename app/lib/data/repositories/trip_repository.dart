@@ -5,13 +5,9 @@ import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
-import '../models/trip_model.dart';
 import 'package:summitmate/domain/domain.dart';
 
 /// 行程 Repository (支援 Offline-First)
-///
-/// 協調 LocalDataSource (Hive) 與 RemoteDataSource (GCP) 的資料存取。
-/// 處理離線快取、資料同步與成員管理。
 @LazySingleton(as: ITripRepository)
 class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
@@ -29,12 +25,10 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<List<Trip>, Exception>> getAllTrips(String userId) async {
     try {
-      final trips = _localDataSource.getAllTrips()
-          .where((t) => t.userId == userId)
-          .map((t) => t.toDomain())
-          .toList();
-      trips.sort((a, b) => b.startDate.compareTo(a.startDate));
-      return Success(trips);
+      final trips = await _localDataSource.getAllTrips();
+      final userTrips = trips.where((t) => t.userId == userId).toList();
+      userTrips.sort((a, b) => b.startDate.compareTo(a.startDate));
+      return Success(userTrips);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
     }
@@ -43,7 +37,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<Trip?, Exception>> getActiveTrip(String userId) async {
     try {
-      final trip = _localDataSource.getActiveTrip()?.toDomain();
+      final trip = await _localDataSource.getActiveTrip();
       return Success(trip);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -53,7 +47,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<Trip?, Exception>> getTripById(String id) async {
     try {
-      final trip = _localDataSource.getTripById(id)?.toDomain();
+      final trip = await _localDataSource.getTripById(id);
       return Success(trip);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -63,7 +57,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> saveTrip(Trip trip) async {
     try {
-      await _localDataSource.addTrip(TripModel.fromDomain(trip));
+      await _localDataSource.addTrip(trip);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -73,7 +67,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> updateTrip(Trip trip) async {
     try {
-      await _localDataSource.updateTrip(TripModel.fromDomain(trip));
+      await _localDataSource.updateTrip(trip);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -110,7 +104,7 @@ class TripRepository implements ITripRepository {
       final result = await _remoteDataSource.getRemoteTrips(page: page, limit: limit, search: search);
       if (result is Success<PaginatedList<Trip>, Exception>) {
         for (final trip in result.value.items) {
-          await _localDataSource.addTrip(TripModel.fromDomain(trip));
+          await _localDataSource.addTrip(trip);
         }
       }
       return result;
@@ -134,11 +128,9 @@ class TripRepository implements ITripRepository {
     try {
       final result = await _remoteDataSource.getTripDetails(tripId);
       if (result is Success<Trip, Exception>) {
-        await _localDataSource.updateTrip(TripModel.fromDomain(result.value));
+        await _localDataSource.updateTrip(result.value);
       } else if (result is Failure<Trip, Exception>) {
         final error = result.exception;
-        // If 403 Forbidden, it means user lost access (e.g., kicked from group event)
-        // We should delete the local trip data to avoid showing outdated/restricted info.
         if (error is DioException && error.response?.statusCode == 403) {
           LogService.warning('Trip $tripId access denied (403), deleting local data...', source: 'TripRepository');
           await _localDataSource.deleteTrip(tripId);

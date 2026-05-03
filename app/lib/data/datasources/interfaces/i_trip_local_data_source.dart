@@ -1,4 +1,4 @@
-﻿import '../../models/trip_model.dart';
+import '../../../domain/entities/trip.dart';
 
 /// 行程 (TripModel) 的本地資料來源介面
 ///
@@ -6,22 +6,22 @@
 abstract interface class ITripLocalDataSource {
   /// 初始化資料來源
   /// 取得所有行程列表
-  List<TripModel> getAllTrips();
+  Future<List<Trip>> getAllTrips();
 
   /// 透過 ID 取得單一行程
   ///
   /// [id] 行程 ID
-  TripModel? getTripById(String id);
+  Future<Trip?> getTripById(String id);
 
   /// 新增行程
   ///
-  /// [TripModel] 欲新增的行程物件
-  Future<void> addTrip(TripModel trip);
+  /// [trip] 欲新增的行程物件
+  Future<void> addTrip(Trip trip);
 
   /// 更新行程
   ///
-  /// [TripModel] 更新後的行程物件
-  Future<void> updateTrip(TripModel trip);
+  /// [trip] 更新後的行程物件
+  Future<void> updateTrip(Trip trip);
 
   /// 刪除行程
   ///
@@ -34,7 +34,7 @@ abstract interface class ITripLocalDataSource {
   Future<void> setActiveTrip(String tripId);
 
   /// 取得當前活動行程
-  TripModel? getActiveTrip();
+  Future<Trip?> getActiveTrip();
 
   /// 清除所有行程 (登出時使用)
   Future<void> clear();

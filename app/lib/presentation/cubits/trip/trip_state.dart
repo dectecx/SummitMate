@@ -1,4 +1,4 @@
-﻿import 'package:equatable/equatable.dart';
+import 'package:equatable/equatable.dart';
 import 'package:summitmate/domain/domain.dart';
 
 /// 行程狀態基類
@@ -31,17 +31,9 @@ class TripLoaded extends TripState {
   final bool isSyncing;
 
   /// 建構子
-  const TripLoaded({
-    required this.trips,
-    this.activeTrip,
-    this.isSyncing = false,
-  });
+  const TripLoaded({required this.trips, this.activeTrip, this.isSyncing = false});
 
-  TripLoaded copyWith({
-    List<Trip>? trips,
-    Trip? activeTrip,
-    bool? isSyncing,
-  }) {
+  TripLoaded copyWith({List<Trip>? trips, Trip? activeTrip, bool? isSyncing}) {
     return TripLoaded(
       trips: trips ?? this.trips,
       activeTrip: activeTrip ?? this.activeTrip,

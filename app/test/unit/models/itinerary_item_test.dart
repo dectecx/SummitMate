@@ -17,13 +17,7 @@ void main() {
     });
 
     test('should create an instance with provided values', () {
-      const item = ItineraryItem(
-        id: 'id-1',
-        tripId: 'trip_1',
-        day: 'D1',
-        name: '向陽登山口',
-        estTime: '08:00',
-      );
+      const item = ItineraryItem(id: 'id-1', tripId: 'trip_1', day: 'D1', name: '向陽登山口', estTime: '08:00');
 
       expect(item.day, equals('D1'));
       expect(item.name, equals('向陽登山口'));
@@ -57,10 +51,13 @@ void main() {
     });
 
     test('should report checked in when isCheckedIn is true', () {
-      final item = const ItineraryItem(id: 'id-4', tripId: 'trip_1', day: 'D1', name: '', estTime: '').copyWith(
-        isCheckedIn: true,
-        checkedInAt: DateTime.now(),
-      );
+      final item = const ItineraryItem(
+        id: 'id-4',
+        tripId: 'trip_1',
+        day: 'D1',
+        name: '',
+        estTime: '',
+      ).copyWith(isCheckedIn: true, checkedInAt: DateTime.now());
 
       expect(item.isCheckedIn, isTrue);
     });

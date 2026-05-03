@@ -223,19 +223,20 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundImage: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty) ? NetworkImage(_searchResult!.avatar!) : null,
+                backgroundImage: (_searchResult!.avatar != null && _searchResult!.avatar!.isNotEmpty)
+                    ? NetworkImage(_searchResult!.avatar!)
+                    : null,
                 onBackgroundImageError: (_, _) {},
-                child: (_searchResult!.avatar == null || _searchResult!.avatar!.isEmpty) ? Text(_searchResult!.displayName[0]) : null,
+                child: (_searchResult!.avatar == null || _searchResult!.avatar!.isEmpty)
+                    ? Text(_searchResult!.displayName[0])
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _searchResult!.displayName,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                    Text(_searchResult!.displayName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 2),
                     Text(_searchResult!.email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 2),

@@ -1,60 +1,43 @@
-import 'package:hive_ce/hive.dart';
-import '../../models/gear_item_model.dart';
+import '../../../domain/entities/gear_item.dart';
 
-/// 裝備項目 (GearItemModel) 的本地資料來源介面
-///
-/// 負責定義對本地裝備資料庫的 CRUD 操作。
+/// 裝備項目 (GearItem) 的本地資料來源介面
 abstract interface class IGearLocalDataSource {
   /// 取得所有裝備項目
-  List<GearItemModel> getAll();
+  Future<List<GearItem>> getAll();
 
   /// 根據行程 ID 取得裝備清單
-  ///
-  /// [tripId] 行程 ID
-  List<GearItemModel> getByTripId(String tripId);
+  Future<List<GearItem>> getByTripId(String tripId);
 
   /// 根據類別取得裝備清單
-  ///
-  /// [category] 裝備類別
-  List<GearItemModel> getByCategory(String category);
+  Future<List<GearItem>> getByCategory(String category);
 
   /// 取得尚未檢查 (checkbox 未勾選) 的裝備
-  List<GearItemModel> getUnchecked();
+  Future<List<GearItem>> getUnchecked();
 
-  /// 透過 Key 取得單一裝備
-  ///
-  /// [key] 裝備的本地鍵值
-  GearItemModel? getByKey(dynamic key);
+  /// 透過 Key 取得單一裝備 (已廢棄，僅供遷移參考)
+  GearItem? getByKey(dynamic key);
 
   /// 透過 ID 取得單一裝備 (UUID)
-  GearItemModel? getById(String id);
+  Future<GearItem?> getById(String id);
 
-  /// 新增裝備項目，回傳新建的 Key
-  ///
-  /// [item] 欲新增的裝備
-  Future<int> add(GearItemModel item);
+  /// 新增裝備項目
+  Future<int> add(GearItem item);
 
   /// 更新裝備項目
-  ///
-  /// [item] 更新後的裝備
-  Future<void> update(GearItemModel item);
+  Future<void> update(GearItem item);
 
-  /// 刪除裝備項目
-  ///
-  /// [key] 裝備的本地鍵值
+  /// 刪除裝備項目 (透過 Key，已廢棄)
   Future<void> delete(dynamic key);
 
   /// 刪除裝備項目 (透過 ID)
   Future<void> deleteById(String id);
 
   /// 清除指定行程的所有裝備
-  ///
-  /// [tripId] 行程 ID
   Future<void> clearByTripId(String tripId);
 
   /// 清除所有裝備資料
   Future<void> clearAll();
 
   /// 監聽資料變更流
-  Stream<BoxEvent> watch();
+  Stream<List<GearItem>> watch();
 }

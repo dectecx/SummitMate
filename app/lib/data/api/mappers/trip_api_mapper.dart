@@ -70,6 +70,7 @@ class TripApiMapper {
       lastUpdatedAt: trip.updatedAt,
     );
   }
+
   /// TripMemberResponse → TripMember (domain model)
   static TripMember fromMemberResponse(TripMemberResponse response) {
     return TripMember(

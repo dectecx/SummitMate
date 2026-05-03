@@ -3,11 +3,10 @@ import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_message_local_data_source.dart';
 import '../datasources/interfaces/i_message_remote_data_source.dart';
-import '../models/message_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../../infrastructure/tools/log_service.dart';
 
-/// 行程留言板 Repository (支援 Offline-First)
+/// 行程留言板 Repository 實作
 @LazySingleton(as: IMessageRepository)
 class MessageRepository implements IMessageRepository {
   static const String _source = 'MessageRepository';
@@ -23,27 +22,30 @@ class MessageRepository implements IMessageRepository {
   }
 
   @override
-  List<Message> getByTripId(String tripId) {
-    return _localDataSource.getAll().where((m) => m.tripId == tripId).map((m) => m.toDomain()).toList();
+  Future<List<Message>> getByTripId(String tripId) async {
+    final messages = await _localDataSource.getAll();
+    return messages.where((m) => m.tripId == tripId).toList();
   }
 
   @override
   Future<Result<PaginatedList<Message>, Exception>> getRemoteMessages(String tripId, {int? page, int? limit}) async {
-    final result = await _remoteDataSource.getMessages(tripId, page: page, limit: limit);
-    if (result is Success<PaginatedList<Message>, Exception>) {
-      // 緩存到本地
-      for (final entity in result.value.items) {
-        await _localDataSource.add(MessageModel.fromDomain(entity));
+    try {
+      final result = await _remoteDataSource.getMessages(tripId, page: page, limit: limit);
+      if (result is Success<PaginatedList<Message>, Exception>) {
+        for (final entity in result.value.items) {
+          await _localDataSource.add(entity);
+        }
+        return result;
       }
-
-      return result;
+      return Failure((result as Failure).exception);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
     }
-    return Failure((result as Failure).exception);
   }
 
   @override
   Future<Result<void, Exception>> saveLocally(Message message) async {
-    await _localDataSource.add(MessageModel.fromDomain(message));
+    await _localDataSource.add(message);
     return const Success(null);
   }
 
@@ -53,23 +55,17 @@ class MessageRepository implements IMessageRepository {
     required String content,
     String? replyToId,
   }) async {
-    // 遠端新增
     final result = await _remoteDataSource.addMessage(tripId: tripId, content: content, replyToId: replyToId);
-
     if (result is Success<String, Exception>) {
-      // 如果成功，觸發重新獲取最新留言以同步本地資料
-      await getRemoteMessages(tripId);
+      // 成功後嘗試背景更新本地資料
+      getRemoteMessages(tripId);
     }
-
     return result;
   }
 
   @override
   Future<Result<void, Exception>> deleteById(String tripId, String messageId) async {
-    // 1. 本地先刪除
-    await _localDataSource.delete(messageId);
-
-    // 2. 嘗試同步到遠端
+    await _localDataSource.deleteById(messageId);
     try {
       await _remoteDataSource.deleteMessage(tripId, messageId);
       LogService.info('Auto-sync delete message success: $messageId', source: _source);
@@ -82,9 +78,10 @@ class MessageRepository implements IMessageRepository {
 
   @override
   Future<Result<void, Exception>> clearByTripId(String tripId) async {
-    final itemsToDelete = _localDataSource.getAll().where((m) => m.tripId == tripId);
+    final messages = await _localDataSource.getAll();
+    final itemsToDelete = messages.where((m) => m.tripId == tripId);
     for (final item in itemsToDelete) {
-      await _localDataSource.delete(item.id);
+      await _localDataSource.deleteById(item.id);
     }
     return const Success(null);
   }

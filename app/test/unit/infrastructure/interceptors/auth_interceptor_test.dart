@@ -100,7 +100,6 @@ void main() {
         completer.complete();
       });
 
-
       interceptor.onError(error, handler);
 
       await completer.future;

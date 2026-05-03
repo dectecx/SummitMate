@@ -45,36 +45,36 @@ class GearSetModel {
   });
 
   GearSet toDomain() => GearSet(
-        id: id,
-        title: title,
-        author: author,
-        totalWeight: totalWeight,
-        itemCount: itemCount,
-        visibility: visibility,
-        uploadedAt: uploadedAt,
-        createdAt: createdAt,
-        createdBy: createdBy,
-        updatedAt: updatedAt,
-        updatedBy: updatedBy,
-        items: items?.map((i) => i.toDomain()).toList(),
-        meals: meals?.map((m) => m.toDomain()).toList(),
-      );
+    id: id,
+    title: title,
+    author: author,
+    totalWeight: totalWeight,
+    itemCount: itemCount,
+    visibility: visibility,
+    uploadedAt: uploadedAt,
+    createdAt: createdAt,
+    createdBy: createdBy,
+    updatedAt: updatedAt,
+    updatedBy: updatedBy,
+    items: items?.map((i) => i.toDomain()).toList(),
+    meals: meals?.map((m) => m.toDomain()).toList(),
+  );
 
   factory GearSetModel.fromDomain(GearSet entity) => GearSetModel(
-        id: entity.id,
-        title: entity.title,
-        author: entity.author,
-        totalWeight: entity.totalWeight,
-        itemCount: entity.itemCount,
-        visibility: entity.visibility,
-        uploadedAt: entity.uploadedAt,
-        createdAt: entity.createdAt,
-        createdBy: entity.createdBy,
-        updatedAt: entity.updatedAt,
-        updatedBy: entity.updatedBy,
-        items: entity.items?.map((i) => GearItemModel.fromDomain(i)).toList(),
-        meals: entity.meals?.map((m) => DailyMealPlanModel.fromDomain(m)).toList(),
-      );
+    id: entity.id,
+    title: entity.title,
+    author: entity.author,
+    totalWeight: entity.totalWeight,
+    itemCount: entity.itemCount,
+    visibility: entity.visibility,
+    uploadedAt: entity.uploadedAt,
+    createdAt: entity.createdAt,
+    createdBy: entity.createdBy,
+    updatedAt: entity.updatedAt,
+    updatedBy: entity.updatedBy,
+    items: entity.items?.map((i) => GearItemModel.fromDomain(i)).toList(),
+    meals: entity.meals?.map((m) => DailyMealPlanModel.fromDomain(m)).toList(),
+  );
 
   factory GearSetModel.fromJson(Map<String, dynamic> json) => _$GearSetModelFromJson(json);
   Map<String, dynamic> toJson() => _$GearSetModelToJson(this);

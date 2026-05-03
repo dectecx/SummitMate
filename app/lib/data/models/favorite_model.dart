@@ -39,7 +39,7 @@ class FavoriteModel extends HiveObject {
     this.updatedAt,
     this.updatedBy = '',
   });
-  
+
   /// 組合鍵 (用於快取查找)
   String get compositeKey => '${type.name}_$targetId';
 

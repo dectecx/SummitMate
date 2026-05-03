@@ -21,9 +21,7 @@ class MessageRemoteDataSource implements IMessageRemoteDataSource {
     try {
       LogService.info('獲取行程留言列表: $tripId (page: $page, limit: $limit)...', source: _source);
       final response = await _messageApi.listTripMessages(tripId, page: page, limit: limit);
-      final messages = response.items
-          .map((r) => MessageApiMapper.fromResponse(r))
-          .toList();
+      final messages = response.items.map((r) => MessageApiMapper.fromResponse(r)).toList();
       return Success(
         PaginatedList<Message>(
           items: messages,

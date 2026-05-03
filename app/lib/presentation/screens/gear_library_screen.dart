@@ -324,12 +324,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
       builder: (dialogContext) => _GearLibraryItemDialog(
         item: item,
         onSave: (name, weight, category, notes) async {
-          final updatedItem = item.copyWith(
-            name: name,
-            weight: weight,
-            category: category,
-            notes: notes,
-          );
+          final updatedItem = item.copyWith(name: name, weight: weight, category: category, notes: notes);
           await context.read<GearLibraryCubit>().updateItem(updatedItem);
           if (dialogContext.mounted) Navigator.pop(dialogContext);
         },

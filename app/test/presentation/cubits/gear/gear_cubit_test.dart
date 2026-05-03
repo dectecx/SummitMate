@@ -15,7 +15,9 @@ void main() {
 
   setUpAll(() {
     // Fallback registration
-    registerFallbackValue(const GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback', weight: 0, category: 'Other'));
+    registerFallbackValue(
+      const GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback', weight: 0, category: 'Other'),
+    );
   });
 
   setUp(() {
@@ -108,8 +110,22 @@ void main() {
     blocTest<GearCubit, GearState>(
       'toggleChecked calls repo and reloads',
       build: () {
-        const uncheckedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: false, weight: 1000, category: 'Sleep');
-        const checkedItem = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', isChecked: true, weight: 1000, category: 'Sleep');
+        const uncheckedItem = GearItem(
+          id: 'item1',
+          tripId: 'trip1',
+          name: 'Tent',
+          isChecked: false,
+          weight: 1000,
+          category: 'Sleep',
+        );
+        const checkedItem = GearItem(
+          id: 'item1',
+          tripId: 'trip1',
+          name: 'Tent',
+          isChecked: true,
+          weight: 1000,
+          category: 'Sleep',
+        );
 
         var callCount = 0;
         when(() => mockGearRepository.getAllItems()).thenAnswer((_) {

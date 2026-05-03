@@ -112,7 +112,14 @@ void main() {
         when(() => mockRepo.getAll(any())).thenReturn([libItem1]);
 
         // Mock sync logic
-        const linkedGear = GearItem(id: 'g1', name: 'OldName', libraryItemId: 'lib1', tripId: 't1', weight: 1000, category: 'Sleep');
+        const linkedGear = GearItem(
+          id: 'g1',
+          name: 'OldName',
+          libraryItemId: 'lib1',
+          tripId: 't1',
+          weight: 1000,
+          category: 'Sleep',
+        );
         when(() => mockGearRepo.getAllItems()).thenReturn([linkedGear]);
         when(() => mockTripRepo.getTripById('t1')).thenAnswer(
           (_) async => Success(

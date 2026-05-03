@@ -1,6 +1,5 @@
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/core/theme.dart';
-import '../models/settings_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../datasources/interfaces/i_settings_local_data_source.dart';
 
@@ -20,14 +19,14 @@ class SettingsRepository implements ISettingsRepository {
   // ========== Data Operations ==========
 
   @override
-  Settings getSettings() {
+  Future<Settings> getSettings() async {
     if (_cachedSettings == null) {
-      final model = _localDataSource.getSettings();
-      if (model == null) {
+      final settings = await _localDataSource.getSettings();
+      if (settings == null) {
         _cachedSettings = const Settings();
-        _localDataSource.saveSettings(SettingsModel.fromDomain(_cachedSettings!));
+        await _localDataSource.saveSettings(_cachedSettings!);
       } else {
-        _cachedSettings = model.toDomain();
+        _cachedSettings = settings;
       }
     }
     return _cachedSettings!;
@@ -35,41 +34,41 @@ class SettingsRepository implements ISettingsRepository {
 
   @override
   Future<void> updateUsername(String username) async {
-    final settings = getSettings();
+    final settings = await getSettings();
     final newSettings = settings.copyWith(username: username);
-    await _localDataSource.saveSettings(SettingsModel.fromDomain(newSettings));
+    await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateLastSyncTime(DateTime? time) async {
-    final settings = getSettings();
+    final settings = await getSettings();
     final newSettings = settings.copyWith(lastSyncTime: time);
-    await _localDataSource.saveSettings(SettingsModel.fromDomain(newSettings));
+    await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateAvatar(String avatar) async {
-    final settings = getSettings();
+    final settings = await getSettings();
     final newSettings = settings.copyWith(avatar: avatar);
-    await _localDataSource.saveSettings(SettingsModel.fromDomain(newSettings));
+    await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateOfflineMode(bool isOffline) async {
-    final settings = getSettings();
+    final settings = await getSettings();
     final newSettings = settings.copyWith(isOfflineMode: isOffline);
-    await _localDataSource.saveSettings(SettingsModel.fromDomain(newSettings));
+    await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
   }
 
   @override
   Future<void> updateTheme(AppThemeType theme) async {
-    final settings = getSettings();
+    final settings = await getSettings();
     final newSettings = settings.copyWith(theme: theme);
-    await _localDataSource.saveSettings(SettingsModel.fromDomain(newSettings));
+    await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
   }
 

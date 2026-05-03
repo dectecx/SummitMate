@@ -1,4 +1,4 @@
-import '../../models/settings_model.dart';
+import '../../../domain/entities/settings.dart';
 
 /// 設定本地資料來源介面
 ///
@@ -8,12 +8,12 @@ abstract interface class ISettingsLocalDataSource {
   /// 取得設定
   ///
   /// 回傳: 設定物件，若不存在則回傳 null
-  SettingsModel? getSettings();
+  Future<Settings?> getSettings();
 
   /// 儲存設定
   ///
   /// [settings] 欲儲存的設定物件
-  Future<void> saveSettings(SettingsModel settings);
+  Future<void> saveSettings(Settings settings);
 
   /// 清除設定
   ///

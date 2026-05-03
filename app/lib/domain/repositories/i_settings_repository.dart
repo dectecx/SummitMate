@@ -8,7 +8,7 @@ abstract interface class ISettingsRepository {
   // ========== Data Operations ==========
 
   /// 取得設定（若不存在則建立預設值）
-  Settings getSettings();
+  Future<Settings> getSettings();
 
   /// 更新使用者名稱
   ///

@@ -37,9 +37,7 @@ class _TripSnapshotDetailScreenState extends State<TripSnapshotDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // 將 ItineraryItemModel 轉換為 Domain ItineraryItem
-    final items = widget.snapshot.itinerary
-        .where((e) => e.day == _selectedDay)
-        .toList();
+    final items = widget.snapshot.itinerary.where((e) => e.day == _selectedDay).toList();
 
     return Scaffold(
       appBar: AppBar(title: Text('${widget.snapshot.name} - 行程預覽')),

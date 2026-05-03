@@ -31,12 +31,7 @@ class GearLoaded extends GearState {
   final bool showUncheckedOnly;
 
   /// 建構子
-  const GearLoaded({
-    required this.items,
-    this.selectedCategory,
-    this.searchQuery = '',
-    this.showUncheckedOnly = false,
-  });
+  const GearLoaded({required this.items, this.selectedCategory, this.searchQuery = '', this.showUncheckedOnly = false});
 
   /// CopyWith method for updating state
   GearLoaded copyWith({

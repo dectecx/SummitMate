@@ -23,10 +23,7 @@ void main() {
     mockLocalDataSource = MockItineraryLocalDataSource();
     mockRemoteDataSource = MockItineraryRemoteDataSource();
 
-    repository = ItineraryRepository(
-      localDataSource: mockLocalDataSource,
-      remoteDataSource: mockRemoteDataSource,
-    );
+    repository = ItineraryRepository(localDataSource: mockLocalDataSource, remoteDataSource: mockRemoteDataSource);
 
     testItem = const ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point', estTime: '08:00');
     testItemModel = ItineraryItemModel.fromDomain(testItem);

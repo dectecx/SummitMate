@@ -33,8 +33,7 @@ class GearSetRepository implements IGearSetRepository {
 
   /// 刪除雲端裝備組合
   @override
-  Future<Result<bool, Exception>> deleteGearSet(String id, String key) =>
-      _remoteDataSource.deleteGearSet(id, key);
+  Future<Result<bool, Exception>> deleteGearSet(String id, String key) => _remoteDataSource.deleteGearSet(id, key);
 
   /// 上傳裝備組合
   @override
@@ -46,16 +45,15 @@ class GearSetRepository implements IGearSetRepository {
     required List<GearItem> items,
     List<DailyMealPlan>? meals,
     String? key,
-  }) =>
-      _remoteDataSource.uploadGearSet(
-        tripId: tripId,
-        title: title,
-        author: author,
-        visibility: visibility,
-        items: items,
-        meals: meals,
-        key: key,
-      );
+  }) => _remoteDataSource.uploadGearSet(
+    tripId: tripId,
+    title: title,
+    author: author,
+    visibility: visibility,
+    items: items,
+    meals: meals,
+    key: key,
+  );
 
   // --- Local (本地記錄) ---
 

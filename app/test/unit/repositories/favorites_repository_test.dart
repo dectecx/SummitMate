@@ -9,7 +9,6 @@ import 'package:summitmate/data/models/favorite_model.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/favorites_repository.dart';
 
-
 class MockFavoritesLocalDataSource extends Mock implements IFavoritesLocalDataSource {}
 
 class MockFavoritesRemoteDataSource extends Mock implements IFavoritesRemoteDataSource {}

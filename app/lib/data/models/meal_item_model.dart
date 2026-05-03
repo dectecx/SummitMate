@@ -22,23 +22,17 @@ class MealItemModel {
     this.note,
   });
 
-  MealItem toDomain() => MealItem(
-        id: id,
-        name: name,
-        weight: weight,
-        calories: calories,
-        quantity: quantity,
-        note: note,
-      );
+  MealItem toDomain() =>
+      MealItem(id: id, name: name, weight: weight, calories: calories, quantity: quantity, note: note);
 
   factory MealItemModel.fromDomain(MealItem entity) => MealItemModel(
-        id: entity.id,
-        name: entity.name,
-        weight: entity.weight,
-        calories: entity.calories,
-        quantity: entity.quantity,
-        note: entity.note,
-      );
+    id: entity.id,
+    name: entity.name,
+    weight: entity.weight,
+    calories: entity.calories,
+    quantity: entity.quantity,
+    note: entity.note,
+  );
 
   factory MealItemModel.fromJson(Map<String, dynamic> json) => _$MealItemModelFromJson(json);
   Map<String, dynamic> toJson() => _$MealItemModelToJson(this);

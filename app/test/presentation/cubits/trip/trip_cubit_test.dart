@@ -86,7 +86,16 @@ void main() {
     );
 
     test('initial state is TripInitial', () {
-      expect(TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource).state, const TripInitial());
+      expect(
+        TripCubit(
+          mockTripRepository,
+          mockAuthService,
+          mockGearRepository,
+          mockItineraryRepository,
+          mockTripGearRemoteDataSource,
+        ).state,
+        const TripInitial(),
+      );
     });
 
     blocTest<TripCubit, TripState>(
@@ -94,7 +103,13 @@ void main() {
       build: () {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
-        return TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+        return TripCubit(
+          mockTripRepository,
+          mockAuthService,
+          mockGearRepository,
+          mockItineraryRepository,
+          mockTripGearRemoteDataSource,
+        );
       },
       act: (cubit) => cubit.loadTrips(),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
@@ -107,14 +122,16 @@ void main() {
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
         when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+        return TripCubit(
+          mockTripRepository,
+          mockAuthService,
+          mockGearRepository,
+          mockItineraryRepository,
+          mockTripGearRemoteDataSource,
+        );
       },
       act: (cubit) => cubit.addTrip(name: 'New Trip', startDate: DateTime.now()),
-      expect: () => [
-        const TripLoading(),
-        const TripLoading(),
-        isA<TripLoaded>(),
-      ],
+      expect: () => [const TripLoading(), const TripLoading(), isA<TripLoaded>()],
       verify: (_) {
         verify(() => mockTripRepository.saveTrip(any())).called(1);
         verify(() => mockTripRepository.setActiveTrip(any(), any())).called(1);
@@ -127,7 +144,13 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+        return TripCubit(
+          mockTripRepository,
+          mockAuthService,
+          mockGearRepository,
+          mockItineraryRepository,
+          mockTripGearRemoteDataSource,
+        );
       },
       act: (cubit) => cubit.importTrip(trip2),
       expect: () => [const TripLoading(), const TripLoading(), isA<TripLoaded>()],
@@ -142,7 +165,13 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+        return TripCubit(
+          mockTripRepository,
+          mockAuthService,
+          mockGearRepository,
+          mockItineraryRepository,
+          mockTripGearRemoteDataSource,
+        );
       },
       act: (cubit) => cubit.setActiveTrip('trip2'),
       expect: () => [const TripLoading(), const TripLoading(), isA<TripLoaded>()],
@@ -157,7 +186,13 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
         when(() => mockTripRepository.deleteTrip(any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+        return TripCubit(
+          mockTripRepository,
+          mockAuthService,
+          mockGearRepository,
+          mockItineraryRepository,
+          mockTripGearRemoteDataSource,
+        );
       },
       seed: () => TripLoaded(trips: [trip1, trip2], activeTrip: trip2),
       act: (cubit) => cubit.deleteTrip('trip1'),
@@ -173,7 +208,13 @@ void main() {
       when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => const Success(null));
       when(() => mockTripGearRemoteDataSource.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());
 
-      final cubit = TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+      final cubit = TripCubit(
+        mockTripRepository,
+        mockAuthService,
+        mockGearRepository,
+        mockItineraryRepository,
+        mockTripGearRemoteDataSource,
+      );
 
       final result = await cubit.uploadFullTrip(trip1);
 
@@ -187,7 +228,13 @@ void main() {
         () => mockTripRepository.getAllTrips(any()),
       ).thenAnswer((_) async => Failure(GeneralException('Load failed')));
 
-      final cubit = TripCubit(mockTripRepository, mockAuthService, mockGearRepository, mockItineraryRepository, mockTripGearRemoteDataSource);
+      final cubit = TripCubit(
+        mockTripRepository,
+        mockAuthService,
+        mockGearRepository,
+        mockItineraryRepository,
+        mockTripGearRemoteDataSource,
+      );
 
       expectLater(cubit.stream, emitsInOrder([const TripLoading(), isA<TripError>()]));
 

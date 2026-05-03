@@ -52,21 +52,21 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
         final user = authState.user;
         // Verify if current user is indeed the creator/owner (should be for pendingCreate)
         if (widget.trip.userId == user.id) {
-        final localMember = TripMember(
+          final localMember = TripMember(
             userId: user.id,
             name: user.displayName,
             avatar: user.avatar,
             role: RoleConstants.leader,
             joinedAt: DateTime.now(),
-        );
+          );
 
-        setState(() {
-          _members = [localMember];
-          _isLoading = false;
-        });
-        return;
+          setState(() {
+            _members = [localMember];
+            _isLoading = false;
+          });
+          return;
+        }
       }
-    }
     }
 
     try {

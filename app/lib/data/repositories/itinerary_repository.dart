@@ -2,11 +2,10 @@ import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/itinerary_item.dart';
 import '../../domain/repositories/i_itinerary_repository.dart';
-import '../models/itinerary_item_model.dart';
 import '../datasources/interfaces/i_itinerary_local_data_source.dart';
 import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
 
-/// 行程 Repository 實作
+/// 行程節點 Repository 實作
 @LazySingleton(as: IItineraryRepository)
 class ItineraryRepository implements IItineraryRepository {
   final IItineraryLocalDataSource _localDataSource;
@@ -15,8 +14,8 @@ class ItineraryRepository implements IItineraryRepository {
   ItineraryRepository({
     required IItineraryLocalDataSource localDataSource,
     required IItineraryRemoteDataSource remoteDataSource,
-  })  : _localDataSource = localDataSource,
-        _remoteDataSource = remoteDataSource;
+  }) : _localDataSource = localDataSource,
+       _remoteDataSource = remoteDataSource;
 
   @override
   Future<Result<void, Exception>> init() async {
@@ -24,23 +23,19 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   @override
-  List<ItineraryItem> getByTripId(String tripId) {
-    return _localDataSource
-        .getByTripId(tripId)
-        .map((m) => m.toDomain())
-        .toList();
+  Future<List<ItineraryItem>> getByTripId(String tripId) async {
+    return await _localDataSource.getByTripId(tripId);
   }
 
   @override
-  ItineraryItem? getById(String id) {
-    return _localDataSource.getById(id)?.toDomain();
+  Future<ItineraryItem?> getById(String id) async {
+    return await _localDataSource.getById(id);
   }
 
   @override
   Future<Result<void, Exception>> add(ItineraryItem item) async {
     try {
-      final model = ItineraryItemModel.fromDomain(item);
-      await _localDataSource.add(model);
+      await _localDataSource.add(item);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -50,8 +45,7 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> update(ItineraryItem item) async {
     try {
-      final model = ItineraryItemModel.fromDomain(item);
-      await _localDataSource.update(model);
+      await _localDataSource.update(item);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -81,21 +75,23 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> saveAll(List<ItineraryItem> items) async {
     try {
-      // 策略：保留本地打卡紀錄
-      final existingModels = _localDataSource.getAll();
-      final actualTimeMap = {for (var m in existingModels) m.id: (m.actualTime, m.isCheckedIn, m.checkedInAt)};
+      // 策略：保留本地打卡紀錄 (Drift 實作中應考慮 upsert 或手動合併)
+      final existingItems = await _localDataSource.getAll();
+      final localDataMap = {for (var item in existingItems) item.id: item};
 
       await _localDataSource.clear();
 
       for (final item in items) {
-        final model = ItineraryItemModel.fromDomain(item);
-        final localData = actualTimeMap[model.id];
-        if (localData != null) {
-          model.actualTime = localData.$1;
-          model.isCheckedIn = localData.$2;
-          model.checkedInAt = localData.$3;
+        var itemToSave = item;
+        final localItem = localDataMap[item.id];
+        if (localItem != null) {
+          // 合併本地打卡狀態
+          itemToSave = item.copyWith(
+            isCompleted: localItem.isCompleted,
+            // TODO: 若 ItineraryItem 有 actualTime 等屬性，在此合併
+          );
         }
-        await _localDataSource.add(model);
+        await _localDataSource.add(itemToSave);
       }
       return const Success(null);
     } catch (e) {
@@ -106,12 +102,10 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> toggleCheckIn(String id) async {
     try {
-      final model = _localDataSource.getById(id);
-      if (model != null) {
-        model.isCheckedIn = !model.isCheckedIn;
-        model.checkedInAt = model.isCheckedIn ? DateTime.now() : null;
-        model.actualTime = model.checkedInAt;
-        await _localDataSource.update(model);
+      final item = await _localDataSource.getById(id);
+      if (item != null) {
+        final updatedItem = item.copyWith(isCompleted: !item.isCompleted);
+        await _localDataSource.update(updatedItem);
         return const Success(null);
       }
       return const Failure(GeneralException('Item not found'));
@@ -122,12 +116,9 @@ class ItineraryRepository implements IItineraryRepository {
 
   @override
   Future<Result<void, Exception>> sync(String tripId) async {
-    // Basic sync logic: Fetch from remote and save to local
     try {
       final remoteItems = await _remoteDataSource.getItinerary(tripId);
-      for (final item in remoteItems) {
-        await _localDataSource.add(ItineraryItemModel.fromDomain(item));
-      }
+      await saveAll(remoteItems);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

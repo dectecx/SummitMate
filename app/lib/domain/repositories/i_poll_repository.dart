@@ -12,7 +12,7 @@ abstract interface class IPollRepository {
   /// 從本地取得行程投票
   ///
   /// [tripId] 行程 ID
-  List<Poll> getByTripId(String tripId);
+  Future<List<Poll>> getByTripId(String tripId);
 
   /// 同步：從雲端拉取分頁資料並更新本地
   ///

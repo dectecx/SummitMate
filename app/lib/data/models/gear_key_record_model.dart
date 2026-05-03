@@ -12,26 +12,16 @@ class GearKeyRecordModel {
   @JsonKey(fromJson: _parseDateTime, toJson: _dateTimeToJson)
   final DateTime uploadedAt;
 
-  GearKeyRecordModel({
-    required this.key,
-    required this.title,
-    required this.visibility,
-    required this.uploadedAt,
-  });
+  GearKeyRecordModel({required this.key, required this.title, required this.visibility, required this.uploadedAt});
 
-  GearKeyRecord toDomain() => GearKeyRecord(
-        key: key,
-        title: title,
-        visibility: visibility,
-        uploadedAt: uploadedAt,
-      );
+  GearKeyRecord toDomain() => GearKeyRecord(key: key, title: title, visibility: visibility, uploadedAt: uploadedAt);
 
   factory GearKeyRecordModel.fromDomain(GearKeyRecord entity) => GearKeyRecordModel(
-        key: entity.key,
-        title: entity.title,
-        visibility: entity.visibility,
-        uploadedAt: entity.uploadedAt,
-      );
+    key: entity.key,
+    title: entity.title,
+    visibility: entity.visibility,
+    uploadedAt: entity.uploadedAt,
+  );
 
   factory GearKeyRecordModel.fromJson(Map<String, dynamic> json) => _$GearKeyRecordModelFromJson(json);
   Map<String, dynamic> toJson() => _$GearKeyRecordModelToJson(this);

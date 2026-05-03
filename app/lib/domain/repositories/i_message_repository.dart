@@ -12,7 +12,7 @@ abstract interface class IMessageRepository {
   /// 從本地取得行程留言
   ///
   /// [tripId] 行程 ID
-  List<Message> getByTripId(String tripId);
+  Future<List<Message>> getByTripId(String tripId);
 
   /// 從雲端取得分頁留言
   ///

@@ -10,10 +10,7 @@ part 'daily_meal_plan.g.dart';
 abstract class DailyMealPlan with _$DailyMealPlan {
   const DailyMealPlan._();
 
-  const factory DailyMealPlan({
-    required String day,
-    @Default({}) Map<MealType, List<MealItem>> meals,
-  }) = _DailyMealPlan;
+  const factory DailyMealPlan({required String day, @Default({}) Map<MealType, List<MealItem>> meals}) = _DailyMealPlan;
 
   double get totalWeight =>
       meals.values.expand((items) => items).fold(0.0, (sum, item) => sum + (item.weight * item.quantity));

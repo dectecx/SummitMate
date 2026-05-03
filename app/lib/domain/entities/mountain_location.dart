@@ -41,11 +41,7 @@ abstract class MountainLocation with _$MountainLocation {
 /// 山岳相關連結實體 (Domain Entity)
 @freezed
 abstract class MountainLink with _$MountainLink {
-  const factory MountainLink({
-    required LinkType type,
-    required String title,
-    required String url,
-  }) = _MountainLink;
+  const factory MountainLink({required LinkType type, required String title, required String url}) = _MountainLink;
 
   factory MountainLink.fromJson(Map<String, dynamic> json) => _$MountainLinkFromJson(json);
 }

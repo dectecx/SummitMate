@@ -1,45 +1,40 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_ce/hive.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/data/models/settings_model.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/settings_repository.dart';
 import 'package:summitmate/data/datasources/interfaces/i_settings_local_data_source.dart';
 
 // Mocks
 class MockSettingsLocalDataSource extends Mock implements ISettingsLocalDataSource {}
 
+class FakeSettings extends Fake implements Settings {}
+
 void main() {
   late SettingsRepository repository;
   late MockSettingsLocalDataSource mockDataSource;
 
   setUpAll(() {
-    registerFallbackValue(SettingsModel());
+    registerFallbackValue(FakeSettings());
   });
 
   setUp(() {
     mockDataSource = MockSettingsLocalDataSource();
 
     // Default behaviors
-    when(() => mockDataSource.getSettings()).thenReturn(null);
+    when(() => mockDataSource.getSettings()).thenAnswer((_) async => null);
     when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
-    // Inject mock via constructor (automatically calls getSettings)
     repository = SettingsRepository(localDataSource: mockDataSource);
   });
 
   group('SettingsRepository', () {
-    test('constructor should preload settings from DataSource', () async {
-      // Assert
-      verify(() => mockDataSource.getSettings()).called(1);
-    });
-
     test('getSettings() returns existing settings if present', () async {
       // Arrange
-      final model = SettingsModel(username: 'Test User');
-      when(() => mockDataSource.getSettings()).thenReturn(model);
+      const model = Settings(username: 'Test User');
+      when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
 
       // Act
-      final result = repository.getSettings();
+      final result = await repository.getSettings();
 
       // Assert
       expect(result.username, 'Test User');
@@ -47,11 +42,11 @@ void main() {
 
     test('getSettings() creates default settings if missing', () async {
       // Arrange
-      when(() => mockDataSource.getSettings()).thenReturn(null);
+      when(() => mockDataSource.getSettings()).thenAnswer((_) async => null);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
-      final result = repository.getSettings();
+      final result = await repository.getSettings();
 
       // Assert
       expect(result.username, ''); // Default
@@ -61,8 +56,8 @@ void main() {
 
     test('updateUsername() updates settings and saves', () async {
       // Arrange
-      final model = SettingsModel();
-      when(() => mockDataSource.getSettings()).thenReturn(model);
+      const model = Settings();
+      when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
@@ -70,14 +65,14 @@ void main() {
 
       // Assert
       verify(
-        () => mockDataSource.saveSettings(any(that: isA<SettingsModel>().having((s) => s.username, 'username', 'New Name'))),
+        () => mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.username, 'username', 'New Name'))),
       ).called(1);
     });
 
     test('updateOfflineMode() updates value and saves', () async {
       // Arrange
-      final model = SettingsModel();
-      when(() => mockDataSource.getSettings()).thenReturn(model);
+      const model = Settings();
+      when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
@@ -86,15 +81,15 @@ void main() {
       // Assert
       verify(
         () => mockDataSource.saveSettings(
-          any(that: isA<SettingsModel>().having((s) => s.isOfflineMode, 'isOfflineMode', true)),
+          any(that: isA<Settings>().having((s) => s.isOfflineMode, 'isOfflineMode', true)),
         ),
       ).called(1);
     });
 
     test('updateAvatar() updates avatar and saves', () async {
       // Arrange
-      final model = SettingsModel();
-      when(() => mockDataSource.getSettings()).thenReturn(model);
+      const model = Settings();
+      when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
 
       // Act
@@ -102,14 +97,14 @@ void main() {
 
       // Assert
       verify(
-        () => mockDataSource.saveSettings(any(that: isA<SettingsModel>().having((s) => s.avatar, 'avatar', '🦊'))),
+        () => mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.avatar, 'avatar', '🦊'))),
       ).called(1);
     });
 
     test('updateLastSyncTime() updates time and saves', () async {
       // Arrange
-      final model = SettingsModel();
-      when(() => mockDataSource.getSettings()).thenReturn(model);
+      const model = Settings();
+      when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
       final time = DateTime(2023, 1, 1);
 
@@ -119,7 +114,7 @@ void main() {
       // Assert
       verify(
         () =>
-            mockDataSource.saveSettings(any(that: isA<SettingsModel>().having((s) => s.lastSyncTime, 'lastSyncTime', time))),
+            mockDataSource.saveSettings(any(that: isA<Settings>().having((s) => s.lastSyncTime, 'lastSyncTime', time))),
       ).called(1);
     });
 
@@ -132,16 +127,6 @@ void main() {
 
       // Assert
       verify(() => mockDataSource.clear()).called(1);
-    });
-
-    test('watchSettings() returns empty stream (DataSource pattern)', () async {
-      // Arrange
-      // Act
-      final result = repository.watchSettings();
-
-      // Assert
-      // With DataSource pattern, watchSettings returns empty stream
-      expect(result, isA<Stream<BoxEvent>>());
     });
   });
 }

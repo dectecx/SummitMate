@@ -18,15 +18,20 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> loadSettings() async {
     emit(SettingsLoading());
     try {
-      final settings = _repository.getSettings();
+      final settings = await _repository.getSettings();
       // 向下相容: 從 Prefs 讀取 username 如果 Settings 裡沒有
       if (settings.username.isEmpty) {
         final savedUsername = _prefs.getString(PrefKeys.username);
         if (savedUsername != null && savedUsername.isNotEmpty) {
           await _repository.updateUsername(savedUsername);
           // 重新載入設定
-          final updatedSettings = _repository.getSettings();
-          emit(SettingsLoaded(settings: updatedSettings, hasSeenOnboarding: _prefs.getBool('has_seen_onboarding') ?? false));
+          final updatedSettings = await _repository.getSettings();
+          emit(
+            SettingsLoaded(
+              settings: updatedSettings,
+              hasSeenOnboarding: _prefs.getBool('has_seen_onboarding') ?? false,
+            ),
+          );
           return;
         }
       }
@@ -54,7 +59,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       await _prefs.setString(PrefKeys.username, username);
 
       // 重新載入設定以取得更新後的物件
-      final updatedSettings = _repository.getSettings();
+      final updatedSettings = await _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update username: $e', source: _source);
@@ -72,7 +77,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     try {
       await _repository.updateAvatar(avatar);
-      final updatedSettings = _repository.getSettings();
+      final updatedSettings = await _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update avatar: $e', source: _source);
@@ -94,7 +99,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       await _repository.updateAvatar(avatar);
       await _prefs.setString(PrefKeys.username, name);
 
-      final updatedSettings = _repository.getSettings();
+      final updatedSettings = await _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update profile: $e', source: _source);
@@ -116,7 +121,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       // 2. 執行實際儲存
       await _repository.updateOfflineMode(newStatus);
       // 3. 儲存後再次確認狀態 (以防 repository 內部有其他邏輯或需要同步最新物件)
-      final updatedSettings = _repository.getSettings();
+      final updatedSettings = await _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to toggle offline mode: $e', source: _source);
@@ -135,7 +140,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     try {
       await _repository.updateLastSyncTime(time);
-      final updatedSettings = _repository.getSettings();
+      final updatedSettings = await _repository.getSettings();
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update last sync time: $e', source: _source);
@@ -183,7 +188,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       LogService.info('Update theme: $theme', source: _source);
 
       await _repository.updateTheme(theme);
-      final updatedSettings = _repository.getSettings();
+      final updatedSettings = await _repository.getSettings();
 
       emit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
