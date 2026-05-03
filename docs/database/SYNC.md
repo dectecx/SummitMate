@@ -1,6 +1,6 @@
 # 同步機制 (Sync Mechanism)
 
-SummitMate 採用 **Offline-First** 策略，所有操作優先寫入本地 Hive，再背景同步至雲端。
+SummitMate 採用 **Offline-First** 策略，所有操作優先寫入本地 Drift (SQLite)，再背景同步至雲端。
 
 ---
 
@@ -10,25 +10,25 @@ SummitMate 採用 **Offline-First** 策略，所有操作優先寫入本地 Hive
 sequenceDiagram
     participant App
     participant SyncService
-    participant Hive as Local (Hive)
-    participant GAS as Remote (GAS)
+    participant Local as Local (Drift)
+    participant Remote as Remote (Go API)
 
     App->>SyncService: syncAll()
 
     Note over SyncService: Phase 1: Push
-    SyncService->>Hive: getPending()
-    Hive-->>SyncService: pendingItems
+    SyncService->>Local: getPending()
+    Local-->>SyncService: pendingItems
 
     loop Each Item
-        SyncService->>GAS: push(item)
-        GAS-->>SyncService: ok
-        SyncService->>Hive: markSynced(item)
+        SyncService->>Remote: push(item)
+        Remote-->>SyncService: ok
+        SyncService->>Local: markSynced(item)
     end
 
     Note over SyncService: Phase 2: Pull
-    SyncService->>GAS: fetchLatest(since)
-    GAS-->>SyncService: remoteItems
-    SyncService->>Hive: upsert(items)
+    SyncService->>Remote: fetchLatest(since)
+    Remote-->>SyncService: remoteItems
+    SyncService->>Local: upsert(items)
 
     SyncService-->>App: SyncResult
 ```
@@ -59,11 +59,11 @@ stateDiagram-v2
 
 ## 同步策略
 
-| 情境     | 策略                    |
-| :------- | :---------------------- |
-| 線上     | 先讀 cache，背景 fetch  |
-| 離線     | 只讀 Hive，禁止寫入雲端 |
-| 恢復連線 | 自動同步 (5分鐘節流)    |
+| 情境     | 策略                         |
+| :------- | :--------------------------- |
+| 線上     | 先讀 cache，背景 fetch       |
+| 離線     | 只讀 Drift，緩存寫入雲端任務 |
+| 恢復連線 | 自動同步 (5分鐘節流)         |
 
 ---
 

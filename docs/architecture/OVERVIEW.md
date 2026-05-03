@@ -13,15 +13,16 @@ graph TD
     User[使用者] <--> FlutterApp[Flutter App]
 
     subgraph Local ["本地端"]
-        FlutterApp <--> Hive[(Hive Database)]
+        FlutterApp <--> Drift[(Drift SQLite)]
         FlutterApp <--> SecureStorage[Secure Storage]
     end
 
     subgraph GoBackend ["Go Backend (主要)"]
         FlutterApp -- "REST (JSON)" --> ChiRouter[Chi Router]
-        ChiRouter --> Handlers[Handlers]
-        Handlers --> Services[Services]
-        Services --> PgPool[(PostgreSQL)]
+        ChiRouter --> APIAdapter[API Adapters]
+        APIAdapter --> Domain[Domain (Handlers, Services)]
+        Domain --> Repo[Repositories]
+        Repo --> PgPool[(PostgreSQL)]
     end
 
     subgraph GASBackend ["GAS Backend (Legacy)"]
@@ -30,7 +31,7 @@ graph TD
     end
 ```
 
-### Go Backend 內部分層
+### Go Backend 內部分層 (Domain-Driven Design)
 
 ```mermaid
 graph LR
@@ -41,23 +42,19 @@ graph LR
     end
 
     subgraph internal
-        Config[config]
-        Logger[logger]
-        MW[middleware]
-        Auth[auth]
-        Handler[handler]
-        Service[service]
-        Repo[repository]
-        Model[model]
-        AppError[apperror]
-        DB[database]
+        App[app]
+        Common[common]
+        subgraph Domains
+            Trip[trip]
+            Auth[auth]
+            Interaction[interaction]
+            GroupEvent[groupevent]
+        end
     end
 
-    API --> Config & Logger & MW & Handler
-    Handler --> Service
-    Service --> Repo
-    Repo --> DB
-    Auth --> Model
+    API --> App
+    App --> Domains
+    Domains --> Common
 ```
 
 ---
@@ -68,10 +65,10 @@ graph LR
 | :----------------- | :------------------------------------------------ |
 | Frontend Framework | Flutter 3.x (Dart 3.x)                            |
 | Platforms          | iOS, Android, Web (CanvasKit)                     |
-| Local DB           | Hive (NoSQL)                                      |
-| State Management   | flutter_bloc (Cubit) + Provider                   |
-| API Layer (FE)    | Retrofit + Dio + Freezed (Code-Gen)               |
-| DI / Service Loc. | Injectable + GetIt                                |
+| Local DB           | Drift (SQLite)                                    |
+| State Management   | flutter_bloc (Cubit)                              |
+| API Layer (FE)     | Retrofit + Dio + Freezed (Code-Gen)               |
+| DI / Service Loc.  | Injectable + GetIt                                |
 | Backend (Primary)  | Go 1.26 + Chi v5 + PostgreSQL                     |
 | Backend (Legacy)   | Google Apps Script + Google Sheets                |
 | API Style          | OpenAPI 3.0 (Code-Gen via oapi-codegen)           |

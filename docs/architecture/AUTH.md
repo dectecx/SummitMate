@@ -12,7 +12,7 @@ graph TD
         AuthCubit
     end
     subgraph Service
-        IAuthService --> GasAuthService["GasAuthService (Go Backend)"]
+        IAuthService --> FlutterAuth["AuthService (Flutter)"]
         IAuthService -.-> FutureImpl["Firebase / Other (可抽換)"]
     end
     subgraph Data
@@ -27,8 +27,8 @@ graph TD
     end
 
     AuthCubit --> IAuthService
-    GasAuthService --> AuthSessionRepo
-    GasAuthService --> AuthHandler
+    FlutterAuth --> AuthSessionRepo
+    FlutterAuth --> AuthHandler
 ```
 
 ---
@@ -151,13 +151,13 @@ flowchart TD
 
 ## 後端實作對照
 
-| Go Backend 元件      | 檔案                               | 職責                         |
-| :------------------- | :--------------------------------- | :--------------------------- |
-| `TokenManager`       | `internal/auth/jwt.go`             | JWT 簽發與驗證               |
-| `Password`           | `internal/auth/password.go`        | bcrypt 雜湊與比對            |
-| `AuthService`        | `internal/service/auth_service.go` | 註冊/登入/刷新/驗證/帳號管理 |
-| `AuthHandler`        | `internal/handler/auth_handler.go` | HTTP 請求處理                |
-| `JWTAuth Middleware` | `internal/middleware/jwt_auth.go`  | 請求級 JWT 驗證              |
+| Go Backend 元件      | 檔案                             | 職責                         |
+| :------------------- | :------------------------------- | :--------------------------- |
+| `TokenManager`       | `internal/auth/jwt.go`           | JWT 簽發與驗證               |
+| `Password`           | `internal/auth/password.go`      | bcrypt 雜湊與比對            |
+| `AuthService`        | `internal/auth/service.go`       | 註冊/登入/刷新/驗證/帳號管理 |
+| `AuthHandler`        | `internal/auth/handler.go`       | HTTP 請求處理                |
+| `JWTAuth Middleware` | `internal/common/middleware/...` | 請求級 JWT 驗證              |
 
 ---
 
@@ -173,4 +173,4 @@ abstract class IAuthService {
 }
 ```
 
-抽換作法：修改 `lib/core/di.dart` 中的 `IAuthService` 註冊即可替換認證後端。
+抽換作法：修改 `lib/core/di/injection.dart` (與 `@Injectable` 標籤) 中的 `IAuthService` 註冊即可替換認證後端。

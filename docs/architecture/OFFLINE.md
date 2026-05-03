@@ -9,29 +9,29 @@
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation Layer"]
-        P1["Providers"]
+        C1["Cubits"]
         UI["Screens/Widgets"]
     end
 
     subgraph Services["Services Layer"]
         CS["ConnectivityService"]
-        AS["GasAuthService"]
+        AS["AuthService"]
         SS["SyncService"]
     end
 
     subgraph Data["Data Layer"]
         REPO["Repositories"]
-        HIVE["Hive (Local)"]
-        API["GAS API (Remote)"]
+        DB["Drift SQLite (Local)"]
+        API["Go API (Remote)"]
     end
 
-    UI --> P1
-    P1 --> CS
-    P1 --> SS
+    UI --> C1
+    C1 --> CS
+    C1 --> SS
     AS --> CS
     SS --> CS
     SS --> REPO
-    REPO --> HIVE
+    REPO --> DB
     SS --> API
 ```
 
@@ -65,15 +65,15 @@ if (getIt<ConnectivityService>().isOffline) {
 
 ### 登出時
 
-| 資料類型            | 行為                      |
-| ------------------- | ------------------------- |
-| Provider 記憶體狀態 | **清除** (呼叫 `reset()`) |
-| Session Token       | **清除**                  |
-| Hive 本地資料       | **保留** (供離線登入使用) |
+| 資料類型         | 行為                       |
+| ---------------- | -------------------------- |
+| Cubit 記憶體狀態 | **清除** (發送 ResetState) |
+| Session Token    | **清除**                   |
+| Drift 本地資料   | **保留** (供離線登入使用)  |
 
 ### 手動清除
 
-透過開發選項的「清除本地資料」功能，完整清除所有 Hive 資料。
+透過開發選項的「清除本地資料」功能，完整清除所有 Drift (SQLite) 資料。
 
 ---
 
@@ -120,7 +120,7 @@ if (tokenAge < OfflineConfig.offlineGracePeriod) {
 | 情境     | 策略                         |
 | -------- | ---------------------------- |
 | 線上模式 | 先讀本地快取，背景同步遠端   |
-| 離線模式 | 只讀本地 Hive，禁用寫入操作  |
+| 離線模式 | 只讀本地 Drift，禁用寫入操作 |
 | 恢復連線 | 自動觸發同步 (有 5 分鐘節流) |
 
 ### 同步節流
@@ -139,7 +139,7 @@ static const Duration syncThrottleDuration = Duration(minutes: syncThrottleMinut
 採用 **Infrastructure 層內部處理** 方式，各 Service Impl 自行決定離線行為：
 
 ```dart
-class GasSyncServiceImpl implements ISyncService {
+class SyncService implements ISyncService {
   final ConnectivityService _connectivity;
 
   @override
@@ -164,12 +164,12 @@ class GasSyncServiceImpl implements ISyncService {
 
 ## 相關檔案
 
-| 功能           | 檔案                                         |
-| -------------- | -------------------------------------------- |
-| 離線常數       | `lib/core/offline_config.dart`               |
-| 離線判斷       | `lib/services/connectivity_service.dart`     |
-| 離線例外       | `lib/core/exceptions/offline_exception.dart` |
-| 離線登入       | `lib/services/gas_auth_service.dart`         |
-| 同步服務       | `lib/services/sync_service.dart`             |
-| Provider Reset | `lib/presentation/providers/*.dart`          |
-| DI 註冊        | `lib/core/di.dart`                           |
+| 功能        | 檔案                                            |
+| ----------- | ----------------------------------------------- |
+| 離線常數    | `lib/core/offline_config.dart`                  |
+| 離線判斷    | `lib/services/connectivity_service.dart`        |
+| 離線例外    | `lib/core/exceptions/offline_exception.dart`    |
+| 離線登入    | `lib/infrastructure/services/auth_service.dart` |
+| 同步服務    | `lib/infrastructure/services/sync_service.dart` |
+| Cubit Reset | `lib/presentation/cubits/*/`                    |
+| DI 註冊     | `lib/core/di/injection.dart`                    |

@@ -33,13 +33,13 @@ graph TB
 
     subgraph Data["資料層 (Data)"]
         Repos["Repositories"]
-        LocalDS["Local DataSources"]
-        RemoteDS["Remote DataSources"]
-        Hive[(Hive DB)]
+        LocalDS["Local DataSources (DAOs)"]
+        RemoteDS["Remote DataSources (Retrofit)"]
+        Drift[(Drift SQLite)]
     end
 
     subgraph Core["核心層 (Core)"]
-        DI["GetIt DI"]
+        DI["Injectable DI"]
         PermSvc["PermissionService"]
         Theme["ThemeProvider"]
     end
@@ -65,7 +65,7 @@ graph TB
 
     %% Data flow
     Repos --> LocalDS & RemoteDS
-    LocalDS --> Hive
+    LocalDS --> Drift
     RemoteDS --> ApiClient
 
     %% Core provides
@@ -132,7 +132,7 @@ graph TB
 | `GearCubit`        | 個人裝備  | GearRepository        |
 | `GearLibraryCubit` | 裝備庫    | GearLibraryRepository |
 | `MessageCubit`     | 留言板    | MessageRepository     |
-| `PollCubit`        | 投票      | IPollService          |
+| `PollCubit`        | 投票      | PollRepository        |
 | `MealCubit`        | 餐點規劃  | 記憶體                |
 | `GroupEventCubit`  | 揪團      | GroupEventRepository  |
 | `FavoritesCubit`   | 最愛      | FavoritesRepository   |
