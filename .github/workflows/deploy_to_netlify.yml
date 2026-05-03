@@ -35,8 +35,11 @@ jobs:
       - name: 📦 Install Dependencies
         run: flutter pub get
 
-      - name: ⚙️ Generate Code (Hive/JSON)
+      - name: ⚙️ Generate Code (JSON/Drift)
         run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: ⚙️ Compile Drift Web Worker
+        run: dart compile js web/drift_worker.dart -o web/drift_worker.js
 
       - name: 🏗️ Build Web App
         run: flutter build web --release --base-href "/" --dart-define-from-file=.env.prod

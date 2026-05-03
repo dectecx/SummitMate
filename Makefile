@@ -20,6 +20,10 @@ api-gen:
 app-get:
 	cd app && flutter pub get
 
-## 重新產生 Flutter 程式碼 (Freezed, Retrofit, Hive, json_serializable, injectable)
+## 重新產生 Flutter 程式碼 (Freezed, Retrofit, Drift, json_serializable, injectable)
 app-gen:
 	cd app && dart run build_runner build --delete-conflicting-outputs
+
+## 編譯 Drift Web Worker (Web 平台需要)
+app-worker:
+	cd app && dart compile js web/drift_worker.dart -o web/drift_worker.js
