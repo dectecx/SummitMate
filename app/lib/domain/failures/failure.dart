@@ -21,7 +21,7 @@ class NetworkFailure extends Failure {
   const NetworkFailure([super.message = '網路連線異常，請檢查您的網路設定']) : super(code: 'NETWORK_ERROR');
 }
 
-/// 快取錯誤 (Hive 讀寫錯誤)
+/// 快取錯誤 (本地資料庫讀寫錯誤)
 class CacheFailure extends Failure {
   const CacheFailure(super.message, {super.code});
 }

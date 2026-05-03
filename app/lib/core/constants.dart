@@ -1,6 +1,5 @@
 library;
 
-export 'constants/hive_box_names.dart';
 export 'constants/api_constants.dart';
 export 'constants/app_constants.dart';
 export 'constants/domain_constants.dart';

@@ -36,7 +36,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         return;
       }
 
-      final tripItems = _repository.getByTripId(currentTripId);
+      final tripItems = await _repository.getByTripId(currentTripId);
 
       final tripResult = await _tripRepository.getTripById(currentTripId);
       final activeTrip = switch (tripResult) {
@@ -129,7 +129,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     await _tripRepository.updateTrip(updatedTrip);
 
     // 2. 批次更新 Item 的 day 欄位
-    final tripItems = _repository.getByTripId(trip.id).where((i) => i.day == oldName);
+    final tripItems = (await _repository.getByTripId(trip.id)).where((i) => i.day == oldName);
     for (var item in tripItems) {
       final updatedItem = item.copyWith(day: newName, updatedAt: DateTime.now());
       await _repository.update(updatedItem);
@@ -148,7 +148,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
 
-    final hasItems = _repository.getByTripId(trip.id).any((i) => i.day == name);
+    final hasItems = (await _repository.getByTripId(trip.id)).any((i) => i.day == name);
     if (hasItems) {
       emit(ItineraryError('無法刪除 "$name"，請先清空該天行程'));
       await loadItinerary();
@@ -208,7 +208,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   /// 指定時間簽到
   Future<void> checkInWithTime(String id, DateTime time) async {
     try {
-      final item = _repository.getById(id);
+      final item = await _repository.getById(id);
       if (item == null) return;
 
       final updatedItem = item.copyWith(

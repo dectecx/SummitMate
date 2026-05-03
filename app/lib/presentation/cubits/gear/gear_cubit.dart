@@ -37,7 +37,7 @@ class GearCubit extends Cubit<GearState> {
     emit(const GearLoading());
 
     try {
-      final tripItems = _repository.getAllItems().where((i) => i.tripId == tripId).toList();
+      final tripItems = (await _repository.getAllItems()).where((i) => i.tripId == tripId).toList();
 
       emit(GearLoaded(items: tripItems));
       LogService.debug('Loaded ${tripItems.length} gear items for trip $tripId', source: _source);
@@ -48,9 +48,9 @@ class GearCubit extends Cubit<GearState> {
   }
 
   /// 重新載入當前行程的裝備
-  void reload() {
+  Future<void> reload() async {
     if (_currentTripId != null) {
-      final tripItems = _repository.getAllItems().where((i) => i.tripId == _currentTripId).toList();
+      final tripItems = (await _repository.getAllItems()).where((i) => i.tripId == _currentTripId).toList();
 
       if (state is GearLoaded) {
         emit((state as GearLoaded).copyWith(items: tripItems));
@@ -121,7 +121,7 @@ class GearCubit extends Cubit<GearState> {
 
       final result = await _repository.addItem(item);
       if (result is Failure) throw result.exception;
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to add item: $e', source: _source);
       emit(GearError(AppErrorHandler.getUserMessage(e)));
@@ -133,7 +133,7 @@ class GearCubit extends Cubit<GearState> {
     try {
       final result = await _repository.updateItem(item);
       if (result is Failure) throw result.exception;
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to update item: $e', source: _source);
       emit(GearError(AppErrorHandler.getUserMessage(e)));
@@ -147,7 +147,7 @@ class GearCubit extends Cubit<GearState> {
       final updatedItem = item.copyWith(quantity: quantity);
       final result = await _repository.updateItem(updatedItem);
       if (result is Failure) throw result.exception;
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to update quantity: $e', source: _source);
       emit(GearError(AppErrorHandler.getUserMessage(e)));
@@ -161,7 +161,7 @@ class GearCubit extends Cubit<GearState> {
     try {
       final result = await _repository.deleteItem(id);
       if (result is Failure) throw result.exception;
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to delete item: $e', source: _source);
       emit(GearError(AppErrorHandler.getUserMessage(e)));
@@ -173,7 +173,7 @@ class GearCubit extends Cubit<GearState> {
     try {
       final result = await _repository.toggleChecked(id);
       if (result is Failure) throw result.exception;
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to toggle checked: $e', source: _source);
       emit(GearError(AppErrorHandler.getUserMessage(e)));
@@ -214,7 +214,7 @@ class GearCubit extends Cubit<GearState> {
 
       final result = await _repository.updateItemsOrder(finalSortedList);
       if (result is Failure) throw result.exception;
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to reorder: $e', source: _source);
       emit(GearError(AppErrorHandler.getUserMessage(e)));

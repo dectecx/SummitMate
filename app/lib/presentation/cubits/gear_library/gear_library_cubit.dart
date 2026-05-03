@@ -20,7 +20,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     emit(const GearLibraryLoading());
     try {
       final userId = _authService.currentUserId ?? 'guest';
-      final items = _repository.getAll(userId);
+      final items = await _repository.getAll(userId);
       emit(GearLibraryLoaded(items: items));
     } catch (e) {
       LogService.error('Failed to load gear library: $e', source: 'GearLibraryCubit');
@@ -28,10 +28,10 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     }
   }
 
-  void reload() {
+  Future<void> reload() async {
     try {
       final userId = _authService.currentUserId ?? 'guest';
-      final items = _repository.getAll(userId);
+      final items = await _repository.getAll(userId);
       if (state is GearLibraryLoaded) {
         emit((state as GearLibraryLoaded).copyWith(items: items));
       } else {
@@ -81,7 +81,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
         syncStatus: SyncStatus.pendingCreate,
       );
       await _repository.add(item);
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to add library item: $e', source: 'GearLibraryCubit');
       emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
@@ -95,7 +95,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final updatedItem = item.copyWith(updatedBy: userId, updatedAt: DateTime.now());
       await _repository.update(updatedItem);
       await _syncLinkedGear(updatedItem);
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to update library item: $e', source: 'GearLibraryCubit');
       emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
@@ -105,7 +105,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   /// 刪除庫存項目
   Future<void> deleteItem(String id) async {
     try {
-      final allGear = _gearRepository.getAllItems();
+      final allGear = await _gearRepository.getAllItems();
       final linkedItems = allGear.where((g) => g.libraryItemId == id).toList();
 
       for (final gear in linkedItems) {
@@ -114,7 +114,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       }
 
       await _repository.delete(id);
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to delete library item: $e', source: 'GearLibraryCubit');
       emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
@@ -124,11 +124,11 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   /// 切換封存狀態
   Future<void> toggleArchive(String id) async {
     try {
-      final item = _repository.getById(id);
+      final item = await _repository.getById(id);
       if (item != null) {
         final updatedItem = item.copyWith(isArchived: !item.isArchived, updatedAt: DateTime.now());
         await _repository.update(updatedItem);
-        reload();
+        await reload();
       }
     } catch (e) {
       LogService.error('Failed to toggle archive: $e', source: 'GearLibraryCubit');
@@ -144,7 +144,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   Future<void> importItems(List<GearLibraryItem> items) async {
     try {
       await _repository.importAll(items);
-      reload();
+      await reload();
     } catch (e) {
       LogService.error('Failed to import items: $e', source: 'GearLibraryCubit');
       emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
@@ -157,7 +157,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final userId = _authService.currentUserId;
       if (userId == null) return Failure(Exception('未登入'));
 
-      final items = _repository.getAll(userId);
+      final items = await _repository.getAll(userId);
       final result = await _repository.syncRemoteItems(items);
       if (result is Failure) return Failure(result.exception);
 
@@ -182,7 +182,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       };
       await _repository.importAll(cloudItems);
 
-      reload();
+      await reload();
       LogService.info('Gear Library 下載成功, 項目數: ${cloudItems.length}', source: 'GearLibraryCubit');
       return Success(cloudItems.length);
     } catch (e) {
@@ -193,7 +193,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
   Future<void> _syncLinkedGear(GearLibraryItem libItem) async {
     try {
-      final allGear = _gearRepository.getAllItems();
+      final allGear = await _gearRepository.getAllItems();
       final linkedItems = allGear.where((g) => g.libraryItemId == libItem.id).toList();
 
       if (linkedItems.isEmpty) return;
@@ -237,11 +237,11 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   }
 
   // Helper getters
-  GearLibraryItem? getById(String id) => _repository.getById(id);
+  Future<GearLibraryItem?> getById(String id) => _repository.getById(id);
 
   /// 取得連結此裝備的行程資訊
   Future<List<Map<String, dynamic>>> getLinkedTrips(String libraryItemId) async {
-    final allGear = _gearRepository.getAllItems();
+    final allGear = await _gearRepository.getAllItems();
     final linkedGear = allGear.where((g) => g.libraryItemId == libraryItemId).toList();
 
     final Set<String> tripIds = linkedGear.map((g) => g.tripId).whereType<String>().toSet();

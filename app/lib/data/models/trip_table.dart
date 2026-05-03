@@ -3,6 +3,8 @@ import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/trip.dart';
 import '../../domain/enums/sync_status.dart';
+import 'converters/sync_status_converter.dart';
+
 export '../../domain/enums/sync_status.dart';
 
 // TODO: 確認是否需要建立 Foreign Key 關聯 userId, linkedEventId 等
@@ -20,7 +22,7 @@ class TripsTable extends Table {
   // TODO: 確認 List<String> 序列化為 JSON String 是否為最佳實踐，或該另開關聯表
   TextColumn get dayNames => text().map(const ListStringTypeConverter()).withDefault(const Constant('[]'))();
 
-  IntColumn get syncStatus => integer().map(const SyncStatusConverter()).withDefault(const Constant(0))();
+  TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
 
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
@@ -42,20 +44,6 @@ class ListStringTypeConverter extends TypeConverter<List<String>, String> {
   @override
   String toSql(List<String> value) {
     return json.encode(value);
-  }
-}
-
-class SyncStatusConverter extends TypeConverter<SyncStatus, int> {
-  const SyncStatusConverter();
-
-  @override
-  SyncStatus fromSql(int fromDb) {
-    return SyncStatus.values.firstWhere((e) => e.index == fromDb, orElse: () => SyncStatus.synced);
-  }
-
-  @override
-  int toSql(SyncStatus value) {
-    return value.index;
   }
 }
 

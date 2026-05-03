@@ -8,9 +8,6 @@ abstract interface class IItineraryLocalDataSource {
   /// 根據行程 ID 取得項目
   Future<List<ItineraryItem>> getByTripId(String tripId);
 
-  /// 透過 Key 取得單一行程項目 (已廢棄)
-  ItineraryItem? getByKey(dynamic key);
-
   /// 透過 ID 取得單一行程項目 (UUID)
   Future<ItineraryItem?> getById(String id);
 
@@ -19,9 +16,6 @@ abstract interface class IItineraryLocalDataSource {
 
   /// 更新行程項目
   Future<void> updateItem(ItineraryItem item);
-
-  /// 刪除行程項目 (透過 Key，已廢棄)
-  Future<void> deleteByKey(dynamic key);
 
   /// 刪除行程項目 (透過 ID)
   Future<void> deleteById(String id);

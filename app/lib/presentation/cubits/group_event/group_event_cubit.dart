@@ -27,7 +27,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   Future<void> loadEvents() async {
     emit(const GroupEventLoading());
 
-    final events = _groupEventRepository.getAll();
+    final events = await _groupEventRepository.getAll();
     final lastSync = _groupEventRepository.getLastSyncTime();
 
     emit(GroupEventLoaded(events: events, currentUserId: _currentUserId, lastSyncTime: lastSync, isGuest: _isGuest));
@@ -79,7 +79,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     } catch (e) {
       LogService.error('Fetch group events failed: $e', source: _source);
       if (!isAuto) {
-        final events = _groupEventRepository.getAll();
+        final events = await _groupEventRepository.getAll();
         final lastSync = DateTime.now();
         emit(
           GroupEventLoaded(
@@ -102,7 +102,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   /// Get a single event by ID (local or remote)
   Future<GroupEvent?> getEventById(String eventId) async {
     // Try local cache first
-    final localEvent = _groupEventRepository.getById(eventId);
+    final localEvent = await _groupEventRepository.getById(eventId);
     if (localEvent != null) return localEvent;
 
     if (_isOffline) return null;
@@ -284,7 +284,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       LogService.error('Like event failed: ${result.exception}', source: _source);
       ToastService.error('操作失敗');
 
-      final freshEvents = _groupEventRepository.getAll();
+      final freshEvents = await _groupEventRepository.getAll();
       emit(currentState.copyWith(events: freshEvents));
       return false;
     }

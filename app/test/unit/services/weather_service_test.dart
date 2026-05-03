@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
-// Note: We don't import the actual WeatherService since it has dependencies on Hive and DI
+// Note: We don't import the actual WeatherService since it has dependencies on Drift and DI
 // Instead, we create a test helper that replicates the pure logic for testing
 
 void main() {
