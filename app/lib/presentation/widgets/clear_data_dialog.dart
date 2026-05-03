@@ -4,12 +4,13 @@ import 'package:flutter/services.dart'; // for SystemNavigator
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/di/injection.dart';
+import '../../infrastructure/database/app_database.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 顯示清除資料對話框
 ///
 /// 這是 Debug 工具，但在正式版保留以解決極端異常狀況。
-/// 允許用戶選擇性清除特定類型的本地 Hive 資料。
+/// 允許用戶選擇性清除特定類型的本地 Drift 資料。
 void showClearDataDialog(BuildContext context) {
   // 預設選項狀態
   bool clearItinerary = true;
@@ -20,6 +21,7 @@ void showClearDataDialog(BuildContext context) {
   bool clearSettings = false;
   bool clearLogs = false;
   bool clearPolls = true;
+  bool clearFavorites = true;
 
   showDialog(
     context: context,
@@ -53,6 +55,11 @@ void showClearDataDialog(BuildContext context) {
                 title: const Text('個人裝備庫'),
                 value: clearGearLibrary,
                 onChanged: (v) => setState(() => clearGearLibrary = v ?? false),
+              ),
+              CheckboxListTile(
+                title: const Text('收藏資料'),
+                value: clearFavorites,
+                onChanged: (v) => setState(() => clearFavorites = v ?? false),
               ),
               CheckboxListTile(
                 title: const Text('天氣快取'),
@@ -89,18 +96,32 @@ void showClearDataDialog(BuildContext context) {
             onPressed: () async {
               Navigator.pop(dialogContext);
 
-              // 執行選擇性清除
-              await getIt<HiveService>().clearSelectedData(
-                clearTrips: clearItinerary,
-                clearItinerary: clearItinerary,
-                clearMessages: clearMessages,
-                clearGear: clearGear,
-                clearGearLibrary: clearGearLibrary,
-                clearWeather: clearWeather,
-                clearSettings: clearSettings,
-                clearLogs: clearLogs,
-                clearPolls: clearPolls,
+              // 執行 Drift 清除
+              await getIt<AppDatabase>().clearSelectedData(
+                trips: clearItinerary,
+                messages: clearMessages,
+                gear: clearGear,
+                gearLibrary: clearGearLibrary,
+                polls: clearPolls,
+                favorites: clearFavorites,
+                logs: clearLogs,
+                settings: clearSettings,
               );
+
+              // 同時也清除舊的 Hive 資料 (如果有殘留)
+              try {
+                await getIt<HiveService>().clearSelectedData(
+                  clearTrips: clearItinerary,
+                  clearItinerary: clearItinerary,
+                  clearMessages: clearMessages,
+                  clearGear: clearGear,
+                  clearGearLibrary: clearGearLibrary,
+                  clearWeather: clearWeather,
+                  clearSettings: clearSettings,
+                  clearLogs: clearLogs,
+                  clearPolls: clearPolls,
+                );
+              } catch (_) {}
 
               // 顯示重啟提示對話框 (不可取消)
               if (context.mounted) {

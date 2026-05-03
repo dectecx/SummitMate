@@ -1,354 +1,91 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:injectable/injectable.dart';
-import 'dart:math';
-import 'package:dio/dio.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:summitmate/domain/domain.dart';
-import '../tools/log_service.dart';
-import '../../core/env_config.dart';
-import '../../core/constants.dart';
-import '../../core/di/injection.dart';
-import '../../domain/repositories/i_settings_repository.dart';
-
-import '../../domain/interfaces/i_weather_service.dart';
 import '../../core/location/i_location_resolver.dart';
 import '../../data/cwa/cwa_weather_source.dart';
+import '../../domain/domain.dart';
+import '../../domain/entities/weather_data.dart';
+import '../database/app_database.dart';
 
-/// 天氣服務
-///
-/// 整合 CWA (氣象署) 與登山天氣 API 的資料。
-/// 支援：
-/// - 本地快取 (TODO: 目前暫停 Hive 快取，準備遷移至 Isar)
-/// - 離線模式存取 (暫時受限)
-/// - 透過 [ILocationResolver] 解析地點名稱
-/// - 取得目前天氣與預報
 @LazySingleton(as: IWeatherService)
 class WeatherService implements IWeatherService {
-  // static const String _boxName = HiveBoxNames.weather; // Removed Hive dependency for now
-
-  final ISettingsRepository _settingsRepo;
-  // Box<WeatherData>? _box; // Removed Hive dependency for now
   final ILocationResolver _locationResolver;
   final CwaWeatherSource _cwaSource;
+  final AppDatabase _db;
+
   final _weatherController = StreamController<WeatherData?>.broadcast();
 
-  WeatherService({ISettingsRepository? settingsRepo, ILocationResolver? locationResolver, CwaWeatherSource? cwaSource})
-    : _settingsRepo = settingsRepo ?? getIt<ISettingsRepository>(),
-      _locationResolver = locationResolver ?? getIt<ILocationResolver>(),
-      _cwaSource = cwaSource ?? CwaWeatherSource();
+  WeatherService({
+    required ISettingsRepository settingsRepo, // Keep for constructor compatibility if needed, though unused
+    required ILocationResolver locationResolver,
+    required CwaWeatherSource cwaSource,
+    required AppDatabase db,
+  }) : _locationResolver = locationResolver,
+       _cwaSource = cwaSource,
+       _db = db;
 
-  /// 初始化天氣服務
   @override
   Future<void> init() async {
-    // _box = await HiveService().openBox<WeatherData>(_boxName); // Removed Hive dependency
-  }
-
-  /// 取得特定地點的天氣資料
-  @override
-  Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
-    // final dynamicCacheKey = 'weather_$locationName';
-    // final cached = _box?.get(dynamicCacheKey);
-    final settings = await _settingsRepo.getSettings();
-    final isOffline = settings.isOfflineMode;
-
-    if (isOffline) {
-      // TODO: 在 Phase 7 完成 Drift 遷移後恢復快取讀取
-      LogService.warning('離線模式: 目前暫時不支援快取讀取 (準備遷移至 Drift)', source: 'WeatherService');
-      return null;
-    }
-
-    try {
-      LogService.info('取得 $locationName 的最新天氣...', source: 'WeatherService');
-      final weather = await _fetchWeatherInternal(locationName: locationName);
-      // _box?.put(dynamicCacheKey, weather);
-      _weatherController.add(weather);
-      return weather;
-    } catch (e) {
-      LogService.error('取得天氣失敗: $e', source: 'WeatherService');
-      return null;
-    }
-  }
-
-  /// 內部取得邏輯：根據地點類型選擇資料源
-  Future<WeatherData> _fetchWeatherInternal({required String locationName}) async {
-    final settings = await _settingsRepo.getSettings();
-    final isOffline = settings.isOfflineMode;
-    if (isOffline) {
-      throw Exception('離線模式: 無法取得天氣');
-    }
-
-    if (locationName.contains('縣') ||
-        locationName.contains('市') ||
-        locationName.contains('區') ||
-        locationName.contains('鄉') ||
-        locationName.contains('鎮')) {
-      return _fetchCwaWeather(locationName);
-    } else {
-      return _fetchHikingWeather(locationName);
-    }
-  }
-
-  /// 從登山天氣端點取得資料
-  Future<WeatherData> _fetchHikingWeather(String locationName) async {
-    final baseUrl = EnvConfig.getApiUrl();
-    final url = Uri.parse('$baseUrl/weather/hiking');
-
-    LogService.info('取得登山天氣: $locationName', source: 'WeatherService');
-
-    try {
-      final dio = getIt<Dio>();
-      final response = await dio.get(url.toString(), options: Options(extra: {'requiresAuth': false}));
-
-      if (response.statusCode == 200) {
-        final decoded = response.data;
-        LogService.debug('天氣 API 回應成功', source: 'WeatherService');
-
-        if (decoded is! List) {
-          throw Exception('API 回傳格式錯誤：預期為陣列，實際為 ${decoded.runtimeType}');
-        }
-        final List<dynamic> jsonList = decoded;
-
-        if (jsonList.isEmpty) {
-          throw Exception('API 未回傳天氣資料');
-        }
-
-        return _parseWeatherData(jsonList, locationName);
-      } else {
-        throw Exception('API 錯誤: ${response.statusCode}');
-      }
-    } catch (e) {
-      LogService.error('天氣 API 請求失敗: $e', source: 'WeatherService');
-      rethrow;
-    }
-  }
-
-  /// 從氣象署 (CWA) 取得城鎮天氣
-  Future<WeatherData> _fetchCwaWeather(String locationName) async {
-    LogService.info('從 CWA 取得城鎮天氣: $locationName', source: 'WeatherService');
-    try {
-      return await _cwaSource.getWeather(locationName);
-    } catch (e) {
-      LogService.error('CWA Source 取得失敗: $e', source: 'WeatherService');
-      rethrow;
-    }
-  }
-
-  /// 將原始 JSON 列表解析為 [WeatherData] 對象
-  WeatherData _parseWeatherData(List<dynamic> list, String locationName) {
-    // 1. 依地點過濾
-    final locationRows = list.where((item) => item['location'] == locationName).toList();
-
-    if (locationRows.isEmpty) {
-      // 嘗試模糊比對
-      final fallbackRows = list.where((item) {
-        final loc = item['location']?.toString() ?? '';
-        return loc.replaceAll(' ', '') == locationName.replaceAll(' ', '') ||
-            loc.contains(locationName) ||
-            locationName.contains(loc);
-      }).toList();
-
-      if (fallbackRows.isNotEmpty) {
-        LogService.info(
-          '地點 "$locationName" 查無精確匹配，使用模糊匹配結果: ${fallbackRows.first['location']}',
-          source: 'WeatherService',
-        );
-        locationRows.addAll(fallbackRows);
-      } else {
-        throw Exception('資料中找不到地點 "$locationName"');
-      }
-    }
-
-    // 2. 排序
-    locationRows.sort((a, b) {
-      final startTimeA = a['start_time']?.toString() ?? '';
-      final startTimeB = b['start_time']?.toString() ?? '';
-      return startTimeA.compareTo(startTimeB);
-    });
-
-    // 3. 目前天氣資訊
-    final current = locationRows.first;
-
-    final temp = double.tryParse(current['temp'].toString()) ?? 0.0;
-    final humidity = double.tryParse(current['humidity'].toString()) ?? 0.0;
-    final pop = int.tryParse(current['pop'].toString()) ?? 0;
-    final windSpeed = double.tryParse(current['wind_speed'].toString()) ?? 0.0;
-    final wx = current['wx'].toString();
-
-    // 體感溫度
-    final maxAT = double.tryParse(current['max_at'].toString()) ?? 0.0;
-    final minAT = double.tryParse(current['min_at'].toString()) ?? 0.0;
-    final apparentTemp = (maxAT != 0.0 || minAT != 0.0) ? (maxAT + minAT) / 2 : temp;
-
-    // 發布時間
-    DateTime? issueTime;
-    if (current.containsKey('issue_time') &&
-        current['issue_time'] != null &&
-        current['issue_time'].toString().isNotEmpty) {
-      try {
-        issueTime = DateTime.parse(current['issue_time'].toString());
-      } catch (_) {}
-    }
-
-    // 4. 建立每日預報
-    final dailyMap = <String, Map<String, dynamic>>{};
-
-    for (var row in locationRows) {
-      final start = DateTime.parse(row['start_time']);
-      final dateKey = "${start.year}-${start.month.toString().padLeft(2, '0')}-${start.day.toString().padLeft(2, '0')}";
-
-      dailyMap.putIfAbsent(
-        dateKey,
-        () => {
-          'dayCondition': '',
-          'nightCondition': '',
-          'maxTemp': -100.0,
-          'minTemp': 100.0,
-          'maxAT': -100.0,
-          'minAT': 100.0,
-          'pop': 0,
-        },
-      );
-
-      final val = row['wx'].toString();
-      if (start.hour >= 6 && start.hour < 18) {
-        if (dailyMap[dateKey]!['dayCondition'] == '') {
-          dailyMap[dateKey]!['dayCondition'] = val;
-        }
-      } else {
-        if (dailyMap[dateKey]!['nightCondition'] == '') {
-          dailyMap[dateKey]!['nightCondition'] = val;
-        }
-      }
-
-      final maxT = double.tryParse(row['max_temp'].toString());
-      if (maxT != null && maxT != 0.0) {
-        if (maxT > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = maxT;
-      } else {
-        final t = double.tryParse(row['temp'].toString()) ?? 0.0;
-        if (t > dailyMap[dateKey]!['maxTemp']) dailyMap[dateKey]!['maxTemp'] = t;
-      }
-
-      final minT = double.tryParse(row['min_temp'].toString());
-      if (minT != null && minT != 0.0) {
-        if (minT < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = minT;
-      } else {
-        final t = double.tryParse(row['temp'].toString()) ?? 0.0;
-        if (t < dailyMap[dateKey]!['minTemp']) dailyMap[dateKey]!['minTemp'] = t;
-      }
-
-      final mxAT = double.tryParse(row['max_at'].toString());
-      if (mxAT != null && mxAT != 0.0) {
-        if (mxAT > dailyMap[dateKey]!['maxAT']) dailyMap[dateKey]!['maxAT'] = mxAT;
-      }
-
-      final mnAT = double.tryParse(row['min_at'].toString());
-      if (mnAT != null && mnAT != 0.0) {
-        if (mnAT < dailyMap[dateKey]!['minAT']) dailyMap[dateKey]!['minAT'] = mnAT;
-      }
-
-      final p = int.tryParse(row['pop'].toString()) ?? 0;
-      if (p > dailyMap[dateKey]!['pop']) dailyMap[dateKey]!['pop'] = p;
-    }
-
-    final dailyForecasts = dailyMap.entries.map((e) {
-      final d = e.value;
-      return DailyForecast(
-        date: DateTime.parse(e.key),
-        dayCondition: d['dayCondition'] == '' ? d['nightCondition'] : d['dayCondition'],
-        nightCondition: d['nightCondition'] == '' ? d['dayCondition'] : d['nightCondition'],
-        maxTemp: d['maxTemp'] == -100.0 ? 0.0 : d['maxTemp'],
-        minTemp: d['minTemp'] == 100.0 ? 0.0 : d['minTemp'],
-        rainProbability: d['pop'],
-        maxApparentTemp: d['maxAT'] == -100.0 ? 0.0 : d['maxAT'],
-        minApparentTemp: d['minAT'] == 100.0 ? 0.0 : d['minAT'],
-      );
-    }).toList();
-
-    dailyForecasts.sort((a, b) => a.date.compareTo(b.date));
-
-    final now = DateTime.now();
-    final sunTimes = _calculateSunTimes(now, 23.29, 121.03);
-
-    return WeatherData(
-      temperature: temp,
-      humidity: humidity,
-      rainProbability: pop,
-      windSpeed: windSpeed,
-      condition: wx,
-      sunrise: sunTimes['sunrise']!,
-      sunset: sunTimes['sunset']!,
-      timestamp: DateTime.now(),
-      locationName: locationName,
-      dailyForecasts: dailyForecasts,
-      apparentTemperature: apparentTemp,
-      issueTime: issueTime,
-    );
-  }
-
-  /// 簡易本地日出日落計算
-  Map<String, DateTime> _calculateSunTimes(DateTime date, double lat, double lng) {
-    final startOfYear = DateTime(date.year, 1, 1, 0, 0, 0);
-    final dayOfYear = date.difference(startOfYear).inDays + 1;
-    final radLat = (pi / 180) * lat;
-    final declination = 0.4095 * sin(0.016906 * (dayOfYear - 80.089));
-    double halfDayRad = 0;
-    try {
-      final val = -tan(radLat) * tan(declination);
-      halfDayRad = acos(val.clamp(-1.0, 1.0));
-    } catch (_) {
-      halfDayRad = pi / 2;
-    }
-    final halfDayHours = (halfDayRad * 180 / pi) / 15.0;
-    final timeOffsetMin = (lng - 120.0) * 4.0;
-    final solarNoon = 12.0 - (timeOffsetMin / 60.0);
-    final sunriseHour = solarNoon - halfDayHours;
-    final sunsetHour = solarNoon + halfDayHours;
-    DateTime toTime(double h) {
-      int hour = h.floor();
-      int min = ((h - hour) * 60).round();
-      return DateTime(date.year, date.month, date.day, hour, min);
-    }
-
-    return {'sunrise': toTime(sunriseHour), 'sunset': toTime(sunsetHour)};
-  }
-
-  /// 透過座標取得地點資料並回傳天氣
-  @override
-  Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
-    final settings = await _settingsRepo.getSettings();
-    final isOffline = settings.isOfflineMode;
-
-    final location = await _locationResolver.resolve(lat, lon);
-    if (location == null) {
-      LogService.warning('無法解析座標 $lat, $lon', source: 'WeatherService');
-      return null;
-    }
-
-    final locationName = location.name;
-
-    if (isOffline) {
-      LogService.warning('離線模式: 目前暫時不支援快取讀取 (準備遷移至 Isar)', source: 'WeatherService');
-      return null;
-    }
-
-    if (locationName.contains('縣') ||
-        locationName.contains('市') ||
-        locationName.contains('區') ||
-        locationName.contains('鄉') ||
-        locationName.contains('鎮')) {
-      try {
-        final weather = await _fetchCwaWeather(locationName);
-        _weatherController.add(weather);
-        return weather;
-      } catch (e) {
-        LogService.error('CWA 天氣取得失敗 $locationName: $e', source: 'WeatherService');
-        return null;
-      }
-    }
-
-    return null;
+    // 初始化邏輯
   }
 
   @override
   Stream<WeatherData?> get onWeatherChanged => _weatherController.stream;
+
+  @override
+  Future<WeatherData?> getWeatherByName(String locationName, {bool forceRefresh = false}) async {
+    final cacheKey = 'weather_$locationName';
+
+    // 1. 檢查快取
+    if (!forceRefresh) {
+      try {
+        final cached = await (_db.select(_db.weatherDataTable)..where((t) => t.id.equals(cacheKey))).getSingleOrNull();
+        if (cached != null) {
+          final now = DateTime.now();
+          if (now.difference(cached.updatedAt).inMinutes < 30) {
+            final data = WeatherData.fromJson(json.decode(cached.data));
+            _weatherController.add(data);
+            return data;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 2. 從 API 抓取
+    try {
+      final weatherData = await _cwaSource.getWeather(locationName);
+
+      // 3. 更新快取
+      await _db
+          .into(_db.weatherDataTable)
+          .insertOnConflictUpdate(
+            WeatherDataTableCompanion.insert(
+              id: cacheKey,
+              data: json.encode(weatherData.toJson()),
+              updatedAt: DateTime.now(),
+            ),
+          );
+
+      _weatherController.add(weatherData);
+      return weatherData;
+    } catch (e) {
+      // 失敗時嘗試回傳舊快取
+      try {
+        final cached = await (_db.select(_db.weatherDataTable)..where((t) => t.id.equals(cacheKey))).getSingleOrNull();
+        if (cached != null) {
+          return WeatherData.fromJson(json.decode(cached.data));
+        }
+      } catch (_) {}
+      return null;
+    }
+  }
+
+  @override
+  Future<WeatherData?> getWeatherByLocation(double lat, double lon, {bool forceRefresh = false}) async {
+    // 1. 將座標轉換為行政區
+    final location = await _locationResolver.resolve(lat, lon);
+    if (location == null) return null;
+
+    return getWeatherByName(location.name, forceRefresh: forceRefresh);
+  }
 }

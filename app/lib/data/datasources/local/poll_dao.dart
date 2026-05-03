@@ -5,10 +5,11 @@ import '../../../infrastructure/database/app_database.dart';
 import '../../../domain/entities/poll.dart';
 import '../interfaces/i_poll_local_data_source.dart';
 import '../../models/poll_table.dart';
+import '../../models/sync_meta_data_table.dart';
 
 part 'poll_dao.g.dart';
 
-@DriftAccessor(tables: [PollsTable, PollOptionsTable])
+@DriftAccessor(tables: [PollsTable, PollOptionsTable, SyncMetaDataTable])
 @LazySingleton(as: IPollLocalDataSource)
 class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implements IPollLocalDataSource {
   PollDao(AppDatabase db) : super(db);
@@ -69,6 +70,23 @@ class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implemen
       await delete(pollOptionsTable).go();
       await delete(pollsTable).go();
     });
+  }
+
+  @override
+  Future<void> saveLastSyncTime(DateTime time) async {
+    await into(syncMetaDataTable).insertOnConflictUpdate(
+      SyncMetaDataTableCompanion.insert(
+        key: 'polls',
+        lastSyncTime: Value(time),
+      ),
+    );
+  }
+
+  @override
+  Future<DateTime?> getLastSyncTime() async {
+    final query = select(syncMetaDataTable)..where((t) => t.key.equals('polls'));
+    final row = await query.getSingleOrNull();
+    return row?.lastSyncTime;
   }
 
   Poll _mapToDomain(PollsTableData row, List<PollOptionsTableData> optionsRows) {

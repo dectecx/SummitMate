@@ -4,11 +4,12 @@ import '../../../infrastructure/database/app_database.dart';
 import '../../../domain/entities/itinerary_item.dart';
 import '../interfaces/i_itinerary_local_data_source.dart';
 import '../../models/itinerary_item_table.dart';
+import '../../models/sync_meta_data_table.dart';
 
 part 'itinerary_dao.g.dart';
 
 @LazySingleton(as: IItineraryLocalDataSource)
-@DriftAccessor(tables: [ItineraryItemsTable])
+@DriftAccessor(tables: [ItineraryItemsTable, SyncMetaDataTable])
 class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixin implements IItineraryLocalDataSource {
   ItineraryDao(AppDatabase db) : super(db);
 
@@ -74,12 +75,19 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    // TODO: Implement metadata storage
+    await into(syncMetaDataTable).insertOnConflictUpdate(
+      SyncMetaDataTableCompanion.insert(
+        key: 'itinerary',
+        lastSyncTime: Value(time),
+      ),
+    );
   }
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    return null;
+    final query = select(syncMetaDataTable)..where((t) => t.key.equals('itinerary'));
+    final row = await query.getSingleOrNull();
+    return row?.lastSyncTime;
   }
 
   ItineraryItem _mapToDomain(ItineraryItemsTableData row) {
