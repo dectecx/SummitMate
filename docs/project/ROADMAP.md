@@ -187,8 +187,25 @@
 - [x] GAS 驗證碼生成與發送 (MailApp)
 - [x] `authVerifyEmail` / `authResendCode` API
 - [x] `VerificationScreen` UI (6 位數輸入)
-- [x] `AuthProvider` 驗證狀態檢查 (`isVerified`)
+- [x] `AuthCubit` 驗證狀態檢查 (`isVerified`)
 - [x] 登入/註冊流程整合
+
+---
+
+## Phase 24: 全面架構重構 (Architecture Refactoring) ✅
+
+### 目標
+
+解決技術債，提升效能、維護性與型別安全，徹底拋棄 Legacy 架構。
+
+### 任務
+
+- [x] **資料層**: Hive 遷移至 Drift (SQLite)，解決 Web 相容性與關聯查詢痛點。
+- [x] **狀態管理**: Provider 遷移至 `flutter_bloc` (Cubit)，實作單向資料流。
+- [x] **依賴注入**: 手動 DI 遷移至 `injectable` + `get_it`，支援環境變數切換。
+- [x] **API 客戶端**: 手動 HTTP 請求遷移至 `retrofit` + `dio` + `freezed`。
+- [x] **後端架構**: Go API 從單一腳本重構為 Domain-Driven Design (DDD)。
+- [x] **Legacy 清理**: 完全移除 GAS API 客戶端與相關程式碼。
 
 ---
 
@@ -238,10 +255,10 @@ SummitMate/
 
 ### 風險管理
 
-| 風險                  | 狀態   | 緩解策略                     |
-| :-------------------- | :----- | :--------------------------- |
-| Isar 相容性           | 已解決 | 遷移至 Hive                  |
-| Google Sheets 限流    | 已解決 | 遷移至 Go + PostgreSQL       |
-| Web CORS 問題         | 已解決 | 調整 Content-Type            |
-| GAS 響應慢            | 已解決 | 遷移至 Go Backend            |
-| Go Backend 遷移完整性 | 進行中 | 前端雙後端切換，逐步替代 GAS |
+| 風險               | 狀態   | 緩解策略                                 |
+| :----------------- | :----- | :--------------------------------------- |
+| Isar 相容性        | 已解決 | 遷移至 Hive，後續遷移至 Drift            |
+| Google Sheets 限流 | 已解決 | 遷移至 Go + PostgreSQL                   |
+| Web CORS 問題      | 已解決 | 調整 Content-Type                        |
+| GAS 響應慢         | 已解決 | 遷移至 Go Backend                        |
+| 狀態管理效能       | 已解決 | Provider 全面遷移至 flutter_bloc (Cubit) |

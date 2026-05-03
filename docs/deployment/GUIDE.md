@@ -60,41 +60,7 @@ docker run -p 8080:8080 \
 
 ---
 
-## 2. Google Apps Script (Legacy)
-
-> [!WARNING]
-> GAS 後端為遷移過渡期保留，後端逐步遷移至 Go Backend 後將移除。
-
-### 部署步驟
-
-1.  **建立專案**
-    - 建立 Google Sheet，命名為 `SummitMate Database`。
-    - 開啟 **擴充功能** > **Apps Script**。
-    - 複製 `gas/Code.gs` 內容至 `Code.gs`。
-    - 建立新腳本 `weather_etl.gs`，並複製 `gas/weather_etl.gs` 內容。
-
-2.  **初始化資料**
-    - 執行 `setupSheets` 函式以建立 `Itinerary`, `Messages`, `Logs` 工作表。
-
-3.  **發布 API**
-    - 點擊 **部署** > **新增部署作業**。
-    - 類型選擇 **網頁應用程式**。
-    - 存取權限設定為 **任何人**。
-    - 部署並取得 URL。
-
-4.  **環境設定**
-    - 將 URL 填入 `.env.prod` (本地開發用) 或 GitHub Secrets (CI/CD 用)。
-    - Key: `GAS_BASE_URL`
-    - **氣象功能設定**:
-      - 於 **專案設定** > **指令碼屬性** 新增 `CWA_API_KEY` (填入您的 CWA API 授權碼)。
-      - 設定 **觸發條件** (Triggers):
-        - 函式: `syncWeatherToSheets`
-        - 類型: 時間驅動 (Time-driven)
-        - 頻率: 每 4 小時 (Every 4 hours)
-
----
-
-## 3. Flutter Web Deployment
+## 2. Flutter Web Deployment
 
 本專案支援多種 Web 部署方式，以下列出 Netlify 與 GitHub Pages 的配置流程。
 
@@ -115,11 +81,10 @@ docker run -p 8080:8080 \
 
 於 GitHub Repository 的 `Settings` > `Secrets and variables` > `Actions` 新增以下變數：
 
-| Name                 | Description                    |
-| -------------------- | ------------------------------ |
-| `NETLIFY_SITE_ID`    | Netlify Site API ID            |
-| `NETLIFY_AUTH_TOKEN` | Netlify Personal Access Token  |
-| `GAS_BASE_URL`       | Google Apps Script Web App URL |
+| Name                 | Description                   |
+| -------------------- | ----------------------------- |
+| `NETLIFY_SITE_ID`    | Netlify Site API ID           |
+| `NETLIFY_AUTH_TOKEN` | Netlify Personal Access Token |
 
 #### 3. 觸發部署
 
@@ -160,7 +125,7 @@ git push origin --set-upstream gh-pages
 
 ---
 
-## 4. Android Deployment
+## 3. Android Deployment
 
 建置 Release APK：
 

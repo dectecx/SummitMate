@@ -3,7 +3,7 @@
 ## 1. 概述 (Overview)
 
 本專案後端採用 **PostgreSQL** 作為正式資料庫 (Supabase Free Tier)。
-前端 App 使用 **Hive** 作為本地快取庫 (Offline-First)。
+前端 App 使用 **Drift (SQLite)** 作為本地快取庫 (Offline-First)。
 
 > [!NOTE]
 > 此文件為 PostgreSQL Schema 的最終規格設計 (Single Source of Truth)。
@@ -152,19 +152,19 @@ CREATE TABLE role_permissions (
 
 #### Table: `users`
 
-| Column              | Type         | Constraints | Description    |
-| :------------------ | :----------- | :---------- | :------------- |
-| **id**              | UUID         | **PK**      |                |
-| email               | VARCHAR(255) | **UK**, NN  | 登入帳號       |
-| password_hash       | TEXT         | NN          | bcrypt         |
-| display_name        | VARCHAR(100) | NN          |                |
-| avatar              | VARCHAR(10)  | NN, Default | Emoji 頭像     |
-| **role_id**         | UUID         | **FK**      | Ref: roles.id  |
-| is_active           | BOOLEAN      | NN, Default | 帳號啟用       |
-| is_verified         | BOOLEAN      | NN, Default | Email 已驗證   |
-| last_login_at       | TIMESTAMPTZ  |             |                |
-| created_at          | TIMESTAMPTZ  | NN, Default |                |
-| updated_at          | TIMESTAMPTZ  | NN, Default |                |
+| Column        | Type         | Constraints | Description   |
+| :------------ | :----------- | :---------- | :------------ |
+| **id**        | UUID         | **PK**      |               |
+| email         | VARCHAR(255) | **UK**, NN  | 登入帳號      |
+| password_hash | TEXT         | NN          | bcrypt        |
+| display_name  | VARCHAR(100) | NN          |               |
+| avatar        | VARCHAR(10)  | NN, Default | Emoji 頭像    |
+| **role_id**   | UUID         | **FK**      | Ref: roles.id |
+| is_active     | BOOLEAN      | NN, Default | 帳號啟用      |
+| is_verified   | BOOLEAN      | NN, Default | Email 已驗證  |
+| last_login_at | TIMESTAMPTZ  |             |               |
+| created_at    | TIMESTAMPTZ  | NN, Default |               |
+| updated_at    | TIMESTAMPTZ  | NN, Default |               |
 
 ```sql
 CREATE TABLE users (
@@ -477,20 +477,20 @@ CREATE TABLE meal_items (
 
 #### Table: `templates`
 
-| Column       | Type             | Constraints | Description                                   |
-| :----------- | :--------------- | :---------- | :-------------------------------------------- |
-| **id**       | UUID             | **PK**      |                                               |
-| type         | VARCHAR(20)      | NN          | `GEAR_SET`, `MEAL_PLAN`, `PACK`               |
-| title        | VARCHAR(200)     | NN          |                                               |
-| author       | VARCHAR(100)     | NN          | 顯示名稱                                      |
-| total_weight | DOUBLE PRECISION | NN, Default | 總重 (公克)                                   |
-| item_count   | INT              | NN, Default |                                               |
-| visibility   | VARCHAR(20)      | NN, Default | `public`, `protected`, `private`              |
-| access_key   | VARCHAR(100)     |             | 用於 protected/private 保護密碼               |
-| created_at   | TIMESTAMPTZ      | NN, Default |                                               |
-| created_by   | UUID             | **FK**, NN  |                                               |
-| updated_at   | TIMESTAMPTZ      | NN, Default |                                               |
-| updated_by   | UUID             | **FK**, NN  |                                               |
+| Column       | Type             | Constraints | Description                      |
+| :----------- | :--------------- | :---------- | :------------------------------- |
+| **id**       | UUID             | **PK**      |                                  |
+| type         | VARCHAR(20)      | NN          | `GEAR_SET`, `MEAL_PLAN`, `PACK`  |
+| title        | VARCHAR(200)     | NN          |                                  |
+| author       | VARCHAR(100)     | NN          | 顯示名稱                         |
+| total_weight | DOUBLE PRECISION | NN, Default | 總重 (公克)                      |
+| item_count   | INT              | NN, Default |                                  |
+| visibility   | VARCHAR(20)      | NN, Default | `public`, `protected`, `private` |
+| access_key   | VARCHAR(100)     |             | 用於 protected/private 保護密碼  |
+| created_at   | TIMESTAMPTZ      | NN, Default |                                  |
+| created_by   | UUID             | **FK**, NN  |                                  |
+| updated_at   | TIMESTAMPTZ      | NN, Default |                                  |
+| updated_by   | UUID             | **FK**, NN  |                                  |
 
 ```sql
 CREATE TABLE templates (
@@ -808,22 +808,22 @@ CREATE TABLE heartbeats (
 
 ---
 
-## 5. App Local Cache Schema (Hive)
+## 5. App Local Cache Schema (Drift SQLite)
 
-Hive Box 結構與 Backend Schema 對應，可包含本地專用欄位 (e.g. `syncStatus`)。
+Drift Table 結構與 Backend Schema 對應，可包含本地專用欄位 (e.g. `syncStatus`, `isPendingSync`)。
 
-| Hive Box       | 對應 PostgreSQL Table | 備註            |
+| Drift Table    | 對應 PostgreSQL Table | 備註            |
 | :------------- | :-------------------- | :-------------- |
 | `trips`        | trips                 | 含 `syncStatus` |
 | `itinerary`    | itinerary_items       |                 |
 | `messages`     | messages              |                 |
-| `user_profile` | users                 | 本地快取        |
+| `users`        | users                 | 本地快取        |
 | `gear_items`   | gear_items            | 含 `syncStatus` |
 | `gear_library` | gear_library_items    | 含 `syncStatus` |
 | `meal_items`   | meal_items            | 含 `syncStatus` |
 | `meal_library` | meal_library_items    | 含 `syncStatus` |
 | `templates`    | templates             | 支援下載組合包  |
-| `polls`        | polls + poll_options  | 合併快取        |
+| `polls`        | polls + poll_options  | 合併/關聯快取   |
 | `group_events` | group_events          |                 |
 | `favorites`    | favorites             |                 |
 | `settings`     | (Local Only)          | 不同步到後端    |
