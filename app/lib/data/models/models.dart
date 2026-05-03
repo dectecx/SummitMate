@@ -9,4 +9,3 @@ export 'poll_table.dart';
 export 'settings_table.dart';
 export 'trip_table.dart';
 export 'weather_table.dart';
-export 'mountain_location_model.dart';

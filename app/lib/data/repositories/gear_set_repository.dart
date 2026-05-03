@@ -60,9 +60,7 @@ class GearSetRepository implements IGearSetRepository {
   /// 取得本地已上傳過的 Key 紀錄
   @override
   Future<List<GearKeyRecord>> getUploadedKeys() async {
-    final models = await _localDataSource.getUploadedKeys();
-    // 將 Model 轉換為 Domain Entity
-    return models.map((m) => m.toDomain()).toList();
+    return _localDataSource.getUploadedKeys();
   }
 
   /// 儲存一條上傳紀錄

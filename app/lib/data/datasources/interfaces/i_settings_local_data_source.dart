@@ -2,7 +2,7 @@ import '../../../domain/entities/settings.dart';
 
 /// 設定本地資料來源介面
 ///
-/// 負責定義對本地資料庫 (Hive) 的設定存取操作。
+/// 負責定義對本地資料庫 (如 Drift) 的設定存取操作。
 /// 設定資料為應用程式層級，與使用者綁定。
 abstract interface class ISettingsLocalDataSource {
   /// 取得設定

@@ -27,9 +27,6 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
   }
 
   @override
-  ItineraryItem? getByKey(dynamic key) => null; // Deprecated
-
-  @override
   Future<ItineraryItem?> getById(String id) async {
     final query = select(itineraryItemsTable)..where((t) => t.id.equals(id));
     final row = await query.getSingleOrNull();
@@ -44,13 +41,6 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
   @override
   Future<void> updateItem(ItineraryItem item) async {
     await update(itineraryItemsTable).replace(item.toCompanion());
-  }
-
-  @override
-  Future<void> deleteByKey(dynamic key) async {
-    if (key is String) {
-      await deleteById(key);
-    }
   }
 
   @override

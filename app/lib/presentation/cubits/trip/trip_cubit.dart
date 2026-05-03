@@ -195,7 +195,7 @@ class TripCubit extends Cubit<TripState> {
   /// 上傳整個行程的資料到雲端 (Metadata + Itinerary + Gear)
   Future<bool> uploadFullTrip(Trip trip) async {
     try {
-      final allGear = _gearRepository.getAllItems();
+      final allGear = await _gearRepository.getAllItems();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
       final uploadTripResult = await _tripRepository.uploadToCloud(trip);

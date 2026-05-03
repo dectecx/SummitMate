@@ -6,8 +6,8 @@ part 'trip.g.dart';
 
 /// 行程領域實體 (Domain Entity)
 ///
-/// 不可變物件，承載行程的業務規則。
-/// 不依賴持久化框架（Hive/Isar）。
+/// 不可變物件，承載行程的業務規則
+/// 不依賴持久化框架（如 Drift）
 @freezed
 abstract class Trip with _$Trip {
   const Trip._();
