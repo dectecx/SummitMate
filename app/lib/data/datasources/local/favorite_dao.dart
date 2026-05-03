@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
-import '../../infrastructure/database/app_database.dart';
-import '../datasources/interfaces/i_favorites_local_data_source.dart';
-import '../models/favorite_table.dart';
-import '../../domain/entities/favorite.dart';
+import '../../../infrastructure/database/app_database.dart';
+import '../interfaces/i_favorites_local_data_source.dart';
+import '../../models/favorite_table.dart';
+import '../../../domain/entities/favorite.dart';
 
 part 'favorite_dao.g.dart';
 
@@ -21,14 +21,13 @@ class FavoriteDao extends DatabaseAccessor<AppDatabase> with _$FavoriteDaoMixin 
   @override
   Future<void> toggleFavorite(String id, FavoriteType type, bool isFavorite, {String userId = ''}) async {
     if (isFavorite) {
-      // 假設 id 為 targetId，若需要 UUID 則在此生成
-      // TODO: 確認是否需要在此生成 UUID
       final companion = FavoritesTableCompanion.insert(
-        id: id,
+        id: '${type.name}_$id',
         targetId: id,
         type: type,
         createdAt: DateTime.now(),
         createdBy: Value(userId),
+        updatedAt: Value(DateTime.now()),
       );
       await into(favoritesTable).insertOnConflictUpdate(companion);
     } else {
@@ -39,7 +38,7 @@ class FavoriteDao extends DatabaseAccessor<AppDatabase> with _$FavoriteDaoMixin 
   @override
   Future<void> saveFavorites(List<Favorite> rows) async {
     await batch((batch) {
-      batch.insertAllOnConflictUpdate(favoritesTable, rows.map((e) => e.toCompanion()).toList());
+      batch.insertAllOnConflictUpdate(favoritesTable, rows.map((f) => f.toCompanion()).toList());
     });
   }
 
@@ -50,7 +49,7 @@ class FavoriteDao extends DatabaseAccessor<AppDatabase> with _$FavoriteDaoMixin 
       type: row.type,
       createdAt: row.createdAt,
       createdBy: row.createdBy,
-      updatedAt: row.updatedAt,
+      updatedAt: row.updatedAt ?? row.createdAt,
       updatedBy: row.updatedBy,
     );
   }

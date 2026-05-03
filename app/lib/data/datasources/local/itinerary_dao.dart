@@ -7,8 +7,8 @@ import '../../models/itinerary_item_table.dart';
 
 part 'itinerary_dao.g.dart';
 
-@DriftAccessor(tables: [ItineraryItemsTable])
 @LazySingleton(as: IItineraryLocalDataSource)
+@DriftAccessor(tables: [ItineraryItemsTable])
 class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixin implements IItineraryLocalDataSource {
   ItineraryDao(AppDatabase db) : super(db);
 
@@ -26,6 +26,9 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
   }
 
   @override
+  ItineraryItem? getByKey(dynamic key) => null; // Deprecated
+
+  @override
   Future<ItineraryItem?> getById(String id) async {
     final query = select(itineraryItemsTable)..where((t) => t.id.equals(id));
     final row = await query.getSingleOrNull();
@@ -33,13 +36,20 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
   }
 
   @override
-  Future<void> add(ItineraryItem item) async {
+  Future<void> addItem(ItineraryItem item) async {
     await into(itineraryItemsTable).insert(item.toCompanion());
   }
 
   @override
-  Future<void> update(ItineraryItem item) async {
+  Future<void> updateItem(ItineraryItem item) async {
     await update(itineraryItemsTable).replace(item.toCompanion());
+  }
+
+  @override
+  Future<void> deleteByKey(dynamic key) async {
+    if (key is String) {
+      await deleteById(key);
+    }
   }
 
   @override
@@ -64,12 +74,12 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    // TODO: Implement metadata storage for sync times in AppDatabase if needed
+    // TODO: Implement metadata storage
   }
 
   @override
   Future<DateTime?> getLastSyncTime() async {
-    return null; // TODO: Implement metadata retrieval
+    return null;
   }
 
   ItineraryItem _mapToDomain(ItineraryItemsTableData row) {
@@ -92,10 +102,4 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
       updatedBy: row.updatedBy,
     );
   }
-
-  @override
-  ItineraryItem? getByKey(key) => throw UnimplementedError();
-
-  @override
-  Future<void> delete(key) => throw UnimplementedError();
 }

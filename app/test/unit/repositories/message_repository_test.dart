@@ -4,7 +4,7 @@ import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_message_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_message_remote_data_source.dart';
-import 'package:summitmate/data/models/message_model.dart';
+import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/message_repository.dart';
 
 // Mocks
@@ -17,26 +17,23 @@ void main() {
   late MockMessageLocalDataSource mockLocalDataSource;
   late MockMessageRemoteDataSource mockRemoteDataSource;
 
-  late MessageModel testMessageModel;
+  late Message testMessage;
 
   setUpAll(() {
-    testMessageModel = MessageModel(
+    testMessage = Message(
       id: 'msg_1',
       tripId: 'trip_1',
       userId: 'user_1',
-      user: 'User 1',
+      userName: 'User 1',
       content: 'Hello',
-      timestamp: DateTime.now(),
       createdAt: DateTime.now(),
       createdBy: 'user_1',
       updatedAt: DateTime.now(),
       updatedBy: 'user_1',
-      category: 'general',
-      avatar: '🐻',
+      userAvatar: '🐻',
     );
 
-    registerFallbackValue(testMessageModel);
-    registerFallbackValue(testMessageModel.toDomain());
+    registerFallbackValue(testMessage);
   });
 
   setUp(() {
@@ -46,16 +43,16 @@ void main() {
   });
 
   group('MessageRepository', () {
-    test('getByTripId delegates to localDataSource getAll and filters', () {
-      when(() => mockLocalDataSource.getAll()).thenReturn([testMessageModel]);
-      final result = repository.getByTripId('trip_1');
-      expect(result, [testMessageModel.toDomain()]);
+    test('getByTripId delegates to localDataSource getAll and filters', () async {
+      when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testMessage]);
+      final result = await repository.getByTripId('trip_1');
+      expect(result, [testMessage]);
       verify(() => mockLocalDataSource.getAll()).called(1);
     });
 
     group('getRemoteMessages', () {
       test('fetches from remote and saves to local', () async {
-        final paginated = PaginatedList(items: [testMessageModel.toDomain()], page: 1, total: 1, hasMore: false);
+        final paginated = PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false);
         when(
           () => mockRemoteDataSource.getMessages(
             any(),
@@ -98,7 +95,7 @@ void main() {
             limit: any(named: 'limit'),
           ),
         ).thenAnswer(
-          (_) async => Success(PaginatedList(items: [testMessageModel.toDomain()], page: 1, total: 1, hasMore: false)),
+          (_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)),
         );
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
 
@@ -121,14 +118,14 @@ void main() {
     group('deleteById', () {
       test('deletes from local and remote', () async {
         // Arrange
-        when(() => mockLocalDataSource.delete(any())).thenAnswer((_) async {});
+        when(() => mockLocalDataSource.deleteById(any())).thenAnswer((_) async {});
         when(() => mockRemoteDataSource.deleteMessage(any(), any())).thenAnswer((_) async => const Success(null));
 
         // Act
         await repository.deleteById('trip_1', 'msg_1');
 
         // Assert
-        verify(() => mockLocalDataSource.delete('msg_1')).called(1);
+        verify(() => mockLocalDataSource.deleteById('msg_1')).called(1);
         verify(() => mockRemoteDataSource.deleteMessage('trip_1', 'msg_1')).called(1);
       });
     });

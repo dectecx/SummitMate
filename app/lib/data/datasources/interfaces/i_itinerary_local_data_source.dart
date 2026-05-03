@@ -15,13 +15,13 @@ abstract interface class IItineraryLocalDataSource {
   Future<ItineraryItem?> getById(String id);
 
   /// 新增行程項目
-  Future<void> add(ItineraryItem item);
+  Future<void> addItem(ItineraryItem item);
 
   /// 更新行程項目
-  Future<void> update(ItineraryItem item);
+  Future<void> updateItem(ItineraryItem item);
 
   /// 刪除行程項目 (透過 Key，已廢棄)
-  Future<void> delete(dynamic key);
+  Future<void> deleteByKey(dynamic key);
 
   /// 刪除行程項目 (透過 ID)
   Future<void> deleteById(String id);

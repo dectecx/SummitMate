@@ -21,13 +21,13 @@ abstract interface class IGearLocalDataSource {
   Future<GearItem?> getById(String id);
 
   /// 新增裝備項目
-  Future<int> add(GearItem item);
+  Future<int> addItem(GearItem item);
 
   /// 更新裝備項目
-  Future<void> update(GearItem item);
+  Future<void> updateItem(GearItem item);
 
   /// 刪除裝備項目 (透過 Key，已廢棄)
-  Future<void> delete(dynamic key);
+  Future<void> deleteByKey(dynamic key);
 
   /// 刪除裝備項目 (透過 ID)
   Future<void> deleteById(String id);

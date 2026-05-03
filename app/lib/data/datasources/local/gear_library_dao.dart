@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
-import '../../infrastructure/database/app_database.dart';
-import '../datasources/interfaces/i_gear_library_local_data_source.dart';
-import '../models/gear_library_item_table.dart';
-import '../../domain/entities/gear_library_item.dart';
+import '../../../infrastructure/database/app_database.dart';
+import '../interfaces/i_gear_library_local_data_source.dart';
+import '../../models/gear_library_item_table.dart';
+import '../../../domain/entities/gear_library_item.dart';
 
 part 'gear_library_dao.g.dart';
 
