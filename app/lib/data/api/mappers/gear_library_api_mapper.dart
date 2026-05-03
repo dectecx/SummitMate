@@ -1,4 +1,3 @@
-import '../../models/gear_library_item_model.dart';
 import '../../../domain/enums/sync_status.dart';
 import '../../../domain/entities/gear_library_item.dart';
 import '../models/gear_library_api_models.dart';
@@ -31,17 +30,6 @@ class GearLibraryApiMapper {
       category: item.category,
       notes: item.notes,
       isArchived: item.isArchived,
-    );
-  }
-
-  /// GearLibraryItemModel → GearLibraryItemRequest
-  static GearLibraryItemRequest toRequestFromModel(GearLibraryItemModel model) {
-    return GearLibraryItemRequest(
-      name: model.name,
-      weight: model.weight,
-      category: model.category,
-      notes: model.notes,
-      isArchived: model.isArchived,
     );
   }
 }
