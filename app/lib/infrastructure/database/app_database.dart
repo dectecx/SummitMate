@@ -100,5 +100,17 @@ class AppDatabase extends _$AppDatabase {
 }
 
 QueryExecutor _openConnection() {
-  return driftDatabase(name: 'summitmate_db', native: const DriftNativeOptions());
+  return driftDatabase(
+    name: 'summitmate_db',
+    native: const DriftNativeOptions(),
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+      onResult: (result) {
+        if (result.missingFeatures.isNotEmpty) {
+          print('Using ${result.chosenImplementation} due to missing browser features: ${result.missingFeatures}');
+        }
+      },
+    ),
+  );
 }

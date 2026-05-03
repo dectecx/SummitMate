@@ -7,6 +7,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../env_config.dart';
 import '../../infrastructure/infrastructure.dart';
 import '../../infrastructure/interceptors/connectivity_interceptor.dart';
+import '../../infrastructure/database/app_database.dart';
 
 @module
 abstract class RegisterModule {
@@ -36,4 +37,7 @@ abstract class RegisterModule {
 
   @lazySingleton
   InternetConnectionChecker get internetConnectionChecker => InternetConnectionChecker.createInstance();
+
+  @lazySingleton
+  AppDatabase get appDatabase => AppDatabase();
 }

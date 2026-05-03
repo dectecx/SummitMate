@@ -198,6 +198,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i973.InternetConnectionChecker>(
       () => registerModule.internetConnectionChecker,
     );
+    gh.lazySingleton<_i89.AppDatabase>(() => registerModule.appDatabase);
     gh.lazySingleton<_i1007.PlatformService>(() => _i1007.PlatformService());
     gh.lazySingleton<_i455.CwaWeatherSource>(() => _i455.CwaWeatherSource());
     gh.lazySingleton<_i304.IPollService>(() => _i133.MockPollService());
