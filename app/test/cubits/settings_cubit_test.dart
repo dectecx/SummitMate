@@ -24,7 +24,7 @@ void main() {
       mockPrefs = MockSharedPreferences();
       testSettings = Settings(username: 'TestUser', isOfflineMode: false, avatar: 'bear');
 
-      when(() => mockRepo.getSettings()).thenReturn(testSettings);
+      when(() => mockRepo.getSettings()).thenAnswer((_) async => testSettings);
       when(() => mockRepo.updateUsername(any())).thenAnswer((_) async {});
       when(() => mockRepo.updateAvatar(any())).thenAnswer((_) async {});
       when(() => mockRepo.updateOfflineMode(any())).thenAnswer((_) async {});

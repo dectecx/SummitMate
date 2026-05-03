@@ -7,29 +7,29 @@ void main() {
       'id': 'poll-1',
       'title': 'Test Poll',
       'description': 'Description',
-      'creator_id': 'user-1',
-      'created_at': '2024-01-01T00:00:00Z',
-      'created_by': 'user-1',
-      'updated_at': '2024-01-01T00:00:00Z',
-      'updated_by': 'user-1',
+      'creatorId': 'user-1',
+      'createdAt': '2024-01-01T00:00:00Z',
+      'createdBy': 'user-1',
+      'updatedAt': '2024-01-01T00:00:00Z',
+      'updatedBy': 'user-1',
       'options': [
         {
           'id': 'opt-1',
-          'poll_id': 'poll-1',
+          'pollId': 'poll-1',
           'text': 'Option 1',
-          'creator_id': 'user-1',
-          'created_at': '2024-01-01T00:00:00Z',
-          'created_by': 'user-1',
-          'updated_at': '2024-01-01T00:00:00Z',
-          'updated_by': 'user-1',
-          'vote_count': 5,
+          'creatorId': 'user-1',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'createdBy': 'user-1',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          'updatedBy': 'user-1',
+          'voteCount': 5,
           'voters': [
-            {'user_id': 'u1', 'user_name': 'User 1'},
+            {'userId': 'u1', 'userName': 'User 1'},
           ],
         },
       ],
-      'my_votes': ['opt-1'],
-      'total_votes': 5,
+      'myVotes': ['opt-1'],
+      'totalVotes': 5,
     };
 
     test('Positive: Should parse Poll and PollOption from JSON', () {
@@ -43,7 +43,7 @@ void main() {
       expect(option.id, 'opt-1');
       expect(option.text, 'Option 1');
       expect(option.voteCount, 5);
-      expect(option.voters.first['user_name'], 'User 1');
+      expect(option.voters.first['userName'], 'User 1');
       expect(poll.myVotes, contains('opt-1'));
     });
 
@@ -76,18 +76,18 @@ void main() {
 
       expect(json['id'], 'poll-1');
       expect(json['options'][0]['id'], 'o1');
-      expect(json['total_votes'], 1);
+      expect(json['totalVotes'], 1);
     });
 
     test('Edge: Should handle empty options and my_votes', () {
       final minimalJson = {
         'id': 'poll-2',
         'title': 'Empty Poll',
-        'creator_id': 'u2',
-        'created_at': '2024-01-01T00:00:00Z',
-        'created_by': 'u2',
-        'updated_at': '2024-01-01T00:00:00Z',
-        'updated_by': 'u2',
+        'creatorId': 'u2',
+        'createdAt': '2024-01-01T00:00:00Z',
+        'createdBy': 'u2',
+        'updatedAt': '2024-01-01T00:00:00Z',
+        'updatedBy': 'u2',
       };
 
       final poll = Poll.fromJson(minimalJson);
@@ -101,12 +101,12 @@ void main() {
       final poll = Poll.fromJson({
         'id': 'p',
         'title': 'T',
-        'creator_id': 'c',
-        'created_at': '2024-01-01T00:00:00Z',
-        'created_by': 'c',
-        'updated_at': '2024-01-01T00:00:00Z',
-        'updated_by': 'c',
-        'total_votes': 999999999,
+        'creatorId': 'c',
+        'createdAt': '2024-01-01T00:00:00Z',
+        'createdBy': 'c',
+        'updatedAt': '2024-01-01T00:00:00Z',
+        'updatedBy': 'c',
+        'totalVotes': 999999999,
       });
 
       expect(poll.totalVotes, 999999999);
@@ -114,7 +114,7 @@ void main() {
 
     test('Exception: Should handle malformed dates gracefully (if possible)', () {
       // JsonSerializable by default throws if it can't parse DateTime unless handled
-      final badDateJson = {'id': 'p', 'title': 'T', 'creator_id': 'c', 'created_at': 'not-a-date'};
+      final badDateJson = {'id': 'p', 'title': 'T', 'creatorId': 'c', 'createdAt': 'not-a-date'};
 
       expect(() => Poll.fromJson(badDateJson), throwsA(isA<FormatException>()));
     });

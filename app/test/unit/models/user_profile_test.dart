@@ -7,10 +7,10 @@ void main() {
     final testUserJson = {
       'id': 'user-123',
       'email': 'test@example.com',
-      'display_name': 'Test User',
+      'displayName': 'Test User',
       'avatar': '🐻',
       'role': RoleConstants.leader,
-      'is_verified': true,
+      'isVerified': true,
     };
 
     test('Positive: Should parse from valid JSON', () {
@@ -38,14 +38,14 @@ void main() {
 
       expect(json['id'], 'user-123');
       expect(json['email'], 'test@example.com');
-      expect(json['display_name'], 'Test User');
+      expect(json['displayName'], 'Test User');
       expect(json['avatar'], '🐻');
       expect(json['role'], RoleConstants.leader);
-      expect(json['is_verified'], isTrue);
+      expect(json['isVerified'], isTrue);
     });
 
     test('Edge: Should use default values for missing optional fields', () {
-      final minimalJson = {'id': 'user-456', 'email': 'min@example.com', 'display_name': 'Minimal User'};
+      final minimalJson = {'id': 'user-456', 'email': 'min@example.com', 'displayName': 'Minimal User'};
 
       final user = UserProfile.fromJson(minimalJson);
 
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('Negative: Should throw when required "id" is missing', () {
-      final legacyJson = {'uuid': 'old-uuid', 'email': 'old@example.com', 'display_name': 'Old User'};
+      final legacyJson = {'uuid': 'old-uuid', 'email': 'old@example.com', 'displayName': 'Old User'};
 
       // Since we removed @JsonKey(name: 'uuid') and id is not present, it should throw or result in error if not handled
       expect(() => UserProfile.fromJson(legacyJson), throwsA(anything));
@@ -66,7 +66,7 @@ void main() {
       final invalidJson = {
         'id': 'user-123',
         'email': 'test@example.com',
-        'display_name': 12345, // Should be String
+        'displayName': 12345, // Should be String
       };
 
       expect(() => UserProfile.fromJson(invalidJson), throwsA(isA<TypeError>()));

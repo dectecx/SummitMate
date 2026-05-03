@@ -218,7 +218,7 @@ void main() {
 
   group('AuthService.refreshToken', () {
     test('returns success and saves new token', () async {
-      when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => 'old-token');
+      when(() => mockSessionRepo.getRefreshToken()).thenAnswer((_) async => 'old-refresh-token');
       when(() => mockApiClient.post('/auth/refresh', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/refresh'),

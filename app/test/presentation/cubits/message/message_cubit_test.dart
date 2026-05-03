@@ -141,8 +141,11 @@ void main() {
       expect: () => [
         isA<MessageLoaded>().having((s) => s.isSyncing, 'syncing', true),
         isA<MessageLoaded>()
+            .having((s) => s.allMessages, 'messages updated while syncing', [testMessage1])
+            .having((s) => s.isSyncing, 'still syncing', true),
+        isA<MessageLoaded>()
             .having((s) => s.allMessages, 'messages', [testMessage1])
-            .having((s) => s.isSyncing, 'syncing', false),
+            .having((s) => s.isSyncing, 'syncing finished', false),
       ],
     );
 

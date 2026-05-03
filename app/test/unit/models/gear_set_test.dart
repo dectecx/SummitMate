@@ -8,14 +8,14 @@ void main() {
         'id': 'uuid-123',
         'title': 'Test Set',
         'author': 'User',
-        'total_weight': 1500.5, // Number
-        'item_count': 10, // Number
+        'totalWeight': 1500.5, // Number
+        'itemCount': 10, // Number
         'visibility': 'public',
-        'uploaded_at': '2025-01-01T10:00:00.000Z',
-        'created_at': '2025-01-01T10:00:00.000Z',
-        'created_by': 'User',
-        'updated_at': '2025-01-01T10:00:00.000Z',
-        'updated_by': 'User',
+        'uploadedAt': '2025-01-01T10:00:00.000Z',
+        'createdAt': '2025-01-01T10:00:00.000Z',
+        'createdBy': 'User',
+        'updatedAt': '2025-01-01T10:00:00.000Z',
+        'updatedBy': 'User',
         'items': [],
       };
 
@@ -39,14 +39,14 @@ void main() {
         'id': 'uuid-123',
         'title': 'Test Set',
         'author': 'User',
-        'total_weight': 10.0,
-        'item_count': 1,
+        'totalWeight': 10.0,
+        'itemCount': 1,
         'visibility': 'public',
-        'uploaded_at': '2025-01-01T10:00:00.000Z',
-        'created_at': '2025-01-01T10:00:00.000Z',
-        'created_by': 'User',
-        'updated_at': '2025-01-01T10:00:00.000Z',
-        'updated_by': 'User',
+        'uploadedAt': '2025-01-01T10:00:00.000Z',
+        'createdAt': '2025-01-01T10:00:00.000Z',
+        'createdBy': 'User',
+        'updatedAt': '2025-01-01T10:00:00.000Z',
+        'updatedBy': 'User',
         'meals': [
           {
             'day': 'D1',
@@ -86,10 +86,10 @@ void main() {
 
       expect(json['id'], 'uuid-123');
       expect(json['title'], 'Test Set');
-      expect(json['total_weight'], 1200.0);
-      expect(json['item_count'], 5);
+      expect(json['totalWeight'], 1200.0);
+      expect(json['itemCount'], 5);
       expect(json['visibility'], 'private');
-      expect(json['uploaded_at'], '2025-01-01T10:00:00.000Z');
+      expect(json['uploadedAt'], '2025-01-01T10:00:00.000Z');
       expect(json['items'], isA<List>());
       expect((json['items'] as List).length, 1);
     });

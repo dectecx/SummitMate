@@ -57,8 +57,8 @@ class MessageRepository implements IMessageRepository {
   }) async {
     final result = await _remoteDataSource.addMessage(tripId: tripId, content: content, replyToId: replyToId);
     if (result is Success<String, Exception>) {
-      // 成功後嘗試背景更新本地資料
-      getRemoteMessages(tripId);
+      // 成功後嘗試更新本地資料
+      await getRemoteMessages(tripId);
     }
     return result;
   }
