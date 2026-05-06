@@ -52,7 +52,8 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 		categoryPtr = &c
 	}
 
-	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, categoryPtr, creatorIDPtr, page, limit, search)
+	userID, _ := appMiddleware.GetUserIDFromContext(r.Context())
+	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, categoryPtr, creatorIDPtr, page, limit, search, userID)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
@@ -141,7 +142,8 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
-	event, err := h.service.GetEvent(r.Context(), id.String())
+	userID, _ := appMiddleware.GetUserIDFromContext(r.Context())
+	event, err := h.service.GetEvent(r.Context(), id.String(), userID)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
@@ -436,4 +438,46 @@ func (h *GroupEventHandler) PostGroupEventsIdTripSnapshot(w http.ResponseWriter,
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *GroupEventHandler) GetGroupEventsMy(w http.ResponseWriter, r *http.Request, params api.GetGroupEventsMyParams) {
+	userID, ok := appMiddleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	page := 1
+	if params.Page != nil {
+		page = *params.Page
+	}
+	limit := 20
+	if params.Limit != nil {
+		limit = *params.Limit
+	}
+	listType := string(params.Type)
+
+
+	events, total, hasMore, err := h.service.ListMyEvents(r.Context(), userID, listType, page, limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	items := make([]api.GroupEvent, len(events))
+	for i, e := range events {
+		items[i] = ToGroupEventResponse(e)
+	}
+
+	resp := api.GroupEventPaginationResponse{
+		Items: items,
+		Pagination: api.PaginationMetadata{
+			HasMore: hasMore,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
 }

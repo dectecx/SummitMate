@@ -1855,9 +1855,48 @@ paths:
           description: 未登入
         "404":
           description: 找不到該收藏紀錄
+  /group-events/my:
+    get:
+      tags:
+        - Community
+      summary: 列出我的活動
+      description: "取得使用者建立的活動或是已報名的活動"
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          description: "類型 (host: 我主辦的, apply: 我報名的, like: 我收藏的)"
+          required: true
+          schema:
+            type: string
+            enum: [host, apply, like]
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: 成功取得活動列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEventPaginationResponse"
+        "401":
+          description: 未登入
+
   /group-events:
     get:
-      tags: [Community]
+      tags:
+        - Community
       summary: 列出社群活動
       parameters:
         - name: status
@@ -3311,6 +3350,14 @@ components:
           type: integer
         comment_count:
           type: integer
+        application_count:
+          type: integer
+        is_liked:
+          type: boolean
+        my_application_status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+          nullable: true
         created_at:
           type: string
           format: date-time

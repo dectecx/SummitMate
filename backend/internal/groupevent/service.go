@@ -12,8 +12,9 @@ import (
 
 type GroupEventService interface {
 	CreateEvent(ctx context.Context, event *GroupEvent) error
-	GetEvent(ctx context.Context, id string) (*GroupEvent, error)
-	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error)
+	GetEvent(ctx context.Context, id string, userID string) (*GroupEvent, error)
+	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error)
+	ListMyEvents(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error)
 	UpdateEvent(ctx context.Context, event *GroupEvent, userID string) error
 	DeleteEvent(ctx context.Context, id string, userID string) error
 
@@ -60,16 +61,20 @@ func (s *groupEventService) CreateEvent(ctx context.Context, event *GroupEvent) 
 	return nil
 }
 
-func (s *groupEventService) GetEvent(ctx context.Context, id string) (*GroupEvent, error) {
-	return s.repo.GetEventByID(ctx, id)
+func (s *groupEventService) GetEvent(ctx context.Context, id string, userID string) (*GroupEvent, error) {
+	return s.repo.GetEventByID(ctx, id, userID)
 }
 
-func (s *groupEventService) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
-	return s.repo.ListEvents(ctx, status, category, creatorID, page, limit, search)
+func (s *groupEventService) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
+	return s.repo.ListEvents(ctx, status, category, creatorID, page, limit, search, userID)
+}
+
+func (s *groupEventService) ListMyEvents(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error) {
+	return s.repo.ListEventsByUser(ctx, userID, listType, page, limit)
 }
 
 func (s *groupEventService) UpdateEvent(ctx context.Context, event *GroupEvent, userID string) error {
-	existing, err := s.repo.GetEventByID(ctx, event.ID)
+	existing, err := s.repo.GetEventByID(ctx, event.ID, userID)
 	if err != nil {
 		return err
 	}
@@ -91,7 +96,7 @@ func (s *groupEventService) UpdateEvent(ctx context.Context, event *GroupEvent, 
 }
 
 func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID string) error {
-	existing, err := s.repo.GetEventByID(ctx, id)
+	existing, err := s.repo.GetEventByID(ctx, id, userID)
 	if err != nil {
 		return err
 	}
@@ -128,7 +133,7 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 }
 
 func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApplication) error {
-	event, err := s.repo.GetEventByID(ctx, app.EventID)
+	event, err := s.repo.GetEventByID(ctx, app.EventID, "") // Use empty userID for basic check
 	if err != nil {
 		return err
 	}
@@ -169,7 +174,7 @@ func (s *groupEventService) CancelApplication(ctx context.Context, appID string,
 
 	// 如果報名已被核准且活動有連結行程，移除行程權限
 	if app.Status == ApplicationStatusApproved {
-		event, err := s.repo.GetEventByID(ctx, app.EventID)
+		event, err := s.repo.GetEventByID(ctx, app.EventID, "")
 		if err == nil && event != nil && event.LinkedTripID != nil {
 			_ = s.tripServ.RemoveMember(ctx, *event.LinkedTripID, event.CreatedBy, userID)
 		}
@@ -185,7 +190,7 @@ func (s *groupEventService) CancelApplication(ctx context.Context, appID string,
 }
 
 func (s *groupEventService) ListApplications(ctx context.Context, id string, userID string) ([]*GroupEventApplication, error) {
-	event, err := s.repo.GetEventByID(ctx, id)
+	event, err := s.repo.GetEventByID(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +205,7 @@ func (s *groupEventService) ListApplications(ctx context.Context, id string, use
 }
 
 func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, userID, status, executorID string) error {
-	event, err := s.repo.GetEventByID(ctx, eventID)
+	event, err := s.repo.GetEventByID(ctx, eventID, executorID)
 	if err != nil {
 		return err
 	}
@@ -260,7 +265,7 @@ func (s *groupEventService) ToggleLike(ctx context.Context, eventID, userID stri
 }
 
 func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error {
-	event, err := s.repo.GetEventByID(ctx, eventID)
+	event, err := s.repo.GetEventByID(ctx, eventID, userID)
 	if err != nil {
 		return err
 	}
@@ -307,7 +312,7 @@ func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, 
 }
 
 func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) error {
-	event, err := s.repo.GetEventByID(ctx, eventID)
+	event, err := s.repo.GetEventByID(ctx, eventID, userID)
 	if err != nil {
 		return err
 	}

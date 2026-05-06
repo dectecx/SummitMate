@@ -97,7 +97,7 @@ class _GearTabState extends State<GearTab> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is GearLoading && (state as dynamic).items == null) {
+          if (state is GearLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 

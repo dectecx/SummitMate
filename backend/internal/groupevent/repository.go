@@ -11,8 +11,9 @@ import (
 
 type GroupEventRepository interface {
 	CreateEvent(ctx context.Context, event *GroupEvent) error
-	GetEventByID(ctx context.Context, id string) (*GroupEvent, error)
-	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error)
+	GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error)
+	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error)
+	ListEventsByUser(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error)
 	UpdateEvent(ctx context.Context, event *GroupEvent) error
 	DeleteEvent(ctx context.Context, id string) error
 
@@ -61,22 +62,27 @@ func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEven
 	return nil
 }
 
-func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*GroupEvent, error) {
+func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error) {
 	query := `
-		SELECT id, title, description, category, location, start_date, end_date,
-            status, max_members, approval_required, private_message, linked_trip_id,
-            trip_snapshot, snapshot_updated_at,
-            like_count, comment_count, created_at, created_by, updated_at, updated_by
-		FROM group_events
-		WHERE id = $1
+		SELECT 
+			e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+			e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
+			e.trip_snapshot, e.snapshot_updated_at,
+			e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
+			(SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
+			EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $2) as is_liked,
+			(SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $2 LIMIT 1) as my_application_status
+		FROM group_events e
+		WHERE e.id = $1
 	`
 	event := &GroupEvent{}
 	db := database.GetQuerier(ctx, r.db)
-	err := db.QueryRow(ctx, query, id).Scan(
+	err := db.QueryRow(ctx, query, id, userID).Scan(
 		&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 		&event.TripSnapshot, &event.SnapshotUpdatedAt,
 		&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
+		&event.ApplicationCount, &event.IsLiked, &event.MyApplicationStatus,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -87,7 +93,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string) (*Gr
 	return event, nil
 }
 
-func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
+func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
 	if limit <= 0 {
 		limit = 20
 	}
@@ -100,39 +106,43 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 
 	if status != nil {
 		args = append(args, *status)
-		whereClause += fmt.Sprintf(" AND status = $%d", len(args))
+		whereClause += fmt.Sprintf(" AND e.status = $%d", len(args))
 	}
 	if category != nil {
 		args = append(args, *category)
-		whereClause += fmt.Sprintf(" AND category = $%d", len(args))
+		whereClause += fmt.Sprintf(" AND e.category = $%d", len(args))
 	}
 	if creatorID != nil {
 		args = append(args, *creatorID)
-		whereClause += fmt.Sprintf(" AND created_by = $%d", len(args))
+		whereClause += fmt.Sprintf(" AND e.created_by = $%d", len(args))
 	}
 	if search != "" {
 		args = append(args, "%"+search+"%")
-		whereClause += fmt.Sprintf(" AND title ILIKE $%d", len(args))
+		whereClause += fmt.Sprintf(" AND e.title ILIKE $%d", len(args))
 	}
 
 	db := database.GetQuerier(ctx, r.db)
 	var total int
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM group_events %s", whereClause)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM group_events e %s", whereClause)
 	if err := db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, false, fmt.Errorf("count group events: %w", err)
 	}
 
-	dataArgs := append(args, limit, (page-1)*limit)
+	dataArgs := append(args, userID, limit, (page-1)*limit)
 	mainQuery := fmt.Sprintf(`
-		SELECT id, title, description, category, location, start_date, end_date,
-			status, max_members, approval_required, private_message, linked_trip_id,
-			trip_snapshot, snapshot_updated_at,
-			like_count, comment_count, created_at, created_by, updated_at, updated_by
-		FROM group_events
+		SELECT 
+			e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+			e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
+			e.trip_snapshot, e.snapshot_updated_at,
+			e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
+			(SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
+			EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $%d) as is_liked,
+			(SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $%d LIMIT 1) as my_application_status
+		FROM group_events e
 		%s
-		ORDER BY created_at DESC, id DESC
+		ORDER BY e.created_at DESC, e.id DESC
 		LIMIT $%d OFFSET $%d
-	`, whereClause, len(args)+1, len(args)+2)
+	`, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
 
 	rows, err := db.Query(ctx, mainQuery, dataArgs...)
 	if err != nil {
@@ -148,6 +158,7 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 			&event.TripSnapshot, &event.SnapshotUpdatedAt,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
+			&event.ApplicationCount, &event.IsLiked, &event.MyApplicationStatus,
 		)
 		if err != nil {
 			return nil, 0, false, fmt.Errorf("scan group event row: %w", err)
@@ -158,6 +169,73 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 		return nil, 0, false, fmt.Errorf("iterate group event rows: %w", err)
 	}
 
+	return events, total, page*limit < total, nil
+}
+
+func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	whereClause := ""
+	switch listType {
+	case "host":
+		whereClause = "WHERE e.created_by = $1"
+	case "apply":
+		whereClause = "WHERE EXISTS (SELECT 1 FROM group_event_applications WHERE event_id = e.id AND user_id = $1)"
+	case "like":
+		whereClause = "WHERE EXISTS (SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1)"
+	default:
+		// Default to host if unknown
+		whereClause = "WHERE e.created_by = $1"
+	}
+
+	db := database.GetQuerier(ctx, r.db)
+	var total int
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM group_events e %s", whereClause)
+	if err := db.QueryRow(ctx, countQuery, userID).Scan(&total); err != nil {
+		return nil, 0, false, fmt.Errorf("count my group events: %w", err)
+	}
+
+	mainQuery := fmt.Sprintf(`
+		SELECT 
+			e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+			e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
+			e.trip_snapshot, e.snapshot_updated_at,
+			e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
+			(SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
+			EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1) as is_liked,
+			(SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $1 LIMIT 1) as my_application_status
+		FROM group_events e
+		%s
+		ORDER BY e.created_at DESC, e.id DESC
+		LIMIT $2 OFFSET $3
+	`, whereClause)
+
+	rows, err := db.Query(ctx, mainQuery, userID, limit, (page-1)*limit)
+	if err != nil {
+		return nil, 0, false, fmt.Errorf("query my group events: %w", err)
+	}
+	defer rows.Close()
+
+	var events []*GroupEvent
+	for rows.Next() {
+		event := &GroupEvent{}
+		err := rows.Scan(
+			&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
+			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
+			&event.TripSnapshot, &event.SnapshotUpdatedAt,
+			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
+			&event.ApplicationCount, &event.IsLiked, &event.MyApplicationStatus,
+		)
+		if err != nil {
+			return nil, 0, false, fmt.Errorf("scan my group event row: %w", err)
+		}
+		events = append(events, event)
+	}
 	return events, total, page*limit < total, nil
 }
 
