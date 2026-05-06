@@ -38,11 +38,13 @@ class GroupEventLoaded extends GroupEventState {
 
   /// My created events
   List<GroupEvent> get myCreatedEvents =>
-      events.where((e) => e.creatorId == currentUserId).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      events.where((e) => e.creatorId == currentUserId).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// My applied events
   List<GroupEvent> get myAppliedEvents =>
-      events.where((e) => e.myApplicationStatus != null).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      events.where((e) => e.myApplicationStatus != null).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// My liked events
   List<GroupEvent> get myLikedEvents =>
@@ -75,4 +77,61 @@ class GroupEventError extends GroupEventState {
 
   @override
   List<Object?> get props => [message];
+}
+
+/// ─────────────────────────────────────────────
+/// 「我的揪團」專用狀態 (host / apply / like)
+/// ─────────────────────────────────────────────
+
+class MyEventsLoading extends GroupEventState {
+  const MyEventsLoading();
+}
+
+class MyEventsLoaded extends GroupEventState {
+  final List<GroupEvent> events;
+  final String type; // 'host' | 'apply' | 'like'
+  final int page;
+  final int total;
+  final bool hasMore;
+  final bool isLoadingMore;
+
+  const MyEventsLoaded({
+    required this.events,
+    required this.type,
+    required this.page,
+    required this.total,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+  });
+
+  MyEventsLoaded copyWith({
+    List<GroupEvent>? events,
+    String? type,
+    int? page,
+    int? total,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return MyEventsLoaded(
+      events: events ?? this.events,
+      type: type ?? this.type,
+      page: page ?? this.page,
+      total: total ?? this.total,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
+
+  @override
+  List<Object?> get props => [events, type, page, total, hasMore, isLoadingMore];
+}
+
+class MyEventsError extends GroupEventState {
+  final String message;
+  final String type;
+
+  const MyEventsError({required this.message, required this.type});
+
+  @override
+  List<Object?> get props => [message, type];
 }
