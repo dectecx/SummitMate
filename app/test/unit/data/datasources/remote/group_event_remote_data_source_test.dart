@@ -106,6 +106,72 @@ void main() {
     });
   });
 
+  group('GroupEventRemoteDataSource.getMyEvents', () {
+    test('returns paginated list of my events on success', () async {
+      final paginationResponse = GroupEventPaginationResponse.fromJson({
+        'items': [
+          {
+            'id': 'evt-1',
+            'title': 'My Hosted Event',
+            'creator_id': 'u1',
+            'creator_name': 'Me',
+            'creator_avatar': '',
+            'status': 'open',
+            'start_date': '2024-01-01T00:00:00Z',
+            'location': 'Mountain',
+            'description': 'A test trip',
+            'max_members': 10,
+            'application_count': 0,
+            'total_application_count': 0,
+            'approval_required': false,
+            'private_message': '',
+            'like_count': 0,
+            'comment_count': 0,
+            'is_liked': false,
+            'latest_comments': [],
+            'created_at': '2024-01-01T00:00:00Z',
+            'created_by': 'u1',
+            'updated_at': '2024-01-01T00:00:00Z',
+            'updated_by': 'u1',
+          },
+        ],
+        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
+      });
+
+      when(
+        () => mockApiService.listMyEvents(
+          any(),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => paginationResponse);
+
+      final result = await dataSource.getMyEvents(type: 'host', page: 1, limit: 10);
+
+      expect(result, isA<Success>());
+      final paginated = (result as Success).value;
+      expect(paginated.items.length, 1);
+      expect(paginated.items[0].title, 'My Hosted Event');
+
+      verify(() => mockApiService.listMyEvents('host', page: 1, limit: 10)).called(1);
+    });
+
+    test('returns failure on error', () async {
+      when(
+        () => mockApiService.listMyEvents(
+          any(),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenThrow(Exception('API Error'));
+
+      final result = await dataSource.getMyEvents(type: 'host');
+
+      expect(result, isA<Failure>());
+    });
+  });
+
+
   group('GroupEventRemoteDataSource CRUD', () {
     test('createEvent returns ID', () async {
       when(() => mockApiService.createEvent(any())).thenAnswer((_) async => testEventResponse);
