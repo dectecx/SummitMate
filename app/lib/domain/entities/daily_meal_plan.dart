@@ -7,7 +7,6 @@ part 'daily_meal_plan.g.dart';
 
 /// 每日餐食計畫實體 (Domain Entity)
 @freezed
-@JsonSerializable(explicitToJson: true)
 abstract class DailyMealPlan with _$DailyMealPlan {
   const DailyMealPlan._();
 
