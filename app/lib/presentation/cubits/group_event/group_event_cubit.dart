@@ -292,6 +292,74 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     return true;
   }
 
+  /// ── 我的揪團 ──────────────────────────────────
+  /// type: 'host' | 'apply' | 'like'
+  Future<void> fetchMyEvents({required String type}) async {
+    if (_isGuest) {
+      ToastService.warning('請登入以查看我的揪團');
+      return;
+    }
+    if (_isOffline) {
+      ToastService.warning('離線模式無法取得我的揪團');
+      return;
+    }
+
+    emit(const MyEventsLoading());
+
+    try {
+      final result = await _groupEventRepository.syncMyEvents(type: type, page: 1);
+      switch (result) {
+        case Success(value: final paginated):
+          emit(MyEventsLoaded(
+            events: paginated.items,
+            type: type,
+            page: 1,
+            total: paginated.total,
+            hasMore: paginated.hasMore,
+          ));
+        case Failure(exception: final e):
+          emit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
+      }
+    } catch (e) {
+      LogService.error('fetchMyEvents ($type) failed: $e', source: _source);
+      emit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
+    }
+  }
+
+  /// 載入下一頁我的揪團
+  Future<void> loadMoreMyEvents() async {
+    final current = state;
+    if (current is! MyEventsLoaded) return;
+    if (!current.hasMore || current.isLoadingMore) return;
+    if (_isOffline) return;
+
+    emit(current.copyWith(isLoadingMore: true));
+
+    try {
+      final nextPage = current.page + 1;
+      final result = await _groupEventRepository.syncMyEvents(
+        type: current.type,
+        page: nextPage,
+      );
+      switch (result) {
+        case Success(value: final paginated):
+          emit(current.copyWith(
+            events: [...current.events, ...paginated.items],
+            page: nextPage,
+            total: paginated.total,
+            hasMore: paginated.hasMore,
+            isLoadingMore: false,
+          ));
+        case Failure(exception: final e):
+          LogService.error('loadMoreMyEvents failed: $e', source: _source);
+          emit(current.copyWith(isLoadingMore: false));
+      }
+    } catch (e) {
+      LogService.error('loadMoreMyEvents exception: $e', source: _source);
+      emit(current.copyWith(isLoadingMore: false));
+    }
+  }
+
   void reset() {
     emit(const GroupEventInitial());
   }
