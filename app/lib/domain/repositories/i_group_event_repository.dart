@@ -1,4 +1,5 @@
 import '../../core/error/result.dart';
+import '../../core/models/paginated_list.dart';
 import 'package:summitmate/domain/domain.dart';
 
 /// 揪團 Repository 抽象介面
@@ -53,10 +54,16 @@ abstract interface class IGroupEventRepository {
   /// [eventId] 揪團 ID
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId);
 
-  /// 同步使用者報名紀錄
+  /// 獲取我的揪團列表（雲端，支援 host / apply / like 三種類型）
   ///
-  /// [userId] 使用者 ID
-  Future<Result<List<GroupEventApplication>, Exception>> syncMyApplications(String userId);
+  /// [type] 揪團類型：host（我主辦）、apply（我報名）、like（我收藏）
+  /// [page] 頁碼（可選）
+  /// [limit] 每頁筆數（可選）
+  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({
+    required String type,
+    int? page,
+    int? limit,
+  });
 
   // ========== Remote Write Operations ==========
 
