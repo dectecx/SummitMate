@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../enums/sync_status.dart';
 
 part 'gear_item.freezed.dart';
 part 'gear_item.g.dart';
@@ -18,6 +19,7 @@ abstract class GearItem with _$GearItem {
     @Default(0) int orderIndex,
     @Default(1) int quantity,
     String? libraryItemId,
+    @Default(SyncStatus.synced) SyncStatus syncStatus,
     DateTime? createdAt,
     String? createdBy,
     DateTime? updatedAt,

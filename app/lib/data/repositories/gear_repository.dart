@@ -140,4 +140,11 @@ class GearRepository implements IGearRepository {
     // TODO: 這裡應呼叫 Library 相關 Service 獲取資料並轉入
     return const Success(null);
   }
+
+  @override
+  Future<Result<void, Exception>> sync(String tripId) async {
+    // TODO: 實作裝備同步邏輯 (Fetch from remote & push local changes)
+    await Future.delayed(const Duration(seconds: 1)); // 模擬網路延遲
+    return const Success(null);
+  }
 }

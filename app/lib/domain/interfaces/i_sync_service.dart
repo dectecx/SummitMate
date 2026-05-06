@@ -1,4 +1,4 @@
-﻿import '../../core/error/result.dart';
+import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -6,8 +6,10 @@ import 'package:summitmate/domain/domain.dart';
 class SyncResult {
   final bool isSuccess;
   final bool itinerarySynced;
+  final bool gearSynced;
   final bool messagesSynced;
   final bool pollsSynced;
+  final bool eventsSynced;
   final List<String> errors;
   final String? errorMessage;
   final DateTime syncedAt;
@@ -16,8 +18,10 @@ class SyncResult {
   const SyncResult({
     required this.isSuccess,
     this.itinerarySynced = false,
+    this.gearSynced = false,
     this.messagesSynced = false,
     this.pollsSynced = false,
+    this.eventsSynced = false,
     this.errors = const [],
     this.errorMessage,
     required this.syncedAt,
@@ -28,18 +32,24 @@ class SyncResult {
   ///
   /// [itinerarySynced] 是否同步了行程
   /// [messagesSynced] 是否同步了留言
+  /// [gearSynced] 是否同步了裝備
+  /// [eventsSynced] 是否同步了活動
   /// [pollsSynced] 是否同步了投票
   /// [syncedAt] 同步時間
   factory SyncResult.success({
     bool itinerarySynced = true,
+    bool gearSynced = true,
     bool messagesSynced = true,
+    bool eventsSynced = true,
     bool pollsSynced = false,
     DateTime? syncedAt,
   }) {
     return SyncResult(
       isSuccess: true,
       itinerarySynced: itinerarySynced,
+      gearSynced: gearSynced,
       messagesSynced: messagesSynced,
+      eventsSynced: eventsSynced,
       pollsSynced: pollsSynced,
       syncedAt: syncedAt ?? DateTime.now(),
     );
@@ -87,4 +97,10 @@ abstract interface class ISyncService {
 
   /// 重設同步時間 (用於測試)
   void resetLastSyncTimes();
+
+  /// 監看待同步項目總數
+  Stream<int> watchPendingSyncCount();
+
+  /// 監看特定類型的同步狀態
+  Stream<SyncStatus> watchSyncStatus(String table);
 }

@@ -31,4 +31,14 @@ class MockSyncService implements ISyncService {
     _lastItinerarySyncTime = null;
     _lastMessagesSyncTime = null;
   }
+
+  @override
+  Stream<int> watchPendingSyncCount() {
+    return Stream.value(0);
+  }
+
+  @override
+  Stream<SyncStatus> watchSyncStatus(String table) {
+    return Stream.value(SyncStatus.synced);
+  }
 }

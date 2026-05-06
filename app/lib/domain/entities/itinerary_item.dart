@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../enums/sync_status.dart';
 
 part 'itinerary_item.freezed.dart';
 part 'itinerary_item.g.dart';
@@ -21,6 +22,7 @@ abstract class ItineraryItem with _$ItineraryItem {
     String? imageAsset,
     @Default(false) bool isCheckedIn,
     DateTime? checkedInAt,
+    @Default(SyncStatus.synced) SyncStatus syncStatus,
     DateTime? createdAt,
     String? createdBy,
     DateTime? updatedAt,

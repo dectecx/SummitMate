@@ -1,61 +1,72 @@
 import 'package:equatable/equatable.dart';
 
 abstract class SyncState extends Equatable {
-  const SyncState();
+  final int pendingCount;
+  final bool isOnline;
+
+  const SyncState({this.pendingCount = 0, this.isOnline = true});
+
+  bool get isInProgress => this is SyncInProgress;
+  bool get isFailure => this is SyncFailure;
+  bool get isSuccess => this is SyncSuccess;
+  bool get isInitial => this is SyncInitial;
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [pendingCount, isOnline];
 }
 
 class SyncInitial extends SyncState {
-  /// 上次同步時間
   final DateTime? lastSyncTime;
 
-  /// 建構子
-  ///
-  /// [lastSyncTime] 上次同步時間 (可為 null)
-  const SyncInitial({this.lastSyncTime});
+  const SyncInitial({
+    this.lastSyncTime,
+    int pendingCount = 0,
+    bool isOnline = true,
+  }) : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
-  List<Object?> get props => [lastSyncTime];
+  List<Object?> get props => [...super.props, lastSyncTime];
 }
 
 class SyncInProgress extends SyncState {
   final String message;
 
-  /// 建構子
-  ///
-  /// [message] 進度訊息
-  const SyncInProgress({this.message = '正在同步資料...'});
+  const SyncInProgress({
+    this.message = '正在同步資料...',
+    int pendingCount = 0,
+    bool isOnline = true,
+  }) : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [...super.props, message];
 }
 
 class SyncSuccess extends SyncState {
   final DateTime timestamp;
   final String message;
 
-  /// 建構子
-  ///
-  /// [timestamp] 同步完成時間
-  /// [message] 成功訊息
-  const SyncSuccess({required this.timestamp, required this.message});
+  const SyncSuccess({
+    required this.timestamp,
+    required this.message,
+    int pendingCount = 0,
+    bool isOnline = true,
+  }) : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
-  List<Object?> get props => [timestamp, message];
+  List<Object?> get props => [...super.props, timestamp, message];
 }
 
 class SyncFailure extends SyncState {
   final String errorMessage;
   final DateTime? lastSuccessTime;
 
-  /// 建構子
-  ///
-  /// [errorMessage] 錯誤訊息
-  /// [lastSuccessTime] 上次成功時間 (如果有的話)
-  const SyncFailure({required this.errorMessage, this.lastSuccessTime});
+  const SyncFailure({
+    required this.errorMessage,
+    this.lastSuccessTime,
+    int pendingCount = 0,
+    bool isOnline = true,
+  }) : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
-  List<Object?> get props => [errorMessage, lastSuccessTime];
+  List<Object?> get props => [...super.props, errorMessage, lastSuccessTime];
 }

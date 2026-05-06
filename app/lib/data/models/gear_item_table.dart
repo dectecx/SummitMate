@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/gear_item.dart';
+import '../../domain/enums/sync_status.dart';
+import 'converters/sync_status_converter.dart';
 
 // TODO: 確認是否需要建立 Foreign Key 關聯 TripTable
 class GearItemsTable extends Table {
@@ -13,6 +15,7 @@ class GearItemsTable extends Table {
   IntColumn get orderIndex => integer().withDefault(const Constant(0))();
   IntColumn get quantity => integer().withDefault(const Constant(1))();
   TextColumn get libraryItemId => text().nullable()();
+  TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime().nullable()();
   TextColumn get createdBy => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
@@ -34,6 +37,7 @@ extension GearItemMapping on GearItem {
       orderIndex: Value(orderIndex),
       quantity: Value(quantity),
       libraryItemId: Value(libraryItemId),
+      syncStatus: Value(syncStatus),
       createdAt: Value(createdAt),
       createdBy: Value(createdBy),
       updatedAt: Value(updatedAt),

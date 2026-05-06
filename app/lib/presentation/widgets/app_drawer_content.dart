@@ -18,6 +18,7 @@ import '../cubits/meal/meal_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../screens/group_events_list_screen.dart';
 import '../screens/my_group_events_screen.dart';
+import 'sync/sync_status_indicator.dart';
 
 /// 應用程式側邊欄內容 (抽離出來以便在 Drawer 與 Sidebar 共用)
 class AppDrawerContent extends StatelessWidget {
@@ -74,13 +75,19 @@ class AppDrawerContent extends StatelessWidget {
                       children: [
                         const Icon(Icons.terrain, size: 40, color: Colors.white),
                         const SizedBox(height: 8),
-                        Text(
-                          'SummitMate 山友',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'SummitMate 山友',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
+                            ),
+                            const SyncStatusIndicator(showLabel: true, color: Colors.white),
+                          ],
                         ),
                         if (activeTrip != null) ...[
                           const SizedBox(height: 12),

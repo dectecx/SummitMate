@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../enums/sync_status.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
@@ -20,6 +21,7 @@ abstract class Message with _$Message {
     @Default('') String category,
     @Default('') String content,
     required DateTime timestamp,
+    @Default(SyncStatus.synced) SyncStatus syncStatus,
     required DateTime createdAt,
     required String createdBy,
     required DateTime updatedAt,
