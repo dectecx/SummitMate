@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/presentation/cubits/group_event/group_event_state.dart';
@@ -78,7 +79,12 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   @override
   Future<Result<GroupEvent, Exception>> syncEventById(String eventId) async => Failure(Exception('Not implemented'));
   @override
-  Future<Result<List<GroupEventApplication>, Exception>> syncMyApplications(String userId) async => const Success([]);
+  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({
+    required String type,
+    int? page,
+    int? limit,
+  }) async =>
+      Success(PaginatedList<GroupEvent>(items: _events, page: 1, total: _events.length, hasMore: false));
   @override
   Future<Result<String, Exception>> create({
     required String title,

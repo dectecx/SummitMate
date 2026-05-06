@@ -23,7 +23,11 @@ abstract class GroupEventApiService {
   });
 
   @GET('/group-events/my')
-  Future<List<GroupEventResponse>> listMyEvents(@Query('type') String type);
+  Future<GroupEventPaginationResponse> listMyEvents(
+    @Query('type') String type, {
+    @Query('page') int? page,
+    @Query('limit') int? limit,
+  });
 
   @GET('/group-events/{eventId}')
   Future<GroupEventResponse> getEvent(@Path('eventId') String eventId);

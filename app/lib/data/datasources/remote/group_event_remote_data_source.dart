@@ -119,15 +119,25 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
   }
 
   @override
-  Future<Result<List<GroupEventApplication>, Exception>> getMyApplications() async {
+  Future<Result<PaginatedList<GroupEvent>, Exception>> getMyEvents({
+    required String type,
+    int? page,
+    int? limit,
+  }) async {
     try {
-      await _groupEventApi.listMyEvents('applied');
-      // The API returns List<GroupEventResponse> for listMyEvents.
-      // But the interface expects List<GroupEventApplication>.
-      // This is a conceptual mismatch in the interface vs API.
-      // For now, return empty or throw if not possible.
-      throw UnimplementedError('getMyApplications concept mismatch in API (returns events, not applications)');
+      LogService.info('獲取我的揪團列表 (type: $type, page: $page)...', source: _source);
+      final response = await _groupEventApi.listMyEvents(type, page: page, limit: limit);
+      final items = response.items.map(GroupEventApiMapper.fromResponse).toList();
+      return Success(
+        PaginatedList<GroupEvent>(
+          items: items,
+          page: response.pagination.page,
+          total: response.pagination.total,
+          hasMore: response.pagination.hasMore,
+        ),
+      );
     } catch (e) {
+      LogService.error('獲取我的揪團失敗: $e', source: _source);
       return Failure(e is Exception ? e : GeneralException(e.toString()));
     }
   }

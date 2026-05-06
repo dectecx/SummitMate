@@ -135,11 +135,15 @@ class GroupEventRepository implements IGroupEventRepository {
       _localDataSource.saveApplications(applications);
 
   @override
-  Future<Result<List<GroupEventApplication>, Exception>> syncMyApplications(String userId) async {
+  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({
+    required String type,
+    int? page,
+    int? limit,
+  }) async {
     try {
-      final result = await _remoteDataSource.getMyApplications();
-      if (result is Success<List<GroupEventApplication>, Exception>) {
-        await _localDataSource.saveApplications(result.value);
+      final result = await _remoteDataSource.getMyEvents(type: type, page: page, limit: limit);
+      if (result is Success<PaginatedList<GroupEvent>, Exception>) {
+        await _localDataSource.saveEvents(result.value.items);
         return Success(result.value);
       }
       return Failure((result as Failure).exception);
