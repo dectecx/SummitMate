@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../enums/sync_status.dart';
 import '../enums/group_event_status.dart';
 import '../enums/group_event_application_status.dart';
 import '../enums/group_event_category.dart';
@@ -37,6 +38,7 @@ abstract class GroupEvent with _$GroupEvent {
     @Default('') String creatorName,
     @Default('🐻') String creatorAvatar,
     @Default([]) List<GroupEventComment> latestComments,
+    @Default(SyncStatus.synced) SyncStatus syncStatus,
     required DateTime createdAt,
     required String createdBy,
     required DateTime updatedAt,
@@ -66,11 +68,12 @@ abstract class GroupEventApplication with _$GroupEventApplication {
     required String userId,
     @Default(GroupEventApplicationStatus.pending) GroupEventApplicationStatus status,
     @Default('') String message,
+    @Default('') String userName,
+    @Default('🐻') String userAvatar,
+    @Default(SyncStatus.synced) SyncStatus syncStatus,
     required DateTime createdAt,
     required DateTime updatedAt,
     required String updatedBy,
-    @Default('') String userName,
-    @Default('🐻') String userAvatar,
   }) = _GroupEventApplication;
 
   bool get isPending => status == GroupEventApplicationStatus.pending;

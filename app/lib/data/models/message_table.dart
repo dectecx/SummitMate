@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/message.dart';
+import '../../domain/enums/sync_status.dart';
+import 'converters/sync_status_converter.dart';
 
 // TODO: 確認是否需要建立 Foreign Key 關聯 TripTable (tripId) 或是其他表 (parentId)
 class MessagesTable extends Table {
@@ -13,6 +15,7 @@ class MessagesTable extends Table {
   TextColumn get category => text().withDefault(const Constant(''))();
   TextColumn get content => text().withDefault(const Constant(''))();
   DateTimeColumn get timestamp => dateTime()();
+  TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -34,6 +37,7 @@ extension MessageMapping on Message {
       category: Value(category),
       content: Value(content),
       timestamp: timestamp,
+      syncStatus: Value(syncStatus),
       createdAt: createdAt,
       createdBy: createdBy,
       updatedAt: updatedAt,

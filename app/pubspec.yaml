@@ -62,6 +62,7 @@ dependencies:
   injectable: ^2.7.1+4
   meta: ^1.17.0
   url_strategy: ^0.2.0
+  rxdart: ^0.28.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

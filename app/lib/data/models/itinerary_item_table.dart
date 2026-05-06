@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/itinerary_item.dart';
+import '../../domain/enums/sync_status.dart';
+import 'converters/sync_status_converter.dart';
 
 // TODO: 確認是否需要建立 Foreign Key 關聯 TripTable
 class ItineraryItemsTable extends Table {
@@ -16,6 +18,7 @@ class ItineraryItemsTable extends Table {
   TextColumn get imageAsset => text().nullable()();
   BoolColumn get isCheckedIn => boolean().withDefault(const Constant(false))();
   DateTimeColumn get checkedInAt => dateTime().nullable()();
+  TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime().nullable()();
   TextColumn get createdBy => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
@@ -40,6 +43,7 @@ extension ItineraryItemMapping on ItineraryItem {
       imageAsset: Value(imageAsset),
       isCheckedIn: Value(isCheckedIn),
       checkedInAt: Value(checkedInAt),
+      syncStatus: Value(syncStatus),
       createdAt: Value(createdAt),
       createdBy: Value(createdBy),
       updatedAt: Value(updatedAt),

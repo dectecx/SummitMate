@@ -43,4 +43,7 @@ abstract interface class IGearRepository {
 
   /// 從個人庫匯入預設裝備
   Future<Result<void, Exception>> importFromLibrary(String tripId, List<String> libraryItemIds);
+
+  /// 觸發同步 (Fetch & Update)
+  Future<Result<void, Exception>> sync(String tripId);
 }

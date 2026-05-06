@@ -469,6 +469,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IAuthService>(),
       ),
     );
+    gh.lazySingleton<_i614.ISyncService>(
+      () => _i724.SyncService(
+        tripRepo: gh<_i614.ITripRepository>(),
+        itineraryRepo: gh<_i614.IItineraryRepository>(),
+        messageRepo: gh<_i614.IMessageRepository>(),
+        connectivity: gh<_i614.IConnectivityService>(),
+        authService: gh<_i614.IAuthService>(),
+        gearRepo: gh<_i614.IGearRepository>(),
+        eventRepo: gh<_i614.IGroupEventRepository>(),
+        db: gh<_i89.AppDatabase>(),
+      ),
+    );
     gh.factory<_i757.GearLibraryCubit>(
       () => _i757.GearLibraryCubit(
         gh<_i614.IGearLibraryRepository>(),
@@ -498,15 +510,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IItineraryRepository>(),
         gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
-      ),
-    );
-    gh.lazySingleton<_i614.ISyncService>(
-      () => _i724.SyncService(
-        tripRepo: gh<_i614.ITripRepository>(),
-        itineraryRepo: gh<_i614.IItineraryRepository>(),
-        messageRepo: gh<_i614.IMessageRepository>(),
-        connectivity: gh<_i614.IConnectivityService>(),
-        authService: gh<_i614.IAuthService>(),
       ),
     );
     gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(

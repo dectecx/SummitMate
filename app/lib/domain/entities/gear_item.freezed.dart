@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GearItem {
 
- String get id; String get tripId; String get name; double get weight; String get category; bool get isChecked; int get orderIndex; int get quantity; String? get libraryItemId; DateTime? get createdAt; String? get createdBy; DateTime? get updatedAt; String? get updatedBy;
+ String get id; String get tripId; String get name; double get weight; String get category; bool get isChecked; int get orderIndex; int get quantity; String? get libraryItemId; SyncStatus get syncStatus; DateTime? get createdAt; String? get createdBy; DateTime? get updatedAt; String? get updatedBy;
 /// Create a copy of GearItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $GearItemCopyWith<GearItem> get copyWith => _$GearItemCopyWithImpl<GearItem>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GearItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.category, category) || other.category == category)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GearItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.category, category) || other.category == category)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,name,weight,category,isChecked,orderIndex,quantity,libraryItemId,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,tripId,name,weight,category,isChecked,orderIndex,quantity,libraryItemId,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'GearItem(id: $id, tripId: $tripId, name: $name, weight: $weight, category: $category, isChecked: $isChecked, orderIndex: $orderIndex, quantity: $quantity, libraryItemId: $libraryItemId, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GearItem(id: $id, tripId: $tripId, name: $name, weight: $weight, category: $category, isChecked: $isChecked, orderIndex: $orderIndex, quantity: $quantity, libraryItemId: $libraryItemId, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $GearItemCopyWith<$Res>  {
   factory $GearItemCopyWith(GearItem value, $Res Function(GearItem) _then) = _$GearItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String tripId, String name, double weight, String category, bool isChecked, int orderIndex, int quantity, String? libraryItemId, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
+ String id, String tripId, String name, double weight, String category, bool isChecked, int orderIndex, int quantity, String? libraryItemId, SyncStatus syncStatus, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
 });
 
 
@@ -65,7 +65,7 @@ class _$GearItemCopyWithImpl<$Res>
 
 /// Create a copy of GearItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? name = null,Object? weight = null,Object? category = null,Object? isChecked = null,Object? orderIndex = null,Object? quantity = null,Object? libraryItemId = freezed,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? name = null,Object? weight = null,Object? category = null,Object? isChecked = null,Object? orderIndex = null,Object? quantity = null,Object? libraryItemId = freezed,Object? syncStatus = null,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -76,7 +76,8 @@ as String,isChecked: null == isChecked ? _self.isChecked : isChecked // ignore: 
 as bool,orderIndex: null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,libraryItemId: freezed == libraryItemId ? _self.libraryItemId : libraryItemId // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String?,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedBy: freezed == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -165,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tripId,  String name,  double weight,  String category,  bool isChecked,  int orderIndex,  int quantity,  String? libraryItemId,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tripId,  String name,  double weight,  String category,  bool isChecked,  int orderIndex,  int quantity,  String? libraryItemId,  SyncStatus syncStatus,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GearItem() when $default != null:
-return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_that.isChecked,_that.orderIndex,_that.quantity,_that.libraryItemId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_that.isChecked,_that.orderIndex,_that.quantity,_that.libraryItemId,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -186,10 +187,10 @@ return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tripId,  String name,  double weight,  String category,  bool isChecked,  int orderIndex,  int quantity,  String? libraryItemId,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tripId,  String name,  double weight,  String category,  bool isChecked,  int orderIndex,  int quantity,  String? libraryItemId,  SyncStatus syncStatus,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GearItem():
-return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_that.isChecked,_that.orderIndex,_that.quantity,_that.libraryItemId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_that.isChecked,_that.orderIndex,_that.quantity,_that.libraryItemId,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +207,10 @@ return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tripId,  String name,  double weight,  String category,  bool isChecked,  int orderIndex,  int quantity,  String? libraryItemId,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tripId,  String name,  double weight,  String category,  bool isChecked,  int orderIndex,  int quantity,  String? libraryItemId,  SyncStatus syncStatus,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GearItem() when $default != null:
-return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_that.isChecked,_that.orderIndex,_that.quantity,_that.libraryItemId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_that.isChecked,_that.orderIndex,_that.quantity,_that.libraryItemId,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -221,7 +222,7 @@ return $default(_that.id,_that.tripId,_that.name,_that.weight,_that.category,_th
 @JsonSerializable()
 
 class _GearItem extends GearItem {
-  const _GearItem({required this.id, required this.tripId, required this.name, required this.weight, required this.category, this.isChecked = false, this.orderIndex = 0, this.quantity = 1, this.libraryItemId, this.createdAt, this.createdBy, this.updatedAt, this.updatedBy}): super._();
+  const _GearItem({required this.id, required this.tripId, required this.name, required this.weight, required this.category, this.isChecked = false, this.orderIndex = 0, this.quantity = 1, this.libraryItemId, this.syncStatus = SyncStatus.synced, this.createdAt, this.createdBy, this.updatedAt, this.updatedBy}): super._();
   factory _GearItem.fromJson(Map<String, dynamic> json) => _$GearItemFromJson(json);
 
 @override final  String id;
@@ -233,6 +234,7 @@ class _GearItem extends GearItem {
 @override@JsonKey() final  int orderIndex;
 @override@JsonKey() final  int quantity;
 @override final  String? libraryItemId;
+@override@JsonKey() final  SyncStatus syncStatus;
 @override final  DateTime? createdAt;
 @override final  String? createdBy;
 @override final  DateTime? updatedAt;
@@ -251,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GearItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.category, category) || other.category == category)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GearItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.category, category) || other.category == category)&&(identical(other.isChecked, isChecked) || other.isChecked == isChecked)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,name,weight,category,isChecked,orderIndex,quantity,libraryItemId,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,tripId,name,weight,category,isChecked,orderIndex,quantity,libraryItemId,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'GearItem(id: $id, tripId: $tripId, name: $name, weight: $weight, category: $category, isChecked: $isChecked, orderIndex: $orderIndex, quantity: $quantity, libraryItemId: $libraryItemId, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GearItem(id: $id, tripId: $tripId, name: $name, weight: $weight, category: $category, isChecked: $isChecked, orderIndex: $orderIndex, quantity: $quantity, libraryItemId: $libraryItemId, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -271,7 +273,7 @@ abstract mixin class _$GearItemCopyWith<$Res> implements $GearItemCopyWith<$Res>
   factory _$GearItemCopyWith(_GearItem value, $Res Function(_GearItem) _then) = __$GearItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String tripId, String name, double weight, String category, bool isChecked, int orderIndex, int quantity, String? libraryItemId, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
+ String id, String tripId, String name, double weight, String category, bool isChecked, int orderIndex, int quantity, String? libraryItemId, SyncStatus syncStatus, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
 });
 
 
@@ -288,7 +290,7 @@ class __$GearItemCopyWithImpl<$Res>
 
 /// Create a copy of GearItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? name = null,Object? weight = null,Object? category = null,Object? isChecked = null,Object? orderIndex = null,Object? quantity = null,Object? libraryItemId = freezed,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? name = null,Object? weight = null,Object? category = null,Object? isChecked = null,Object? orderIndex = null,Object? quantity = null,Object? libraryItemId = freezed,Object? syncStatus = null,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
   return _then(_GearItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -299,7 +301,8 @@ as String,isChecked: null == isChecked ? _self.isChecked : isChecked // ignore: 
 as bool,orderIndex: null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
 as int,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,libraryItemId: freezed == libraryItemId ? _self.libraryItemId : libraryItemId // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String?,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedBy: freezed == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

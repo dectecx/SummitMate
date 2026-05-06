@@ -83,4 +83,7 @@ class MockGearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> importFromLibrary(String tripId, List<String> libraryItemIds) async =>
       const Success(null);
+
+  @override
+  Future<Result<void, Exception>> sync(String tripId) async => const Success(null);
 }

@@ -12,6 +12,9 @@ enum SyncStatus {
   /// 等待刪除 (本地刪除)
   pendingDelete,
 
+  /// 同步中
+  syncing,
+
   /// 同步錯誤
   error,
 }

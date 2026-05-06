@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Message {
 
- String get id; String? get tripId; String? get parentId; String get userId; String get user; String get avatar; String get category; String get content; DateTime get timestamp; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
+ String get id; String? get tripId; String? get parentId; String get userId; String get user; String get avatar; String get category; String get content; DateTime get timestamp; SyncStatus get syncStatus; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $MessageCopyWith<Message> get copyWith => _$MessageCopyWithImpl<Message>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Message&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.user, user) || other.user == user)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.category, category) || other.category == category)&&(identical(other.content, content) || other.content == content)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Message&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.user, user) || other.user == user)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.category, category) || other.category == category)&&(identical(other.content, content) || other.content == content)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,parentId,userId,user,avatar,category,content,timestamp,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,tripId,parentId,userId,user,avatar,category,content,timestamp,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'Message(id: $id, tripId: $tripId, parentId: $parentId, userId: $userId, user: $user, avatar: $avatar, category: $category, content: $content, timestamp: $timestamp, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'Message(id: $id, tripId: $tripId, parentId: $parentId, userId: $userId, user: $user, avatar: $avatar, category: $category, content: $content, timestamp: $timestamp, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $MessageCopyWith<$Res>  {
   factory $MessageCopyWith(Message value, $Res Function(Message) _then) = _$MessageCopyWithImpl;
 @useResult
 $Res call({
- String id, String? tripId, String? parentId, String userId, String user, String avatar, String category, String content, DateTime timestamp, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String? tripId, String? parentId, String userId, String user, String avatar, String category, String content, DateTime timestamp, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -65,7 +65,7 @@ class _$MessageCopyWithImpl<$Res>
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = freezed,Object? parentId = freezed,Object? userId = null,Object? user = null,Object? avatar = null,Object? category = null,Object? content = null,Object? timestamp = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = freezed,Object? parentId = freezed,Object? userId = null,Object? user = null,Object? avatar = null,Object? category = null,Object? content = null,Object? timestamp = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: freezed == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -76,7 +76,8 @@ as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullabl
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
-as DateTime,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -165,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? tripId,  String? parentId,  String userId,  String user,  String avatar,  String category,  String content,  DateTime timestamp,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? tripId,  String? parentId,  String userId,  String user,  String avatar,  String category,  String content,  DateTime timestamp,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
-return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_that.avatar,_that.category,_that.content,_that.timestamp,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_that.avatar,_that.category,_that.content,_that.timestamp,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -186,10 +187,10 @@ return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? tripId,  String? parentId,  String userId,  String user,  String avatar,  String category,  String content,  DateTime timestamp,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? tripId,  String? parentId,  String userId,  String user,  String avatar,  String category,  String content,  DateTime timestamp,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _Message():
-return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_that.avatar,_that.category,_that.content,_that.timestamp,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_that.avatar,_that.category,_that.content,_that.timestamp,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +207,10 @@ return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? tripId,  String? parentId,  String userId,  String user,  String avatar,  String category,  String content,  DateTime timestamp,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? tripId,  String? parentId,  String userId,  String user,  String avatar,  String category,  String content,  DateTime timestamp,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
-return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_that.avatar,_that.category,_that.content,_that.timestamp,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_that.avatar,_that.category,_that.content,_that.timestamp,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -221,7 +222,7 @@ return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.user,_th
 @JsonSerializable()
 
 class _Message extends Message {
-  const _Message({required this.id, this.tripId, this.parentId, this.userId = '', this.user = '', this.avatar = '🐻', this.category = '', this.content = '', required this.timestamp, required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): super._();
+  const _Message({required this.id, this.tripId, this.parentId, this.userId = '', this.user = '', this.avatar = '🐻', this.category = '', this.content = '', required this.timestamp, this.syncStatus = SyncStatus.synced, required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): super._();
   factory _Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
 @override final  String id;
@@ -233,6 +234,7 @@ class _Message extends Message {
 @override@JsonKey() final  String category;
 @override@JsonKey() final  String content;
 @override final  DateTime timestamp;
+@override@JsonKey() final  SyncStatus syncStatus;
 @override final  DateTime createdAt;
 @override final  String createdBy;
 @override final  DateTime updatedAt;
@@ -251,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Message&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.user, user) || other.user == user)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.category, category) || other.category == category)&&(identical(other.content, content) || other.content == content)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Message&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.parentId, parentId) || other.parentId == parentId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.user, user) || other.user == user)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.category, category) || other.category == category)&&(identical(other.content, content) || other.content == content)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,parentId,userId,user,avatar,category,content,timestamp,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,tripId,parentId,userId,user,avatar,category,content,timestamp,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'Message(id: $id, tripId: $tripId, parentId: $parentId, userId: $userId, user: $user, avatar: $avatar, category: $category, content: $content, timestamp: $timestamp, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'Message(id: $id, tripId: $tripId, parentId: $parentId, userId: $userId, user: $user, avatar: $avatar, category: $category, content: $content, timestamp: $timestamp, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -271,7 +273,7 @@ abstract mixin class _$MessageCopyWith<$Res> implements $MessageCopyWith<$Res> {
   factory _$MessageCopyWith(_Message value, $Res Function(_Message) _then) = __$MessageCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? tripId, String? parentId, String userId, String user, String avatar, String category, String content, DateTime timestamp, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String? tripId, String? parentId, String userId, String user, String avatar, String category, String content, DateTime timestamp, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -288,7 +290,7 @@ class __$MessageCopyWithImpl<$Res>
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = freezed,Object? parentId = freezed,Object? userId = null,Object? user = null,Object? avatar = null,Object? category = null,Object? content = null,Object? timestamp = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = freezed,Object? parentId = freezed,Object? userId = null,Object? user = null,Object? avatar = null,Object? category = null,Object? content = null,Object? timestamp = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_Message(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: freezed == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -299,7 +301,8 @@ as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullabl
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
 as String,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
-as DateTime,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

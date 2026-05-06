@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ItineraryItem {
 
- String get id; String get tripId; String get day; String get name; String get estTime; DateTime? get actualTime; int get altitude; double get distance; String get note; String? get imageAsset; bool get isCheckedIn; DateTime? get checkedInAt; DateTime? get createdAt; String? get createdBy; DateTime? get updatedAt; String? get updatedBy;
+ String get id; String get tripId; String get day; String get name; String get estTime; DateTime? get actualTime; int get altitude; double get distance; String get note; String? get imageAsset; bool get isCheckedIn; DateTime? get checkedInAt; SyncStatus get syncStatus; DateTime? get createdAt; String? get createdBy; DateTime? get updatedAt; String? get updatedBy;
 /// Create a copy of ItineraryItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ItineraryItemCopyWith<ItineraryItem> get copyWith => _$ItineraryItemCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.day, day) || other.day == day)&&(identical(other.name, name) || other.name == name)&&(identical(other.estTime, estTime) || other.estTime == estTime)&&(identical(other.actualTime, actualTime) || other.actualTime == actualTime)&&(identical(other.altitude, altitude) || other.altitude == altitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.note, note) || other.note == note)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.isCheckedIn, isCheckedIn) || other.isCheckedIn == isCheckedIn)&&(identical(other.checkedInAt, checkedInAt) || other.checkedInAt == checkedInAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ItineraryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.day, day) || other.day == day)&&(identical(other.name, name) || other.name == name)&&(identical(other.estTime, estTime) || other.estTime == estTime)&&(identical(other.actualTime, actualTime) || other.actualTime == actualTime)&&(identical(other.altitude, altitude) || other.altitude == altitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.note, note) || other.note == note)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.isCheckedIn, isCheckedIn) || other.isCheckedIn == isCheckedIn)&&(identical(other.checkedInAt, checkedInAt) || other.checkedInAt == checkedInAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,day,name,estTime,actualTime,altitude,distance,note,imageAsset,isCheckedIn,checkedInAt,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,tripId,day,name,estTime,actualTime,altitude,distance,note,imageAsset,isCheckedIn,checkedInAt,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'ItineraryItem(id: $id, tripId: $tripId, day: $day, name: $name, estTime: $estTime, actualTime: $actualTime, altitude: $altitude, distance: $distance, note: $note, imageAsset: $imageAsset, isCheckedIn: $isCheckedIn, checkedInAt: $checkedInAt, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'ItineraryItem(id: $id, tripId: $tripId, day: $day, name: $name, estTime: $estTime, actualTime: $actualTime, altitude: $altitude, distance: $distance, note: $note, imageAsset: $imageAsset, isCheckedIn: $isCheckedIn, checkedInAt: $checkedInAt, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ItineraryItemCopyWith<$Res>  {
   factory $ItineraryItemCopyWith(ItineraryItem value, $Res Function(ItineraryItem) _then) = _$ItineraryItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String tripId, String day, String name, String estTime, DateTime? actualTime, int altitude, double distance, String note, String? imageAsset, bool isCheckedIn, DateTime? checkedInAt, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
+ String id, String tripId, String day, String name, String estTime, DateTime? actualTime, int altitude, double distance, String note, String? imageAsset, bool isCheckedIn, DateTime? checkedInAt, SyncStatus syncStatus, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
 });
 
 
@@ -65,7 +65,7 @@ class _$ItineraryItemCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? day = null,Object? name = null,Object? estTime = null,Object? actualTime = freezed,Object? altitude = null,Object? distance = null,Object? note = null,Object? imageAsset = freezed,Object? isCheckedIn = null,Object? checkedInAt = freezed,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? day = null,Object? name = null,Object? estTime = null,Object? actualTime = freezed,Object? altitude = null,Object? distance = null,Object? note = null,Object? imageAsset = freezed,Object? isCheckedIn = null,Object? checkedInAt = freezed,Object? syncStatus = null,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -79,7 +79,8 @@ as double,note: null == note ? _self.note : note // ignore: cast_nullable_to_non
 as String,imageAsset: freezed == imageAsset ? _self.imageAsset : imageAsset // ignore: cast_nullable_to_non_nullable
 as String?,isCheckedIn: null == isCheckedIn ? _self.isCheckedIn : isCheckedIn // ignore: cast_nullable_to_non_nullable
 as bool,checkedInAt: freezed == checkedInAt ? _self.checkedInAt : checkedInAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedBy: freezed == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -168,10 +169,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tripId,  String day,  String name,  String estTime,  DateTime? actualTime,  int altitude,  double distance,  String note,  String? imageAsset,  bool isCheckedIn,  DateTime? checkedInAt,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String tripId,  String day,  String name,  String estTime,  DateTime? actualTime,  int altitude,  double distance,  String note,  String? imageAsset,  bool isCheckedIn,  DateTime? checkedInAt,  SyncStatus syncStatus,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItineraryItem() when $default != null:
-return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -189,10 +190,10 @@ return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tripId,  String day,  String name,  String estTime,  DateTime? actualTime,  int altitude,  double distance,  String note,  String? imageAsset,  bool isCheckedIn,  DateTime? checkedInAt,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String tripId,  String day,  String name,  String estTime,  DateTime? actualTime,  int altitude,  double distance,  String note,  String? imageAsset,  bool isCheckedIn,  DateTime? checkedInAt,  SyncStatus syncStatus,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryItem():
-return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -209,10 +210,10 @@ return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tripId,  String day,  String name,  String estTime,  DateTime? actualTime,  int altitude,  double distance,  String note,  String? imageAsset,  bool isCheckedIn,  DateTime? checkedInAt,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String tripId,  String day,  String name,  String estTime,  DateTime? actualTime,  int altitude,  double distance,  String note,  String? imageAsset,  bool isCheckedIn,  DateTime? checkedInAt,  SyncStatus syncStatus,  DateTime? createdAt,  String? createdBy,  DateTime? updatedAt,  String? updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryItem() when $default != null:
-return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -224,7 +225,7 @@ return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.a
 @JsonSerializable()
 
 class _ItineraryItem extends ItineraryItem {
-  const _ItineraryItem({required this.id, required this.tripId, required this.day, required this.name, required this.estTime, this.actualTime, this.altitude = 0, this.distance = 0.0, this.note = '', this.imageAsset, this.isCheckedIn = false, this.checkedInAt, this.createdAt, this.createdBy, this.updatedAt, this.updatedBy}): super._();
+  const _ItineraryItem({required this.id, required this.tripId, required this.day, required this.name, required this.estTime, this.actualTime, this.altitude = 0, this.distance = 0.0, this.note = '', this.imageAsset, this.isCheckedIn = false, this.checkedInAt, this.syncStatus = SyncStatus.synced, this.createdAt, this.createdBy, this.updatedAt, this.updatedBy}): super._();
   factory _ItineraryItem.fromJson(Map<String, dynamic> json) => _$ItineraryItemFromJson(json);
 
 @override final  String id;
@@ -239,6 +240,7 @@ class _ItineraryItem extends ItineraryItem {
 @override final  String? imageAsset;
 @override@JsonKey() final  bool isCheckedIn;
 @override final  DateTime? checkedInAt;
+@override@JsonKey() final  SyncStatus syncStatus;
 @override final  DateTime? createdAt;
 @override final  String? createdBy;
 @override final  DateTime? updatedAt;
@@ -257,16 +259,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.day, day) || other.day == day)&&(identical(other.name, name) || other.name == name)&&(identical(other.estTime, estTime) || other.estTime == estTime)&&(identical(other.actualTime, actualTime) || other.actualTime == actualTime)&&(identical(other.altitude, altitude) || other.altitude == altitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.note, note) || other.note == note)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.isCheckedIn, isCheckedIn) || other.isCheckedIn == isCheckedIn)&&(identical(other.checkedInAt, checkedInAt) || other.checkedInAt == checkedInAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ItineraryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.day, day) || other.day == day)&&(identical(other.name, name) || other.name == name)&&(identical(other.estTime, estTime) || other.estTime == estTime)&&(identical(other.actualTime, actualTime) || other.actualTime == actualTime)&&(identical(other.altitude, altitude) || other.altitude == altitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.note, note) || other.note == note)&&(identical(other.imageAsset, imageAsset) || other.imageAsset == imageAsset)&&(identical(other.isCheckedIn, isCheckedIn) || other.isCheckedIn == isCheckedIn)&&(identical(other.checkedInAt, checkedInAt) || other.checkedInAt == checkedInAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,day,name,estTime,actualTime,altitude,distance,note,imageAsset,isCheckedIn,checkedInAt,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,tripId,day,name,estTime,actualTime,altitude,distance,note,imageAsset,isCheckedIn,checkedInAt,syncStatus,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'ItineraryItem(id: $id, tripId: $tripId, day: $day, name: $name, estTime: $estTime, actualTime: $actualTime, altitude: $altitude, distance: $distance, note: $note, imageAsset: $imageAsset, isCheckedIn: $isCheckedIn, checkedInAt: $checkedInAt, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'ItineraryItem(id: $id, tripId: $tripId, day: $day, name: $name, estTime: $estTime, actualTime: $actualTime, altitude: $altitude, distance: $distance, note: $note, imageAsset: $imageAsset, isCheckedIn: $isCheckedIn, checkedInAt: $checkedInAt, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -277,7 +279,7 @@ abstract mixin class _$ItineraryItemCopyWith<$Res> implements $ItineraryItemCopy
   factory _$ItineraryItemCopyWith(_ItineraryItem value, $Res Function(_ItineraryItem) _then) = __$ItineraryItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String tripId, String day, String name, String estTime, DateTime? actualTime, int altitude, double distance, String note, String? imageAsset, bool isCheckedIn, DateTime? checkedInAt, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
+ String id, String tripId, String day, String name, String estTime, DateTime? actualTime, int altitude, double distance, String note, String? imageAsset, bool isCheckedIn, DateTime? checkedInAt, SyncStatus syncStatus, DateTime? createdAt, String? createdBy, DateTime? updatedAt, String? updatedBy
 });
 
 
@@ -294,7 +296,7 @@ class __$ItineraryItemCopyWithImpl<$Res>
 
 /// Create a copy of ItineraryItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? day = null,Object? name = null,Object? estTime = null,Object? actualTime = freezed,Object? altitude = null,Object? distance = null,Object? note = null,Object? imageAsset = freezed,Object? isCheckedIn = null,Object? checkedInAt = freezed,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? day = null,Object? name = null,Object? estTime = null,Object? actualTime = freezed,Object? altitude = null,Object? distance = null,Object? note = null,Object? imageAsset = freezed,Object? isCheckedIn = null,Object? checkedInAt = freezed,Object? syncStatus = null,Object? createdAt = freezed,Object? createdBy = freezed,Object? updatedAt = freezed,Object? updatedBy = freezed,}) {
   return _then(_ItineraryItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
@@ -308,7 +310,8 @@ as double,note: null == note ? _self.note : note // ignore: cast_nullable_to_non
 as String,imageAsset: freezed == imageAsset ? _self.imageAsset : imageAsset // ignore: cast_nullable_to_non_nullable
 as String?,isCheckedIn: null == isCheckedIn ? _self.isCheckedIn : isCheckedIn // ignore: cast_nullable_to_non_nullable
 as bool,checkedInAt: freezed == checkedInAt ? _self.checkedInAt : checkedInAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as SyncStatus,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdBy: freezed == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String?,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,updatedBy: freezed == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

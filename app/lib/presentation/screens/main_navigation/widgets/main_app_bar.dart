@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/core/core.dart';
 import '../../../cubits/settings/settings_cubit.dart';
@@ -8,6 +8,8 @@ import '../../../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../../utils/tutorial_keys.dart';
 import '../../../../presentation/widgets/responsive_layout.dart';
+
+import '../../../widgets/sync/sync_status_indicator.dart';
 
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Trip? activeTrip;
@@ -112,24 +114,6 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
               },
             ),
           ],
-          if (isOffline) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error, // Use error color for offline warning
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.cloud_off, size: 12, color: Theme.of(context).colorScheme.onError),
-                  const SizedBox(width: 4),
-                  Text('離線', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onError)),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
       bottom: isLoading
@@ -147,6 +131,8 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
             IconButton(icon: const Icon(Icons.cloud_upload_outlined), tooltip: '上傳至雲端', onPressed: onUpload),
           if (!isEditMode) ...[IconButton(icon: const Icon(Icons.map_outlined), tooltip: '查看地圖', onPressed: onMap)],
         ],
+        // 同步狀態指示器
+        const SyncStatusIndicator(),
         // 設定按鈕
         IconButton(
           key: TutorialKeys.mainSettings,

@@ -5,6 +5,7 @@ import 'package:summitmate/infrastructure/services/sync_service.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/core/models/paginated_list.dart';
+import 'package:summitmate/infrastructure/database/app_database.dart';
 
 // Mocks - use interfaces for better test isolation
 
@@ -14,24 +15,36 @@ class MockItineraryRepository extends Mock implements IItineraryRepository {}
 
 class MockMessageRepository extends Mock implements IMessageRepository {}
 
+class MockGearRepository extends Mock implements IGearRepository {}
+
+class MockGroupEventRepository extends Mock implements IGroupEventRepository {}
+
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
 class MockAuthService extends Mock implements IAuthService {}
+
+class MockAppDatabase extends Mock implements AppDatabase {}
 
 void main() {
   late SyncService syncService;
   late MockTripRepository mockTripRepo;
   late MockItineraryRepository mockItineraryRepo;
   late MockMessageRepository mockMessageRepo;
+  late MockGearRepository mockGearRepo;
+  late MockGroupEventRepository mockEventRepo;
   late MockConnectivityService mockConnectivity;
   late MockAuthService mockAuthService;
+  late MockAppDatabase mockDb;
 
   setUp(() {
     mockTripRepo = MockTripRepository();
     mockItineraryRepo = MockItineraryRepository();
     mockMessageRepo = MockMessageRepository();
+    mockGearRepo = MockGearRepository();
+    mockEventRepo = MockGroupEventRepository();
     mockConnectivity = MockConnectivityService();
     mockAuthService = MockAuthService();
+    mockDb = MockAppDatabase();
 
     when(() => mockAuthService.currentUserId).thenReturn('u1');
 
@@ -57,6 +70,8 @@ void main() {
 
     // Default: Itinerary sync behavior
     when(() => mockItineraryRepo.sync(any())).thenAnswer((_) async => const Success(null));
+    when(() => mockGearRepo.sync(any())).thenAnswer((_) async => const Success(null));
+    when(() => mockEventRepo.syncEvents(category: any(named: 'category'))).thenAnswer((_) async => const Success([]));
 
     // Default: Message sync behavior
     when(
@@ -67,8 +82,11 @@ void main() {
       tripRepo: mockTripRepo,
       itineraryRepo: mockItineraryRepo,
       messageRepo: mockMessageRepo,
+      gearRepo: mockGearRepo,
+      eventRepo: mockEventRepo,
       connectivity: mockConnectivity,
       authService: mockAuthService,
+      db: mockDb,
     );
 
     // Register fallback values
@@ -114,6 +132,8 @@ void main() {
       expect(result.isSuccess, isTrue);
       verify(() => mockItineraryRepo.sync('test-trip-1')).called(1);
       verify(() => mockMessageRepo.getRemoteMessages('test-trip-1')).called(1);
+      verify(() => mockGearRepo.sync('test-trip-1')).called(1);
+      verify(() => mockEventRepo.syncEvents()).called(1);
     });
 
     test('syncAll failure handles error', () async {

@@ -4,6 +4,8 @@ import '../../domain/entities/group_event.dart';
 import '../../domain/enums/group_event_status.dart';
 import '../../domain/enums/group_event_application_status.dart';
 import '../../domain/enums/group_event_category.dart';
+import '../../domain/enums/sync_status.dart';
+import 'converters/sync_status_converter.dart';
 
 class GroupEventsTable extends Table {
   TextColumn get id => text()();
@@ -28,6 +30,7 @@ class GroupEventsTable extends Table {
   TextColumn get myApplicationStatus => text().map(const GroupEventApplicationStatusConverter()).nullable()();
   TextColumn get creatorName => text().withDefault(const Constant(''))();
   TextColumn get creatorAvatar => text().withDefault(const Constant('🐻'))();
+  TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -44,11 +47,12 @@ class GroupEventApplicationsTable extends Table {
   TextColumn get status =>
       text().map(const GroupEventApplicationStatusConverter()).withDefault(const Constant('pending'))();
   TextColumn get message => text().withDefault(const Constant(''))();
+  TextColumn get userName => text().withDefault(const Constant(''))();
+  TextColumn get userAvatar => text().withDefault(const Constant('🐻'))();
+  TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get updatedBy => text()();
-  TextColumn get userName => text().withDefault(const Constant(''))();
-  TextColumn get userAvatar => text().withDefault(const Constant('🐻'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -108,6 +112,7 @@ extension GroupEventMapping on GroupEvent {
       myApplicationStatus: Value(myApplicationStatus),
       creatorName: Value(creatorName),
       creatorAvatar: Value(creatorAvatar),
+      syncStatus: Value(syncStatus),
       createdAt: createdAt,
       createdBy: createdBy,
       updatedAt: updatedAt,
@@ -124,11 +129,12 @@ extension GroupEventApplicationMapping on GroupEventApplication {
       userId: userId,
       status: Value(status),
       message: Value(message),
+      userName: Value(userName),
+      userAvatar: Value(userAvatar),
+      syncStatus: Value(syncStatus),
       createdAt: createdAt,
       updatedAt: updatedAt,
       updatedBy: updatedBy,
-      userName: Value(userName),
-      userAvatar: Value(userAvatar),
     );
   }
 }
