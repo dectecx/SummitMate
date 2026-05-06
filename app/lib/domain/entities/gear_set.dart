@@ -8,7 +8,6 @@ part 'gear_set.g.dart';
 
 /// 裝備組合實體 (Domain Entity)
 @freezed
-@JsonSerializable(explicitToJson: true)
 abstract class GearSet with _$GearSet {
   const GearSet._();
 
