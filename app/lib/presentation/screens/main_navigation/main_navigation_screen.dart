@@ -158,13 +158,16 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 builder: (context, pollState) {
                   return BlocBuilder<TripCubit, TripState>(
                     builder: (context, tripState) {
-                      final bool isTripLoading = tripState is TripLoading;
-                      final bool hasTrips = tripState is TripLoaded && tripState.trips.isNotEmpty;
-                      final Trip? activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
+                      return BlocBuilder<SyncCubit, SyncState>(
+                        builder: (context, syncState) {
+                          final bool isTripLoading = tripState is TripLoading;
+                          final bool hasTrips = tripState is TripLoaded && tripState.trips.isNotEmpty;
+                          final Trip? activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
 
-                      final bool isMessageSyncing = messageState is MessageLoaded && messageState.isSyncing;
-                      final bool isPollSyncing = pollState is PollLoaded && pollState.isSyncing;
-                      final isLoading = isMessageSyncing || isPollSyncing || isTripLoading;
+                          final bool isMessageSyncing = messageState is MessageLoaded && messageState.isSyncing;
+                          final bool isPollSyncing = pollState is PollLoaded && pollState.isSyncing;
+                          final bool isSyncInProgress = syncState is SyncInProgress;
+                          final isLoading = isMessageSyncing || isPollSyncing || isTripLoading || isSyncInProgress;
 
                       final settingsState = context.watch<SettingsCubit>().state;
                       final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
@@ -354,6 +357,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                 child: const Icon(Icons.add),
                               )
                             : null,
+                          );
+                        },
                       );
                     },
                   );

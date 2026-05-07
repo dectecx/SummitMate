@@ -16,18 +16,10 @@ class CloudUploadHelper {
       return;
     }
 
-    // 1. 顯示檢查中 Loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    // 2. 檢查衝突 (Use SyncCubit)
+    // 1. 檢查衝突 (Use SyncCubit)
     final hasConflict = await context.read<SyncCubit>().checkItineraryConflict();
 
     if (!context.mounted) return;
-    Navigator.pop(context); // 關閉 Loading
 
     if (hasConflict) {
       // 3. 有衝突，顯示警告
