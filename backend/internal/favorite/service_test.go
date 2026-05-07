@@ -6,14 +6,28 @@ import (
 	"os"
 	"testing"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+type MockBeginner struct {
+	mock.Mock
+}
+
+func (m *MockBeginner) Begin(ctx context.Context) (pgx.Tx, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(pgx.Tx), args.Error(1)
+}
+
 func TestFavoriteService_AddFavorite(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockFavoriteRepository)
-	svc := NewFavoriteService(logger, mockRepo)
+	mockDB := new(MockBeginner)
+	svc := NewFavoriteService(logger, mockDB, mockRepo)
 
 	t.Run("Success", func(t *testing.T) {
 		userID := "user-1"
@@ -35,7 +49,8 @@ func TestFavoriteService_AddFavorite(t *testing.T) {
 func TestFavoriteService_RemoveFavorite(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockFavoriteRepository)
-	svc := NewFavoriteService(logger, mockRepo)
+	mockDB := new(MockBeginner)
+	svc := NewFavoriteService(logger, mockDB, mockRepo)
 
 	t.Run("Success", func(t *testing.T) {
 		userID := "user-1"

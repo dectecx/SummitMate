@@ -65,3 +65,7 @@ func (s *Server) PatchGroupEventsIdTripLink(w http.ResponseWriter, r *http.Reque
 func (s *Server) PostGroupEventsIdTripSnapshot(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	s.GroupHandler.PostGroupEventsIdTripSnapshot(w, r, id)
 }
+
+func (s *Server) GetGroupEventsMy(w http.ResponseWriter, r *http.Request, params api.GetGroupEventsMyParams) {
+	s.GroupHandler.GetGroupEventsMy(w, r, params)
+}

@@ -7,14 +7,28 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+type MockBeginner struct {
+	mock.Mock
+}
+
+func (m *MockBeginner) Begin(ctx context.Context) (pgx.Tx, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(pgx.Tx), args.Error(1)
+}
+
 func TestWeatherService_ListByLocation(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockWeatherRepository)
-	svc := NewWeatherService(logger, mockRepo, "key", []string{"玉山"})
+	mockDB := new(MockBeginner)
+	svc := NewWeatherService(logger, mockDB, mockRepo, "key", []string{"玉山"})
 
 	t.Run("Success", func(t *testing.T) {
 		location := "玉山"

@@ -15,16 +15,24 @@ func (m *MockGroupEventRepository) CreateEvent(ctx context.Context, event *Group
 	return args.Error(0)
 }
 
-func (m *MockGroupEventRepository) GetEventByID(ctx context.Context, id string) (*GroupEvent, error) {
-	args := m.Called(ctx, id)
+func (m *MockGroupEventRepository) GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error) {
+	args := m.Called(ctx, id, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*GroupEvent), args.Error(1)
 }
 
-func (m *MockGroupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string) ([]*GroupEvent, int, bool, error) {
-	args := m.Called(ctx, status, category, creatorID, page, limit, search)
+func (m *MockGroupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
+	args := m.Called(ctx, status, category, creatorID, page, limit, search, userID)
+	if args.Get(0) == nil {
+		return nil, 0, false, args.Error(3)
+	}
+	return args.Get(0).([]*GroupEvent), args.Int(1), args.Bool(2), args.Error(3)
+}
+
+func (m *MockGroupEventRepository) ListEventsByUser(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error) {
+	args := m.Called(ctx, userID, listType, page, limit)
 	if args.Get(0) == nil {
 		return nil, 0, false, args.Error(3)
 	}

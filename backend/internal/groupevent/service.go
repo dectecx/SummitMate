@@ -133,7 +133,7 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 }
 
 func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApplication) error {
-	event, err := s.repo.GetEventByID(ctx, app.EventID, "") // Use empty userID for basic check
+	event, err := s.repo.GetEventByID(ctx, app.EventID, app.UserID)
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func (s *groupEventService) CancelApplication(ctx context.Context, appID string,
 
 	// 如果報名已被核准且活動有連結行程，移除行程權限
 	if app.Status == ApplicationStatusApproved {
-		event, err := s.repo.GetEventByID(ctx, app.EventID, "")
+		event, err := s.repo.GetEventByID(ctx, app.EventID, userID)
 		if err == nil && event != nil && event.LinkedTripID != nil {
 			_ = s.tripServ.RemoveMember(ctx, *event.LinkedTripID, event.CreatedBy, userID)
 		}
@@ -249,7 +249,10 @@ func (s *groupEventService) AddComment(ctx context.Context, comment *GroupEventC
 	}
 	comment.CreatedBy = comment.UserID
 	comment.UpdatedBy = comment.UserID
-	return s.repo.AddComment(ctx, comment)
+
+	return database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		return s.repo.AddComment(txCtx, comment)
+	})
 }
 
 func (s *groupEventService) ListComments(ctx context.Context, eventID string) ([]*GroupEventComment, error) {
@@ -257,11 +260,19 @@ func (s *groupEventService) ListComments(ctx context.Context, eventID string) ([
 }
 
 func (s *groupEventService) DeleteComment(ctx context.Context, commentID string, userID string) error {
-	return s.repo.DeleteComment(ctx, commentID, userID)
+	return database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		return s.repo.DeleteComment(txCtx, commentID, userID)
+	})
 }
 
 func (s *groupEventService) ToggleLike(ctx context.Context, eventID, userID string) (bool, error) {
-	return s.repo.ToggleLike(ctx, eventID, userID)
+	var isLiked bool
+	err := database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		var err error
+		isLiked, err = s.repo.ToggleLike(txCtx, eventID, userID)
+		return err
+	})
+	return isLiked, err
 }
 
 func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error {
