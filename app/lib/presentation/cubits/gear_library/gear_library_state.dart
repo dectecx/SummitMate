@@ -55,7 +55,7 @@ class GearLibraryLoaded extends GearLibraryState {
       result = result.where((item) => item.name.toLowerCase().contains(query)).toList();
     }
 
-    // 依最後使用時間或建立時間排序？目前 Provider 沒特別排序
+    // TODO: 依最後使用時間或建立時間排序？目前尚無特別排序
     return result;
   }
 
