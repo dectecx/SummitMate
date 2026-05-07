@@ -67,7 +67,6 @@ class _GearTabState extends State<GearTab> {
 
   @override
   Widget build(BuildContext context) {
-    // final mealProvider = context.watch<MealProvider>(); // Removed
     final mealState = context.watch<MealCubit>().state;
     final mealWeight = mealState is MealLoaded ? mealState.totalWeightKg : 0.0;
 

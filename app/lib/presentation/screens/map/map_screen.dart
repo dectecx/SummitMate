@@ -166,21 +166,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
                   if (isLoading) const Center(child: CircularProgressIndicator()),
 
-                  // ... (Existing UI code mostly unchanged, just update callbacks) ...
-                  // Since the existing UI code is large, I will target specific sections if I can, or replace the whole Stack logic chunk by chunk.
-                  // But replace_file_content already replaced the wrapper.
-                  // I need to ensure the rest of the file (FABs) uses context.read<MapCubit/OfflineMapCubit> instead of `provider`.
-                  // The `provider` variable is gone.
-                  // So I need to update the FAB section which used `provider`.
-
-                  // Returning the rest of the stack (Wait, I replaced the whole body build?)
-                  // No, I'm replacing lines 50-493.
-                  // But my replacement content ends at `if (_previewBounds != null) ... ]`.
-                  // I missed the rest of the widgets in the Stack!
-                  // I should probably do this in smaller chunks or include the whole Stack.
-                  // Including the whole Stack is safer to update `provider` references.
-
-                  // ... (Rest of Stack widgets) ...
 
                   // 返回按鈕
                   Positioned(

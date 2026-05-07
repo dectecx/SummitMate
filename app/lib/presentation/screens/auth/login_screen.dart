@@ -7,7 +7,6 @@ import '../../cubits/auth/auth_cubit.dart';
 import '../../cubits/auth/auth_state.dart'
     show AuthState, AuthLoading, AuthAuthenticated, AuthError, AuthRequiresVerification;
 
-// import '../../providers/settings_provider.dart'; // Removed
 import 'register_screen.dart';
 import 'verification_screen.dart';
 
