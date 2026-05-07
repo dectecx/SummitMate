@@ -367,27 +367,20 @@ func (r *groupEventRepository) DeleteApplication(ctx context.Context, id string)
 func (r *groupEventRepository) AddComment(ctx context.Context, comment *GroupEventComment) error {
 	db := database.GetQuerier(ctx, r.db)
 
-	tx, ok := db.(pgx.Tx)
-	if !ok {
-		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
-			return r.AddComment(txCtx, comment)
-		})
-	}
-
 	query := `
 		INSERT INTO group_event_comments (
 			event_id, user_id, content, created_by, updated_by
 		) VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, created_at, updated_at
 	`
-	err := tx.QueryRow(ctx, query,
+	err := db.QueryRow(ctx, query,
 		comment.EventID, comment.UserID, comment.Content, comment.CreatedBy, comment.UpdatedBy,
 	).Scan(&comment.ID, &comment.CreatedAt, &comment.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("insert comment to event %s: %w", comment.EventID, err)
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE group_events SET comment_count = comment_count + 1 WHERE id = $1", comment.EventID)
+	_, err = db.Exec(ctx, "UPDATE group_events SET comment_count = comment_count + 1 WHERE id = $1", comment.EventID)
 	if err != nil {
 		return fmt.Errorf("increment comment count for event %s: %w", comment.EventID, err)
 	}
@@ -434,15 +427,8 @@ func (r *groupEventRepository) ListComments(ctx context.Context, eventID string)
 func (r *groupEventRepository) DeleteComment(ctx context.Context, commentID string, userID string) error {
 	db := database.GetQuerier(ctx, r.db)
 
-	tx, ok := db.(pgx.Tx)
-	if !ok {
-		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
-			return r.DeleteComment(txCtx, commentID, userID)
-		})
-	}
-
 	var eventID string
-	err := tx.QueryRow(ctx, "DELETE FROM group_event_comments WHERE id = $1 AND user_id = $2 RETURNING event_id", commentID, userID).Scan(&eventID)
+	err := db.QueryRow(ctx, "DELETE FROM group_event_comments WHERE id = $1 AND user_id = $2 RETURNING event_id", commentID, userID).Scan(&eventID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return fmt.Errorf("comment %s not found or unauthorized", commentID)
@@ -450,7 +436,7 @@ func (r *groupEventRepository) DeleteComment(ctx context.Context, commentID stri
 		return fmt.Errorf("delete comment %s: %w", commentID, err)
 	}
 
-	_, err = tx.Exec(ctx, "UPDATE group_events SET comment_count = comment_count - 1 WHERE id = $1", eventID)
+	_, err = db.Exec(ctx, "UPDATE group_events SET comment_count = comment_count - 1 WHERE id = $1", eventID)
 	if err != nil {
 		return fmt.Errorf("decrement comment count for event %s: %w", eventID, err)
 	}
@@ -461,40 +447,29 @@ func (r *groupEventRepository) DeleteComment(ctx context.Context, commentID stri
 func (r *groupEventRepository) ToggleLike(ctx context.Context, eventID, userID string) (bool, error) {
 	db := database.GetQuerier(ctx, r.db)
 
-	tx, ok := db.(pgx.Tx)
-	if !ok {
-		var isLiked bool
-		err := database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
-			var err error
-			isLiked, err = r.ToggleLike(txCtx, eventID, userID)
-			return err
-		})
-		return isLiked, err
-	}
-
 	var exists bool
-	err := tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = $1 AND user_id = $2)", eventID, userID).Scan(&exists)
+	err := db.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = $1 AND user_id = $2)", eventID, userID).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("check existing like for event %s, user %s: %w", eventID, userID, err)
 	}
 
 	var isLiked bool
 	if exists {
-		_, err = tx.Exec(ctx, "DELETE FROM group_event_likes WHERE event_id = $1 AND user_id = $2", eventID, userID)
+		_, err = db.Exec(ctx, "DELETE FROM group_event_likes WHERE event_id = $1 AND user_id = $2", eventID, userID)
 		if err != nil {
 			return false, fmt.Errorf("delete like for event %s, user %s: %w", eventID, userID, err)
 		}
-		_, err = tx.Exec(ctx, "UPDATE group_events SET like_count = like_count - 1 WHERE id = $1", eventID)
+		_, err = db.Exec(ctx, "UPDATE group_events SET like_count = like_count - 1 WHERE id = $1", eventID)
 		if err != nil {
 			return false, fmt.Errorf("decrement like count for event %s: %w", eventID, err)
 		}
 		isLiked = false
 	} else {
-		_, err = tx.Exec(ctx, "INSERT INTO group_event_likes (event_id, user_id, created_by) VALUES ($1, $2, $2)", eventID, userID)
+		_, err = db.Exec(ctx, "INSERT INTO group_event_likes (event_id, user_id, created_by) VALUES ($1, $2, $2)", eventID, userID)
 		if err != nil {
 			return false, fmt.Errorf("insert like for event %s, user %s: %w", eventID, userID, err)
 		}
-		_, err = tx.Exec(ctx, "UPDATE group_events SET like_count = like_count + 1 WHERE id = $1", eventID)
+		_, err = db.Exec(ctx, "UPDATE group_events SET like_count = like_count + 1 WHERE id = $1", eventID)
 		if err != nil {
 			return false, fmt.Errorf("increment like count for event %s: %w", eventID, err)
 		}

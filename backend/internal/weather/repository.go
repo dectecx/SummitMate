@@ -28,15 +28,8 @@ func NewWeatherRepository(db database.DB) WeatherRepository {
 func (r *weatherRepository) ReplaceAll(ctx context.Context, records []WeatherRecord) error {
 	db := database.GetQuerier(ctx, r.db)
 
-	tx, ok := db.(pgx.Tx)
-	if !ok {
-		return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
-			return r.ReplaceAll(txCtx, records)
-		})
-	}
-
 	// 清除舊資料
-	if _, err := tx.Exec(ctx, "DELETE FROM weather_data"); err != nil {
+	if _, err := db.Exec(ctx, "DELETE FROM weather_data"); err != nil {
 		return fmt.Errorf("clear old weather data: %w", err)
 	}
 
@@ -59,7 +52,7 @@ func (r *weatherRepository) ReplaceAll(ctx context.Context, records []WeatherRec
 		}
 	}
 
-	_, err := tx.CopyFrom(
+	_, err := db.CopyFrom(
 		ctx,
 		pgx.Identifier{"weather_data"},
 		columnNames,

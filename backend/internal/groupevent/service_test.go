@@ -69,7 +69,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		event := &GroupEvent{ID: eventID, Title: "Updated Title"}
 
 		existing := &GroupEvent{ID: eventID, CreatedBy: userID}
-		mockRepo.On("GetEventByID", mock.Anything, eventID).Return(existing, nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(existing, nil).Once()
 		mockRepo.On("UpdateEvent", mock.Anything, event).Return(nil).Once()
 
 		err := svc.UpdateEvent(context.Background(), event, userID)
@@ -85,7 +85,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		event := &GroupEvent{ID: eventID}
 
 		existing := &GroupEvent{ID: eventID, CreatedBy: "user-creator"}
-		mockRepo.On("GetEventByID", mock.Anything, eventID).Return(existing, nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(existing, nil).Once()
 
 		err := svc.UpdateEvent(context.Background(), event, userID)
 
@@ -106,7 +106,7 @@ func TestGroupEventService_ApplyToEvent(t *testing.T) {
 		app := &GroupEventApplication{EventID: eventID, UserID: userID}
 
 		event := &GroupEvent{ID: eventID, Status: "open"}
-		mockRepo.On("GetEventByID", mock.Anything, eventID).Return(event, nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
 		mockRepo.On("ApplyToEvent", mock.Anything, app).Return(nil).Once()
 
 		err := svc.ApplyToEvent(context.Background(), app)
@@ -121,7 +121,7 @@ func TestGroupEventService_ApplyToEvent(t *testing.T) {
 		app := &GroupEventApplication{EventID: eventID}
 
 		event := &GroupEvent{ID: eventID, Status: "closed"}
-		mockRepo.On("GetEventByID", mock.Anything, eventID).Return(event, nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, eventID, mock.Anything).Return(event, nil).Once()
 
 		err := svc.ApplyToEvent(context.Background(), app)
 

@@ -3,6 +3,8 @@ package favorite
 import (
 	"context"
 	"log/slog"
+
+	"summitmate/internal/database"
 )
 
 // FavoriteService 定義我的最愛相關的業務邏輯介面。
@@ -15,12 +17,14 @@ type FavoriteService interface {
 
 type favoriteService struct {
 	logger *slog.Logger
+	db     database.Beginner
 	repo   FavoriteRepository
 }
 
-func NewFavoriteService(logger *slog.Logger, repo FavoriteRepository) FavoriteService {
+func NewFavoriteService(logger *slog.Logger, db database.Beginner, repo FavoriteRepository) FavoriteService {
 	return &favoriteService{
 		logger: logger.With("component", "favorite"),
+		db:     db,
 		repo:   repo,
 	}
 }
@@ -48,5 +52,7 @@ func (s *favoriteService) RemoveFavorite(ctx context.Context, targetID, userID s
 }
 
 func (s *favoriteService) BatchUpdateFavorites(ctx context.Context, userID string, items []BatchFavoriteItem) error {
-	return s.repo.BatchUpdate(ctx, userID, items)
+	return database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		return s.repo.BatchUpdate(txCtx, userID, items)
+	})
 }

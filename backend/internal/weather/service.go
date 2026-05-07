@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"summitmate/internal/database"
 )
 
 const (
@@ -26,15 +28,17 @@ type WeatherService interface {
 
 type weatherService struct {
 	logger     *slog.Logger
+	db         database.Beginner
 	repo       WeatherRepository
 	cwaAPIKey  string
 	locations  []string
 	httpClient *http.Client
 }
 
-func NewWeatherService(logger *slog.Logger, repo WeatherRepository, cwaAPIKey string, locations []string) WeatherService {
+func NewWeatherService(logger *slog.Logger, db database.Beginner, repo WeatherRepository, cwaAPIKey string, locations []string) WeatherService {
 	return &weatherService{
 		logger:    logger.With("component", "weather"),
+		db:        db,
 		repo:      repo,
 		cwaAPIKey: cwaAPIKey,
 		locations: locations,
@@ -62,7 +66,10 @@ func (s *weatherService) FetchAndStore(ctx context.Context) error {
 	s.logger.Info("資料聚合完成", "count", len(records))
 
 	// 3. Store to DB
-	if err := s.repo.ReplaceAll(ctx, records); err != nil {
+	err = database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		return s.repo.ReplaceAll(txCtx, records)
+	})
+	if err != nil {
 		return fmt.Errorf("寫入 DB 失敗: %w", err)
 	}
 	s.logger.Info("天氣資料已寫入 DB")
