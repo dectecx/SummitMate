@@ -5,7 +5,9 @@ import 'package:uuid/uuid.dart';
 import '../../../core/core.dart';
 import '../../../data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/core/di/injection.dart';
 import '../../../infrastructure/infrastructure.dart';
+import '../app_error/app_error_cubit.dart';
 import 'trip_state.dart';
 
 /// Manage Trip state and operations
@@ -44,10 +46,13 @@ class TripCubit extends Cubit<TripState> {
 
         emit(TripLoaded(trips: trips, activeTrip: activeTrip));
       } else {
-        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        final error = (result as Failure).exception;
+        getIt<AppErrorCubit>().reportError(error);
+        emit(TripError(AppErrorHandler.getUserMessage(error)));
       }
     } catch (e) {
       LogService.error('載入行程失敗: $e', source: _source);
+      getIt<AppErrorCubit>().reportError(e);
       emit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }

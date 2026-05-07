@@ -143,6 +143,7 @@ import '../../infrastructure/services/jwt_token_validator.dart' as _i1065;
 import '../../infrastructure/services/sync_service.dart' as _i724;
 import '../../infrastructure/services/weather_service.dart' as _i27;
 import '../../infrastructure/tools/usage_tracking_service.dart' as _i755;
+import '../../presentation/cubits/app_error/app_error_cubit.dart' as _i958;
 import '../../presentation/cubits/auth/auth_cubit.dart' as _i33;
 import '../../presentation/cubits/favorites/group_event/group_event_favorites_cubit.dart'
     as _i115;
@@ -201,6 +202,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i89.AppDatabase>(() => registerModule.appDatabase);
     gh.lazySingleton<_i1007.PlatformService>(() => _i1007.PlatformService());
     gh.lazySingleton<_i455.CwaWeatherSource>(() => _i455.CwaWeatherSource());
+    gh.lazySingleton<_i958.AppErrorCubit>(() => _i958.AppErrorCubit());
     gh.lazySingleton<_i304.IPollService>(() => _i133.MockPollService());
     gh.lazySingleton<_i1012.ITokenValidator>(() => _i1065.JwtTokenValidator());
     gh.lazySingleton<_i730.IAdService>(() => _i702.AdService());

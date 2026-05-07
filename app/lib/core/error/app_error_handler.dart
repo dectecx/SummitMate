@@ -107,4 +107,33 @@ class AppErrorHandler {
         return null;
     }
   }
+
+  /// 檢查是否為認證錯誤
+  static bool isAuthError(Object error) {
+    if (error is ApiException) {
+      return error.code == AppErrorCodes.unauthorized || error.statusCode == 401;
+    }
+    if (error is DioException) {
+      return error.response?.statusCode == 401;
+    }
+    return false;
+  }
+
+  /// 檢查是否為網路連線錯誤
+  static bool isNetworkError(Object error) {
+    if (error is DioException) {
+      return error.type == DioExceptionType.unknown && error.message?.contains('SocketException') == true;
+    }
+    return false;
+  }
+
+  /// 檢查是否為逾時錯誤
+  static bool isTimeout(Object error) {
+    if (error is DioException) {
+      return error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout;
+    }
+    return false;
+  }
 }
