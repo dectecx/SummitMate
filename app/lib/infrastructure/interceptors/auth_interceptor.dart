@@ -1,9 +1,10 @@
-﻿import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/core/di/injection.dart';
 import '../../domain/interfaces/i_auth_service.dart';
 import '../../domain/repositories/i_auth_session_repository.dart';
 import '../tools/log_service.dart';
+import '../../presentation/cubits/app_error/app_error_cubit.dart';
 
 /// 用於處理 API 認證邏輯的攔截器 (Interceptor)
 @LazySingleton()
@@ -56,7 +57,8 @@ class AuthInterceptor extends Interceptor {
       // 避免無限迴圈：若本身是 refresh 或 login 介面 401，直接清除 Session 並回傳錯誤
       if (path.contains('/auth/refresh') || path.contains('/auth/login')) {
         LogService.warning('[AuthInterceptor] 401 on auth endpoint ($path). Triggering logout.', source: _source);
-        await _sessionRepo.clearSession();
+        getIt<IAuthService>().logout();
+        getIt<AppErrorCubit>().reportAuthExpired();
         return handler.next(err);
       }
 
@@ -82,11 +84,13 @@ class AuthInterceptor extends Interceptor {
           return handler.resolve(response);
         } else {
           LogService.warning('[AuthInterceptor] Refresh token failed. Triggering logout.', source: _source);
-          await _sessionRepo.clearSession();
+          getIt<IAuthService>().logout();
+          getIt<AppErrorCubit>().reportAuthExpired();
         }
       } catch (e) {
         LogService.error('[AuthInterceptor] Refresh token exception: $e', source: _source);
-        await _sessionRepo.clearSession();
+        getIt<IAuthService>().logout();
+        getIt<AppErrorCubit>().reportAuthExpired();
       }
     }
 
