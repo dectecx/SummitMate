@@ -40,18 +40,13 @@ class GroupEventReviewScreen extends StatelessWidget {
 
               final isSyncing = state is GroupEventReviewSyncing;
 
-              return Stack(
-                children: [
-                  ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: applications.length,
-                    itemBuilder: (context, index) {
-                      final app = applications[index];
-                      return _buildApplicationCard(context, app, isSyncing);
-                    },
-                  ),
-                  if (isSyncing) const Positioned.fill(child: Center(child: CircularProgressIndicator())),
-                ],
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: applications.length,
+                itemBuilder: (context, index) {
+                  final app = applications[index];
+                  return _buildApplicationCard(context, app, isSyncing);
+                },
               );
             }
 
@@ -105,7 +100,13 @@ class GroupEventReviewScreen extends StatelessWidget {
                             context.read<GroupEventReviewCubit>().reviewApplication(app.id, 'reject');
                           },
                     style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                    child: const Text('拒絕'),
+                    child: isSyncing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
+                          )
+                        : const Text('拒絕'),
                   ),
                   const SizedBox(width: 12),
                   FilledButton(
@@ -115,7 +116,13 @@ class GroupEventReviewScreen extends StatelessWidget {
                             context.read<GroupEventReviewCubit>().reviewApplication(app.id, 'approve');
                           },
                     style: FilledButton.styleFrom(backgroundColor: Colors.green),
-                    child: const Text('通過'),
+                    child: isSyncing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('通過'),
                   ),
                 ],
               ),
