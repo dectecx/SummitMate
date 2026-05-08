@@ -198,27 +198,27 @@ class SyncService implements ISyncService {
   Stream<int> watchPendingSyncCount() {
     // Using customSelect as a workaround for a weird type inference issue with the generated select method
     final itineraryStream = _db
-        .customSelect('SELECT COUNT(*) AS count FROM itinerary_items_table WHERE sync_status != "synced"')
+        .customSelect("SELECT COUNT(*) AS count FROM itinerary_items_table WHERE sync_status != 'synced'")
         .watchSingle()
         .map((row) => row.read<int>('count'));
 
     final gearStream = _db
-        .customSelect('SELECT COUNT(*) AS count FROM gear_items_table WHERE sync_status != "synced"')
+        .customSelect("SELECT COUNT(*) AS count FROM gear_items_table WHERE sync_status != 'synced'")
         .watchSingle()
         .map((row) => row.read<int>('count'));
 
     final messageStream = _db
-        .customSelect('SELECT COUNT(*) AS count FROM messages_table WHERE sync_status != "synced"')
+        .customSelect("SELECT COUNT(*) AS count FROM messages_table WHERE sync_status != 'synced'")
         .watchSingle()
         .map((row) => row.read<int>('count'));
 
     final eventStream = _db
-        .customSelect('SELECT COUNT(*) AS count FROM group_events_table WHERE sync_status != "synced"')
+        .customSelect("SELECT COUNT(*) AS count FROM group_events_table WHERE sync_status != 'synced'")
         .watchSingle()
         .map((row) => row.read<int>('count'));
 
     final applicationStream = _db
-        .customSelect('SELECT COUNT(*) AS count FROM group_event_applications_table WHERE sync_status != "synced"')
+        .customSelect("SELECT COUNT(*) AS count FROM group_event_applications_table WHERE sync_status != 'synced'")
         .watchSingle()
         .map((row) => row.read<int>('count'));
 
