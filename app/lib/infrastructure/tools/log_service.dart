@@ -114,7 +114,7 @@ class LogService {
 
     try {
       await _logDao!.addLog(entry);
-      await _logDao!.deleteOldLogs(_maxLogCount);
+      await _logDao!.deleteOldNonErrorLogs(_maxLogCount);
     } catch (e) {
       debugPrint('存儲日誌失敗: $e');
     }

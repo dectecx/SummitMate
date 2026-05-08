@@ -12,7 +12,6 @@ import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_state.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
-import 'package:summitmate/infrastructure/infrastructure.dart';
 
 class MockConnectivityService extends Mock implements IConnectivityService {}
 

@@ -50,6 +50,40 @@ class LogDao extends DatabaseAccessor<AppDatabase> with _$LogDaoMixin {
     }
   }
 
+  Future<void> deleteOldNonErrorLogs(int keepCount) async {
+    // Count non-error logs (debug=0, info=1, warning=2; error=3)
+    final countQuery = countAll();
+    final total = await (selectOnly(logsTable)..addColumns([countQuery]))
+        .map((row) => row.read(countQuery))
+        .getSingle();
+
+    if (total == null || total <= keepCount) return;
+
+    final deleteCount = total - keepCount;
+
+    // Try to delete oldest non-error logs first (level < 3)
+    final nonErrorQuery = select(logsTable)
+      ..where((t) => t.level.isSmallerThanValue(3)) // debug/info/warning
+      ..orderBy([(t) => OrderingTerm(expression: t.timestamp, mode: OrderingMode.asc)])
+      ..limit(deleteCount);
+    final nonErrorRows = await nonErrorQuery.get();
+
+    if (nonErrorRows.isNotEmpty) {
+      await (delete(logsTable)..where((t) => t.id.isIn(nonErrorRows.map((e) => e.id)))).go();
+      return;
+    }
+
+    // Fallback: if only error logs remain and we are still over limit,
+    // delete the oldest error logs (last resort).
+    final errorQuery = select(logsTable)
+      ..orderBy([(t) => OrderingTerm(expression: t.timestamp, mode: OrderingMode.asc)])
+      ..limit(deleteCount);
+    final errorRows = await errorQuery.get();
+    if (errorRows.isNotEmpty) {
+      await (delete(logsTable)..where((t) => t.id.isIn(errorRows.map((e) => e.id)))).go();
+    }
+  }
+
   Future<void> clearAll() async {
     await delete(logsTable).go();
   }
