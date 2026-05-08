@@ -38,13 +38,11 @@ class GroupEventLoaded extends GroupEventState {
 
   /// My created events
   List<GroupEvent> get myCreatedEvents =>
-      events.where((e) => e.creatorId == currentUserId).toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      events.where((e) => e.creatorId == currentUserId).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// My applied events
   List<GroupEvent> get myAppliedEvents =>
-      events.where((e) => e.myApplicationStatus != null).toList()
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      events.where((e) => e.myApplicationStatus != null).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// My liked events
   List<GroupEvent> get myLikedEvents =>

@@ -27,12 +27,7 @@ class GearKeyLocalDataSource implements IGearKeyLocalDataSource {
     final prefs = await SharedPreferences.getInstance();
     final keysJson = prefs.getStringList(_keyPrefix) ?? [];
 
-    final record = GearKeyRecord(
-      key: key,
-      title: title,
-      visibility: visibility,
-      uploadedAt: DateTime.now(),
-    );
+    final record = GearKeyRecord(key: key, title: title, visibility: visibility, uploadedAt: DateTime.now());
 
     keysJson.add(json.encode(record.toJson()));
     await prefs.setStringList(_keyPrefix, keysJson);

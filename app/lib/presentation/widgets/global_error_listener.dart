@@ -43,24 +43,14 @@ class GlobalErrorListener extends StatelessWidget {
                 );
               },
               authenticationExpired: () {
-                ErrorSnackbar.show(
-                  context,
-                  message: '登入已過期，請重新登入',
-                  isPersistent: true,
-                );
+                ErrorSnackbar.show(context, message: '登入已過期，請重新登入', isPersistent: true);
                 // AuthCubit 會因為 interceptor 調用 logout 而更新 UI
               },
               networkOffline: () {
-                ErrorSnackbar.show(
-                  context,
-                  message: '網路連線中斷，切換至離線模式',
-                );
+                ErrorSnackbar.show(context, message: '網路連線中斷，切換至離線模式');
               },
               networkTimeout: () {
-                ErrorSnackbar.show(
-                  context,
-                  message: '連線逾時，請檢查網路狀況',
-                );
+                ErrorSnackbar.show(context, message: '連線逾時，請檢查網路狀況');
               },
             );
           },

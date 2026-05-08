@@ -74,12 +74,9 @@ class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implemen
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    await into(syncMetaDataTable).insertOnConflictUpdate(
-      SyncMetaDataTableCompanion.insert(
-        key: 'polls',
-        lastSyncTime: Value(time),
-      ),
-    );
+    await into(
+      syncMetaDataTable,
+    ).insertOnConflictUpdate(SyncMetaDataTableCompanion.insert(key: 'polls', lastSyncTime: Value(time)));
   }
 
   @override

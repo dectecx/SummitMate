@@ -8,11 +8,7 @@ class SyncStatusIndicator extends StatelessWidget {
   final bool showLabel;
   final Color? color;
 
-  const SyncStatusIndicator({
-    super.key,
-    this.showLabel = false,
-    this.color,
-  });
+  const SyncStatusIndicator({super.key, this.showLabel = false, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -66,21 +62,11 @@ class SyncStatusIndicator extends StatelessWidget {
                     if (pendingCount > 0 && !isInProgress)
                       Container(
                         padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
-                        ),
+                        decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                        constraints: const BoxConstraints(minWidth: 12, minHeight: 12),
                         child: Text(
                           pendingCount > 99 ? '99+' : '$pendingCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -90,11 +76,7 @@ class SyncStatusIndicator extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     label,
-                    style: TextStyle(
-                      color: mainColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(color: mainColor, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ],
               ],

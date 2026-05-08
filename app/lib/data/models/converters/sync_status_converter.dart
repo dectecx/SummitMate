@@ -6,10 +6,7 @@ class SyncStatusConverter extends TypeConverter<SyncStatus, String> {
 
   @override
   SyncStatus fromSql(String fromDb) {
-    return SyncStatus.values.firstWhere(
-      (e) => e.name == fromDb,
-      orElse: () => SyncStatus.synced,
-    );
+    return SyncStatus.values.firstWhere((e) => e.name == fromDb, orElse: () => SyncStatus.synced);
   }
 
   @override

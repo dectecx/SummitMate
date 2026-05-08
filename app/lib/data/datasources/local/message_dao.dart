@@ -48,12 +48,9 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin im
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    await into(syncMetaDataTable).insertOnConflictUpdate(
-      SyncMetaDataTableCompanion.insert(
-        key: 'messages',
-        lastSyncTime: Value(time),
-      ),
-    );
+    await into(
+      syncMetaDataTable,
+    ).insertOnConflictUpdate(SyncMetaDataTableCompanion.insert(key: 'messages', lastSyncTime: Value(time)));
   }
 
   @override

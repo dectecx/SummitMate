@@ -34,20 +34,17 @@ void main() {
       updatedBy: 'u1',
     );
 
-    final tPaginatedList = PaginatedList<GroupEvent>(
-      items: [tEvent],
-      page: 1,
-      total: 1,
-      hasMore: false,
-    );
+    final tPaginatedList = PaginatedList<GroupEvent>(items: [tEvent], page: 1, total: 1, hasMore: false);
 
     test('should sync my events from remote and save to local on success', () async {
       // Arrange
-      when(() => mockRemoteDataSource.getMyEvents(
-            type: any(named: 'type'),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => Success(tPaginatedList));
+      when(
+        () => mockRemoteDataSource.getMyEvents(
+          type: any(named: 'type'),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => Success(tPaginatedList));
       when(() => mockLocalDataSource.saveEvents(any())).thenAnswer((_) async {});
 
       // Act
@@ -64,11 +61,13 @@ void main() {
     test('should return failure when remote sync fails', () async {
       // Arrange
       final tException = Exception('Remote Error');
-      when(() => mockRemoteDataSource.getMyEvents(
-            type: any(named: 'type'),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenAnswer((_) async => Failure(tException));
+      when(
+        () => mockRemoteDataSource.getMyEvents(
+          type: any(named: 'type'),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenAnswer((_) async => Failure(tException));
 
       // Act
       final result = await repository.syncMyEvents(type: 'host');
@@ -81,11 +80,13 @@ void main() {
 
     test('should return failure when exception occurs', () async {
       // Arrange
-      when(() => mockRemoteDataSource.getMyEvents(
-            type: any(named: 'type'),
-            page: any(named: 'page'),
-            limit: any(named: 'limit'),
-          )).thenThrow(Exception('Unexpected Error'));
+      when(
+        () => mockRemoteDataSource.getMyEvents(
+          type: any(named: 'type'),
+          page: any(named: 'page'),
+          limit: any(named: 'limit'),
+        ),
+      ).thenThrow(Exception('Unexpected Error'));
 
       // Act
       final result = await repository.syncMyEvents(type: 'host');

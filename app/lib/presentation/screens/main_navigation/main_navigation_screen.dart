@@ -169,194 +169,194 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           final bool isSyncInProgress = syncState is SyncInProgress;
                           final isLoading = isMessageSyncing || isPollSyncing || isTripLoading || isSyncInProgress;
 
-                      final settingsState = context.watch<SettingsCubit>().state;
-                      final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
-                      final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
+                          final settingsState = context.watch<SettingsCubit>().state;
+                          final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+                          final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
 
-                      if (!hasTrips && !isTripLoading) {
-                        return Scaffold(
-                          key: _scaffoldKey,
-                          appBar: AppBar(
-                            leading: IconButton(
-                              icon: const Icon(Icons.menu),
-                              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                              tooltip: '選單',
-                            ),
-                            title: const Text('SummitMate 山友'),
-                            actions: [
-                              IconButton(
-                                icon: const Icon(Icons.info_outline),
-                                tooltip: '歡迎訊息 / 教學',
-                                onPressed: () => _showWelcomeDialog(context),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.settings),
-                                onPressed: () => _showSettingsDialog(context),
-                                tooltip: '設定',
-                              ),
-                            ],
-                          ),
-                          drawer: const AppDrawer(),
-                          body: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.hiking, size: 80, color: Colors.grey),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  '歡迎使用 SummitMate',
-                                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          if (!hasTrips && !isTripLoading) {
+                            return Scaffold(
+                              key: _scaffoldKey,
+                              appBar: AppBar(
+                                leading: IconButton(
+                                  icon: const Icon(Icons.menu),
+                                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                                  tooltip: '選單',
                                 ),
-                                const SizedBox(height: 8),
-                                const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
-                                const SizedBox(height: 32),
-                                FilledButton.icon(
-                                  onPressed: () => TripSelectionDialog.show(context),
-                                  icon: const Icon(Icons.cloud_download),
-                                  label: const Text('從雲端匯入行程'),
-                                ),
-                                const SizedBox(height: 16),
-                                OutlinedButton.icon(
-                                  onPressed: () => context.read<TripCubit>().createDefaultTrip(),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('建立新行程'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-
-                      return Scaffold(
-                        key: _scaffoldKey,
-                        drawer: ResponsiveLayout.isDesktop(context) ? null : const AppDrawer(),
-                        drawerEnableOpenDragGesture: !ResponsiveLayout.isDesktop(context),
-                        appBar: MainAppBar(
-                          activeTrip: activeTrip,
-                          isOffline: isOffline,
-                          isLoading: isLoading,
-                          currentIndex: _currentIndex,
-                          isEditMode: isEditMode,
-                          showLeading: !ResponsiveLayout.isDesktop(context),
-                          onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                          onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
-                          onUpload: () => CloudUploadHelper.handleCloudUpload(context),
-                          onMap: () => _handleMapNavigation(context),
-                          onSettings: () => _showSettingsDialog(context),
-                        ),
-                        body: ResponsiveLayout(
-                          mobile: Column(
-                            children: [
-                              Expanded(
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 250),
-                                  transitionBuilder: (child, animation) {
-                                    return FadeTransition(opacity: animation, child: child);
-                                  },
-                                  child: _buildTabContent(_currentIndex),
-                                ),
+                                title: const Text('SummitMate 山友'),
+                                actions: [
+                                  IconButton(
+                                    icon: const Icon(Icons.info_outline),
+                                    tooltip: '歡迎訊息 / 教學',
+                                    onPressed: () => _showWelcomeDialog(context),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.settings),
+                                    onPressed: () => _showSettingsDialog(context),
+                                    tooltip: '設定',
+                                  ),
+                                ],
                               ),
-                              const BannerAdWidget(location: 'navigation_bottom'),
-                            ],
-                          ),
-                          desktop: Row(
-                            children: [
-                              AppDrawerContent(
-                                isSidebar: true,
-                                currentIndex: _currentIndex,
-                                onTabSelected: (index) {
-                                  setState(() => _currentIndex = index);
-                                  if (isEditMode) {
-                                    context.read<ItineraryCubit>().toggleEditMode();
-                                  }
-                                },
-                              ),
-                              const VerticalDivider(thickness: 1, width: 1),
-                              Expanded(
+                              drawer: const AppDrawer(),
+                              body: Center(
                                 child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Expanded(child: _buildTabContent(_currentIndex)),
-                                    const BannerAdWidget(location: 'navigation_bottom'),
+                                    const Icon(Icons.hiking, size: 80, color: Colors.grey),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      '歡迎使用 SummitMate',
+                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
+                                    const SizedBox(height: 32),
+                                    FilledButton.icon(
+                                      onPressed: () => TripSelectionDialog.show(context),
+                                      icon: const Icon(Icons.cloud_download),
+                                      label: const Text('從雲端匯入行程'),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    OutlinedButton.icon(
+                                      onPressed: () => context.read<TripCubit>().createDefaultTrip(),
+                                      icon: const Icon(Icons.add),
+                                      label: const Text('建立新行程'),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                          tablet: Row(
-                            children: [
-                              NavigationRail(
-                                selectedIndex: _currentIndex,
+                            );
+                          }
+
+                          return Scaffold(
+                            key: _scaffoldKey,
+                            drawer: ResponsiveLayout.isDesktop(context) ? null : const AppDrawer(),
+                            drawerEnableOpenDragGesture: !ResponsiveLayout.isDesktop(context),
+                            appBar: MainAppBar(
+                              activeTrip: activeTrip,
+                              isOffline: isOffline,
+                              isLoading: isLoading,
+                              currentIndex: _currentIndex,
+                              isEditMode: isEditMode,
+                              showLeading: !ResponsiveLayout.isDesktop(context),
+                              onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                              onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
+                              onUpload: () => CloudUploadHelper.handleCloudUpload(context),
+                              onMap: () => _handleMapNavigation(context),
+                              onSettings: () => _showSettingsDialog(context),
+                            ),
+                            body: ResponsiveLayout(
+                              mobile: Column(
+                                children: [
+                                  Expanded(
+                                    child: AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 250),
+                                      transitionBuilder: (child, animation) {
+                                        return FadeTransition(opacity: animation, child: child);
+                                      },
+                                      child: _buildTabContent(_currentIndex),
+                                    ),
+                                  ),
+                                  const BannerAdWidget(location: 'navigation_bottom'),
+                                ],
+                              ),
+                              desktop: Row(
+                                children: [
+                                  AppDrawerContent(
+                                    isSidebar: true,
+                                    currentIndex: _currentIndex,
+                                    onTabSelected: (index) {
+                                      setState(() => _currentIndex = index);
+                                      if (isEditMode) {
+                                        context.read<ItineraryCubit>().toggleEditMode();
+                                      }
+                                    },
+                                  ),
+                                  const VerticalDivider(thickness: 1, width: 1),
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Expanded(child: _buildTabContent(_currentIndex)),
+                                        const BannerAdWidget(location: 'navigation_bottom'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              tablet: Row(
+                                children: [
+                                  NavigationRail(
+                                    selectedIndex: _currentIndex,
+                                    onDestinationSelected: (index) {
+                                      setState(() => _currentIndex = index);
+                                      if (isEditMode) {
+                                        context.read<ItineraryCubit>().toggleEditMode();
+                                      }
+                                    },
+                                    labelType: NavigationRailLabelType.all,
+                                    leading: Column(
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        IconButton(
+                                          icon: const Icon(Icons.menu),
+                                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                                          tooltip: '選單',
+                                        ),
+                                        const SizedBox(height: 20),
+                                      ],
+                                    ),
+                                    destinations: const [
+                                      NavigationRailDestination(
+                                        icon: Icon(Icons.hiking),
+                                        selectedIcon: Icon(Icons.hiking),
+                                        label: Text('行程'),
+                                      ),
+                                      NavigationRailDestination(
+                                        icon: Icon(Icons.backpack_outlined),
+                                        selectedIcon: Icon(Icons.backpack),
+                                        label: Text('裝備'),
+                                      ),
+                                      NavigationRailDestination(
+                                        icon: Icon(Icons.groups_outlined),
+                                        selectedIcon: Icon(Icons.groups),
+                                        label: Text('揪團/訊息'),
+                                      ),
+                                      NavigationRailDestination(
+                                        icon: Icon(Icons.info_outline),
+                                        selectedIcon: Icon(Icons.info),
+                                        label: Text('資訊'),
+                                      ),
+                                    ],
+                                  ),
+                                  const VerticalDivider(thickness: 1, width: 1),
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Expanded(child: _buildTabContent(_currentIndex)),
+                                        const BannerAdWidget(location: 'navigation_bottom'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            bottomNavigationBar: ResponsiveLayout(
+                              mobile: MainBottomNavigationBar(
+                                currentIndex: _currentIndex,
                                 onDestinationSelected: (index) {
                                   setState(() => _currentIndex = index);
                                   if (isEditMode) {
                                     context.read<ItineraryCubit>().toggleEditMode();
                                   }
                                 },
-                                labelType: NavigationRailLabelType.all,
-                                leading: Column(
-                                  children: [
-                                    const SizedBox(height: 8),
-                                    IconButton(
-                                      icon: const Icon(Icons.menu),
-                                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                                      tooltip: '選單',
-                                    ),
-                                    const SizedBox(height: 20),
-                                  ],
-                                ),
-                                destinations: const [
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.hiking),
-                                    selectedIcon: Icon(Icons.hiking),
-                                    label: Text('行程'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.backpack_outlined),
-                                    selectedIcon: Icon(Icons.backpack),
-                                    label: Text('裝備'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.groups_outlined),
-                                    selectedIcon: Icon(Icons.groups),
-                                    label: Text('揪團/訊息'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.info_outline),
-                                    selectedIcon: Icon(Icons.info),
-                                    label: Text('資訊'),
-                                  ),
-                                ],
                               ),
-                              const VerticalDivider(thickness: 1, width: 1),
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    Expanded(child: _buildTabContent(_currentIndex)),
-                                    const BannerAdWidget(location: 'navigation_bottom'),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        bottomNavigationBar: ResponsiveLayout(
-                          mobile: MainBottomNavigationBar(
-                            currentIndex: _currentIndex,
-                            onDestinationSelected: (index) {
-                              setState(() => _currentIndex = index);
-                              if (isEditMode) {
-                                context.read<ItineraryCubit>().toggleEditMode();
-                              }
-                            },
-                          ),
-                          desktop: const SizedBox.shrink(),
-                        ),
-                        floatingActionButton: (_currentIndex == 0 && isEditMode)
-                            ? FloatingActionButton(
-                                onPressed: () => _showAddItineraryDialog(context),
-                                child: const Icon(Icons.add),
-                              )
-                            : null,
+                              desktop: const SizedBox.shrink(),
+                            ),
+                            floatingActionButton: (_currentIndex == 0 && isEditMode)
+                                ? FloatingActionButton(
+                                    onPressed: () => _showAddItineraryDialog(context),
+                                    child: const Icon(Icons.add),
+                                  )
+                                : null,
                           );
                         },
                       );

@@ -83,8 +83,7 @@ class FakeGroupEventRepository implements IGroupEventRepository {
     required String type,
     int? page,
     int? limit,
-  }) async =>
-      Success(PaginatedList<GroupEvent>(items: _events, page: 1, total: _events.length, hasMore: false));
+  }) async => Success(PaginatedList<GroupEvent>(items: _events, page: 1, total: _events.length, hasMore: false));
   @override
   Future<Result<String, Exception>> create({
     required String title,

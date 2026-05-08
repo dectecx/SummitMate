@@ -65,12 +65,9 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
 
   @override
   Future<void> saveLastSyncTime(DateTime time) async {
-    await into(syncMetaDataTable).insertOnConflictUpdate(
-      SyncMetaDataTableCompanion.insert(
-        key: 'itinerary',
-        lastSyncTime: Value(time),
-      ),
-    );
+    await into(
+      syncMetaDataTable,
+    ).insertOnConflictUpdate(SyncMetaDataTableCompanion.insert(key: 'itinerary', lastSyncTime: Value(time)));
   }
 
   @override

@@ -18,11 +18,8 @@ abstract class SyncState extends Equatable {
 class SyncInitial extends SyncState {
   final DateTime? lastSyncTime;
 
-  const SyncInitial({
-    this.lastSyncTime,
-    int pendingCount = 0,
-    bool isOnline = true,
-  }) : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncInitial({this.lastSyncTime, int pendingCount = 0, bool isOnline = true})
+    : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
   List<Object?> get props => [...super.props, lastSyncTime];
@@ -31,11 +28,8 @@ class SyncInitial extends SyncState {
 class SyncInProgress extends SyncState {
   final String message;
 
-  const SyncInProgress({
-    this.message = '正在同步資料...',
-    int pendingCount = 0,
-    bool isOnline = true,
-  }) : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncInProgress({this.message = '正在同步資料...', int pendingCount = 0, bool isOnline = true})
+    : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
   List<Object?> get props => [...super.props, message];
@@ -45,12 +39,8 @@ class SyncSuccess extends SyncState {
   final DateTime timestamp;
   final String message;
 
-  const SyncSuccess({
-    required this.timestamp,
-    required this.message,
-    int pendingCount = 0,
-    bool isOnline = true,
-  }) : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncSuccess({required this.timestamp, required this.message, int pendingCount = 0, bool isOnline = true})
+    : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
   List<Object?> get props => [...super.props, timestamp, message];
@@ -60,12 +50,8 @@ class SyncFailure extends SyncState {
   final String errorMessage;
   final DateTime? lastSuccessTime;
 
-  const SyncFailure({
-    required this.errorMessage,
-    this.lastSuccessTime,
-    int pendingCount = 0,
-    bool isOnline = true,
-  }) : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncFailure({required this.errorMessage, this.lastSuccessTime, int pendingCount = 0, bool isOnline = true})
+    : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
   List<Object?> get props => [...super.props, errorMessage, lastSuccessTime];

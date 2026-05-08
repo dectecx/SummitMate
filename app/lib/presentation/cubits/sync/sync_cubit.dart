@@ -48,7 +48,14 @@ class SyncCubit extends Cubit<SyncState> {
         emit(SyncSuccess(timestamp: s.timestamp, message: s.message, pendingCount: s.pendingCount, isOnline: isOnline));
       } else if (state is SyncFailure) {
         final s = state as SyncFailure;
-        emit(SyncFailure(errorMessage: s.errorMessage, lastSuccessTime: s.lastSuccessTime, pendingCount: s.pendingCount, isOnline: isOnline));
+        emit(
+          SyncFailure(
+            errorMessage: s.errorMessage,
+            lastSuccessTime: s.lastSuccessTime,
+            pendingCount: s.pendingCount,
+            isOnline: isOnline,
+          ),
+        );
       }
 
       if (isOnline) {
@@ -72,7 +79,14 @@ class SyncCubit extends Cubit<SyncState> {
         emit(SyncSuccess(timestamp: s.timestamp, message: s.message, pendingCount: count, isOnline: s.isOnline));
       } else if (state is SyncFailure) {
         final s = state as SyncFailure;
-        emit(SyncFailure(errorMessage: s.errorMessage, lastSuccessTime: s.lastSuccessTime, pendingCount: count, isOnline: s.isOnline));
+        emit(
+          SyncFailure(
+            errorMessage: s.errorMessage,
+            lastSuccessTime: s.lastSuccessTime,
+            pendingCount: count,
+            isOnline: s.isOnline,
+          ),
+        );
       }
     });
   }
@@ -97,12 +111,14 @@ class SyncCubit extends Cubit<SyncState> {
   /// [force] 是否強制執行同步 (忽略節流與最小間隔)
   Future<void> syncAll({bool force = false}) async {
     if (_connectivityService.isOffline) {
-      emit(SyncFailure(
-        errorMessage: '目前處於離線模式，無法同步',
-        lastSuccessTime: _getLastSyncTime(),
-        pendingCount: state.pendingCount,
-        isOnline: false,
-      ));
+      emit(
+        SyncFailure(
+          errorMessage: '目前處於離線模式，無法同步',
+          lastSuccessTime: _getLastSyncTime(),
+          pendingCount: state.pendingCount,
+          isOnline: false,
+        ),
+      );
       return;
     }
 
@@ -115,36 +131,44 @@ class SyncCubit extends Cubit<SyncState> {
       if (result.isSuccess) {
         if (result.skipReason != null) {
           LogService.info('Sync skipped: ${result.skipReason}', source: _source);
-          emit(SyncSuccess(
-            timestamp: result.syncedAt,
-            message: '同步完成 (已略過)',
-            pendingCount: state.pendingCount,
-            isOnline: state.isOnline,
-          ));
+          emit(
+            SyncSuccess(
+              timestamp: result.syncedAt,
+              message: '同步完成 (已略過)',
+              pendingCount: state.pendingCount,
+              isOnline: state.isOnline,
+            ),
+          );
         } else {
-          emit(SyncSuccess(
-            timestamp: result.syncedAt,
-            message: '同步成功',
-            pendingCount: state.pendingCount,
-            isOnline: state.isOnline,
-          ));
+          emit(
+            SyncSuccess(
+              timestamp: result.syncedAt,
+              message: '同步成功',
+              pendingCount: state.pendingCount,
+              isOnline: state.isOnline,
+            ),
+          );
         }
       } else {
-        emit(SyncFailure(
-          errorMessage: result.errorMessage ?? '同步失敗',
-          lastSuccessTime: _getLastSyncTime(),
-          pendingCount: state.pendingCount,
-          isOnline: state.isOnline,
-        ));
+        emit(
+          SyncFailure(
+            errorMessage: result.errorMessage ?? '同步失敗',
+            lastSuccessTime: _getLastSyncTime(),
+            pendingCount: state.pendingCount,
+            isOnline: state.isOnline,
+          ),
+        );
       }
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);
-      emit(SyncFailure(
-        errorMessage: '同步發生錯誤',
-        lastSuccessTime: _getLastSyncTime(),
-        pendingCount: state.pendingCount,
-        isOnline: state.isOnline,
-      ));
+      emit(
+        SyncFailure(
+          errorMessage: '同步發生錯誤',
+          lastSuccessTime: _getLastSyncTime(),
+          pendingCount: state.pendingCount,
+          isOnline: state.isOnline,
+        ),
+      );
     }
   }
 
@@ -156,12 +180,14 @@ class SyncCubit extends Cubit<SyncState> {
   /// 上傳行程 (強製觸發同步)
   Future<void> uploadItinerary() async {
     if (_connectivityService.isOffline) {
-      emit(SyncFailure(
-        errorMessage: '目前處於離線模式，無法上傳',
-        lastSuccessTime: _getLastSyncTime(),
-        pendingCount: state.pendingCount,
-        isOnline: false,
-      ));
+      emit(
+        SyncFailure(
+          errorMessage: '目前處於離線模式，無法上傳',
+          lastSuccessTime: _getLastSyncTime(),
+          pendingCount: state.pendingCount,
+          isOnline: false,
+        ),
+      );
       return;
     }
 
@@ -170,12 +196,14 @@ class SyncCubit extends Cubit<SyncState> {
     final tripId = activeTrip is Success<Trip?, Exception> ? activeTrip.value?.id : null;
 
     if (tripId == null) {
-      emit(SyncFailure(
-        errorMessage: '找不到活動行程',
-        lastSuccessTime: _getLastSyncTime(),
-        pendingCount: state.pendingCount,
-        isOnline: state.isOnline,
-      ));
+      emit(
+        SyncFailure(
+          errorMessage: '找不到活動行程',
+          lastSuccessTime: _getLastSyncTime(),
+          pendingCount: state.pendingCount,
+          isOnline: state.isOnline,
+        ),
+      );
       return;
     }
 
@@ -183,28 +211,34 @@ class SyncCubit extends Cubit<SyncState> {
     try {
       final result = await _itineraryRepository.sync(tripId);
       if (result is Success) {
-        emit(SyncSuccess(
-          timestamp: DateTime.now(),
-          message: '行程上傳成功',
-          pendingCount: state.pendingCount,
-          isOnline: state.isOnline,
-        ));
+        emit(
+          SyncSuccess(
+            timestamp: DateTime.now(),
+            message: '行程上傳成功',
+            pendingCount: state.pendingCount,
+            isOnline: state.isOnline,
+          ),
+        );
       } else {
-        emit(SyncFailure(
-          errorMessage: '上傳失敗',
-          lastSuccessTime: _getLastSyncTime(),
-          pendingCount: state.pendingCount,
-          isOnline: state.isOnline,
-        ));
+        emit(
+          SyncFailure(
+            errorMessage: '上傳失敗',
+            lastSuccessTime: _getLastSyncTime(),
+            pendingCount: state.pendingCount,
+            isOnline: state.isOnline,
+          ),
+        );
       }
     } catch (e) {
       LogService.error('Upload failed: $e', source: _source);
-      emit(SyncFailure(
-        errorMessage: '上傳發生錯誤',
-        lastSuccessTime: _getLastSyncTime(),
-        pendingCount: state.pendingCount,
-        isOnline: state.isOnline,
-      ));
+      emit(
+        SyncFailure(
+          errorMessage: '上傳發生錯誤',
+          lastSuccessTime: _getLastSyncTime(),
+          pendingCount: state.pendingCount,
+          isOnline: state.isOnline,
+        ),
+      );
     }
   }
 

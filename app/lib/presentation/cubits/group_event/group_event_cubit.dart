@@ -310,13 +310,15 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       final result = await _groupEventRepository.syncMyEvents(type: type, page: 1);
       switch (result) {
         case Success(value: final paginated):
-          emit(MyEventsLoaded(
-            events: paginated.items,
-            type: type,
-            page: 1,
-            total: paginated.total,
-            hasMore: paginated.hasMore,
-          ));
+          emit(
+            MyEventsLoaded(
+              events: paginated.items,
+              type: type,
+              page: 1,
+              total: paginated.total,
+              hasMore: paginated.hasMore,
+            ),
+          );
         case Failure(exception: final e):
           emit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
       }
@@ -337,19 +339,18 @@ class GroupEventCubit extends Cubit<GroupEventState> {
 
     try {
       final nextPage = current.page + 1;
-      final result = await _groupEventRepository.syncMyEvents(
-        type: current.type,
-        page: nextPage,
-      );
+      final result = await _groupEventRepository.syncMyEvents(type: current.type, page: nextPage);
       switch (result) {
         case Success(value: final paginated):
-          emit(current.copyWith(
-            events: [...current.events, ...paginated.items],
-            page: nextPage,
-            total: paginated.total,
-            hasMore: paginated.hasMore,
-            isLoadingMore: false,
-          ));
+          emit(
+            current.copyWith(
+              events: [...current.events, ...paginated.items],
+              page: nextPage,
+              total: paginated.total,
+              hasMore: paginated.hasMore,
+              isLoadingMore: false,
+            ),
+          );
         case Failure(exception: final e):
           LogService.error('loadMoreMyEvents failed: $e', source: _source);
           emit(current.copyWith(isLoadingMore: false));

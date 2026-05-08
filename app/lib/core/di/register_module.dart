@@ -17,7 +17,6 @@ abstract class RegisterModule {
   @preResolve
   Future<PackageInfo> get packageInfo => PackageInfo.fromPlatform();
 
-
   @Named('baseUrl')
   String get baseUrl => EnvConfig.apiBaseUrl;
 

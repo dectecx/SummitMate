@@ -160,11 +160,7 @@ class LogService {
       final apiClient = getIt<NetworkAwareClient>();
       final logEntries = _memoryLogs.map((e) => e.toJson()).toList();
 
-      final payload = {
-        'device_name': deviceName ?? 'Unknown Device',
-        'device_id': 'app-client',
-        'logs': logEntries
-      };
+      final payload = {'device_name': deviceName ?? 'Unknown Device', 'device_id': 'app-client', 'logs': logEntries};
 
       final response = await apiClient.post('/logs', data: payload);
 
