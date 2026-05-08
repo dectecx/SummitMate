@@ -9,7 +9,7 @@ import 'core/di/injection.dart';
 import 'infrastructure/observers/global_bloc_observer.dart';
 import 'infrastructure/tools/log_service.dart';
 
-void main() async {
+Future<void> main() async {
   if (kIsWeb) {
     setPathUrlStrategy();
   }
