@@ -47,9 +47,7 @@ void main() {
         final item1 = testItem1.copyWith(orderIndex: 1);
         final item2 = testItem2.copyWith(orderIndex: 0);
 
-        when(
-          () => mockLocalDataSource.getAll(),
-        ).thenAnswer((_) async => [item1, item2]);
+        when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [item1, item2]);
 
         // Act
         final result = await repository.getAllItems();
@@ -64,9 +62,7 @@ void main() {
         final item1 = testItem1.copyWith(orderIndex: 999);
         final item2 = testItem2.copyWith(orderIndex: 0);
 
-        when(
-          () => mockLocalDataSource.getAll(),
-        ).thenAnswer((_) async => [item1, item2]);
+        when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [item1, item2]);
 
         final result = await repository.getAllItems();
 
@@ -97,9 +93,7 @@ void main() {
     });
 
     test('getTotalWeight calculates correctly', () async {
-      when(
-        () => mockLocalDataSource.getAll(),
-      ).thenAnswer((_) async => [testItem1, testItem2]); // 2000 + 1000
+      when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testItem1, testItem2]); // 2000 + 1000
       final result = await repository.getAllItems();
       final total = result.fold<double>(0, (sum, item) => sum + (item.weight * item.quantity));
       expect(total, 3000.0);
@@ -109,9 +103,7 @@ void main() {
       final item1 = testItem1.copyWith(isChecked: true);
       final item2 = testItem2.copyWith(isChecked: true);
 
-      when(
-        () => mockLocalDataSource.getAll(),
-      ).thenAnswer((_) async => [item1, item2]);
+      when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [item1, item2]);
       when(() => mockLocalDataSource.updateItem(any())).thenAnswer((_) async => {});
 
       await repository.resetAllChecked();

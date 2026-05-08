@@ -171,7 +171,6 @@ void main() {
     });
   });
 
-
   group('GroupEventRemoteDataSource CRUD', () {
     test('createEvent returns ID', () async {
       when(() => mockApiService.createEvent(any())).thenAnswer((_) async => testEventResponse);

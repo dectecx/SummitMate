@@ -95,9 +95,7 @@ void main() {
             page: any(named: 'page'),
             limit: any(named: 'limit'),
           ),
-        ).thenAnswer(
-          (_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)),
-        );
+        ).thenAnswer((_) async => Success(PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false)));
         when(() => mockLocalDataSource.add(any())).thenAnswer((_) async {});
 
         // Act

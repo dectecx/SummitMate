@@ -237,18 +237,9 @@ void main() {
           updatedBy: 'u1',
         );
 
-        expect(
-          trip.toString(),
-          contains('id: trip-str'),
-        );
-        expect(
-          trip.toString(),
-          contains('name: Test Trip'),
-        );
-        expect(
-          trip.toString(),
-          contains('isActive: true'),
-        );
+        expect(trip.toString(), contains('id: trip-str'));
+        expect(trip.toString(), contains('name: Test Trip'));
+        expect(trip.toString(), contains('isActive: true'));
       });
     });
   });

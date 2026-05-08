@@ -10,10 +10,7 @@ class TripSelectionDialog extends StatefulWidget {
   const TripSelectionDialog({super.key});
 
   static Future<void> show(BuildContext context) async {
-    return showDialog(
-      context: context,
-      builder: (context) => const TripSelectionDialog(),
-    );
+    return showDialog(context: context, builder: (context) => const TripSelectionDialog());
   }
 
   @override
@@ -94,10 +91,7 @@ class _TripSelectionDialogState extends State<TripSelectionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('選擇要匯入的行程'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: _buildContent(),
-      ),
+      content: SizedBox(width: double.maxFinite, child: _buildContent()),
       actions: [
         TextButton(
           onPressed: (_isLoading || _isImporting) ? null : () => Navigator.pop(context),
@@ -113,11 +107,7 @@ class _TripSelectionDialogState extends State<TripSelectionDialog> {
         padding: EdgeInsets.symmetric(vertical: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('正在取得雲端行程...'),
-          ],
+          children: [CircularProgressIndicator(), SizedBox(height: 16), Text('正在取得雲端行程...')],
         ),
       );
     }
@@ -164,11 +154,7 @@ class _TripSelectionDialogState extends State<TripSelectionDialog> {
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('正在匯入並同步資料...'),
-                  ],
+                  children: [CircularProgressIndicator(), SizedBox(height: 16), Text('正在匯入並同步資料...')],
                 ),
               ),
             ),

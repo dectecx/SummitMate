@@ -17,14 +17,13 @@ class MyGroupEventsScreen extends StatefulWidget {
   State<MyGroupEventsScreen> createState() => _MyGroupEventsScreenState();
 }
 
-class _MyGroupEventsScreenState extends State<MyGroupEventsScreen>
-    with SingleTickerProviderStateMixin {
+class _MyGroupEventsScreenState extends State<MyGroupEventsScreen> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   static const _tabs = [
-    ('host',  Icons.star_rounded,         '主辦'),
+    ('host', Icons.star_rounded, '主辦'),
     ('apply', Icons.assignment_turned_in, '報名'),
-    ('like',  Icons.favorite_rounded,     '喜歡'),
+    ('like', Icons.favorite_rounded, '喜歡'),
   ];
 
   @override
@@ -92,8 +91,7 @@ class _MyEventsTabBodyState extends State<_MyEventsTabBody> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       context.read<GroupEventCubit>().loadMoreMyEvents();
     }
   }
@@ -109,10 +107,7 @@ class _MyEventsTabBodyState extends State<_MyEventsTabBody> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GroupEventCubit, GroupEventState>(
-      buildWhen: (prev, cur) =>
-          cur is MyEventsLoading ||
-          cur is MyEventsLoaded ||
-          cur is MyEventsError,
+      buildWhen: (prev, cur) => cur is MyEventsLoading || cur is MyEventsLoaded || cur is MyEventsError,
       builder: (context, state) {
         if (state is MyEventsLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -121,8 +116,7 @@ class _MyEventsTabBodyState extends State<_MyEventsTabBody> {
         if (state is MyEventsError) {
           return _ErrorView(
             message: state.message,
-            onRetry: () =>
-                context.read<GroupEventCubit>().fetchMyEvents(type: widget.type),
+            onRetry: () => context.read<GroupEventCubit>().fetchMyEvents(type: widget.type),
           );
         }
 
@@ -135,8 +129,7 @@ class _MyEventsTabBodyState extends State<_MyEventsTabBody> {
             isLoadingMore: state.isLoadingMore,
             scrollController: _scrollController,
             type: widget.type,
-            onRefresh: () =>
-                context.read<GroupEventCubit>().fetchMyEvents(type: widget.type),
+            onRefresh: () => context.read<GroupEventCubit>().fetchMyEvents(type: widget.type),
           );
         }
 
@@ -218,10 +211,7 @@ class _EventCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => GroupEventDetailScreen(event: event)),
-        ),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => GroupEventDetailScreen(event: event))),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -233,8 +223,7 @@ class _EventCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       event.title,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -250,10 +239,7 @@ class _EventCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.calendar_today, size: 13, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text(
-                    _formatDate(event.startDate, event.endDate),
-                    style: theme.textTheme.bodySmall,
-                  ),
+                  Text(_formatDate(event.startDate, event.endDate), style: theme.textTheme.bodySmall),
                   if (event.location.isNotEmpty) ...[
                     const SizedBox(width: 12),
                     const Icon(Icons.location_on, size: 13, color: Colors.grey),
@@ -276,15 +262,11 @@ class _EventCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.people, size: 13, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text(
-                    '${event.applicationCount}/${event.maxMembers}',
-                    style: theme.textTheme.bodySmall,
-                  ),
+                  Text('${event.applicationCount}/${event.maxMembers}', style: theme.textTheme.bodySmall),
                   const Spacer(),
                   if (type == 'apply' && event.myApplicationStatus != null)
                     _AppStatusBadge(status: event.myApplicationStatus!),
-                  if (type == 'like')
-                    const Icon(Icons.favorite, size: 14, color: Colors.redAccent),
+                  if (type == 'like') const Icon(Icons.favorite, size: 14, color: Colors.redAccent),
                 ],
               ),
             ],
@@ -295,16 +277,16 @@ class _EventCard extends StatelessWidget {
   }
 
   Color _statusColor(GroupEventStatus s) => switch (s) {
-        GroupEventStatus.open => Colors.green,
-        GroupEventStatus.closed => Colors.grey,
-        GroupEventStatus.cancelled => Colors.red,
-      };
+    GroupEventStatus.open => Colors.green,
+    GroupEventStatus.closed => Colors.grey,
+    GroupEventStatus.cancelled => Colors.red,
+  };
 
   String _statusText(GroupEventStatus s) => switch (s) {
-        GroupEventStatus.open => '招募中',
-        GroupEventStatus.closed => '已截止',
-        GroupEventStatus.cancelled => '已取消',
-      };
+    GroupEventStatus.open => '招募中',
+    GroupEventStatus.closed => '已截止',
+    GroupEventStatus.cancelled => '已取消',
+  };
 
   String _formatDate(DateTime start, DateTime? end) {
     final s = DateFormat('yyyy/MM/dd').format(start);
@@ -343,9 +325,9 @@ class _AppStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      GroupEventApplicationStatus.pending   => ('待審核', Colors.orange),
-      GroupEventApplicationStatus.approved  => ('已通過', Colors.green),
-      GroupEventApplicationStatus.rejected  => ('已拒絕', Colors.red),
+      GroupEventApplicationStatus.pending => ('待審核', Colors.orange),
+      GroupEventApplicationStatus.approved => ('已通過', Colors.green),
+      GroupEventApplicationStatus.rejected => ('已拒絕', Colors.red),
       GroupEventApplicationStatus.cancelled => ('已取消', Colors.grey),
     };
     return _StatusChip(label: label, color: color);
@@ -359,9 +341,9 @@ class _EmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (icon, label) = switch (type) {
-      'host'  => (Icons.star_outline, '還沒有主辦的揪團'),
+      'host' => (Icons.star_outline, '還沒有主辦的揪團'),
       'apply' => (Icons.assignment_outlined, '還沒有報名的揪團'),
-      _       => (Icons.favorite_border, '還沒有喜歡的揪團'),
+      _ => (Icons.favorite_border, '還沒有喜歡的揪團'),
     };
     return Center(
       child: Column(
@@ -369,11 +351,7 @@ class _EmptyView extends StatelessWidget {
         children: [
           Icon(icon, size: 64, color: Colors.grey.withValues(alpha: 0.4)),
           const SizedBox(height: 16),
-          Text(label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: Colors.grey)),
+          Text(label, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey)),
         ],
       ),
     );
@@ -395,11 +373,7 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: 12),
           Text(message, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('重試'),
-          ),
+          FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('重試')),
         ],
       ),
     );

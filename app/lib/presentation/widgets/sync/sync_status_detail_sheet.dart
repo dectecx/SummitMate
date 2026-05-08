@@ -36,26 +36,16 @@ class SyncStatusDetailSheet extends StatelessWidget {
                 child: Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
                 ),
               ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '同步狀態',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  const Text('同步狀態', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   if (state.isInProgress)
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                    const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                   else
                     IconButton(
                       onPressed: state.isOnline ? () => context.read<SyncCubit>().syncAll(force: true) : null,
@@ -79,10 +69,7 @@ class SyncStatusDetailSheet extends StatelessWidget {
                 color: state.isOnline ? Colors.green : Colors.red,
               ),
               const Divider(height: 32),
-              const Text(
-                '待同步項目',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              const Text('待同步項目', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               _buildTableSyncStatus(context, 'itinerary_items_table', '行程項目'),
               _buildTableSyncStatus(context, 'gear_items_table', '裝備清單'),
@@ -115,7 +102,9 @@ class SyncStatusDetailSheet extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: state.isOnline && !state.isInProgress ? () => context.read<SyncCubit>().syncAll(force: true) : null,
+                  onPressed: state.isOnline && !state.isInProgress
+                      ? () => context.read<SyncCubit>().syncAll(force: true)
+                      : null,
                   icon: const Icon(Icons.sync),
                   label: const Text('立即完整同步'),
                 ),
@@ -138,10 +127,7 @@ class SyncStatusDetailSheet extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: color ?? Theme.of(context).textTheme.bodyLarge?.color,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w500, color: color ?? Theme.of(context).textTheme.bodyLarge?.color),
           ),
         ],
       ),

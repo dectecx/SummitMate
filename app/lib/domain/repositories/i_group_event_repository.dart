@@ -59,11 +59,7 @@ abstract interface class IGroupEventRepository {
   /// [type] 揪團類型：host（我主辦）、apply（我報名）、like（我收藏）
   /// [page] 頁碼（可選）
   /// [limit] 每頁筆數（可選）
-  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({
-    required String type,
-    int? page,
-    int? limit,
-  });
+  Future<Result<PaginatedList<GroupEvent>, Exception>> syncMyEvents({required String type, int? page, int? limit});
 
   // ========== Remote Write Operations ==========
 
