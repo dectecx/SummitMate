@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/core/theme.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -13,6 +14,9 @@ class SettingsRepository implements ISettingsRepository {
 
   /// 快取設定供同步讀取
   Settings? _cachedSettings;
+
+  /// 設定變更通知
+  final _settingsController = StreamController<void>.broadcast();
 
   SettingsRepository({required ISettingsLocalDataSource localDataSource}) : _localDataSource = localDataSource;
 
@@ -38,6 +42,7 @@ class SettingsRepository implements ISettingsRepository {
     final newSettings = settings.copyWith(username: username);
     await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
+    _settingsController.add(null);
   }
 
   @override
@@ -46,6 +51,7 @@ class SettingsRepository implements ISettingsRepository {
     final newSettings = settings.copyWith(lastSyncTime: time);
     await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
+    _settingsController.add(null);
   }
 
   @override
@@ -54,6 +60,7 @@ class SettingsRepository implements ISettingsRepository {
     final newSettings = settings.copyWith(avatar: avatar);
     await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
+    _settingsController.add(null);
   }
 
   @override
@@ -62,6 +69,7 @@ class SettingsRepository implements ISettingsRepository {
     final newSettings = settings.copyWith(isOfflineMode: isOffline);
     await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
+    _settingsController.add(null);
   }
 
   @override
@@ -70,19 +78,20 @@ class SettingsRepository implements ISettingsRepository {
     final newSettings = settings.copyWith(theme: theme);
     await _localDataSource.saveSettings(newSettings);
     _cachedSettings = newSettings;
+    _settingsController.add(null);
   }
 
   @override
   Future<void> resetSettings() async {
     await _localDataSource.clear();
     _cachedSettings = null;
+    _settingsController.add(null);
   }
 
   // ========== Watch ==========
 
   @override
   Stream<void> watchSettings() {
-    // Note: Internal implementation could use a stream controller if needed
-    return const Stream.empty();
+    return _settingsController.stream;
   }
 }

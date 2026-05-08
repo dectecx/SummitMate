@@ -13,7 +13,7 @@ abstract class Settings with _$Settings {
     @Default('') String username,
     @Default('🐻') String avatar,
     @Default(AppThemeType.nature) AppThemeType theme,
-    @Default(true) bool isOfflineMode,
+    @Default(false) bool isOfflineMode,
     @Default(true) bool enableNotifications,
     @Default('zh') String language,
     @Default(false) bool darkMode,
