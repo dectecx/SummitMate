@@ -216,7 +216,7 @@ return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_tha
 @JsonSerializable()
 
 class _Settings extends Settings {
-  const _Settings({this.username = '', this.avatar = '🐻', this.theme = AppThemeType.nature, this.isOfflineMode = true, this.enableNotifications = true, this.language = 'zh', this.darkMode = false, this.lastSyncTime}): super._();
+  const _Settings({this.username = '', this.avatar = '🐻', this.theme = AppThemeType.nature, this.isOfflineMode = false, this.enableNotifications = true, this.language = 'zh', this.darkMode = false, this.lastSyncTime}): super._();
   factory _Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);
 
 @override@JsonKey() final  String username;
