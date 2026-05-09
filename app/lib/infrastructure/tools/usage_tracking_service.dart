@@ -39,6 +39,14 @@ class UsageTrackingService {
       return;
     }
 
+    if (_username == username && _userId == userId && _heartbeatTimer != null) {
+      LogService.debug('心跳追蹤已在執行中, User: $username', source: _source);
+      return;
+    }
+
+    // 先停止現有的追蹤 (如有)
+    stop();
+
     _username = username;
     _userId = userId;
     _userType = userId != null ? 'member' : 'guest';
