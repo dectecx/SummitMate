@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/presentation/utils/gear_utils.dart';
+import 'package:summitmate/presentation/utils/meal_utils.dart';
 import 'responsive_layout.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -307,16 +308,10 @@ class _MealItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
-      leading: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          type.name.toUpperCase().substring(0, 1),
-          style: TextStyle(color: Colors.blue.shade800, fontSize: 10, fontWeight: FontWeight.bold),
-        ),
+      leading: Icon(
+        MealUIUtils.getMealIcon(type),
+        color: MealUIUtils.getMealColor(type),
+        size: 20,
       ),
       title: Text(meal.name, style: const TextStyle(fontSize: 14)),
       subtitle: meal.note != null ? Text(meal.note!, style: const TextStyle(fontSize: 11)) : null,

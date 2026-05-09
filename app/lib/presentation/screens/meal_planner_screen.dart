@@ -5,6 +5,7 @@ import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import 'food_reference_screen.dart';
 import '../widgets/responsive_layout.dart';
+import '../utils/meal_utils.dart';
 
 /// 糧食計畫畫面
 ///
@@ -134,7 +135,7 @@ class MealPlannerScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ExpansionTile(
         initiallyExpanded: true,
-        leading: Icon(_getMealIcon(type), color: _getMealColor(type)),
+        leading: Icon(MealUIUtils.getMealIcon(type), color: MealUIUtils.getMealColor(type)),
         title: Text(type.label, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: items.isNotEmpty
             ? Text(
@@ -295,43 +296,5 @@ class MealPlannerScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  IconData _getMealIcon(MealType type) {
-    switch (type) {
-      case MealType.preBreakfast:
-        return Icons.wb_twilight;
-      case MealType.breakfast:
-        return Icons.wb_sunny;
-      case MealType.lunch:
-        return Icons.lunch_dining;
-      case MealType.teatime:
-        return Icons.coffee;
-      case MealType.dinner:
-        return Icons.dinner_dining;
-      case MealType.action:
-        return Icons.directions_walk;
-      case MealType.emergency:
-        return Icons.medical_services;
-    }
-  }
-
-  Color _getMealColor(MealType type) {
-    switch (type) {
-      case MealType.preBreakfast:
-        return Colors.indigo;
-      case MealType.breakfast:
-        return Colors.orange;
-      case MealType.lunch:
-        return Colors.green;
-      case MealType.teatime:
-        return Colors.brown;
-      case MealType.dinner:
-        return Colors.deepPurple;
-      case MealType.action:
-        return Colors.blue;
-      case MealType.emergency:
-        return Colors.red;
-    }
   }
 }
