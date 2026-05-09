@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,8 +34,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   final IGearSetRepository _repository = getIt<IGearSetRepository>();
   List<GearSet> _gearSets = [];
   bool _isLoading = false;
-  String? _errorMessage;
+  bool _hasFetched = false;
   String? _busyGearSetId; // 防止連續點擊的狀態
+  Timer? _refreshTimer;
   final TextEditingController _searchController = TextEditingController();
 
   List<GearSet> get _filteredGearSets {
@@ -47,25 +49,31 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     }).toList();
   }
 
-
   @override
   void initState() {
     super.initState();
+    _fetchGearSets();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (_repository.lastFetchedAt != null && mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchGearSets() async {
+  Future<void> _fetchGearSets({bool forceRefresh = false}) async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
+      _hasFetched = true;
     });
 
-    final result = await _repository.getGearSets();
+    final result = await _repository.getGearSets(forceRefresh: forceRefresh);
 
     if (!mounted) return;
 
@@ -77,8 +85,10 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     } else if (result is Failure<List<GearSet>, Exception>) {
       setState(() {
         _isLoading = false;
-        _errorMessage = result.exception.toString();
       });
+      if (mounted) {
+        ToastService.error('載入失敗: ${result.exception}');
+      }
     }
   }
 
@@ -238,7 +248,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   Future<void> _importMeals(List<DailyMealPlan> meals) async {
     try {
       context.read<MealCubit>().setDailyPlans(meals);
-      ToastService.success('已匯入糧食計畫');
+      ToastService.success('已匯入裝備與糧食計畫');
     } catch (e) {
       ToastService.error('匯入糧食失敗: $e');
     }
@@ -307,48 +317,23 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         ),
       ),
       body: _buildBody(isOffline),
+      floatingActionButton: _hasFetched && _gearSets.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: isOffline ? null : () => _fetchGearSets(forceRefresh: true),
+              icon: const Icon(Icons.refresh),
+              label: const Text('抓取最新資料'),
+              backgroundColor: isOffline ? Colors.grey : null,
+            )
+          : null,
     );
   }
 
   Widget _buildBody(bool isOffline) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
-            const SizedBox(height: 16),
-            Text(_errorMessage!, style: TextStyle(color: Colors.red.shade600)),
-            const SizedBox(height: 16),
-            OutlinedButton(onPressed: _fetchGearSets, child: const Text('重試')),
-          ],
-        ),
-      );
-    }
-
-    if (_gearSets.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.cloud_off, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text('尚無共享的裝備組合', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('成為第一個分享的人！', style: TextStyle(color: Colors.grey.shade500)),
-            const SizedBox(height: 24),
-            _buildToolbarCard(isOffline),
-          ],
-        ),
-      );
-    }
+    final hasNoData = _gearSets.isEmpty && !_isLoading;
+    final isSearching = _searchController.text.isNotEmpty;
 
     return RefreshIndicator(
-      onRefresh: _fetchGearSets,
+      onRefresh: () => _fetchGearSets(forceRefresh: true),
       child: CustomScrollView(
         slivers: [
           SliverPadding(
@@ -356,8 +341,48 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _buildToolbarCard(isOffline),
-                _buildSearchBar(),
-                if (_filteredGearSets.isEmpty)
+                if (_gearSets.isNotEmpty) _buildSearchBar(),
+                if (_isLoading && _gearSets.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 100),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                if (_gearSets.isEmpty && !_isLoading)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 60),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _hasFetched ? Icons.cloud_off : Icons.cloud_download_outlined,
+                            size: 64,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _hasFetched ? '尚無共享的裝備組合' : '尚未載入雲端資料',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _hasFetched ? '稍後再過來看看吧！' : '點擊下方按鈕獲取最新共享資源',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: 200,
+                            child: FilledButton.icon(
+                              onPressed: isOffline ? null : () => _fetchGearSets(forceRefresh: true),
+                              icon: const Icon(Icons.download),
+                              label: const Text('抓取最新資料'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (!hasNoData && isSearching && _filteredGearSets.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 40),
                     child: Center(
@@ -367,31 +392,32 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
               ]),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: ResponsiveLayout.isDesktop(context)
-                ? SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 500,
-                      mainAxisExtent: 140,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => _buildGearSetCard(index, isOffline),
-                      childCount: _filteredGearSets.length,
-                    ),
-                  )
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildGearSetCard(index, isOffline),
+          if (!hasNoData)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: ResponsiveLayout.isDesktop(context)
+                  ? SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 500,
+                        mainAxisExtent: 140,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
                       ),
-                      childCount: _filteredGearSets.length,
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _buildGearSetCard(index, isOffline),
+                        childCount: _filteredGearSets.length,
+                      ),
+                    )
+                  : SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildGearSetCard(index, isOffline),
+                        ),
+                        childCount: _filteredGearSets.length,
+                      ),
                     ),
-                  ),
-          ),
+            ),
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
         ],
       ),
@@ -405,9 +431,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       gearSet: gearSet,
       isLoading: isBusy,
       onDownload: isBusy || isOffline ? null : () => _onDownloadPressed(gearSet),
-      onDelete: gearSet.visibility == GearSetVisibility.public && !isBusy
-          ? () => _confirmDeletePublicGearSet(gearSet)
-          : null,
     );
   }
 
@@ -449,20 +472,8 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            // 第一行：同步、上傳
             Row(
               children: [
-                // 重整清單按鈕
-                Expanded(
-                  child: _ToolButton(
-                    icon: Icons.refresh,
-                    label: '重整清單',
-                    onTap: isOffline ? null : _fetchGearSets,
-                    disabled: isOffline,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // 上傳
                 Expanded(
                   child: _ToolButton(
                     icon: Icons.upload,
@@ -471,21 +482,44 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                     disabled: isOffline,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // 第二行：管理我的雲端裝備庫
-            Row(
-              children: [
-                // 管理我的雲端裝備庫
+                const SizedBox(width: 8),
                 Expanded(
-                  child: _ToolButton(icon: Icons.cloud_done, label: '管理我的雲端裝備庫', onTap: _showManagementDialog),
+                  child: _ToolButton(icon: Icons.cloud_done, label: '管理雲端裝備', onTap: _showManagementDialog),
                 ),
               ],
             ),
+            if (_repository.lastFetchedAt != null) ...[const SizedBox(height: 12), _buildLastFetchedInfo()],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLastFetchedInfo() {
+    final now = DateTime.now();
+    final diff = now.difference(_repository.lastFetchedAt!);
+    final isStale = diff.inHours >= 1;
+
+    String timeStr;
+    if (diff.inMinutes < 1) {
+      timeStr = '剛剛';
+    } else if (diff.inMinutes < 60) {
+      timeStr = '${diff.inMinutes} 分鐘前';
+    } else {
+      timeStr = '${diff.inHours} 小時前';
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.access_time, size: 14, color: isStale ? Colors.orange : Colors.grey),
+        const SizedBox(width: 4),
+        Text('最後更新: $timeStr', style: TextStyle(fontSize: 12, color: isStale ? Colors.orange : Colors.grey)),
+        if (isStale) ...[
+          const SizedBox(width: 8),
+          const Text('(建議重新抓取)', style: TextStyle(fontSize: 12, color: Colors.orange)),
+        ],
+      ],
     );
   }
 
@@ -508,46 +542,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         onImportMeals: (meals) => _importMeals(meals),
       ),
     );
-  }
-
-  /// 確認刪除 public 裝備組合
-  Future<void> _confirmDeletePublicGearSet(GearSet gearSet) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ 確認刪除'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('確定要刪除「${gearSet.title}」嗎？'),
-            const SizedBox(height: 8),
-            const Text(
-              '此操作無法復原！',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('刪除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      final deleteResult = await _repository.deleteGearSet(gearSet.id);
-      if (deleteResult is Success<bool, Exception>) {
-        ToastService.success('已刪除裝備組合');
-        _fetchGearSets(); // 刷新列表
-      } else if (deleteResult is Failure<bool, Exception>) {
-        ToastService.error(deleteResult.exception.toString());
-      }
-    }
   }
 
   void _onDownloadPressed(GearSet gearSet) {
@@ -574,10 +568,9 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 class _GearSetCard extends StatelessWidget {
   final GearSet gearSet;
   final VoidCallback? onDownload;
-  final VoidCallback? onDelete;
   final bool isLoading;
 
-  const _GearSetCard({required this.gearSet, this.onDownload, this.onDelete, this.isLoading = false});
+  const _GearSetCard({required this.gearSet, this.onDownload, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -603,17 +596,13 @@ class _GearSetCard extends StatelessWidget {
               children: [
                 _InfoChip(icon: Icons.fitness_center, label: gearSet.formattedWeight),
                 const SizedBox(width: 12),
-                _InfoChip(icon: Icons.backpack, label: '${gearSet.itemCount} items'),
+                _InfoChip(icon: Icons.backpack, label: '${gearSet.itemCount} 件裝備'),
+                const SizedBox(width: 12),
+                _InfoChip(
+                  icon: Icons.restaurant,
+                  label: gearSet.meals == null || gearSet.meals!.isEmpty ? '無糧食' : '${gearSet.meals!.length} 天糧食',
+                ),
                 const Spacer(),
-                // public 組合顯示刪除按鈕
-                if (gearSet.visibility == GearSetVisibility.public && onDelete != null) ...[
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                    tooltip: '刪除此組合',
-                    onPressed: onDelete,
-                  ),
-                  const SizedBox(width: 4),
-                ],
                 _buildDownloadButton(),
               ],
             ),

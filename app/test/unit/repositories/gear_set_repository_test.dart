@@ -5,20 +5,30 @@ import 'package:summitmate/data/datasources/interfaces/i_gear_cloud_remote_data_
 import 'package:summitmate/data/datasources/interfaces/i_gear_key_local_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_set_repository.dart';
+import 'package:summitmate/data/datasources/local/gear_set_cache_dao.dart';
 
 class MockGearCloudRemoteDataSource extends Mock implements IGearCloudRemoteDataSource {}
 
 class MockGearKeyLocalDataSource extends Mock implements IGearKeyLocalDataSource {}
 
+class MockGearSetCacheDao extends Mock implements GearSetCacheDao {}
+
 void main() {
   late GearSetRepository repository;
   late MockGearCloudRemoteDataSource mockRemoteDataSource;
   late MockGearKeyLocalDataSource mockLocalDataSource;
+  late MockGearSetCacheDao mockCacheDao;
 
   setUp(() {
     mockRemoteDataSource = MockGearCloudRemoteDataSource();
     mockLocalDataSource = MockGearKeyLocalDataSource();
-    repository = GearSetRepository(mockRemoteDataSource, mockLocalDataSource);
+    mockCacheDao = MockGearSetCacheDao();
+
+    // Default mock behavior
+    when(() => mockCacheDao.getAllGearSets()).thenAnswer((_) async => []);
+    when(() => mockCacheDao.saveGearSets(any())).thenAnswer((_) async {});
+
+    repository = GearSetRepository(mockRemoteDataSource, mockLocalDataSource, mockCacheDao);
   });
 
   group('GearSetRepository', () {

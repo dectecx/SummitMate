@@ -16,12 +16,17 @@ import '../../data/models/favorite_table.dart';
 import '../../data/models/sync_meta_data_table.dart';
 import '../../data/models/log_table.dart';
 import '../../data/models/weather_table.dart';
+import '../../data/models/gear_set_cache_table.dart';
+
+import '../../data/datasources/local/gear_set_cache_dao.dart';
 
 // Enums (Needed for Drift TypeConverters in generated code)
 import '../../domain/enums/group_event_category.dart';
 import '../../domain/enums/group_event_status.dart';
 import '../../domain/enums/group_event_application_status.dart';
+import '../../domain/enums/gear_set_visibility.dart';
 import '../../data/models/converters/sync_status_converter.dart';
+import '../../data/models/converters/gear_set_visibility_converter.dart';
 
 part 'app_database.g.dart';
 
@@ -43,7 +48,9 @@ part 'app_database.g.dart';
     SyncMetaDataTable,
     LogsTable,
     WeatherDataTable,
+    GearSetCacheTable,
   ],
+  daos: [],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());

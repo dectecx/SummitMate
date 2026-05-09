@@ -9,7 +9,10 @@ abstract class IGearSetRepository {
   // === 遠端操作 (Remote Actions) ===
 
   /// 取得雲端裝備組合清單 (支援過濾我上傳的)
-  Future<Result<List<GearSet>, Exception>> getGearSets({bool? myUploadedOnly});
+  Future<Result<List<GearSet>, Exception>> getGearSets({bool? myUploadedOnly, bool forceRefresh = false});
+
+  /// 取得最後一次從雲端抓取成功的時間
+  DateTime? get lastFetchedAt;
 
   /// 下載特定裝備組合
   ///

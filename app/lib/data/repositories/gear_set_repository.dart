@@ -3,6 +3,7 @@ import '../../core/error/result.dart';
 import '../../domain/domain.dart';
 import '../datasources/interfaces/i_gear_cloud_remote_data_source.dart';
 import '../datasources/interfaces/i_gear_key_local_data_source.dart';
+import '../datasources/interfaces/i_gear_set_cache_local_data_source.dart';
 
 /// 裝備組合 Repository
 ///
@@ -11,15 +12,52 @@ import '../datasources/interfaces/i_gear_key_local_data_source.dart';
 class GearSetRepository implements IGearSetRepository {
   final IGearCloudRemoteDataSource _remoteDataSource;
   final IGearKeyLocalDataSource _localDataSource;
+  final IGearSetCacheLocalDataSource _cacheDao;
 
-  GearSetRepository(this._remoteDataSource, this._localDataSource);
+  List<GearSet>? _cache;
+  DateTime? _lastFetchedAt;
+
+  @override
+  DateTime? get lastFetchedAt => _lastFetchedAt;
+
+  GearSetRepository(this._remoteDataSource, this._localDataSource, this._cacheDao);
 
   // --- Remote (雲端操作) ---
 
   /// 取得所有公開/分享的裝備組合
   @override
-  Future<Result<List<GearSet>, Exception>> getGearSets({bool? myUploadedOnly}) =>
-      _remoteDataSource.getGearSets(myUploadedOnly: myUploadedOnly);
+  Future<Result<List<GearSet>, Exception>> getGearSets({bool? myUploadedOnly, bool forceRefresh = false}) async {
+    // 1. 如果非強制刷新，且內存已有，直接回傳
+    if (!forceRefresh && _cache != null && myUploadedOnly == null) {
+      return Success(_cache!);
+    }
+
+    // 2. 如果內存沒有，且非強制刷新，嘗試從本地資料庫讀取
+    if (!forceRefresh && _cache == null && myUploadedOnly == null) {
+      try {
+        final localSets = await _cacheDao.getAllGearSets();
+        if (localSets.isNotEmpty) {
+          _cache = localSets;
+          return Success(localSets);
+        }
+      } catch (e) {
+        // 快取讀取失敗則忽略，繼續往後打 API
+        print('Persistent cache load failed: $e');
+      }
+    }
+
+    // 3. 獲取遠端資料
+    final result = await _remoteDataSource.getGearSets(myUploadedOnly: myUploadedOnly);
+
+    // 如果是全體清單且獲取成功，更新內存與本地資料庫
+    if (result is Success<List<GearSet>, Exception> && myUploadedOnly == null) {
+      _cache = result.value;
+      _lastFetchedAt = DateTime.now();
+      await _cacheDao.saveGearSets(result.value);
+    }
+
+    return result;
+  }
 
   /// 下載特定裝備組合
   @override
