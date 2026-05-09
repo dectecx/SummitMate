@@ -35,8 +35,10 @@ func (h *HeartbeatHandler) Heartbeat(w http.ResponseWriter, r *http.Request) {
 
 	svcReq := &HeartbeatRequest{
 		UserType: req.UserType,
-		View:     req.View,
 		Platform: req.Platform,
+	}
+	if req.View != nil {
+		svcReq.View = *req.View
 	}
 
 	if err := h.svc.HandleHeartbeat(r.Context(), userID, svcReq); err != nil {
