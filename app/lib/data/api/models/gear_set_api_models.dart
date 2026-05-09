@@ -35,6 +35,34 @@ abstract class GearSetMealDto with _$GearSetMealDto {
       _$GearSetMealDtoFromJson(json);
 }
 
+@freezed
+abstract class GearSetItemRequest with _$GearSetItemRequest {
+  const factory GearSetItemRequest({
+    required String name,
+    required String category,
+    required double weight,
+    @Default(1) int quantity,
+    @JsonKey(name: 'order_index') @Default(0) int orderIndex,
+  }) = _GearSetItemRequest;
+
+  factory GearSetItemRequest.fromJson(Map<String, dynamic> json) =>
+      _$GearSetItemRequestFromJson(json);
+}
+
+@freezed
+abstract class GearSetMealRequest with _$GearSetMealRequest {
+  const factory GearSetMealRequest({
+    required String day,
+    @JsonKey(name: 'meal_type') required String mealType,
+    required String name,
+    @Default(0.0) double calories,
+    String? note,
+  }) = _GearSetMealRequest;
+
+  factory GearSetMealRequest.fromJson(Map<String, dynamic> json) =>
+      _$GearSetMealRequestFromJson(json);
+}
+
 // ── Response ──
 
 @freezed
@@ -80,8 +108,8 @@ class GearSetCreateRequest {
   final String? downloadKey;
   final double totalWeight;
   final int itemCount;
-  final List<Map<String, dynamic>> items;
-  final List<Map<String, dynamic>>? meals;
+  final List<GearSetItemRequest> items;
+  final List<GearSetMealRequest>? meals;
 
   const GearSetCreateRequest({
     required this.title,
@@ -101,7 +129,7 @@ class GearSetCreateRequest {
         if (downloadKey != null) 'download_key': downloadKey,
         'total_weight': totalWeight,
         'item_count': itemCount,
-        'items': items,
-        if (meals != null) 'meals': meals,
+        'items': items.map((i) => i.toJson()).toList(),
+        if (meals != null) 'meals': meals!.map((m) => m.toJson()).toList(),
       };
 }

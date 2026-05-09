@@ -109,45 +109,34 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 		gs.ItemCount = *req.ItemCount
 	}
 
-	for i, item := range req.Items {
+	for _, item := range req.Items {
 		gi := GearSetItem{
-			ID:         uuid.New(),
-			OrderIndex: i,
+			ID:       uuid.New(),
+			Name:     item.Name,
+			Category: item.Category,
+			Weight:   item.Weight,
+			Quantity: item.Quantity,
 		}
-		if v, ok := item["name"].(string); ok {
-			gi.Name = v
+		if item.Id != nil {
+			gi.ID = *item.Id
 		}
-		if v, ok := item["category"].(string); ok {
-			gi.Category = v
-		}
-		if v, ok := item["weight"].(float64); ok {
-			gi.Weight = v
-		}
-		if v, ok := item["quantity"].(float64); ok {
-			gi.Quantity = int(v)
-		} else {
-			gi.Quantity = 1
+		if item.OrderIndex != nil {
+			gi.OrderIndex = *item.OrderIndex
 		}
 		gs.Items = append(gs.Items, gi)
 	}
 
 	if req.Meals != nil {
 		for _, meal := range *req.Meals {
-			gm := GearSetMeal{ID: uuid.New()}
-			if v, ok := meal["day"].(string); ok {
-				gm.Day = v
+			gm := GearSetMeal{
+				ID:       uuid.New(),
+				Day:      meal.Day,
+				MealType: meal.MealType,
+				Name:     meal.Name,
+				Note:     meal.Note,
 			}
-			if v, ok := meal["meal_type"].(string); ok {
-				gm.MealType = v
-			}
-			if v, ok := meal["name"].(string); ok {
-				gm.Name = v
-			}
-			if v, ok := meal["calories"].(float64); ok {
-				gm.Calories = v
-			}
-			if v, ok := meal["note"].(string); ok {
-				gm.Note = &v
+			if meal.Calories != nil {
+				gm.Calories = *meal.Calories
 			}
 			gs.Meals = append(gs.Meals, gm)
 		}
@@ -215,45 +204,34 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 		gs.ItemCount = *req.ItemCount
 	}
 
-	for i, item := range req.Items {
+	for _, item := range req.Items {
 		gi := GearSetItem{
-			ID:         uuid.New(),
-			OrderIndex: i,
+			ID:       uuid.New(),
+			Name:     item.Name,
+			Category: item.Category,
+			Weight:   item.Weight,
+			Quantity: item.Quantity,
 		}
-		if v, ok := item["name"].(string); ok {
-			gi.Name = v
+		if item.Id != nil {
+			gi.ID = *item.Id
 		}
-		if v, ok := item["category"].(string); ok {
-			gi.Category = v
-		}
-		if v, ok := item["weight"].(float64); ok {
-			gi.Weight = v
-		}
-		if v, ok := item["quantity"].(float64); ok {
-			gi.Quantity = int(v)
-		} else {
-			gi.Quantity = 1
+		if item.OrderIndex != nil {
+			gi.OrderIndex = *item.OrderIndex
 		}
 		gs.Items = append(gs.Items, gi)
 	}
 
 	if req.Meals != nil {
 		for _, meal := range *req.Meals {
-			gm := GearSetMeal{ID: uuid.New()}
-			if v, ok := meal["day"].(string); ok {
-				gm.Day = v
+			gm := GearSetMeal{
+				ID:       uuid.New(),
+				Day:      meal.Day,
+				MealType: meal.MealType,
+				Name:     meal.Name,
+				Note:     meal.Note,
 			}
-			if v, ok := meal["meal_type"].(string); ok {
-				gm.MealType = v
-			}
-			if v, ok := meal["name"].(string); ok {
-				gm.Name = v
-			}
-			if v, ok := meal["calories"].(float64); ok {
-				gm.Calories = v
-			}
-			if v, ok := meal["note"].(string); ok {
-				gm.Note = &v
+			if meal.Calories != nil {
+				gm.Calories = *meal.Calories
 			}
 			gs.Meals = append(gs.Meals, gm)
 		}
@@ -288,33 +266,34 @@ func (h *GearSetHandler) DeleteGearSet(w http.ResponseWriter, r *http.Request, i
 }
 
 func mapToResponse(gs *GearSet) api.GearSetResponse {
-	items := make([]map[string]interface{}, 0, len(gs.Items))
+	items := make([]api.GearSetItemRequest, 0, len(gs.Items))
 	for _, it := range gs.Items {
-		items = append(items, map[string]interface{}{
-			"id":          it.ID.String(),
-			"name":        it.Name,
-			"category":    it.Category,
-			"weight":      it.Weight,
-			"quantity":    it.Quantity,
-			"order_index": it.OrderIndex,
+		id := it.ID
+		orderIndex := it.OrderIndex
+		items = append(items, api.GearSetItemRequest{
+			Id:         &id,
+			Name:       it.Name,
+			Category:   it.Category,
+			Weight:     it.Weight,
+			Quantity:   it.Quantity,
+			OrderIndex: &orderIndex,
 		})
 	}
 
-	var meals *[]map[string]interface{}
+	var meals *[]api.GearSetMealRequest
 	if len(gs.Meals) > 0 {
-		mList := make([]map[string]interface{}, 0, len(gs.Meals))
+		mList := make([]api.GearSetMealRequest, 0, len(gs.Meals))
 		for _, m := range gs.Meals {
-			entry := map[string]interface{}{
-				"id":        m.ID.String(),
-				"day":       m.Day,
-				"meal_type": m.MealType,
-				"name":      m.Name,
-				"calories":  m.Calories,
-			}
-			if m.Note != nil {
-				entry["note"] = *m.Note
-			}
-			mList = append(mList, entry)
+			mealID := m.ID
+			calories := m.Calories
+			mList = append(mList, api.GearSetMealRequest{
+				Id:       &mealID,
+				Day:      m.Day,
+				MealType: m.MealType,
+				Name:     m.Name,
+				Calories: &calories,
+				Note:     m.Note,
+			})
 		}
 		meals = &mList
 	}

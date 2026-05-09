@@ -4045,13 +4045,11 @@ components:
         items:
           type: array
           items:
-            type: object
-            additionalProperties: true
+            $ref: "#/components/schemas/GearSetItemRequest"
         meals:
           type: array
           items:
-            type: object
-            additionalProperties: true
+            $ref: "#/components/schemas/GearSetMealRequest"
 
     GearSetResponse:
       type: object
@@ -4087,13 +4085,11 @@ components:
         items:
           type: array
           items:
-            type: object
-            additionalProperties: true
+            $ref: "#/components/schemas/GearSetItemRequest"
         meals:
           type: array
           items:
-            type: object
-            additionalProperties: true
+            $ref: "#/components/schemas/GearSetMealRequest"
         created_at:
           type: string
           format: date-time
@@ -4116,3 +4112,42 @@ components:
             $ref: "#/components/schemas/GearSetResponse"
         pagination:
           $ref: "#/components/schemas/PaginationMetadata"
+
+    GearSetItemRequest:
+      type: object
+      required: [name, category, weight, quantity]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        weight:
+          type: number
+          format: double
+        quantity:
+          type: integer
+        order_index:
+          type: integer
+
+    GearSetMealRequest:
+      type: object
+      required: [day, meal_type, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        day:
+          type: string
+        meal_type:
+          type: string
+        name:
+          type: string
+        calories:
+          type: number
+          format: double
+        note:
+          type: string
+          nullable: true

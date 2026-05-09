@@ -58,124 +58,183 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
   Widget build(BuildContext context) {
     final totalWeight = items.fold<double>(0, (sum, item) => sum + item.totalWeight);
 
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: ResponsiveLayout.isMobile(context) ? 500 : 1000,
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 標題列
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              ),
-              child: Row(
-                children: [
-                  Text(widget.gearSet.visibilityIcon, style: const TextStyle(fontSize: 24)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.gearSet.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('@${widget.gearSet.author}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 統計資訊
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _StatChip(icon: Icons.backpack, value: '${items.length}', label: '件裝備'),
-                  _StatChip(icon: Icons.fitness_center, value: WeightFormatter.format(totalWeight), label: '總重量'),
-                ],
-              ),
-            ),
-
-            const Divider(height: 1),
-
-            // 裝備列表 (按類別分組，可縮合)
-            Flexible(
-              child: items.isEmpty
-                  ? const Center(
-                      child: Padding(padding: EdgeInsets.all(32), child: Text('此組合沒有裝備項目')),
-                    )
-                  : ListView(
-                      shrinkWrap: true,
-                      children: [
-                        for (final category in sortedCategories) ...[
-                          _buildCategoryHeader(category),
-                          if (_expandedCategories.contains(category))
-                            ...groupedItems[category]!.map((item) => _GearItemTile(item: item)),
+    return DefaultTabController(
+      length: 2,
+      child: Dialog(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: ResponsiveLayout.isMobile(context) ? 500 : 1000,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 標題列
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                child: Row(
+                  children: [
+                    Text(widget.gearSet.visibilityIcon, style: const TextStyle(fontSize: 24)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.gearSet.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('@${widget.gearSet.author}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                         ],
-                      ],
-                    ),
-            ),
-
-            const Divider(height: 1),
-
-            // 警告與按鈕
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.shade200),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.warning_amber, color: Colors.orange, size: 20),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text('下載將覆蓋您目前的裝備清單', style: TextStyle(color: Colors.orange, fontSize: 13)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-                      // 加入我的庫按鈕 (如果有提供 callback)
-                      if (widget.onAddToLibrary != null) ...[
-                        const SizedBox(width: 8),
-                        OutlinedButton.icon(
-                          onPressed: () async {
-                            await widget.onAddToLibrary!(items);
-                            if (context.mounted) Navigator.pop(context, false);
-                          },
-                          icon: const Icon(Icons.backpack, size: 18),
-                          label: const Text('加入我的庫'),
-                        ),
-                      ],
-                      const SizedBox(width: 8),
-                      FilledButton.icon(
-                        onPressed: () => Navigator.pop(context, true),
-                        icon: const Icon(Icons.download, size: 18),
-                        label: const Text('下載並覆蓋'),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // TabBar
+              TabBar(
+                labelColor: Theme.of(context).colorScheme.primary,
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Theme.of(context).colorScheme.primary,
+                tabs: const [
+                  Tab(text: '裝備清單', icon: Icon(Icons.backpack)),
+                  Tab(text: '糧食計畫', icon: Icon(Icons.restaurant)),
                 ],
               ),
-            ),
-          ],
+
+              // Tab內容
+              Flexible(
+                child: TabBarView(
+                  children: [
+                    // Tab 1: Gear Items
+                    Column(
+                      children: [
+                        // 統計資訊
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _StatChip(icon: Icons.backpack, value: '${items.length}', label: '件裝備'),
+                              _StatChip(icon: Icons.fitness_center, value: WeightFormatter.format(totalWeight), label: '總重量'),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: items.isEmpty
+                              ? const Center(child: Text('此組合沒有裝備項目'))
+                              : ListView(
+                                  children: [
+                                    for (final category in sortedCategories) ...[
+                                      _buildCategoryHeader(category),
+                                      if (_expandedCategories.contains(category))
+                                        ...groupedItems[category]!.map((item) => _GearItemTile(item: item)),
+                                    ],
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
+
+                    // Tab 2: Meals
+                    Column(
+                      children: [
+                        // 統計資訊
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _StatChip(
+                                icon: Icons.calendar_today,
+                                value: '${widget.gearSet.meals?.length ?? 0}',
+                                label: '天數',
+                              ),
+                              _StatChip(
+                                icon: Icons.local_fire_department,
+                                value: (widget.gearSet.meals?.fold<double>(0, (sum, p) => sum + p.totalCalories) ?? 0).toStringAsFixed(0),
+                                label: '總熱量',
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Expanded(
+                          child: widget.gearSet.meals == null || widget.gearSet.meals!.isEmpty
+                              ? const Center(child: Text('此組合沒有糧食計畫'))
+                              : ListView(
+                                  children: [
+                                    for (final plan in widget.gearSet.meals!) ...[
+                                      _buildMealPlanHeader(plan),
+                                      for (final entry in plan.meals.entries)
+                                        for (final meal in entry.value)
+                                          _MealItemTile(meal: meal, type: entry.key),
+                                    ],
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 1),
+
+              // 警告與按鈕
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.shade200),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text('下載將覆蓋您目前的裝備清單與糧食計畫', style: TextStyle(color: Colors.orange, fontSize: 13)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+                        if (widget.onAddToLibrary != null) ...[
+                          const SizedBox(width: 8),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              await widget.onAddToLibrary!(items);
+                              if (context.mounted) Navigator.pop(context, false);
+                            },
+                            icon: const Icon(Icons.backpack, size: 18),
+                            label: const Text('加入我的庫'),
+                          ),
+                        ],
+                        const SizedBox(width: 8),
+                        FilledButton.icon(
+                          onPressed: () => Navigator.pop(context, true),
+                          icon: const Icon(Icons.download, size: 18),
+                          label: const Text('下載並覆蓋'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -214,6 +273,56 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
             Icon(isExpanded ? Icons.expand_less : Icons.expand_more, size: 20, color: Colors.grey.shade600),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMealPlanHeader(DailyMealPlan plan) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.grey.shade100,
+      child: Row(
+        children: [
+          const Icon(Icons.calendar_today, size: 18, color: Colors.blueGrey),
+          const SizedBox(width: 12),
+          Text(plan.day, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Spacer(),
+          Text(
+            '${plan.totalCalories.toStringAsFixed(0)} kcal',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MealItemTile extends StatelessWidget {
+  final MealItem meal;
+  final MealType type;
+
+  const _MealItemTile({required this.meal, required this.type});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      dense: true,
+      leading: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          type.name.toUpperCase().substring(0, 1),
+          style: TextStyle(color: Colors.blue.shade800, fontSize: 10, fontWeight: FontWeight.bold),
+        ),
+      ),
+      title: Text(meal.name, style: const TextStyle(fontSize: 14)),
+      subtitle: meal.note != null ? Text(meal.note!, style: const TextStyle(fontSize: 11)) : null,
+      trailing: Text(
+        '${meal.calories.toStringAsFixed(0)} kcal',
+        style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
       ),
     );
   }
