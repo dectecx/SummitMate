@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/gear_library_item.dart';
-import '../../domain/enums/sync_status.dart';
 import 'converters/sync_status_converter.dart';
 
 class GearLibraryItemsTable extends Table {

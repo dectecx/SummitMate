@@ -4,7 +4,6 @@ import '../../domain/entities/group_event.dart';
 import '../../domain/enums/group_event_status.dart';
 import '../../domain/enums/group_event_application_status.dart';
 import '../../domain/enums/group_event_category.dart';
-import '../../domain/enums/sync_status.dart';
 import 'converters/sync_status_converter.dart';
 
 class GroupEventsTable extends Table {

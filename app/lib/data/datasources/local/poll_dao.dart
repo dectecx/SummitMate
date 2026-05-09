@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
 import '../../../infrastructure/database/app_database.dart';
@@ -102,10 +101,10 @@ class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implemen
       options: optionsRows.map((o) => _mapOptionToDomain(o)).toList(),
       myVotes: row.myVotes,
       totalVotes: row.totalVotes,
-      createdAt: row.createdAt ?? DateTime.now(),
-      createdBy: row.createdBy ?? '',
-      updatedAt: row.updatedAt ?? DateTime.now(),
-      updatedBy: row.updatedBy ?? '',
+      createdAt: row.createdAt,
+      createdBy: row.createdBy,
+      updatedAt: row.updatedAt,
+      updatedBy: row.updatedBy,
     );
   }
 
@@ -117,10 +116,10 @@ class PollDao extends DatabaseAccessor<AppDatabase> with _$PollDaoMixin implemen
       creatorId: row.creatorId,
       voteCount: row.voteCount,
       voters: row.voters,
-      createdAt: row.createdAt ?? DateTime.now(),
-      createdBy: row.createdBy ?? '',
-      updatedAt: row.updatedAt ?? DateTime.now(),
-      updatedBy: row.updatedBy ?? '',
+      createdAt: row.createdAt,
+      createdBy: row.createdBy,
+      updatedAt: row.updatedAt,
+      updatedBy: row.updatedBy,
     );
   }
 }

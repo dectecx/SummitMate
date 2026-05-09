@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/di/injection.dart';
 import '../../infrastructure/database/app_database.dart';
-import 'package:summitmate/infrastructure/infrastructure.dart';
 
 /// 顯示清除資料對話框
 ///

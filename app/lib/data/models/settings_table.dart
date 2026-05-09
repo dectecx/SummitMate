@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/settings.dart';
-import '../../core/theme.dart';
 
 /// 使用者設定資料表
 class SettingsTable extends Table {
