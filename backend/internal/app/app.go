@@ -19,6 +19,7 @@ import (
 	"summitmate/internal/database"
 	"summitmate/internal/favorite"
 	"summitmate/internal/flag"
+	"summitmate/internal/gearset"
 	"summitmate/internal/groupevent"
 	"summitmate/internal/heartbeat"
 	"summitmate/internal/interaction"
@@ -178,6 +179,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	logRepo := log.NewLogRepository(pool)
 	heartbeatRepo := heartbeat.NewHeartbeatRepository(pool)
 	flagRepo := flag.NewRepository(pool)
+	gearSetRepo := gearset.NewGearSetRepository(pool)
 
 	// --- Utilities ---
 	tokenManager := tokens.NewTokenManager(cfg.JWTSecret)
@@ -214,6 +216,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	weatherService := weather.NewWeatherService(logger, pool, weatherRepo, cfg.CWAApiKey, nil)
 	logService := log.NewLogService(logger, logRepo)
 	heartbeatService := heartbeat.NewHeartbeatService(logger, heartbeatRepo)
+	gearSetService := gearset.NewGearSetService(logger, gearSetRepo)
 
 	// --- Handlers ---
 	authHandler := auth.NewAuthHandler(authService)
@@ -230,12 +233,13 @@ func (a *App) initializeAPI() *appapi.Server {
 	logHandler := log.NewLogHandler(logService)
 	heartbeatHandler := heartbeat.NewHeartbeatHandler(heartbeatService)
 	flagHandler := flag.NewFlagHandler(flagService)
+	gearSetHandler := gearset.NewGearSetHandler(gearSetService)
 
 	return appapi.NewServer(
 		authHandler, tripHandler, libraryHandler, interactionHandler,
 		tripGearHandler, tripMealHandler, favoriteHandler,
 		groupHandler, weatherHandler, logHandler, heartbeatHandler,
-		flagHandler,
+		flagHandler, gearSetHandler,
 		tokenManager,
 	)
 }

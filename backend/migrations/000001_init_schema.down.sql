@@ -1,6 +1,15 @@
 -- Reverse of 000001_init_schema.up.sql
 -- Drop in reverse dependency order
 
+-- 3.10 Gear Cloud (drop first — foreign key refs to gear_sets)
+DROP INDEX IF EXISTS idx_gear_set_meals_set_id;
+DROP TABLE IF EXISTS gear_set_meals;
+DROP INDEX IF EXISTS idx_gear_set_items_set_id;
+DROP TABLE IF EXISTS gear_set_items;
+DROP INDEX IF EXISTS idx_gear_sets_user_id;
+DROP INDEX IF EXISTS idx_gear_sets_visibility;
+DROP TABLE IF EXISTS gear_sets;
+
 DROP INDEX IF EXISTS idx_weather_start_time;
 DROP INDEX IF EXISTS idx_weather_location;
 DROP TABLE IF EXISTS weather_data;

@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../data/api/services/favorites_api_service.dart';
 import '../../data/api/services/gear_library_api_service.dart';
+import '../../data/api/services/gear_set_api_service.dart';
 import '../../data/api/services/group_event_api_service.dart';
 import '../../data/api/services/itinerary_api_service.dart';
 import '../../data/api/services/meal_library_api_service.dart';
@@ -20,6 +21,9 @@ abstract class ApiModule {
 
   @lazySingleton
   GearLibraryApiService getGearLibraryApi(Dio dio) => GearLibraryApiService(dio);
+
+  @lazySingleton
+  GearSetApiService getGearSetApi(Dio dio) => GearSetApiService(dio);
 
   @lazySingleton
   GroupEventApiService getGroupEventApi(Dio dio) => GroupEventApiService(dio);

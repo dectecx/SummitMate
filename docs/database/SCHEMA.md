@@ -59,6 +59,9 @@ erDiagram
     users ||--o{ group_event_likes : "likes"
 
     users ||--o{ favorites : "marks"
+    users ||--o{ gear_sets : "uploads"
+    gear_sets ||--o{ gear_set_items : "contains"
+    gear_sets ||--o{ gear_set_meals : "contains"
 
     Users {
         UUID id PK
@@ -88,6 +91,30 @@ erDiagram
         UUID creator_id FK
         string title
         string status
+    }
+    GearSets {
+        UUID id PK
+        string title
+        string author
+        double total_weight
+        int item_count
+        string visibility
+        string download_key
+        UUID owner_id FK
+    }
+    GearSetItems {
+        UUID id PK
+        UUID gear_set_id FK
+        string name
+        double weight
+        int quantity
+    }
+    GearSetMeals {
+        UUID id PK
+        UUID gear_set_id FK
+        string day
+        string meal_type
+        string name
     }
 ```
 
@@ -781,6 +808,96 @@ CREATE TABLE heartbeats (
 
 ---
 
+### 3.10 雲端裝備組合 (Gear Cloud)
+
+#### Table: `gear_sets`
+
+| Column       | Type             | Constraints | Description                      |
+| :----------- | :--------------- | :---------- | :------------------------------- |
+| **id**       | UUID             | **PK**      |                                  |
+| title        | VARCHAR(200)     | NN          | 組合名稱                         |
+| author       | VARCHAR(100)     | NN          | 作者名稱                         |
+| total_weight | DOUBLE PRECISION | NN, Default | 總重 (公克)                      |
+| item_count   | INT              | NN, Default | 項目數量                         |
+| visibility   | VARCHAR(20)      | NN, Default | `public`, `protected`, `private` |
+| download_key | VARCHAR(100)     |             | 受保護組合的下載金鑰             |
+| **user_id**  | UUID             | **FK**, NN  | 擁有者 ID (Auth UserID)          |
+| created_at   | TIMESTAMPTZ      | NN, Default |                                  |
+| created_by   | UUID             | **FK**, NN  |                                  |
+| updated_at   | TIMESTAMPTZ      | NN, Default |                                  |
+| updated_by   | UUID             | **FK**, NN  |                                  |
+
+```sql
+CREATE TABLE gear_sets (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title        VARCHAR(200) NOT NULL,
+    author       VARCHAR(100) NOT NULL,
+    total_weight DOUBLE PRECISION NOT NULL DEFAULT 0,
+    item_count   INT NOT NULL DEFAULT 0,
+    visibility   VARCHAR(20) NOT NULL DEFAULT 'public',
+    download_key VARCHAR(100),
+    user_id      UUID NOT NULL REFERENCES users(id),
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by   UUID NOT NULL REFERENCES users(id),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by   UUID NOT NULL REFERENCES users(id)
+);
+CREATE INDEX idx_gear_sets_user_id ON gear_sets(user_id);
+CREATE INDEX idx_gear_sets_visibility ON gear_sets(visibility);
+```
+
+#### Table: `gear_set_items`
+
+| Column          | Type             | Constraints | Description |
+| :-------------- | :--------------- | :---------- | :---------- |
+| **id**          | UUID             | **PK**      |             |
+| **gear_set_id** | UUID             | **FK**, NN  |             |
+| name            | VARCHAR(200)     | NN          | 裝備名稱    |
+| category        | VARCHAR(50)      | NN, Default | 裝備分類    |
+| weight          | DOUBLE PRECISION | NN, Default | 單件重量    |
+| quantity        | INT              | NN, Default | 數量        |
+| order_index     | INT              | NN, Default | 排序        |
+
+```sql
+CREATE TABLE gear_set_items (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
+    name        VARCHAR(200) NOT NULL,
+    category    VARCHAR(50) NOT NULL DEFAULT 'Other',
+    weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
+    quantity    INT NOT NULL DEFAULT 1,
+    order_index INT NOT NULL DEFAULT 0
+);
+CREATE INDEX idx_gear_set_items_set_id ON gear_set_items(gear_set_id);
+```
+
+#### Table: `gear_set_meals`
+
+| Column          | Type             | Constraints | Description |
+| :-------------- | :--------------- | :---------- | :---------- |
+| **id**          | UUID             | **PK**      |             |
+| **gear_set_id** | UUID             | **FK**, NN  |             |
+| day             | VARCHAR(50)      | NN          | 天數        |
+| meal_type       | VARCHAR(50)      | NN          | 餐別        |
+| name            | VARCHAR(200)     | NN          | 名稱        |
+| calories        | DOUBLE PRECISION | NN, Default | 熱量        |
+| note            | TEXT             |             | 備註        |
+
+```sql
+CREATE TABLE gear_set_meals (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
+    day         VARCHAR(50) NOT NULL,
+    meal_type   VARCHAR(50) NOT NULL,
+    name        VARCHAR(200) NOT NULL,
+    calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
+    note        TEXT
+);
+CREATE INDEX idx_gear_set_meals_set_id ON gear_set_meals(gear_set_id);
+```
+
+---
+
 ## 4. GAS → PostgreSQL 遷移對照
 
 | GAS Sheet 名稱         | PostgreSQL Table           | 變更重點                                     |
@@ -826,5 +943,6 @@ Drift Table 結構與 Backend Schema 對應，可包含本地專用欄位 (e.g. 
 | `templates`    | templates             | 支援下載組合包  |
 | `polls`        | polls + poll_options  | 合併/關聯快取   |
 | `group_events` | group_events          |                 |
+| `gear_sets`    | gear_sets             | 雲端裝備組合    |
 | `favorites`    | favorites             |                 |
 | `settings`     | (Local Only)          | 不同步到後端    |

@@ -1,0 +1,220 @@
+package gearset
+
+import (
+	"context"
+	"fmt"
+
+	"summitmate/internal/database"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+)
+
+// GearSetRepository 定義裝備組合資料存取介面。
+type GearSetRepository interface {
+	Create(ctx context.Context, gs *GearSet) error
+	GetByID(ctx context.Context, id uuid.UUID) (*GearSet, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	List(ctx context.Context, limit, offset int, search string, userID *string) ([]*GearSet, int, error)
+}
+
+type gearSetRepository struct {
+	db database.DB
+}
+
+func NewGearSetRepository(db database.DB) GearSetRepository {
+	return &gearSetRepository{db: db}
+}
+
+func (r *gearSetRepository) Create(ctx context.Context, gs *GearSet) error {
+	return database.WithTransaction(ctx, r.db, func(txCtx context.Context) error {
+		db := database.GetQuerier(txCtx, r.db)
+
+		query := `
+			INSERT INTO gear_sets (
+				id, title, author, total_weight, item_count, visibility, download_key,
+				user_id, created_at, created_by, updated_at, updated_by
+			) VALUES (
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+			)
+		`
+		_, err := db.Exec(txCtx, query,
+			gs.ID, gs.Title, gs.Author, gs.TotalWeight, gs.ItemCount, gs.Visibility, gs.DownloadKey,
+			gs.UserID, gs.CreatedAt, gs.CreatedBy, gs.UpdatedAt, gs.UpdatedBy,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to insert gear set: %w", err)
+		}
+
+		for _, item := range gs.Items {
+			qItem := `INSERT INTO gear_set_items (id, gear_set_id, name, category, weight, quantity, order_index) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+			if item.ID == uuid.Nil {
+				item.ID = uuid.New()
+			}
+			_, err = db.Exec(txCtx, qItem, item.ID, gs.ID, item.Name, item.Category, item.Weight, item.Quantity, item.OrderIndex)
+			if err != nil {
+				return fmt.Errorf("failed to insert gear set item: %w", err)
+			}
+		}
+
+		for _, meal := range gs.Meals {
+			qMeal := `INSERT INTO gear_set_meals (id, gear_set_id, day, meal_type, name, calories, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+			if meal.ID == uuid.Nil {
+				meal.ID = uuid.New()
+			}
+			_, err = db.Exec(txCtx, qMeal, meal.ID, gs.ID, meal.Day, meal.MealType, meal.Name, meal.Calories, meal.Note)
+			if err != nil {
+				return fmt.Errorf("failed to insert gear set meal: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func (r *gearSetRepository) GetByID(ctx context.Context, id uuid.UUID) (*GearSet, error) {
+	query := `
+		SELECT id, title, author, total_weight, item_count, visibility, download_key,
+			   user_id, created_at, created_by, updated_at, updated_by
+		FROM gear_sets
+		WHERE id = $1
+	`
+	db := database.GetQuerier(ctx, r.db)
+	var gs GearSet
+	err := db.QueryRow(ctx, query, id).Scan(
+		&gs.ID, &gs.Title, &gs.Author, &gs.TotalWeight, &gs.ItemCount, &gs.Visibility, &gs.DownloadKey,
+		&gs.UserID, &gs.CreatedAt, &gs.CreatedBy, &gs.UpdatedAt, &gs.UpdatedBy,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("gear set not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to get gear set: %w", err)
+	}
+
+	qItems := `SELECT id, gear_set_id, name, category, weight, quantity, order_index FROM gear_set_items WHERE gear_set_id = $1 ORDER BY order_index ASC`
+	rows, err := db.Query(ctx, qItems, id)
+	if err == nil {
+		for rows.Next() {
+			var it GearSetItem
+			if err := rows.Scan(&it.ID, &it.GearSetID, &it.Name, &it.Category, &it.Weight, &it.Quantity, &it.OrderIndex); err == nil {
+				gs.Items = append(gs.Items, it)
+			}
+		}
+		rows.Close()
+	}
+
+	qMeals := `SELECT id, gear_set_id, day, meal_type, name, calories, note FROM gear_set_meals WHERE gear_set_id = $1`
+	mrows, err := db.Query(ctx, qMeals, id)
+	if err == nil {
+		for mrows.Next() {
+			var m GearSetMeal
+			if err := mrows.Scan(&m.ID, &m.GearSetID, &m.Day, &m.MealType, &m.Name, &m.Calories, &m.Note); err == nil {
+				gs.Meals = append(gs.Meals, m)
+			}
+		}
+		mrows.Close()
+	}
+
+	return &gs, nil
+}
+
+func (r *gearSetRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	query := `DELETE FROM gear_sets WHERE id = $1`
+	db := database.GetQuerier(ctx, r.db)
+	res, err := db.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete gear set: %w", err)
+	}
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("gear set not found")
+	}
+	return nil
+}
+
+func (r *gearSetRepository) List(ctx context.Context, limit, offset int, search string, userID *string) ([]*GearSet, int, error) {
+	baseQuery := `
+		FROM gear_sets
+		WHERE 1=1
+	`
+	args := []interface{}{}
+	argIdx := 1
+
+	if userID != nil {
+		baseQuery += fmt.Sprintf(" AND user_id = $%d", argIdx)
+		args = append(args, *userID)
+		argIdx++
+	} else {
+		baseQuery += " AND visibility IN ('public', 'protected')"
+	}
+
+	if search != "" {
+		baseQuery += fmt.Sprintf(" AND (title ILIKE $%d OR author ILIKE $%d)", argIdx, argIdx)
+		searchPattern := "%" + search + "%"
+		args = append(args, searchPattern)
+		argIdx++
+	}
+
+	db := database.GetQuerier(ctx, r.db)
+	countQuery := "SELECT COUNT(*) " + baseQuery
+	var total int
+	err := db.QueryRow(ctx, countQuery, args...).Scan(&total)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count gear sets: %w", err)
+	}
+
+	selectQuery := `
+		SELECT id, title, author, total_weight, item_count, visibility, download_key,
+			   user_id, created_at, created_by, updated_at, updated_by
+	` + baseQuery + fmt.Sprintf(" ORDER BY created_at DESC LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
+
+	args = append(args, limit, offset)
+
+	rows, err := db.Query(ctx, selectQuery, args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list gear sets: %w", err)
+	}
+	defer rows.Close()
+
+	var sets []*GearSet
+	for rows.Next() {
+		var gs GearSet
+		err := rows.Scan(
+			&gs.ID, &gs.Title, &gs.Author, &gs.TotalWeight, &gs.ItemCount, &gs.Visibility, &gs.DownloadKey,
+			&gs.UserID, &gs.CreatedAt, &gs.CreatedBy, &gs.UpdatedAt, &gs.UpdatedBy,
+		)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to scan gear set: %w", err)
+		}
+		sets = append(sets, &gs)
+	}
+
+	// Fetch items and meals for the listed sets
+	for _, gs := range sets {
+		qItems := `SELECT id, gear_set_id, name, category, weight, quantity, order_index FROM gear_set_items WHERE gear_set_id = $1 ORDER BY order_index ASC`
+		ir, err := db.Query(ctx, qItems, gs.ID)
+		if err == nil {
+			for ir.Next() {
+				var it GearSetItem
+				if err := ir.Scan(&it.ID, &it.GearSetID, &it.Name, &it.Category, &it.Weight, &it.Quantity, &it.OrderIndex); err == nil {
+					gs.Items = append(gs.Items, it)
+				}
+			}
+			ir.Close()
+		}
+
+		qMeals := `SELECT id, gear_set_id, day, meal_type, name, calories, note FROM gear_set_meals WHERE gear_set_id = $1`
+		mr, err := db.Query(ctx, qMeals, gs.ID)
+		if err == nil {
+			for mr.Next() {
+				var m GearSetMeal
+				if err := mr.Scan(&m.ID, &m.GearSetID, &m.Day, &m.MealType, &m.Name, &m.Calories, &m.Note); err == nil {
+					gs.Meals = append(gs.Meals, m)
+				}
+			}
+			mr.Close()
+		}
+	}
+
+	return sets, total, nil
+}

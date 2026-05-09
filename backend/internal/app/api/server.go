@@ -5,6 +5,7 @@ import (
 	"summitmate/internal/auth/tokens"
 	"summitmate/internal/favorite"
 	"summitmate/internal/flag"
+	"summitmate/internal/gearset"
 	"summitmate/internal/groupevent"
 	"summitmate/internal/heartbeat"
 	"summitmate/internal/interaction"
@@ -31,6 +32,9 @@ type Server struct {
 	LogHandler       *log.LogHandler
 	HeartbeatHandler *heartbeat.HeartbeatHandler
 
+	// Cloud
+	GearSetHandler *gearset.GearSetHandler
+
 	TokenManager *tokens.TokenManager
 }
 
@@ -47,6 +51,7 @@ func NewServer(
 	logH *log.LogHandler,
 	hbH *heartbeat.HeartbeatHandler,
 	flagH *flag.FlagHandler,
+	gearSetH *gearset.GearSetHandler,
 	tm *tokens.TokenManager,
 ) *Server {
 	return &Server{
@@ -62,6 +67,7 @@ func NewServer(
 		WeatherHandler:     weatherH,
 		LogHandler:         logH,
 		HeartbeatHandler:   hbH,
+		GearSetHandler:     gearSetH,
 		TokenManager:       tm,
 	}
 }

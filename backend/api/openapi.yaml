@@ -1855,6 +1855,133 @@ paths:
           description: 未登入
         "404":
           description: 找不到該收藏紀錄
+  /gear-sets:
+    get:
+      summary: List Gear Sets
+      description: 取得雲端裝備庫列表 (public/protected)
+      operationId: listGearSets
+      tags:
+        - gear-library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: my_uploaded
+          in: query
+          required: false
+          description: 只查詢我上傳的裝備組合
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: 回傳列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GearSetListResponse"
+        "401":
+          description: 未登入
+    post:
+      summary: Upload Gear Set
+      description: 上傳新的裝備組合
+      operationId: createGearSet
+      tags:
+        - gear-library
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GearSetCreateRequest"
+      responses:
+        "201":
+          description: 上傳成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GearSetResponse"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+
+  /gear-sets/{id}:
+    get:
+      summary: Get/Download Gear Set
+      description: 取得裝備組合詳情 (若為 protected 需透過 header 帶 download_key，或者 query key)
+      operationId: getGearSet
+      tags:
+        - gear-library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: key
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 成功取得
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GearSetResponse"
+        "401":
+          description: 未登入
+        "403":
+          description: Key 錯誤或權限不足
+        "404":
+          description: 找不到
+    delete:
+      summary: Delete Gear Set
+      description: 刪除指定的裝備組合 (需為上傳者)
+      operationId: deleteGearSet
+      tags:
+        - gear-library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 成功刪除
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限
+        "404":
+          description: 找不到
   /group-events/my:
     get:
       tags:
@@ -3851,5 +3978,107 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/GroupEvent"
+        pagination:
+          $ref: "#/components/schemas/PaginationMetadata"
+
+    GearSetCreateRequest:
+      type: object
+      required:
+        - title
+        - author
+        - visibility
+        - items
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 如果前端有自定義ID，可以直接給予
+        title:
+          type: string
+        author:
+          type: string
+        total_weight:
+          type: number
+          format: double
+        item_count:
+          type: integer
+        visibility:
+          type: string
+          enum: [public, protected, private]
+        download_key:
+          type: string
+          description: 若為 protected 則此欄位必填
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        meals:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    GearSetResponse:
+      type: object
+      required:
+        - id
+        - title
+        - author
+        - total_weight
+        - item_count
+        - visibility
+        - items
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        author:
+          type: string
+        total_weight:
+          type: number
+          format: double
+        item_count:
+          type: integer
+        visibility:
+          type: string
+        download_key:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        meals:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+          format: uuid
+
+    GearSetListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GearSetResponse"
         pagination:
           $ref: "#/components/schemas/PaginationMetadata"

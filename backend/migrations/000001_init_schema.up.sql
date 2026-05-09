@@ -413,3 +413,50 @@ INSERT INTO system_flags (key, value, description) VALUES
     ('skip_verification_code', FALSE, 'Whether to allow any verification code to pass'),
     ('enable_email_sending',   TRUE,  'Whether to actually send emails')
 ON CONFLICT (key) DO NOTHING;
+
+-- 3.10 Gear Cloud
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS gear_sets (
+    id UUID PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    total_weight NUMERIC(10,2) DEFAULT 0,
+    item_count INTEGER DEFAULT 0,
+    visibility VARCHAR(20) NOT NULL CHECK (visibility IN ('public', 'protected', 'private')),
+    download_key VARCHAR(255),
+    user_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by UUID NOT NULL
+);
+
+-- Index for querying public/protected sets efficiently
+CREATE INDEX IF NOT EXISTS idx_gear_sets_visibility ON gear_sets(visibility);
+-- Index for finding my uploaded sets
+CREATE INDEX IF NOT EXISTS idx_gear_sets_user_id ON gear_sets(user_id);
+
+CREATE TABLE IF NOT EXISTS gear_set_items (
+    id UUID PRIMARY KEY,
+    gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    weight NUMERIC(10,2) NOT NULL DEFAULT 0,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    order_index INTEGER DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_gear_set_items_set_id ON gear_set_items(gear_set_id);
+
+CREATE TABLE IF NOT EXISTS gear_set_meals (
+    id UUID PRIMARY KEY,
+    gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
+    day VARCHAR(50) NOT NULL,
+    meal_type VARCHAR(50) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    calories NUMERIC(10,2) DEFAULT 0,
+    note TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_gear_set_meals_set_id ON gear_set_meals(gear_set_id);

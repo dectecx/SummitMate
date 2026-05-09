@@ -1,12 +1,9 @@
-import '../../core/error/result.dart';
-import '../entities/gear_set.dart';
-import '../entities/gear_item.dart';
-import '../entities/daily_meal_plan.dart';
-import '../enums/gear_set_visibility.dart';
+import '../../../core/error/result.dart';
+import '../../../domain/domain.dart';
 
-/// 雲端裝備庫服務介面
+/// 雲端裝備庫遠端資料來源介面
 /// 負責裝備組合的上傳、下載、分享
-abstract interface class IGearCloudService {
+abstract interface class IGearCloudRemoteDataSource {
   /// 取得公開/保護的裝備組合列表
   Future<Result<List<GearSet>, Exception>> getGearSets();
 
