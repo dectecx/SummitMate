@@ -1,21 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/data/datasources/interfaces/i_gear_cloud_remote_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_key_local_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_set_repository.dart';
 
-class MockGearCloudService extends Mock implements IGearCloudService {}
+class MockGearCloudRemoteDataSource extends Mock implements IGearCloudRemoteDataSource {}
 
 class MockGearKeyLocalDataSource extends Mock implements IGearKeyLocalDataSource {}
 
 void main() {
   late GearSetRepository repository;
-  late MockGearCloudService mockRemoteDataSource;
+  late MockGearCloudRemoteDataSource mockRemoteDataSource;
   late MockGearKeyLocalDataSource mockLocalDataSource;
 
   setUp(() {
-    mockRemoteDataSource = MockGearCloudService();
+    mockRemoteDataSource = MockGearCloudRemoteDataSource();
     mockLocalDataSource = MockGearKeyLocalDataSource();
     repository = GearSetRepository(mockRemoteDataSource, mockLocalDataSource);
   });

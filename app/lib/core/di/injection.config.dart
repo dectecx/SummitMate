@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 import '../../data/api/services/favorites_api_service.dart' as _i1035;
 import '../../data/api/services/gear_library_api_service.dart' as _i83;
+import '../../data/api/services/gear_set_api_service.dart' as _i49;
 import '../../data/api/services/group_event_api_service.dart' as _i912;
 import '../../data/api/services/itinerary_api_service.dart' as _i100;
 import '../../data/api/services/meal_library_api_service.dart' as _i458;
@@ -36,6 +37,8 @@ import '../../data/datasources/interfaces/i_favorites_local_data_source.dart'
     as _i307;
 import '../../data/datasources/interfaces/i_favorites_remote_data_source.dart'
     as _i342;
+import '../../data/datasources/interfaces/i_gear_cloud_remote_data_source.dart'
+    as _i114;
 import '../../data/datasources/interfaces/i_gear_key_local_data_source.dart'
     as _i484;
 import '../../data/datasources/interfaces/i_gear_library_local_data_source.dart'
@@ -85,9 +88,10 @@ import '../../data/datasources/local/message_dao.dart' as _i287;
 import '../../data/datasources/local/poll_dao.dart' as _i183;
 import '../../data/datasources/local/settings_dao.dart' as _i837;
 import '../../data/datasources/local/trip_dao.dart' as _i711;
-import '../../data/datasources/remote/fake_gear_cloud_service.dart' as _i699;
 import '../../data/datasources/remote/favorites_remote_data_source.dart'
     as _i168;
+import '../../data/datasources/remote/gear_cloud_remote_data_source.dart'
+    as _i228;
 import '../../data/datasources/remote/gear_library_remote_data_source.dart'
     as _i781;
 import '../../data/datasources/remote/group_event_remote_data_source.dart'
@@ -216,9 +220,6 @@ extension GetItInjectableX on _i174.GetIt {
         baseUrl: gh<String>(instanceName: 'baseUrl'),
       ),
     );
-    gh.lazySingleton<_i614.IGearCloudService>(
-      () => _i699.FakeGearCloudService(),
-    );
     gh.lazySingleton<_i956.IGeolocatorService>(() => _i548.GeolocatorService());
     gh.lazySingleton<_i887.ILocationResolver>(
       () => _i351.TownshipLocationResolver(),
@@ -280,12 +281,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i27.AuthInterceptor>(
       () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
-    );
-    gh.lazySingleton<_i614.IGearSetRepository>(
-      () => _i536.GearSetRepository(
-        gh<_i614.IGearCloudService>(),
-        gh<_i484.IGearKeyLocalDataSource>(),
-      ),
     );
     gh.lazySingleton<_i614.IAuthService>(
       () => _i227.AuthService(
@@ -349,6 +344,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i83.GearLibraryApiService>(
       () => apiModule.getGearLibraryApi(gh<_i361.Dio>()),
     );
+    gh.lazySingleton<_i49.GearSetApiService>(
+      () => apiModule.getGearSetApi(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i912.GroupEventApiService>(
       () => apiModule.getGroupEventApi(gh<_i361.Dio>()),
     );
@@ -379,6 +377,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i342.IFavoritesRemoteDataSource>(
       () => _i168.FavoritesRemoteDataSource(gh<_i1035.FavoritesApiService>()),
     );
+    gh.lazySingleton<_i114.IGearCloudRemoteDataSource>(
+      () => _i228.GearCloudRemoteDataSource(gh<_i49.GearSetApiService>()),
+    );
     gh.lazySingleton<_i725.ITripGearRemoteDataSource>(
       () => _i391.TripGearRemoteDataSource(gh<_i9.TripGearApiService>()),
     );
@@ -390,6 +391,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i307.IItineraryRemoteDataSource>(
       () => _i636.ItineraryRemoteDataSource(gh<_i100.ItineraryApiService>()),
+    );
+    gh.lazySingleton<_i614.IGearSetRepository>(
+      () => _i536.GearSetRepository(
+        gh<_i114.IGearCloudRemoteDataSource>(),
+        gh<_i484.IGearKeyLocalDataSource>(),
+      ),
     );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i367.MessageApiService>()),

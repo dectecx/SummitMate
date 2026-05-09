@@ -69,6 +69,10 @@ Authorization: Bearer <access_token>
 | `PUT`    | `/meal-library/{id}`                              | 更新食物庫項目 | JWT  |
 | `DELETE` | `/meal-library/{id}`                              | 刪除食物庫項目 | JWT  |
 | `PUT`    | `/meal-library/batch`                             | 批次取代食物庫 | JWT  |
+| `GET`    | `/gear-sets`                                      | 搜尋雲端裝備組合 | JWT  |
+| `POST`   | `/gear-sets`                                      | 上傳裝備組合   | JWT  |
+| `GET`    | `/gear-sets/{id}`                                 | 裝備組合詳情   | JWT  |
+| `DELETE` | `/gear-sets/{id}`                                 | 刪除裝備組合   | JWT  |
 | `GET`    | `/favorites`                                      | 收藏列表       | JWT  |
 | `POST`   | `/favorites`                                      | 新增收藏       | JWT  |
 | `DELETE` | `/favorites/{targetId}`                           | 移除收藏       | JWT  |
