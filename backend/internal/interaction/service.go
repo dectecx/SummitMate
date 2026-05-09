@@ -113,6 +113,7 @@ func (s *messageService) isTripMemberOrCreator(ctx context.Context, tripID, user
 	if err == nil && trip != nil && trip.UserID == userID {
 		return true
 	}
+
 	members, err := s.memberRepo.ListByTripID(ctx, tripID)
 	if err == nil {
 		for _, m := range members {
@@ -291,6 +292,7 @@ func (s *pollService) isTripMemberOrCreator(ctx context.Context, tripID, userID 
 	if err == nil && trip != nil && trip.UserID == userID {
 		return true
 	}
+
 	members, err := s.memberRepo.ListByTripID(ctx, tripID)
 	if err == nil {
 		for _, m := range members {

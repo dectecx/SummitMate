@@ -37,7 +37,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<Trip?, Exception>> getActiveTrip(String userId) async {
     try {
-      final trip = await _localDataSource.getActiveTrip();
+      final trip = await _localDataSource.getActiveTrip(userId);
       return Success(trip);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -88,7 +88,7 @@ class TripRepository implements ITripRepository {
   Future<Result<void, Exception>> setActiveTrip(String userId, String? tripId) async {
     try {
       if (tripId != null) {
-        await _localDataSource.setActiveTrip(tripId);
+        await _localDataSource.setActiveTrip(userId, tripId);
       }
       return const Success(null);
     } catch (e) {

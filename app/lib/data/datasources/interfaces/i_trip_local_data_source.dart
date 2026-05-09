@@ -30,11 +30,14 @@ abstract interface class ITripLocalDataSource {
 
   /// 設定當前活動行程 (Active TripModel)
   ///
+  /// [userId] 使用者 ID
   /// [tripId] 要設為 Active 的行程 ID
-  Future<void> setActiveTrip(String tripId);
+  Future<void> setActiveTrip(String userId, String tripId);
 
   /// 取得當前活動行程
-  Future<Trip?> getActiveTrip();
+  ///
+  /// [userId] 使用者 ID
+  Future<Trip?> getActiveTrip(String userId);
 
   /// 清除所有行程 (登出時使用)
   Future<void> clear();
