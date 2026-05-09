@@ -77,15 +77,8 @@ func (a *App) InitRouter() *chi.Mux {
 	})
 	router.Mount("/", apiHandler)
 
-	// Health check (Special case, not part of ServerInterface for simplicity here)
-	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "version": "1.0.0"})
-	})
-
-	// System Flags API (Manual registration because they are not in OpenAPI yet)
-	router.Get("/api/v1/system/flags", apiServer.FlagHandler.GetFlags)
-	router.Post("/api/v1/system/flags", apiServer.FlagHandler.UpdateFlag)
+	// Basic Health check (Uses logic from ServerInterface but mounted at root)
+	router.Get("/health", apiServer.GetHealth)
 
 	return router
 }

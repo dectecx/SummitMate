@@ -2317,6 +2317,49 @@ paths:
         "401":
           description: 未授權
 
+  /system/flags:
+    get:
+      tags: [system]
+      summary: 取得系統旗標
+      description: 取得所有系統功能開關旗標
+      operationId: getFlags
+      responses:
+        "200":
+          description: 成功取得
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SystemFlag"
+        "500":
+          description: 伺服器錯誤
+
+    post:
+      tags: [system]
+      summary: 更新系統旗標
+      description: 更新特定系統功能開關旗標的值
+      operationId: updateFlag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, value]
+              properties:
+                key:
+                  type: string
+                value:
+                  type: boolean
+      responses:
+        "204":
+          description: 更新成功
+        "400":
+          description: 請求格式錯誤
+        "500":
+          description: 伺服器錯誤
+
   # --- Weather ---
 
   /weather/hiking:
@@ -3697,6 +3740,20 @@ components:
           additionalProperties:
             type: integer
           description: 同步後的各畫面累計瀏覽次數
+
+    SystemFlag:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+        value:
+          type: boolean
+        description:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
 
     # --- Pagination & Standards ---
     PaginationMetadata:
