@@ -7,14 +7,15 @@ import (
 	"time"
 )
 
-type Service interface {
+// FlagService 定義系統旗標相關的業務邏輯介面。
+type FlagService interface {
 	IsEnabled(ctx context.Context, key string) bool
 	SetFlag(ctx context.Context, key string, value bool) error
 	GetAll(ctx context.Context) ([]Flag, error)
 }
 
-type service struct {
-	repo   Repository
+type flagService struct {
+	repo   FlagRepository
 	logger *slog.Logger
 
 	cache      map[string]bool
@@ -22,8 +23,8 @@ type service struct {
 	lastFetch  time.Time
 }
 
-func NewService(repo Repository, logger *slog.Logger) Service {
-	s := &service{
+func NewFlagService(repo FlagRepository, logger *slog.Logger) FlagService {
+	s := &flagService{
 		repo:   repo,
 		logger: logger.With("component", "flag"),
 		cache:  make(map[string]bool),
@@ -33,13 +34,13 @@ func NewService(repo Repository, logger *slog.Logger) Service {
 	return s
 }
 
-func (s *service) refreshCache(ctx context.Context) error {
+func (s *flagService) refreshCache(ctx context.Context) error {
 	s.cacheMutex.Lock()
 	defer s.cacheMutex.Unlock()
 	return s.loadFlags(ctx)
 }
 
-func (s *service) loadFlags(ctx context.Context) error {
+func (s *flagService) loadFlags(ctx context.Context) error {
 	flags, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return err
@@ -52,7 +53,7 @@ func (s *service) loadFlags(ctx context.Context) error {
 	return nil
 }
 
-func (s *service) IsEnabled(ctx context.Context, key string) bool {
+func (s *flagService) IsEnabled(ctx context.Context, key string) bool {
 	s.cacheMutex.RLock()
 	val, ok := s.cache[key]
 	last := s.lastFetch
@@ -75,7 +76,7 @@ func (s *service) IsEnabled(ctx context.Context, key string) bool {
 	return val
 }
 
-func (s *service) SetFlag(ctx context.Context, key string, value bool) error {
+func (s *flagService) SetFlag(ctx context.Context, key string, value bool) error {
 	err := s.repo.Update(ctx, key, value)
 	if err != nil {
 		return err
@@ -87,6 +88,6 @@ func (s *service) SetFlag(ctx context.Context, key string, value bool) error {
 	return nil
 }
 
-func (s *service) GetAll(ctx context.Context) ([]Flag, error) {
+func (s *flagService) GetAll(ctx context.Context) ([]Flag, error) {
 	return s.repo.GetAll(ctx)
 }

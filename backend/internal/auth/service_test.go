@@ -23,7 +23,7 @@ func TestAuthService_Register(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockService)
+		mockFlag := new(flag.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
 		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
@@ -55,7 +55,7 @@ func TestAuthService_Register(t *testing.T) {
 
 	t.Run("EmailAlreadyExists", func(t *testing.T) {
 		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockService)
+		mockFlag := new(flag.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
 		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
@@ -108,7 +108,7 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockService)
+		mockFlag := new(flag.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
 		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
@@ -135,7 +135,7 @@ func TestAuthService_Login(t *testing.T) {
 
 	t.Run("InvalidCredentials", func(t *testing.T) {
 		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockService)
+		mockFlag := new(flag.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
 		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
@@ -159,7 +159,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockService)
+		mockFlag := new(flag.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
 		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
