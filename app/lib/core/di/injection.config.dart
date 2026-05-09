@@ -47,6 +47,8 @@ import '../../data/datasources/interfaces/i_gear_library_remote_data_source.dart
     as _i31;
 import '../../data/datasources/interfaces/i_gear_local_data_source.dart'
     as _i691;
+import '../../data/datasources/interfaces/i_gear_set_cache_local_data_source.dart'
+    as _i675;
 import '../../data/datasources/interfaces/i_group_event_local_data_source.dart'
     as _i529;
 import '../../data/datasources/interfaces/i_group_event_remote_data_source.dart'
@@ -81,6 +83,7 @@ import '../../data/datasources/local/favorite_dao.dart' as _i1019;
 import '../../data/datasources/local/gear_dao.dart' as _i892;
 import '../../data/datasources/local/gear_key_local_data_source.dart' as _i835;
 import '../../data/datasources/local/gear_library_dao.dart' as _i780;
+import '../../data/datasources/local/gear_set_cache_dao.dart' as _i265;
 import '../../data/datasources/local/group_event_dao.dart' as _i619;
 import '../../data/datasources/local/itinerary_dao.dart' as _i744;
 import '../../data/datasources/local/log_dao.dart' as _i619;
@@ -268,6 +271,9 @@ extension GetItInjectableX on _i174.GetIt {
         localDataSource: gh<_i393.ISettingsLocalDataSource>(),
       ),
     );
+    gh.lazySingleton<_i675.IGearSetCacheLocalDataSource>(
+      () => _i265.GearSetCacheDao(gh<_i89.AppDatabase>()),
+    );
     gh.lazySingleton<_i755.UsageTrackingService>(
       () => _i755.UsageTrackingService(gh<_i418.IApiClient>()),
     );
@@ -386,17 +392,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i999.ITripMealRemoteDataSource>(
       () => _i829.TripMealRemoteDataSource(gh<_i579.TripMealApiService>()),
     );
+    gh.lazySingleton<_i614.IGearSetRepository>(
+      () => _i536.GearSetRepository(
+        gh<_i114.IGearCloudRemoteDataSource>(),
+        gh<_i484.IGearKeyLocalDataSource>(),
+        gh<_i675.IGearSetCacheLocalDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i644.IPollRemoteDataSource>(
       () => _i621.PollRemoteDataSource(gh<_i245.PollApiService>()),
     );
     gh.lazySingleton<_i307.IItineraryRemoteDataSource>(
       () => _i636.ItineraryRemoteDataSource(gh<_i100.ItineraryApiService>()),
-    );
-    gh.lazySingleton<_i614.IGearSetRepository>(
-      () => _i536.GearSetRepository(
-        gh<_i114.IGearCloudRemoteDataSource>(),
-        gh<_i484.IGearKeyLocalDataSource>(),
-      ),
     );
     gh.lazySingleton<_i880.IMessageRemoteDataSource>(
       () => _i1017.MessageRemoteDataSource(gh<_i367.MessageApiService>()),
