@@ -103,7 +103,21 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     }
 
     if (currentTripId == null) {
-      ToastService.warning('請先選擇行程');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('提示'),
+            content: const Text('請先選擇或建立行程後，再上傳您的裝備。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('確定'),
+              ),
+            ],
+          ),
+        );
+      }
       return;
     }
 
@@ -130,7 +144,21 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     }
 
     if (items.isEmpty) {
-      ToastService.info('請先新增裝備再上傳');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('提示'),
+            content: const Text('目前行程中沒有任何裝備。請先新增裝備後再上傳。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('確定'),
+              ),
+            ],
+          ),
+        );
+      }
       return;
     }
 
