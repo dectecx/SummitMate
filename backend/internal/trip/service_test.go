@@ -122,13 +122,13 @@ func TestTripService_AddMember(t *testing.T) {
 		mockTargetUser := &auth.User{ID: targetUserID, Email: targetEmail}
 
 		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(mockTrip, nil)
-		mockUserRepo.On("GetByEmail", mock.Anything, targetEmail).Return(mockTargetUser, nil)
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, targetUserID).Return(false, nil)
 		mockMemberRepo.On("AddMember", mock.Anything, tripID, targetUserID).Return(nil)
 		mockMemberRepo.On("ListByTripID", mock.Anything, tripID).Return([]*TripMember{
 			{UserID: targetUserID, UserDisplayName: mockTargetUser.DisplayName, UserEmail: mockTargetUser.Email},
 		}, nil)
 
-		member, err := svc.AddMember(context.Background(), tripID, requesterID, targetEmail)
+		member, err := svc.AddMember(context.Background(), tripID, requesterID, targetUserID)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, member)
