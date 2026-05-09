@@ -7,21 +7,22 @@ import (
 	"summitmate/internal/database"
 )
 
-type Repository interface {
+// FlagRepository 定義系統旗標資料存取介面。
+type FlagRepository interface {
 	GetByKey(ctx context.Context, key string) (*Flag, error)
 	GetAll(ctx context.Context) ([]Flag, error)
 	Update(ctx context.Context, key string, value bool) error
 }
 
-type repository struct {
+type flagRepository struct {
 	db database.DB
 }
 
-func NewRepository(db database.DB) Repository {
-	return &repository{db: db}
+func NewFlagRepository(db database.DB) FlagRepository {
+	return &flagRepository{db: db}
 }
 
-func (r *repository) GetByKey(ctx context.Context, key string) (*Flag, error) {
+func (r *flagRepository) GetByKey(ctx context.Context, key string) (*Flag, error) {
 	var f Flag
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, "SELECT key, value, description, updated_at FROM system_flags WHERE key = $1", key).
@@ -32,7 +33,7 @@ func (r *repository) GetByKey(ctx context.Context, key string) (*Flag, error) {
 	return &f, nil
 }
 
-func (r *repository) GetAll(ctx context.Context) ([]Flag, error) {
+func (r *flagRepository) GetAll(ctx context.Context) ([]Flag, error) {
 	db := database.GetQuerier(ctx, r.db)
 	rows, err := db.Query(ctx, "SELECT key, value, description, updated_at FROM system_flags")
 	if err != nil {
@@ -54,7 +55,7 @@ func (r *repository) GetAll(ctx context.Context) ([]Flag, error) {
 	return flags, nil
 }
 
-func (r *repository) Update(ctx context.Context, key string, value bool) error {
+func (r *flagRepository) Update(ctx context.Context, key string, value bool) error {
 	db := database.GetQuerier(ctx, r.db)
 	_, err := db.Exec(ctx, "UPDATE system_flags SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2", value, key)
 	if err != nil {

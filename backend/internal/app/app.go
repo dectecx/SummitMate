@@ -178,7 +178,7 @@ func (a *App) initializeAPI() *appapi.Server {
 	weatherRepo := weather.NewWeatherRepository(pool)
 	logRepo := log.NewLogRepository(pool)
 	heartbeatRepo := heartbeat.NewHeartbeatRepository(pool)
-	flagRepo := flag.NewRepository(pool)
+	flagRepo := flag.NewFlagRepository(pool)
 	gearSetRepo := gearset.NewGearSetRepository(pool)
 
 	// --- Utilities ---
@@ -198,7 +198,7 @@ func (a *App) initializeAPI() *appapi.Server {
 		RedisAddr: cfg.RedisAddr, RedisPassword: cfg.RedisPassword, RedisDB: cfg.RedisDB,
 	})
 
-	flagService := flag.NewService(flagRepo, logger)
+	flagService := flag.NewFlagService(flagRepo, logger)
 
 	// --- Services ---
 	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret)

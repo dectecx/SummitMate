@@ -34,7 +34,7 @@ type authService struct {
 	tokenManager *tokens.TokenManager
 	emailService *email.EmailService
 	authCache    cache.Cache[string]
-	flagService  flag.Service
+	flagService  flag.FlagService
 	jwtSecret    []byte
 }
 
@@ -44,7 +44,7 @@ func NewAuthService(
 	tokenManager *tokens.TokenManager,
 	emailService *email.EmailService,
 	authCache cache.Cache[string],
-	flagService flag.Service,
+	flagService flag.FlagService,
 	jwtSecret string,
 ) AuthService {
 	return &authService{
