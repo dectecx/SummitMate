@@ -26,20 +26,22 @@ func JWTAuth(tokenManager *tokens.TokenManager) func(http.Handler) http.Handler 
 			// api.BearerAuthScopes 是 gen.go 中自動定義的常量 "bearerAuth.Scopes"
 			_, required := request.Context().Value(api.BearerAuthScopes).([]string)
 
-			if !required {
-				// 公開端點，直接放行
+			// 取得 Authorization header
+			header := request.Header.Get("Authorization")
+
+			// 如果沒有提供 Token
+			if header == "" {
+				if required {
+					// 必須授權的路徑，回傳 401
+					http.Error(writer, `{"message":"未授權"}`, http.StatusUnauthorized)
+					return
+				}
+				// 公開端點且未提供 Token，直接放行
 				next.ServeHTTP(writer, request)
 				return
 			}
 
-			// --- 以下為驗證邏輯 ---
-
-			// 取得 Authorization header
-			header := request.Header.Get("Authorization")
-			if header == "" {
-				http.Error(writer, `{"message":"未授權"}`, http.StatusUnauthorized)
-				return
-			}
+			// --- 以下為驗證邏輯 (當有提供 Token 時) ---
 
 			// 解析 "Bearer <token>" 格式
 			parts := strings.SplitN(header, " ", 2)
@@ -51,6 +53,7 @@ func JWTAuth(tokenManager *tokens.TokenManager) func(http.Handler) http.Handler 
 			// 驗證 Token
 			claims, err := tokenManager.ParseToken(parts[1])
 			if err != nil {
+				// 如果有提供 Token 但無效，一律回傳 401，避免客戶端誤解
 				http.Error(writer, `{"message":"Token 無效或已過期"}`, http.StatusUnauthorized)
 				return
 			}
