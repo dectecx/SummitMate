@@ -83,11 +83,9 @@ func (a *App) InitRouter() *chi.Mux {
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "version": "1.0.0"})
 	})
 
-	// System Flags API
-	router.Route("/api/v1/system", func(r chi.Router) {
-		r.Get("/flags", apiServer.FlagHandler.GetFlags)
-		r.Post("/flags", apiServer.FlagHandler.UpdateFlag)
-	})
+	// System Flags API (Manual registration because they are not in OpenAPI yet)
+	router.Get("/api/v1/system/flags", apiServer.FlagHandler.GetFlags)
+	router.Post("/api/v1/system/flags", apiServer.FlagHandler.UpdateFlag)
 
 	return router
 }

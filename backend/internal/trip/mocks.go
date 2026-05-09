@@ -122,6 +122,16 @@ func (m *MockTripMemberRepository) ListByTripID(ctx context.Context, tripID stri
 	return args.Get(0).([]*TripMember), args.Error(1)
 }
 
+func (m *MockTripMemberRepository) BatchAddMembers(ctx context.Context, tripID string, userIDs []string) error {
+	args := m.Called(ctx, tripID, userIDs)
+	return args.Error(0)
+}
+
+func (m *MockTripMemberRepository) BatchRemoveMembers(ctx context.Context, tripID string, userIDs []string) error {
+	args := m.Called(ctx, tripID, userIDs)
+	return args.Error(0)
+}
+
 // MockItineraryRepository is a mock implementation of the ItineraryRepository interface
 type MockItineraryRepository struct {
 	mock.Mock
