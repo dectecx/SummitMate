@@ -770,11 +770,12 @@ CREATE TABLE logs (
 
 ```sql
 CREATE TABLE heartbeats (
-    user_id   UUID PRIMARY KEY REFERENCES users(id),
-    user_type VARCHAR(20),
-    last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    view      VARCHAR(100),
-    platform  VARCHAR(20)
+    user_id    UUID PRIMARY KEY REFERENCES users(id),
+    user_type  VARCHAR(20),
+    last_seen  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    view       VARCHAR(100),
+    view_stats JSONB DEFAULT '{}',
+    platform   VARCHAR(20)
 );
 ```
 

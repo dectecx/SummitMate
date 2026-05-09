@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../../../core/di/injection.dart';
+import '../../../domain/enums/app_view.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -112,14 +113,14 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _updateTrackingView(int index) {
     if (_usageTrackingService == null) return;
-    String viewName = 'unknown';
+    AppView view = AppView.unknown;
     switch (index) {
-      case 0: viewName = 'itinerary'; break;
-      case 1: viewName = 'gear'; break;
-      case 2: viewName = 'collaboration'; break;
-      case 3: viewName = 'info'; break;
+      case 0: view = AppView.itinerary; break;
+      case 1: view = AppView.gear; break;
+      case 2: view = AppView.collaboration; break;
+      case 3: view = AppView.info; break;
     }
-    _usageTrackingService!.updateView(viewName);
+    _usageTrackingService!.updateView(view);
   }
 
   @override

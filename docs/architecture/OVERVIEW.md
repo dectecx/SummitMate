@@ -99,7 +99,7 @@ Go Backend 提供 `/api/v1` 前綴的 RESTful API，包含以下模組：
 | Group Events | `GET /group-events`, `POST /group-events`                 | 部分需 JWT |
 | Weather      | `GET /weather/hiking`, `GET /weather/hiking/{location}`   | 無         |
 | Logs         | `POST /logs`                                              | 無         |
-| Heartbeat    | `POST /heartbeat`                                         | JWT        |
+| Heartbeat    | `POST /system/heartbeat`                                  | JWT        |
 
 完整 OpenAPI Spec 可透過 `GET /openapi.json` 取得，互動式文件位於 `GET /docs` (Scalar UI)。
 
