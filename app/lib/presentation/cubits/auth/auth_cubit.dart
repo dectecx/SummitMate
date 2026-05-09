@@ -30,11 +30,10 @@ class AuthCubit extends Cubit<AuthState> {
       if (user != null) {
         _emitAuthenticated(user, false, isOffline: _authService.isOfflineMode);
       } else {
-        // 只有在當前是已登入狀態，且 service 說 null 時才發送 (避免覆蓋其他狀態如 AuthLoading)
-        if (state is AuthAuthenticated) {
+        // 當 Service 通知未登入 (null) 時
+        // 如果目前是已登入、載入中或初始狀態，則切換至未登入狀態
+        if (state is AuthAuthenticated || state is AuthLoading || state is AuthInitial) {
           _usageTrackingService.stop();
-          emit(AuthUnauthenticated());
-        } else if (state is AuthInitial) {
           emit(AuthUnauthenticated());
         }
       }
