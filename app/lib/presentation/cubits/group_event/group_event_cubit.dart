@@ -94,6 +94,18 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       } else {
         if (state is GroupEventLoaded) {
           emit((state as GroupEventLoaded).copyWith(isSyncing: false));
+        } else if (state is GroupEventLoading) {
+          // 如果是第一次載入失敗，也要設法脫離 loading 狀態
+          final events = await _groupEventRepository.getAll();
+          emit(
+            GroupEventLoaded(
+              events: events,
+              currentUserId: _currentUserId,
+              lastSyncTime: _groupEventRepository.getLastSyncTime(),
+              isSyncing: false,
+              isGuest: _isGuest,
+            ),
+          );
         }
       }
     }

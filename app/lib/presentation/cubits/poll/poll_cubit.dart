@@ -90,6 +90,9 @@ class PollCubit extends Cubit<PollState> {
       } else {
         if (state is PollLoaded) {
           emit((state as PollLoaded).copyWith(isSyncing: false));
+        } else if (state is PollLoading) {
+          final polls = await _pollRepository.getByTripId(tripId);
+          emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
         }
       }
     }
