@@ -2293,7 +2293,7 @@ paths:
         "400":
           description: 格式錯誤
 
-  /heartbeat:
+  /system/heartbeat:
     post:
       tags: [system]
       summary: 發送心跳訊號
@@ -3659,8 +3659,12 @@ components:
 
     HeartbeatRequest:
       type: object
-      required: [user_type, view, platform]
+      required: [user_type, platform]
       properties:
+        user_id:
+          type: string
+        user_name:
+          type: string
         user_type:
           type: string
           description: 使用者類型 (e.g. member, guest)
@@ -3670,6 +3674,9 @@ components:
         platform:
           type: string
           description: 作業平台 (e.g. android, ios, web)
+        timestamp:
+          type: string
+          description: 發送時間 (ISO8601)
 
     # --- Pagination & Standards ---
     PaginationMetadata:
