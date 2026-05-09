@@ -21,23 +21,7 @@ class GearSetCacheDao extends DatabaseAccessor<AppDatabase>
   Future<List<GearSet>> getAllGearSets() async {
     final rows = await select(gearSetCacheTable).get();
     return rows.map((row) {
-      if (row.rawJson != null) {
-        return GearSet.fromJson(jsonDecode(row.rawJson!));
-      }
-      // 回退到從欄位構建 (如果沒有 rawJson)
-      return GearSet(
-        id: row.id,
-        title: row.title,
-        author: row.author,
-        totalWeight: row.totalWeight,
-        itemCount: row.itemCount,
-        visibility: row.visibility,
-        uploadedAt: row.uploadedAt,
-        createdAt: row.createdAt,
-        createdBy: row.createdBy,
-        updatedAt: row.updatedAt,
-        updatedBy: row.updatedBy,
-      );
+      return GearSet.fromJson(jsonDecode(row.rawJson));
     }).toList();
   }
 
@@ -54,17 +38,7 @@ class GearSetCacheDao extends DatabaseAccessor<AppDatabase>
             .map(
               (s) => GearSetCacheTableCompanion.insert(
                 id: s.id,
-                title: s.title,
-                author: s.author,
-                totalWeight: Value(s.totalWeight),
-                itemCount: Value(s.itemCount),
-                visibility: s.visibility,
-                uploadedAt: s.uploadedAt,
-                createdAt: s.createdAt,
-                createdBy: s.createdBy,
-                updatedAt: s.updatedAt,
-                updatedBy: s.updatedBy,
-                rawJson: Value(jsonEncode(s.toJson())),
+                rawJson: jsonEncode(s.toJson()),
               ),
             )
             .toList(),
