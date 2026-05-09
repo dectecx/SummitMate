@@ -12,6 +12,7 @@ import (
 // GearSetService 定義裝備組合相關的業務邏輯介面。
 type GearSetService interface {
 	Create(ctx context.Context, gs *GearSet) (*GearSet, error)
+	Update(ctx context.Context, gs *GearSet, requestingUserID string) (*GearSet, error)
 	GetByID(ctx context.Context, id uuid.UUID, requestingUserID string, providedKey *string) (*GearSet, error)
 	Delete(ctx context.Context, id uuid.UUID, requestingUserID string) error
 	List(ctx context.Context, limit, offset int, search string, requestingUserID string, myUploadedOnly bool) ([]*GearSet, int, error)
@@ -37,15 +38,8 @@ func (s *gearSetService) Create(ctx context.Context, gs *GearSet) (*GearSet, err
 	gs.CreatedAt = now
 	gs.UpdatedAt = now
 
-	switch gs.Visibility {
-	case VisibilityPublic, VisibilityProtected, VisibilityPrivate:
-		// valid
-	default:
-		return nil, fmt.Errorf("invalid visibility: %s", gs.Visibility)
-	}
-
-	if gs.Visibility == VisibilityProtected && (gs.DownloadKey == nil || *gs.DownloadKey == "") {
-		return nil, fmt.Errorf("download_key is required for protected gear sets")
+	if err := s.validateGearSet(gs); err != nil {
+		return nil, err
 	}
 
 	err := s.repo.Create(ctx, gs)
@@ -53,6 +47,47 @@ func (s *gearSetService) Create(ctx context.Context, gs *GearSet) (*GearSet, err
 		return nil, err
 	}
 	return gs, nil
+}
+
+func (s *gearSetService) Update(ctx context.Context, gs *GearSet, requestingUserID string) (*GearSet, error) {
+	existing, err := s.repo.GetByID(ctx, gs.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if existing.UserID != requestingUserID {
+		return nil, fmt.Errorf("only the owner can update this gear set")
+	}
+
+	gs.UserID = existing.UserID
+	gs.CreatedAt = existing.CreatedAt
+	gs.CreatedBy = existing.CreatedBy
+	gs.UpdatedAt = time.Now()
+	gs.UpdatedBy = requestingUserID
+
+	if err := s.validateGearSet(gs); err != nil {
+		return nil, err
+	}
+
+	err = s.repo.Update(ctx, gs)
+	if err != nil {
+		return nil, err
+	}
+	return gs, nil
+}
+
+func (s *gearSetService) validateGearSet(gs *GearSet) error {
+	switch gs.Visibility {
+	case VisibilityPublic, VisibilityProtected, VisibilityPrivate:
+		// valid
+	default:
+		return fmt.Errorf("invalid visibility: %s", gs.Visibility)
+	}
+
+	if gs.Visibility == VisibilityProtected && (gs.DownloadKey == nil || *gs.DownloadKey == "") {
+		return fmt.Errorf("download_key is required for protected gear sets")
+	}
+	return nil
 }
 
 func (s *gearSetService) GetByID(ctx context.Context, id uuid.UUID, requestingUserID string, providedKey *string) (*GearSet, error) {

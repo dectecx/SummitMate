@@ -15,7 +15,7 @@ import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../widgets/gear_upload_dialog.dart';
-import '../widgets/gear_key_dialog.dart';
+import '../widgets/gear_cloud_management_dialog.dart';
 import '../widgets/gear_key_download_dialog.dart';
 import '../widgets/gear_preview_dialog.dart';
 import '../widgets/common/summit_app_bar.dart';
@@ -109,12 +109,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           builder: (ctx) => AlertDialog(
             title: const Text('提示'),
             content: const Text('請先選擇或建立行程後，再上傳您的裝備。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('確定'),
-              ),
-            ],
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('確定'))],
           ),
         );
       }
@@ -150,12 +145,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           builder: (ctx) => AlertDialog(
             title: const Text('提示'),
             content: const Text('目前行程中沒有任何裝備。請先新增裝備後再上傳。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('確定'),
-              ),
-            ],
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('確定'))],
           ),
         );
       }
@@ -207,17 +197,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         await _repository.saveUploadedKey(uploadedKey!, uploadedTitle ?? '', uploadedVisibility?.name ?? '');
       }
       _fetchGearSets();
-    }
-  }
-
-  Future<void> _showKeyInputDialog() async {
-    final result = await showDialog<GearSet?>(
-      context: context,
-      builder: (context) => GearKeyInputDialog(repository: _repository),
-    );
-
-    if (result != null && mounted) {
-      _showDownloadConfirmDialog(result);
     }
   }
 
@@ -367,7 +346,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           children: [
             Icon(Icons.cloud_off, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            Text('尚無公開的裝備組合', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+            Text('尚無共享的裝備組合', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
             const SizedBox(height: 8),
             Text('成為第一個分享的人！', style: TextStyle(color: Colors.grey.shade500)),
             const SizedBox(height: 24),
@@ -504,22 +483,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            // 第二行：我的 Keys、用 Key 下載
+            // 第二行：管理我的雲端裝備庫
             Row(
               children: [
-                // 我的 Keys
+                // 管理我的雲端裝備庫
                 Expanded(
-                  child: _ToolButton(icon: Icons.key, label: '我的 Keys', onTap: _showMyKeysDialog),
-                ),
-                const SizedBox(width: 8),
-                // 用 Key 下載
-                Expanded(
-                  child: _ToolButton(
-                    icon: Icons.download,
-                    label: '用 Key 下載',
-                    onTap: isOffline ? null : _showKeyInputDialog,
-                    disabled: isOffline,
-                  ),
+                  child: _ToolButton(icon: Icons.cloud_done, label: '管理我的雲端裝備庫', onTap: _showManagementDialog),
                 ),
               ],
             ),
@@ -529,110 +498,26 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     );
   }
 
-  void _showMyKeysDialog() async {
-    final keys = await _repository.getUploadedKeys();
-    if (!mounted) return;
+  void _showManagementDialog() async {
+    final settingsState = context.read<SettingsCubit>().state;
+    final String username = settingsState is SettingsLoaded ? settingsState.settings.username : 'Anonymous';
 
-    showDialog(
+    final mealCubit = context.read<MealCubit>();
+    final gearCubit = context.read<GearCubit>();
+
+    await showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('🔑 我上傳的 Keys'),
-        content: keys.isEmpty
-            ? const Text('尚無上傳記錄', style: TextStyle(color: Colors.grey))
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: keys
-                    .map(
-                      (record) => ListTile(
-                        leading: Text(
-                          record.visibility == 'protected' ? '🔒' : '🔐',
-                          style: const TextStyle(fontSize: 20),
-                        ),
-                        title: Text(
-                          record.key,
-                          style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.bold, fontSize: 20),
-                        ),
-                        subtitle: Text(record.title),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          tooltip: '刪除此組合',
-                          onPressed: () {
-                            Navigator.pop(dialogContext);
-                            _confirmDeleteGearSet(record);
-                          },
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-        actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('關閉'))],
+      builder: (context) => GearCloudManagementDialog(
+        repository: _repository,
+        username: username,
+        currentItems: gearCubit.state is GearLoaded ? (gearCubit.state as GearLoaded).items : [],
+        currentMeals: mealCubit.state is MealLoaded ? (mealCubit.state as MealLoaded).dailyPlans : [],
+        onImport: (items) => _importGearItems(items),
+        onAddToLibrary: (items) => _addToGearLibrary(items),
+        onImportMeals: (meals) => _importMeals(meals),
       ),
     );
-  }
-
-  Future<void> _confirmDeleteGearSet(GearKeyRecord record) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('⚠️ 確認刪除'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('確定要刪除「${record.title}」嗎？'),
-            const SizedBox(height: 8),
-            const Text(
-              '此操作無法復原！',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('刪除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      await _deleteGearSet(record);
-    }
-  }
-
-  Future<void> _deleteGearSet(GearKeyRecord record) async {
-    // 嘗試從雲端刪除 (需要透過 key 查詢 uuid)
-    final fetchResult = await _repository.getGearSetByKey(record.key);
-
-    // Check if fetch failed or data is null
-    if (fetchResult is Failure<GearSet, Exception>) {
-      ToastService.error('找不到此組合或已被刪除');
-      return;
-    }
-
-    // Now we know it is Success due to flow, but safe cast
-    if (fetchResult is Success<GearSet, Exception>) {
-      // Safe to access value
-    } else {
-      // Fallback for analysis
-      return;
-    }
-
-    // At this point we can access fetchResult.value
-    final gearSet = fetchResult.value;
-    final deleteResult = await _repository.deleteGearSet(gearSet.id, record.key);
-
-    if (deleteResult is Success<bool, Exception>) {
-      // 從本地儲存中也刪除記錄
-      await _repository.removeUploadedKey(record.key);
-      ToastService.success('已刪除裝備組合');
-      _fetchGearSets(); // 刷新列表
-    } else if (deleteResult is Failure<bool, Exception>) {
-      ToastService.error(deleteResult.exception.toString());
-    }
+    _fetchGearSets();
   }
 
   /// 確認刪除 public 裝備組合
@@ -665,8 +550,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     );
 
     if (confirmed == true) {
-      // public 組合不需要 key
-      final deleteResult = await _repository.deleteGearSet(gearSet.id, '');
+      final deleteResult = await _repository.deleteGearSet(gearSet.id);
       if (deleteResult is Success<bool, Exception>) {
         ToastService.success('已刪除裝備組合');
         _fetchGearSets(); // 刷新列表

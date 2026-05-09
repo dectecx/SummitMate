@@ -18,13 +18,8 @@ class GearSetRepository implements IGearSetRepository {
 
   /// 取得所有公開/分享的裝備組合
   @override
-  Future<Result<List<GearSet>, Exception>> getGearSets() => _remoteDataSource.getGearSets();
-
-  /// 透過 Key 取得單一裝備組合
-  ///
-  /// [key] 裝備組合的唯一識別碼
-  @override
-  Future<Result<GearSet, Exception>> getGearSetByKey(String key) => _remoteDataSource.getGearSetByKey(key);
+  Future<Result<List<GearSet>, Exception>> getGearSets({bool? myUploadedOnly}) =>
+      _remoteDataSource.getGearSets(myUploadedOnly: myUploadedOnly);
 
   /// 下載特定裝備組合
   @override
@@ -33,7 +28,7 @@ class GearSetRepository implements IGearSetRepository {
 
   /// 刪除雲端裝備組合
   @override
-  Future<Result<bool, Exception>> deleteGearSet(String id, String key) => _remoteDataSource.deleteGearSet(id, key);
+  Future<Result<bool, Exception>> deleteGearSet(String id) => _remoteDataSource.deleteGearSet(id);
 
   /// 上傳裝備組合
   @override
@@ -47,6 +42,26 @@ class GearSetRepository implements IGearSetRepository {
     String? key,
   }) => _remoteDataSource.uploadGearSet(
     tripId: tripId,
+    title: title,
+    author: author,
+    visibility: visibility,
+    items: items,
+    meals: meals,
+    key: key,
+  );
+
+  /// 更新裝備組合
+  @override
+  Future<Result<GearSet, Exception>> updateGearSet({
+    required String id,
+    required String title,
+    required String author,
+    required GearSetVisibility visibility,
+    required List<GearItem> items,
+    List<DailyMealPlan>? meals,
+    String? key,
+  }) => _remoteDataSource.updateGearSet(
+    id: id,
     title: title,
     author: author,
     visibility: visibility,
