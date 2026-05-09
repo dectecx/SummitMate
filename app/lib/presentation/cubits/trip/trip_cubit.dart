@@ -67,7 +67,7 @@ class TripCubit extends Cubit<TripState> {
     emit(const TripLoading());
     try {
       final newTrip = Trip(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: _authService.currentUserId ?? '',
         name: name,
         startDate: startDate,
@@ -148,7 +148,7 @@ class TripCubit extends Cubit<TripState> {
     emit(const TripLoading());
     try {
       final newTrip = trip.copyWith(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: _authService.currentUserId ?? '',
         isActive: false,
         syncStatus: SyncStatus.pendingCreate,

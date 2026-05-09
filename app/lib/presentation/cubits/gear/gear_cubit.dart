@@ -109,7 +109,7 @@ class GearCubit extends Cubit<GearState> {
 
     try {
       final item = GearItem(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         name: name,
         weight: weight,
         category: category,

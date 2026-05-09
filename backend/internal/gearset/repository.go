@@ -50,7 +50,7 @@ func (r *gearSetRepository) Create(ctx context.Context, gs *GearSet) error {
 		for _, item := range gs.Items {
 			qItem := `INSERT INTO gear_set_items (id, gear_set_id, name, category, weight, quantity, order_index) VALUES ($1, $2, $3, $4, $5, $6, $7)`
 			if item.ID == uuid.Nil {
-				item.ID = uuid.New()
+				item.ID = uuid.Must(uuid.NewV7())
 			}
 			_, err = db.Exec(txCtx, qItem, item.ID, gs.ID, item.Name, item.Category, item.Weight, item.Quantity, item.OrderIndex)
 			if err != nil {
@@ -61,7 +61,7 @@ func (r *gearSetRepository) Create(ctx context.Context, gs *GearSet) error {
 		for _, meal := range gs.Meals {
 			qMeal := `INSERT INTO gear_set_meals (id, gear_set_id, day, meal_type, name, calories, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`
 			if meal.ID == uuid.Nil {
-				meal.ID = uuid.New()
+				meal.ID = uuid.Must(uuid.NewV7())
 			}
 			_, err = db.Exec(txCtx, qMeal, meal.ID, gs.ID, meal.Day, meal.MealType, meal.Name, meal.Calories, meal.Note)
 			if err != nil {
@@ -152,7 +152,7 @@ func (r *gearSetRepository) Update(ctx context.Context, gs *GearSet) error {
 		for _, item := range gs.Items {
 			qItem := `INSERT INTO gear_set_items (id, gear_set_id, name, category, weight, quantity, order_index) VALUES ($1, $2, $3, $4, $5, $6, $7)`
 			if item.ID == uuid.Nil {
-				item.ID = uuid.New()
+				item.ID = uuid.Must(uuid.NewV7())
 			}
 			_, err = db.Exec(txCtx, qItem, item.ID, gs.ID, item.Name, item.Category, item.Weight, item.Quantity, item.OrderIndex)
 			if err != nil {
@@ -164,7 +164,7 @@ func (r *gearSetRepository) Update(ctx context.Context, gs *GearSet) error {
 		for _, meal := range gs.Meals {
 			qMeal := `INSERT INTO gear_set_meals (id, gear_set_id, day, meal_type, name, calories, note) VALUES ($1, $2, $3, $4, $5, $6, $7)`
 			if meal.ID == uuid.Nil {
-				meal.ID = uuid.New()
+				meal.ID = uuid.Must(uuid.NewV7())
 			}
 			_, err = db.Exec(txCtx, qMeal, meal.ID, gs.ID, meal.Day, meal.MealType, meal.Name, meal.Calories, meal.Note)
 			if err != nil {

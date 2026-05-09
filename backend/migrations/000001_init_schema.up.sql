@@ -7,7 +7,7 @@
 -- ============================================================
 
 CREATE TABLE roles (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     code        VARCHAR(20)  NOT NULL UNIQUE,
     name        VARCHAR(50)  NOT NULL,
     description TEXT,
@@ -15,7 +15,7 @@ CREATE TABLE roles (
 );
 
 CREATE TABLE permissions (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     code        VARCHAR(50) NOT NULL UNIQUE,
     category    VARCHAR(50),
     description TEXT
@@ -28,7 +28,7 @@ CREATE TABLE role_permissions (
 );
 
 CREATE TABLE users (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                  UUID PRIMARY KEY DEFAULT uuidv7(),
     email               VARCHAR(255) NOT NULL UNIQUE,
     password_hash       TEXT         NOT NULL,
     display_name        VARCHAR(100) NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE users (
 -- ============================================================
 
 CREATE TABLE trips (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID         NOT NULL REFERENCES users(id),
     name        VARCHAR(200) NOT NULL,
     description TEXT,
@@ -71,7 +71,7 @@ CREATE TABLE trip_members (
 );
 
 CREATE TABLE itinerary_items (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id       UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     day           VARCHAR(10)      NOT NULL DEFAULT '',
     name          VARCHAR(200)     NOT NULL DEFAULT '',
@@ -90,7 +90,7 @@ CREATE TABLE itinerary_items (
 );
 
 CREATE TABLE messages (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id    UUID        REFERENCES trips(id) ON DELETE CASCADE,
     parent_id  UUID        REFERENCES messages(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id),
@@ -107,7 +107,7 @@ CREATE TABLE messages (
 -- ============================================================
 
 CREATE TABLE gear_library_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -121,7 +121,7 @@ CREATE TABLE gear_library_items (
 );
 
 CREATE TABLE gear_items (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             REFERENCES trips(id) ON DELETE CASCADE,
     library_item_id UUID             REFERENCES gear_library_items(id) ON DELETE SET NULL,
     name            VARCHAR(200)     NOT NULL DEFAULT '',
@@ -137,7 +137,7 @@ CREATE TABLE gear_items (
 );
 
 CREATE TABLE meal_library_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -151,7 +151,7 @@ CREATE TABLE meal_library_items (
 );
 
 CREATE TABLE meal_items (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     library_item_id UUID             REFERENCES meal_library_items(id) ON DELETE SET NULL,
     day             VARCHAR(10)      NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE meal_items (
 );
 
 CREATE TABLE templates (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
     type         VARCHAR(20)      NOT NULL,
     title        VARCHAR(200)     NOT NULL,
     author       VARCHAR(100)     NOT NULL,
@@ -183,7 +183,7 @@ CREATE TABLE templates (
 );
 
 CREATE TABLE template_gear_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -193,7 +193,7 @@ CREATE TABLE template_gear_items (
 );
 
 CREATE TABLE template_meal_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     day         VARCHAR(10)      NOT NULL,
     meal_type   VARCHAR(20)      NOT NULL,
@@ -208,7 +208,7 @@ CREATE TABLE template_meal_items (
 -- ============================================================
 
 CREATE TABLE polls (
-    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                   UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id              UUID         REFERENCES trips(id) ON DELETE CASCADE,
     title                VARCHAR(200) NOT NULL,
     description          TEXT         NOT NULL DEFAULT '',
@@ -225,7 +225,7 @@ CREATE TABLE polls (
 );
 
 CREATE TABLE poll_options (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     poll_id    UUID         NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
     text       VARCHAR(500) NOT NULL,
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -246,7 +246,7 @@ CREATE TABLE poll_votes (
 -- ============================================================
 
 CREATE TABLE group_events (
-    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                UUID PRIMARY KEY DEFAULT uuidv7(),
     title             VARCHAR(200) NOT NULL,
     description       TEXT         NOT NULL DEFAULT '',
     category          VARCHAR(50)  NOT NULL DEFAULT 'Other' CHECK (category IN ('Hiking', 'Camping', 'Bouldering', 'Other')),
@@ -269,7 +269,7 @@ CREATE TABLE group_events (
 );
 
 CREATE TABLE group_event_applications (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id),
     status     VARCHAR(20) NOT NULL DEFAULT 'pending',
@@ -282,7 +282,7 @@ CREATE TABLE group_event_applications (
 );
 
 CREATE TABLE group_event_comments (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id),
     content    TEXT        NOT NULL,
@@ -304,7 +304,7 @@ CREATE TABLE group_event_likes (
 -- ============================================================
 
 CREATE TABLE favorites (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     target_id  UUID        NOT NULL,
     type       VARCHAR(30) NOT NULL,
@@ -319,7 +319,7 @@ CREATE TABLE favorites (
 -- ============================================================
 
 CREATE TABLE logs (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     upload_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     device_id   TEXT,
     device_name TEXT,
@@ -378,7 +378,7 @@ WHERE r.code = 'MEMBER' AND p.code IN ('trip.create', 'trip.view', 'gear.manage'
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS weather_data (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     location    TEXT NOT NULL,
     start_time  TIMESTAMPTZ NOT NULL,
     end_time    TIMESTAMPTZ NOT NULL,

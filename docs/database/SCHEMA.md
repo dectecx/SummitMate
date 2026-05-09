@@ -2,7 +2,7 @@
 
 ## 1. 概述 (Overview)
 
-本專案後端採用 **PostgreSQL** 作為正式資料庫 (Supabase Free Tier)。
+本專案後端採用 **PostgreSQL 18** 作為正式資料庫。
 前端 App 使用 **Drift (SQLite)** 作為本地快取庫 (Offline-First)。
 
 > [!NOTE]
@@ -13,7 +13,7 @@
 
 | 原則              | 說明                                                                       |
 | :---------------- | :------------------------------------------------------------------------- |
-| **UUID PK**       | 所有主鍵使用 UUID，與 Flutter 端相容、支援離線產生 ID                      |
+| **UUID PK**       | 所有主鍵使用 **UUID v7** (時間排序)，提升索引效能並支援離線產生 ID          |
 | **TIMESTAMPTZ**   | 所有時間欄位統一使用帶時區的時間戳                                         |
 | **稽核欄位**      | 所有表預設包含 `created_at`, `created_by`, `updated_at`, `updated_by`      |
 | **CASCADE 刪除**  | 父記錄刪除自動清理子記錄                                                   |
@@ -128,7 +128,7 @@ erDiagram
 
 | Column      | Type        | Constraints | Description                          |
 | :---------- | :---------- | :---------- | :----------------------------------- |
-| **id**      | UUID        | **PK**      | `gen_random_uuid()`                  |
+| **id**      | UUID        | **PK**      | `uuidv7()`                  |
 | code        | VARCHAR(20) | **UK**, NN  | `ADMIN`, `LEADER`, `GUIDE`, `MEMBER` |
 | name        | VARCHAR(50) | NN          | 顯示名稱                             |
 | description | TEXT        |             |                                      |
@@ -136,7 +136,7 @@ erDiagram
 
 ```sql
 CREATE TABLE roles (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     code        VARCHAR(20)  NOT NULL UNIQUE,
     name        VARCHAR(50)  NOT NULL,
     description TEXT,
@@ -155,7 +155,7 @@ CREATE TABLE roles (
 
 ```sql
 CREATE TABLE permissions (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     code        VARCHAR(50) NOT NULL UNIQUE,
     category    VARCHAR(50),
     description TEXT
@@ -195,7 +195,7 @@ CREATE TABLE role_permissions (
 
 ```sql
 CREATE TABLE users (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                  UUID PRIMARY KEY DEFAULT uuidv7(),
     email               VARCHAR(255) NOT NULL UNIQUE,
     password_hash       TEXT         NOT NULL,
     display_name        VARCHAR(100) NOT NULL,
@@ -233,7 +233,7 @@ CREATE TABLE users (
 
 ```sql
 CREATE TABLE trips (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID         NOT NULL REFERENCES users(id),
     name        VARCHAR(200) NOT NULL,
     description TEXT,
@@ -295,7 +295,7 @@ CREATE TABLE trip_members (
 
 ```sql
 CREATE TABLE itinerary_items (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id            UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id       UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     day           VARCHAR(10)      NOT NULL DEFAULT '',
     name          VARCHAR(200)     NOT NULL DEFAULT '',
@@ -336,7 +336,7 @@ CREATE TABLE itinerary_items (
 
 ```sql
 CREATE TABLE messages (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id    UUID        REFERENCES trips(id) ON DELETE CASCADE,
     parent_id  UUID        REFERENCES messages(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id),
@@ -372,7 +372,7 @@ CREATE TABLE messages (
 
 ```sql
 CREATE TABLE gear_library_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -410,7 +410,7 @@ CREATE TABLE gear_library_items (
 
 ```sql
 CREATE TABLE gear_items (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             REFERENCES trips(id) ON DELETE CASCADE,
     library_item_id UUID             REFERENCES gear_library_items(id) ON DELETE SET NULL,
     name            VARCHAR(200)     NOT NULL DEFAULT '',
@@ -446,7 +446,7 @@ CREATE TABLE gear_items (
 
 ```sql
 CREATE TABLE meal_library_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -481,7 +481,7 @@ CREATE TABLE meal_library_items (
 
 ```sql
 CREATE TABLE meal_items (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     library_item_id UUID             REFERENCES meal_library_items(id) ON DELETE SET NULL,
     day             VARCHAR(10)      NOT NULL,
@@ -521,7 +521,7 @@ CREATE TABLE meal_items (
 
 ```sql
 CREATE TABLE templates (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
     type         VARCHAR(20)      NOT NULL,
     title        VARCHAR(200)     NOT NULL,
     author       VARCHAR(100)     NOT NULL,
@@ -550,7 +550,7 @@ CREATE TABLE templates (
 
 ```sql
 CREATE TABLE template_gear_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -576,7 +576,7 @@ CREATE TABLE template_gear_items (
 
 ```sql
 CREATE TABLE template_meal_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
     day         VARCHAR(10)      NOT NULL,
     meal_type   VARCHAR(20)      NOT NULL,
@@ -614,7 +614,7 @@ CREATE TABLE template_meal_items (
 
 ```sql
 CREATE TABLE polls (
-    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                   UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id              UUID         REFERENCES trips(id) ON DELETE CASCADE,
     title                VARCHAR(200) NOT NULL,
     description          TEXT         NOT NULL DEFAULT '',
@@ -636,7 +636,7 @@ CREATE TABLE polls (
 
 ```sql
 CREATE TABLE poll_options (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     poll_id    UUID         NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
     text       VARCHAR(500) NOT NULL,
     creator_id UUID         NOT NULL REFERENCES users(id),
@@ -695,7 +695,7 @@ CREATE TABLE poll_votes (
 
 ```sql
 CREATE TABLE group_events (
-    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                UUID PRIMARY KEY DEFAULT uuidv7(),
     creator_id        UUID         NOT NULL REFERENCES users(id),
     title             VARCHAR(200) NOT NULL,
     description       TEXT         NOT NULL DEFAULT '',
@@ -720,7 +720,7 @@ CREATE TABLE group_events (
 
 ```sql
 CREATE TABLE group_event_applications (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id),
     status     VARCHAR(20) NOT NULL DEFAULT 'pending',
@@ -736,7 +736,7 @@ CREATE TABLE group_event_applications (
 
 ```sql
 CREATE TABLE group_event_comments (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
     user_id    UUID        NOT NULL REFERENCES users(id),
     content    TEXT        NOT NULL,
@@ -762,7 +762,7 @@ CREATE TABLE group_event_likes (
 
 ```sql
 CREATE TABLE favorites (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id         UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     target_id  UUID        NOT NULL,
     type       VARCHAR(30) NOT NULL,
@@ -782,7 +782,7 @@ CREATE TABLE favorites (
 
 ```sql
 CREATE TABLE logs (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     upload_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     device_id   TEXT,
     device_name TEXT,
@@ -829,7 +829,7 @@ CREATE TABLE heartbeats (
 
 ```sql
 CREATE TABLE gear_sets (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id           UUID PRIMARY KEY DEFAULT uuidv7(),
     title        VARCHAR(200) NOT NULL,
     author       VARCHAR(100) NOT NULL,
     total_weight DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -860,7 +860,7 @@ CREATE INDEX idx_gear_sets_visibility ON gear_sets(visibility);
 
 ```sql
 CREATE TABLE gear_set_items (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
     name        VARCHAR(200) NOT NULL,
     category    VARCHAR(50) NOT NULL DEFAULT 'Other',
@@ -885,7 +885,7 @@ CREATE INDEX idx_gear_set_items_set_id ON gear_set_items(gear_set_id);
 
 ```sql
 CREATE TABLE gear_set_meals (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY DEFAULT uuidv7(),
     gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
     day         VARCHAR(50) NOT NULL,
     meal_type   VARCHAR(50) NOT NULL,

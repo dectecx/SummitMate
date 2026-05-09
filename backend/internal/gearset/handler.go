@@ -111,7 +111,7 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 
 	for _, item := range req.Items {
 		gi := GearSetItem{
-			ID:       uuid.New(),
+			ID:       uuid.Must(uuid.NewV7()),
 			Name:     item.Name,
 			Category: item.Category,
 			Weight:   item.Weight,
@@ -129,7 +129,7 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 	if req.Meals != nil {
 		for _, meal := range *req.Meals {
 			gm := GearSetMeal{
-				ID:       uuid.New(),
+				ID:       uuid.Must(uuid.NewV7()),
 				Day:      meal.Day,
 				MealType: meal.MealType,
 				Name:     meal.Name,
@@ -206,7 +206,7 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 
 	for _, item := range req.Items {
 		gi := GearSetItem{
-			ID:       uuid.New(),
+			ID:       uuid.Must(uuid.NewV7()),
 			Name:     item.Name,
 			Category: item.Category,
 			Weight:   item.Weight,
@@ -224,7 +224,7 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 	if req.Meals != nil {
 		for _, meal := range *req.Meals {
 			gm := GearSetMeal{
-				ID:       uuid.New(),
+				ID:       uuid.Must(uuid.NewV7()),
 				Day:      meal.Day,
 				MealType: meal.MealType,
 				Name:     meal.Name,

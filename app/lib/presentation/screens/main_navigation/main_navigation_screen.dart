@@ -434,7 +434,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       }
 
       final item = ItineraryItem(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         tripId: tripId,
         day: selectedDay,
         name: result['name'] ?? '',

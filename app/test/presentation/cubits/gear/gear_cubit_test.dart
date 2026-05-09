@@ -75,7 +75,9 @@ void main() {
         isA<GearLoaded>().having((s) => s.items.length, 'items count', 1),
       ],
       verify: (_) {
-        verify(() => mockGearRepository.addItem(any())).called(1);
+        final captured = verify(() => mockGearRepository.addItem(captureAny())).captured;
+        final item = captured.first as GearItem;
+        expect(item.id[14], '7', reason: 'UUID must be version 7');
       },
     );
 
