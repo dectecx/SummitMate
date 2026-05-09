@@ -32,7 +32,7 @@ func NewGearSetService(logger *slog.Logger, repo GearSetRepository) GearSetServi
 
 func (s *gearSetService) Create(ctx context.Context, gs *GearSet) (*GearSet, error) {
 	if gs.ID == uuid.Nil {
-		gs.ID = uuid.New()
+		gs.ID = uuid.Must(uuid.NewV7())
 	}
 	now := time.Now()
 	gs.CreatedAt = now

@@ -68,7 +68,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final userId = _authService.currentUserId ?? 'guest';
 
       final item = GearLibraryItem(
-        id: const Uuid().v4(),
+        id: const Uuid().v7(),
         userId: userId,
         name: name,
         weight: weight,
