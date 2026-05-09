@@ -80,17 +80,17 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
   }
 
   @override
-  Future<void> setActiveTrip(String tripId) async {
-    // 實作：將所有 active 設為 false，再將指定的設為 true
-    await update(tripsTable).write(const TripsTableCompanion(isActive: Value(false)));
+  Future<void> setActiveTrip(String userId, String tripId) async {
+    // 實作：將該使用者的所有 active 設為 false，再將指定的設為 true
+    await (update(tripsTable)..where((t) => t.userId.equals(userId))).write(const TripsTableCompanion(isActive: Value(false)));
     await (update(
       tripsTable,
-    )..where((t) => t.id.equals(tripId))).write(const TripsTableCompanion(isActive: Value(true)));
+    )..where((t) => t.id.equals(tripId) & t.userId.equals(userId))).write(const TripsTableCompanion(isActive: Value(true)));
   }
 
   @override
-  Future<Trip?> getActiveTrip() async {
-    final query = select(tripsTable)..where((t) => t.isActive.equals(true));
+  Future<Trip?> getActiveTrip(String userId) async {
+    final query = select(tripsTable)..where((t) => t.isActive.equals(true) & t.userId.equals(userId));
     final row = await query.getSingleOrNull();
     if (row == null) return null;
 
