@@ -4085,11 +4085,11 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/GearSetItemRequest"
+            $ref: "#/components/schemas/GearSetItemResponse"
         meals:
           type: array
           items:
-            $ref: "#/components/schemas/GearSetMealRequest"
+            $ref: "#/components/schemas/GearSetMealResponse"
         created_at:
           type: string
           format: date-time
@@ -4102,6 +4102,45 @@ components:
         updated_by:
           type: string
           format: uuid
+
+    GearSetItemResponse:
+      type: object
+      required: [id, name, category, weight, quantity, order_index]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        weight:
+          type: number
+          format: double
+        quantity:
+          type: integer
+        order_index:
+          type: integer
+
+    GearSetMealResponse:
+      type: object
+      required: [id, day, meal_type, name, calories]
+      properties:
+        id:
+          type: string
+          format: uuid
+        day:
+          type: string
+        meal_type:
+          type: string
+        name:
+          type: string
+        calories:
+          type: number
+          format: double
+        note:
+          type: string
+          nullable: true
 
     GearSetListResponse:
       type: object

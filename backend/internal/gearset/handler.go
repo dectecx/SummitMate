@@ -266,32 +266,28 @@ func (h *GearSetHandler) DeleteGearSet(w http.ResponseWriter, r *http.Request, i
 }
 
 func mapToResponse(gs *GearSet) api.GearSetResponse {
-	items := make([]api.GearSetItemRequest, 0, len(gs.Items))
+	items := make([]api.GearSetItemResponse, 0, len(gs.Items))
 	for _, it := range gs.Items {
-		id := it.ID
-		orderIndex := it.OrderIndex
-		items = append(items, api.GearSetItemRequest{
-			Id:         &id,
+		items = append(items, api.GearSetItemResponse{
+			Id:         it.ID,
 			Name:       it.Name,
 			Category:   it.Category,
 			Weight:     it.Weight,
 			Quantity:   it.Quantity,
-			OrderIndex: &orderIndex,
+			OrderIndex: it.OrderIndex,
 		})
 	}
 
-	var meals *[]api.GearSetMealRequest
+	var meals *[]api.GearSetMealResponse
 	if len(gs.Meals) > 0 {
-		mList := make([]api.GearSetMealRequest, 0, len(gs.Meals))
+		mList := make([]api.GearSetMealResponse, 0, len(gs.Meals))
 		for _, m := range gs.Meals {
-			mealID := m.ID
-			calories := m.Calories
-			mList = append(mList, api.GearSetMealRequest{
-				Id:       &mealID,
+			mList = append(mList, api.GearSetMealResponse{
+				Id:       m.ID,
 				Day:      m.Day,
 				MealType: m.MealType,
 				Name:     m.Name,
-				Calories: &calories,
+				Calories: m.Calories,
 				Note:     m.Note,
 			})
 		}
