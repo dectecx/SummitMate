@@ -28,7 +28,10 @@ class ToastService {
   /// 內部方法：顯示 SnackBar
   static void _show(String message, Color color, IconData icon) {
     final messenger = messengerKey.currentState;
-    if (messenger == null) return;
+    if (messenger == null) {
+      debugPrint('ToastService failed to show message: $message (messenger is null)');
+      return;
+    }
 
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
