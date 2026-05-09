@@ -88,7 +88,7 @@ Authorization: Bearer <access_token>
 | `GET`    | `/weather/hiking`                                 | 登山氣象資料   | 無   |
 | `GET`    | `/weather/hiking/{location}`                      | 特定地點氣象   | 無   |
 | `POST`   | `/logs`                                           | 上傳 App 日誌  | 無   |
-| `POST`   | `/heartbeat`                                      | 心跳回報       | JWT  |
+| `POST`   | `/system/heartbeat`                               | 心跳與統計同步 | JWT  |
 
 互動式 API 文件：`GET /docs` (Scalar API Reference UI)
 

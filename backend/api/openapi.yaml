@@ -2310,6 +2310,10 @@ paths:
       responses:
         "200":
           description: 成功更新
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeartbeatResponse"
         "401":
           description: 未授權
 
@@ -3671,12 +3675,28 @@ components:
         view:
           type: string
           description: 目前停留的畫面名稱
+        view_stats:
+          type: object
+          additionalProperties:
+            type: integer
+          description: 各畫面累計瀏覽次數
         platform:
           type: string
           description: 作業平台 (e.g. android, ios, web)
         timestamp:
           type: string
           description: 發送時間 (ISO8601)
+
+    HeartbeatResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        view_stats:
+          type: object
+          additionalProperties:
+            type: integer
+          description: 同步後的各畫面累計瀏覽次數
 
     # --- Pagination & Standards ---
     PaginationMetadata:

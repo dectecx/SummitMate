@@ -33,18 +33,31 @@ func (h *HeartbeatHandler) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 處理統計數據
+	viewStats := make(map[string]int)
+	if req.ViewStats != nil {
+		viewStats = *req.ViewStats
+	}
+
 	svcReq := &HeartbeatRequest{
-		UserType: req.UserType,
-		Platform: req.Platform,
+		UserType:  req.UserType,
+		ViewStats: viewStats,
+		Platform:  req.Platform,
 	}
 	if req.View != nil {
 		svcReq.View = *req.View
 	}
 
-	if err := h.svc.HandleHeartbeat(r.Context(), userID, svcReq); err != nil {
+	syncedHb, err := h.svc.HandleHeartbeat(r.Context(), userID, svcReq)
+	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	// 回傳同步後的統計數據給客戶端 (Server-side Win)
+	status := "ok"
+	apiutil.SendJSON(w, http.StatusOK, api.HeartbeatResponse{
+		Status:    &status,
+		ViewStats: &syncedHb.ViewStats,
+	})
 }
