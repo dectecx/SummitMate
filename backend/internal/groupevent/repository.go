@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"summitmate/internal/database"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type GroupEventRepository interface {
@@ -42,14 +43,14 @@ func NewGroupEventRepository(db database.DB) GroupEventRepository {
 
 func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEvent) error {
 	query := `
-		INSERT INTO group_events (
-			title, description, category, location, start_date, end_date,
-			max_members, approval_required, private_message, linked_trip_id,
-			created_by, updated_by
-		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
-		) RETURNING id, status, like_count, comment_count, created_at, updated_at
-	`
+        INSERT INTO group_events (
+            title, description, category, location, start_date, end_date,
+            max_members, approval_required, private_message, linked_trip_id,
+            created_by, updated_by
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        ) RETURNING id, status, like_count, comment_count, created_at, updated_at
+    `
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
 		event.Title, event.Description, event.Category, event.Location, event.StartDate, event.EndDate,
@@ -64,20 +65,25 @@ func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEven
 
 func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error) {
 	query := `
-		SELECT 
-			e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
-			e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
-			e.trip_snapshot, e.snapshot_updated_at,
-			e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
-			(SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
-			EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $2) as is_liked,
-			(SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $2 LIMIT 1) as my_application_status
-		FROM group_events e
-		WHERE e.id = $1
-	`
+        SELECT 
+            e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+            e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
+            e.trip_snapshot, e.snapshot_updated_at,
+            e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
+            (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
+            EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $2) as is_liked,
+            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $2 LIMIT 1) as my_application_status
+        FROM group_events e
+        WHERE e.id = $1
+    `
 	event := &GroupEvent{}
+	var userIDArg any = userID
+	if userID == "" {
+		userIDArg = nil
+	}
+
 	db := database.GetQuerier(ctx, r.db)
-	err := db.QueryRow(ctx, query, id, userID).Scan(
+	err := db.QueryRow(ctx, query, id, userIDArg).Scan(
 		&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 		&event.TripSnapshot, &event.SnapshotUpdatedAt,
@@ -128,21 +134,26 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 		return nil, 0, false, fmt.Errorf("count group events: %w", err)
 	}
 
-	dataArgs := append(args, userID, limit, (page-1)*limit)
+	var userIDArg any = userID
+	if userID == "" {
+		userIDArg = nil
+	}
+
+	dataArgs := append(args, userIDArg, limit, (page-1)*limit)
 	mainQuery := fmt.Sprintf(`
-		SELECT 
-			e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
-			e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
-			e.trip_snapshot, e.snapshot_updated_at,
-			e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
-			(SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
-			EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $%d) as is_liked,
-			(SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $%d LIMIT 1) as my_application_status
-		FROM group_events e
-		%s
-		ORDER BY e.created_at DESC, e.id DESC
-		LIMIT $%d OFFSET $%d
-	`, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
+        SELECT
+            e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+            e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
+            e.trip_snapshot, e.snapshot_updated_at,
+            e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
+            (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
+            EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $%d) as is_liked,
+            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $%d LIMIT 1) as my_application_status
+        FROM group_events e
+        %s
+        ORDER BY e.created_at DESC, e.id DESC
+        LIMIT $%d OFFSET $%d
+    `, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
 
 	rows, err := db.Query(ctx, mainQuery, dataArgs...)
 	if err != nil {
@@ -201,19 +212,19 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 	}
 
 	mainQuery := fmt.Sprintf(`
-		SELECT 
-			e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
-			e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
-			e.trip_snapshot, e.snapshot_updated_at,
-			e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
-			(SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
-			EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1) as is_liked,
-			(SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $1 LIMIT 1) as my_application_status
-		FROM group_events e
-		%s
-		ORDER BY e.created_at DESC, e.id DESC
-		LIMIT $2 OFFSET $3
-	`, whereClause)
+        SELECT 
+            e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+            e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
+            e.trip_snapshot, e.snapshot_updated_at,
+            e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
+            (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
+            EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1) as is_liked,
+            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $1 LIMIT 1) as my_application_status
+        FROM group_events e
+        %s
+        ORDER BY e.created_at DESC, e.id DESC
+        LIMIT $2 OFFSET $3
+    `, whereClause)
 
 	rows, err := db.Query(ctx, mainQuery, userID, limit, (page-1)*limit)
 	if err != nil {
@@ -241,13 +252,13 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 
 func (r *groupEventRepository) UpdateEvent(ctx context.Context, event *GroupEvent) error {
 	query := `
-		UPDATE group_events
-		SET title = $1, description = $2, category = $3, location = $4, start_date = $5, end_date = $6,
+        UPDATE group_events
+        SET title = $1, description = $2, category = $3, location = $4, start_date = $5, end_date = $6,
             max_members = $7, approval_required = $8, private_message = $9, linked_trip_id = $10,
             updated_at = NOW(), updated_by = $11
-		WHERE id = $12
-		RETURNING updated_at
-	`
+        WHERE id = $12
+        RETURNING updated_at
+    `
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
 		event.Title, event.Description, event.Category, event.Location, event.StartDate, event.EndDate,
@@ -272,11 +283,11 @@ func (r *groupEventRepository) DeleteEvent(ctx context.Context, id string) error
 
 func (r *groupEventRepository) ApplyToEvent(ctx context.Context, app *GroupEventApplication) error {
 	query := `
-		INSERT INTO group_event_applications (
-			event_id, user_id, message, created_by, updated_by
-		) VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, status, created_at, updated_at
-	`
+        INSERT INTO group_event_applications (
+            event_id, user_id, message, created_by, updated_by
+        ) VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, status, created_at, updated_at
+    `
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
 		app.EventID, app.UserID, app.Message, app.CreatedBy, app.UpdatedBy,
@@ -289,11 +300,11 @@ func (r *groupEventRepository) ApplyToEvent(ctx context.Context, app *GroupEvent
 
 func (r *groupEventRepository) ListApplications(ctx context.Context, eventID string) ([]*GroupEventApplication, error) {
 	query := `
-		SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
-		FROM group_event_applications
-		WHERE event_id = $1
-		ORDER BY created_at ASC
-	`
+        SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
+        FROM group_event_applications
+        WHERE event_id = $1
+        ORDER BY created_at ASC
+    `
 	db := database.GetQuerier(ctx, r.db)
 	rows, err := db.Query(ctx, query, eventID)
 	if err != nil {
@@ -321,10 +332,10 @@ func (r *groupEventRepository) ListApplications(ctx context.Context, eventID str
 
 func (r *groupEventRepository) UpdateApplicationStatus(ctx context.Context, eventID, userID, status, updatedBy string) error {
 	query := `
-		UPDATE group_event_applications
-		SET status = $1, updated_at = NOW(), updated_by = $2
-		WHERE event_id = $3 AND user_id = $4
-	`
+        UPDATE group_event_applications
+        SET status = $1, updated_at = NOW(), updated_by = $2
+        WHERE event_id = $3 AND user_id = $4
+    `
 	db := database.GetQuerier(ctx, r.db)
 	_, err := db.Exec(ctx, query, status, updatedBy, eventID, userID)
 	if err != nil {
@@ -335,10 +346,10 @@ func (r *groupEventRepository) UpdateApplicationStatus(ctx context.Context, even
 
 func (r *groupEventRepository) GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error) {
 	query := `
-		SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
-		FROM group_event_applications
-		WHERE id = $1
-	`
+        SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
+        FROM group_event_applications
+        WHERE id = $1
+    `
 	app := &GroupEventApplication{}
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query, id).Scan(
@@ -368,11 +379,11 @@ func (r *groupEventRepository) AddComment(ctx context.Context, comment *GroupEve
 	db := database.GetQuerier(ctx, r.db)
 
 	query := `
-		INSERT INTO group_event_comments (
-			event_id, user_id, content, created_by, updated_by
-		) VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, created_at, updated_at
-	`
+        INSERT INTO group_event_comments (
+            event_id, user_id, content, created_by, updated_by
+        ) VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, created_at, updated_at
+    `
 	err := db.QueryRow(ctx, query,
 		comment.EventID, comment.UserID, comment.Content, comment.CreatedBy, comment.UpdatedBy,
 	).Scan(&comment.ID, &comment.CreatedAt, &comment.UpdatedAt)
@@ -390,14 +401,14 @@ func (r *groupEventRepository) AddComment(ctx context.Context, comment *GroupEve
 
 func (r *groupEventRepository) ListComments(ctx context.Context, eventID string) ([]*GroupEventComment, error) {
 	query := `
-		SELECT c.id, c.event_id, c.user_id, c.content,
-		       c.created_at, c.created_by, c.updated_at, c.updated_by,
-		       u.display_name, u.avatar
-		FROM group_event_comments c
-		JOIN users u ON c.user_id = u.id
-		WHERE c.event_id = $1
-		ORDER BY c.created_at ASC
-	`
+        SELECT c.id, c.event_id, c.user_id, c.content,
+               c.created_at, c.created_by, c.updated_at, c.updated_by,
+               u.display_name, u.avatar
+        FROM group_event_comments c
+        JOIN users u ON c.user_id = u.id
+        WHERE c.event_id = $1
+        ORDER BY c.created_at ASC
+    `
 	db := database.GetQuerier(ctx, r.db)
 	rows, err := db.Query(ctx, query, eventID)
 	if err != nil {
@@ -481,10 +492,10 @@ func (r *groupEventRepository) ToggleLike(ctx context.Context, eventID, userID s
 
 func (r *groupEventRepository) UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error {
 	query := `
-		UPDATE group_events
-		SET linked_trip_id = $1, updated_at = NOW(), updated_by = $2
-		WHERE id = $3
-	`
+        UPDATE group_events
+        SET linked_trip_id = $1, updated_at = NOW(), updated_by = $2
+        WHERE id = $3
+    `
 	db := database.GetQuerier(ctx, r.db)
 	_, err := db.Exec(ctx, query, tripID, userID, eventID)
 	if err != nil {
@@ -495,10 +506,10 @@ func (r *groupEventRepository) UpdateTripLink(ctx context.Context, eventID strin
 
 func (r *groupEventRepository) UpdateTripSnapshot(ctx context.Context, eventID string, snapshot *TripSnapshot, userID string) error {
 	query := `
-		UPDATE group_events
-		SET trip_snapshot = $1, snapshot_updated_at = NOW(), updated_at = NOW(), updated_by = $2
-		WHERE id = $3
-	`
+        UPDATE group_events
+        SET trip_snapshot = $1, snapshot_updated_at = NOW(), updated_at = NOW(), updated_by = $2
+        WHERE id = $3
+    `
 	db := database.GetQuerier(ctx, r.db)
 	_, err := db.Exec(ctx, query, snapshot, userID, eventID)
 	if err != nil {
