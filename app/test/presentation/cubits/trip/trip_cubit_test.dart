@@ -8,6 +8,7 @@ import 'package:summitmate/core/error/result.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
+import 'package:summitmate/presentation/cubits/app_error/app_error_cubit.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
@@ -21,12 +22,15 @@ class MockGearRepository extends Mock implements IGearRepository {}
 
 class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
 
+class MockAppErrorCubit extends Mock implements AppErrorCubit {}
+
 void main() {
   late MockTripRepository mockTripRepository;
   late MockAuthService mockAuthService;
   late MockItineraryRepository mockItineraryRepository;
   late MockGearRepository mockGearRepository;
   late MockTripGearRemoteDataSource mockTripGearRemoteDataSource;
+  late MockAppErrorCubit mockAppErrorCubit;
 
   setUpAll(() {
     registerFallbackValue(
@@ -49,6 +53,7 @@ void main() {
     mockItineraryRepository = MockItineraryRepository();
     mockGearRepository = MockGearRepository();
     mockTripGearRemoteDataSource = MockTripGearRemoteDataSource();
+    mockAppErrorCubit = MockAppErrorCubit();
 
     GetIt.I.reset();
 
@@ -57,8 +62,10 @@ void main() {
     GetIt.I.registerSingleton<ITripGearRemoteDataSource>(mockTripGearRemoteDataSource);
     GetIt.I.registerSingleton<ITripRepository>(mockTripRepository);
     GetIt.I.registerSingleton<IAuthService>(mockAuthService);
+    GetIt.I.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
 
     when(() => mockAuthService.currentUserId).thenReturn('user-1');
+    when(() => mockAppErrorCubit.reportError(any())).thenReturn(false);
   });
 
   group('TripCubit', () {
