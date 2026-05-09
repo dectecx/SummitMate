@@ -20,6 +20,7 @@ Commands:
   down      Rollback the last migration
   version   Show current migration version
   drop      Drop all tables (DANGER!)
+  force <v> Force migration version to <v>
 `
 
 func main() {
@@ -67,6 +68,20 @@ func main() {
 		}
 		if err := database.MigrateDrop(cfg.DatabaseURL); err != nil {
 			slog.Error("migrate drop failed", "error", err)
+			os.Exit(1)
+		}
+	case "force":
+		if len(os.Args) < 3 {
+			slog.Error("force command requires a version number")
+			os.Exit(1)
+		}
+		var version int
+		if _, err := fmt.Sscanf(os.Args[2], "%d", &version); err != nil {
+			slog.Error("invalid version number", "error", err)
+			os.Exit(1)
+		}
+		if err := database.MigrateForce(cfg.DatabaseURL, version); err != nil {
+			slog.Error("migrate force failed", "error", err)
 			os.Exit(1)
 		}
 	default:

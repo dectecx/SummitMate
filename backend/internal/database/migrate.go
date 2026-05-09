@@ -87,3 +87,18 @@ func MigrateDrop(databaseURL string) error {
 	slog.Info("All tables dropped")
 	return nil
 }
+
+// MigrateForce forces the migration version in the database.
+func MigrateForce(databaseURL string, version int) error {
+	m, err := newMigrate(databaseURL)
+	if err != nil {
+		return err
+	}
+
+	if err := m.Force(version); err != nil {
+		return fmt.Errorf("force: %w", err)
+	}
+
+	slog.Info("Migration version forced", "version", version)
+	return nil
+}
