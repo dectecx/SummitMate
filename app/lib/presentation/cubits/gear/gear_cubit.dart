@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/gear_item.dart';
@@ -108,7 +109,7 @@ class GearCubit extends Cubit<GearState> {
 
     try {
       final item = GearItem(
-        id: '', // id handled by repository or model if empty
+        id: const Uuid().v4(),
         name: name,
         weight: weight,
         category: category,
