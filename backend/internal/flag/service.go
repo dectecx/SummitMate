@@ -34,14 +34,16 @@ func NewService(repo Repository, logger *slog.Logger) Service {
 }
 
 func (s *service) refreshCache(ctx context.Context) error {
-	flags, err := s.repo.GetAll(ctx)
-	if err != nil {
-		s.logger.Error("Failed to refresh flags cache", "error", err)
-		return err
-	}
-
 	s.cacheMutex.Lock()
 	defer s.cacheMutex.Unlock()
+	return s.loadFlags(ctx)
+}
+
+func (s *service) loadFlags(ctx context.Context) error {
+	flags, err := s.repo.GetAll(ctx)
+	if err != nil {
+		return err
+	}
 
 	for _, f := range flags {
 		s.cache[f.Key] = f.Value
@@ -61,8 +63,10 @@ func (s *service) IsEnabled(ctx context.Context, key string) bool {
 		s.cacheMutex.Lock()
 		// Double check after acquiring lock
 		if !ok || time.Since(s.lastFetch) > 5*time.Minute {
-			if err := s.refreshCache(ctx); err == nil {
+			if err := s.loadFlags(ctx); err == nil {
 				val = s.cache[key]
+			} else {
+				s.logger.Error("Failed to refresh flags cache in IsEnabled", "error", err)
 			}
 		}
 		s.cacheMutex.Unlock()
