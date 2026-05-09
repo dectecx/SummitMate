@@ -184,6 +184,90 @@ func (h *GearSetHandler) GetGearSet(w http.ResponseWriter, r *http.Request, id o
 	apiutil.SendJSON(w, http.StatusOK, mapToResponse(gs))
 }
 
+// UpdateGearSet 更新指定的裝備組合
+// (PUT /gear-sets/{id})
+func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req api.GearSetCreateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		apiutil.SendError(w, r, apperror.ErrBadRequest)
+		return
+	}
+
+	parsedID := uuid.UUID(id)
+	gs := &GearSet{
+		ID:          parsedID,
+		Title:       req.Title,
+		Author:      req.Author,
+		Visibility:  GearSetVisibility(req.Visibility),
+		DownloadKey: req.DownloadKey,
+	}
+
+	if req.TotalWeight != nil {
+		gs.TotalWeight = *req.TotalWeight
+	}
+	if req.ItemCount != nil {
+		gs.ItemCount = *req.ItemCount
+	}
+
+	for i, item := range req.Items {
+		gi := GearSetItem{
+			ID:         uuid.New(),
+			OrderIndex: i,
+		}
+		if v, ok := item["name"].(string); ok {
+			gi.Name = v
+		}
+		if v, ok := item["category"].(string); ok {
+			gi.Category = v
+		}
+		if v, ok := item["weight"].(float64); ok {
+			gi.Weight = v
+		}
+		if v, ok := item["quantity"].(float64); ok {
+			gi.Quantity = int(v)
+		} else {
+			gi.Quantity = 1
+		}
+		gs.Items = append(gs.Items, gi)
+	}
+
+	if req.Meals != nil {
+		for _, meal := range *req.Meals {
+			gm := GearSetMeal{ID: uuid.New()}
+			if v, ok := meal["day"].(string); ok {
+				gm.Day = v
+			}
+			if v, ok := meal["meal_type"].(string); ok {
+				gm.MealType = v
+			}
+			if v, ok := meal["name"].(string); ok {
+				gm.Name = v
+			}
+			if v, ok := meal["calories"].(float64); ok {
+				gm.Calories = v
+			}
+			if v, ok := meal["note"].(string); ok {
+				gm.Note = &v
+			}
+			gs.Meals = append(gs.Meals, gm)
+		}
+	}
+
+	updated, err := h.svc.Update(r.Context(), gs, userID)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, mapToResponse(updated))
+}
+
 // DeleteGearSet 刪除指定的裝備組合
 // (DELETE /gear-sets/{id})
 func (h *GearSetHandler) DeleteGearSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {

@@ -1982,6 +1982,40 @@ paths:
           description: 無權限
         "404":
           description: 找不到
+    put:
+      summary: Update Gear Set
+      description: 更新指定的裝備組合 (需為上傳者)
+      operationId: updateGearSet
+      tags:
+        - gear-library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GearSetCreateRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GearSetResponse"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限
+        "404":
+          description: 找不到
   /group-events/my:
     get:
       tags:

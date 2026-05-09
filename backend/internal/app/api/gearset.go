@@ -23,3 +23,7 @@ func (s *Server) GetGearSet(w http.ResponseWriter, r *http.Request, id openapi_t
 func (s *Server) DeleteGearSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	s.GearSetHandler.DeleteGearSet(w, r, id)
 }
+
+func (s *Server) UpdateGearSet(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
+	s.GearSetHandler.UpdateGearSet(w, r, id)
+}

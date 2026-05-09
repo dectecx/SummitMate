@@ -32,4 +32,11 @@ abstract class GearSetApiService {
   /// 刪除裝備組合
   @DELETE('/gear-sets/{id}')
   Future<void> deleteGearSet(@Path('id') String id);
+
+  /// 更新裝備組合
+  @PUT('/gear-sets/{id}')
+  Future<GearSetResponse> updateGearSet(
+    @Path('id') String id,
+    @Body() GearSetCreateRequest request,
+  );
 }
