@@ -71,10 +71,10 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin im
       category: row.category,
       content: row.content,
       timestamp: row.timestamp,
-      createdAt: row.createdAt ?? DateTime.now(),
-      createdBy: row.createdBy ?? '',
-      updatedAt: row.updatedAt ?? DateTime.now(),
-      updatedBy: row.updatedBy ?? '',
+      createdAt: row.createdAt,
+      createdBy: row.createdBy,
+      updatedAt: row.updatedAt,
+      updatedBy: row.updatedBy,
     );
   }
 }

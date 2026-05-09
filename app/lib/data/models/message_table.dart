@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import '../../domain/entities/message.dart';
-import '../../domain/enums/sync_status.dart';
 import 'converters/sync_status_converter.dart';
 
 // TODO: 確認是否需要建立 Foreign Key 關聯 TripTable (tripId) 或是其他表 (parentId)

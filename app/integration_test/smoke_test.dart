@@ -7,7 +7,6 @@ import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/main.dart' as app;
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
-import 'package:summitmate/infrastructure/infrastructure.dart';
 
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
