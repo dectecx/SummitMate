@@ -44,6 +44,7 @@ void main() {
     when(() => mockConnectivityService.onConnectivityChanged).thenAnswer((_) => const Stream.empty());
 
     when(() => mockSyncService.lastItinerarySync).thenReturn(null);
+    when(() => mockSyncService.watchPendingSyncCount()).thenAnswer((_) => const Stream.empty());
     when(() => mockAuthService.currentUserId).thenReturn('u1');
   });
 
