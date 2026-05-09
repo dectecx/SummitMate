@@ -46,12 +46,26 @@ func JWTAuth(tokenManager *tokens.TokenManager) func(http.Handler) http.Handler 
 			// 解析 "Bearer <token>" 格式
 			parts := strings.SplitN(header, " ", 2)
 			if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-				http.Error(writer, `{"message":"Token 格式錯誤"}`, http.StatusUnauthorized)
+				if required {
+					http.Error(writer, `{"message":"Token 格式錯誤"}`, http.StatusUnauthorized)
+					return
+				}
+				next.ServeHTTP(writer, request)
+				return
+			}
+
+			tokenStr := strings.TrimSpace(parts[1])
+			if tokenStr == "" {
+				if required {
+					http.Error(writer, `{"message":"未提供認證 Token"}`, http.StatusUnauthorized)
+					return
+				}
+				next.ServeHTTP(writer, request)
 				return
 			}
 
 			// 驗證 Token
-			claims, err := tokenManager.ParseToken(parts[1])
+			claims, err := tokenManager.ParseToken(tokenStr)
 			if err != nil {
 				// 如果有提供 Token 但無效，一律回傳 401，避免客戶端誤解
 				http.Error(writer, `{"message":"Token 無效或已過期"}`, http.StatusUnauthorized)

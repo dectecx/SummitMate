@@ -64,7 +64,9 @@ func (s *APITestSuite) sendAuthRequest(method, path string, token string, body i
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("Authorization", "Bearer "+token)
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	s.Require().NoError(err)
