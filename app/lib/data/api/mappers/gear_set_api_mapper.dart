@@ -1,18 +1,19 @@
 import '../../../domain/entities/gear_set.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../../domain/entities/daily_meal_plan.dart';
+import '../../../domain/entities/meal_item.dart';
 import '../../../domain/enums/gear_set_visibility.dart';
+import '../../../domain/enums/meal_type.dart';
 import '../models/gear_set_api_models.dart';
 
 /// GearSet API Model ↔ Domain Model 轉換
 class GearSetApiMapper {
   /// GearSetResponse → GearSet (Domain Entity)
   static GearSet fromResponse(GearSetResponse response) {
-    // Map DTO items to GearItem domain entities
     final items = response.items.map((dto) {
       return GearItem(
         id: dto.id,
-        tripId: '', // cloud sets are not trip-bound
+        tripId: '',
         name: dto.name,
         category: dto.category,
         weight: dto.weight,
@@ -21,11 +22,7 @@ class GearSetApiMapper {
       );
     }).toList();
 
-    // DailyMealPlan from meal DTOs — keep as flat list mapped by day
-    // (domain model organises by day/mealType, so we produce one plan per unique day)
-    final List<DailyMealPlan>? meals = response.meals != null
-        ? _groupMeals(response.meals!)
-        : null;
+    final List<DailyMealPlan>? meals = response.meals != null ? _groupMeals(response.meals!) : null;
 
     return GearSet(
       id: response.id,
@@ -53,26 +50,28 @@ class GearSetApiMapper {
     List<DailyMealPlan>? meals,
     String? downloadKey,
   }) {
-    final itemMaps = items.asMap().entries.map((e) {
+    final itemRequests = items.asMap().entries.map((e) {
       final item = e.value;
-      return <String, dynamic>{
-        'name': item.name,
-        'category': item.category,
-        'weight': item.weight,
-        'quantity': item.quantity,
-        'order_index': e.key,
-      };
+      return GearSetItemRequest(
+        name: item.name,
+        category: item.category,
+        weight: item.weight,
+        quantity: item.quantity,
+        orderIndex: e.key,
+      );
     }).toList();
 
-    final mealMaps = meals?.expand((plan) {
+    final mealRequests = meals?.expand((plan) {
       return plan.meals.entries.expand((entry) {
-        return entry.value.map((mealItem) => <String, dynamic>{
-          'day': plan.day,
-          'meal_type': entry.key.name,
-          'name': mealItem.name,
-          'calories': mealItem.calories,
-          'note': null,
-        });
+        return entry.value.map(
+          (mealItem) => GearSetMealRequest(
+            day: plan.day,
+            mealType: entry.key.name,
+            name: mealItem.name,
+            calories: mealItem.calories,
+            note: mealItem.note,
+          ),
+        );
       });
     }).toList();
 
@@ -83,8 +82,8 @@ class GearSetApiMapper {
       downloadKey: downloadKey,
       totalWeight: items.fold(0.0, (sum, i) => sum + i.totalWeight),
       itemCount: items.length,
-      items: itemMaps,
-      meals: mealMaps,
+      items: itemRequests,
+      meals: mealRequests,
     );
   }
 
@@ -101,14 +100,24 @@ class GearSetApiMapper {
     }
   }
 
-  /// Group flat meal DTOs into DailyMealPlan domain entities.
-  /// Since DailyMealPlan uses MealItem internally (with weight etc), and cloud data
-  /// only stores minimal info, we use empty MealItems for display purposes.
   static List<DailyMealPlan> _groupMeals(List<GearSetMealDto> dtos) {
-    // Group by day
     final Map<String, DailyMealPlan> byDay = {};
     for (final dto in dtos) {
-      byDay.putIfAbsent(dto.day, () => DailyMealPlan(day: dto.day));
+      final plan = byDay.putIfAbsent(dto.day, () => DailyMealPlan(day: dto.day));
+      final mealType = MealType.values.firstWhere((t) => t.name == dto.mealType, orElse: () => MealType.breakfast);
+
+      final mealItem = MealItem(
+        id: dto.id,
+        name: dto.name,
+        calories: dto.calories,
+        weight: 0,
+        note: dto.note,
+      );
+
+      final meals = Map<MealType, List<MealItem>>.from(plan.meals);
+      meals.putIfAbsent(mealType, () => []).add(mealItem);
+
+      byDay[dto.day] = plan.copyWith(meals: meals);
     }
     return byDay.values.toList();
   }

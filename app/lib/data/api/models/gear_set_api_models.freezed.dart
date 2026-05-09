@@ -569,6 +569,556 @@ as String?,
 
 
 /// @nodoc
+mixin _$GearSetItemRequest {
+
+ String get name; String get category; double get weight; int get quantity;@JsonKey(name: 'order_index') int get orderIndex;
+/// Create a copy of GearSetItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GearSetItemRequestCopyWith<GearSetItemRequest> get copyWith => _$GearSetItemRequestCopyWithImpl<GearSetItemRequest>(this as GearSetItemRequest, _$identity);
+
+  /// Serializes this GearSetItemRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GearSetItemRequest&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,category,weight,quantity,orderIndex);
+
+@override
+String toString() {
+  return 'GearSetItemRequest(name: $name, category: $category, weight: $weight, quantity: $quantity, orderIndex: $orderIndex)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GearSetItemRequestCopyWith<$Res>  {
+  factory $GearSetItemRequestCopyWith(GearSetItemRequest value, $Res Function(GearSetItemRequest) _then) = _$GearSetItemRequestCopyWithImpl;
+@useResult
+$Res call({
+ String name, String category, double weight, int quantity,@JsonKey(name: 'order_index') int orderIndex
+});
+
+
+
+
+}
+/// @nodoc
+class _$GearSetItemRequestCopyWithImpl<$Res>
+    implements $GearSetItemRequestCopyWith<$Res> {
+  _$GearSetItemRequestCopyWithImpl(this._self, this._then);
+
+  final GearSetItemRequest _self;
+  final $Res Function(GearSetItemRequest) _then;
+
+/// Create a copy of GearSetItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? category = null,Object? weight = null,Object? quantity = null,Object? orderIndex = null,}) {
+  return _then(_self.copyWith(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String,weight: null == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
+as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
+as int,orderIndex: null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [GearSetItemRequest].
+extension GearSetItemRequestPatterns on GearSetItemRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GearSetItemRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GearSetItemRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GearSetItemRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _GearSetItemRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GearSetItemRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GearSetItemRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String category,  double weight,  int quantity, @JsonKey(name: 'order_index')  int orderIndex)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GearSetItemRequest() when $default != null:
+return $default(_that.name,_that.category,_that.weight,_that.quantity,_that.orderIndex);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String category,  double weight,  int quantity, @JsonKey(name: 'order_index')  int orderIndex)  $default,) {final _that = this;
+switch (_that) {
+case _GearSetItemRequest():
+return $default(_that.name,_that.category,_that.weight,_that.quantity,_that.orderIndex);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String category,  double weight,  int quantity, @JsonKey(name: 'order_index')  int orderIndex)?  $default,) {final _that = this;
+switch (_that) {
+case _GearSetItemRequest() when $default != null:
+return $default(_that.name,_that.category,_that.weight,_that.quantity,_that.orderIndex);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _GearSetItemRequest implements GearSetItemRequest {
+  const _GearSetItemRequest({required this.name, required this.category, required this.weight, this.quantity = 1, @JsonKey(name: 'order_index') this.orderIndex = 0});
+  factory _GearSetItemRequest.fromJson(Map<String, dynamic> json) => _$GearSetItemRequestFromJson(json);
+
+@override final  String name;
+@override final  String category;
+@override final  double weight;
+@override@JsonKey() final  int quantity;
+@override@JsonKey(name: 'order_index') final  int orderIndex;
+
+/// Create a copy of GearSetItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GearSetItemRequestCopyWith<_GearSetItemRequest> get copyWith => __$GearSetItemRequestCopyWithImpl<_GearSetItemRequest>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$GearSetItemRequestToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GearSetItemRequest&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.orderIndex, orderIndex) || other.orderIndex == orderIndex));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,category,weight,quantity,orderIndex);
+
+@override
+String toString() {
+  return 'GearSetItemRequest(name: $name, category: $category, weight: $weight, quantity: $quantity, orderIndex: $orderIndex)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GearSetItemRequestCopyWith<$Res> implements $GearSetItemRequestCopyWith<$Res> {
+  factory _$GearSetItemRequestCopyWith(_GearSetItemRequest value, $Res Function(_GearSetItemRequest) _then) = __$GearSetItemRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String name, String category, double weight, int quantity,@JsonKey(name: 'order_index') int orderIndex
+});
+
+
+
+
+}
+/// @nodoc
+class __$GearSetItemRequestCopyWithImpl<$Res>
+    implements _$GearSetItemRequestCopyWith<$Res> {
+  __$GearSetItemRequestCopyWithImpl(this._self, this._then);
+
+  final _GearSetItemRequest _self;
+  final $Res Function(_GearSetItemRequest) _then;
+
+/// Create a copy of GearSetItemRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? category = null,Object? weight = null,Object? quantity = null,Object? orderIndex = null,}) {
+  return _then(_GearSetItemRequest(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String,weight: null == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
+as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
+as int,orderIndex: null == orderIndex ? _self.orderIndex : orderIndex // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$GearSetMealRequest {
+
+ String get day;@JsonKey(name: 'meal_type') String get mealType; String get name; double get calories; String? get note;
+/// Create a copy of GearSetMealRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GearSetMealRequestCopyWith<GearSetMealRequest> get copyWith => _$GearSetMealRequestCopyWithImpl<GearSetMealRequest>(this as GearSetMealRequest, _$identity);
+
+  /// Serializes this GearSetMealRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GearSetMealRequest&&(identical(other.day, day) || other.day == day)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.note, note) || other.note == note));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,day,mealType,name,calories,note);
+
+@override
+String toString() {
+  return 'GearSetMealRequest(day: $day, mealType: $mealType, name: $name, calories: $calories, note: $note)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GearSetMealRequestCopyWith<$Res>  {
+  factory $GearSetMealRequestCopyWith(GearSetMealRequest value, $Res Function(GearSetMealRequest) _then) = _$GearSetMealRequestCopyWithImpl;
+@useResult
+$Res call({
+ String day,@JsonKey(name: 'meal_type') String mealType, String name, double calories, String? note
+});
+
+
+
+
+}
+/// @nodoc
+class _$GearSetMealRequestCopyWithImpl<$Res>
+    implements $GearSetMealRequestCopyWith<$Res> {
+  _$GearSetMealRequestCopyWithImpl(this._self, this._then);
+
+  final GearSetMealRequest _self;
+  final $Res Function(GearSetMealRequest) _then;
+
+/// Create a copy of GearSetMealRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? day = null,Object? mealType = null,Object? name = null,Object? calories = null,Object? note = freezed,}) {
+  return _then(_self.copyWith(
+day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+as String,mealType: null == mealType ? _self.mealType : mealType // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,calories: null == calories ? _self.calories : calories // ignore: cast_nullable_to_non_nullable
+as double,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [GearSetMealRequest].
+extension GearSetMealRequestPatterns on GearSetMealRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GearSetMealRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GearSetMealRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GearSetMealRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _GearSetMealRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GearSetMealRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GearSetMealRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String day, @JsonKey(name: 'meal_type')  String mealType,  String name,  double calories,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GearSetMealRequest() when $default != null:
+return $default(_that.day,_that.mealType,_that.name,_that.calories,_that.note);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String day, @JsonKey(name: 'meal_type')  String mealType,  String name,  double calories,  String? note)  $default,) {final _that = this;
+switch (_that) {
+case _GearSetMealRequest():
+return $default(_that.day,_that.mealType,_that.name,_that.calories,_that.note);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String day, @JsonKey(name: 'meal_type')  String mealType,  String name,  double calories,  String? note)?  $default,) {final _that = this;
+switch (_that) {
+case _GearSetMealRequest() when $default != null:
+return $default(_that.day,_that.mealType,_that.name,_that.calories,_that.note);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _GearSetMealRequest implements GearSetMealRequest {
+  const _GearSetMealRequest({required this.day, @JsonKey(name: 'meal_type') required this.mealType, required this.name, this.calories = 0.0, this.note});
+  factory _GearSetMealRequest.fromJson(Map<String, dynamic> json) => _$GearSetMealRequestFromJson(json);
+
+@override final  String day;
+@override@JsonKey(name: 'meal_type') final  String mealType;
+@override final  String name;
+@override@JsonKey() final  double calories;
+@override final  String? note;
+
+/// Create a copy of GearSetMealRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GearSetMealRequestCopyWith<_GearSetMealRequest> get copyWith => __$GearSetMealRequestCopyWithImpl<_GearSetMealRequest>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$GearSetMealRequestToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GearSetMealRequest&&(identical(other.day, day) || other.day == day)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.note, note) || other.note == note));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,day,mealType,name,calories,note);
+
+@override
+String toString() {
+  return 'GearSetMealRequest(day: $day, mealType: $mealType, name: $name, calories: $calories, note: $note)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$GearSetMealRequestCopyWith<$Res> implements $GearSetMealRequestCopyWith<$Res> {
+  factory _$GearSetMealRequestCopyWith(_GearSetMealRequest value, $Res Function(_GearSetMealRequest) _then) = __$GearSetMealRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String day,@JsonKey(name: 'meal_type') String mealType, String name, double calories, String? note
+});
+
+
+
+
+}
+/// @nodoc
+class __$GearSetMealRequestCopyWithImpl<$Res>
+    implements _$GearSetMealRequestCopyWith<$Res> {
+  __$GearSetMealRequestCopyWithImpl(this._self, this._then);
+
+  final _GearSetMealRequest _self;
+  final $Res Function(_GearSetMealRequest) _then;
+
+/// Create a copy of GearSetMealRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? day = null,Object? mealType = null,Object? name = null,Object? calories = null,Object? note = freezed,}) {
+  return _then(_GearSetMealRequest(
+day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+as String,mealType: null == mealType ? _self.mealType : mealType // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,calories: null == calories ? _self.calories : calories // ignore: cast_nullable_to_non_nullable
+as double,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$GearSetResponse {
 
  String get id; String get title; String get author;@JsonKey(name: 'total_weight') double get totalWeight;@JsonKey(name: 'item_count') int get itemCount; String get visibility;@JsonKey(name: 'download_key') String? get downloadKey; List<GearSetItemDto> get items; List<GearSetMealDto>? get meals;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;

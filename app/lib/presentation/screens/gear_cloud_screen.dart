@@ -32,7 +32,7 @@ class GearCloudScreen extends StatefulWidget {
 class _GearCloudScreenState extends State<GearCloudScreen> {
   final IGearSetRepository _repository = getIt<IGearSetRepository>();
   List<GearSet> _gearSets = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
   String? _errorMessage;
   String? _busyGearSetId; // 防止連續點擊的狀態
   final TextEditingController _searchController = TextEditingController();
@@ -47,19 +47,10 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
     }).toList();
   }
 
-  bool _hasFetched = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_hasFetched) {
-      final state = context.read<SettingsCubit>().state;
-      final isOffline = state is SettingsLoaded && state.isOfflineMode;
-      if (!isOffline) {
-        _hasFetched = true;
-        _fetchGearSets();
-      }
-    }
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -461,11 +452,11 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             // 第一行：同步、上傳
             Row(
               children: [
-                // 同步按鈕
+                // 重整清單按鈕
                 Expanded(
                   child: _ToolButton(
                     icon: Icons.refresh,
-                    label: '同步',
+                    label: '重整清單',
                     onTap: isOffline ? null : _fetchGearSets,
                     disabled: isOffline,
                   ),
@@ -517,7 +508,6 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
         onImportMeals: (meals) => _importMeals(meals),
       ),
     );
-    _fetchGearSets();
   }
 
   /// 確認刪除 public 裝備組合
