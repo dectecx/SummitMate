@@ -171,7 +171,6 @@ void main() {
       'verifyEmail emits AuthLoading then AuthOperationSuccess then AuthUnauthenticated on success',
       build: () {
         when(() => mockAuthService.verifyEmail(email: 'email', code: '123456')).thenAnswer((_) async {
-          authStateController.add(null);
           return AuthResult.success();
         });
         return authCubit;
