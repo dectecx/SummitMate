@@ -15,6 +15,7 @@ class UsageTrackingService {
   String? _username;
   String? _userId;
   String? _userType;
+  String? _currentView;
 
   final IApiClient _apiClient;
 
@@ -45,6 +46,15 @@ class UsageTrackingService {
     });
   }
 
+  /// 更新目前畫面名稱
+  void updateView(String viewName) {
+    if (_currentView == viewName) return;
+    _currentView = viewName;
+    LogService.debug('更新目前畫面: $viewName', source: _source);
+    // 畫面切換時可以考慮立即發送一次心跳，或是等待下一次週期
+    // _sendHeartbeat();
+  }
+
   /// 發送心跳
   Future<void> _sendHeartbeat() async {
     if (_username == null || _username!.isEmpty) {
@@ -60,6 +70,7 @@ class UsageTrackingService {
           'user_name': _username,
           if (_userId != null) 'user_id': _userId,
           'user_type': _userType,
+          if (_currentView != null) 'view': _currentView,
           'timestamp': DateTime.now().toIso8601String(),
           'platform': 'web',
         },

@@ -105,8 +105,21 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
 
       if (context.mounted) {
         context.read<TripCubit>().loadTrips();
+        _updateTrackingView(_currentIndex);
       }
     });
+  }
+
+  void _updateTrackingView(int index) {
+    if (_usageTrackingService == null) return;
+    String viewName = 'unknown';
+    switch (index) {
+      case 0: viewName = 'itinerary'; break;
+      case 1: viewName = 'gear'; break;
+      case 2: viewName = 'collaboration'; break;
+      case 3: viewName = 'info'; break;
+    }
+    _usageTrackingService!.updateView(viewName);
   }
 
   @override
@@ -265,7 +278,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                     isSidebar: true,
                                     currentIndex: _currentIndex,
                                     onTabSelected: (index) {
-                                      setState(() => _currentIndex = index);
+                                      setState(() {
+                                        _currentIndex = index;
+                                        _updateTrackingView(index);
+                                      });
                                       if (isEditMode) {
                                         context.read<ItineraryCubit>().toggleEditMode();
                                       }
@@ -287,7 +303,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                   NavigationRail(
                                     selectedIndex: _currentIndex,
                                     onDestinationSelected: (index) {
-                                      setState(() => _currentIndex = index);
+                                      setState(() {
+                                        _currentIndex = index;
+                                        _updateTrackingView(index);
+                                      });
                                       if (isEditMode) {
                                         context.read<ItineraryCubit>().toggleEditMode();
                                       }
@@ -342,12 +361,15 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             bottomNavigationBar: ResponsiveLayout(
                               mobile: MainBottomNavigationBar(
                                 currentIndex: _currentIndex,
-                                onDestinationSelected: (index) {
-                                  setState(() => _currentIndex = index);
-                                  if (isEditMode) {
-                                    context.read<ItineraryCubit>().toggleEditMode();
-                                  }
-                                },
+                                  onDestinationSelected: (index) {
+                                    setState(() {
+                                      _currentIndex = index;
+                                      _updateTrackingView(index);
+                                    });
+                                    if (isEditMode) {
+                                      context.read<ItineraryCubit>().toggleEditMode();
+                                    }
+                                  },
                               ),
                               desktop: const SizedBox.shrink(),
                             ),
