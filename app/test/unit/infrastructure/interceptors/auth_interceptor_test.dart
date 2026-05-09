@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/interceptors/auth_interceptor.dart';
+import 'package:summitmate/presentation/cubits/app_error/app_error_cubit.dart';
 
 class MockAuthSessionRepository extends Mock implements IAuthSessionRepository {}
 
@@ -17,11 +18,14 @@ class MockRequestInterceptorHandler extends Mock implements RequestInterceptorHa
 
 class MockErrorInterceptorHandler extends Mock implements ErrorInterceptorHandler {}
 
+class MockAppErrorCubit extends Mock implements AppErrorCubit {}
+
 void main() {
   late AuthInterceptor interceptor;
   late MockAuthSessionRepository mockSessionRepo;
   late MockAuthService mockAuthService;
   late MockDio mockDio;
+  late MockAppErrorCubit mockAppErrorCubit;
 
   setUpAll(() {
     registerFallbackValue(RequestOptions(path: ''));
@@ -34,14 +38,18 @@ void main() {
     mockSessionRepo = MockAuthSessionRepository();
     mockAuthService = MockAuthService();
     mockDio = MockDio();
+    mockAppErrorCubit = MockAppErrorCubit();
 
     getIt.registerSingleton<IAuthService>(mockAuthService);
     getIt.registerSingleton<Dio>(mockDio);
+    getIt.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
 
     interceptor = AuthInterceptor(mockSessionRepo);
 
     // Default stubs
     when(() => mockSessionRepo.clearSession()).thenAnswer((_) async {});
+    when(() => mockAuthService.logout()).thenAnswer((_) async {});
+    when(() => mockAppErrorCubit.reportAuthExpired()).thenReturn(null);
   });
 
   group('AuthInterceptor.onRequest', () {
@@ -131,7 +139,8 @@ void main() {
       await completer.future;
 
       verify(() => mockAuthService.refreshToken()).called(1);
-      verify(() => mockSessionRepo.clearSession()).called(1);
+      verify(() => mockAuthService.logout()).called(1);
+      verify(() => mockAppErrorCubit.reportAuthExpired()).called(1);
       verify(() => handler.next(error)).called(1);
     });
 
@@ -152,7 +161,8 @@ void main() {
 
       await completer.future;
 
-      verify(() => mockSessionRepo.clearSession()).called(1);
+      verify(() => mockAuthService.logout()).called(1);
+      verify(() => mockAppErrorCubit.reportAuthExpired()).called(1);
       verifyNever(() => mockAuthService.refreshToken());
       verify(() => handler.next(error)).called(1);
     });
