@@ -67,7 +67,7 @@ class _GearCloudManagementDialogState extends State<GearCloudManagementDialog> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('⚠️ 確認覆蓋'),
-        content: Text('確定要將目前的裝備組合上傳並覆蓋「${gearSet.title}」嗎？\n此操作將會完全取代雲端原有的內容。'),
+        content: Text('確定要將目前的裝備與糧食計畫上傳並覆蓋「${gearSet.title}」嗎？\n此操作將會完全取代雲端原有的內容。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('確認覆蓋')),
@@ -193,7 +193,7 @@ class _GearCloudManagementDialogState extends State<GearCloudManagementDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('📦 管理我的雲端裝備庫'),
+      title: const Text('📦 管理我的雲端裝備與糧食'),
       content: SizedBox(width: 600, height: 400, child: _buildBody()),
       actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('關閉'))],
     );
