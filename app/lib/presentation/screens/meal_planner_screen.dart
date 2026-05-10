@@ -29,10 +29,7 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
       if (mounted) {
         final tripState = context.read<TripCubit>().state;
         if (tripState is TripLoaded && tripState.activeTrip != null) {
-          final dayNames = tripState.activeTrip!.dayNames;
-          if (dayNames.isNotEmpty) {
-            context.read<MealCubit>().syncWithTripDays(dayNames);
-          }
+          context.read<MealCubit>().loadMealPlans(tripState.activeTrip!.id);
         }
       }
     });
@@ -43,10 +40,7 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
     return BlocListener<TripCubit, TripState>(
       listener: (context, tripState) {
         if (tripState is TripLoaded && tripState.activeTrip != null) {
-          final dayNames = tripState.activeTrip!.dayNames;
-          if (dayNames.isNotEmpty) {
-            context.read<MealCubit>().syncWithTripDays(dayNames);
-          }
+          context.read<MealCubit>().loadMealPlans(tripState.activeTrip!.id);
         }
       },
       child: BlocBuilder<MealCubit, MealState>(
