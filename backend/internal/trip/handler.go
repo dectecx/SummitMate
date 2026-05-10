@@ -288,3 +288,94 @@ func (h *TripHandler) DeleteItineraryItem(w http.ResponseWriter, r *http.Request
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// ListTripMealPlanDays 取得糧食計畫天數列表 (GET /trips/{tripId}/meal-plan-days)
+func (h *TripHandler) ListTripMealPlanDays(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
+	userID, ok := apiutil.GetUserIDFromRequest(r)
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	days, err := h.svc.ListMealPlanDays(r.Context(), tripID.String(), userID)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	resp := make([]api.TripMealPlanDay, len(days))
+	for i, d := range days {
+		resp[i] = ToTripMealPlanDayResponse(*d)
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
+}
+
+// AddTripMealPlanDay 新增糧食計畫天數 (POST /trips/{tripId}/meal-plan-days)
+func (h *TripHandler) AddTripMealPlanDay(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
+	userID, ok := apiutil.GetUserIDFromRequest(r)
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req struct {
+		Name              string  `json:"name"`
+		LinkedItineraryDay *string `json:"linked_itinerary_day"`
+	}
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	day, err := h.svc.AddMealPlanDay(r.Context(), tripID.String(), userID, req.Name, req.LinkedItineraryDay)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusCreated, ToTripMealPlanDayResponse(*day))
+}
+
+// UpdateTripMealPlanDay 更新糧食計畫天數 (PUT /trips/{tripId}/meal-plan-days/{dayId})
+func (h *TripHandler) UpdateTripMealPlanDay(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, dayID openapi_types.UUID) {
+	userID, ok := apiutil.GetUserIDFromRequest(r)
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req struct {
+		Name              string  `json:"name"`
+		LinkedItineraryDay *string `json:"linked_itinerary_day"`
+	}
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	day, err := h.svc.UpdateMealPlanDay(r.Context(), tripID.String(), dayID.String(), userID, req.Name, req.LinkedItineraryDay)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, ToTripMealPlanDayResponse(*day))
+}
+
+// DeleteTripMealPlanDay 刪除糧食計畫天數 (DELETE /trips/{tripId}/meal-plan-days/{dayId})
+func (h *TripHandler) DeleteTripMealPlanDay(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID, dayID openapi_types.UUID) {
+	userID, ok := apiutil.GetUserIDFromRequest(r)
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.svc.DeleteMealPlanDay(r.Context(), tripID.String(), dayID.String(), userID); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+

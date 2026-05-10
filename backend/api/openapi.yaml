@@ -1199,6 +1199,162 @@ paths:
         "404":
           description: 找不到該行程或裝備
 
+  /trips/{tripId}/meal-plan-days:
+    get:
+      summary: List Trip Meal Plan Days
+      description: 取得行程的所有糧食計畫天數
+      operationId: listTripMealPlanDays
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功取得天數清單
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripMealPlanDay"
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限存取
+        "404":
+          description: 找不到該行程
+    post:
+      summary: Add Trip Meal Plan Day
+      description: 新增糧食計畫天數
+      operationId: addTripMealPlanDay
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                linked_itinerary_day:
+                  type: string
+                  nullable: true
+      responses:
+        "201":
+          description: 建立成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripMealPlanDay"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+
+  /trips/{tripId}/meal-plan-days/{dayId}:
+    put:
+      summary: Update Trip Meal Plan Day
+      description: 更新糧食計畫天數
+      operationId: updateTripMealPlanDay
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: dayId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                linked_itinerary_day:
+                  type: string
+                  nullable: true
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripMealPlanDay"
+        "400":
+          description: 參數錯誤
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該天數
+    delete:
+      summary: Delete Trip Meal Plan Day
+      description: 刪除糧食計畫天數
+      operationId: deleteTripMealPlanDay
+      tags:
+        - trip-meals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: dayId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: 刪除成功
+        "401":
+          description: 未登入
+        "403":
+          description: 無權限編輯
+        "404":
+          description: 找不到該天數
+
   /trips/{tripId}/meals:
     get:
       summary: Get Trip Meal Items
@@ -2730,6 +2886,7 @@ components:
           start_date,
           is_active,
           day_names,
+          meal_plan_days,
           created_at,
           created_by,
           updated_at,
@@ -2745,6 +2902,10 @@ components:
         cover_image: { type: string, nullable: true }
         is_active: { type: boolean }
         day_names: { type: array, items: { type: string } }
+        meal_plan_days:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripMealPlanDay"
         linked_event_id: { type: string, format: uuid, nullable: true }
         created_at: { type: string, format: date-time }
         created_by: { type: string, format: uuid }
@@ -3126,12 +3287,40 @@ components:
           type: integer
           nullable: true
 
+    TripMealPlanDay:
+      type: object
+      required:
+        - id
+        - trip_id
+        - name
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        trip_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 50
+        linked_itinerary_day:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
     TripMealItem:
       type: object
       required:
         - id
         - trip_id
-        - day
+        - meal_plan_day_id
         - meal_type
         - name
         - weight
@@ -3150,8 +3339,9 @@ components:
           type: string
           format: uuid
           nullable: true
-        day:
+        meal_plan_day_id:
           type: string
+          format: uuid
         meal_type:
           type: string
         name:
@@ -3177,7 +3367,7 @@ components:
     TripMealItemRequest:
       type: object
       required:
-        - day
+        - meal_plan_day_id
         - meal_type
         - name
         - weight
@@ -3187,9 +3377,9 @@ components:
           type: string
           format: uuid
           nullable: true
-        day:
+        meal_plan_day_id:
           type: string
-          maxLength: 10
+          format: uuid
         meal_type:
           type: string
           maxLength: 20

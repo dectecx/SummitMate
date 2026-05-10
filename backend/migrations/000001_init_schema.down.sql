@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS template_meal_items;
 DROP TABLE IF EXISTS template_gear_items;
 DROP TABLE IF EXISTS templates;
 DROP TABLE IF EXISTS meal_items;
+DROP TABLE IF EXISTS trip_meal_plan_days;
 DROP TABLE IF EXISTS meal_library_items;
 DROP TABLE IF EXISTS gear_items;
 DROP TABLE IF EXISTS gear_library_items;

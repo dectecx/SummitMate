@@ -173,3 +173,50 @@ func (m *MockItineraryRepository) DeleteByID(ctx context.Context, id string) err
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
+
+// MockTripMealPlanDayRepository is a mock implementation of the TripMealPlanDayRepository interface
+type MockTripMealPlanDayRepository struct {
+	mock.Mock
+}
+
+func (m *MockTripMealPlanDayRepository) ListByTripID(ctx context.Context, tripID string) ([]*MealPlanDay, error) {
+	args := m.Called(ctx, tripID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripMealPlanDayRepository) Create(ctx context.Context, item *MealPlanDay) (*MealPlanDay, error) {
+	args := m.Called(ctx, item)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripMealPlanDayRepository) Update(ctx context.Context, item *MealPlanDay) (*MealPlanDay, error) {
+	args := m.Called(ctx, item)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripMealPlanDayRepository) Delete(ctx context.Context, id string, tripID string) error {
+	args := m.Called(ctx, id, tripID)
+	return args.Error(0)
+}
+
+func (m *MockTripMealPlanDayRepository) GetByID(ctx context.Context, id string, tripID string) (*MealPlanDay, error) {
+	args := m.Called(ctx, id, tripID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripMealPlanDayRepository) ReplaceAll(ctx context.Context, tripID string, days []*MealPlanDay) error {
+	args := m.Called(ctx, tripID, days)
+	return args.Error(0)
+}

@@ -11,6 +11,16 @@ const (
 	RoleMember = "member"
 )
 
+// MealPlanDay 對應資料庫 trip_meal_plan_days 表
+type MealPlanDay struct {
+	ID                 string    `json:"id" db:"id"`
+	TripID             string    `json:"trip_id" db:"trip_id"`
+	Name               string    `json:"name" db:"name"`
+	LinkedItineraryDay *string   `json:"linked_itinerary_day" db:"linked_itinerary_day"` // 若為 null 表示未綁定
+	CreatedAt          time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at" db:"updated_at"`
+}
+
 // Trip 對應資料庫 trips 表的實體
 type Trip struct {
 	ID          string     `json:"id" db:"id"`
@@ -24,6 +34,7 @@ type Trip struct {
 	// LinkedEventID 關聯的揪團活動 ID (非資料庫欄位，透過查詢獲得)
 	LinkedEventID *string `json:"linked_event_id" db:"linked_event_id"`
 	DayNames    []string   `json:"day_names" db:"day_names"`
+	MealPlanDays []MealPlanDay `json:"meal_plan_days" db:"-"` // 從關聯表載入
 	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
 	CreatedBy   string     `json:"created_by" db:"created_by"`
 	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`

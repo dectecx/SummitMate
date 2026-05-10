@@ -114,3 +114,33 @@ func (m *MockTripService) DeleteItineraryItem(ctx context.Context, tripID, itemI
 	args := m.Called(ctx, tripID, itemID, userID)
 	return args.Error(0)
 }
+
+func (m *MockTripService) ListMealPlanDays(ctx context.Context, tripID, userID string) ([]*MealPlanDay, error) {
+	args := m.Called(ctx, tripID, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripService) AddMealPlanDay(ctx context.Context, tripID, userID string, name string, linkedDay *string) (*MealPlanDay, error) {
+	args := m.Called(ctx, tripID, userID, name, linkedDay)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, userID string, name string, linkedDay *string) (*MealPlanDay, error) {
+	args := m.Called(ctx, tripID, dayID, userID, name, linkedDay)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*MealPlanDay), args.Error(1)
+}
+
+func (m *MockTripService) DeleteMealPlanDay(ctx context.Context, tripID, dayID, userID string) error {
+	args := m.Called(ctx, tripID, dayID, userID)
+	return args.Error(0)
+}
+

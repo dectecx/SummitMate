@@ -23,8 +23,9 @@ func TestTripService_CreateTrip(t *testing.T) {
 		mockMemberRepo := new(MockTripMemberRepository)
 		mockBeginner := new(MockBeginner)
 		mockTx := new(MockTx)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
 
-		svc := NewTripService(logger, mockBeginner, mockTripRepo, mockMemberRepo, nil, nil)
+		svc := NewTripService(logger, mockBeginner, mockTripRepo, mockMemberRepo, nil, mockMealDayRepo, nil)
 
 		userID := "user-1"
 		req := &TripCreateRequest{
@@ -42,6 +43,7 @@ func TestTripService_CreateTrip(t *testing.T) {
 		}, nil)
 
 		mockMemberRepo.On("AddMember", mock.Anything, "trip-1", userID).Return(nil)
+		mockMealDayRepo.On("Create", mock.Anything, mock.Anything).Return(&MealPlanDay{ID: "day-1"}, nil)
 
 		trip, err := svc.CreateTrip(context.Background(), userID, req)
 
@@ -56,8 +58,9 @@ func TestTripService_CreateTrip(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
 		mockBeginner := new(MockBeginner)
 		mockTx := new(MockTx)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
 
-		svc := NewTripService(logger, mockBeginner, mockTripRepo, nil, nil, nil)
+		svc := NewTripService(logger, mockBeginner, mockTripRepo, nil, nil, mockMealDayRepo, nil)
 
 		mockBeginner.On("Begin", mock.Anything).Return(mockTx, nil)
 		mockTx.On("Rollback", mock.Anything).Return(nil)
@@ -76,11 +79,13 @@ func TestTripService_GetTrip(t *testing.T) {
 
 	t.Run("Success_AsCreator", func(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
-		svc := NewTripService(logger, nil, mockTripRepo, nil, nil, nil)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
+		svc := NewTripService(logger, nil, mockTripRepo, nil, nil, mockMealDayRepo, nil)
 
 		tripID := "trip-1"
 		userID := "user-creator"
 		mockTrip := &Trip{ID: tripID, UserID: userID}
+		mockMealDayRepo.On("ListByTripID", mock.Anything, tripID).Return([]*MealPlanDay{}, nil)
 
 		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(mockTrip, nil)
 
@@ -92,7 +97,8 @@ func TestTripService_GetTrip(t *testing.T) {
 
 	t.Run("NotFound", func(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
-		svc := NewTripService(logger, nil, mockTripRepo, nil, nil, nil)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
+		svc := NewTripService(logger, nil, mockTripRepo, nil, nil, mockMealDayRepo, nil)
 
 		mockTripRepo.On("GetByID", mock.Anything, "none").Return(nil, ErrNotFound)
 
@@ -111,7 +117,8 @@ func TestTripService_AddMember(t *testing.T) {
 		mockTripRepo := new(MockTripRepository)
 		mockMemberRepo := new(MockTripMemberRepository)
 		mockUserRepo := new(auth.MockUserRepository)
-		svc := NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, mockUserRepo)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
+		svc := NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, mockMealDayRepo, mockUserRepo)
 
 		tripID := "trip-1"
 		requesterID := "creator"
@@ -133,5 +140,56 @@ func TestTripService_AddMember(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, member)
 		assert.Equal(t, targetUserID, member.UserID)
+	})
+}
+
+func TestTripService_DeleteMealPlanDay(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	t.Run("Success_Unlinked", func(t *testing.T) {
+		mockMemberRepo := new(MockTripMemberRepository)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
+		svc := NewTripService(logger, nil, nil, mockMemberRepo, nil, mockMealDayRepo, nil)
+
+		tripID := "trip-1"
+		dayID := "day-1"
+		userID := "user-1"
+
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, userID).Return(true, nil)
+		mockMealDayRepo.On("GetByID", mock.Anything, dayID, tripID).Return(&MealPlanDay{
+			ID:     dayID,
+			TripID: tripID,
+			Name:   "Unlinked Day",
+		}, nil)
+		mockMealDayRepo.On("Delete", mock.Anything, dayID, tripID).Return(nil)
+
+		err := svc.DeleteMealPlanDay(context.Background(), tripID, dayID, userID)
+
+		assert.NoError(t, err)
+		mockMealDayRepo.AssertExpectations(t)
+	})
+
+	t.Run("Fail_Linked", func(t *testing.T) {
+		mockMemberRepo := new(MockTripMemberRepository)
+		mockMealDayRepo := new(MockTripMealPlanDayRepository)
+		svc := NewTripService(logger, nil, nil, mockMemberRepo, nil, mockMealDayRepo, nil)
+
+		tripID := "trip-1"
+		dayID := "day-1"
+		userID := "user-1"
+		linked := "D1"
+
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, userID).Return(true, nil)
+		mockMealDayRepo.On("GetByID", mock.Anything, dayID, tripID).Return(&MealPlanDay{
+			ID:                 dayID,
+			TripID:             tripID,
+			Name:               "D1",
+			LinkedItineraryDay: &linked,
+		}, nil)
+
+		err := svc.DeleteMealPlanDay(context.Background(), tripID, dayID, userID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "已綁定行程")
 	})
 }
