@@ -93,3 +93,19 @@ func (s *Server) DeleteTripMealItem(w http.ResponseWriter, r *http.Request, trip
 func (srv *Server) ReplaceAllTripMeals(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	srv.TripMealHandler.ReplaceAllTripMeals(w, r, tripId)
 }
+
+func (s *Server) ListTripMealPlanDays(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	s.TripHandler.ListTripMealPlanDays(w, r, tripId)
+}
+
+func (s *Server) AddTripMealPlanDay(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	s.TripHandler.AddTripMealPlanDay(w, r, tripId)
+}
+
+func (s *Server) UpdateTripMealPlanDay(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, dayId openapi_types.UUID) {
+	s.TripHandler.UpdateTripMealPlanDay(w, r, tripId, dayId)
+}
+
+func (s *Server) DeleteTripMealPlanDay(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID, dayId openapi_types.UUID) {
+	s.TripHandler.DeleteTripMealPlanDay(w, r, tripId, dayId)
+}
