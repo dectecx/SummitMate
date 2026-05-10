@@ -25,7 +25,7 @@ void main() {
   final testResponse = TripMealItemResponse(
     id: 'meal-1',
     tripId: 'trip-1',
-    day: 'D1',
+    mealPlanDayId: 'day-1',
     mealType: 'breakfast',
     name: 'Rice',
     weight: 500,
@@ -59,7 +59,7 @@ void main() {
     test('addTripMeal calls api and returns mapped item', () async {
       when(() => mockApiService.addMeal('trip-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.addTripMeal('trip-1', testMeal, day: 'D1', mealType: 'breakfast');
+      final result = await dataSource.addTripMeal('trip-1', testMeal, mealPlanDayId: 'day-1', mealType: 'breakfast');
 
       expect(result.name, 'Rice');
       verify(() => mockApiService.addMeal('trip-1', any())).called(1);
@@ -68,7 +68,7 @@ void main() {
     test('updateTripMeal calls api and returns mapped item', () async {
       when(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.updateTripMeal('trip-1', testMeal, day: 'D1', mealType: 'breakfast');
+      final result = await dataSource.updateTripMeal('trip-1', testMeal, mealPlanDayId: 'day-1', mealType: 'breakfast');
 
       expect(result.name, 'Rice');
       verify(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).called(1);
@@ -80,14 +80,6 @@ void main() {
       await dataSource.deleteTripMeal('trip-1', 'meal-1');
 
       verify(() => mockApiService.deleteMeal('trip-1', 'meal-1')).called(1);
-    });
-
-    test('replaceAllTripMeals calls api with mapped requests', () async {
-      when(() => mockApiService.replaceAllMeals('trip-1', any())).thenAnswer((_) async {});
-
-      await dataSource.replaceAllTripMeals('trip-1', [(item: testMeal, day: 'D1', mealType: 'breakfast')]);
-
-      verify(() => mockApiService.replaceAllMeals('trip-1', any())).called(1);
     });
   });
 }

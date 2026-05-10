@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DailyMealPlan {
 
- String get day; Map<MealType, List<MealItem>> get meals;
+ MealPlanDay get dayInfo; Map<MealType, List<MealItem>> get meals;
 /// Create a copy of DailyMealPlan
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DailyMealPlanCopyWith<DailyMealPlan> get copyWith => _$DailyMealPlanCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyMealPlan&&(identical(other.day, day) || other.day == day)&&const DeepCollectionEquality().equals(other.meals, meals));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DailyMealPlan&&(identical(other.dayInfo, dayInfo) || other.dayInfo == dayInfo)&&const DeepCollectionEquality().equals(other.meals, meals));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,day,const DeepCollectionEquality().hash(meals));
+int get hashCode => Object.hash(runtimeType,dayInfo,const DeepCollectionEquality().hash(meals));
 
 @override
 String toString() {
-  return 'DailyMealPlan(day: $day, meals: $meals)';
+  return 'DailyMealPlan(dayInfo: $dayInfo, meals: $meals)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $DailyMealPlanCopyWith<$Res>  {
   factory $DailyMealPlanCopyWith(DailyMealPlan value, $Res Function(DailyMealPlan) _then) = _$DailyMealPlanCopyWithImpl;
 @useResult
 $Res call({
- String day, Map<MealType, List<MealItem>> meals
+ MealPlanDay dayInfo, Map<MealType, List<MealItem>> meals
 });
 
 
-
+$MealPlanDayCopyWith<$Res> get dayInfo;
 
 }
 /// @nodoc
@@ -65,14 +65,23 @@ class _$DailyMealPlanCopyWithImpl<$Res>
 
 /// Create a copy of DailyMealPlan
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? day = null,Object? meals = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? dayInfo = null,Object? meals = null,}) {
   return _then(_self.copyWith(
-day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
-as String,meals: null == meals ? _self.meals : meals // ignore: cast_nullable_to_non_nullable
+dayInfo: null == dayInfo ? _self.dayInfo : dayInfo // ignore: cast_nullable_to_non_nullable
+as MealPlanDay,meals: null == meals ? _self.meals : meals // ignore: cast_nullable_to_non_nullable
 as Map<MealType, List<MealItem>>,
   ));
 }
-
+/// Create a copy of DailyMealPlan
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MealPlanDayCopyWith<$Res> get dayInfo {
+  
+  return $MealPlanDayCopyWith<$Res>(_self.dayInfo, (value) {
+    return _then(_self.copyWith(dayInfo: value));
+  });
+}
 }
 
 
@@ -154,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String day,  Map<MealType, List<MealItem>> meals)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( MealPlanDay dayInfo,  Map<MealType, List<MealItem>> meals)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DailyMealPlan() when $default != null:
-return $default(_that.day,_that.meals);case _:
+return $default(_that.dayInfo,_that.meals);case _:
   return orElse();
 
 }
@@ -175,10 +184,10 @@ return $default(_that.day,_that.meals);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String day,  Map<MealType, List<MealItem>> meals)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( MealPlanDay dayInfo,  Map<MealType, List<MealItem>> meals)  $default,) {final _that = this;
 switch (_that) {
 case _DailyMealPlan():
-return $default(_that.day,_that.meals);case _:
+return $default(_that.dayInfo,_that.meals);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +204,10 @@ return $default(_that.day,_that.meals);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String day,  Map<MealType, List<MealItem>> meals)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( MealPlanDay dayInfo,  Map<MealType, List<MealItem>> meals)?  $default,) {final _that = this;
 switch (_that) {
 case _DailyMealPlan() when $default != null:
-return $default(_that.day,_that.meals);case _:
+return $default(_that.dayInfo,_that.meals);case _:
   return null;
 
 }
@@ -210,10 +219,10 @@ return $default(_that.day,_that.meals);case _:
 @JsonSerializable()
 
 class _DailyMealPlan extends DailyMealPlan {
-  const _DailyMealPlan({required this.day, final  Map<MealType, List<MealItem>> meals = const {}}): _meals = meals,super._();
+  const _DailyMealPlan({required this.dayInfo, final  Map<MealType, List<MealItem>> meals = const {}}): _meals = meals,super._();
   factory _DailyMealPlan.fromJson(Map<String, dynamic> json) => _$DailyMealPlanFromJson(json);
 
-@override final  String day;
+@override final  MealPlanDay dayInfo;
  final  Map<MealType, List<MealItem>> _meals;
 @override@JsonKey() Map<MealType, List<MealItem>> get meals {
   if (_meals is EqualUnmodifiableMapView) return _meals;
@@ -235,16 +244,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyMealPlan&&(identical(other.day, day) || other.day == day)&&const DeepCollectionEquality().equals(other._meals, _meals));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DailyMealPlan&&(identical(other.dayInfo, dayInfo) || other.dayInfo == dayInfo)&&const DeepCollectionEquality().equals(other._meals, _meals));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,day,const DeepCollectionEquality().hash(_meals));
+int get hashCode => Object.hash(runtimeType,dayInfo,const DeepCollectionEquality().hash(_meals));
 
 @override
 String toString() {
-  return 'DailyMealPlan(day: $day, meals: $meals)';
+  return 'DailyMealPlan(dayInfo: $dayInfo, meals: $meals)';
 }
 
 
@@ -255,11 +264,11 @@ abstract mixin class _$DailyMealPlanCopyWith<$Res> implements $DailyMealPlanCopy
   factory _$DailyMealPlanCopyWith(_DailyMealPlan value, $Res Function(_DailyMealPlan) _then) = __$DailyMealPlanCopyWithImpl;
 @override @useResult
 $Res call({
- String day, Map<MealType, List<MealItem>> meals
+ MealPlanDay dayInfo, Map<MealType, List<MealItem>> meals
 });
 
 
-
+@override $MealPlanDayCopyWith<$Res> get dayInfo;
 
 }
 /// @nodoc
@@ -272,15 +281,24 @@ class __$DailyMealPlanCopyWithImpl<$Res>
 
 /// Create a copy of DailyMealPlan
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? day = null,Object? meals = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? dayInfo = null,Object? meals = null,}) {
   return _then(_DailyMealPlan(
-day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
-as String,meals: null == meals ? _self._meals : meals // ignore: cast_nullable_to_non_nullable
+dayInfo: null == dayInfo ? _self.dayInfo : dayInfo // ignore: cast_nullable_to_non_nullable
+as MealPlanDay,meals: null == meals ? _self._meals : meals // ignore: cast_nullable_to_non_nullable
 as Map<MealType, List<MealItem>>,
   ));
 }
 
-
+/// Create a copy of DailyMealPlan
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$MealPlanDayCopyWith<$Res> get dayInfo {
+  
+  return $MealPlanDayCopyWith<$Res>(_self.dayInfo, (value) {
+    return _then(_self.copyWith(dayInfo: value));
+  });
+}
 }
 
 // dart format on

@@ -12,6 +12,22 @@ part 'trip_meal_api_service.g.dart';
 abstract class TripMealApiService {
   factory TripMealApiService(Dio dio, {String baseUrl}) = _TripMealApiService;
 
+  @GET('/trips/{tripId}/meal-plan-days')
+  Future<List<MealPlanDayResponse>> listMealPlanDays(@Path('tripId') String tripId);
+
+  @POST('/trips/{tripId}/meal-plan-days')
+  Future<MealPlanDayResponse> addMealPlanDay(@Path('tripId') String tripId, @Body() MealPlanDayRequest request);
+
+  @PUT('/trips/{tripId}/meal-plan-days/{dayId}')
+  Future<MealPlanDayResponse> updateMealPlanDay(
+    @Path('tripId') String tripId,
+    @Path('dayId') String dayId,
+    @Body() MealPlanDayRequest request,
+  );
+
+  @DELETE('/trips/{tripId}/meal-plan-days/{dayId}')
+  Future<void> deleteMealPlanDay(@Path('tripId') String tripId, @Path('dayId') String dayId);
+
   @GET('/trips/{tripId}/meals')
   Future<List<TripMealItemResponse>> listMeals(@Path('tripId') String tripId);
 
@@ -27,7 +43,4 @@ abstract class TripMealApiService {
 
   @DELETE('/trips/{tripId}/meals/{itemId}')
   Future<void> deleteMeal(@Path('tripId') String tripId, @Path('itemId') String itemId);
-
-  @PUT('/trips/{tripId}/meals')
-  Future<void> replaceAllMeals(@Path('tripId') String tripId, @Body() List<TripMealItemRequest> items);
 }

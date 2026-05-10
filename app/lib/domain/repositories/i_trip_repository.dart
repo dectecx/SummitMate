@@ -1,6 +1,7 @@
 import '../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../domain.dart';
+import '../entities/meal_plan_day.dart';
 
 /// 行程資料倉庫介面（支援 Offline-First）
 ///
@@ -101,4 +102,18 @@ abstract interface class ITripRepository {
 
   /// 搜尋使用者（透過 ID）
   Future<Result<UserProfile, Exception>> searchUserById(String userId);
+
+  // ========== Meal Plan Day Operations ==========
+
+  /// 取得行程的糧食計畫天數列表
+  Future<Result<List<MealPlanDay>, Exception>> getMealPlanDays(String tripId);
+
+  /// 新增糧食計畫天數
+  Future<Result<MealPlanDay, Exception>> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay});
+
+  /// 更新糧食計畫天數
+  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay});
+
+  /// 刪除糧食計畫天數
+  Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId);
 }

@@ -237,7 +237,7 @@ class DevPanelContent extends StatelessWidget {
     final random = Random();
     final mealState = mealCubit.state;
     final days = mealState is MealLoaded && mealState.dailyPlans.isNotEmpty
-        ? mealState.dailyPlans.map((p) => p.day).toList()
+        ? mealState.dailyPlans.map((p) => p.dayInfo.id).toList()
         : ['D1'];
     final day = days[random.nextInt(days.length)];
     mealCubit.addMealItem(day, MealType.preBreakfast, '測試早早餐 ${random.nextInt(100)}', 150, 400);

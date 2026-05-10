@@ -199,7 +199,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i77.MapCubit>(() => _i77.MapCubit());
     gh.factory<_i843.OfflineMapCubit>(() => _i843.OfflineMapCubit());
-    gh.factory<_i694.MealCubit>(() => _i694.MealCubit());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );
@@ -433,12 +432,6 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i147.IAuthService>(),
       ),
     );
-    gh.lazySingleton<_i614.ITripRepository>(
-      () => _i564.TripRepository(
-        gh<_i774.ITripLocalDataSource>(),
-        gh<_i941.ITripRemoteDataSource>(),
-      ),
-    );
     gh.lazySingleton<_i750.IItineraryRepository>(
       () => _i790.ItineraryRepository(
         localDataSource: gh<_i116.IItineraryLocalDataSource>(),
@@ -451,18 +444,17 @@ extension GetItInjectableX on _i174.GetIt {
         remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),
       ),
     );
-    gh.factory<_i1040.PollCubit>(
-      () => _i1040.PollCubit(
-        gh<_i614.IPollRepository>(),
-        gh<_i614.ITripRepository>(),
-        gh<_i614.IConnectivityService>(),
-        gh<_i614.IAuthService>(),
-      ),
-    );
     gh.lazySingleton<_i614.IGroupEventRepository>(
       () => _i354.GroupEventRepository(
         gh<_i529.IGroupEventLocalDataSource>(),
         gh<_i25.IGroupEventRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i614.ITripRepository>(
+      () => _i564.TripRepository(
+        gh<_i774.ITripLocalDataSource>(),
+        gh<_i941.ITripRemoteDataSource>(),
+        gh<_i999.ITripMealRemoteDataSource>(),
       ),
     );
     gh.lazySingleton<_i614.IMessageRepository>(
@@ -528,11 +520,22 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IAuthService>(),
       ),
     );
+    gh.factory<_i694.MealCubit>(
+      () => _i694.MealCubit(gh<_i614.ITripRepository>()),
+    );
     gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
       (eventId, _) => _i10.GroupEventCommentCubit(
         gh<_i614.IGroupEventRepository>(),
         gh<_i614.IAuthService>(),
         eventId,
+      ),
+    );
+    gh.factory<_i1040.PollCubit>(
+      () => _i1040.PollCubit(
+        gh<_i614.IPollRepository>(),
+        gh<_i614.ITripRepository>(),
+        gh<_i614.IConnectivityService>(),
+        gh<_i614.IAuthService>(),
       ),
     );
     gh.factory<_i846.SyncCubit>(

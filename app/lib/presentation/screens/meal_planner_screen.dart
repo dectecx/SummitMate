@@ -8,6 +8,7 @@ import '../widgets/responsive_layout.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../utils/meal_utils.dart';
+import '../widgets/meal/meal_day_management_dialog.dart';
 
 /// 糧食計畫畫面
 ///
@@ -64,6 +65,11 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
                 title: const Text('糧食計畫'),
                 actions: [
                   IconButton(
+                    icon: const Icon(Icons.edit_calendar),
+                    tooltip: '管理天數',
+                    onPressed: () => MealDayManagementDialog.show(context),
+                  ),
+                  IconButton(
                     icon: const Icon(Icons.info_outline),
                     tooltip: '參考資訊',
                     onPressed: () => FoodReferenceScreen.show(context),
@@ -75,7 +81,7 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
                   indicatorSize: TabBarIndicatorSize.label,
                   labelPadding: const EdgeInsets.symmetric(horizontal: 20),
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
-                  tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
+                  tabs: dailyPlans.map((plan) => Tab(text: plan.dayInfo.name)).toList(),
                 ),
               ),
               body: TabBarView(
@@ -149,13 +155,13 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
     Widget buildMealCard(MealType type) {
       return _MealSectionCard(
         cubit: cubit,
-        day: plan.day,
+        dayId: plan.dayInfo.id,
         type: type,
         items: plan.meals[type] ?? [],
         expandCollapseNotifier: _expandCollapseNotifier,
         initiallyExpanded: _expandCollapseNotifier.value, // 使用當前狀態
-        onRemove: (itemId, itemName) => _confirmRemoveMeal(context, cubit, plan.day, type, itemId, itemName),
-        onAdd: () => _showAddMealDialog(context, cubit, plan.day, type),
+        onRemove: (itemId, itemName) => _confirmRemoveMeal(context, cubit, plan.dayInfo.id, type, itemId, itemName),
+        onAdd: () => _showAddMealDialog(context, cubit, plan.dayInfo.id, type),
       );
     }
 
@@ -259,7 +265,7 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
   void _confirmRemoveMeal(
     BuildContext context,
     MealCubit cubit,
-    String day,
+    String dayId,
     MealType type,
     String itemId,
     String itemName,
@@ -273,7 +279,7 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
           FilledButton(
             onPressed: () {
-              cubit.removeMealItem(day, type, itemId);
+              cubit.removeMealItem(dayId, type, itemId);
               Navigator.pop(context);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -284,7 +290,7 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
     );
   }
 
-  void _showAddMealDialog(BuildContext context, MealCubit cubit, String day, MealType type) {
+  void _showAddMealDialog(BuildContext context, MealCubit cubit, String dayId, MealType type) {
     final nameCtrl = TextEditingController();
     final weightCtrl = TextEditingController();
     final calCtrl = TextEditingController();
@@ -331,7 +337,7 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
               final weight = double.tryParse(weightCtrl.text) ?? 0;
               final cal = double.tryParse(calCtrl.text) ?? 0;
               if (name.isNotEmpty) {
-                cubit.addMealItem(day, type, name, weight, cal);
+                cubit.addMealItem(dayId, type, name, weight, cal);
                 Navigator.pop(context);
               }
             },
@@ -345,7 +351,7 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
 
 class _MealSectionCard extends StatefulWidget {
   final MealCubit cubit;
-  final String day;
+  final String dayId;
   final MealType type;
   final List<MealItem> items;
   final ValueNotifier<bool> expandCollapseNotifier;
@@ -355,7 +361,7 @@ class _MealSectionCard extends StatefulWidget {
 
   const _MealSectionCard({
     required this.cubit,
-    required this.day,
+    required this.dayId,
     required this.type,
     required this.items,
     required this.expandCollapseNotifier,
@@ -515,7 +521,7 @@ class _MealSectionCardState extends State<_MealSectionCard> {
                                     color: theme.colorScheme.onSurfaceVariant,
                                     onPressed: items[i].quantity > 1
                                         ? () => widget.cubit.updateMealItemQuantity(
-                                            widget.day,
+                                            widget.dayId,
                                             widget.type,
                                             items[i].id,
                                             items[i].quantity - 1,
@@ -536,7 +542,7 @@ class _MealSectionCardState extends State<_MealSectionCard> {
                                     icon: const Icon(Icons.add, size: 18),
                                     color: theme.colorScheme.primary,
                                     onPressed: () => widget.cubit.updateMealItemQuantity(
-                                      widget.day,
+                                      widget.dayId,
                                       widget.type,
                                       items[i].id,
                                       items[i].quantity + 1,

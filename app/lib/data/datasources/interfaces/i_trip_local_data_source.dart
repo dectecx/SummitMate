@@ -1,4 +1,5 @@
 import '../../../domain/entities/trip.dart';
+import '../../../domain/entities/meal_plan_day.dart';
 
 /// 行程 (Trip) 的本地資料來源介面
 ///
@@ -41,4 +42,18 @@ abstract interface class ITripLocalDataSource {
 
   /// 清除所有行程 (登出時使用)
   Future<void> clear();
+
+  // ========== Meal Plan Day Operations ==========
+
+  /// 取得行程的所有糧食計畫天數
+  Future<List<MealPlanDay>> getMealPlanDays(String tripId);
+
+  /// 新增或更新糧食計畫天數
+  Future<void> saveMealPlanDay(MealPlanDay day, String tripId);
+
+  /// 刪除糧食計畫天數
+  Future<void> deleteMealPlanDay(String dayId);
+
+  /// 批量更新糧食計畫天數 (通常用於從雲端同步下來時，完整替換或更新)
+  Future<void> replaceMealPlanDays(String tripId, List<MealPlanDay> days);
 }

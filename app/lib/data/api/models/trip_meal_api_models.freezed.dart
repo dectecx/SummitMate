@@ -13,9 +13,287 @@ part of 'trip_meal_api_models.dart';
 T _$identity<T>(T value) => value;
 
 /// @nodoc
+mixin _$MealPlanDayResponse {
+
+ String get id;@JsonKey(name: 'trip_id') String get tripId; String get name;@JsonKey(name: 'linked_itinerary_day') String? get linkedItineraryDay;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
+/// Create a copy of MealPlanDayResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MealPlanDayResponseCopyWith<MealPlanDayResponse> get copyWith => _$MealPlanDayResponseCopyWithImpl<MealPlanDayResponse>(this as MealPlanDayResponse, _$identity);
+
+  /// Serializes this MealPlanDayResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MealPlanDayResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.name, name) || other.name == name)&&(identical(other.linkedItineraryDay, linkedItineraryDay) || other.linkedItineraryDay == linkedItineraryDay)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,tripId,name,linkedItineraryDay,createdAt,updatedAt);
+
+@override
+String toString() {
+  return 'MealPlanDayResponse(id: $id, tripId: $tripId, name: $name, linkedItineraryDay: $linkedItineraryDay, createdAt: $createdAt, updatedAt: $updatedAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MealPlanDayResponseCopyWith<$Res>  {
+  factory $MealPlanDayResponseCopyWith(MealPlanDayResponse value, $Res Function(MealPlanDayResponse) _then) = _$MealPlanDayResponseCopyWithImpl;
+@useResult
+$Res call({
+ String id,@JsonKey(name: 'trip_id') String tripId, String name,@JsonKey(name: 'linked_itinerary_day') String? linkedItineraryDay,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
+});
+
+
+
+
+}
+/// @nodoc
+class _$MealPlanDayResponseCopyWithImpl<$Res>
+    implements $MealPlanDayResponseCopyWith<$Res> {
+  _$MealPlanDayResponseCopyWithImpl(this._self, this._then);
+
+  final MealPlanDayResponse _self;
+  final $Res Function(MealPlanDayResponse) _then;
+
+/// Create a copy of MealPlanDayResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? name = null,Object? linkedItineraryDay = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,linkedItineraryDay: freezed == linkedItineraryDay ? _self.linkedItineraryDay : linkedItineraryDay // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [MealPlanDayResponse].
+extension MealPlanDayResponsePatterns on MealPlanDayResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MealPlanDayResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MealPlanDayResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MealPlanDayResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _MealPlanDayResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MealPlanDayResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MealPlanDayResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId,  String name, @JsonKey(name: 'linked_itinerary_day')  String? linkedItineraryDay, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MealPlanDayResponse() when $default != null:
+return $default(_that.id,_that.tripId,_that.name,_that.linkedItineraryDay,_that.createdAt,_that.updatedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId,  String name, @JsonKey(name: 'linked_itinerary_day')  String? linkedItineraryDay, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
+switch (_that) {
+case _MealPlanDayResponse():
+return $default(_that.id,_that.tripId,_that.name,_that.linkedItineraryDay,_that.createdAt,_that.updatedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId,  String name, @JsonKey(name: 'linked_itinerary_day')  String? linkedItineraryDay, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _MealPlanDayResponse() when $default != null:
+return $default(_that.id,_that.tripId,_that.name,_that.linkedItineraryDay,_that.createdAt,_that.updatedAt);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _MealPlanDayResponse implements MealPlanDayResponse {
+  const _MealPlanDayResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, required this.name, @JsonKey(name: 'linked_itinerary_day') this.linkedItineraryDay, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
+  factory _MealPlanDayResponse.fromJson(Map<String, dynamic> json) => _$MealPlanDayResponseFromJson(json);
+
+@override final  String id;
+@override@JsonKey(name: 'trip_id') final  String tripId;
+@override final  String name;
+@override@JsonKey(name: 'linked_itinerary_day') final  String? linkedItineraryDay;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
+
+/// Create a copy of MealPlanDayResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MealPlanDayResponseCopyWith<_MealPlanDayResponse> get copyWith => __$MealPlanDayResponseCopyWithImpl<_MealPlanDayResponse>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$MealPlanDayResponseToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MealPlanDayResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.name, name) || other.name == name)&&(identical(other.linkedItineraryDay, linkedItineraryDay) || other.linkedItineraryDay == linkedItineraryDay)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,tripId,name,linkedItineraryDay,createdAt,updatedAt);
+
+@override
+String toString() {
+  return 'MealPlanDayResponse(id: $id, tripId: $tripId, name: $name, linkedItineraryDay: $linkedItineraryDay, createdAt: $createdAt, updatedAt: $updatedAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MealPlanDayResponseCopyWith<$Res> implements $MealPlanDayResponseCopyWith<$Res> {
+  factory _$MealPlanDayResponseCopyWith(_MealPlanDayResponse value, $Res Function(_MealPlanDayResponse) _then) = __$MealPlanDayResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String id,@JsonKey(name: 'trip_id') String tripId, String name,@JsonKey(name: 'linked_itinerary_day') String? linkedItineraryDay,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$MealPlanDayResponseCopyWithImpl<$Res>
+    implements _$MealPlanDayResponseCopyWith<$Res> {
+  __$MealPlanDayResponseCopyWithImpl(this._self, this._then);
+
+  final _MealPlanDayResponse _self;
+  final $Res Function(_MealPlanDayResponse) _then;
+
+/// Create a copy of MealPlanDayResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? name = null,Object? linkedItineraryDay = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+  return _then(_MealPlanDayResponse(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,linkedItineraryDay: freezed == linkedItineraryDay ? _self.linkedItineraryDay : linkedItineraryDay // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$TripMealItemResponse {
 
- String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'library_item_id') String? get libraryItemId; String get day;@JsonKey(name: 'meal_type') String get mealType; String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 0.0) double get calories;@JsonKey(defaultValue: 1) int get quantity; String? get note;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
+ String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'meal_plan_day_id') String get mealPlanDayId;@JsonKey(name: 'meal_type') String get mealType; String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 0.0) double get calories;@JsonKey(defaultValue: 1) int get quantity; String? get note;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
 /// Create a copy of TripMealItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +306,16 @@ $TripMealItemResponseCopyWith<TripMealItemResponse> get copyWith => _$TripMealIt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripMealItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.day, day) || other.day == day)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripMealItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.mealPlanDayId, mealPlanDayId) || other.mealPlanDayId == mealPlanDayId)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,libraryItemId,day,mealType,name,weight,calories,quantity,note,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,tripId,mealPlanDayId,mealType,name,weight,calories,quantity,note,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'TripMealItemResponse(id: $id, tripId: $tripId, libraryItemId: $libraryItemId, day: $day, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'TripMealItemResponse(id: $id, tripId: $tripId, mealPlanDayId: $mealPlanDayId, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +326,7 @@ abstract mixin class $TripMealItemResponseCopyWith<$Res>  {
   factory $TripMealItemResponseCopyWith(TripMealItemResponse value, $Res Function(TripMealItemResponse) _then) = _$TripMealItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'meal_plan_day_id') String mealPlanDayId,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -65,12 +343,11 @@ class _$TripMealItemResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripMealItemResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? libraryItemId = freezed,Object? day = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? tripId = null,Object? mealPlanDayId = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
-as String,libraryItemId: freezed == libraryItemId ? _self.libraryItemId : libraryItemId // ignore: cast_nullable_to_non_nullable
-as String?,day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+as String,mealPlanDayId: null == mealPlanDayId ? _self.mealPlanDayId : mealPlanDayId // ignore: cast_nullable_to_non_nullable
 as String,mealType: null == mealType ? _self.mealType : mealType // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,weight: null == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
@@ -164,10 +441,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'meal_plan_day_id')  String mealPlanDayId, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripMealItemResponse() when $default != null:
-return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.tripId,_that.mealPlanDayId,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -185,10 +462,10 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealTy
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'meal_plan_day_id')  String mealPlanDayId, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _TripMealItemResponse():
-return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.tripId,_that.mealPlanDayId,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +482,10 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealTy
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'meal_plan_day_id')  String mealPlanDayId, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TripMealItemResponse() when $default != null:
-return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.tripId,_that.mealPlanDayId,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -220,13 +497,12 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealTy
 @JsonSerializable()
 
 class _TripMealItemResponse implements TripMealItemResponse {
-  const _TripMealItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'library_item_id') this.libraryItemId, required this.day, @JsonKey(name: 'meal_type') required this.mealType, required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 0.0) required this.calories, @JsonKey(defaultValue: 1) required this.quantity, this.note, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
+  const _TripMealItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'meal_plan_day_id') required this.mealPlanDayId, @JsonKey(name: 'meal_type') required this.mealType, required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 0.0) required this.calories, @JsonKey(defaultValue: 1) required this.quantity, this.note, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
   factory _TripMealItemResponse.fromJson(Map<String, dynamic> json) => _$TripMealItemResponseFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'trip_id') final  String tripId;
-@override@JsonKey(name: 'library_item_id') final  String? libraryItemId;
-@override final  String day;
+@override@JsonKey(name: 'meal_plan_day_id') final  String mealPlanDayId;
 @override@JsonKey(name: 'meal_type') final  String mealType;
 @override final  String name;
 @override@JsonKey(defaultValue: 0.0) final  double weight;
@@ -249,16 +525,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripMealItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.day, day) || other.day == day)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripMealItemResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.mealPlanDayId, mealPlanDayId) || other.mealPlanDayId == mealPlanDayId)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,tripId,libraryItemId,day,mealType,name,weight,calories,quantity,note,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,tripId,mealPlanDayId,mealType,name,weight,calories,quantity,note,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'TripMealItemResponse(id: $id, tripId: $tripId, libraryItemId: $libraryItemId, day: $day, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'TripMealItemResponse(id: $id, tripId: $tripId, mealPlanDayId: $mealPlanDayId, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -269,7 +545,7 @@ abstract mixin class _$TripMealItemResponseCopyWith<$Res> implements $TripMealIt
   factory _$TripMealItemResponseCopyWith(_TripMealItemResponse value, $Res Function(_TripMealItemResponse) _then) = __$TripMealItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'meal_plan_day_id') String mealPlanDayId,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -286,12 +562,11 @@ class __$TripMealItemResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripMealItemResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? libraryItemId = freezed,Object? day = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? tripId = null,Object? mealPlanDayId = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_TripMealItemResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
-as String,libraryItemId: freezed == libraryItemId ? _self.libraryItemId : libraryItemId // ignore: cast_nullable_to_non_nullable
-as String?,day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+as String,mealPlanDayId: null == mealPlanDayId ? _self.mealPlanDayId : mealPlanDayId // ignore: cast_nullable_to_non_nullable
 as String,mealType: null == mealType ? _self.mealType : mealType // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,weight: null == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
@@ -309,9 +584,275 @@ as DateTime,
 
 
 /// @nodoc
+mixin _$MealPlanDayRequest {
+
+ String get name;@JsonKey(name: 'linked_itinerary_day') String? get linkedItineraryDay;
+/// Create a copy of MealPlanDayRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MealPlanDayRequestCopyWith<MealPlanDayRequest> get copyWith => _$MealPlanDayRequestCopyWithImpl<MealPlanDayRequest>(this as MealPlanDayRequest, _$identity);
+
+  /// Serializes this MealPlanDayRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MealPlanDayRequest&&(identical(other.name, name) || other.name == name)&&(identical(other.linkedItineraryDay, linkedItineraryDay) || other.linkedItineraryDay == linkedItineraryDay));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,linkedItineraryDay);
+
+@override
+String toString() {
+  return 'MealPlanDayRequest(name: $name, linkedItineraryDay: $linkedItineraryDay)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MealPlanDayRequestCopyWith<$Res>  {
+  factory $MealPlanDayRequestCopyWith(MealPlanDayRequest value, $Res Function(MealPlanDayRequest) _then) = _$MealPlanDayRequestCopyWithImpl;
+@useResult
+$Res call({
+ String name,@JsonKey(name: 'linked_itinerary_day') String? linkedItineraryDay
+});
+
+
+
+
+}
+/// @nodoc
+class _$MealPlanDayRequestCopyWithImpl<$Res>
+    implements $MealPlanDayRequestCopyWith<$Res> {
+  _$MealPlanDayRequestCopyWithImpl(this._self, this._then);
+
+  final MealPlanDayRequest _self;
+  final $Res Function(MealPlanDayRequest) _then;
+
+/// Create a copy of MealPlanDayRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? linkedItineraryDay = freezed,}) {
+  return _then(_self.copyWith(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,linkedItineraryDay: freezed == linkedItineraryDay ? _self.linkedItineraryDay : linkedItineraryDay // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [MealPlanDayRequest].
+extension MealPlanDayRequestPatterns on MealPlanDayRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MealPlanDayRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MealPlanDayRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MealPlanDayRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _MealPlanDayRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MealPlanDayRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MealPlanDayRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'linked_itinerary_day')  String? linkedItineraryDay)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _MealPlanDayRequest() when $default != null:
+return $default(_that.name,_that.linkedItineraryDay);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'linked_itinerary_day')  String? linkedItineraryDay)  $default,) {final _that = this;
+switch (_that) {
+case _MealPlanDayRequest():
+return $default(_that.name,_that.linkedItineraryDay);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name, @JsonKey(name: 'linked_itinerary_day')  String? linkedItineraryDay)?  $default,) {final _that = this;
+switch (_that) {
+case _MealPlanDayRequest() when $default != null:
+return $default(_that.name,_that.linkedItineraryDay);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _MealPlanDayRequest implements MealPlanDayRequest {
+  const _MealPlanDayRequest({required this.name, @JsonKey(name: 'linked_itinerary_day') this.linkedItineraryDay});
+  factory _MealPlanDayRequest.fromJson(Map<String, dynamic> json) => _$MealPlanDayRequestFromJson(json);
+
+@override final  String name;
+@override@JsonKey(name: 'linked_itinerary_day') final  String? linkedItineraryDay;
+
+/// Create a copy of MealPlanDayRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MealPlanDayRequestCopyWith<_MealPlanDayRequest> get copyWith => __$MealPlanDayRequestCopyWithImpl<_MealPlanDayRequest>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$MealPlanDayRequestToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MealPlanDayRequest&&(identical(other.name, name) || other.name == name)&&(identical(other.linkedItineraryDay, linkedItineraryDay) || other.linkedItineraryDay == linkedItineraryDay));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,name,linkedItineraryDay);
+
+@override
+String toString() {
+  return 'MealPlanDayRequest(name: $name, linkedItineraryDay: $linkedItineraryDay)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MealPlanDayRequestCopyWith<$Res> implements $MealPlanDayRequestCopyWith<$Res> {
+  factory _$MealPlanDayRequestCopyWith(_MealPlanDayRequest value, $Res Function(_MealPlanDayRequest) _then) = __$MealPlanDayRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String name,@JsonKey(name: 'linked_itinerary_day') String? linkedItineraryDay
+});
+
+
+
+
+}
+/// @nodoc
+class __$MealPlanDayRequestCopyWithImpl<$Res>
+    implements _$MealPlanDayRequestCopyWith<$Res> {
+  __$MealPlanDayRequestCopyWithImpl(this._self, this._then);
+
+  final _MealPlanDayRequest _self;
+  final $Res Function(_MealPlanDayRequest) _then;
+
+/// Create a copy of MealPlanDayRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? linkedItineraryDay = freezed,}) {
+  return _then(_MealPlanDayRequest(
+name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,linkedItineraryDay: freezed == linkedItineraryDay ? _self.linkedItineraryDay : linkedItineraryDay // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$TripMealItemRequest {
 
-@JsonKey(name: 'library_item_id') String? get libraryItemId; String get day;@JsonKey(name: 'meal_type') String get mealType; String get name; double get weight; double get calories;@JsonKey(defaultValue: 1) int get quantity; String? get note;
+@JsonKey(name: 'meal_plan_day_id') String get mealPlanDayId;@JsonKey(name: 'meal_type') String get mealType; String get name; double get weight; double get calories;@JsonKey(defaultValue: 1) int get quantity; String? get note;
 /// Create a copy of TripMealItemRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -324,16 +865,16 @@ $TripMealItemRequestCopyWith<TripMealItemRequest> get copyWith => _$TripMealItem
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripMealItemRequest&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.day, day) || other.day == day)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripMealItemRequest&&(identical(other.mealPlanDayId, mealPlanDayId) || other.mealPlanDayId == mealPlanDayId)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,libraryItemId,day,mealType,name,weight,calories,quantity,note);
+int get hashCode => Object.hash(runtimeType,mealPlanDayId,mealType,name,weight,calories,quantity,note);
 
 @override
 String toString() {
-  return 'TripMealItemRequest(libraryItemId: $libraryItemId, day: $day, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note)';
+  return 'TripMealItemRequest(mealPlanDayId: $mealPlanDayId, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note)';
 }
 
 
@@ -344,7 +885,7 @@ abstract mixin class $TripMealItemRequestCopyWith<$Res>  {
   factory $TripMealItemRequestCopyWith(TripMealItemRequest value, $Res Function(TripMealItemRequest) _then) = _$TripMealItemRequestCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name, double weight, double calories,@JsonKey(defaultValue: 1) int quantity, String? note
+@JsonKey(name: 'meal_plan_day_id') String mealPlanDayId,@JsonKey(name: 'meal_type') String mealType, String name, double weight, double calories,@JsonKey(defaultValue: 1) int quantity, String? note
 });
 
 
@@ -361,10 +902,9 @@ class _$TripMealItemRequestCopyWithImpl<$Res>
 
 /// Create a copy of TripMealItemRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? libraryItemId = freezed,Object? day = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? mealPlanDayId = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,}) {
   return _then(_self.copyWith(
-libraryItemId: freezed == libraryItemId ? _self.libraryItemId : libraryItemId // ignore: cast_nullable_to_non_nullable
-as String?,day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+mealPlanDayId: null == mealPlanDayId ? _self.mealPlanDayId : mealPlanDayId // ignore: cast_nullable_to_non_nullable
 as String,mealType: null == mealType ? _self.mealType : mealType // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,weight: null == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable
@@ -456,10 +996,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name,  double weight,  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'meal_plan_day_id')  String mealPlanDayId, @JsonKey(name: 'meal_type')  String mealType,  String name,  double weight,  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripMealItemRequest() when $default != null:
-return $default(_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note);case _:
+return $default(_that.mealPlanDayId,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note);case _:
   return orElse();
 
 }
@@ -477,10 +1017,10 @@ return $default(_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.we
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name,  double weight,  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'meal_plan_day_id')  String mealPlanDayId, @JsonKey(name: 'meal_type')  String mealType,  String name,  double weight,  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _TripMealItemRequest():
-return $default(_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note);case _:
+return $default(_that.mealPlanDayId,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -497,10 +1037,10 @@ return $default(_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.we
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name,  double weight,  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'meal_plan_day_id')  String mealPlanDayId, @JsonKey(name: 'meal_type')  String mealType,  String name,  double weight,  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _TripMealItemRequest() when $default != null:
-return $default(_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note);case _:
+return $default(_that.mealPlanDayId,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note);case _:
   return null;
 
 }
@@ -512,11 +1052,10 @@ return $default(_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.we
 @JsonSerializable()
 
 class _TripMealItemRequest implements TripMealItemRequest {
-  const _TripMealItemRequest({@JsonKey(name: 'library_item_id') this.libraryItemId, required this.day, @JsonKey(name: 'meal_type') required this.mealType, required this.name, required this.weight, required this.calories, @JsonKey(defaultValue: 1) required this.quantity, this.note});
+  const _TripMealItemRequest({@JsonKey(name: 'meal_plan_day_id') required this.mealPlanDayId, @JsonKey(name: 'meal_type') required this.mealType, required this.name, required this.weight, required this.calories, @JsonKey(defaultValue: 1) required this.quantity, this.note});
   factory _TripMealItemRequest.fromJson(Map<String, dynamic> json) => _$TripMealItemRequestFromJson(json);
 
-@override@JsonKey(name: 'library_item_id') final  String? libraryItemId;
-@override final  String day;
+@override@JsonKey(name: 'meal_plan_day_id') final  String mealPlanDayId;
 @override@JsonKey(name: 'meal_type') final  String mealType;
 @override final  String name;
 @override final  double weight;
@@ -537,16 +1076,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripMealItemRequest&&(identical(other.libraryItemId, libraryItemId) || other.libraryItemId == libraryItemId)&&(identical(other.day, day) || other.day == day)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripMealItemRequest&&(identical(other.mealPlanDayId, mealPlanDayId) || other.mealPlanDayId == mealPlanDayId)&&(identical(other.mealType, mealType) || other.mealType == mealType)&&(identical(other.name, name) || other.name == name)&&(identical(other.weight, weight) || other.weight == weight)&&(identical(other.calories, calories) || other.calories == calories)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,libraryItemId,day,mealType,name,weight,calories,quantity,note);
+int get hashCode => Object.hash(runtimeType,mealPlanDayId,mealType,name,weight,calories,quantity,note);
 
 @override
 String toString() {
-  return 'TripMealItemRequest(libraryItemId: $libraryItemId, day: $day, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note)';
+  return 'TripMealItemRequest(mealPlanDayId: $mealPlanDayId, mealType: $mealType, name: $name, weight: $weight, calories: $calories, quantity: $quantity, note: $note)';
 }
 
 
@@ -557,7 +1096,7 @@ abstract mixin class _$TripMealItemRequestCopyWith<$Res> implements $TripMealIte
   factory _$TripMealItemRequestCopyWith(_TripMealItemRequest value, $Res Function(_TripMealItemRequest) _then) = __$TripMealItemRequestCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name, double weight, double calories,@JsonKey(defaultValue: 1) int quantity, String? note
+@JsonKey(name: 'meal_plan_day_id') String mealPlanDayId,@JsonKey(name: 'meal_type') String mealType, String name, double weight, double calories,@JsonKey(defaultValue: 1) int quantity, String? note
 });
 
 
@@ -574,10 +1113,9 @@ class __$TripMealItemRequestCopyWithImpl<$Res>
 
 /// Create a copy of TripMealItemRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? libraryItemId = freezed,Object? day = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? mealPlanDayId = null,Object? mealType = null,Object? name = null,Object? weight = null,Object? calories = null,Object? quantity = null,Object? note = freezed,}) {
   return _then(_TripMealItemRequest(
-libraryItemId: freezed == libraryItemId ? _self.libraryItemId : libraryItemId // ignore: cast_nullable_to_non_nullable
-as String?,day: null == day ? _self.day : day // ignore: cast_nullable_to_non_nullable
+mealPlanDayId: null == mealPlanDayId ? _self.mealPlanDayId : mealPlanDayId // ignore: cast_nullable_to_non_nullable
 as String,mealType: null == mealType ? _self.mealType : mealType // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,weight: null == weight ? _self.weight : weight // ignore: cast_nullable_to_non_nullable

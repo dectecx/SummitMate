@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../enums/sync_status.dart';
 
+import 'meal_plan_day.dart';
+
 part 'trip.freezed.dart';
 part 'trip.g.dart';
 
@@ -23,6 +25,7 @@ abstract class Trip with _$Trip {
     @Default(false) bool isActive,
     String? linkedEventId,
     @Default([]) List<String> dayNames,
+    @Default([]) List<MealPlanDay> mealPlanDays,
     @Default(SyncStatus.pendingCreate) SyncStatus syncStatus,
     required DateTime createdAt,
     required String createdBy,

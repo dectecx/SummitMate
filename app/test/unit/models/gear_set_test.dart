@@ -62,7 +62,7 @@ void main() {
       final gearSet = GearSet.fromJson(json);
       expect(gearSet.meals, isNotNull);
       expect(gearSet.meals!.length, 1);
-      expect(gearSet.meals![0].day, 'D1');
+      expect(gearSet.meals![0].dayInfo.name, 'D1');
       expect(gearSet.meals![0].meals[MealType.breakfast]!.first.name, 'Bread');
     });
 
