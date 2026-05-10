@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$MessageResponse {
 
- String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'parent_id') String? get parentId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'display_name', defaultValue: '') String get displayName;@JsonKey(defaultValue: '🐻') String? get avatar;@JsonKey(defaultValue: '') String get category;@JsonKey(defaultValue: '') String get content; DateTime get timestamp; List<MessageResponse>? get replies;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+ String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'parent_id') String? get parentId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'display_name', defaultValue: '') String get displayName;@JsonKey(defaultValue: '🐻') String? get avatar;@JsonKey(defaultValue: '') String get category;@JsonKey(defaultValue: '') String get content;@DateTimeUtcConverter() DateTime get timestamp; List<MessageResponse>? get replies;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() DateTime? get updatedAt;
 /// Create a copy of MessageResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $MessageResponseCopyWith<$Res>  {
   factory $MessageResponseCopyWith(MessageResponse value, $Res Function(MessageResponse) _then) = _$MessageResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'parent_id') String? parentId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'display_name', defaultValue: '') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(defaultValue: '') String category,@JsonKey(defaultValue: '') String content, DateTime timestamp, List<MessageResponse>? replies,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'parent_id') String? parentId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'display_name', defaultValue: '') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(defaultValue: '') String category,@JsonKey(defaultValue: '') String content,@DateTimeUtcConverter() DateTime timestamp, List<MessageResponse>? replies,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() DateTime? updatedAt
 });
 
 
@@ -454,7 +454,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'parent_id')  String? parentId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'display_name', defaultValue: '')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(defaultValue: '')  String category, @JsonKey(defaultValue: '')  String content,  DateTime timestamp,  List<MessageResponse>? replies, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'parent_id')  String? parentId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'display_name', defaultValue: '')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(defaultValue: '')  String category, @JsonKey(defaultValue: '')  String content, @DateTimeUtcConverter()  DateTime timestamp,  List<MessageResponse>? replies, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter()  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MessageResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.displayName,_that.avatar,_that.category,_that.content,_that.timestamp,_that.replies,_that.createdAt,_that.updatedAt);case _:
@@ -475,7 +475,7 @@ return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.displayN
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'parent_id')  String? parentId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'display_name', defaultValue: '')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(defaultValue: '')  String category, @JsonKey(defaultValue: '')  String content,  DateTime timestamp,  List<MessageResponse>? replies, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'parent_id')  String? parentId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'display_name', defaultValue: '')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(defaultValue: '')  String category, @JsonKey(defaultValue: '')  String content, @DateTimeUtcConverter()  DateTime timestamp,  List<MessageResponse>? replies, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter()  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MessageResponse():
 return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.displayName,_that.avatar,_that.category,_that.content,_that.timestamp,_that.replies,_that.createdAt,_that.updatedAt);case _:
@@ -495,7 +495,7 @@ return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.displayN
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'parent_id')  String? parentId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'display_name', defaultValue: '')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(defaultValue: '')  String category, @JsonKey(defaultValue: '')  String content,  DateTime timestamp,  List<MessageResponse>? replies, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'parent_id')  String? parentId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'display_name', defaultValue: '')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(defaultValue: '')  String category, @JsonKey(defaultValue: '')  String content, @DateTimeUtcConverter()  DateTime timestamp,  List<MessageResponse>? replies, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter()  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MessageResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.displayName,_that.avatar,_that.category,_that.content,_that.timestamp,_that.replies,_that.createdAt,_that.updatedAt);case _:
@@ -510,7 +510,7 @@ return $default(_that.id,_that.tripId,_that.parentId,_that.userId,_that.displayN
 @JsonSerializable()
 
 class _MessageResponse implements MessageResponse {
-  const _MessageResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'parent_id') this.parentId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'display_name', defaultValue: '') required this.displayName, @JsonKey(defaultValue: '🐻') this.avatar, @JsonKey(defaultValue: '') required this.category, @JsonKey(defaultValue: '') required this.content, required this.timestamp, final  List<MessageResponse>? replies, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt}): _replies = replies;
+  const _MessageResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'parent_id') this.parentId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'display_name', defaultValue: '') required this.displayName, @JsonKey(defaultValue: '🐻') this.avatar, @JsonKey(defaultValue: '') required this.category, @JsonKey(defaultValue: '') required this.content, @DateTimeUtcConverter() required this.timestamp, final  List<MessageResponse>? replies, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() this.updatedAt}): _replies = replies;
   factory _MessageResponse.fromJson(Map<String, dynamic> json) => _$MessageResponseFromJson(json);
 
 @override final  String id;
@@ -521,7 +521,7 @@ class _MessageResponse implements MessageResponse {
 @override@JsonKey(defaultValue: '🐻') final  String? avatar;
 @override@JsonKey(defaultValue: '') final  String category;
 @override@JsonKey(defaultValue: '') final  String content;
-@override final  DateTime timestamp;
+@override@DateTimeUtcConverter() final  DateTime timestamp;
  final  List<MessageResponse>? _replies;
 @override List<MessageResponse>? get replies {
   final value = _replies;
@@ -531,8 +531,8 @@ class _MessageResponse implements MessageResponse {
   return EqualUnmodifiableListView(value);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() final  DateTime? updatedAt;
 
 /// Create a copy of MessageResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -567,7 +567,7 @@ abstract mixin class _$MessageResponseCopyWith<$Res> implements $MessageResponse
   factory _$MessageResponseCopyWith(_MessageResponse value, $Res Function(_MessageResponse) _then) = __$MessageResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'parent_id') String? parentId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'display_name', defaultValue: '') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(defaultValue: '') String category,@JsonKey(defaultValue: '') String content, DateTime timestamp, List<MessageResponse>? replies,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'parent_id') String? parentId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'display_name', defaultValue: '') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(defaultValue: '') String category,@JsonKey(defaultValue: '') String content,@DateTimeUtcConverter() DateTime timestamp, List<MessageResponse>? replies,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() DateTime? updatedAt
 });
 
 

@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$FavoriteResponse {
 
- String get id;@JsonKey(name: 'target_id') String get targetId; String get type;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'target_id') String get targetId; String get type;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of FavoriteResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $FavoriteResponseCopyWith<$Res>  {
   factory $FavoriteResponseCopyWith(FavoriteResponse value, $Res Function(FavoriteResponse) _then) = _$FavoriteResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'target_id') String targetId, String type,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'target_id') String targetId, String type,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -449,7 +449,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'target_id')  String targetId,  String type, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'target_id')  String targetId,  String type, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FavoriteResponse() when $default != null:
 return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -470,7 +470,7 @@ return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'target_id')  String targetId,  String type, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'target_id')  String targetId,  String type, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteResponse():
 return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -490,7 +490,7 @@ return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.created
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'target_id')  String targetId,  String type, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'target_id')  String targetId,  String type, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _FavoriteResponse() when $default != null:
 return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -505,15 +505,15 @@ return $default(_that.id,_that.targetId,_that.type,_that.createdAt,_that.created
 @JsonSerializable()
 
 class _FavoriteResponse implements FavoriteResponse {
-  const _FavoriteResponse({required this.id, @JsonKey(name: 'target_id') required this.targetId, required this.type, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
+  const _FavoriteResponse({required this.id, @JsonKey(name: 'target_id') required this.targetId, required this.type, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
   factory _FavoriteResponse.fromJson(Map<String, dynamic> json) => _$FavoriteResponseFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'target_id') final  String targetId;
 @override final  String type;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of FavoriteResponse
@@ -549,7 +549,7 @@ abstract mixin class _$FavoriteResponseCopyWith<$Res> implements $FavoriteRespon
   factory _$FavoriteResponseCopyWith(_FavoriteResponse value, $Res Function(_FavoriteResponse) _then) = __$FavoriteResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'target_id') String targetId, String type,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'target_id') String targetId, String type,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 

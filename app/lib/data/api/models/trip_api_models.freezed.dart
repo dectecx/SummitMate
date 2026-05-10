@@ -305,7 +305,8 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$TripResponse {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String get name; String? get description;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'linked_event_id') String? get linkedEventId;@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> get dayNames;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'user_id') String get userId; String get name; String? get description;// start_date / end_date are date-only fields (format: date in OpenAPI)
+@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'linked_event_id') String? get linkedEventId;@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> get dayNames;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of TripResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +339,7 @@ abstract mixin class $TripResponseCopyWith<$Res>  {
   factory $TripResponseCopyWith(TripResponse value, $Res Function(TripResponse) _then) = _$TripResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -456,7 +457,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripResponse() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -477,7 +478,7 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _TripResponse():
 return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -497,7 +498,7 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  String? description, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[])  List<String> dayNames, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _TripResponse() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -512,15 +513,16 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 @JsonSerializable()
 
 class _TripResponse implements TripResponse {
-  const _TripResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, this.description, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'linked_event_id') this.linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[]) required final  List<String> dayNames, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _dayNames = dayNames;
+  const _TripResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, this.description, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'linked_event_id') this.linkedEventId, @JsonKey(name: 'day_names', defaultValue: <String>[]) required final  List<String> dayNames, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _dayNames = dayNames;
   factory _TripResponse.fromJson(Map<String, dynamic> json) => _$TripResponseFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'user_id') final  String userId;
 @override final  String name;
 @override final  String? description;
-@override@JsonKey(name: 'start_date') final  DateTime startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+// start_date / end_date are date-only fields (format: date in OpenAPI)
+@override@JsonKey(name: 'start_date')@DateOnlyConverter() final  DateTime startDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(name: 'cover_image') final  String? coverImage;
 @override@JsonKey(name: 'is_active') final  bool isActive;
 @override@JsonKey(name: 'linked_event_id') final  String? linkedEventId;
@@ -531,9 +533,9 @@ class _TripResponse implements TripResponse {
   return EqualUnmodifiableListView(_dayNames);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of TripResponse
@@ -569,7 +571,7 @@ abstract mixin class _$TripResponseCopyWith<$Res> implements $TripResponseCopyWi
   factory _$TripResponseCopyWith(_TripResponse value, $Res Function(_TripResponse) _then) = __$TripResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name, String? description,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'day_names', defaultValue: <String>[]) List<String> dayNames,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -613,7 +615,7 @@ as String,
 /// @nodoc
 mixin _$TripListItemResponse {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String get name;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'linked_event_id') String? get linkedEventId;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'user_id') String get userId; String get name;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'linked_event_id') String? get linkedEventId;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of TripListItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -646,7 +648,7 @@ abstract mixin class $TripListItemResponseCopyWith<$Res>  {
   factory $TripListItemResponseCopyWith(TripListItemResponse value, $Res Function(TripListItemResponse) _then) = _$TripListItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -762,7 +764,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripListItemResponse() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.linkedEventId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -783,7 +785,7 @@ return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _TripListItemResponse():
 return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.linkedEventId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -803,7 +805,7 @@ return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'linked_event_id')  String? linkedEventId, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _TripListItemResponse() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDate,_that.endDate,_that.isActive,_that.linkedEventId,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -818,20 +820,20 @@ return $default(_that.id,_that.userId,_that.name,_that.coverImage,_that.startDat
 @JsonSerializable()
 
 class _TripListItemResponse implements TripListItemResponse {
-  const _TripListItemResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'linked_event_id') this.linkedEventId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
+  const _TripListItemResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(name: 'is_active') required this.isActive, @JsonKey(name: 'linked_event_id') this.linkedEventId, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
   factory _TripListItemResponse.fromJson(Map<String, dynamic> json) => _$TripListItemResponseFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'user_id') final  String userId;
 @override final  String name;
 @override@JsonKey(name: 'cover_image') final  String? coverImage;
-@override@JsonKey(name: 'start_date') final  DateTime startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+@override@JsonKey(name: 'start_date')@DateOnlyConverter() final  DateTime startDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(name: 'is_active') final  bool isActive;
 @override@JsonKey(name: 'linked_event_id') final  String? linkedEventId;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of TripListItemResponse
@@ -867,7 +869,7 @@ abstract mixin class _$TripListItemResponseCopyWith<$Res> implements $TripListIt
   factory _$TripListItemResponseCopyWith(_TripListItemResponse value, $Res Function(_TripListItemResponse) _then) = __$TripListItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId, String name,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'linked_event_id') String? linkedEventId,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -909,7 +911,7 @@ as String,
 /// @nodoc
 mixin _$TripMemberResponse {
 
-@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'joined_at') DateTime get joinedAt;@JsonKey(name: 'user_metadata') TripMemberUserMetadata get userMetadata;
+@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime get joinedAt;@JsonKey(name: 'user_metadata') TripMemberUserMetadata get userMetadata;
 /// Create a copy of TripMemberResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -942,7 +944,7 @@ abstract mixin class $TripMemberResponseCopyWith<$Res>  {
   factory $TripMemberResponseCopyWith(TripMemberResponse value, $Res Function(TripMemberResponse) _then) = _$TripMemberResponseCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at') DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
+@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
 });
 
 
@@ -1059,7 +1061,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripMemberResponse() when $default != null:
 return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);case _:
@@ -1080,7 +1082,7 @@ return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)  $default,) {final _that = this;
 switch (_that) {
 case _TripMemberResponse():
 return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);case _:
@@ -1100,7 +1102,7 @@ return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,) {final _that = this;
 switch (_that) {
 case _TripMemberResponse() when $default != null:
 return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);case _:
@@ -1115,12 +1117,12 @@ return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);cas
 @JsonSerializable()
 
 class _TripMemberResponse implements TripMemberResponse {
-  const _TripMemberResponse({@JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'joined_at') required this.joinedAt, @JsonKey(name: 'user_metadata') required this.userMetadata});
+  const _TripMemberResponse({@JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter() required this.joinedAt, @JsonKey(name: 'user_metadata') required this.userMetadata});
   factory _TripMemberResponse.fromJson(Map<String, dynamic> json) => _$TripMemberResponseFromJson(json);
 
 @override@JsonKey(name: 'trip_id') final  String tripId;
 @override@JsonKey(name: 'user_id') final  String userId;
-@override@JsonKey(name: 'joined_at') final  DateTime joinedAt;
+@override@JsonKey(name: 'joined_at')@DateTimeUtcConverter() final  DateTime joinedAt;
 @override@JsonKey(name: 'user_metadata') final  TripMemberUserMetadata userMetadata;
 
 /// Create a copy of TripMemberResponse
@@ -1156,7 +1158,7 @@ abstract mixin class _$TripMemberResponseCopyWith<$Res> implements $TripMemberRe
   factory _$TripMemberResponseCopyWith(_TripMemberResponse value, $Res Function(_TripMemberResponse) _then) = __$TripMemberResponseCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at') DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
+@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
 });
 
 
@@ -1474,7 +1476,7 @@ as String,
 /// @nodoc
 mixin _$TripCreateRequest {
 
- String get name;@JsonKey(name: 'start_date') DateTime get startDate; String? get description;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'day_names') List<String>? get dayNames;
+ String get name;@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate; String? get description;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'day_names') List<String>? get dayNames;
 /// Create a copy of TripCreateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1507,7 +1509,7 @@ abstract mixin class $TripCreateRequestCopyWith<$Res>  {
   factory $TripCreateRequestCopyWith(TripCreateRequest value, $Res Function(TripCreateRequest) _then) = _$TripCreateRequestCopyWithImpl;
 @useResult
 $Res call({
- String name,@JsonKey(name: 'start_date') DateTime startDate, String? description,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'day_names') List<String>? dayNames
+ String name,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate, String? description,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'day_names') List<String>? dayNames
 });
 
 
@@ -1617,7 +1619,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')  DateTime startDate,  String? description, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'day_names')  List<String>? dayNames)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate,  String? description, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'day_names')  List<String>? dayNames)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripCreateRequest() when $default != null:
 return $default(_that.name,_that.startDate,_that.description,_that.endDate,_that.coverImage,_that.dayNames);case _:
@@ -1638,7 +1640,7 @@ return $default(_that.name,_that.startDate,_that.description,_that.endDate,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')  DateTime startDate,  String? description, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'day_names')  List<String>? dayNames)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate,  String? description, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'day_names')  List<String>? dayNames)  $default,) {final _that = this;
 switch (_that) {
 case _TripCreateRequest():
 return $default(_that.name,_that.startDate,_that.description,_that.endDate,_that.coverImage,_that.dayNames);case _:
@@ -1658,7 +1660,7 @@ return $default(_that.name,_that.startDate,_that.description,_that.endDate,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name, @JsonKey(name: 'start_date')  DateTime startDate,  String? description, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'day_names')  List<String>? dayNames)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate,  String? description, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'day_names')  List<String>? dayNames)?  $default,) {final _that = this;
 switch (_that) {
 case _TripCreateRequest() when $default != null:
 return $default(_that.name,_that.startDate,_that.description,_that.endDate,_that.coverImage,_that.dayNames);case _:
@@ -1673,13 +1675,13 @@ return $default(_that.name,_that.startDate,_that.description,_that.endDate,_that
 @JsonSerializable()
 
 class _TripCreateRequest implements TripCreateRequest {
-  const _TripCreateRequest({required this.name, @JsonKey(name: 'start_date') required this.startDate, this.description, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'day_names') final  List<String>? dayNames}): _dayNames = dayNames;
+  const _TripCreateRequest({required this.name, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, this.description, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'day_names') final  List<String>? dayNames}): _dayNames = dayNames;
   factory _TripCreateRequest.fromJson(Map<String, dynamic> json) => _$TripCreateRequestFromJson(json);
 
 @override final  String name;
-@override@JsonKey(name: 'start_date') final  DateTime startDate;
+@override@JsonKey(name: 'start_date')@DateOnlyConverter() final  DateTime startDate;
 @override final  String? description;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(name: 'cover_image') final  String? coverImage;
  final  List<String>? _dayNames;
 @override@JsonKey(name: 'day_names') List<String>? get dayNames {
@@ -1724,7 +1726,7 @@ abstract mixin class _$TripCreateRequestCopyWith<$Res> implements $TripCreateReq
   factory _$TripCreateRequestCopyWith(_TripCreateRequest value, $Res Function(_TripCreateRequest) _then) = __$TripCreateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String name,@JsonKey(name: 'start_date') DateTime startDate, String? description,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'day_names') List<String>? dayNames
+ String name,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate, String? description,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'day_names') List<String>? dayNames
 });
 
 
@@ -1760,7 +1762,7 @@ as List<String>?,
 /// @nodoc
 mixin _$TripUpdateRequest {
 
- String? get name; String? get description;@JsonKey(name: 'start_date') DateTime? get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'is_active') bool? get isActive;@JsonKey(name: 'day_names') List<String>? get dayNames;@JsonKey(name: 'last_updated_at') DateTime? get lastUpdatedAt;
+ String? get name; String? get description;@JsonKey(name: 'start_date')@NullableDateOnlyConverter() DateTime? get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(name: 'cover_image') String? get coverImage;@JsonKey(name: 'is_active') bool? get isActive;@JsonKey(name: 'day_names') List<String>? get dayNames;@JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter() DateTime? get lastUpdatedAt;
 /// Create a copy of TripUpdateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1793,7 +1795,7 @@ abstract mixin class $TripUpdateRequestCopyWith<$Res>  {
   factory $TripUpdateRequestCopyWith(TripUpdateRequest value, $Res Function(TripUpdateRequest) _then) = _$TripUpdateRequestCopyWithImpl;
 @useResult
 $Res call({
- String? name, String? description,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'day_names') List<String>? dayNames,@JsonKey(name: 'last_updated_at') DateTime? lastUpdatedAt
+ String? name, String? description,@JsonKey(name: 'start_date')@NullableDateOnlyConverter() DateTime? startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'day_names') List<String>? dayNames,@JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter() DateTime? lastUpdatedAt
 });
 
 
@@ -1905,7 +1907,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? name,  String? description, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'day_names')  List<String>? dayNames, @JsonKey(name: 'last_updated_at')  DateTime? lastUpdatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? name,  String? description, @JsonKey(name: 'start_date')@NullableDateOnlyConverter()  DateTime? startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'day_names')  List<String>? dayNames, @JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter()  DateTime? lastUpdatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripUpdateRequest() when $default != null:
 return $default(_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.dayNames,_that.lastUpdatedAt);case _:
@@ -1926,7 +1928,7 @@ return $default(_that.name,_that.description,_that.startDate,_that.endDate,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? name,  String? description, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'day_names')  List<String>? dayNames, @JsonKey(name: 'last_updated_at')  DateTime? lastUpdatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? name,  String? description, @JsonKey(name: 'start_date')@NullableDateOnlyConverter()  DateTime? startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'day_names')  List<String>? dayNames, @JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter()  DateTime? lastUpdatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _TripUpdateRequest():
 return $default(_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.dayNames,_that.lastUpdatedAt);case _:
@@ -1946,7 +1948,7 @@ return $default(_that.name,_that.description,_that.startDate,_that.endDate,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? name,  String? description, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'day_names')  List<String>? dayNames, @JsonKey(name: 'last_updated_at')  DateTime? lastUpdatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? name,  String? description, @JsonKey(name: 'start_date')@NullableDateOnlyConverter()  DateTime? startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'cover_image')  String? coverImage, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'day_names')  List<String>? dayNames, @JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter()  DateTime? lastUpdatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TripUpdateRequest() when $default != null:
 return $default(_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.dayNames,_that.lastUpdatedAt);case _:
@@ -1961,13 +1963,13 @@ return $default(_that.name,_that.description,_that.startDate,_that.endDate,_that
 @JsonSerializable()
 
 class _TripUpdateRequest implements TripUpdateRequest {
-  const _TripUpdateRequest({this.name, this.description, @JsonKey(name: 'start_date') this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'is_active') this.isActive, @JsonKey(name: 'day_names') final  List<String>? dayNames, @JsonKey(name: 'last_updated_at') this.lastUpdatedAt}): _dayNames = dayNames;
+  const _TripUpdateRequest({this.name, this.description, @JsonKey(name: 'start_date')@NullableDateOnlyConverter() this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(name: 'cover_image') this.coverImage, @JsonKey(name: 'is_active') this.isActive, @JsonKey(name: 'day_names') final  List<String>? dayNames, @JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter() this.lastUpdatedAt}): _dayNames = dayNames;
   factory _TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);
 
 @override final  String? name;
 @override final  String? description;
-@override@JsonKey(name: 'start_date') final  DateTime? startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+@override@JsonKey(name: 'start_date')@NullableDateOnlyConverter() final  DateTime? startDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(name: 'cover_image') final  String? coverImage;
 @override@JsonKey(name: 'is_active') final  bool? isActive;
  final  List<String>? _dayNames;
@@ -1979,7 +1981,7 @@ class _TripUpdateRequest implements TripUpdateRequest {
   return EqualUnmodifiableListView(value);
 }
 
-@override@JsonKey(name: 'last_updated_at') final  DateTime? lastUpdatedAt;
+@override@JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter() final  DateTime? lastUpdatedAt;
 
 /// Create a copy of TripUpdateRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -2014,7 +2016,7 @@ abstract mixin class _$TripUpdateRequestCopyWith<$Res> implements $TripUpdateReq
   factory _$TripUpdateRequestCopyWith(_TripUpdateRequest value, $Res Function(_TripUpdateRequest) _then) = __$TripUpdateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String? name, String? description,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'day_names') List<String>? dayNames,@JsonKey(name: 'last_updated_at') DateTime? lastUpdatedAt
+ String? name, String? description,@JsonKey(name: 'start_date')@NullableDateOnlyConverter() DateTime? startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'cover_image') String? coverImage,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'day_names') List<String>? dayNames,@JsonKey(name: 'last_updated_at')@NullableDateTimeUtcConverter() DateTime? lastUpdatedAt
 });
 
 

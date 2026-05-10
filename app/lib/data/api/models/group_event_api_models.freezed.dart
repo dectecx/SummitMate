@@ -305,7 +305,8 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$GroupEventResponse {
 
- String get id;@JsonKey(name: 'creator_id') String get creatorId; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category;@JsonKey(defaultValue: '') String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? get tripSnapshot;@JsonKey(name: 'snapshot_updated_at') DateTime? get snapshotUpdatedAt;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'creator_name', defaultValue: '') String get creatorName;@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String get creatorAvatar;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'creator_id') String get creatorId; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category;@JsonKey(defaultValue: '') String get location;// start_date / end_date are date-only fields (format: date in OpenAPI)
+@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? get tripSnapshot;@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? get snapshotUpdatedAt;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'creator_name', defaultValue: '') String get creatorName;@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String get creatorAvatar;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +339,7 @@ abstract mixin class $GroupEventResponseCopyWith<$Res>  {
   factory $GroupEventResponseCopyWith(GroupEventResponse value, $Res Function(GroupEventResponse) _then) = _$GroupEventResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at') DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -482,7 +483,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventResponse() when $default != null:
 return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -503,7 +504,7 @@ return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.cat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventResponse():
 return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -523,7 +524,7 @@ return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.cat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'creator_id')  String creatorId,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '')  String creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻')  String creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventResponse() when $default != null:
 return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.creatorName,_that.creatorAvatar,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -538,7 +539,7 @@ return $default(_that.id,_that.creatorId,_that.title,_that.description,_that.cat
 @JsonSerializable()
 
 class _GroupEventResponse implements GroupEventResponse {
-  const _GroupEventResponse({required this.id, @JsonKey(name: 'creator_id') required this.creatorId, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, @JsonKey(defaultValue: '') required this.location, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(defaultValue: 'open') required this.status, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'application_count', defaultValue: 0) required this.applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0) required this.totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message', defaultValue: '') required this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId, @JsonKey(name: 'trip_snapshot') this.tripSnapshot, @JsonKey(name: 'snapshot_updated_at') this.snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0) required this.likeCount, @JsonKey(name: 'comment_count', defaultValue: 0) required this.commentCount, @JsonKey(name: 'is_liked', defaultValue: false) required this.isLiked, @JsonKey(name: 'my_application_status') this.myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '') required this.creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻') required this.creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: []) required final  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _latestComments = latestComments;
+  const _GroupEventResponse({required this.id, @JsonKey(name: 'creator_id') required this.creatorId, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, @JsonKey(defaultValue: '') required this.location, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(defaultValue: 'open') required this.status, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'application_count', defaultValue: 0) required this.applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0) required this.totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message', defaultValue: '') required this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId, @JsonKey(name: 'trip_snapshot') this.tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() this.snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0) required this.likeCount, @JsonKey(name: 'comment_count', defaultValue: 0) required this.commentCount, @JsonKey(name: 'is_liked', defaultValue: false) required this.isLiked, @JsonKey(name: 'my_application_status') this.myApplicationStatus, @JsonKey(name: 'creator_name', defaultValue: '') required this.creatorName, @JsonKey(name: 'creator_avatar', defaultValue: '🐻') required this.creatorAvatar, @JsonKey(name: 'latest_comments', defaultValue: []) required final  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _latestComments = latestComments;
   factory _GroupEventResponse.fromJson(Map<String, dynamic> json) => _$GroupEventResponseFromJson(json);
 
 @override final  String id;
@@ -547,8 +548,9 @@ class _GroupEventResponse implements GroupEventResponse {
 @override@JsonKey(defaultValue: '') final  String description;
 @override@JsonKey(defaultValue: GroupEventCategory.other) final  GroupEventCategory category;
 @override@JsonKey(defaultValue: '') final  String location;
-@override@JsonKey(name: 'start_date') final  DateTime startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+// start_date / end_date are date-only fields (format: date in OpenAPI)
+@override@JsonKey(name: 'start_date')@DateOnlyConverter() final  DateTime startDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(defaultValue: 'open') final  String status;
 @override@JsonKey(name: 'max_members', defaultValue: 10) final  int maxMembers;
 @override@JsonKey(name: 'application_count', defaultValue: 0) final  int applicationCount;
@@ -557,7 +559,7 @@ class _GroupEventResponse implements GroupEventResponse {
 @override@JsonKey(name: 'private_message', defaultValue: '') final  String privateMessage;
 @override@JsonKey(name: 'linked_trip_id') final  String? linkedTripId;
 @override@JsonKey(name: 'trip_snapshot') final  TripSnapshotResponse? tripSnapshot;
-@override@JsonKey(name: 'snapshot_updated_at') final  DateTime? snapshotUpdatedAt;
+@override@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() final  DateTime? snapshotUpdatedAt;
 @override@JsonKey(name: 'like_count', defaultValue: 0) final  int likeCount;
 @override@JsonKey(name: 'comment_count', defaultValue: 0) final  int commentCount;
 @override@JsonKey(name: 'is_liked', defaultValue: false) final  bool isLiked;
@@ -571,9 +573,9 @@ class _GroupEventResponse implements GroupEventResponse {
   return EqualUnmodifiableListView(_latestComments);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of GroupEventResponse
@@ -609,7 +611,7 @@ abstract mixin class _$GroupEventResponseCopyWith<$Res> implements $GroupEventRe
   factory _$GroupEventResponseCopyWith(_GroupEventResponse value, $Res Function(_GroupEventResponse) _then) = __$GroupEventResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at') DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'creator_id') String creatorId, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'creator_name', defaultValue: '') String creatorName,@JsonKey(name: 'creator_avatar', defaultValue: '🐻') String creatorAvatar,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -679,7 +681,7 @@ $TripSnapshotResponseCopyWith<$Res>? get tripSnapshot {
 /// @nodoc
 mixin _$GroupEventApplicationResponse {
 
- String get id;@JsonKey(name: 'event_id') String get eventId;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: 'pending') String get status;@JsonKey(defaultValue: '') String get message;@JsonKey(name: 'user_name', defaultValue: '') String get userName;@JsonKey(name: 'user_avatar', defaultValue: '🐻') String get userAvatar;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'event_id') String get eventId;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: 'pending') String get status;@JsonKey(defaultValue: '') String get message;@JsonKey(name: 'user_name', defaultValue: '') String get userName;@JsonKey(name: 'user_avatar', defaultValue: '🐻') String get userAvatar;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GroupEventApplicationResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -712,7 +714,7 @@ abstract mixin class $GroupEventApplicationResponseCopyWith<$Res>  {
   factory $GroupEventApplicationResponseCopyWith(GroupEventApplicationResponse value, $Res Function(GroupEventApplicationResponse) _then) = _$GroupEventApplicationResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -826,7 +828,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventApplicationResponse() when $default != null:
 return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
@@ -847,7 +849,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventApplicationResponse():
 return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
@@ -867,7 +869,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventApplicationResponse() when $default != null:
 return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
@@ -882,7 +884,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 @JsonSerializable()
 
 class _GroupEventApplicationResponse implements GroupEventApplicationResponse {
-  const _GroupEventApplicationResponse({required this.id, @JsonKey(name: 'event_id') required this.eventId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(defaultValue: 'pending') required this.status, @JsonKey(defaultValue: '') required this.message, @JsonKey(name: 'user_name', defaultValue: '') required this.userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻') required this.userAvatar, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
+  const _GroupEventApplicationResponse({required this.id, @JsonKey(name: 'event_id') required this.eventId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(defaultValue: 'pending') required this.status, @JsonKey(defaultValue: '') required this.message, @JsonKey(name: 'user_name', defaultValue: '') required this.userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻') required this.userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
   factory _GroupEventApplicationResponse.fromJson(Map<String, dynamic> json) => _$GroupEventApplicationResponseFromJson(json);
 
 @override final  String id;
@@ -892,8 +894,8 @@ class _GroupEventApplicationResponse implements GroupEventApplicationResponse {
 @override@JsonKey(defaultValue: '') final  String message;
 @override@JsonKey(name: 'user_name', defaultValue: '') final  String userName;
 @override@JsonKey(name: 'user_avatar', defaultValue: '🐻') final  String userAvatar;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of GroupEventApplicationResponse
@@ -929,7 +931,7 @@ abstract mixin class _$GroupEventApplicationResponseCopyWith<$Res> implements $G
   factory _$GroupEventApplicationResponseCopyWith(_GroupEventApplicationResponse value, $Res Function(_GroupEventApplicationResponse) _then) = __$GroupEventApplicationResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -969,7 +971,7 @@ as String,
 /// @nodoc
 mixin _$GroupEventCommentResponse {
 
- String get id;@JsonKey(name: 'event_id') String get eventId;@JsonKey(name: 'user_id') String get userId; String get content;@JsonKey(name: 'user_name', defaultValue: '') String get userName;@JsonKey(name: 'user_avatar', defaultValue: '🐻') String get userAvatar;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'event_id') String get eventId;@JsonKey(name: 'user_id') String get userId; String get content;@JsonKey(name: 'user_name', defaultValue: '') String get userName;@JsonKey(name: 'user_avatar', defaultValue: '🐻') String get userAvatar;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
 /// Create a copy of GroupEventCommentResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1002,7 +1004,7 @@ abstract mixin class $GroupEventCommentResponseCopyWith<$Res>  {
   factory $GroupEventCommentResponseCopyWith(GroupEventCommentResponse value, $Res Function(GroupEventCommentResponse) _then) = _$GroupEventCommentResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId, String content,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId, String content,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -1114,7 +1116,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId,  String content, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId,  String content, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventCommentResponse() when $default != null:
 return $default(_that.id,_that.eventId,_that.userId,_that.content,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt);case _:
@@ -1135,7 +1137,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.content,_that.userName
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId,  String content, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId,  String content, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventCommentResponse():
 return $default(_that.id,_that.eventId,_that.userId,_that.content,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt);case _:
@@ -1155,7 +1157,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.content,_that.userName
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId,  String content, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId,  String content, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventCommentResponse() when $default != null:
 return $default(_that.id,_that.eventId,_that.userId,_that.content,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt);case _:
@@ -1170,7 +1172,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.content,_that.userName
 @JsonSerializable()
 
 class _GroupEventCommentResponse implements GroupEventCommentResponse {
-  const _GroupEventCommentResponse({required this.id, @JsonKey(name: 'event_id') required this.eventId, @JsonKey(name: 'user_id') required this.userId, required this.content, @JsonKey(name: 'user_name', defaultValue: '') required this.userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻') required this.userAvatar, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _GroupEventCommentResponse({required this.id, @JsonKey(name: 'event_id') required this.eventId, @JsonKey(name: 'user_id') required this.userId, required this.content, @JsonKey(name: 'user_name', defaultValue: '') required this.userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻') required this.userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
   factory _GroupEventCommentResponse.fromJson(Map<String, dynamic> json) => _$GroupEventCommentResponseFromJson(json);
 
 @override final  String id;
@@ -1179,8 +1181,8 @@ class _GroupEventCommentResponse implements GroupEventCommentResponse {
 @override final  String content;
 @override@JsonKey(name: 'user_name', defaultValue: '') final  String userName;
 @override@JsonKey(name: 'user_avatar', defaultValue: '🐻') final  String userAvatar;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 
 /// Create a copy of GroupEventCommentResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -1215,7 +1217,7 @@ abstract mixin class _$GroupEventCommentResponseCopyWith<$Res> implements $Group
   factory _$GroupEventCommentResponseCopyWith(_GroupEventCommentResponse value, $Res Function(_GroupEventCommentResponse) _then) = __$GroupEventCommentResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId, String content,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId, String content,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -1253,7 +1255,7 @@ as DateTime,
 /// @nodoc
 mixin _$TripSnapshotResponse {
 
- String get name;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(defaultValue: []) List<ItineraryItemResponse> get itinerary;
+ String get name;@JsonKey(name: 'start_date')@DateTimeUtcConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateTimeUtcConverter() DateTime? get endDate;@JsonKey(defaultValue: []) List<ItineraryItemResponse> get itinerary;
 /// Create a copy of TripSnapshotResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1286,7 +1288,7 @@ abstract mixin class $TripSnapshotResponseCopyWith<$Res>  {
   factory $TripSnapshotResponseCopyWith(TripSnapshotResponse value, $Res Function(TripSnapshotResponse) _then) = _$TripSnapshotResponseCopyWithImpl;
 @useResult
 $Res call({
- String name,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: []) List<ItineraryItemResponse> itinerary
+ String name,@JsonKey(name: 'start_date')@DateTimeUtcConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateTimeUtcConverter() DateTime? endDate,@JsonKey(defaultValue: []) List<ItineraryItemResponse> itinerary
 });
 
 
@@ -1394,7 +1396,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: [])  List<ItineraryItemResponse> itinerary)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')@DateTimeUtcConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateTimeUtcConverter()  DateTime? endDate, @JsonKey(defaultValue: [])  List<ItineraryItemResponse> itinerary)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripSnapshotResponse() when $default != null:
 return $default(_that.name,_that.startDate,_that.endDate,_that.itinerary);case _:
@@ -1415,7 +1417,7 @@ return $default(_that.name,_that.startDate,_that.endDate,_that.itinerary);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: [])  List<ItineraryItemResponse> itinerary)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name, @JsonKey(name: 'start_date')@DateTimeUtcConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateTimeUtcConverter()  DateTime? endDate, @JsonKey(defaultValue: [])  List<ItineraryItemResponse> itinerary)  $default,) {final _that = this;
 switch (_that) {
 case _TripSnapshotResponse():
 return $default(_that.name,_that.startDate,_that.endDate,_that.itinerary);case _:
@@ -1435,7 +1437,7 @@ return $default(_that.name,_that.startDate,_that.endDate,_that.itinerary);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(defaultValue: [])  List<ItineraryItemResponse> itinerary)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name, @JsonKey(name: 'start_date')@DateTimeUtcConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateTimeUtcConverter()  DateTime? endDate, @JsonKey(defaultValue: [])  List<ItineraryItemResponse> itinerary)?  $default,) {final _that = this;
 switch (_that) {
 case _TripSnapshotResponse() when $default != null:
 return $default(_that.name,_that.startDate,_that.endDate,_that.itinerary);case _:
@@ -1450,12 +1452,12 @@ return $default(_that.name,_that.startDate,_that.endDate,_that.itinerary);case _
 @JsonSerializable()
 
 class _TripSnapshotResponse implements TripSnapshotResponse {
-  const _TripSnapshotResponse({required this.name, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(defaultValue: []) required final  List<ItineraryItemResponse> itinerary}): _itinerary = itinerary;
+  const _TripSnapshotResponse({required this.name, @JsonKey(name: 'start_date')@DateTimeUtcConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateTimeUtcConverter() this.endDate, @JsonKey(defaultValue: []) required final  List<ItineraryItemResponse> itinerary}): _itinerary = itinerary;
   factory _TripSnapshotResponse.fromJson(Map<String, dynamic> json) => _$TripSnapshotResponseFromJson(json);
 
 @override final  String name;
-@override@JsonKey(name: 'start_date') final  DateTime startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+@override@JsonKey(name: 'start_date')@DateTimeUtcConverter() final  DateTime startDate;
+@override@JsonKey(name: 'end_date')@NullableDateTimeUtcConverter() final  DateTime? endDate;
  final  List<ItineraryItemResponse> _itinerary;
 @override@JsonKey(defaultValue: []) List<ItineraryItemResponse> get itinerary {
   if (_itinerary is EqualUnmodifiableListView) return _itinerary;
@@ -1497,7 +1499,7 @@ abstract mixin class _$TripSnapshotResponseCopyWith<$Res> implements $TripSnapsh
   factory _$TripSnapshotResponseCopyWith(_TripSnapshotResponse value, $Res Function(_TripSnapshotResponse) _then) = __$TripSnapshotResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String name,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(defaultValue: []) List<ItineraryItemResponse> itinerary
+ String name,@JsonKey(name: 'start_date')@DateTimeUtcConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateTimeUtcConverter() DateTime? endDate,@JsonKey(defaultValue: []) List<ItineraryItemResponse> itinerary
 });
 
 
@@ -1531,7 +1533,8 @@ as List<ItineraryItemResponse>,
 /// @nodoc
 mixin _$GroupEventCreateRequest {
 
- String get title; String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category; String get location;@JsonKey(name: 'start_date') DateTime get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;
+ String get title; String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category; String get location;// date-only fields (format: date in OpenAPI) - send YYYY-MM-DD
+@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;
 /// Create a copy of GroupEventCreateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1564,7 +1567,7 @@ abstract mixin class $GroupEventCreateRequestCopyWith<$Res>  {
   factory $GroupEventCreateRequestCopyWith(GroupEventCreateRequest value, $Res Function(GroupEventCreateRequest) _then) = _$GroupEventCreateRequestCopyWithImpl;
 @useResult
 $Res call({
- String title, String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category, String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
+ String title, String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category, String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
 });
 
 
@@ -1678,7 +1681,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventCreateRequest() when $default != null:
 return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
@@ -1699,7 +1702,7 @@ return $default(_that.title,_that.description,_that.category,_that.location,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventCreateRequest():
 return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
@@ -1719,7 +1722,7 @@ return $default(_that.title,_that.description,_that.category,_that.location,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')  DateTime startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title,  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category,  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventCreateRequest() when $default != null:
 return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
@@ -1734,15 +1737,16 @@ return $default(_that.title,_that.description,_that.category,_that.location,_tha
 @JsonSerializable()
 
 class _GroupEventCreateRequest implements GroupEventCreateRequest {
-  const _GroupEventCreateRequest({required this.title, required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, required this.location, @JsonKey(name: 'start_date') required this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId});
+  const _GroupEventCreateRequest({required this.title, required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, required this.location, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId});
   factory _GroupEventCreateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventCreateRequestFromJson(json);
 
 @override final  String title;
 @override final  String description;
 @override@JsonKey(defaultValue: GroupEventCategory.other) final  GroupEventCategory category;
 @override final  String location;
-@override@JsonKey(name: 'start_date') final  DateTime startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+// date-only fields (format: date in OpenAPI) - send YYYY-MM-DD
+@override@JsonKey(name: 'start_date')@DateOnlyConverter() final  DateTime startDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(name: 'max_members', defaultValue: 10) final  int maxMembers;
 @override@JsonKey(name: 'approval_required', defaultValue: false) final  bool approvalRequired;
 @override@JsonKey(name: 'private_message') final  String? privateMessage;
@@ -1781,7 +1785,7 @@ abstract mixin class _$GroupEventCreateRequestCopyWith<$Res> implements $GroupEv
   factory _$GroupEventCreateRequestCopyWith(_GroupEventCreateRequest value, $Res Function(_GroupEventCreateRequest) _then) = __$GroupEventCreateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String title, String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category, String location,@JsonKey(name: 'start_date') DateTime startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
+ String title, String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category, String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
 });
 
 
@@ -1821,7 +1825,7 @@ as String?,
 /// @nodoc
 mixin _$GroupEventUpdateRequest {
 
- String? get title; String? get description; GroupEventCategory? get category; String? get location;@JsonKey(name: 'start_date') DateTime? get startDate;@JsonKey(name: 'end_date') DateTime? get endDate;@JsonKey(name: 'max_members') int? get maxMembers;@JsonKey(name: 'approval_required') bool? get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;
+ String? get title; String? get description; GroupEventCategory? get category; String? get location;@JsonKey(name: 'start_date')@NullableDateOnlyConverter() DateTime? get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(name: 'max_members') int? get maxMembers;@JsonKey(name: 'approval_required') bool? get approvalRequired;@JsonKey(name: 'private_message') String? get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;
 /// Create a copy of GroupEventUpdateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1854,7 +1858,7 @@ abstract mixin class $GroupEventUpdateRequestCopyWith<$Res>  {
   factory $GroupEventUpdateRequestCopyWith(GroupEventUpdateRequest value, $Res Function(GroupEventUpdateRequest) _then) = _$GroupEventUpdateRequestCopyWithImpl;
 @useResult
 $Res call({
- String? title, String? description, GroupEventCategory? category, String? location,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
+ String? title, String? description, GroupEventCategory? category, String? location,@JsonKey(name: 'start_date')@NullableDateOnlyConverter() DateTime? startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
 });
 
 
@@ -1968,7 +1972,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')@NullableDateOnlyConverter()  DateTime? startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventUpdateRequest() when $default != null:
 return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
@@ -1989,7 +1993,7 @@ return $default(_that.title,_that.description,_that.category,_that.location,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')@NullableDateOnlyConverter()  DateTime? startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventUpdateRequest():
 return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
@@ -2009,7 +2013,7 @@ return $default(_that.title,_that.description,_that.category,_that.location,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')  DateTime? startDate, @JsonKey(name: 'end_date')  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? title,  String? description,  GroupEventCategory? category,  String? location, @JsonKey(name: 'start_date')@NullableDateOnlyConverter()  DateTime? startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(name: 'max_members')  int? maxMembers, @JsonKey(name: 'approval_required')  bool? approvalRequired, @JsonKey(name: 'private_message')  String? privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventUpdateRequest() when $default != null:
 return $default(_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.maxMembers,_that.approvalRequired,_that.privateMessage,_that.linkedTripId);case _:
@@ -2024,15 +2028,15 @@ return $default(_that.title,_that.description,_that.category,_that.location,_tha
 @JsonSerializable()
 
 class _GroupEventUpdateRequest implements GroupEventUpdateRequest {
-  const _GroupEventUpdateRequest({this.title, this.description, this.category, this.location, @JsonKey(name: 'start_date') this.startDate, @JsonKey(name: 'end_date') this.endDate, @JsonKey(name: 'max_members') this.maxMembers, @JsonKey(name: 'approval_required') this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId});
+  const _GroupEventUpdateRequest({this.title, this.description, this.category, this.location, @JsonKey(name: 'start_date')@NullableDateOnlyConverter() this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(name: 'max_members') this.maxMembers, @JsonKey(name: 'approval_required') this.approvalRequired, @JsonKey(name: 'private_message') this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId});
   factory _GroupEventUpdateRequest.fromJson(Map<String, dynamic> json) => _$GroupEventUpdateRequestFromJson(json);
 
 @override final  String? title;
 @override final  String? description;
 @override final  GroupEventCategory? category;
 @override final  String? location;
-@override@JsonKey(name: 'start_date') final  DateTime? startDate;
-@override@JsonKey(name: 'end_date') final  DateTime? endDate;
+@override@JsonKey(name: 'start_date')@NullableDateOnlyConverter() final  DateTime? startDate;
+@override@JsonKey(name: 'end_date')@NullableDateOnlyConverter() final  DateTime? endDate;
 @override@JsonKey(name: 'max_members') final  int? maxMembers;
 @override@JsonKey(name: 'approval_required') final  bool? approvalRequired;
 @override@JsonKey(name: 'private_message') final  String? privateMessage;
@@ -2071,7 +2075,7 @@ abstract mixin class _$GroupEventUpdateRequestCopyWith<$Res> implements $GroupEv
   factory _$GroupEventUpdateRequestCopyWith(_GroupEventUpdateRequest value, $Res Function(_GroupEventUpdateRequest) _then) = __$GroupEventUpdateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String? title, String? description, GroupEventCategory? category, String? location,@JsonKey(name: 'start_date') DateTime? startDate,@JsonKey(name: 'end_date') DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
+ String? title, String? description, GroupEventCategory? category, String? location,@JsonKey(name: 'start_date')@NullableDateOnlyConverter() DateTime? startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(name: 'max_members') int? maxMembers,@JsonKey(name: 'approval_required') bool? approvalRequired,@JsonKey(name: 'private_message') String? privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId
 });
 
 

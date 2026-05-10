@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$PollOptionResponse {
 
- String get id;@JsonKey(name: 'poll_id') String get pollId; String get text;@JsonKey(name: 'creator_id') String get creatorId;@JsonKey(name: 'vote_count', defaultValue: 0) int get voteCount;@JsonKey(defaultValue: []) List<Map<String, dynamic>> get voters;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'poll_id') String get pollId; String get text;@JsonKey(name: 'creator_id') String get creatorId;@JsonKey(name: 'vote_count', defaultValue: 0) int get voteCount;@JsonKey(defaultValue: []) List<Map<String, dynamic>> get voters;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of PollOptionResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $PollOptionResponseCopyWith<$Res>  {
   factory $PollOptionResponseCopyWith(PollOptionResponse value, $Res Function(PollOptionResponse) _then) = _$PollOptionResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<Map<String, dynamic>> voters,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<Map<String, dynamic>> voters,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -452,7 +452,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PollOptionResponse() when $default != null:
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -473,7 +473,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _PollOptionResponse():
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -493,7 +493,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _PollOptionResponse() when $default != null:
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -508,7 +508,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 @JsonSerializable()
 
 class _PollOptionResponse implements PollOptionResponse {
-  const _PollOptionResponse({required this.id, @JsonKey(name: 'poll_id') required this.pollId, required this.text, @JsonKey(name: 'creator_id') required this.creatorId, @JsonKey(name: 'vote_count', defaultValue: 0) required this.voteCount, @JsonKey(defaultValue: []) required final  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _voters = voters;
+  const _PollOptionResponse({required this.id, @JsonKey(name: 'poll_id') required this.pollId, required this.text, @JsonKey(name: 'creator_id') required this.creatorId, @JsonKey(name: 'vote_count', defaultValue: 0) required this.voteCount, @JsonKey(defaultValue: []) required final  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _voters = voters;
   factory _PollOptionResponse.fromJson(Map<String, dynamic> json) => _$PollOptionResponseFromJson(json);
 
 @override final  String id;
@@ -523,9 +523,9 @@ class _PollOptionResponse implements PollOptionResponse {
   return EqualUnmodifiableListView(_voters);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of PollOptionResponse
@@ -561,7 +561,7 @@ abstract mixin class _$PollOptionResponseCopyWith<$Res> implements $PollOptionRe
   factory _$PollOptionResponseCopyWith(_PollOptionResponse value, $Res Function(_PollOptionResponse) _then) = __$PollOptionResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<Map<String, dynamic>> voters,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<Map<String, dynamic>> voters,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -601,7 +601,7 @@ as String,
 /// @nodoc
 mixin _$PollResponse {
 
- String get id; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(name: 'creator_id') String get creatorId; DateTime? get deadline;@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool get isAllowAddOption;@JsonKey(name: 'max_option_limit', defaultValue: 20) int get maxOptionLimit;@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool get allowMultipleVotes;@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String get resultDisplayType;@JsonKey(defaultValue: 'active') String get status;@JsonKey(defaultValue: []) List<PollOptionResponse> get options;@JsonKey(name: 'my_votes', defaultValue: []) List<String> get myVotes;@JsonKey(name: 'total_votes', defaultValue: 0) int get totalVotes;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(name: 'creator_id') String get creatorId;@NullableDateTimeUtcConverter() DateTime? get deadline;@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool get isAllowAddOption;@JsonKey(name: 'max_option_limit', defaultValue: 20) int get maxOptionLimit;@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool get allowMultipleVotes;@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String get resultDisplayType;@JsonKey(defaultValue: 'active') String get status;@JsonKey(defaultValue: []) List<PollOptionResponse> get options;@JsonKey(name: 'my_votes', defaultValue: []) List<String> get myVotes;@JsonKey(name: 'total_votes', defaultValue: 0) int get totalVotes;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of PollResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -634,7 +634,7 @@ abstract mixin class $PollResponseCopyWith<$Res>  {
   factory $PollResponseCopyWith(PollResponse value, $Res Function(PollResponse) _then) = _$PollResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String title,@JsonKey(defaultValue: '') String description,@JsonKey(name: 'creator_id') String creatorId, DateTime? deadline,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType,@JsonKey(defaultValue: 'active') String status,@JsonKey(defaultValue: []) List<PollOptionResponse> options,@JsonKey(name: 'my_votes', defaultValue: []) List<String> myVotes,@JsonKey(name: 'total_votes', defaultValue: 0) int totalVotes,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id, String title,@JsonKey(defaultValue: '') String description,@JsonKey(name: 'creator_id') String creatorId,@NullableDateTimeUtcConverter() DateTime? deadline,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType,@JsonKey(defaultValue: 'active') String status,@JsonKey(defaultValue: []) List<PollOptionResponse> options,@JsonKey(name: 'my_votes', defaultValue: []) List<String> myVotes,@JsonKey(name: 'total_votes', defaultValue: 0) int totalVotes,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -755,7 +755,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(name: 'creator_id')  String creatorId,  DateTime? deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType, @JsonKey(defaultValue: 'active')  String status, @JsonKey(defaultValue: [])  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: [])  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0)  int totalVotes, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(name: 'creator_id')  String creatorId, @NullableDateTimeUtcConverter()  DateTime? deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType, @JsonKey(defaultValue: 'active')  String status, @JsonKey(defaultValue: [])  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: [])  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0)  int totalVotes, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PollResponse() when $default != null:
 return $default(_that.id,_that.title,_that.description,_that.creatorId,_that.deadline,_that.isAllowAddOption,_that.maxOptionLimit,_that.allowMultipleVotes,_that.resultDisplayType,_that.status,_that.options,_that.myVotes,_that.totalVotes,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -776,7 +776,7 @@ return $default(_that.id,_that.title,_that.description,_that.creatorId,_that.dea
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(name: 'creator_id')  String creatorId,  DateTime? deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType, @JsonKey(defaultValue: 'active')  String status, @JsonKey(defaultValue: [])  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: [])  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0)  int totalVotes, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(name: 'creator_id')  String creatorId, @NullableDateTimeUtcConverter()  DateTime? deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType, @JsonKey(defaultValue: 'active')  String status, @JsonKey(defaultValue: [])  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: [])  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0)  int totalVotes, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _PollResponse():
 return $default(_that.id,_that.title,_that.description,_that.creatorId,_that.deadline,_that.isAllowAddOption,_that.maxOptionLimit,_that.allowMultipleVotes,_that.resultDisplayType,_that.status,_that.options,_that.myVotes,_that.totalVotes,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -796,7 +796,7 @@ return $default(_that.id,_that.title,_that.description,_that.creatorId,_that.dea
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(name: 'creator_id')  String creatorId,  DateTime? deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType, @JsonKey(defaultValue: 'active')  String status, @JsonKey(defaultValue: [])  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: [])  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0)  int totalVotes, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(name: 'creator_id')  String creatorId, @NullableDateTimeUtcConverter()  DateTime? deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType, @JsonKey(defaultValue: 'active')  String status, @JsonKey(defaultValue: [])  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: [])  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0)  int totalVotes, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _PollResponse() when $default != null:
 return $default(_that.id,_that.title,_that.description,_that.creatorId,_that.deadline,_that.isAllowAddOption,_that.maxOptionLimit,_that.allowMultipleVotes,_that.resultDisplayType,_that.status,_that.options,_that.myVotes,_that.totalVotes,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -811,14 +811,14 @@ return $default(_that.id,_that.title,_that.description,_that.creatorId,_that.dea
 @JsonSerializable()
 
 class _PollResponse implements PollResponse {
-  const _PollResponse({required this.id, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(name: 'creator_id') required this.creatorId, this.deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false) required this.isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20) required this.maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false) required this.allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime') required this.resultDisplayType, @JsonKey(defaultValue: 'active') required this.status, @JsonKey(defaultValue: []) required final  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: []) required final  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0) required this.totalVotes, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _options = options,_myVotes = myVotes;
+  const _PollResponse({required this.id, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(name: 'creator_id') required this.creatorId, @NullableDateTimeUtcConverter() this.deadline, @JsonKey(name: 'is_allow_add_option', defaultValue: false) required this.isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20) required this.maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false) required this.allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime') required this.resultDisplayType, @JsonKey(defaultValue: 'active') required this.status, @JsonKey(defaultValue: []) required final  List<PollOptionResponse> options, @JsonKey(name: 'my_votes', defaultValue: []) required final  List<String> myVotes, @JsonKey(name: 'total_votes', defaultValue: 0) required this.totalVotes, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _options = options,_myVotes = myVotes;
   factory _PollResponse.fromJson(Map<String, dynamic> json) => _$PollResponseFromJson(json);
 
 @override final  String id;
 @override final  String title;
 @override@JsonKey(defaultValue: '') final  String description;
 @override@JsonKey(name: 'creator_id') final  String creatorId;
-@override final  DateTime? deadline;
+@override@NullableDateTimeUtcConverter() final  DateTime? deadline;
 @override@JsonKey(name: 'is_allow_add_option', defaultValue: false) final  bool isAllowAddOption;
 @override@JsonKey(name: 'max_option_limit', defaultValue: 20) final  int maxOptionLimit;
 @override@JsonKey(name: 'allow_multiple_votes', defaultValue: false) final  bool allowMultipleVotes;
@@ -839,9 +839,9 @@ class _PollResponse implements PollResponse {
 }
 
 @override@JsonKey(name: 'total_votes', defaultValue: 0) final  int totalVotes;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of PollResponse
@@ -877,7 +877,7 @@ abstract mixin class _$PollResponseCopyWith<$Res> implements $PollResponseCopyWi
   factory _$PollResponseCopyWith(_PollResponse value, $Res Function(_PollResponse) _then) = __$PollResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title,@JsonKey(defaultValue: '') String description,@JsonKey(name: 'creator_id') String creatorId, DateTime? deadline,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType,@JsonKey(defaultValue: 'active') String status,@JsonKey(defaultValue: []) List<PollOptionResponse> options,@JsonKey(name: 'my_votes', defaultValue: []) List<String> myVotes,@JsonKey(name: 'total_votes', defaultValue: 0) int totalVotes,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id, String title,@JsonKey(defaultValue: '') String description,@JsonKey(name: 'creator_id') String creatorId,@NullableDateTimeUtcConverter() DateTime? deadline,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType,@JsonKey(defaultValue: 'active') String status,@JsonKey(defaultValue: []) List<PollOptionResponse> options,@JsonKey(name: 'my_votes', defaultValue: []) List<String> myVotes,@JsonKey(name: 'total_votes', defaultValue: 0) int totalVotes,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -924,7 +924,7 @@ as String,
 /// @nodoc
 mixin _$PollCreateRequest {
 
- String get title;@JsonKey(defaultValue: '') String? get description; DateTime? get deadline;@JsonKey(name: 'initial_options', defaultValue: []) List<String> get initialOptions;@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool get isAllowAddOption;@JsonKey(name: 'max_option_limit', defaultValue: 20) int get maxOptionLimit;@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool get allowMultipleVotes;@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String get resultDisplayType;
+ String get title;@JsonKey(defaultValue: '') String? get description;@NullableDateTimeUtcConverter() DateTime? get deadline;@JsonKey(name: 'initial_options', defaultValue: []) List<String> get initialOptions;@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool get isAllowAddOption;@JsonKey(name: 'max_option_limit', defaultValue: 20) int get maxOptionLimit;@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool get allowMultipleVotes;@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String get resultDisplayType;
 /// Create a copy of PollCreateRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -957,7 +957,7 @@ abstract mixin class $PollCreateRequestCopyWith<$Res>  {
   factory $PollCreateRequestCopyWith(PollCreateRequest value, $Res Function(PollCreateRequest) _then) = _$PollCreateRequestCopyWithImpl;
 @useResult
 $Res call({
- String title,@JsonKey(defaultValue: '') String? description, DateTime? deadline,@JsonKey(name: 'initial_options', defaultValue: []) List<String> initialOptions,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType
+ String title,@JsonKey(defaultValue: '') String? description,@NullableDateTimeUtcConverter() DateTime? deadline,@JsonKey(name: 'initial_options', defaultValue: []) List<String> initialOptions,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType
 });
 
 
@@ -1069,7 +1069,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title, @JsonKey(defaultValue: '')  String? description,  DateTime? deadline, @JsonKey(name: 'initial_options', defaultValue: [])  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String title, @JsonKey(defaultValue: '')  String? description, @NullableDateTimeUtcConverter()  DateTime? deadline, @JsonKey(name: 'initial_options', defaultValue: [])  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PollCreateRequest() when $default != null:
 return $default(_that.title,_that.description,_that.deadline,_that.initialOptions,_that.isAllowAddOption,_that.maxOptionLimit,_that.allowMultipleVotes,_that.resultDisplayType);case _:
@@ -1090,7 +1090,7 @@ return $default(_that.title,_that.description,_that.deadline,_that.initialOption
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title, @JsonKey(defaultValue: '')  String? description,  DateTime? deadline, @JsonKey(name: 'initial_options', defaultValue: [])  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String title, @JsonKey(defaultValue: '')  String? description, @NullableDateTimeUtcConverter()  DateTime? deadline, @JsonKey(name: 'initial_options', defaultValue: [])  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType)  $default,) {final _that = this;
 switch (_that) {
 case _PollCreateRequest():
 return $default(_that.title,_that.description,_that.deadline,_that.initialOptions,_that.isAllowAddOption,_that.maxOptionLimit,_that.allowMultipleVotes,_that.resultDisplayType);case _:
@@ -1110,7 +1110,7 @@ return $default(_that.title,_that.description,_that.deadline,_that.initialOption
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title, @JsonKey(defaultValue: '')  String? description,  DateTime? deadline, @JsonKey(name: 'initial_options', defaultValue: [])  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String title, @JsonKey(defaultValue: '')  String? description, @NullableDateTimeUtcConverter()  DateTime? deadline, @JsonKey(name: 'initial_options', defaultValue: [])  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false)  bool isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20)  int maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false)  bool allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime')  String resultDisplayType)?  $default,) {final _that = this;
 switch (_that) {
 case _PollCreateRequest() when $default != null:
 return $default(_that.title,_that.description,_that.deadline,_that.initialOptions,_that.isAllowAddOption,_that.maxOptionLimit,_that.allowMultipleVotes,_that.resultDisplayType);case _:
@@ -1125,12 +1125,12 @@ return $default(_that.title,_that.description,_that.deadline,_that.initialOption
 @JsonSerializable()
 
 class _PollCreateRequest implements PollCreateRequest {
-  const _PollCreateRequest({required this.title, @JsonKey(defaultValue: '') this.description, this.deadline, @JsonKey(name: 'initial_options', defaultValue: []) required final  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false) required this.isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20) required this.maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false) required this.allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime') required this.resultDisplayType}): _initialOptions = initialOptions;
+  const _PollCreateRequest({required this.title, @JsonKey(defaultValue: '') this.description, @NullableDateTimeUtcConverter() this.deadline, @JsonKey(name: 'initial_options', defaultValue: []) required final  List<String> initialOptions, @JsonKey(name: 'is_allow_add_option', defaultValue: false) required this.isAllowAddOption, @JsonKey(name: 'max_option_limit', defaultValue: 20) required this.maxOptionLimit, @JsonKey(name: 'allow_multiple_votes', defaultValue: false) required this.allowMultipleVotes, @JsonKey(name: 'result_display_type', defaultValue: 'realtime') required this.resultDisplayType}): _initialOptions = initialOptions;
   factory _PollCreateRequest.fromJson(Map<String, dynamic> json) => _$PollCreateRequestFromJson(json);
 
 @override final  String title;
 @override@JsonKey(defaultValue: '') final  String? description;
-@override final  DateTime? deadline;
+@override@NullableDateTimeUtcConverter() final  DateTime? deadline;
  final  List<String> _initialOptions;
 @override@JsonKey(name: 'initial_options', defaultValue: []) List<String> get initialOptions {
   if (_initialOptions is EqualUnmodifiableListView) return _initialOptions;
@@ -1176,7 +1176,7 @@ abstract mixin class _$PollCreateRequestCopyWith<$Res> implements $PollCreateReq
   factory _$PollCreateRequestCopyWith(_PollCreateRequest value, $Res Function(_PollCreateRequest) _then) = __$PollCreateRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String title,@JsonKey(defaultValue: '') String? description, DateTime? deadline,@JsonKey(name: 'initial_options', defaultValue: []) List<String> initialOptions,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType
+ String title,@JsonKey(defaultValue: '') String? description,@NullableDateTimeUtcConverter() DateTime? deadline,@JsonKey(name: 'initial_options', defaultValue: []) List<String> initialOptions,@JsonKey(name: 'is_allow_add_option', defaultValue: false) bool isAllowAddOption,@JsonKey(name: 'max_option_limit', defaultValue: 20) int maxOptionLimit,@JsonKey(name: 'allow_multiple_votes', defaultValue: false) bool allowMultipleVotes,@JsonKey(name: 'result_display_type', defaultValue: 'realtime') String resultDisplayType
 });
 
 

@@ -1121,7 +1121,7 @@ as String?,
 /// @nodoc
 mixin _$GearSetResponse {
 
- String get id; String get title; String get author;@JsonKey(name: 'total_weight') double get totalWeight;@JsonKey(name: 'item_count') int get itemCount; String get visibility;@JsonKey(name: 'download_key') String? get downloadKey; List<GearSetItemDto> get items; List<GearSetMealDto>? get meals;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id; String get title; String get author;@JsonKey(name: 'total_weight') double get totalWeight;@JsonKey(name: 'item_count') int get itemCount; String get visibility;@JsonKey(name: 'download_key') String? get downloadKey; List<GearSetItemDto> get items; List<GearSetMealDto>? get meals;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GearSetResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1154,7 +1154,7 @@ abstract mixin class $GearSetResponseCopyWith<$Res>  {
   factory $GearSetResponseCopyWith(GearSetResponse value, $Res Function(GearSetResponse) _then) = _$GearSetResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String author,@JsonKey(name: 'total_weight') double totalWeight,@JsonKey(name: 'item_count') int itemCount, String visibility,@JsonKey(name: 'download_key') String? downloadKey, List<GearSetItemDto> items, List<GearSetMealDto>? meals,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id, String title, String author,@JsonKey(name: 'total_weight') double totalWeight,@JsonKey(name: 'item_count') int itemCount, String visibility,@JsonKey(name: 'download_key') String? downloadKey, List<GearSetItemDto> items, List<GearSetMealDto>? meals,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -1271,7 +1271,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String author, @JsonKey(name: 'total_weight')  double totalWeight, @JsonKey(name: 'item_count')  int itemCount,  String visibility, @JsonKey(name: 'download_key')  String? downloadKey,  List<GearSetItemDto> items,  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String author, @JsonKey(name: 'total_weight')  double totalWeight, @JsonKey(name: 'item_count')  int itemCount,  String visibility, @JsonKey(name: 'download_key')  String? downloadKey,  List<GearSetItemDto> items,  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GearSetResponse() when $default != null:
 return $default(_that.id,_that.title,_that.author,_that.totalWeight,_that.itemCount,_that.visibility,_that.downloadKey,_that.items,_that.meals,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -1292,7 +1292,7 @@ return $default(_that.id,_that.title,_that.author,_that.totalWeight,_that.itemCo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String author, @JsonKey(name: 'total_weight')  double totalWeight, @JsonKey(name: 'item_count')  int itemCount,  String visibility, @JsonKey(name: 'download_key')  String? downloadKey,  List<GearSetItemDto> items,  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String author, @JsonKey(name: 'total_weight')  double totalWeight, @JsonKey(name: 'item_count')  int itemCount,  String visibility, @JsonKey(name: 'download_key')  String? downloadKey,  List<GearSetItemDto> items,  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GearSetResponse():
 return $default(_that.id,_that.title,_that.author,_that.totalWeight,_that.itemCount,_that.visibility,_that.downloadKey,_that.items,_that.meals,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -1312,7 +1312,7 @@ return $default(_that.id,_that.title,_that.author,_that.totalWeight,_that.itemCo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String author, @JsonKey(name: 'total_weight')  double totalWeight, @JsonKey(name: 'item_count')  int itemCount,  String visibility, @JsonKey(name: 'download_key')  String? downloadKey,  List<GearSetItemDto> items,  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String author, @JsonKey(name: 'total_weight')  double totalWeight, @JsonKey(name: 'item_count')  int itemCount,  String visibility, @JsonKey(name: 'download_key')  String? downloadKey,  List<GearSetItemDto> items,  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GearSetResponse() when $default != null:
 return $default(_that.id,_that.title,_that.author,_that.totalWeight,_that.itemCount,_that.visibility,_that.downloadKey,_that.items,_that.meals,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -1327,7 +1327,7 @@ return $default(_that.id,_that.title,_that.author,_that.totalWeight,_that.itemCo
 @JsonSerializable()
 
 class _GearSetResponse implements GearSetResponse {
-  const _GearSetResponse({required this.id, required this.title, required this.author, @JsonKey(name: 'total_weight') this.totalWeight = 0.0, @JsonKey(name: 'item_count') this.itemCount = 0, required this.visibility, @JsonKey(name: 'download_key') this.downloadKey, final  List<GearSetItemDto> items = const [], final  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _items = items,_meals = meals;
+  const _GearSetResponse({required this.id, required this.title, required this.author, @JsonKey(name: 'total_weight') this.totalWeight = 0.0, @JsonKey(name: 'item_count') this.itemCount = 0, required this.visibility, @JsonKey(name: 'download_key') this.downloadKey, final  List<GearSetItemDto> items = const [], final  List<GearSetMealDto>? meals, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _items = items,_meals = meals;
   factory _GearSetResponse.fromJson(Map<String, dynamic> json) => _$GearSetResponseFromJson(json);
 
 @override final  String id;
@@ -1353,9 +1353,9 @@ class _GearSetResponse implements GearSetResponse {
   return EqualUnmodifiableListView(value);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of GearSetResponse
@@ -1391,7 +1391,7 @@ abstract mixin class _$GearSetResponseCopyWith<$Res> implements $GearSetResponse
   factory _$GearSetResponseCopyWith(_GearSetResponse value, $Res Function(_GearSetResponse) _then) = __$GearSetResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String author,@JsonKey(name: 'total_weight') double totalWeight,@JsonKey(name: 'item_count') int itemCount, String visibility,@JsonKey(name: 'download_key') String? downloadKey, List<GearSetItemDto> items, List<GearSetMealDto>? meals,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id, String title, String author,@JsonKey(name: 'total_weight') double totalWeight,@JsonKey(name: 'item_count') int itemCount, String visibility,@JsonKey(name: 'download_key') String? downloadKey, List<GearSetItemDto> items, List<GearSetMealDto>? meals,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 
 part 'trip_gear_api_models.freezed.dart';
 part 'trip_gear_api_models.g.dart';
@@ -18,8 +19,8 @@ abstract class TripGearItemResponse with _$TripGearItemResponse {
     @JsonKey(defaultValue: 1) required int quantity,
     @JsonKey(name: 'is_checked', defaultValue: false) required bool isChecked,
     @JsonKey(name: 'order_index') int? orderIndex,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
   }) = _TripGearItemResponse;
 
   factory TripGearItemResponse.fromJson(Map<String, dynamic> json) => _$TripGearItemResponseFromJson(json);

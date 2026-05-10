@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
 
 part 'meal_library_api_models.freezed.dart';
@@ -25,8 +26,8 @@ abstract class MealLibraryItem with _$MealLibraryItem {
     required double calories,
     String? notes,
     @JsonKey(name: 'is_archived') required bool isArchived,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
   }) = _MealLibraryItem;
 
   factory MealLibraryItem.fromJson(Map<String, dynamic> json) => _$MealLibraryItemFromJson(json);

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TripGearItemResponse {
 
- String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'library_item_id') String? get libraryItemId;@JsonKey(defaultValue: '') String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 'Other') String get category;@JsonKey(defaultValue: 1) int get quantity;@JsonKey(name: 'is_checked', defaultValue: false) bool get isChecked;@JsonKey(name: 'order_index') int? get orderIndex;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'library_item_id') String? get libraryItemId;@JsonKey(defaultValue: '') String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 'Other') String get category;@JsonKey(defaultValue: 1) int get quantity;@JsonKey(name: 'is_checked', defaultValue: false) bool get isChecked;@JsonKey(name: 'order_index') int? get orderIndex;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
 /// Create a copy of TripGearItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $TripGearItemResponseCopyWith<$Res>  {
   factory $TripGearItemResponseCopyWith(TripGearItemResponse value, $Res Function(TripGearItemResponse) _then) = _$TripGearItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category,@JsonKey(defaultValue: 1) int quantity,@JsonKey(name: 'is_checked', defaultValue: false) bool isChecked,@JsonKey(name: 'order_index') int? orderIndex,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category,@JsonKey(defaultValue: 1) int quantity,@JsonKey(name: 'is_checked', defaultValue: false) bool isChecked,@JsonKey(name: 'order_index') int? orderIndex,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -163,7 +163,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category, @JsonKey(defaultValue: 1)  int quantity, @JsonKey(name: 'is_checked', defaultValue: false)  bool isChecked, @JsonKey(name: 'order_index')  int? orderIndex, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category, @JsonKey(defaultValue: 1)  int quantity, @JsonKey(name: 'is_checked', defaultValue: false)  bool isChecked, @JsonKey(name: 'order_index')  int? orderIndex, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripGearItemResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.libraryItemId,_that.name,_that.weight,_that.category,_that.quantity,_that.isChecked,_that.orderIndex,_that.createdAt,_that.updatedAt);case _:
@@ -184,7 +184,7 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.name,_that.weigh
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category, @JsonKey(defaultValue: 1)  int quantity, @JsonKey(name: 'is_checked', defaultValue: false)  bool isChecked, @JsonKey(name: 'order_index')  int? orderIndex, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category, @JsonKey(defaultValue: 1)  int quantity, @JsonKey(name: 'is_checked', defaultValue: false)  bool isChecked, @JsonKey(name: 'order_index')  int? orderIndex, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _TripGearItemResponse():
 return $default(_that.id,_that.tripId,_that.libraryItemId,_that.name,_that.weight,_that.category,_that.quantity,_that.isChecked,_that.orderIndex,_that.createdAt,_that.updatedAt);case _:
@@ -204,7 +204,7 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.name,_that.weigh
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category, @JsonKey(defaultValue: 1)  int quantity, @JsonKey(name: 'is_checked', defaultValue: false)  bool isChecked, @JsonKey(name: 'order_index')  int? orderIndex, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category, @JsonKey(defaultValue: 1)  int quantity, @JsonKey(name: 'is_checked', defaultValue: false)  bool isChecked, @JsonKey(name: 'order_index')  int? orderIndex, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TripGearItemResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.libraryItemId,_that.name,_that.weight,_that.category,_that.quantity,_that.isChecked,_that.orderIndex,_that.createdAt,_that.updatedAt);case _:
@@ -219,7 +219,7 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.name,_that.weigh
 @JsonSerializable()
 
 class _TripGearItemResponse implements TripGearItemResponse {
-  const _TripGearItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'library_item_id') this.libraryItemId, @JsonKey(defaultValue: '') required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 'Other') required this.category, @JsonKey(defaultValue: 1) required this.quantity, @JsonKey(name: 'is_checked', defaultValue: false) required this.isChecked, @JsonKey(name: 'order_index') this.orderIndex, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _TripGearItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'library_item_id') this.libraryItemId, @JsonKey(defaultValue: '') required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 'Other') required this.category, @JsonKey(defaultValue: 1) required this.quantity, @JsonKey(name: 'is_checked', defaultValue: false) required this.isChecked, @JsonKey(name: 'order_index') this.orderIndex, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
   factory _TripGearItemResponse.fromJson(Map<String, dynamic> json) => _$TripGearItemResponseFromJson(json);
 
 @override final  String id;
@@ -231,8 +231,8 @@ class _TripGearItemResponse implements TripGearItemResponse {
 @override@JsonKey(defaultValue: 1) final  int quantity;
 @override@JsonKey(name: 'is_checked', defaultValue: false) final  bool isChecked;
 @override@JsonKey(name: 'order_index') final  int? orderIndex;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 
 /// Create a copy of TripGearItemResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -267,7 +267,7 @@ abstract mixin class _$TripGearItemResponseCopyWith<$Res> implements $TripGearIt
   factory _$TripGearItemResponseCopyWith(_TripGearItemResponse value, $Res Function(_TripGearItemResponse) _then) = __$TripGearItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category,@JsonKey(defaultValue: 1) int quantity,@JsonKey(name: 'is_checked', defaultValue: false) bool isChecked,@JsonKey(name: 'order_index') int? orderIndex,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category,@JsonKey(defaultValue: 1) int quantity,@JsonKey(name: 'is_checked', defaultValue: false) bool isChecked,@JsonKey(name: 'order_index') int? orderIndex,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 

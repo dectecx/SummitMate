@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TripMealItemResponse {
 
- String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'library_item_id') String? get libraryItemId; String get day;@JsonKey(name: 'meal_type') String get mealType; String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 0.0) double get calories;@JsonKey(defaultValue: 1) int get quantity; String? get note;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'library_item_id') String? get libraryItemId; String get day;@JsonKey(name: 'meal_type') String get mealType; String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 0.0) double get calories;@JsonKey(defaultValue: 1) int get quantity; String? get note;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
 /// Create a copy of TripMealItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $TripMealItemResponseCopyWith<$Res>  {
   factory $TripMealItemResponseCopyWith(TripMealItemResponse value, $Res Function(TripMealItemResponse) _then) = _$TripMealItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -164,7 +164,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripMealItemResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
@@ -185,7 +185,7 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealTy
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _TripMealItemResponse():
 return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
@@ -205,7 +205,7 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealTy
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'library_item_id')  String? libraryItemId,  String day, @JsonKey(name: 'meal_type')  String mealType,  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 0.0)  double calories, @JsonKey(defaultValue: 1)  int quantity,  String? note, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _TripMealItemResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealType,_that.name,_that.weight,_that.calories,_that.quantity,_that.note,_that.createdAt,_that.updatedAt);case _:
@@ -220,7 +220,7 @@ return $default(_that.id,_that.tripId,_that.libraryItemId,_that.day,_that.mealTy
 @JsonSerializable()
 
 class _TripMealItemResponse implements TripMealItemResponse {
-  const _TripMealItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'library_item_id') this.libraryItemId, required this.day, @JsonKey(name: 'meal_type') required this.mealType, required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 0.0) required this.calories, @JsonKey(defaultValue: 1) required this.quantity, this.note, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _TripMealItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'library_item_id') this.libraryItemId, required this.day, @JsonKey(name: 'meal_type') required this.mealType, required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 0.0) required this.calories, @JsonKey(defaultValue: 1) required this.quantity, this.note, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
   factory _TripMealItemResponse.fromJson(Map<String, dynamic> json) => _$TripMealItemResponseFromJson(json);
 
 @override final  String id;
@@ -233,8 +233,8 @@ class _TripMealItemResponse implements TripMealItemResponse {
 @override@JsonKey(defaultValue: 0.0) final  double calories;
 @override@JsonKey(defaultValue: 1) final  int quantity;
 @override final  String? note;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 
 /// Create a copy of TripMealItemResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -269,7 +269,7 @@ abstract mixin class _$TripMealItemResponseCopyWith<$Res> implements $TripMealIt
   factory _$TripMealItemResponseCopyWith(_TripMealItemResponse value, $Res Function(_TripMealItemResponse) _then) = __$TripMealItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'library_item_id') String? libraryItemId, String day,@JsonKey(name: 'meal_type') String mealType, String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 0.0) double calories,@JsonKey(defaultValue: 1) int quantity, String? note,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 

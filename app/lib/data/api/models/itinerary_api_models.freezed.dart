@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ItineraryItemResponse {
 
- String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(defaultValue: '') String get day;@JsonKey(defaultValue: '') String get name;@JsonKey(name: 'est_time', defaultValue: '') String get estTime;@JsonKey(name: 'actual_time') DateTime? get actualTime;@JsonKey(defaultValue: 0) int get altitude;@JsonKey(defaultValue: 0.0) double get distance;@JsonKey(defaultValue: '') String get note;@JsonKey(name: 'image_asset') String? get imageAsset;@JsonKey(name: 'is_checked_in', defaultValue: false) bool get isCheckedIn;@JsonKey(name: 'checked_in_at') DateTime? get checkedInAt;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'trip_id') String get tripId;@JsonKey(defaultValue: '') String get day;@JsonKey(defaultValue: '') String get name;@JsonKey(name: 'est_time', defaultValue: '') String get estTime;@JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter() DateTime? get actualTime;@JsonKey(defaultValue: 0) int get altitude;@JsonKey(defaultValue: 0.0) double get distance;@JsonKey(defaultValue: '') String get note;@JsonKey(name: 'image_asset') String? get imageAsset;@JsonKey(name: 'is_checked_in', defaultValue: false) bool get isCheckedIn;@JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter() DateTime? get checkedInAt;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
 /// Create a copy of ItineraryItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ItineraryItemResponseCopyWith<$Res>  {
   factory $ItineraryItemResponseCopyWith(ItineraryItemResponse value, $Res Function(ItineraryItemResponse) _then) = _$ItineraryItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(defaultValue: '') String day,@JsonKey(defaultValue: '') String name,@JsonKey(name: 'est_time', defaultValue: '') String estTime,@JsonKey(name: 'actual_time') DateTime? actualTime,@JsonKey(defaultValue: 0) int altitude,@JsonKey(defaultValue: 0.0) double distance,@JsonKey(defaultValue: '') String note,@JsonKey(name: 'image_asset') String? imageAsset,@JsonKey(name: 'is_checked_in', defaultValue: false) bool isCheckedIn,@JsonKey(name: 'checked_in_at') DateTime? checkedInAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(defaultValue: '') String day,@JsonKey(defaultValue: '') String name,@JsonKey(name: 'est_time', defaultValue: '') String estTime,@JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter() DateTime? actualTime,@JsonKey(defaultValue: 0) int altitude,@JsonKey(defaultValue: 0.0) double distance,@JsonKey(defaultValue: '') String note,@JsonKey(name: 'image_asset') String? imageAsset,@JsonKey(name: 'is_checked_in', defaultValue: false) bool isCheckedIn,@JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter() DateTime? checkedInAt,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -166,7 +166,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(defaultValue: '')  String day, @JsonKey(defaultValue: '')  String name, @JsonKey(name: 'est_time', defaultValue: '')  String estTime, @JsonKey(name: 'actual_time')  DateTime? actualTime, @JsonKey(defaultValue: 0)  int altitude, @JsonKey(defaultValue: 0.0)  double distance, @JsonKey(defaultValue: '')  String note, @JsonKey(name: 'image_asset')  String? imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false)  bool isCheckedIn, @JsonKey(name: 'checked_in_at')  DateTime? checkedInAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(defaultValue: '')  String day, @JsonKey(defaultValue: '')  String name, @JsonKey(name: 'est_time', defaultValue: '')  String estTime, @JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter()  DateTime? actualTime, @JsonKey(defaultValue: 0)  int altitude, @JsonKey(defaultValue: 0.0)  double distance, @JsonKey(defaultValue: '')  String note, @JsonKey(name: 'image_asset')  String? imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false)  bool isCheckedIn, @JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter()  DateTime? checkedInAt, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItineraryItemResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.createdAt,_that.updatedAt);case _:
@@ -187,7 +187,7 @@ return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(defaultValue: '')  String day, @JsonKey(defaultValue: '')  String name, @JsonKey(name: 'est_time', defaultValue: '')  String estTime, @JsonKey(name: 'actual_time')  DateTime? actualTime, @JsonKey(defaultValue: 0)  int altitude, @JsonKey(defaultValue: 0.0)  double distance, @JsonKey(defaultValue: '')  String note, @JsonKey(name: 'image_asset')  String? imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false)  bool isCheckedIn, @JsonKey(name: 'checked_in_at')  DateTime? checkedInAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(defaultValue: '')  String day, @JsonKey(defaultValue: '')  String name, @JsonKey(name: 'est_time', defaultValue: '')  String estTime, @JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter()  DateTime? actualTime, @JsonKey(defaultValue: 0)  int altitude, @JsonKey(defaultValue: 0.0)  double distance, @JsonKey(defaultValue: '')  String note, @JsonKey(name: 'image_asset')  String? imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false)  bool isCheckedIn, @JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter()  DateTime? checkedInAt, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryItemResponse():
 return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.createdAt,_that.updatedAt);case _:
@@ -207,7 +207,7 @@ return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.a
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(defaultValue: '')  String day, @JsonKey(defaultValue: '')  String name, @JsonKey(name: 'est_time', defaultValue: '')  String estTime, @JsonKey(name: 'actual_time')  DateTime? actualTime, @JsonKey(defaultValue: 0)  int altitude, @JsonKey(defaultValue: 0.0)  double distance, @JsonKey(defaultValue: '')  String note, @JsonKey(name: 'image_asset')  String? imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false)  bool isCheckedIn, @JsonKey(name: 'checked_in_at')  DateTime? checkedInAt, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'trip_id')  String tripId, @JsonKey(defaultValue: '')  String day, @JsonKey(defaultValue: '')  String name, @JsonKey(name: 'est_time', defaultValue: '')  String estTime, @JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter()  DateTime? actualTime, @JsonKey(defaultValue: 0)  int altitude, @JsonKey(defaultValue: 0.0)  double distance, @JsonKey(defaultValue: '')  String note, @JsonKey(name: 'image_asset')  String? imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false)  bool isCheckedIn, @JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter()  DateTime? checkedInAt, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ItineraryItemResponse() when $default != null:
 return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.actualTime,_that.altitude,_that.distance,_that.note,_that.imageAsset,_that.isCheckedIn,_that.checkedInAt,_that.createdAt,_that.updatedAt);case _:
@@ -222,7 +222,7 @@ return $default(_that.id,_that.tripId,_that.day,_that.name,_that.estTime,_that.a
 @JsonSerializable()
 
 class _ItineraryItemResponse implements ItineraryItemResponse {
-  const _ItineraryItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(defaultValue: '') required this.day, @JsonKey(defaultValue: '') required this.name, @JsonKey(name: 'est_time', defaultValue: '') required this.estTime, @JsonKey(name: 'actual_time') this.actualTime, @JsonKey(defaultValue: 0) required this.altitude, @JsonKey(defaultValue: 0.0) required this.distance, @JsonKey(defaultValue: '') required this.note, @JsonKey(name: 'image_asset') this.imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false) required this.isCheckedIn, @JsonKey(name: 'checked_in_at') this.checkedInAt, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _ItineraryItemResponse({required this.id, @JsonKey(name: 'trip_id') required this.tripId, @JsonKey(defaultValue: '') required this.day, @JsonKey(defaultValue: '') required this.name, @JsonKey(name: 'est_time', defaultValue: '') required this.estTime, @JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter() this.actualTime, @JsonKey(defaultValue: 0) required this.altitude, @JsonKey(defaultValue: 0.0) required this.distance, @JsonKey(defaultValue: '') required this.note, @JsonKey(name: 'image_asset') this.imageAsset, @JsonKey(name: 'is_checked_in', defaultValue: false) required this.isCheckedIn, @JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter() this.checkedInAt, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
   factory _ItineraryItemResponse.fromJson(Map<String, dynamic> json) => _$ItineraryItemResponseFromJson(json);
 
 @override final  String id;
@@ -230,15 +230,15 @@ class _ItineraryItemResponse implements ItineraryItemResponse {
 @override@JsonKey(defaultValue: '') final  String day;
 @override@JsonKey(defaultValue: '') final  String name;
 @override@JsonKey(name: 'est_time', defaultValue: '') final  String estTime;
-@override@JsonKey(name: 'actual_time') final  DateTime? actualTime;
+@override@JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter() final  DateTime? actualTime;
 @override@JsonKey(defaultValue: 0) final  int altitude;
 @override@JsonKey(defaultValue: 0.0) final  double distance;
 @override@JsonKey(defaultValue: '') final  String note;
 @override@JsonKey(name: 'image_asset') final  String? imageAsset;
 @override@JsonKey(name: 'is_checked_in', defaultValue: false) final  bool isCheckedIn;
-@override@JsonKey(name: 'checked_in_at') final  DateTime? checkedInAt;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter() final  DateTime? checkedInAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 
 /// Create a copy of ItineraryItemResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -273,7 +273,7 @@ abstract mixin class _$ItineraryItemResponseCopyWith<$Res> implements $Itinerary
   factory _$ItineraryItemResponseCopyWith(_ItineraryItemResponse value, $Res Function(_ItineraryItemResponse) _then) = __$ItineraryItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(defaultValue: '') String day,@JsonKey(defaultValue: '') String name,@JsonKey(name: 'est_time', defaultValue: '') String estTime,@JsonKey(name: 'actual_time') DateTime? actualTime,@JsonKey(defaultValue: 0) int altitude,@JsonKey(defaultValue: 0.0) double distance,@JsonKey(defaultValue: '') String note,@JsonKey(name: 'image_asset') String? imageAsset,@JsonKey(name: 'is_checked_in', defaultValue: false) bool isCheckedIn,@JsonKey(name: 'checked_in_at') DateTime? checkedInAt,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'trip_id') String tripId,@JsonKey(defaultValue: '') String day,@JsonKey(defaultValue: '') String name,@JsonKey(name: 'est_time', defaultValue: '') String estTime,@JsonKey(name: 'actual_time')@NullableDateTimeUtcConverter() DateTime? actualTime,@JsonKey(defaultValue: 0) int altitude,@JsonKey(defaultValue: 0.0) double distance,@JsonKey(defaultValue: '') String note,@JsonKey(name: 'image_asset') String? imageAsset,@JsonKey(name: 'is_checked_in', defaultValue: false) bool isCheckedIn,@JsonKey(name: 'checked_in_at')@NullableDateTimeUtcConverter() DateTime? checkedInAt,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserResponse {
 
- String get id; String get email;@JsonKey(name: 'display_name') String get displayName;@JsonKey(defaultValue: '🐻') String? get avatar;@JsonKey(name: 'role_id', defaultValue: '') String get roleId;@JsonKey(defaultValue: 'member') String get role;@JsonKey(defaultValue: []) List<String> get permissions;@JsonKey(name: 'is_verified', defaultValue: false) bool get isVerified;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+ String get id; String get email;@JsonKey(name: 'display_name') String get displayName;@JsonKey(defaultValue: '🐻') String? get avatar;@JsonKey(name: 'role_id', defaultValue: '') String get roleId;@JsonKey(defaultValue: 'member') String get role;@JsonKey(defaultValue: []) List<String> get permissions;@JsonKey(name: 'is_verified', defaultValue: false) bool get isVerified;@JsonKey(name: 'created_at')@NullableDateTimeUtcConverter() DateTime? get createdAt;@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() DateTime? get updatedAt;
 /// Create a copy of UserResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $UserResponseCopyWith<$Res>  {
   factory $UserResponseCopyWith(UserResponse value, $Res Function(UserResponse) _then) = _$UserResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String email,@JsonKey(name: 'display_name') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(name: 'role_id', defaultValue: '') String roleId,@JsonKey(defaultValue: 'member') String role,@JsonKey(defaultValue: []) List<String> permissions,@JsonKey(name: 'is_verified', defaultValue: false) bool isVerified,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id, String email,@JsonKey(name: 'display_name') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(name: 'role_id', defaultValue: '') String roleId,@JsonKey(defaultValue: 'member') String role,@JsonKey(defaultValue: []) List<String> permissions,@JsonKey(name: 'is_verified', defaultValue: false) bool isVerified,@JsonKey(name: 'created_at')@NullableDateTimeUtcConverter() DateTime? createdAt,@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() DateTime? updatedAt
 });
 
 
@@ -162,7 +162,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(name: 'role_id', defaultValue: '')  String roleId, @JsonKey(defaultValue: 'member')  String role, @JsonKey(defaultValue: [])  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false)  bool isVerified, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(name: 'role_id', defaultValue: '')  String roleId, @JsonKey(defaultValue: 'member')  String role, @JsonKey(defaultValue: [])  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false)  bool isVerified, @JsonKey(name: 'created_at')@NullableDateTimeUtcConverter()  DateTime? createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter()  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserResponse() when $default != null:
 return $default(_that.id,_that.email,_that.displayName,_that.avatar,_that.roleId,_that.role,_that.permissions,_that.isVerified,_that.createdAt,_that.updatedAt);case _:
@@ -183,7 +183,7 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatar,_that.roleId
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(name: 'role_id', defaultValue: '')  String roleId, @JsonKey(defaultValue: 'member')  String role, @JsonKey(defaultValue: [])  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false)  bool isVerified, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email, @JsonKey(name: 'display_name')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(name: 'role_id', defaultValue: '')  String roleId, @JsonKey(defaultValue: 'member')  String role, @JsonKey(defaultValue: [])  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false)  bool isVerified, @JsonKey(name: 'created_at')@NullableDateTimeUtcConverter()  DateTime? createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter()  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _UserResponse():
 return $default(_that.id,_that.email,_that.displayName,_that.avatar,_that.roleId,_that.role,_that.permissions,_that.isVerified,_that.createdAt,_that.updatedAt);case _:
@@ -203,7 +203,7 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatar,_that.roleId
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email, @JsonKey(name: 'display_name')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(name: 'role_id', defaultValue: '')  String roleId, @JsonKey(defaultValue: 'member')  String role, @JsonKey(defaultValue: [])  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false)  bool isVerified, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email, @JsonKey(name: 'display_name')  String displayName, @JsonKey(defaultValue: '🐻')  String? avatar, @JsonKey(name: 'role_id', defaultValue: '')  String roleId, @JsonKey(defaultValue: 'member')  String role, @JsonKey(defaultValue: [])  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false)  bool isVerified, @JsonKey(name: 'created_at')@NullableDateTimeUtcConverter()  DateTime? createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter()  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _UserResponse() when $default != null:
 return $default(_that.id,_that.email,_that.displayName,_that.avatar,_that.roleId,_that.role,_that.permissions,_that.isVerified,_that.createdAt,_that.updatedAt);case _:
@@ -218,7 +218,7 @@ return $default(_that.id,_that.email,_that.displayName,_that.avatar,_that.roleId
 @JsonSerializable()
 
 class _UserResponse implements UserResponse {
-  const _UserResponse({required this.id, required this.email, @JsonKey(name: 'display_name') required this.displayName, @JsonKey(defaultValue: '🐻') this.avatar, @JsonKey(name: 'role_id', defaultValue: '') required this.roleId, @JsonKey(defaultValue: 'member') required this.role, @JsonKey(defaultValue: []) required final  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false) required this.isVerified, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt}): _permissions = permissions;
+  const _UserResponse({required this.id, required this.email, @JsonKey(name: 'display_name') required this.displayName, @JsonKey(defaultValue: '🐻') this.avatar, @JsonKey(name: 'role_id', defaultValue: '') required this.roleId, @JsonKey(defaultValue: 'member') required this.role, @JsonKey(defaultValue: []) required final  List<String> permissions, @JsonKey(name: 'is_verified', defaultValue: false) required this.isVerified, @JsonKey(name: 'created_at')@NullableDateTimeUtcConverter() this.createdAt, @JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() this.updatedAt}): _permissions = permissions;
   factory _UserResponse.fromJson(Map<String, dynamic> json) => _$UserResponseFromJson(json);
 
 @override final  String id;
@@ -235,8 +235,8 @@ class _UserResponse implements UserResponse {
 }
 
 @override@JsonKey(name: 'is_verified', defaultValue: false) final  bool isVerified;
-@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
+@override@JsonKey(name: 'created_at')@NullableDateTimeUtcConverter() final  DateTime? createdAt;
+@override@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() final  DateTime? updatedAt;
 
 /// Create a copy of UserResponse
 /// with the given fields replaced by the non-null parameter values.
@@ -271,7 +271,7 @@ abstract mixin class _$UserResponseCopyWith<$Res> implements $UserResponseCopyWi
   factory _$UserResponseCopyWith(_UserResponse value, $Res Function(_UserResponse) _then) = __$UserResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email,@JsonKey(name: 'display_name') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(name: 'role_id', defaultValue: '') String roleId,@JsonKey(defaultValue: 'member') String role,@JsonKey(defaultValue: []) List<String> permissions,@JsonKey(name: 'is_verified', defaultValue: false) bool isVerified,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id, String email,@JsonKey(name: 'display_name') String displayName,@JsonKey(defaultValue: '🐻') String? avatar,@JsonKey(name: 'role_id', defaultValue: '') String roleId,@JsonKey(defaultValue: 'member') String role,@JsonKey(defaultValue: []) List<String> permissions,@JsonKey(name: 'is_verified', defaultValue: false) bool isVerified,@JsonKey(name: 'created_at')@NullableDateTimeUtcConverter() DateTime? createdAt,@JsonKey(name: 'updated_at')@NullableDateTimeUtcConverter() DateTime? updatedAt
 });
 
 

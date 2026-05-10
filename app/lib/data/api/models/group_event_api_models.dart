@@ -1,7 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
-import '../../../domain/enums/group_event_category.dart';
 import 'itinerary_api_models.dart';
+import '../../../domain/enums/group_event_category.dart';
 
 part 'group_event_api_models.freezed.dart';
 part 'group_event_api_models.g.dart';
@@ -29,8 +30,9 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(defaultValue: '') required String description,
     @JsonKey(defaultValue: GroupEventCategory.other) required GroupEventCategory category,
     @JsonKey(defaultValue: '') required String location,
-    @JsonKey(name: 'start_date') required DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    // start_date / end_date are date-only fields (format: date in OpenAPI)
+    @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(defaultValue: 'open') required String status,
     @JsonKey(name: 'max_members', defaultValue: 10) required int maxMembers,
     @JsonKey(name: 'application_count', defaultValue: 0) required int applicationCount,
@@ -39,7 +41,7 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'private_message', defaultValue: '') required String privateMessage,
     @JsonKey(name: 'linked_trip_id') String? linkedTripId,
     @JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,
-    @JsonKey(name: 'snapshot_updated_at') DateTime? snapshotUpdatedAt,
+    @JsonKey(name: 'snapshot_updated_at') @NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,
     @JsonKey(name: 'like_count', defaultValue: 0) required int likeCount,
     @JsonKey(name: 'comment_count', defaultValue: 0) required int commentCount,
     @JsonKey(name: 'is_liked', defaultValue: false) required bool isLiked,
@@ -47,9 +49,9 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'creator_name', defaultValue: '') required String creatorName,
     @JsonKey(name: 'creator_avatar', defaultValue: '🐻') required String creatorAvatar,
     @JsonKey(name: 'latest_comments', defaultValue: []) required List<GroupEventCommentResponse> latestComments,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GroupEventResponse;
 
@@ -67,8 +69,8 @@ abstract class GroupEventApplicationResponse with _$GroupEventApplicationRespons
     @JsonKey(defaultValue: '') required String message,
     @JsonKey(name: 'user_name', defaultValue: '') required String userName,
     @JsonKey(name: 'user_avatar', defaultValue: '🐻') required String userAvatar,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GroupEventApplicationResponse;
 
@@ -86,8 +88,8 @@ abstract class GroupEventCommentResponse with _$GroupEventCommentResponse {
     required String content,
     @JsonKey(name: 'user_name', defaultValue: '') required String userName,
     @JsonKey(name: 'user_avatar', defaultValue: '🐻') required String userAvatar,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
   }) = _GroupEventCommentResponse;
 
   factory GroupEventCommentResponse.fromJson(Map<String, dynamic> json) => _$GroupEventCommentResponseFromJson(json);
@@ -98,8 +100,8 @@ abstract class GroupEventCommentResponse with _$GroupEventCommentResponse {
 abstract class TripSnapshotResponse with _$TripSnapshotResponse {
   const factory TripSnapshotResponse({
     required String name,
-    @JsonKey(name: 'start_date') required DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'start_date') @DateTimeUtcConverter() required DateTime startDate,
+    @JsonKey(name: 'end_date') @NullableDateTimeUtcConverter() DateTime? endDate,
     @JsonKey(defaultValue: []) required List<ItineraryItemResponse> itinerary,
   }) = _TripSnapshotResponse;
 
@@ -116,8 +118,9 @@ abstract class GroupEventCreateRequest with _$GroupEventCreateRequest {
     required String description,
     @JsonKey(defaultValue: GroupEventCategory.other) required GroupEventCategory category,
     required String location,
-    @JsonKey(name: 'start_date') required DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    // date-only fields (format: date in OpenAPI) - send YYYY-MM-DD
+    @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(name: 'max_members', defaultValue: 10) required int maxMembers,
     @JsonKey(name: 'approval_required', defaultValue: false) required bool approvalRequired,
     @JsonKey(name: 'private_message') String? privateMessage,
@@ -135,8 +138,8 @@ abstract class GroupEventUpdateRequest with _$GroupEventUpdateRequest {
     String? description,
     GroupEventCategory? category,
     String? location,
-    @JsonKey(name: 'start_date') DateTime? startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'start_date') @NullableDateOnlyConverter() DateTime? startDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(name: 'max_members') int? maxMembers,
     @JsonKey(name: 'approval_required') bool? approvalRequired,
     @JsonKey(name: 'private_message') String? privateMessage,

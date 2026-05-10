@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 
 part 'gear_set_api_models.freezed.dart';
 part 'gear_set_api_models.g.dart';
@@ -77,9 +78,9 @@ abstract class GearSetResponse with _$GearSetResponse {
     @JsonKey(name: 'download_key') String? downloadKey,
     @Default([]) List<GearSetItemDto> items,
     List<GearSetMealDto>? meals,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GearSetResponse;
 

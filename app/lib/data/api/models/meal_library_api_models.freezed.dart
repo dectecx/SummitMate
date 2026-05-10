@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$MealLibraryItem {
 
- String get id;@JsonKey(name: 'user_id') String get userId; String get name; double get weight; double get calories; String? get notes;@JsonKey(name: 'is_archived') bool get isArchived;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'user_id') String get userId; String get name; double get weight; double get calories; String? get notes;@JsonKey(name: 'is_archived') bool get isArchived;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;
 /// Create a copy of MealLibraryItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $MealLibraryItemCopyWith<$Res>  {
   factory $MealLibraryItemCopyWith(MealLibraryItem value, $Res Function(MealLibraryItem) _then) = _$MealLibraryItemCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name, double weight, double calories, String? notes,@JsonKey(name: 'is_archived') bool isArchived,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'user_id') String userId, String name, double weight, double calories, String? notes,@JsonKey(name: 'is_archived') bool isArchived,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 
@@ -451,7 +451,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  double weight,  double calories,  String? notes, @JsonKey(name: 'is_archived')  bool isArchived, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  double weight,  double calories,  String? notes, @JsonKey(name: 'is_archived')  bool isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MealLibraryItem() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.weight,_that.calories,_that.notes,_that.isArchived,_that.createdAt,_that.updatedAt);case _:
@@ -472,7 +472,7 @@ return $default(_that.id,_that.userId,_that.name,_that.weight,_that.calories,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  double weight,  double calories,  String? notes, @JsonKey(name: 'is_archived')  bool isArchived, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  double weight,  double calories,  String? notes, @JsonKey(name: 'is_archived')  bool isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _MealLibraryItem():
 return $default(_that.id,_that.userId,_that.name,_that.weight,_that.calories,_that.notes,_that.isArchived,_that.createdAt,_that.updatedAt);case _:
@@ -492,7 +492,7 @@ return $default(_that.id,_that.userId,_that.name,_that.weight,_that.calories,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  double weight,  double calories,  String? notes, @JsonKey(name: 'is_archived')  bool isArchived, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId,  String name,  double weight,  double calories,  String? notes, @JsonKey(name: 'is_archived')  bool isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _MealLibraryItem() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.weight,_that.calories,_that.notes,_that.isArchived,_that.createdAt,_that.updatedAt);case _:
@@ -507,7 +507,7 @@ return $default(_that.id,_that.userId,_that.name,_that.weight,_that.calories,_th
 @JsonSerializable()
 
 class _MealLibraryItem implements MealLibraryItem {
-  const _MealLibraryItem({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, required this.weight, required this.calories, this.notes, @JsonKey(name: 'is_archived') required this.isArchived, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  const _MealLibraryItem({required this.id, @JsonKey(name: 'user_id') required this.userId, required this.name, required this.weight, required this.calories, this.notes, @JsonKey(name: 'is_archived') required this.isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt});
   factory _MealLibraryItem.fromJson(Map<String, dynamic> json) => _$MealLibraryItemFromJson(json);
 
 @override final  String id;
@@ -517,8 +517,8 @@ class _MealLibraryItem implements MealLibraryItem {
 @override final  double calories;
 @override final  String? notes;
 @override@JsonKey(name: 'is_archived') final  bool isArchived;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 
 /// Create a copy of MealLibraryItem
 /// with the given fields replaced by the non-null parameter values.
@@ -553,7 +553,7 @@ abstract mixin class _$MealLibraryItemCopyWith<$Res> implements $MealLibraryItem
   factory _$MealLibraryItemCopyWith(_MealLibraryItem value, $Res Function(_MealLibraryItem) _then) = __$MealLibraryItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId, String name, double weight, double calories, String? notes,@JsonKey(name: 'is_archived') bool isArchived,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'user_id') String userId, String name, double weight, double calories, String? notes,@JsonKey(name: 'is_archived') bool isArchived,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt
 });
 
 

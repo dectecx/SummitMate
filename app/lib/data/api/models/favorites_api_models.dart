@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
 
 part 'favorites_api_models.freezed.dart';
@@ -23,9 +24,9 @@ abstract class FavoriteResponse with _$FavoriteResponse {
     required String id,
     @JsonKey(name: 'target_id') required String targetId,
     required String type,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _FavoriteResponse;
 

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 
 part 'itinerary_api_models.freezed.dart';
 part 'itinerary_api_models.g.dart';
@@ -14,15 +15,15 @@ abstract class ItineraryItemResponse with _$ItineraryItemResponse {
     @JsonKey(defaultValue: '') required String day,
     @JsonKey(defaultValue: '') required String name,
     @JsonKey(name: 'est_time', defaultValue: '') required String estTime,
-    @JsonKey(name: 'actual_time') DateTime? actualTime,
+    @JsonKey(name: 'actual_time') @NullableDateTimeUtcConverter() DateTime? actualTime,
     @JsonKey(defaultValue: 0) required int altitude,
     @JsonKey(defaultValue: 0.0) required double distance,
     @JsonKey(defaultValue: '') required String note,
     @JsonKey(name: 'image_asset') String? imageAsset,
     @JsonKey(name: 'is_checked_in', defaultValue: false) required bool isCheckedIn,
-    @JsonKey(name: 'checked_in_at') DateTime? checkedInAt,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'checked_in_at') @NullableDateTimeUtcConverter() DateTime? checkedInAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
   }) = _ItineraryItemResponse;
 
   factory ItineraryItemResponse.fromJson(Map<String, dynamic> json) => _$ItineraryItemResponseFromJson(json);

@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$GearLibraryItemResponse {
 
- String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: '') String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 'Other') String get category; String? get notes;@JsonKey(name: 'is_archived', defaultValue: false) bool get isArchived;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: '') String get name;@JsonKey(defaultValue: 0.0) double get weight;@JsonKey(defaultValue: 'Other') String get category; String? get notes;@JsonKey(name: 'is_archived', defaultValue: false) bool get isArchived;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GearLibraryItemResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $GearLibraryItemResponseCopyWith<$Res>  {
   factory $GearLibraryItemResponseCopyWith(GearLibraryItemResponse value, $Res Function(GearLibraryItemResponse) _then) = _$GearLibraryItemResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category, String? notes,@JsonKey(name: 'is_archived', defaultValue: false) bool isArchived,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category, String? notes,@JsonKey(name: 'is_archived', defaultValue: false) bool isArchived,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -453,7 +453,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category,  String? notes, @JsonKey(name: 'is_archived', defaultValue: false)  bool isArchived, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category,  String? notes, @JsonKey(name: 'is_archived', defaultValue: false)  bool isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GearLibraryItemResponse() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.weight,_that.category,_that.notes,_that.isArchived,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -474,7 +474,7 @@ return $default(_that.id,_that.userId,_that.name,_that.weight,_that.category,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category,  String? notes, @JsonKey(name: 'is_archived', defaultValue: false)  bool isArchived, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category,  String? notes, @JsonKey(name: 'is_archived', defaultValue: false)  bool isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GearLibraryItemResponse():
 return $default(_that.id,_that.userId,_that.name,_that.weight,_that.category,_that.notes,_that.isArchived,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -494,7 +494,7 @@ return $default(_that.id,_that.userId,_that.name,_that.weight,_that.category,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category,  String? notes, @JsonKey(name: 'is_archived', defaultValue: false)  bool isArchived, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: '')  String name, @JsonKey(defaultValue: 0.0)  double weight, @JsonKey(defaultValue: 'Other')  String category,  String? notes, @JsonKey(name: 'is_archived', defaultValue: false)  bool isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GearLibraryItemResponse() when $default != null:
 return $default(_that.id,_that.userId,_that.name,_that.weight,_that.category,_that.notes,_that.isArchived,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -509,7 +509,7 @@ return $default(_that.id,_that.userId,_that.name,_that.weight,_that.category,_th
 @JsonSerializable()
 
 class _GearLibraryItemResponse implements GearLibraryItemResponse {
-  const _GearLibraryItemResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(defaultValue: '') required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 'Other') required this.category, this.notes, @JsonKey(name: 'is_archived', defaultValue: false) required this.isArchived, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at') required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
+  const _GearLibraryItemResponse({required this.id, @JsonKey(name: 'user_id') required this.userId, @JsonKey(defaultValue: '') required this.name, @JsonKey(defaultValue: 0.0) required this.weight, @JsonKey(defaultValue: 'Other') required this.category, this.notes, @JsonKey(name: 'is_archived', defaultValue: false) required this.isArchived, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
   factory _GearLibraryItemResponse.fromJson(Map<String, dynamic> json) => _$GearLibraryItemResponseFromJson(json);
 
 @override final  String id;
@@ -519,9 +519,9 @@ class _GearLibraryItemResponse implements GearLibraryItemResponse {
 @override@JsonKey(defaultValue: 'Other') final  String category;
 @override final  String? notes;
 @override@JsonKey(name: 'is_archived', defaultValue: false) final  bool isArchived;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
 @override@JsonKey(name: 'created_by') final  String createdBy;
-@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
+@override@JsonKey(name: 'updated_at')@DateTimeUtcConverter() final  DateTime updatedAt;
 @override@JsonKey(name: 'updated_by') final  String updatedBy;
 
 /// Create a copy of GearLibraryItemResponse
@@ -557,7 +557,7 @@ abstract mixin class _$GearLibraryItemResponseCopyWith<$Res> implements $GearLib
   factory _$GearLibraryItemResponseCopyWith(_GearLibraryItemResponse value, $Res Function(_GearLibraryItemResponse) _then) = __$GearLibraryItemResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category, String? notes,@JsonKey(name: 'is_archived', defaultValue: false) bool isArchived,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: '') String name,@JsonKey(defaultValue: 0.0) double weight,@JsonKey(defaultValue: 'Other') String category, String? notes,@JsonKey(name: 'is_archived', defaultValue: false) bool isArchived,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
