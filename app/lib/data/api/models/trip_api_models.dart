@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
 
 part 'trip_api_models.freezed.dart';
@@ -24,15 +25,16 @@ abstract class TripResponse with _$TripResponse {
     @JsonKey(name: 'user_id') required String userId,
     required String name,
     String? description,
-    @JsonKey(name: 'start_date') required DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    // start_date / end_date are date-only fields (format: date in OpenAPI)
+    @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(name: 'cover_image') String? coverImage,
     @JsonKey(name: 'is_active') required bool isActive,
     @JsonKey(name: 'linked_event_id') String? linkedEventId,
     @JsonKey(name: 'day_names', defaultValue: <String>[]) required List<String> dayNames,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _TripResponse;
 
@@ -47,13 +49,13 @@ abstract class TripListItemResponse with _$TripListItemResponse {
     @JsonKey(name: 'user_id') required String userId,
     required String name,
     @JsonKey(name: 'cover_image') String? coverImage,
-    @JsonKey(name: 'start_date') required DateTime startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(name: 'is_active') required bool isActive,
     @JsonKey(name: 'linked_event_id') String? linkedEventId,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _TripListItemResponse;
 
@@ -66,7 +68,7 @@ abstract class TripMemberResponse with _$TripMemberResponse {
   const factory TripMemberResponse({
     @JsonKey(name: 'trip_id') required String tripId,
     @JsonKey(name: 'user_id') required String userId,
-    @JsonKey(name: 'joined_at') required DateTime joinedAt,
+    @JsonKey(name: 'joined_at') @DateTimeUtcConverter() required DateTime joinedAt,
     @JsonKey(name: 'user_metadata') required TripMemberUserMetadata userMetadata,
   }) = _TripMemberResponse;
 
@@ -94,9 +96,9 @@ abstract class TripMemberUserMetadata with _$TripMemberUserMetadata {
 abstract class TripCreateRequest with _$TripCreateRequest {
   const factory TripCreateRequest({
     required String name,
-    @JsonKey(name: 'start_date') required DateTime startDate,
+    @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
     String? description,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(name: 'cover_image') String? coverImage,
     @JsonKey(name: 'day_names') List<String>? dayNames,
   }) = _TripCreateRequest;
@@ -110,12 +112,12 @@ abstract class TripUpdateRequest with _$TripUpdateRequest {
   const factory TripUpdateRequest({
     String? name,
     String? description,
-    @JsonKey(name: 'start_date') DateTime? startDate,
-    @JsonKey(name: 'end_date') DateTime? endDate,
+    @JsonKey(name: 'start_date') @NullableDateOnlyConverter() DateTime? startDate,
+    @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(name: 'cover_image') String? coverImage,
     @JsonKey(name: 'is_active') bool? isActive,
     @JsonKey(name: 'day_names') List<String>? dayNames,
-    @JsonKey(name: 'last_updated_at') DateTime? lastUpdatedAt,
+    @JsonKey(name: 'last_updated_at') @NullableDateTimeUtcConverter() DateTime? lastUpdatedAt,
   }) = _TripUpdateRequest;
 
   factory TripUpdateRequest.fromJson(Map<String, dynamic> json) => _$TripUpdateRequestFromJson(json);

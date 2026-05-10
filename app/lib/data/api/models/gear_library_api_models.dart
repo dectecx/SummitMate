@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
 
 part 'gear_library_api_models.freezed.dart';
@@ -28,9 +29,9 @@ abstract class GearLibraryItemResponse with _$GearLibraryItemResponse {
     @JsonKey(defaultValue: 'Other') required String category,
     String? notes,
     @JsonKey(name: 'is_archived', defaultValue: false) required bool isArchived,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GearLibraryItemResponse;
 

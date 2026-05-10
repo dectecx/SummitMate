@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 
 part 'user_api_models.freezed.dart';
 part 'user_api_models.g.dart';
@@ -17,8 +18,8 @@ abstract class UserResponse with _$UserResponse {
     @JsonKey(defaultValue: 'member') required String role,
     @JsonKey(defaultValue: []) required List<String> permissions,
     @JsonKey(name: 'is_verified', defaultValue: false) required bool isVerified,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+    @JsonKey(name: 'created_at') @NullableDateTimeUtcConverter() DateTime? createdAt,
+    @JsonKey(name: 'updated_at') @NullableDateTimeUtcConverter() DateTime? updatedAt,
   }) = _UserResponse;
 
   factory UserResponse.fromJson(Map<String, dynamic> json) => _$UserResponseFromJson(json);

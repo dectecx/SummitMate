@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
 
 part 'poll_api_models.freezed.dart';
@@ -24,9 +25,9 @@ abstract class PollOptionResponse with _$PollOptionResponse {
     @JsonKey(name: 'creator_id') required String creatorId,
     @JsonKey(name: 'vote_count', defaultValue: 0) required int voteCount,
     @JsonKey(defaultValue: []) required List<Map<String, dynamic>> voters,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _PollOptionResponse;
 
@@ -41,7 +42,7 @@ abstract class PollResponse with _$PollResponse {
     required String title,
     @JsonKey(defaultValue: '') required String description,
     @JsonKey(name: 'creator_id') required String creatorId,
-    DateTime? deadline,
+    @NullableDateTimeUtcConverter() DateTime? deadline,
     @JsonKey(name: 'is_allow_add_option', defaultValue: false) required bool isAllowAddOption,
     @JsonKey(name: 'max_option_limit', defaultValue: 20) required int maxOptionLimit,
     @JsonKey(name: 'allow_multiple_votes', defaultValue: false) required bool allowMultipleVotes,
@@ -50,9 +51,9 @@ abstract class PollResponse with _$PollResponse {
     @JsonKey(defaultValue: []) required List<PollOptionResponse> options,
     @JsonKey(name: 'my_votes', defaultValue: []) required List<String> myVotes,
     @JsonKey(name: 'total_votes', defaultValue: 0) required int totalVotes,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _PollResponse;
 
@@ -67,7 +68,7 @@ abstract class PollCreateRequest with _$PollCreateRequest {
   const factory PollCreateRequest({
     required String title,
     @JsonKey(defaultValue: '') String? description,
-    DateTime? deadline,
+    @NullableDateTimeUtcConverter() DateTime? deadline,
     @JsonKey(name: 'initial_options', defaultValue: []) required List<String> initialOptions,
     @JsonKey(name: 'is_allow_add_option', defaultValue: false) required bool isAllowAddOption,
     @JsonKey(name: 'max_option_limit', defaultValue: 20) required int maxOptionLimit,

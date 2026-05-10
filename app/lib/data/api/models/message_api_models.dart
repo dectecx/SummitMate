@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 import 'pagination_api_models.dart';
 
 part 'message_api_models.freezed.dart';
@@ -28,10 +29,10 @@ abstract class MessageResponse with _$MessageResponse {
     @JsonKey(defaultValue: '🐻') String? avatar,
     @JsonKey(defaultValue: '') required String category,
     @JsonKey(defaultValue: '') required String content,
-    required DateTime timestamp,
+    @DateTimeUtcConverter() required DateTime timestamp,
     List<MessageResponse>? replies,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @NullableDateTimeUtcConverter() DateTime? updatedAt,
   }) = _MessageResponse;
 
   factory MessageResponse.fromJson(Map<String, dynamic> json) => _$MessageResponseFromJson(json);

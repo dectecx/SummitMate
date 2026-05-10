@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../converters/datetime_converter.dart';
 
 part 'trip_meal_api_models.freezed.dart';
 part 'trip_meal_api_models.g.dart';
@@ -19,8 +20,8 @@ abstract class TripMealItemResponse with _$TripMealItemResponse {
     @JsonKey(defaultValue: 0.0) required double calories,
     @JsonKey(defaultValue: 1) required int quantity,
     String? note,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
-    @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
+    @JsonKey(name: 'updated_at') @DateTimeUtcConverter() required DateTime updatedAt,
   }) = _TripMealItemResponse;
 
   factory TripMealItemResponse.fromJson(Map<String, dynamic> json) => _$TripMealItemResponseFromJson(json);
