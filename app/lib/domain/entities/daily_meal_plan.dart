@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../enums/meal_type.dart';
 import 'meal_item.dart';
+import 'meal_plan_day.dart';
 
 part 'daily_meal_plan.freezed.dart';
 part 'daily_meal_plan.g.dart';
@@ -10,7 +11,8 @@ part 'daily_meal_plan.g.dart';
 abstract class DailyMealPlan with _$DailyMealPlan {
   const DailyMealPlan._();
 
-  const factory DailyMealPlan({required String day, @Default({}) Map<MealType, List<MealItem>> meals}) = _DailyMealPlan;
+  const factory DailyMealPlan({required MealPlanDay dayInfo, @Default({}) Map<MealType, List<MealItem>> meals}) =
+      _DailyMealPlan;
 
   double get totalWeight =>
       meals.values.expand((items) => items).fold(0.0, (sum, item) => sum + (item.weight * item.quantity));

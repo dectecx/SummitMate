@@ -5,15 +5,18 @@ import '../../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
+import '../datasources/interfaces/i_trip_meal_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 /// 行程 Repository (支援 Offline-First)
 @LazySingleton(as: ITripRepository)
 class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
+  final ITripMealRemoteDataSource _mealRemoteDataSource;
 
-  TripRepository(this._localDataSource, this._remoteDataSource);
+  TripRepository(this._localDataSource, this._remoteDataSource, this._mealRemoteDataSource);
 
   @override
   Future<Result<void, Exception>> init() async {
@@ -177,5 +180,50 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
     return _remoteDataSource.searchUserById(userId);
+  }
+
+  // ========== Meal Plan Day Operations ==========
+
+  @override
+  Future<Result<List<MealPlanDay>, Exception>> getMealPlanDays(String tripId) async {
+    try {
+      final days = await _localDataSource.getMealPlanDays(tripId);
+      return Success(days);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<MealPlanDay, Exception>> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay}) async {
+    try {
+      final day = await _mealRemoteDataSource.addMealPlanDay(tripId, name, linkedItineraryDay: linkedItineraryDay);
+      await _localDataSource.saveMealPlanDay(day, tripId);
+      return Success(day);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay}) async {
+    try {
+      final day = await _mealRemoteDataSource.updateMealPlanDay(tripId, dayId, name, linkedItineraryDay: linkedItineraryDay);
+      await _localDataSource.saveMealPlanDay(day, tripId);
+      return Success(day);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId) async {
+    try {
+      await _mealRemoteDataSource.deleteMealPlanDay(tripId, dayId);
+      await _localDataSource.deleteMealPlanDay(dayId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 }

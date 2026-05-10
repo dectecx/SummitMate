@@ -2,6 +2,7 @@ import '../../../domain/entities/gear_set.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../../domain/entities/daily_meal_plan.dart';
 import '../../../domain/entities/meal_item.dart';
+import '../../../domain/entities/meal_plan_day.dart';
 import '../../../domain/enums/gear_set_visibility.dart';
 import '../../../domain/enums/meal_type.dart';
 import '../models/gear_set_api_models.dart';
@@ -65,7 +66,7 @@ class GearSetApiMapper {
       return plan.meals.entries.expand((entry) {
         return entry.value.map(
           (mealItem) => GearSetMealRequest(
-            day: plan.day,
+            day: plan.dayInfo.name,
             mealType: entry.key.name,
             name: mealItem.name,
             calories: mealItem.calories,
@@ -103,7 +104,7 @@ class GearSetApiMapper {
   static List<DailyMealPlan> _groupMeals(List<GearSetMealDto> dtos) {
     final Map<String, DailyMealPlan> byDay = {};
     for (final dto in dtos) {
-      final plan = byDay.putIfAbsent(dto.day, () => DailyMealPlan(day: dto.day));
+      final plan = byDay.putIfAbsent(dto.day, () => DailyMealPlan(dayInfo: MealPlanDay(id: dto.day, name: dto.day)));
       final mealType = MealType.values.firstWhere((t) => t.name == dto.mealType, orElse: () => MealType.breakfast);
 
       final mealItem = MealItem(

@@ -6,16 +6,20 @@ import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/trip_repository.dart';
 import 'package:summitmate/core/error/result.dart';
+import 'package:summitmate/data/datasources/interfaces/i_trip_meal_remote_data_source.dart';
 
 // Mocks
 class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
 
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
 
+class MockTripMealRemoteDataSource extends Mock implements ITripMealRemoteDataSource {}
+
 void main() {
   late TripRepository repository;
   late MockTripLocalDataSource mockLocalDataSource;
   late MockTripRemoteDataSource mockRemoteDataSource;
+  late MockTripMealRemoteDataSource mockMealRemoteDataSource;
 
   late Trip testTrip;
 
@@ -37,7 +41,8 @@ void main() {
   setUp(() {
     mockLocalDataSource = MockTripLocalDataSource();
     mockRemoteDataSource = MockTripRemoteDataSource();
-    repository = TripRepository(mockLocalDataSource, mockRemoteDataSource);
+    mockMealRemoteDataSource = MockTripMealRemoteDataSource();
+    repository = TripRepository(mockLocalDataSource, mockRemoteDataSource, mockMealRemoteDataSource);
   });
 
   group('TripRepository', () {

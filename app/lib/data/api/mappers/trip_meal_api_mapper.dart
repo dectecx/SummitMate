@@ -1,4 +1,5 @@
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/domain/entities/meal_plan_day.dart';
 import '../models/trip_meal_api_models.dart';
 
 /// TripMealItem API Model ↔ Domain Model 轉換
@@ -24,17 +25,34 @@ class TripMealApiMapper {
   /// MealItem (domain model) + 行程脈絡 → TripMealItemRequest
   ///
   /// [item] 餐點 domain model
-  /// [day] 天次，例如 "D1"、"D2"
+  /// [mealPlanDayId] 天次 ID
   /// [mealType] 餐食類型，例如 "breakfast"、"lunch"
-  static TripMealItemRequest toRequest(MealItem item, {required String day, required String mealType}) {
+  static TripMealItemRequest toRequest(MealItem item, {required String mealPlanDayId, required String mealType}) {
     return TripMealItemRequest(
-      day: day,
+      mealPlanDayId: mealPlanDayId,
       mealType: mealType,
       name: item.name,
       weight: item.weight,
       calories: item.calories,
       quantity: item.quantity,
       note: item.note,
+    );
+  }
+
+  /// MealPlanDayResponse → MealPlanDay
+  static MealPlanDay fromDayResponse(MealPlanDayResponse response) {
+    return MealPlanDay(
+      id: response.id,
+      name: response.name,
+      linkedItineraryDay: response.linkedItineraryDay,
+    );
+  }
+
+  /// 參數 → MealPlanDayRequest
+  static MealPlanDayRequest toDayRequest(String name, {String? linkedItineraryDay}) {
+    return MealPlanDayRequest(
+      name: name,
+      linkedItineraryDay: linkedItineraryDay,
     );
   }
 }

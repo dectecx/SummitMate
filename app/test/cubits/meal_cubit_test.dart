@@ -1,56 +1,102 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_cubit.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_state.dart';
+import 'package:summitmate/domain/entities/daily_meal_plan.dart';
+import 'package:summitmate/domain/entities/meal_plan_day.dart';
+import 'package:summitmate/data/repositories/mock/mock_trip_repository.dart';
 
 void main() {
   group('MealCubit', () {
     late MealCubit mealCubit;
+    late MockTripRepository mockTripRepository;
 
     setUp(() {
-      mealCubit = MealCubit();
+      mockTripRepository = MockTripRepository();
+      mealCubit = MealCubit(mockTripRepository);
     });
 
     tearDown(() {
       mealCubit.close();
     });
 
-    test('initial state is MealLoaded with default plans', () {
-      expect(mealCubit.state, isA<MealLoaded>());
-      expect((mealCubit.state as MealLoaded).dailyPlans.length, 3);
+    test('initial state is MealInitial', () {
+      expect(mealCubit.state, isA<MealInitial>());
     });
 
     blocTest<MealCubit, MealState>(
-      'reset emits MealLoaded with default days',
+      'reset emits MealInitial',
       seed: () => const MealLoaded(dailyPlans: []),
       build: () => mealCubit,
       act: (cubit) => cubit.reset(),
-      expect: () => [isA<MealLoaded>().having((state) => state.dailyPlans.length, 'dailyPlans length', 3)],
+      expect: () => [isA<MealInitial>()],
     );
 
-    blocTest<MealCubit, MealState>(
-      'addMealItem adds item and updates weight',
-      build: () => mealCubit,
-      act: (cubit) => cubit.addMealItem('D1', MealType.lunch, 'Rice', 100, 350),
-      expect: () => [isA<MealLoaded>().having((s) => s.totalWeightKg, 'weight 0.1kg', 0.1)],
-    );
+    group('Day Management', () {
+      final initialPlans = [
+        DailyMealPlan(dayInfo: const MealPlanDay(id: 'day1', name: 'Original Day')),
+        DailyMealPlan(dayInfo: const MealPlanDay(id: 'day2', name: 'Linked Day', linkedItineraryDay: 'D1')),
+      ];
 
-    blocTest<MealCubit, MealState>(
-      'removeMealItem removes item',
-      build: () => mealCubit,
-      act: (cubit) async {
-        cubit.addMealItem('D1', MealType.lunch, 'Rice', 100, 350);
-        await Future.delayed(Duration.zero);
-        final state = cubit.state as MealLoaded;
-        final plan = state.dailyPlans.firstWhere((p) => p.day == 'D1');
-        final item = plan.meals[MealType.lunch]!.first;
-        cubit.removeMealItem('D1', MealType.lunch, item.id);
-      },
-      expect: () => [
-        isA<MealLoaded>().having((s) => s.totalWeightKg, 'added', 0.1),
-        isA<MealLoaded>().having((s) => s.totalWeightKg, 'removed', 0.0),
-      ],
-    );
+      blocTest<MealCubit, MealState>(
+        'addMealPlanDay adds a new day',
+        seed: () => MealLoaded(dailyPlans: initialPlans),
+        build: () => mealCubit,
+        act: (cubit) => cubit.addMealPlanDay('New Independent Day'),
+        expect: () => [
+          isA<MealLoaded>().having((s) => s.dailyPlans.length, 'length', 3)
+                           .having((s) => s.dailyPlans.last.dayInfo.name, 'name', 'New Independent Day'),
+        ],
+      );
+
+      blocTest<MealCubit, MealState>(
+        'renameMealPlanDay renames an unlinked day',
+        seed: () => MealLoaded(dailyPlans: initialPlans),
+        build: () => mealCubit,
+        act: (cubit) => cubit.renameMealPlanDay('day1', 'Renamed Day'),
+        expect: () => [
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].dayInfo.name, 'name', 'Renamed Day'),
+        ],
+      );
+
+      blocTest<MealCubit, MealState>(
+        'renameMealPlanDay ignores linked day',
+        seed: () => MealLoaded(dailyPlans: initialPlans),
+        build: () => mealCubit,
+        act: (cubit) => cubit.renameMealPlanDay('day2', 'Attempt Rename'),
+        expect: () => [], // Should not emit any new state since linked days can't be renamed
+      );
+
+      blocTest<MealCubit, MealState>(
+        'linkMealPlanDay links to itinerary day',
+        seed: () => MealLoaded(dailyPlans: initialPlans),
+        build: () => mealCubit,
+        act: (cubit) => cubit.linkMealPlanDay('day1', 'D2'),
+        expect: () => [
+          isA<MealLoaded>().having((s) => s.dailyPlans[0].dayInfo.linkedItineraryDay, 'linked', 'D2'),
+        ],
+      );
+
+      blocTest<MealCubit, MealState>(
+        'unlinkMealPlanDay unlinks from itinerary day',
+        seed: () => MealLoaded(dailyPlans: initialPlans),
+        build: () => mealCubit,
+        act: (cubit) => cubit.unlinkMealPlanDay('day2'),
+        expect: () => [
+          isA<MealLoaded>().having((s) => s.dailyPlans[1].dayInfo.linkedItineraryDay, 'linked', null),
+        ],
+      );
+
+      blocTest<MealCubit, MealState>(
+        'deleteMealPlanDay removes the day',
+        seed: () => MealLoaded(dailyPlans: initialPlans),
+        build: () => mealCubit,
+        act: (cubit) => cubit.deleteMealPlanDay('day1'),
+        expect: () => [
+          isA<MealLoaded>().having((s) => s.dailyPlans.length, 'length', 1)
+                           .having((s) => s.dailyPlans.first.dayInfo.id, 'id', 'day2'),
+        ],
+      );
+    });
   });
 }

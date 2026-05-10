@@ -1,6 +1,7 @@
-import '../../../core/error/result.dart';
 import '../../../core/models/paginated_list.dart';
-import 'package:summitmate/domain/domain.dart';
+import '../../../core/error/result.dart';
+import '../../../domain/domain.dart';
+import '../../../domain/entities/meal_plan_day.dart';
 import 'mock_itinerary_repository.dart';
 
 /// 模擬行程清單資料庫
@@ -122,5 +123,27 @@ class MockTripRepository implements ITripRepository {
   @override
   Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
     return Success(UserProfile(id: userId, email: 'user@example.com', displayName: '搜尋到的用戶', avatar: '🐻'));
+  }
+
+  // ========== Meal Plan Day Operations ==========
+
+  @override
+  Future<Result<List<MealPlanDay>, Exception>> getMealPlanDays(String tripId) async {
+    return const Success([]);
+  }
+
+  @override
+  Future<Result<MealPlanDay, Exception>> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay}) async {
+    return Success(MealPlanDay(id: 'day-1', name: name, linkedItineraryDay: linkedItineraryDay));
+  }
+
+  @override
+  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay}) async {
+    return Success(MealPlanDay(id: dayId, name: name, linkedItineraryDay: linkedItineraryDay));
+  }
+
+  @override
+  Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId) async {
+    return const Success(null);
   }
 }

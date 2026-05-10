@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 void main() {
   group('MealItem Tests', () {
@@ -44,7 +45,7 @@ void main() {
       );
 
       final plan = DailyMealPlan(
-        day: 'D1',
+        dayInfo: MealPlanDay(id: 'day_1', name: 'D1'),
         meals: {
           MealType.breakfast: [item1],
           MealType.dinner: [item2],
@@ -56,7 +57,7 @@ void main() {
     });
 
     test('should return 0 for empty plan', () {
-      final plan = DailyMealPlan(day: 'D1');
+      final plan = DailyMealPlan(dayInfo: MealPlanDay(id: 'day_1', name: 'D1'));
       expect(plan.totalWeight, 0);
       expect(plan.totalCalories, 0);
     });

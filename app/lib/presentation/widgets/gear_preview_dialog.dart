@@ -286,7 +286,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
         children: [
           const Icon(Icons.calendar_today, size: 18, color: Colors.blueGrey),
           const SizedBox(width: 12),
-          Text(plan.day, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(plan.dayInfo.name, style: const TextStyle(fontWeight: FontWeight.bold)),
           const Spacer(),
           Text(
             '${plan.totalCalories.toStringAsFixed(0)} kcal',

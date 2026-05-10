@@ -1,37 +1,38 @@
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 /// 行程餐飲 (Trip Meal) 的遠端資料來源介面
 abstract interface class ITripMealRemoteDataSource {
+  // ========== Meal Plan Day Management ==========
+
+  /// 取得行程的所有糧食計畫天數
+  Future<List<MealPlanDay>> getMealPlanDays(String tripId);
+
+  /// 新增糧食計畫天數
+  Future<MealPlanDay> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay});
+
+  /// 更新糧食計畫天數
+  Future<MealPlanDay> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay});
+
+  /// 刪除糧食計畫天數
+  Future<void> deleteMealPlanDay(String tripId, String dayId);
+
+  // ========== Meal Item Operations ==========
+
   /// 取得行程所有餐點
-  ///
-  /// [tripId] 行程 ID
   Future<List<MealItem>> getTripMeals(String tripId);
 
-  /// 新增餐點至行程
-  ///
-  /// [tripId] 行程 ID
-  /// [item] 餐點資料
-  /// [day] 天次，例如 "D1"、"D2"
-  /// [mealType] 餐食類型，例如 "breakfast"、"lunch"
-  Future<MealItem> addTripMeal(String tripId, MealItem item, {required String day, required String mealType});
+  /// 新增餐點
+  Future<MealItem> addTripMeal(String tripId, MealItem item, {required String mealPlanDayId, required String mealType});
 
-  /// 更新行程餐點內容
-  ///
-  /// [tripId] 行程 ID
-  /// [item] 欲更新的餐點（需含 id）
-  /// [day] 天次
-  /// [mealType] 餐食類型
-  Future<MealItem> updateTripMeal(String tripId, MealItem item, {required String day, required String mealType});
+  /// 更新餐點
+  Future<MealItem> updateTripMeal(
+    String tripId,
+    MealItem item, {
+    required String mealPlanDayId,
+    required String mealType,
+  });
 
-  /// 從行程中刪除餐點
-  ///
-  /// [tripId] 行程 ID
-  /// [itemId] 餐點 ID
+  /// 刪除餐點
   Future<void> deleteTripMeal(String tripId, String itemId);
-
-  /// 批量替換行程所有餐點（離線同步用）
-  ///
-  /// [tripId] 行程 ID
-  /// [requests] 完整餐點清單（含 day/mealType 上下文）
-  Future<void> replaceAllTripMeals(String tripId, List<({MealItem item, String day, String mealType})> requests);
 }
