@@ -16,12 +16,3 @@ class GearCategory {
 
   static const List<String> all = [sleep, cook, wear, other];
 }
-
-/// 行程天數
-class ItineraryDay {
-  static const String d0 = 'D0';
-  static const String d1 = 'D1';
-  static const String d2 = 'D2';
-
-  static const List<String> all = [d0, d1, d2];
-}

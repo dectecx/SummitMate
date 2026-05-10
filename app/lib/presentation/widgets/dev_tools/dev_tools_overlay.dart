@@ -9,6 +9,7 @@ import 'package:summitmate/presentation/cubits/poll/poll_cubit.dart';
 import 'package:summitmate/infrastructure/database/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:summitmate/app.dart';
+import 'package:summitmate/presentation/cubits/meal/meal_state.dart';
 import 'dart:math';
 
 class DevToolsOverlay extends StatelessWidget {
@@ -234,7 +235,10 @@ class DevPanelContent extends StatelessWidget {
   void _addRandomMeals(BuildContext context) {
     final mealCubit = context.read<MealCubit>();
     final random = Random();
-    final days = ['D0', 'D1', 'D2', 'D3'];
+    final mealState = mealCubit.state;
+    final days = mealState is MealLoaded && mealState.dailyPlans.isNotEmpty
+        ? mealState.dailyPlans.map((p) => p.day).toList()
+        : ['D1'];
     final day = days[random.nextInt(days.length)];
     mealCubit.addMealItem(day, MealType.preBreakfast, '測試早早餐 ${random.nextInt(100)}', 150, 400);
     mealCubit.addMealItem(day, MealType.breakfast, '測試早餐 ${random.nextInt(100)}', 200, 500);

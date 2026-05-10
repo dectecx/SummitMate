@@ -5,28 +5,29 @@ import '../../../domain/domain.dart';
 
 @injectable
 class MealCubit extends Cubit<MealState> {
-  MealCubit()
-    : super(
-        const MealLoaded(
-          dailyPlans: [
-            DailyMealPlan(day: 'D0'),
-            DailyMealPlan(day: 'D1'),
-            DailyMealPlan(day: 'D2'),
-          ],
-        ),
-      );
+  MealCubit() : super(const MealLoaded(dailyPlans: [DailyMealPlan(day: 'D1')]));
 
   /// 初始化或重置
   void reset() {
-    emit(
-      const MealLoaded(
-        dailyPlans: [
-          DailyMealPlan(day: 'D0'),
-          DailyMealPlan(day: 'D1'),
-          DailyMealPlan(day: 'D2'),
-        ],
-      ),
-    );
+    emit(const MealLoaded(dailyPlans: [DailyMealPlan(day: 'D1')]));
+  }
+
+  /// 根據行程天數同步計畫
+  void syncWithTripDays(List<String> dayNames) {
+    if (state is! MealLoaded || dayNames.isEmpty) return;
+    final loadedState = state as MealLoaded;
+
+    final currentPlans = loadedState.dailyPlans;
+    final newPlans = dayNames.map((dayName) {
+      final existingPlan = currentPlans.cast<DailyMealPlan?>().firstWhere((p) => p?.day == dayName, orElse: () => null);
+      return existingPlan ?? DailyMealPlan(day: dayName);
+    }).toList();
+
+    bool hasChanged = currentPlans.length != newPlans.length || !currentPlans.every((p) => dayNames.contains(p.day));
+
+    if (hasChanged) {
+      emit(loadedState.copyWith(dailyPlans: newPlans));
+    }
   }
 
   /// 新增餐點項目
