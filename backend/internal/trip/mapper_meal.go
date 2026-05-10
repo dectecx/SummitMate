@@ -18,7 +18,7 @@ func ToTripMealItemResponse(item *TripMealItem) api.TripMealItem {
 		Id:            uuid.MustParse(item.ID),
 		TripId:        uuid.MustParse(item.TripID),
 		LibraryItemId: libID,
-		Day:           item.Day,
+		MealPlanDayId: uuid.MustParse(item.MealPlanDayID),
 		MealType:      item.MealType,
 		Name:          item.Name,
 		Weight:        item.Weight,
@@ -45,7 +45,7 @@ func ToModelTripMealItem(req api.TripMealItemRequest) TripMealItem {
 
 	return TripMealItem{
 		LibraryItemID: libIDStr,
-		Day:           req.Day,
+		MealPlanDayID: req.MealPlanDayId.String(),
 		MealType:      req.MealType,
 		Name:          req.Name,
 		Weight:        req.Weight,
@@ -67,7 +67,7 @@ func ToModelTripMealItemFromAPI(item api.TripMealItem) *TripMealItem {
 		ID:            item.Id.String(),
 		TripID:        item.TripId.String(),
 		LibraryItemID: libIDStr,
-		Day:           item.Day,
+		MealPlanDayID: item.MealPlanDayId.String(),
 		MealType:      item.MealType,
 		Name:          item.Name,
 		Weight:        item.Weight,

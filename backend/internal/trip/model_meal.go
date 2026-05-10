@@ -6,7 +6,7 @@ type TripMealItem struct {
 	ID            string    `json:"id" db:"id"`
 	TripID        string    `json:"trip_id" db:"trip_id"`
 	LibraryItemID *string   `json:"library_item_id" db:"library_item_id"`
-	Day           string    `json:"day" db:"day"`
+	MealPlanDayID string    `json:"meal_plan_day_id" db:"meal_plan_day_id"`
 	MealType      string    `json:"meal_type" db:"meal_type"`
 	Name          string    `json:"name" db:"name"`
 	Weight        float64   `json:"weight" db:"weight"`

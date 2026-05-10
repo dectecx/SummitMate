@@ -179,6 +179,7 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	// --- Feature Repositories ---
 	tripGearRepo := trip.NewTripGearRepository(pool)
 	tripMealRepo := trip.NewTripMealRepository(pool)
+	tripMealDayRepo := trip.NewTripMealPlanDayRepository(pool)
 	favoriteRepo := favorite.NewFavoriteRepository(pool)
 	groupRepo := groupevent.NewGroupEventRepository(pool)
 	weatherRepo := weather.NewWeatherRepository(pool)
@@ -216,7 +217,7 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 
 	// --- Services ---
 	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret)
-	tripService := trip.NewTripService(logger, pool, tripRepo, tripMemberRepo, tripItineraryRepo, authRepo)
+	tripService := trip.NewTripService(logger, pool, tripRepo, tripMemberRepo, tripItineraryRepo, tripMealDayRepo, authRepo)
 	gearLibService := library.NewGearLibraryService(logger, gearLibRepo)
 	mealLibService := library.NewMealLibraryService(logger, mealLibRepo)
 	messageService := interaction.NewMessageService(logger, messageRepo, tripRepo, tripMemberRepo)

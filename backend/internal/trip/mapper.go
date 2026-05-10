@@ -82,6 +82,25 @@ func ToTripGetResponse(t Trip) api.TripGetResponse {
 		CreatedBy:   uuid.MustParse(t.CreatedBy),
 		UpdatedAt:   t.UpdatedAt,
 		UpdatedBy:   uuid.MustParse(t.UpdatedBy),
+		MealPlanDays: func() []api.TripMealPlanDay {
+			res := make([]api.TripMealPlanDay, len(t.MealPlanDays))
+			for i, d := range t.MealPlanDays {
+				res[i] = ToTripMealPlanDayResponse(d)
+			}
+			return res
+		}(),
+	}
+}
+
+// ToTripMealPlanDayResponse converts MealPlanDay to api.TripMealPlanDay
+func ToTripMealPlanDayResponse(d MealPlanDay) api.TripMealPlanDay {
+	return api.TripMealPlanDay{
+		Id:                 uuid.MustParse(d.ID),
+		TripId:             uuid.MustParse(d.TripID),
+		Name:               d.Name,
+		LinkedItineraryDay: d.LinkedItineraryDay,
+		CreatedAt:          d.CreatedAt,
+		UpdatedAt:          d.UpdatedAt,
 	}
 }
 

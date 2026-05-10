@@ -30,10 +30,10 @@ func NewTripMealRepository(pool *pgxpool.Pool) TripMealRepository {
 
 func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string) ([]*TripMealItem, error) {
 	query := `
-		SELECT id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
+		SELECT id, trip_id, library_item_id, meal_plan_day_id, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 		FROM meal_items
 		WHERE trip_id = $1
-		ORDER BY day ASC, meal_type ASC, created_at ASC
+		ORDER BY meal_plan_day_id ASC, meal_type ASC, created_at ASC
 	`
 	db := database.GetQuerier(ctx, repo.pool)
 	rows, err := db.Query(ctx, query, tripID)
@@ -59,13 +59,13 @@ func (repo *tripMealRepository) ListByTripID(ctx context.Context, tripID string)
 
 func (repo *tripMealRepository) Create(ctx context.Context, item *TripMealItem) (*TripMealItem, error) {
 	query := `
-		INSERT INTO meal_items (trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_by, updated_by)
+		INSERT INTO meal_items (trip_id, library_item_id, meal_plan_day_id, meal_type, name, weight, calories, quantity, note, created_by, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-		RETURNING id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
+		RETURNING id, trip_id, library_item_id, meal_plan_day_id, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.pool)
 	row := db.QueryRow(ctx, query,
-		item.TripID, item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedBy, item.UpdatedBy,
+		item.TripID, item.LibraryItemID, item.MealPlanDayID, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedBy, item.UpdatedBy,
 	)
 	it, err := repo.scanItem(row)
 	if err != nil {
@@ -76,7 +76,7 @@ func (repo *tripMealRepository) Create(ctx context.Context, item *TripMealItem) 
 
 func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID string) (*TripMealItem, error) {
 	query := `
-		SELECT id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
+		SELECT id, trip_id, library_item_id, meal_plan_day_id, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 		FROM meal_items
 		WHERE id = $1 AND trip_id = $2
 	`
@@ -92,13 +92,13 @@ func (repo *tripMealRepository) GetByID(ctx context.Context, id string, tripID s
 func (repo *tripMealRepository) Update(ctx context.Context, item *TripMealItem) (*TripMealItem, error) {
 	query := `
 		UPDATE meal_items
-		SET library_item_id = $1, day = $2, meal_type = $3, name = $4, weight = $5, calories = $6, quantity = $7, note = $8, updated_at = NOW(), updated_by = $9
+		SET library_item_id = $1, meal_plan_day_id = $2, meal_type = $3, name = $4, weight = $5, calories = $6, quantity = $7, note = $8, updated_at = NOW(), updated_by = $9
 		WHERE id = $10 AND trip_id = $11
-		RETURNING id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
+		RETURNING id, trip_id, library_item_id, meal_plan_day_id, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.pool)
 	row := db.QueryRow(ctx, query,
-		item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.UpdatedBy, item.ID, item.TripID,
+		item.LibraryItemID, item.MealPlanDayID, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.UpdatedBy, item.ID, item.TripID,
 	)
 	it, err := repo.scanItem(row)
 	if err != nil {
@@ -139,12 +139,12 @@ func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 	}
 
 	query := `
-		INSERT INTO meal_items (id, trip_id, library_item_id, day, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by)
+		INSERT INTO meal_items (id, trip_id, library_item_id, meal_plan_day_id, meal_type, name, weight, calories, quantity, note, created_at, created_by, updated_at, updated_by)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, NOW()), $12, COALESCE($13, NOW()), $14)
 	`
 	for _, item := range items {
 		_, err := tx.Exec(ctx, query,
-			item.ID, tripID, item.LibraryItemID, item.Day, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
+			item.ID, tripID, item.LibraryItemID, item.MealPlanDayID, item.MealType, item.Name, item.Weight, item.Calories, item.Quantity, item.Note, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
 		)
 		if err != nil {
 			return fmt.Errorf("replace all meals (insert phase) item %s for trip %s: %w", item.ID, tripID, err)
@@ -157,7 +157,7 @@ func (repo *tripMealRepository) ReplaceAll(ctx context.Context, tripID string, i
 func (repo *tripMealRepository) scanItem(row pgx.Row) (*TripMealItem, error) {
 	var i TripMealItem
 	err := row.Scan(
-		&i.ID, &i.TripID, &i.LibraryItemID, &i.Day, &i.MealType, &i.Name,
+		&i.ID, &i.TripID, &i.LibraryItemID, &i.MealPlanDayID, &i.MealType, &i.Name,
 		&i.Weight, &i.Calories, &i.Quantity, &i.Note,
 		&i.CreatedAt, &i.CreatedBy, &i.UpdatedAt, &i.UpdatedBy,
 	)

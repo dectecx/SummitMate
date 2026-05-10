@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net/http"
 	"time"
 
 	"summitmate/internal/apperror"
@@ -28,6 +29,11 @@ type TripService interface {
 	AddItineraryItem(ctx context.Context, tripID, userID string, req *ItineraryItemRequest) (*ItineraryItem, error)
 	UpdateItineraryItem(ctx context.Context, tripID, itemID, userID string, req *ItineraryItemRequest) (*ItineraryItem, error)
 	DeleteItineraryItem(ctx context.Context, tripID, itemID, userID string) error
+	// Meal Plan Days
+	ListMealPlanDays(ctx context.Context, tripID, userID string) ([]*MealPlanDay, error)
+	AddMealPlanDay(ctx context.Context, tripID, userID string, name string, linkedDay *string) (*MealPlanDay, error)
+	UpdateMealPlanDay(ctx context.Context, tripID, dayID, userID string, name string, linkedDay *string) (*MealPlanDay, error)
+	DeleteMealPlanDay(ctx context.Context, tripID, dayID, userID string) error
 }
 
 type tripService struct {
@@ -36,6 +42,7 @@ type tripService struct {
 	tripRepo      TripRepository
 	memberRepo    TripMemberRepository
 	itineraryRepo ItineraryRepository
+	mealDayRepo   TripMealPlanDayRepository
 	userRepo      auth.UserRepository
 }
 
@@ -45,6 +52,7 @@ func NewTripService(
 	tripRepo TripRepository,
 	memberRepo TripMemberRepository,
 	itineraryRepo ItineraryRepository,
+	mealDayRepo TripMealPlanDayRepository,
 	userRepo auth.UserRepository,
 ) TripService {
 	return &tripService{
@@ -53,6 +61,7 @@ func NewTripService(
 		tripRepo:      tripRepo,
 		memberRepo:    memberRepo,
 		itineraryRepo: itineraryRepo,
+		mealDayRepo:   mealDayRepo,
 		userRepo:      userRepo,
 	}
 }
@@ -91,6 +100,26 @@ func (s *tripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 			s.logger.ErrorContext(txCtx, "建立者加入行程成員失敗", "trip_id", createdTrip.ID, "user_id", userID, "error", err)
 			return err
 		}
+
+		// 預設建立一個 D1 的糧食計畫天數
+		defaultDay := &MealPlanDay{
+			TripID: createdTrip.ID,
+			Name:   "D1",
+		}
+		// 如果行程天數中有 D1，則自動綁定
+		for _, dn := range createdTrip.DayNames {
+			if dn == "D1" {
+				linked := "D1"
+				defaultDay.LinkedItineraryDay = &linked
+				break
+			}
+		}
+		_, err = s.mealDayRepo.Create(txCtx, defaultDay)
+		if err != nil {
+			s.logger.ErrorContext(txCtx, "建立預設糧食計畫天數失敗", "trip_id", createdTrip.ID, "error", err)
+			return err
+		}
+
 		return nil
 	})
 
@@ -113,6 +142,34 @@ func (s *tripService) GetTrip(ctx context.Context, tripID, userID string) (*Trip
 	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
 		return nil, apperror.ErrAccessDenied
 	}
+
+	// 載入糧食計畫天數
+	mealDays, err := s.mealDayRepo.ListByTripID(ctx, tripID)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "載入糧食計畫天數失敗", "trip_id", tripID, "error", err)
+		return nil, apperror.InternalError("載入糧食計畫失敗").Wrap(err)
+	}
+	trip.MealPlanDays = make([]MealPlanDay, len(mealDays))
+	for i, d := range mealDays {
+		// 如果有綁定行程天數，確保名稱同步
+		if d.LinkedItineraryDay != nil {
+			found := false
+			for _, dn := range trip.DayNames {
+				if dn == *d.LinkedItineraryDay {
+					d.Name = dn
+					found = true
+					break
+				}
+			}
+			// 如果沒找到對應的行程天數，表示該連結已失效（可能行程天數被改名或刪除）
+			if !found {
+				s.logger.WarnContext(ctx, "糧食計畫天數綁定的行程天數已不存在", "trip_id", tripID, "meal_plan_day_id", d.ID, "linked_day", *d.LinkedItineraryDay)
+				d.LinkedItineraryDay = nil
+			}
+		}
+		trip.MealPlanDays[i] = *d
+	}
+
 	return trip, nil
 }
 
@@ -151,12 +208,44 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	if req.IsActive != nil {
 		existingTrip.IsActive = *req.IsActive
 	}
-	if req.DayNames != nil {
-		existingTrip.DayNames = *req.DayNames
-	}
 	existingTrip.UpdatedBy = userID
 
-	updatedTrip, err := s.tripRepo.Update(ctx, existingTrip, req.LastUpdatedAt)
+	var updatedTrip *Trip
+	err = database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		var err error
+		updatedTrip, err = s.tripRepo.Update(txCtx, existingTrip, req.LastUpdatedAt)
+		if err != nil {
+			return err
+		}
+
+		if req.DayNames != nil {
+			existingTrip.DayNames = *req.DayNames
+			// 檢查是否有糧食計畫天數綁定了已不存在的行程天數
+			mealDays, err := s.mealDayRepo.ListByTripID(txCtx, tripID)
+			if err == nil {
+				for _, md := range mealDays {
+					if md.LinkedItineraryDay != nil {
+						found := false
+						for _, dn := range existingTrip.DayNames {
+							if dn == *md.LinkedItineraryDay {
+								found = true
+								break
+							}
+						}
+						if !found {
+							// 取消連結
+							md.LinkedItineraryDay = nil
+							if _, err := s.mealDayRepo.Update(txCtx, md); err != nil {
+								return err
+							}
+						}
+					}
+				}
+			}
+		}
+		return nil
+	})
+
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			// 如果提供了 LastUpdatedAt 但找不到對應行，表示 updated_at 已變動 (或是行程被刪除)
@@ -172,6 +261,7 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 	s.logger.InfoContext(ctx, "行程更新成功", "trip_id", tripID, "user_id", userID)
 	return updatedTrip, nil
 }
+
 
 func (s *tripService) DeleteTrip(ctx context.Context, tripID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
@@ -418,6 +508,102 @@ func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 	}
 
 	return s.itineraryRepo.DeleteByID(ctx, itemID)
+}
+
+// --- Meal Plan Days ---
+
+func (s *tripService) ListMealPlanDays(ctx context.Context, tripID, userID string) ([]*MealPlanDay, error) {
+	if !s.isTripMember(ctx, tripID, userID) {
+		return nil, apperror.ErrAccessDenied
+	}
+	return s.mealDayRepo.ListByTripID(ctx, tripID)
+}
+
+func (s *tripService) AddMealPlanDay(ctx context.Context, tripID, userID string, name string, linkedDay *string) (*MealPlanDay, error) {
+	if !s.isTripMember(ctx, tripID, userID) {
+		return nil, apperror.ErrAccessDenied
+	}
+
+	// 驗證連結的天數是否存在
+	if linkedDay != nil {
+		trip, err := s.tripRepo.GetByID(ctx, tripID)
+		if err != nil {
+			return nil, err
+		}
+		found := false
+		for _, dn := range trip.DayNames {
+			if dn == *linkedDay {
+				name = dn // 強制使用行程天數的名稱
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, errors.New("綁定的行程天數不存在")
+		}
+	}
+
+	day := &MealPlanDay{
+		TripID:             tripID,
+		Name:               name,
+		LinkedItineraryDay: linkedDay,
+	}
+
+	return s.mealDayRepo.Create(ctx, day)
+}
+
+func (s *tripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, userID string, name string, linkedDay *string) (*MealPlanDay, error) {
+	if !s.isTripMember(ctx, tripID, userID) {
+		return nil, apperror.ErrAccessDenied
+	}
+
+	existing, err := s.mealDayRepo.GetByID(ctx, dayID, tripID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 驗證連結的天數是否存在
+	if linkedDay != nil {
+		trip, err := s.tripRepo.GetByID(ctx, tripID)
+		if err != nil {
+			return nil, err
+		}
+		found := false
+		for _, dn := range trip.DayNames {
+			if dn == *linkedDay {
+				name = dn // 強制使用行程天數的名稱
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, errors.New("綁定的行程天數不存在")
+		}
+	}
+
+	existing.Name = name
+	existing.LinkedItineraryDay = linkedDay
+
+	return s.mealDayRepo.Update(ctx, existing)
+}
+
+func (s *tripService) DeleteMealPlanDay(ctx context.Context, tripID, dayID, userID string) error {
+	if !s.isTripMember(ctx, tripID, userID) {
+		return apperror.ErrAccessDenied
+	}
+
+	existing, err := s.mealDayRepo.GetByID(ctx, dayID, tripID)
+	if err != nil {
+		return err
+	}
+
+	// 如果是綁定行程的天數，不能直接刪除糧食天數 (必須從行程那邊刪除天數來觸發解綁)
+	if existing.LinkedItineraryDay != nil {
+		return apperror.New(http.StatusBadRequest, apperror.TypeInvalidReq, "linked_day_deletion_forbidden", "此天數已綁定行程，請至行程管理中修改或刪除").WithParam("linked_itinerary_day")
+	}
+
+	// 實作建議：資料庫已設定 ON DELETE CASCADE，故刪除天數時會自動刪除相關餐點。
+	return s.mealDayRepo.Delete(ctx, dayID, tripID)
 }
 
 // isTripMember 判斷給定的 userID 是否已加入該行程。

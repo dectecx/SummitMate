@@ -62,6 +62,18 @@ CREATE TABLE trips (
     updated_by  UUID         NOT NULL REFERENCES users(id)
 );
 
+CREATE TABLE trip_meal_plan_days (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    name VARCHAR(50) NOT NULL,
+    linked_itinerary_day VARCHAR(50),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_trip_meal_plan_days_trip_id ON trip_meal_plan_days(trip_id);
+
+
 CREATE TABLE trip_members (
     trip_id   UUID        NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     user_id   UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -154,7 +166,7 @@ CREATE TABLE meal_items (
     id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     library_item_id UUID             REFERENCES meal_library_items(id) ON DELETE SET NULL,
-    day             VARCHAR(10)      NOT NULL,
+    meal_plan_day_id UUID            NOT NULL REFERENCES trip_meal_plan_days(id) ON DELETE CASCADE,
     meal_type       VARCHAR(20)      NOT NULL,
     name            VARCHAR(200)     NOT NULL,
     weight          DOUBLE PRECISION NOT NULL DEFAULT 0,
