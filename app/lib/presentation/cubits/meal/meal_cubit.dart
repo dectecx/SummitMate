@@ -8,11 +8,13 @@ import '../../../domain/entities/meal_plan_day.dart';
 @injectable
 class MealCubit extends Cubit<MealState> {
   final ITripRepository _tripRepository;
+  String? _currentTripId;
 
   MealCubit(this._tripRepository) : super(const MealInitial());
 
   /// 載入行程的糧食計畫
   Future<void> loadMealPlans(String tripId) async {
+    _currentTripId = tripId;
     final result = await _tripRepository.getMealPlanDays(tripId);
     if (result is Success<List<MealPlanDay>, Exception>) {
       final days = result.value;
@@ -25,12 +27,8 @@ class MealCubit extends Cubit<MealState> {
 
   /// 初始化或重置
   void reset() {
+    _currentTripId = null;
     emit(const MealInitial());
-  }
-
-  /// 根據行程天數同步計畫
-  void syncWithTripDays(List<String> dayNames) {
-    // TODO: 這裡可能需要呼叫 API，此為 placeholder 邏輯。具體同步行為需在後續實作。
   }
 
   /// 新增餐點項目
@@ -115,26 +113,26 @@ class MealCubit extends Cubit<MealState> {
 
   /// 新增獨立的天數
   Future<void> addMealPlanDay(String name) async {
-    if (state is! MealLoaded) return;
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
-    final newDay = MealPlanDay(
-      id: DateTime.now().millisecondsSinceEpoch.toString(), // TODO: use UUID
-      name: name,
-    );
+    final result = await _tripRepository.addMealPlanDay(_currentTripId!, name);
 
-    // TODO: Call Repository here (not fully implemented in backend yet, doing local state for now)
-    // await _tripRepository.addMealPlanDay(tripId, newDay);
+    if (result is Success<MealPlanDay, Exception>) {
+      final newDay = result.value;
+      final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
+      currentPlans.add(DailyMealPlan(dayInfo: newDay));
 
-    final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
-    currentPlans.add(DailyMealPlan(dayInfo: newDay));
-
-    emit(loadedState.copyWith(dailyPlans: currentPlans));
+      emit(loadedState.copyWith(dailyPlans: currentPlans));
+    } else if (result is Failure<MealPlanDay, Exception>) {
+      emit(MealError('新增天數失敗: ${result.exception.toString()}'));
+      emit(loadedState); // 回復狀態
+    }
   }
 
   /// 重新命名未綁定的天數
   Future<void> renameMealPlanDay(String dayId, String newName) async {
-    if (state is! MealLoaded) return;
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
@@ -144,37 +142,55 @@ class MealCubit extends Cubit<MealState> {
       final oldDay = currentPlans[planIndex].dayInfo;
       if (oldDay.linkedItineraryDay != null) return; // 綁定的天數不可改名
 
-      final newDay = oldDay.copyWith(name: newName);
+      final result = await _tripRepository.updateMealPlanDay(
+        _currentTripId!,
+        dayId,
+        newName,
+        linkedItineraryDay: oldDay.linkedItineraryDay,
+      );
 
-      // TODO: await _tripRepository.updateMealPlanDay(tripId, newDay);
-
-      currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
-      emit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (result is Success<MealPlanDay, Exception>) {
+        final newDay = result.value;
+        currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
+        emit(loadedState.copyWith(dailyPlans: currentPlans));
+      } else if (result is Failure<MealPlanDay, Exception>) {
+        emit(MealError('重新命名天數失敗: ${result.exception.toString()}'));
+        emit(loadedState);
+      }
     }
   }
 
   /// 綁定天數到行程天數
   Future<void> linkMealPlanDay(String dayId, String itineraryDay) async {
-    if (state is! MealLoaded) return;
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
 
     if (planIndex != -1) {
-      final oldDay = currentPlans[planIndex].dayInfo;
-      final newDay = oldDay.copyWith(linkedItineraryDay: itineraryDay);
+      // 綁定時，名稱強制覆蓋為行程天數名稱
+      final result = await _tripRepository.updateMealPlanDay(
+        _currentTripId!,
+        dayId,
+        itineraryDay,
+        linkedItineraryDay: itineraryDay,
+      );
 
-      // TODO: await _tripRepository.updateMealPlanDay(tripId, newDay);
-
-      currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
-      emit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (result is Success<MealPlanDay, Exception>) {
+        final newDay = result.value;
+        currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
+        emit(loadedState.copyWith(dailyPlans: currentPlans));
+      } else if (result is Failure<MealPlanDay, Exception>) {
+        emit(MealError('綁定天數失敗: ${result.exception.toString()}'));
+        emit(loadedState);
+      }
     }
   }
 
   /// 取消綁定
   Future<void> unlinkMealPlanDay(String dayId) async {
-    if (state is! MealLoaded) return;
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
@@ -182,25 +198,43 @@ class MealCubit extends Cubit<MealState> {
 
     if (planIndex != -1) {
       final oldDay = currentPlans[planIndex].dayInfo;
-      final newDay = oldDay.copyWith(linkedItineraryDay: null);
 
-      // TODO: await _tripRepository.updateMealPlanDay(tripId, newDay);
+      final result = await _tripRepository.updateMealPlanDay(
+        _currentTripId!,
+        dayId,
+        oldDay.name,
+        linkedItineraryDay: null,
+      );
 
-      currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
-      emit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (result is Success<MealPlanDay, Exception>) {
+        final newDay = result.value;
+        currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
+        emit(loadedState.copyWith(dailyPlans: currentPlans));
+      } else if (result is Failure<MealPlanDay, Exception>) {
+        emit(MealError('解除綁定天數失敗: ${result.exception.toString()}'));
+        emit(loadedState);
+      }
     }
   }
 
   /// 刪除天數
   Future<void> deleteMealPlanDay(String dayId) async {
-    if (state is! MealLoaded) return;
+    if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
-    currentPlans.removeWhere((p) => p.dayInfo.id == dayId);
+    final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
 
-    // TODO: await _tripRepository.deleteMealPlanDay(tripId, dayId);
+    if (planIndex != -1) {
+      final result = await _tripRepository.deleteMealPlanDay(_currentTripId!, dayId);
 
-    emit(loadedState.copyWith(dailyPlans: currentPlans));
+      if (result is Success<void, Exception>) {
+        currentPlans.removeAt(planIndex);
+        emit(loadedState.copyWith(dailyPlans: currentPlans));
+      } else if (result is Failure<void, Exception>) {
+        emit(MealError('刪除天數失敗: ${result.exception.toString()}'));
+        emit(loadedState);
+      }
+    }
   }
 }
