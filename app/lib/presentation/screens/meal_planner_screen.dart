@@ -5,6 +5,8 @@ import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import 'food_reference_screen.dart';
 import '../widgets/responsive_layout.dart';
+import '../cubits/trip/trip_cubit.dart';
+import '../cubits/trip/trip_state.dart';
 import '../utils/meal_utils.dart';
 
 /// 糧食計畫畫面
@@ -20,45 +22,71 @@ class MealPlannerScreen extends StatefulWidget {
 
 class _MealPlannerScreenState extends State<MealPlannerScreen> {
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<MealCubit, MealState>(
-      builder: (context, state) {
-        if (state is! MealLoaded) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final tripState = context.read<TripCubit>().state;
+        if (tripState is TripLoaded && tripState.activeTrip != null) {
+          final dayNames = tripState.activeTrip!.dayNames;
+          if (dayNames.isNotEmpty) {
+            context.read<MealCubit>().syncWithTripDays(dayNames);
+          }
         }
+      }
+    });
+  }
 
-        final dailyPlans = state.dailyPlans;
-        final cubit = context.read<MealCubit>();
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<TripCubit, TripState>(
+      listener: (context, tripState) {
+        if (tripState is TripLoaded && tripState.activeTrip != null) {
+          final dayNames = tripState.activeTrip!.dayNames;
+          if (dayNames.isNotEmpty) {
+            context.read<MealCubit>().syncWithTripDays(dayNames);
+          }
+        }
+      },
+      child: BlocBuilder<MealCubit, MealState>(
+        builder: (context, state) {
+          if (state is! MealLoaded) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
 
-        return DefaultTabController(
-          length: dailyPlans.length,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('糧食計畫'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.info_outline),
-                  tooltip: '參考資訊',
-                  onPressed: () => FoodReferenceScreen.show(context),
+          final dailyPlans = state.dailyPlans;
+          final cubit = context.read<MealCubit>();
+
+          return DefaultTabController(
+            length: dailyPlans.length,
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('糧食計畫'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.info_outline),
+                    tooltip: '參考資訊',
+                    onPressed: () => FoodReferenceScreen.show(context),
+                  ),
+                ],
+                bottom: TabBar(
+                  isScrollable: true,
+                  indicatorWeight: 4.0,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
+                  tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
                 ),
-              ],
-              bottom: TabBar(
-                isScrollable: true,
-                indicatorWeight: 4.0,
-                indicatorSize: TabBarIndicatorSize.label,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
-                tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
+              ),
+              body: TabBarView(
+                children: dailyPlans.map((plan) {
+                  return _DailyPlanView(plan: plan, cubit: cubit);
+                }).toList(),
               ),
             ),
-            body: TabBarView(
-              children: dailyPlans.map((plan) {
-                return _DailyPlanView(plan: plan, cubit: cubit);
-              }).toList(),
-            ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
