@@ -1,7 +1,6 @@
 package groupevent
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -85,9 +84,8 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 	}
 
 	var req api.GroupEventRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -164,9 +162,8 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 	}
 
 	var req api.GroupEventRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -243,8 +240,8 @@ func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *htt
 	}
 
 	var req api.GroupEventApplicationRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -295,8 +292,8 @@ func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWri
 		EventID string `json:"event_id"`
 		UserID  string `json:"user_id"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -346,8 +343,8 @@ func (h *GroupEventHandler) PostGroupEventsIdComments(w http.ResponseWriter, r *
 	}
 
 	var req api.GroupEventCommentRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -406,8 +403,8 @@ func (h *GroupEventHandler) PatchGroupEventsIdTripLink(w http.ResponseWriter, r 
 	var req struct {
 		LinkedTripId *uuid.UUID `json:"linked_trip_id"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

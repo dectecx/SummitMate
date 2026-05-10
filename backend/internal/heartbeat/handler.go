@@ -1,7 +1,6 @@
 package heartbeat
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -28,8 +27,8 @@ func (h *HeartbeatHandler) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req api.HeartbeatRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

@@ -41,6 +41,16 @@ func SendError(w http.ResponseWriter, r *http.Request, err error) {
 				"error", err,
 				"stack", string(debug.Stack()),
 			)
+		} else if appErr.HTTPStatus >= 400 {
+			attrs := []any{
+				"status", appErr.HTTPStatus,
+				"code", appErr.Code,
+				"message", appErr.Message,
+			}
+			if appErr.Unwrap() != nil {
+				attrs = append(attrs, "cause", appErr.Unwrap().Error())
+			}
+			logger.WarnContext(r.Context(), "client error", attrs...)
 		}
 		SendJSON(w, appErr.HTTPStatus, ErrorEnvelope{
 			Error: ErrorBody{
