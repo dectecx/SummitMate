@@ -88,7 +88,8 @@ func (s *APITestSuite) SetupSuite() {
 	s.Require().NoError(err, "無法初始化 App")
 	appInstance.Pool = pool // reuse the test container pool
 
-	router := appInstance.InitRouter()
+	router, err := appInstance.InitRouter()
+	s.Require().NoError(err, "無法初始化 Router")
 
 	s.ts = httptest.NewServer(router)
 	s.baseURL = s.ts.URL + "/api/v1"

@@ -59,8 +59,11 @@ func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	return app, nil
 }
 
-func (a *App) InitRouter() *chi.Mux {
-	apiServer := a.initializeAPI()
+func (a *App) InitRouter() (*chi.Mux, error) {
+	apiServer, err := a.initializeAPI()
+	if err != nil {
+		return nil, err
+	}
 
 	router := chi.NewRouter()
 	router.Use(chiMiddleware.RequestID)
@@ -81,11 +84,14 @@ func (a *App) InitRouter() *chi.Mux {
 	// Basic Health check (Uses logic from ServerInterface but mounted at root)
 	router.Get("/health", apiServer.GetHealth)
 
-	return router
+	return router, nil
 }
 
 func (a *App) Run() error {
-	router := a.InitRouter()
+	router, err := a.InitRouter()
+	if err != nil {
+		return err
+	}
 
 	// Scalar API Reference & OpenAPI JSON
 	a.setupDocs(router)
@@ -155,7 +161,7 @@ func (a *App) setupDocs(router *chi.Mux) {
 	})
 }
 
-func (a *App) initializeAPI() *appapi.Server {
+func (a *App) initializeAPI() (*appapi.Server, error) {
 	pool := a.Pool
 	cfg := a.Config
 	logger := a.Logger
@@ -190,13 +196,21 @@ func (a *App) initializeAPI() *appapi.Server {
 		UseSSL: cfg.SMTPUseSSL,
 	}
 	mailer := email.NewMailer(smtpCfg)
-	templateManager, _ := email.NewTemplateManager()
+	templateManager, err := email.NewTemplateManager()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize email template manager: %w", err)
+	}
 	emailService := email.NewEmailService(mailer, templateManager)
 
-	authCache, _ := cache.NewCache[string](cache.Config{
-		Type:      cache.Provider(cfg.CacheType),
-		RedisAddr: cfg.RedisAddr, RedisPassword: cfg.RedisPassword, RedisDB: cfg.RedisDB,
+	authCache, err := cache.NewCache[string](cache.Config{
+		Type:          cache.Provider(cfg.CacheType),
+		RedisAddr:     cfg.RedisAddr,
+		RedisPassword: cfg.RedisPassword,
+		RedisDB:       cfg.RedisDB,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize auth cache: %w", err)
+	}
 
 	flagService := flag.NewFlagService(flagRepo, logger)
 
@@ -241,5 +255,5 @@ func (a *App) initializeAPI() *appapi.Server {
 		groupHandler, weatherHandler, logHandler, heartbeatHandler,
 		flagHandler, gearSetHandler,
 		tokenManager,
-	)
+	), nil
 }
