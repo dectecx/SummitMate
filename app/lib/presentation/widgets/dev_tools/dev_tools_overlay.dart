@@ -30,8 +30,7 @@ class _DevToolsFloatingButton extends StatefulWidget {
   const _DevToolsFloatingButton();
 
   @override
-  State<_DevToolsFloatingButton> createState() =>
-      _DevToolsFloatingButtonState();
+  State<_DevToolsFloatingButton> createState() => _DevToolsFloatingButtonState();
 }
 
 class _DevToolsFloatingButtonState extends State<_DevToolsFloatingButton> {
@@ -64,10 +63,10 @@ class _DevToolsFloatingButtonState extends State<_DevToolsFloatingButton> {
           final size = MediaQuery.of(context).size;
           double targetX = position.dx + details.velocity.pixelsPerSecond.dx * 0.15;
           double targetY = position.dy + details.velocity.pixelsPerSecond.dy * 0.15;
-          
+
           targetX = targetX > size.width / 2 ? size.width - 56 : 0;
           targetY = targetY.clamp(0.0, size.height - 100);
-          
+
           setState(() {
             position = Offset(targetX, targetY);
           });
@@ -100,13 +99,7 @@ class _DevToolsFloatingButtonState extends State<_DevToolsFloatingButton> {
           decoration: BoxDecoration(
             color: Colors.deepPurple.withValues(alpha: 0.8),
             shape: BoxShape.circle,
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
           ),
           child: const Icon(Icons.developer_mode, color: Colors.white),
         ),
@@ -131,18 +124,12 @@ class DevPanelContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              '開發者工具',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            const Text('開發者工具', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const Divider(),
             Expanded(
               child: ListView(
                 children: [
-                  const Text(
-                    '快速登入/切換帳號',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  const Text('快速登入/切換帳號', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -155,10 +142,7 @@ class DevPanelContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   const Divider(),
-                  const Text(
-                    '快速新增假資料',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  const Text('快速新增假資料', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.backpack),
@@ -179,21 +163,13 @@ class DevPanelContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   const Divider(),
-                  const Text(
-                    '資料庫工具',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
+                  const Text('資料庫工具', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.storage),
                     label: const Text('Drift 資料表檢視器'),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DriftViewerScreen(),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DriftViewerScreen()));
                     },
                   ),
                 ],
@@ -218,23 +194,16 @@ class DevPanelContent extends StatelessWidget {
         try {
           final authCubit = context.read<AuthCubit>();
           await authCubit.logout(); // Use AuthCubit to ensure app-wide state changes
-          
+
           // Reset relevant local Cubit states explicitly
           context.read<MealCubit>().reset();
           context.read<GearCubit>().reset();
           context.read<PollCubit>().reset();
-          
+
           final authService = getIt<IAuthService>();
-          var result = await authService.login(
-            email: email,
-            password: 'password123',
-          );
+          var result = await authService.login(email: email, password: 'password123');
           if (!result.isSuccess) {
-            await authService.register(
-              email: email,
-              password: 'password123',
-              displayName: name,
-            );
+            await authService.register(email: email, password: 'password123', displayName: name);
             await authService.login(email: email, password: 'password123');
           }
         } finally {
@@ -256,13 +225,9 @@ class DevPanelContent extends StatelessWidget {
         category: categories[random.nextInt(categories.length)],
         quantity: random.nextInt(3) + 1,
       );
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('已新增隨機裝備')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已新增隨機裝備')));
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('請先進入包含裝備頁面的行程')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('請先進入包含裝備頁面的行程')));
     }
   }
 
@@ -271,68 +236,25 @@ class DevPanelContent extends StatelessWidget {
     final random = Random();
     final days = ['D0', 'D1', 'D2', 'D3'];
     final day = days[random.nextInt(days.length)];
-    mealCubit.addMealItem(
-      day,
-      MealType.preBreakfast,
-      '測試早早餐 ${random.nextInt(100)}',
-      150,
-      400,
-    );
-    mealCubit.addMealItem(
-      day,
-      MealType.breakfast,
-      '測試早餐 ${random.nextInt(100)}',
-      200,
-      500,
-    );
-    mealCubit.addMealItem(
-      day,
-      MealType.lunch,
-      '測試午餐 ${random.nextInt(100)}',
-      300,
-      600,
-    );
-    mealCubit.addMealItem(
-      day,
-      MealType.dinner,
-      '測試晚餐 ${random.nextInt(100)}',
-      400,
-      800,
-    );
-    mealCubit.addMealItem(
-      day,
-      MealType.action,
-      '測試行動糧 ${random.nextInt(100)}',
-      100,
-      300,
-    );
-    mealCubit.addMealItem(
-      day,
-      MealType.emergency,
-      '測試緊急糧 ${random.nextInt(100)}',
-      100,
-      300,
-    );
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('已在 $day 新增隨機完整餐食')));
+    mealCubit.addMealItem(day, MealType.preBreakfast, '測試早早餐 ${random.nextInt(100)}', 150, 400);
+    mealCubit.addMealItem(day, MealType.breakfast, '測試早餐 ${random.nextInt(100)}', 200, 500);
+    mealCubit.addMealItem(day, MealType.lunch, '測試午餐 ${random.nextInt(100)}', 300, 600);
+    mealCubit.addMealItem(day, MealType.dinner, '測試晚餐 ${random.nextInt(100)}', 400, 800);
+    mealCubit.addMealItem(day, MealType.action, '測試行動糧 ${random.nextInt(100)}', 100, 300);
+    mealCubit.addMealItem(day, MealType.emergency, '測試緊急糧 ${random.nextInt(100)}', 100, 300);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已在 $day 新增隨機完整餐食')));
   }
 
   void _createRandomPoll(BuildContext context) {
     final pollCubit = context.read<PollCubit>();
     final random = Random();
-    pollCubit
-        .createPoll(
-          title: '測試投票 ${random.nextInt(1000)}',
-          initialOptions: ['選項 A', '選項 B', '選項 C'],
-        )
-        .then((success) {
-          if (success) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('已建立隨機投票')));
-          }
-        });
+    pollCubit.createPoll(title: '測試投票 ${random.nextInt(1000)}', initialOptions: ['選項 A', '選項 B', '選項 C']).then((
+      success,
+    ) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已建立隨機投票')));
+      }
+    });
   }
 }
 
@@ -363,18 +285,12 @@ class _DriftViewerScreenState extends State<DriftViewerScreen> {
     if (_selectedTable == null) return;
     setState(() => _isLoading = true);
     try {
-      final results = await db
-          .customSelect(
-            'SELECT * FROM ${_selectedTable!.actualTableName} LIMIT 100',
-          )
-          .get();
+      final results = await db.customSelect('SELECT * FROM ${_selectedTable!.actualTableName} LIMIT 100').get();
       setState(() {
         _data = results.map((row) => row.data).toList();
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('載入失敗: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('載入失敗: $e')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -390,24 +306,14 @@ class _DriftViewerScreenState extends State<DriftViewerScreen> {
             padding: const EdgeInsets.all(8.0),
             child: DropdownButtonFormField<drift.TableInfo>(
               value: _selectedTable,
-              items: _tables
-                  .map(
-                    (t) => DropdownMenuItem(
-                      value: t,
-                      child: Text(t.actualTableName),
-                    ),
-                  )
-                  .toList(),
+              items: _tables.map((t) => DropdownMenuItem(value: t, child: Text(t.actualTableName))).toList(),
               onChanged: (val) {
                 setState(() {
                   _selectedTable = val;
                 });
                 _loadData();
               },
-              decoration: const InputDecoration(
-                labelText: '選擇資料表',
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: '選擇資料表', border: OutlineInputBorder()),
             ),
           ),
           Expanded(
@@ -434,21 +340,12 @@ class _DriftViewerScreenState extends State<DriftViewerScreen> {
           columns: columns
               .map(
                 (c) => DataColumn(
-                  label: Text(
-                    c,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  label: Text(c, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               )
               .toList(),
           rows: _data
-              .map(
-                (row) => DataRow(
-                  cells: columns
-                      .map((c) => DataCell(Text(row[c]?.toString() ?? 'null')))
-                      .toList(),
-                ),
-              )
+              .map((row) => DataRow(cells: columns.map((c) => DataCell(Text(row[c]?.toString() ?? 'null'))).toList()))
               .toList(),
         ),
       ),

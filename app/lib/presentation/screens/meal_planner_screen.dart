@@ -39,11 +39,8 @@ class MealPlannerScreen extends StatelessWidget {
               ],
               bottom: TabBar(
                 isScrollable: true,
-                indicatorColor: Colors.white,
                 indicatorWeight: 4.0,
                 indicatorSize: TabBarIndicatorSize.label,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white60,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 20),
                 labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
                 tabs: dailyPlans.map((plan) => Tab(text: plan.day)).toList(),
@@ -98,31 +95,31 @@ class MealPlannerScreen extends StatelessWidget {
   }
 
   Widget _buildSummaryCard(BuildContext context, DailyMealPlan plan) {
+    final theme = Theme.of(context);
     return Card(
-      margin: const EdgeInsets.all(8),
-      color: Theme.of(context).colorScheme.tertiaryContainer,
+      margin: const EdgeInsets.all(16),
+      elevation: 0,
+      color: theme.colorScheme.primaryContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Column(
-              children: [
-                const Text('總重量', style: TextStyle(fontSize: 12)),
-                Text(
-                  '${plan.totalWeight.toStringAsFixed(0)} g',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ],
+            _buildSummaryItem(
+              context,
+              icon: Icons.scale_outlined,
+              label: '總重量',
+              value: '${plan.totalWeight.toStringAsFixed(0)} g',
+              color: theme.colorScheme.onPrimaryContainer,
             ),
-            Column(
-              children: [
-                const Text('總熱量', style: TextStyle(fontSize: 12)),
-                Text(
-                  '${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ],
+            Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
+            _buildSummaryItem(
+              context,
+              icon: Icons.local_fire_department_outlined,
+              label: '總熱量',
+              value: '${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal',
+              color: theme.colorScheme.onPrimaryContainer,
             ),
           ],
         ),
@@ -130,84 +127,186 @@ class MealPlannerScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildSummaryItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color.withValues(alpha: 0.8)),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(fontSize: 13, color: color.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: color),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMealSection(BuildContext context, MealCubit cubit, String day, MealType type, List<MealItem> items) {
+    final theme = Theme.of(context);
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         initiallyExpanded: true,
-        leading: Icon(MealUIUtils.getMealIcon(type), color: MealUIUtils.getMealColor(type)),
-        title: Text(type.label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
+        shape: const RoundedRectangleBorder(side: BorderSide.none),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: MealUIUtils.getMealColor(type).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(MealUIUtils.getMealIcon(type), color: MealUIUtils.getMealColor(type)),
+        ),
+        title: Text(type.label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         subtitle: items.isNotEmpty
             ? Text(
                 '${items.length} 項 • ${items.fold<double>(0, (sum, i) => sum + i.weight * i.quantity).toStringAsFixed(0)}g • ${items.fold<double>(0, (sum, i) => sum + i.calories * i.quantity).toStringAsFixed(0)}kcal',
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
               )
-            : const Text('尚未規劃', style: TextStyle(color: Colors.grey, fontSize: 12)),
-        trailing: IconButton(
-          icon: const Icon(Icons.add_circle_outline),
-          onPressed: () => _showAddMealDialog(context, cubit, day, type),
-        ),
-        children: items.isEmpty
-            ? [const SizedBox(height: 10)]
-            : items
-                  .map(
-                    (item) => ListTile(
-                      title: Row(
-                        children: [
-                          Flexible(child: Text(item.name, overflow: TextOverflow.ellipsis)),
-                          if (item.quantity > 1) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'x${item.quantity}',
-                                style: const TextStyle(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      subtitle: Text(
-                        '${(item.weight * item.quantity).toStringAsFixed(0)}g / ${(item.calories * item.quantity).toStringAsFixed(0)}kcal',
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline, size: 20, color: Colors.grey),
-                            onPressed: item.quantity > 1
-                                ? () => cubit.updateMealItemQuantity(day, type, item.id, item.quantity - 1)
-                                : null,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
+            : Text('尚未規劃', style: TextStyle(color: theme.colorScheme.outline, fontSize: 13)),
+        children: [
+          const Divider(height: 1),
+          if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+              child: Column(
+                children: [
+                  Icon(Icons.no_meals_outlined, size: 48, color: theme.colorScheme.outlineVariant),
+                  const SizedBox(height: 12),
+                  Text('此餐點尚未加入任何食材', style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 14)),
+                ],
+              ),
+            ),
+          if (items.isNotEmpty)
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    title: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            item.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
                           ),
-                          SizedBox(
-                            width: 24,
-                            child: Text(
-                              '${item.quantity}',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.blue),
-                            onPressed: () => cubit.updateMealItemQuantity(day, type, item.id, item.quantity + 1),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
+                        ),
+                        if (item.quantity > 1) ...[
                           const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, size: 20, color: Colors.grey),
-                            onPressed: () => _confirmRemoveMeal(context, cubit, day, type, item.id, item.name),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondaryContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'x${item.quantity}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ],
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        '${(item.weight * item.quantity).toStringAsFixed(0)}g  /  ${(item.calories * item.quantity).toStringAsFixed(0)}kcal',
+                        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                       ),
                     ),
-                  )
-                  .toList(),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove, size: 18),
+                                color: theme.colorScheme.onSurfaceVariant,
+                                onPressed: item.quantity > 1
+                                    ? () => cubit.updateMealItemQuantity(day, type, item.id, item.quantity - 1)
+                                    : null,
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              ),
+                              SizedBox(
+                                width: 24,
+                                child: Text(
+                                  '${item.quantity}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.add, size: 18),
+                                color: theme.colorScheme.primary,
+                                onPressed: () => cubit.updateMealItemQuantity(day, type, item.id, item.quantity + 1),
+                                padding: const EdgeInsets.all(4),
+                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          color: theme.colorScheme.error,
+                          onPressed: () => _confirmRemoveMeal(context, cubit, day, type, item.id, item.name),
+                          tooltip: '刪除',
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: () => _showAddMealDialog(context, cubit, day, type),
+                icon: const Icon(Icons.add),
+                label: const Text('新增食材'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
