@@ -1,7 +1,6 @@
 package library
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -81,8 +80,8 @@ func (h *LibraryHandler) CreateGearLibraryItem(w http.ResponseWriter, r *http.Re
 	}
 
 	var req api.GearLibraryItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -121,8 +120,8 @@ func (h *LibraryHandler) UpdateGearLibraryItem(w http.ResponseWriter, r *http.Re
 	}
 
 	var req api.GearLibraryItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -160,8 +159,8 @@ func (h *LibraryHandler) ReplaceAllGearLibraryItems(w http.ResponseWriter, r *ht
 	}
 
 	var reqBody api.ReplaceAllGearLibraryItemsJSONBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &reqBody); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -236,8 +235,8 @@ func (h *LibraryHandler) CreateMealLibraryItem(w http.ResponseWriter, r *http.Re
 	}
 
 	var req api.MealLibraryItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -276,8 +275,8 @@ func (h *LibraryHandler) UpdateMealLibraryItem(w http.ResponseWriter, r *http.Re
 	}
 
 	var req api.MealLibraryItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -315,8 +314,8 @@ func (h *LibraryHandler) ReplaceAllMealLibraryItems(w http.ResponseWriter, r *ht
 	}
 
 	var reqBody api.ReplaceAllMealLibraryItemsJSONBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &reqBody); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

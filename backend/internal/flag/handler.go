@@ -1,7 +1,6 @@
 package flag
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/internal/common/apiutil"
@@ -33,7 +32,7 @@ func (h *FlagHandler) UpdateFlag(w http.ResponseWriter, r *http.Request) {
 		Key   string `json:"key"`
 		Value bool   `json:"value"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := apiutil.DecodeBody(r, &req); err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}

@@ -1,7 +1,6 @@
 package trip
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -74,8 +73,8 @@ func (h *TripHandler) CreateTrip(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req api.TripCreateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -115,8 +114,8 @@ func (h *TripHandler) UpdateTrip(w http.ResponseWriter, r *http.Request, tripID 
 	}
 
 	var req api.TripUpdateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -174,8 +173,8 @@ func (h *TripHandler) AddTripMember(w http.ResponseWriter, r *http.Request, trip
 	var req struct {
 		Email string `json:"email"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -235,8 +234,8 @@ func (h *TripHandler) AddItineraryItem(w http.ResponseWriter, r *http.Request, t
 	}
 
 	var req api.ItineraryItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -259,8 +258,8 @@ func (h *TripHandler) UpdateItineraryItem(w http.ResponseWriter, r *http.Request
 	}
 
 	var req api.ItineraryItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

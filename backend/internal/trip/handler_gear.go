@@ -1,7 +1,6 @@
 package trip
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -49,8 +48,8 @@ func (h *TripGearHandler) AddTripGear(w http.ResponseWriter, r *http.Request, tr
 	}
 
 	var req api.TripGearItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -73,8 +72,8 @@ func (h *TripGearHandler) UpdateTripGear(w http.ResponseWriter, r *http.Request,
 	}
 
 	var req api.TripGearItemRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -112,8 +111,8 @@ func (h *TripGearHandler) ReplaceAllTripGear(w http.ResponseWriter, r *http.Requ
 	}
 
 	var reqBody api.ReplaceAllTripGearJSONBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &reqBody); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

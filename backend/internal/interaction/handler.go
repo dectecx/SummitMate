@@ -1,7 +1,6 @@
 package interaction
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -73,8 +72,8 @@ func (h *InteractionHandler) AddTripMessage(w http.ResponseWriter, r *http.Reque
 	}
 
 	var req api.AddTripMessageJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -106,8 +105,8 @@ func (h *InteractionHandler) UpdateTripMessage(w http.ResponseWriter, r *http.Re
 	}
 
 	var req api.UpdateTripMessageJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -192,8 +191,8 @@ func (h *InteractionHandler) CreateTripPoll(w http.ResponseWriter, r *http.Reque
 	}
 
 	var req api.CreateTripPollJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -264,8 +263,8 @@ func (h *InteractionHandler) AddPollOption(w http.ResponseWriter, r *http.Reques
 	}
 
 	var req api.AddPollOptionJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

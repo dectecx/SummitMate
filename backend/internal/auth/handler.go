@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -23,8 +22,8 @@ func NewAuthHandler(authService AuthService) *AuthHandler {
 // RegisterUser 處理 POST /auth/register 請求。
 func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var req api.RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -40,8 +39,8 @@ func (h *AuthHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 // LoginUser 處理 POST /auth/login 請求。
 func (h *AuthHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var req api.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -80,8 +79,8 @@ func (h *AuthHandler) UpdateCurrentUser(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var req api.UpdateProfileRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -113,8 +112,8 @@ func (h *AuthHandler) DeleteCurrentUser(w http.ResponseWriter, r *http.Request) 
 // RefreshToken 處理 POST /auth/refresh 請求。
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	var req api.RefreshTokenRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -130,8 +129,8 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 // VerifyEmail 處理 POST /auth/verify-email 請求。
 func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	var req api.VerifyEmailRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -146,8 +145,8 @@ func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 // ResendVerificationCode 處理 POST /auth/resend-verification 請求。
 func (h *AuthHandler) ResendVerificationCode(w http.ResponseWriter, r *http.Request) {
 	var req api.ResendVerificationRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("無效的請求內容"))
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

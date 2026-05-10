@@ -1,7 +1,6 @@
 package favorite
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -68,8 +67,8 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req api.FavoriteRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -106,8 +105,8 @@ func (h *FavoriteHandler) BatchUpdateFavorites(w http.ResponseWriter, r *http.Re
 	}
 
 	var reqBody api.BatchUpdateFavoritesJSONBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &reqBody); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 

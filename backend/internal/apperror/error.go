@@ -18,6 +18,7 @@ type AppError struct {
 	Code       string `json:"code"`
 	Message    string `json:"message"`
 	Param      string `json:"param,omitempty"`
+	err        error  `json:"-"`
 }
 
 func (e *AppError) Error() string {
@@ -54,6 +55,18 @@ func (e *AppError) WithMessage(message string) *AppError {
 		Message:    message,
 		Param:      e.Param,
 	}
+}
+
+// Wrap 附加原始錯誤資訊 (僅供後端記錄日誌使用，不會傳回前端)
+func (e *AppError) Wrap(err error) *AppError {
+	newErr := *e
+	newErr.err = err
+	return &newErr
+}
+
+// Unwrap 實作 errors.Unwrap 介面
+func (e *AppError) Unwrap() error {
+	return e.err
 }
 
 // InternalError 建立 500 錯誤

@@ -1,7 +1,6 @@
 package gearset
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"summitmate/api"
@@ -84,8 +83,8 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req api.GearSetCreateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
@@ -183,8 +182,8 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 	}
 
 	var req api.GearSetCreateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apiutil.SendError(w, r, apperror.ErrBadRequest)
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
 		return
 	}
 
