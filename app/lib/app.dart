@@ -26,8 +26,12 @@ import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
 import 'presentation/widgets/global_tutorial_wrapper.dart';
 
+import 'presentation/widgets/dev_tools/dev_tools_overlay.dart';
+
 /// SummitMate 主應用程式
 class SummitMateApp extends StatelessWidget {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
   const SummitMateApp({super.key});
 
   @override
@@ -73,6 +77,7 @@ class SummitMateApp extends StatelessWidget {
         return MaterialApp(
           title: 'SummitMate',
           debugShowCheckedModeBanner: false,
+          navigatorKey: SummitMateApp.navigatorKey,
           navigatorObservers: const [],
 
           // Toast 訊息的 key
@@ -83,7 +88,11 @@ class SummitMateApp extends StatelessWidget {
           themeMode: ThemeMode.light, // 目前強制 Light Mode，由 Strategy 控制顏色
           // 錯誤監聽與 Overlay
           builder: (context, child) {
-            final content = GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
+            Widget content = GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
+
+            if (!kReleaseMode) {
+              content = DevToolsOverlay(child: content);
+            }
 
             if (kIsWeb) {
               return content;
