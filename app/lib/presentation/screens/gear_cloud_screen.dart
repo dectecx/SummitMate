@@ -109,7 +109,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('提示'),
-            content: const Text('請先選擇或建立行程後，再上傳您的裝備。'),
+            content: const Text('請先選擇或建立行程後，再上傳您的裝備與糧食計畫。'),
             actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('確定'))],
           ),
         );
@@ -139,13 +139,17 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       items = all.where((i) => i.tripId == currentTripId).toList();
     }
 
-    if (items.isEmpty) {
+    // Get meals for current trip
+    final mealState = context.read<MealCubit>().state;
+    final meals = mealState is MealLoaded ? mealState.dailyPlans : <DailyMealPlan>[];
+
+    if (items.isEmpty && meals.isEmpty) {
       if (mounted) {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('提示'),
-            content: const Text('目前行程中沒有任何裝備。請先新增裝備後再上傳。'),
+            content: const Text('目前行程中沒有任何裝備或糧食計畫。請先新增內容後再上傳。'),
             actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('確定'))],
           ),
         );
@@ -163,6 +167,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       context: context,
       builder: (context) => GearUploadDialog(
         items: items,
+        meals: meals,
         author: username,
         onUpload: (title, visibility, key) async {
           final uploadResult = await _repository.uploadGearSet(
@@ -171,9 +176,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             author: username,
             visibility: visibility,
             items: items,
-            meals: context.read<MealCubit>().state is MealLoaded
-                ? (context.read<MealCubit>().state as MealLoaded).dailyPlans
-                : [],
+            meals: meals,
             key: key,
           );
 
@@ -477,7 +480,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                 Expanded(
                   child: _ToolButton(
                     icon: Icons.upload,
-                    label: '上傳我的裝備',
+                    label: '上傳裝備與糧食計畫',
                     onTap: isOffline ? null : _showUploadDialog,
                     disabled: isOffline,
                   ),

@@ -3,10 +3,17 @@ import 'package:summitmate/domain/domain.dart';
 
 class GearUploadDialog extends StatefulWidget {
   final List<GearItem> items;
+  final List<DailyMealPlan> meals;
   final String author;
   final Future<bool> Function(String title, GearSetVisibility visibility, String? key) onUpload;
 
-  const GearUploadDialog({super.key, required this.items, required this.author, required this.onUpload});
+  const GearUploadDialog({
+    super.key,
+    required this.items,
+    required this.meals,
+    required this.author,
+    required this.onUpload,
+  });
 
   @override
   State<GearUploadDialog> createState() => _GearUploadDialogState();
@@ -56,7 +63,7 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Row(children: [Text('⬆️ '), Text('上傳裝備組合')]),
+      title: const Row(children: [Text('⬆️ '), Text('上傳裝備與糧食計畫')]),
       content: SizedBox(
         width: 500,
         child: SingleChildScrollView(
@@ -131,12 +138,28 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
               // 預覽資訊
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
                   children: [
-                    const Icon(Icons.backpack, size: 16, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    Text('即將上傳 ${widget.items.length} 項裝備', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.backpack, size: 16, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Text('即將上傳 ${widget.items.length} 項裝備', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                    if (widget.meals.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.restaurant, size: 16, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Text('即將上傳 ${widget.meals.length} 天糧食計畫',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
