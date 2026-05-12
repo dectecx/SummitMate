@@ -52,6 +52,42 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
           final dailyPlans = state.dailyPlans;
           final cubit = context.read<MealCubit>();
 
+          if (dailyPlans.isEmpty) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('糧食計畫'),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.edit_calendar),
+                    tooltip: '管理天數',
+                    onPressed: () => MealDayManagementDialog.show(context),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.info_outline),
+                    tooltip: '參考資訊',
+                    onPressed: () => FoodReferenceScreen.show(context),
+                  ),
+                ],
+              ),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.restaurant_menu, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    const Text('尚未建立糧食計畫', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text('管理天數'),
+                      onPressed: () => MealDayManagementDialog.show(context),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           return DefaultTabController(
             length: dailyPlans.length,
             child: Scaffold(
