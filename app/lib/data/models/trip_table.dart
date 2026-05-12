@@ -22,6 +22,7 @@ class TripsTable extends Table {
   TextColumn get dayNames => text().map(const ListStringTypeConverter()).withDefault(const Constant('[]'))();
 
   TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
+  DateTimeColumn get cloudSyncedAt => dateTime().nullable()();
 
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
@@ -60,6 +61,7 @@ extension TripMapping on Trip {
       linkedEventId: Value(linkedEventId),
       dayNames: Value(dayNames),
       syncStatus: Value(syncStatus),
+      cloudSyncedAt: Value(cloudSyncedAt),
       createdAt: createdAt,
       createdBy: createdBy,
       updatedAt: updatedAt,

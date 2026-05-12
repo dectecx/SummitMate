@@ -33,6 +33,12 @@ class TripLoaded extends TripState {
   /// 建構子
   const TripLoaded({required this.trips, this.activeTrip, this.isSyncing = false});
 
+  /// 當前行程是否已上傳至雲端
+  bool get isActiveTripCloudReady => activeTrip?.isCloudReady ?? false;
+
+  /// 當前行程是否為純本地 (從未上傳)
+  bool get isActiveTripLocalOnly => activeTrip?.isLocalOnly ?? true;
+
   TripLoaded copyWith({List<Trip>? trips, Trip? activeTrip, bool? isSyncing}) {
     return TripLoaded(
       trips: trips ?? this.trips,

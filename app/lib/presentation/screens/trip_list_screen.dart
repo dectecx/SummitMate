@@ -12,8 +12,6 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../core/di/injection.dart';
 import '../../core/services/permission_service.dart';
-import '../../presentation/cubits/settings/settings_cubit.dart';
-import '../../presentation/cubits/settings/settings_state.dart';
 
 import '../widgets/common/modern_sliver_app_bar.dart';
 import '../widgets/trip/trip_card.dart';
@@ -92,15 +90,7 @@ class TripListScreen extends StatelessWidget {
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: BlocBuilder<SettingsCubit, SettingsState>(
-                        builder: (context, settingsState) {
-                          DateTime? lastSync;
-                          if (settingsState is SettingsLoaded) {
-                            lastSync = settingsState.lastSyncTime;
-                          }
-                          return CloudSyncBar(lastSyncTime: lastSync);
-                        },
-                      ),
+                      child: const CloudSyncBanner(),
                     ),
                   ),
 

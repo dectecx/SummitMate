@@ -15,7 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Trip {
 
- String get id; String get userId; String get name; String? get description; DateTime get startDate; DateTime? get endDate; String? get coverImage; bool get isActive; String? get linkedEventId; List<String> get dayNames; List<MealPlanDay> get mealPlanDays; SyncStatus get syncStatus; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
+ String get id; String get userId; String get name; String? get description; DateTime get startDate; DateTime? get endDate; String? get coverImage; bool get isActive; String? get linkedEventId; List<String> get dayNames; List<MealPlanDay> get mealPlanDays; SyncStatus get syncStatus;/// 最後一次成功上傳至雲端的時間 (null 表示從未上傳)
+ DateTime? get cloudSyncedAt; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
 /// Create a copy of Trip
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +29,16 @@ $TripCopyWith<Trip> get copyWith => _$TripCopyWithImpl<Trip>(this as Trip, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Trip&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&const DeepCollectionEquality().equals(other.dayNames, dayNames)&&const DeepCollectionEquality().equals(other.mealPlanDays, mealPlanDays)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Trip&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&const DeepCollectionEquality().equals(other.dayNames, dayNames)&&const DeepCollectionEquality().equals(other.mealPlanDays, mealPlanDays)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.cloudSyncedAt, cloudSyncedAt) || other.cloudSyncedAt == cloudSyncedAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,linkedEventId,const DeepCollectionEquality().hash(dayNames),const DeepCollectionEquality().hash(mealPlanDays),syncStatus,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,linkedEventId,const DeepCollectionEquality().hash(dayNames),const DeepCollectionEquality().hash(mealPlanDays),syncStatus,cloudSyncedAt,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'Trip(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, linkedEventId: $linkedEventId, dayNames: $dayNames, mealPlanDays: $mealPlanDays, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'Trip(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, linkedEventId: $linkedEventId, dayNames: $dayNames, mealPlanDays: $mealPlanDays, syncStatus: $syncStatus, cloudSyncedAt: $cloudSyncedAt, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $TripCopyWith<$Res>  {
   factory $TripCopyWith(Trip value, $Res Function(Trip) _then) = _$TripCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String name, String? description, DateTime startDate, DateTime? endDate, String? coverImage, bool isActive, String? linkedEventId, List<String> dayNames, List<MealPlanDay> mealPlanDays, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String userId, String name, String? description, DateTime startDate, DateTime? endDate, String? coverImage, bool isActive, String? linkedEventId, List<String> dayNames, List<MealPlanDay> mealPlanDays, SyncStatus syncStatus, DateTime? cloudSyncedAt, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -65,7 +66,7 @@ class _$TripCopyWithImpl<$Res>
 
 /// Create a copy of Trip
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? dayNames = null,Object? mealPlanDays = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? dayNames = null,Object? mealPlanDays = null,Object? syncStatus = null,Object? cloudSyncedAt = freezed,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -79,7 +80,8 @@ as bool,linkedEventId: freezed == linkedEventId ? _self.linkedEventId : linkedEv
 as String?,dayNames: null == dayNames ? _self.dayNames : dayNames // ignore: cast_nullable_to_non_nullable
 as List<String>,mealPlanDays: null == mealPlanDays ? _self.mealPlanDays : mealPlanDays // ignore: cast_nullable_to_non_nullable
 as List<MealPlanDay>,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
-as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as SyncStatus,cloudSyncedAt: freezed == cloudSyncedAt ? _self.cloudSyncedAt : cloudSyncedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -168,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String? description,  DateTime startDate,  DateTime? endDate,  String? coverImage,  bool isActive,  String? linkedEventId,  List<String> dayNames,  List<MealPlanDay> mealPlanDays,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String? description,  DateTime startDate,  DateTime? endDate,  String? coverImage,  bool isActive,  String? linkedEventId,  List<String> dayNames,  List<MealPlanDay> mealPlanDays,  SyncStatus syncStatus,  DateTime? cloudSyncedAt,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Trip() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.mealPlanDays,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.mealPlanDays,_that.syncStatus,_that.cloudSyncedAt,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -189,10 +191,10 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String? description,  DateTime startDate,  DateTime? endDate,  String? coverImage,  bool isActive,  String? linkedEventId,  List<String> dayNames,  List<MealPlanDay> mealPlanDays,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String userId,  String name,  String? description,  DateTime startDate,  DateTime? endDate,  String? coverImage,  bool isActive,  String? linkedEventId,  List<String> dayNames,  List<MealPlanDay> mealPlanDays,  SyncStatus syncStatus,  DateTime? cloudSyncedAt,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _Trip():
-return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.mealPlanDays,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.mealPlanDays,_that.syncStatus,_that.cloudSyncedAt,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -209,10 +211,10 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String? description,  DateTime startDate,  DateTime? endDate,  String? coverImage,  bool isActive,  String? linkedEventId,  List<String> dayNames,  List<MealPlanDay> mealPlanDays,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String userId,  String name,  String? description,  DateTime startDate,  DateTime? endDate,  String? coverImage,  bool isActive,  String? linkedEventId,  List<String> dayNames,  List<MealPlanDay> mealPlanDays,  SyncStatus syncStatus,  DateTime? cloudSyncedAt,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _Trip() when $default != null:
-return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.mealPlanDays,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDate,_that.endDate,_that.coverImage,_that.isActive,_that.linkedEventId,_that.dayNames,_that.mealPlanDays,_that.syncStatus,_that.cloudSyncedAt,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -224,7 +226,7 @@ return $default(_that.id,_that.userId,_that.name,_that.description,_that.startDa
 @JsonSerializable()
 
 class _Trip extends Trip {
-  const _Trip({required this.id, required this.userId, required this.name, this.description, required this.startDate, this.endDate, this.coverImage, this.isActive = false, this.linkedEventId, final  List<String> dayNames = const [], final  List<MealPlanDay> mealPlanDays = const [], this.syncStatus = SyncStatus.pendingCreate, required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): _dayNames = dayNames,_mealPlanDays = mealPlanDays,super._();
+  const _Trip({required this.id, required this.userId, required this.name, this.description, required this.startDate, this.endDate, this.coverImage, this.isActive = false, this.linkedEventId, final  List<String> dayNames = const [], final  List<MealPlanDay> mealPlanDays = const [], this.syncStatus = SyncStatus.pendingCreate, this.cloudSyncedAt, required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): _dayNames = dayNames,_mealPlanDays = mealPlanDays,super._();
   factory _Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
 
 @override final  String id;
@@ -251,6 +253,8 @@ class _Trip extends Trip {
 }
 
 @override@JsonKey() final  SyncStatus syncStatus;
+/// 最後一次成功上傳至雲端的時間 (null 表示從未上傳)
+@override final  DateTime? cloudSyncedAt;
 @override final  DateTime createdAt;
 @override final  String createdBy;
 @override final  DateTime updatedAt;
@@ -269,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Trip&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&const DeepCollectionEquality().equals(other._dayNames, _dayNames)&&const DeepCollectionEquality().equals(other._mealPlanDays, _mealPlanDays)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Trip&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.name, name) || other.name == name)&&(identical(other.description, description) || other.description == description)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.coverImage, coverImage) || other.coverImage == coverImage)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.linkedEventId, linkedEventId) || other.linkedEventId == linkedEventId)&&const DeepCollectionEquality().equals(other._dayNames, _dayNames)&&const DeepCollectionEquality().equals(other._mealPlanDays, _mealPlanDays)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.cloudSyncedAt, cloudSyncedAt) || other.cloudSyncedAt == cloudSyncedAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,linkedEventId,const DeepCollectionEquality().hash(_dayNames),const DeepCollectionEquality().hash(_mealPlanDays),syncStatus,createdAt,createdBy,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,userId,name,description,startDate,endDate,coverImage,isActive,linkedEventId,const DeepCollectionEquality().hash(_dayNames),const DeepCollectionEquality().hash(_mealPlanDays),syncStatus,cloudSyncedAt,createdAt,createdBy,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'Trip(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, linkedEventId: $linkedEventId, dayNames: $dayNames, mealPlanDays: $mealPlanDays, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'Trip(id: $id, userId: $userId, name: $name, description: $description, startDate: $startDate, endDate: $endDate, coverImage: $coverImage, isActive: $isActive, linkedEventId: $linkedEventId, dayNames: $dayNames, mealPlanDays: $mealPlanDays, syncStatus: $syncStatus, cloudSyncedAt: $cloudSyncedAt, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -289,7 +293,7 @@ abstract mixin class _$TripCopyWith<$Res> implements $TripCopyWith<$Res> {
   factory _$TripCopyWith(_Trip value, $Res Function(_Trip) _then) = __$TripCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String name, String? description, DateTime startDate, DateTime? endDate, String? coverImage, bool isActive, String? linkedEventId, List<String> dayNames, List<MealPlanDay> mealPlanDays, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String userId, String name, String? description, DateTime startDate, DateTime? endDate, String? coverImage, bool isActive, String? linkedEventId, List<String> dayNames, List<MealPlanDay> mealPlanDays, SyncStatus syncStatus, DateTime? cloudSyncedAt, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -306,7 +310,7 @@ class __$TripCopyWithImpl<$Res>
 
 /// Create a copy of Trip
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? dayNames = null,Object? mealPlanDays = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? name = null,Object? description = freezed,Object? startDate = null,Object? endDate = freezed,Object? coverImage = freezed,Object? isActive = null,Object? linkedEventId = freezed,Object? dayNames = null,Object? mealPlanDays = null,Object? syncStatus = null,Object? cloudSyncedAt = freezed,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_Trip(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -320,7 +324,8 @@ as bool,linkedEventId: freezed == linkedEventId ? _self.linkedEventId : linkedEv
 as String?,dayNames: null == dayNames ? _self._dayNames : dayNames // ignore: cast_nullable_to_non_nullable
 as List<String>,mealPlanDays: null == mealPlanDays ? _self._mealPlanDays : mealPlanDays // ignore: cast_nullable_to_non_nullable
 as List<MealPlanDay>,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
-as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as SyncStatus,cloudSyncedAt: freezed == cloudSyncedAt ? _self.cloudSyncedAt : cloudSyncedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

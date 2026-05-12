@@ -42,6 +42,7 @@ import 'dialogs/trip_selection_dialog.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'utils/cloud_upload_helper.dart';
 import 'utils/tutorial_helper.dart';
+import '../../../presentation/widgets/trip/cloud_sync_bar.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -261,6 +262,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             body: ResponsiveLayout(
                               mobile: Column(
                                 children: [
+                                  const CloudSyncBanner(),
                                   Expanded(
                                     child: AnimatedSwitcher(
                                       duration: const Duration(milliseconds: 250),
@@ -292,6 +294,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                   Expanded(
                                     child: Column(
                                       children: [
+                                        const CloudSyncBanner(),
                                         Expanded(child: _buildTabContent(_currentIndex)),
                                         const BannerAdWidget(location: 'navigation_bottom'),
                                       ],

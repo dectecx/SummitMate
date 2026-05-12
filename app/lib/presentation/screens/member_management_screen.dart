@@ -11,6 +11,7 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 
 import '../utils/tutorial_keys.dart';
+import '../widgets/cloud_guard.dart';
 
 /// 成員管理畫面
 ///
@@ -331,7 +332,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
         title: const Text('成員管理'),
         actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _loadMembers)],
       ),
-      floatingActionButton: canManage
+      floatingActionButton: (canManage && widget.trip.isCloudReady)
           ? FloatingActionButton.extended(
               onPressed: _showSearchAddMemberDialog,
               icon: const Icon(Icons.person_add),
@@ -339,48 +340,52 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               key: TutorialKeys.memberFab,
             )
           : null,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _members.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.group_off, size: 64, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      Text('無成員', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                      const SizedBox(height: 8),
-                      TextButton.icon(
-                        onPressed: _loadMembers,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('重新載入'),
-                      ),
-                    ],
+      body: CloudGuard(
+        featureName: '成員管理',
+        icon: Icons.person_add_alt_1_outlined,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _members.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.group_off, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text('無成員', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: _loadMembers,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('重新載入'),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    itemCount: _members.length,
+                    itemBuilder: (context, index) {
+                      final member = _members[index];
+                      final isSelf = member.userId == _currentUserId;
+                      final isRowOwner = member.userId == widget.trip.userId;
+
+                      // Can edit this row?
+                      final canEditRow = canManage && !isSelf && !isRowOwner;
+
+                      return MemberListTile(
+                        member: member,
+                        isSelf: isSelf,
+                        isOwner: isRowOwner,
+                        canEdit: canEditRow,
+                        onSettingsTap: () => _showRoleDialog(member),
+                      );
+                    },
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  itemCount: _members.length,
-                  itemBuilder: (context, index) {
-                    final member = _members[index];
-                    final isSelf = member.userId == _currentUserId;
-                    final isRowOwner = member.userId == widget.trip.userId;
-
-                    // Can edit this row?
-                    final canEditRow = canManage && !isSelf && !isRowOwner;
-
-                    return MemberListTile(
-                      member: member,
-                      isSelf: isSelf,
-                      isOwner: isRowOwner,
-                      canEdit: canEditRow,
-                      onSettingsTap: () => _showRoleDialog(member),
-                    );
-                  },
-                ),
+          ),
         ),
       ),
     );
