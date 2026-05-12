@@ -33,9 +33,9 @@ func NewMessageService(logger *slog.Logger, repo MessageRepository, tripRepo tri
 }
 
 func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID string, page int, limit int) ([]*TripMessage, int, bool, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		s.logger.WarnContext(ctx, "嘗試讀取行程留言但權限不足", "trip_id", tripID, "user_id", userID)
-		return nil, 0, false, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		s.logger.WarnContext(ctx, "讀取行程留言失敗", "trip_id", tripID, "user_id", userID, "error", err)
+		return nil, 0, false, err
 	}
 
 	messages, total, hasMore, err := s.repo.ListTripMessages(ctx, tripID, page, limit)
@@ -47,8 +47,8 @@ func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID st
 }
 
 func (s *messageService) AddTripMessage(ctx context.Context, tripID, userID string, msg *TripMessage) (*TripMessage, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		return nil, err
 	}
 
 	msg.TripID = tripID
@@ -108,21 +108,31 @@ func (s *messageService) DeleteTripMessage(ctx context.Context, tripID, messageI
 	return nil
 }
 
-func (s *messageService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
+func (s *messageService) checkTripAccess(ctx context.Context, tripID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
-	if err == nil && trip != nil && trip.UserID == userID {
-		return true
+	if err != nil {
+		return err
+	}
+	if trip == nil {
+		return apperror.ErrTripNotFound
+	}
+
+	if trip.UserID == userID {
+		return nil
 	}
 
 	members, err := s.memberRepo.ListByTripID(ctx, tripID)
-	if err == nil {
-		for _, m := range members {
-			if m.UserID == userID {
-				return true
-			}
+	if err != nil {
+		return err
+	}
+
+	for _, m := range members {
+		if m.UserID == userID {
+			return nil
 		}
 	}
-	return false
+
+	return apperror.ErrTripAccessDenied
 }
 
 func (s *messageService) buildMessageTree(messages []*TripMessage) []*TripMessage {
@@ -175,8 +185,8 @@ func NewPollService(logger *slog.Logger, repo PollRepository, tripRepo trip.Trip
 }
 
 func (s *pollService) CreateTripPoll(ctx context.Context, tripID, userID string, poll *Poll) (*Poll, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		return nil, err
 	}
 
 	poll.TripID = tripID
@@ -191,15 +201,15 @@ func (s *pollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 }
 
 func (s *pollService) ListTripPolls(ctx context.Context, tripID, userID string, page int, limit int) ([]*Poll, int, bool, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, 0, false, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		return nil, 0, false, err
 	}
 	return s.repo.ListTripPolls(ctx, tripID, page, limit)
 }
 
 func (s *pollService) GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*Poll, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		return nil, err
 	}
 
 	poll, err := s.repo.GetPollByID(ctx, pollID)
@@ -232,8 +242,8 @@ func (s *pollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 }
 
 func (s *pollService) AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*Poll, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		return nil, err
 	}
 
 	poll, err := s.repo.GetPollByID(ctx, pollID)
@@ -263,8 +273,8 @@ func (s *pollService) AddPollOption(ctx context.Context, tripID, pollID, userID 
 }
 
 func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, userID string) (*Poll, error) {
-	if !s.isTripMemberOrCreator(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+		return nil, err
 	}
 
 	poll, err := s.repo.GetPollByID(ctx, pollID)
@@ -287,19 +297,29 @@ func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 	return s.repo.GetPollByID(ctx, pollID)
 }
 
-func (s *pollService) isTripMemberOrCreator(ctx context.Context, tripID, userID string) bool {
+func (s *pollService) checkTripAccess(ctx context.Context, tripID, userID string) error {
 	trip, err := s.tripRepo.GetByID(ctx, tripID)
-	if err == nil && trip != nil && trip.UserID == userID {
-		return true
+	if err != nil {
+		return err
+	}
+	if trip == nil {
+		return apperror.ErrTripNotFound
+	}
+
+	if trip.UserID == userID {
+		return nil
 	}
 
 	members, err := s.memberRepo.ListByTripID(ctx, tripID)
-	if err == nil {
-		for _, m := range members {
-			if m.UserID == userID {
-				return true
-			}
+	if err != nil {
+		return err
+	}
+
+	for _, m := range members {
+		if m.UserID == userID {
+			return nil
 		}
 	}
-	return false
+
+	return apperror.ErrTripAccessDenied
 }

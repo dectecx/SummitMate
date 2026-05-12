@@ -146,4 +146,9 @@ class MockTripRepository implements ITripRepository {
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId) async {
     return const Success(null);
   }
+
+  @override
+  Future<Result<void, Exception>> syncMealPlan(String tripId) async {
+    return const Success(null);
+  }
 }
