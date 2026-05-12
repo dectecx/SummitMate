@@ -27,11 +27,19 @@ abstract class Trip with _$Trip {
     @Default([]) List<String> dayNames,
     @Default([]) List<MealPlanDay> mealPlanDays,
     @Default(SyncStatus.pendingCreate) SyncStatus syncStatus,
+    /// 最後一次成功上傳至雲端的時間 (null 表示從未上傳)
+    DateTime? cloudSyncedAt,
     required DateTime createdAt,
     required String createdBy,
     required DateTime updatedAt,
     required String updatedBy,
   }) = _Trip;
+
+  /// 行程是否已存在於雲端 (至少上傳過一次)
+  bool get isCloudReady => syncStatus == SyncStatus.synced || cloudSyncedAt != null;
+
+  /// 行程是否為純本地 (從未上傳至雲端)
+  bool get isLocalOnly => syncStatus == SyncStatus.pendingCreate && cloudSyncedAt == null;
 
   /// 行程天數（含開始日，最少為 1 天）
   int get durationDays {

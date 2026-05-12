@@ -58,13 +58,12 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// 新增行程
-  Future<void> addTrip({
+  Future<Trip?> addTrip({
     required String name,
     required DateTime startDate,
     DateTime? endDate,
     String? description,
   }) async {
-    emit(const TripLoading());
     try {
       final newTrip = Trip(
         id: const Uuid().v7(),
@@ -83,12 +82,15 @@ class TripCubit extends Cubit<TripState> {
       if (result is Success) {
         await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', newTrip.id);
         await loadTrips();
+        return newTrip;
       } else {
         emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        return null;
       }
     } catch (e) {
       LogService.error('新增行程失敗: $e', source: _source);
       emit(TripError(AppErrorHandler.getUserMessage(e)));
+      return null;
     }
   }
 
@@ -222,11 +224,39 @@ class TripCubit extends Cubit<TripState> {
         return false;
       }
 
+      // 上傳成功後，更新本地行程的同步狀態
+      final now = DateTime.now();
+      final updatedTrip = trip.copyWith(
+        syncStatus: SyncStatus.synced,
+        cloudSyncedAt: now,
+        updatedAt: now,
+      );
+      await _tripRepository.saveTrip(updatedTrip);
+      await loadTrips(); // 刷新 UI 狀態
+
       LogService.info('Full trip upload successful: ${trip.name}', source: _source);
       return true;
     } catch (e) {
       LogService.error('Full trip upload exception: $e', source: _source);
       return false;
     }
+  }
+
+  /// 檢查當前活動行程是否已同步到雲端
+  ///
+  /// 供 CloudGuard 等元件使用，快速判斷是否可使用雲端功能
+  bool isActiveTripCloudReady() {
+    if (state is! TripLoaded) return false;
+    return (state as TripLoaded).isActiveTripCloudReady;
+  }
+
+  /// 快速上傳當前活動行程至雲端
+  ///
+  /// 適用於 CloudGuard / CloudSyncBanner 的一鍵上傳場景
+  Future<bool> uploadActiveTrip() async {
+    if (state is! TripLoaded) return false;
+    final trip = (state as TripLoaded).activeTrip;
+    if (trip == null) return false;
+    return uploadFullTrip(trip);
   }
 }

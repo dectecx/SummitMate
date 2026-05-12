@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -294,15 +294,18 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
           Navigator.pop(context);
         }
       } else {
-        await context.read<TripCubit>().addTrip(
+        final createdTrip = await context.read<TripCubit>().addTrip(
           name: _nameController.text.trim(),
           startDate: _startDate,
           endDate: _endDate,
           description: _descriptionController.text.trim().isNotEmpty ? _descriptionController.text.trim() : null,
         );
-        if (mounted) {
+        if (mounted && createdTrip != null) {
           ToastService.success('行程已建立');
           Navigator.pop(context);
+
+          // 顯示引導上傳對話框 (Option B)
+          _showUploadGuidance(context);
         }
       }
     } catch (e) {
@@ -312,5 +315,26 @@ class _CreateTripDialogState extends State<CreateTripDialog> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _showUploadGuidance(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('行程已建立 (本地)'),
+        content: const Text('您的行程目前僅存在於此裝置中。建議將其上傳至雲端，即可：\n\n1. 邀請好友加入\n2. 使用留言板與投票\n3. 跨裝置同步'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('稍後再說')),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<TripCubit>().uploadActiveTrip();
+            },
+            child: const Text('立即上傳至雲端'),
+          ),
+        ],
+      ),
+    );
   }
 }
