@@ -38,6 +38,7 @@ export 'entities/weather_data.dart';
 export 'entities/mountain_location.dart';
 export 'entities/trip_member.dart';
 export 'entities/download_task.dart';
+export 'entities/meal_plan_day.dart';
 
 // Repository Interfaces
 export 'repositories/i_gear_repository.dart';

@@ -143,11 +143,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   }
 
   /// 移除天數
-  Future<void> removeDay(String name) async {
+  Future<void> removeDay(String name, {bool confirmUnlink = false}) async {
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
 
+    // 1. 檢查是否有行程項目
     final hasItems = (await _repository.getByTripId(trip.id)).any((i) => i.day == name);
     if (hasItems) {
       emit(ItineraryError('無法刪除 "$name"，請先清空該天行程'));
@@ -155,6 +156,32 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       return;
     }
 
+    // 2. 檢查是否綁定了糧食計畫天數
+    final mealDaysResult = await _tripRepository.getMealPlanDays(trip.id);
+    if (mealDaysResult is Success<List<MealPlanDay>, Exception>) {
+      final linkedDay = mealDaysResult.value.cast<MealPlanDay?>().firstWhere(
+            (d) => d?.linkedItineraryDay == name,
+            orElse: () => null,
+          );
+
+      if (linkedDay != null && !confirmUnlink) {
+        // 發出警告狀態，讓 UI 顯示確認視窗
+        emit(ItineraryDayRemovalWarning(dayName: name, mealPlanDayId: linkedDay.id));
+        return;
+      }
+
+      // 如果使用者確認了，先取消綁定
+      if (linkedDay != null && confirmUnlink) {
+        await _tripRepository.updateMealPlanDay(
+          trip.id,
+          linkedDay.id,
+          linkedDay.name,
+          linkedItineraryDay: null,
+        );
+      }
+    }
+
+    // 3. 執行刪除天數
     final newDays = List<String>.from(trip.dayNames)..remove(name);
     final updatedTrip = trip.copyWith(dayNames: newDays);
     await _tripRepository.updateTrip(updatedTrip);
