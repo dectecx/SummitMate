@@ -44,6 +44,8 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
             _initData();
             setState(() {});
           }
+        } else if (state is ItineraryDayRemovalWarning) {
+          _handleRemovalWarning(context, state);
         } else if (state is ItineraryLoaded) {
           if (_pendingActions == 0 && !listEquals(_localDays, state.dayNames)) {
             setState(() {
@@ -258,6 +260,41 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
           });
         }
       }
+    }
+  }
+
+  Future<void> _handleRemovalWarning(BuildContext context, ItineraryDayRemovalWarning state) async {
+    final cubit = context.read<ItineraryCubit>();
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('糧食計畫綁定提醒'),
+        content: Text('行程天數 "${state.dayName}" 已綁定糧食計畫。\n刪除行程將會「取消綁定」，但不會刪除糧食資料。\n\n確定要繼續嗎？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('確定解綁並刪除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      setState(() => _pendingActions++);
+      try {
+        await cubit.removeDay(state.dayName, confirmUnlink: true);
+      } finally {
+        if (mounted) {
+          setState(() => _pendingActions--);
+        }
+      }
+    } else if (mounted) {
+      // User cancelled, restore local data
+      _initData();
+      setState(() {});
     }
   }
 }

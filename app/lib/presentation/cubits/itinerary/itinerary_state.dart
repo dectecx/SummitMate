@@ -76,3 +76,13 @@ class ItineraryError extends ItineraryState {
   @override
   List<Object?> get props => [message];
 }
+
+class ItineraryDayRemovalWarning extends ItineraryState {
+  final String dayName;
+  final String mealPlanDayId;
+
+  const ItineraryDayRemovalWarning({required this.dayName, required this.mealPlanDayId});
+
+  @override
+  List<Object?> get props => [dayName, mealPlanDayId];
+}
