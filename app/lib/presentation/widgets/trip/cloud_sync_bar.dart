@@ -28,13 +28,30 @@ class _CloudSyncBannerState extends State<CloudSyncBanner> {
   bool _isUploading = false;
   bool _isExpanded = false;
 
-  Future<void> _handleUpload() async {
+  Future<void> _handleSync(Trip trip) async {
+    // 如果是純本地行程，直接上傳即可
+    if (trip.isLocalOnly) {
+      return _startUpload();
+    }
+
+    // 既有雲端資料又有本地資料（或手動同步），詢問同步方向
+    final direction = await _showSyncDirectionDialog(context);
+    if (direction == null) return;
+
+    if (direction == SyncDirection.upload) {
+      await _startUpload();
+    } else {
+      await _startDownload(trip);
+    }
+  }
+
+  Future<void> _startUpload() async {
     setState(() => _isUploading = true);
     try {
       final success = await context.read<TripCubit>().uploadActiveTrip();
       if (!mounted) return;
       if (success) {
-        ToastService.success('行程已上傳至雲端');
+        ToastService.success('行程已成功上傳至雲端');
       } else {
         ToastService.error('上傳失敗，請稍後再試');
       }
@@ -43,6 +60,57 @@ class _CloudSyncBannerState extends State<CloudSyncBanner> {
     } finally {
       if (mounted) setState(() => _isUploading = false);
     }
+  }
+
+  Future<void> _startDownload(Trip trip) async {
+    setState(() => _isUploading = true);
+    try {
+      final success = await context.read<TripCubit>().downloadFullTrip(trip);
+      if (!mounted) return;
+      if (success) {
+        ToastService.success('已從雲端載入最新行程資料');
+      } else {
+        ToastService.error('載入失敗，請稍後再試');
+      }
+    } catch (e) {
+      if (mounted) ToastService.error('載入錯誤: $e');
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  Future<SyncDirection?> _showSyncDirectionDialog(BuildContext context) {
+    return showDialog<SyncDirection>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('選擇同步方向'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('發現本地與雲端資料可能不一致，請選擇您想保留的版本：'),
+            SizedBox(height: 16),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.pop(ctx, SyncDirection.download),
+            icon: const Icon(Icons.cloud_download, size: 18),
+            label: const Text('從雲端下載 (覆蓋本地)'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(ctx, SyncDirection.upload),
+            icon: const Icon(Icons.cloud_upload, size: 18),
+            label: const Text('上傳至雲端 (覆蓋雲端)'),
+          ),
+        ],
+        actionsAlignment: MainAxisAlignment.end,
+        actionsOverflowButtonSpacing: 8,
+      ),
+    );
   }
 
   @override
@@ -143,7 +211,7 @@ class _CloudSyncBannerState extends State<CloudSyncBanner> {
                       SizedBox(
                         height: 28,
                         child: TextButton(
-                          onPressed: _isUploading ? null : _handleUpload,
+                          onPressed: _isUploading ? null : () => _handleSync(trip),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             minimumSize: Size.zero,
@@ -169,7 +237,7 @@ class _CloudSyncBannerState extends State<CloudSyncBanner> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: _isUploading ? null : _handleUpload,
+                      onPressed: _isUploading ? null : () => _handleSync(trip),
                       icon: const Icon(Icons.sync, size: 14),
                       label: const Text('手動重新同步', style: TextStyle(fontSize: 11)),
                       style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),

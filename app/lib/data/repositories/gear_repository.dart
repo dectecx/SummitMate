@@ -3,6 +3,7 @@ import '../../core/error/result.dart';
 import '../../domain/entities/gear_item.dart';
 import '../../domain/repositories/i_gear_repository.dart';
 import '../datasources/interfaces/i_gear_local_data_source.dart';
+import '../datasources/interfaces/i_trip_gear_remote_data_source.dart';
 
 /// Gear Repository 實作
 ///
@@ -10,8 +11,9 @@ import '../datasources/interfaces/i_gear_local_data_source.dart';
 @LazySingleton(as: IGearRepository)
 class GearRepository implements IGearRepository {
   final IGearLocalDataSource _localDataSource;
+  final ITripGearRemoteDataSource _remoteDataSource;
 
-  GearRepository(this._localDataSource);
+  GearRepository(this._localDataSource, this._remoteDataSource);
 
   @override
   Future<Result<void, Exception>> init() async => const Success(null);
@@ -143,8 +145,20 @@ class GearRepository implements IGearRepository {
 
   @override
   Future<Result<void, Exception>> sync(String tripId) async {
-    // TODO: 實作裝備同步邏輯 (Fetch from remote & push local changes)
-    await Future.delayed(const Duration(seconds: 1)); // 模擬網路延遲
-    return const Success(null);
+    try {
+      final remoteItems = await _remoteDataSource.getTripGear(tripId);
+
+      // 先清除本地該行程的所有裝備
+      await _localDataSource.clearByTripId(tripId);
+
+      // 批次存入新的裝備
+      for (final item in remoteItems) {
+        await _localDataSource.addItem(item);
+      }
+
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
   }
 }

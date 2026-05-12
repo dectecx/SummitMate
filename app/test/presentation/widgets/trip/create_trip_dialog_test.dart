@@ -69,7 +69,7 @@ void main() {
           endDate: any(named: 'endDate'),
           description: any(named: 'description'),
         ),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => null);
 
       await tester.pumpWidget(
         MaterialApp(

@@ -226,4 +226,15 @@ class TripRepository implements ITripRepository {
       return Failure(e is Exception ? e : Exception(e.toString()));
     }
   }
+
+  @override
+  Future<Result<void, Exception>> syncMealPlan(String tripId) async {
+    try {
+      final remoteDays = await _mealRemoteDataSource.getMealPlanDays(tripId);
+      await _localDataSource.replaceMealPlanDays(tripId, remoteDays);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
 }

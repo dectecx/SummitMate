@@ -242,6 +242,43 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
+  /// 從雲端下載整個行程的資料到本地 (Metadata + Itinerary + Gear)
+  Future<bool> downloadFullTrip(Trip trip) async {
+    try {
+      final tripResult = await _tripRepository.syncTripDetails(trip.id);
+      if (tripResult is Failure) {
+        LogService.error('Trip metadata download failed: ${(tripResult as Failure).exception}', source: _source);
+        return false;
+      }
+
+      try {
+        await _itineraryRepository.sync(trip.id);
+      } catch (e) {
+        LogService.warning('Trip Itinerary sync download had issues: $e', source: _source);
+      }
+
+      try {
+        await _tripRepository.syncMealPlan(trip.id);
+      } catch (e) {
+        LogService.warning('Trip MealPlan sync download had issues: $e', source: _source);
+      }
+
+      try {
+        await _gearRepository.sync(trip.id);
+      } catch (e) {
+        LogService.error('Trip Gear sync download failed: $e', source: _source);
+        return false;
+      }
+
+      await loadTrips(); // 刷新 UI 狀態
+      LogService.info('Full trip download successful: ${trip.name}', source: _source);
+      return true;
+    } catch (e) {
+      LogService.error('Full trip download exception: $e', source: _source);
+      return false;
+    }
+  }
+
   /// 檢查當前活動行程是否已同步到雲端
   ///
   /// 供 CloudGuard 等元件使用，快速判斷是否可使用雲端功能
@@ -259,4 +296,13 @@ class TripCubit extends Cubit<TripState> {
     if (trip == null) return false;
     return uploadFullTrip(trip);
   }
+}
+
+/// 同步方向
+enum SyncDirection {
+  /// 上傳 (本地覆蓋雲端)
+  upload,
+
+  /// 下載 (雲端覆蓋本地)
+  download,
 }

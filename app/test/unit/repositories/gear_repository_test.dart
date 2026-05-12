@@ -4,18 +4,23 @@ import 'package:summitmate/data/datasources/interfaces/i_gear_local_data_source.
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/gear_repository.dart';
 
+import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
+
 // Mocks
 class MockGearLocalDataSource extends Mock implements IGearLocalDataSource {}
+class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
 
 void main() {
   late GearRepository repository;
   late MockGearLocalDataSource mockLocalDataSource;
+  late MockTripGearRemoteDataSource mockRemoteDataSource;
   late GearItem testItem1;
   late GearItem testItem2;
 
   setUp(() {
     mockLocalDataSource = MockGearLocalDataSource();
-    repository = GearRepository(mockLocalDataSource);
+    mockRemoteDataSource = MockTripGearRemoteDataSource();
+    repository = GearRepository(mockLocalDataSource, mockRemoteDataSource);
 
     testItem1 = const GearItem(
       id: 'item_1',

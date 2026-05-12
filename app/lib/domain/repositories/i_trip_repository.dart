@@ -116,4 +116,7 @@ abstract interface class ITripRepository {
 
   /// 刪除糧食計畫天數
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId);
+
+  /// 觸發糧食計畫同步 (Fetch from remote & update local)
+  Future<Result<void, Exception>> syncMealPlan(String tripId);
 }
