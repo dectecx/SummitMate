@@ -31,6 +31,7 @@ abstract class RegisterModule {
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       sendTimeout: const Duration(seconds: 15),
+      contentType: Headers.jsonContentType,
     ));
     dio.interceptors.addAll([connectivityInterceptor, authInterceptor]);
     return dio;
