@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
 import 'package:summitmate/presentation/screens/main_navigation/dialogs/trip_selection_dialog.dart';
+import 'package:summitmate/presentation/widgets/tutorial/quick_tour_sheet.dart';
 
 /// 初次登入歡迎對話框
 ///
@@ -41,8 +42,7 @@ class WelcomeDialog extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context);
             context.read<SettingsCubit>().completeOnboarding();
-            // TODO: QuickTourSheet.show(context) 將在 Step 3 實作
-            TripSelectionDialog.show(context);
+            QuickTourSheet.show(context);
           },
           icon: const Icon(Icons.play_arrow),
           label: const Text('快速導覽'),
