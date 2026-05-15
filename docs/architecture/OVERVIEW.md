@@ -67,6 +67,7 @@ graph LR
 | Platforms          | iOS, Android, Web (CanvasKit)                     |
 | Local DB           | Drift (SQLite)                                    |
 | State Management   | flutter_bloc (Cubit)                              |
+| Tutorial System    | TutorialCubit + Memory Mock Injection             |
 | API Layer (FE)     | Retrofit + Dio + Freezed (Code-Gen)               |
 | DI / Service Loc.  | Injectable + GetIt                                |
 | Backend (Primary)  | Go 1.26 + Chi v5 + PostgreSQL                     |
@@ -102,6 +103,15 @@ Go Backend 提供 `/api/v1` 前綴的 RESTful API，包含以下模組：
 | Heartbeat    | `POST /system/heartbeat`                                  | JWT        |
 
 完整 OpenAPI Spec 可透過 `GET /openapi.json` 取得，互動式文件位於 `GET /docs` (Scalar UI)。
+
+---
+
+## 互動教學系統 (Tutorial System)
+
+系統採用 **Memory-only Mock Injection** 模式：
+- **無定位依賴**：改用卡片導覽（Slide-based）取代舊有的 `GlobalKey` 遮罩定位，提升 UI 重構時的穩定性。
+- **資料注入**：透過 `TutorialCubit` 將範例資料注入 `TripCubit`、`GearCubit` 等，讓使用者在真實介面中體驗功能。
+- **寫入保護**：在教學模式下，系統會自動阻斷所有對本地 SQLite (Drift) 的寫入操作，確保測試資料不會永久保存。
 
 ---
 

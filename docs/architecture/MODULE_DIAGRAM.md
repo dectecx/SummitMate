@@ -138,6 +138,7 @@ graph TB
 | `FavoritesCubit`   | 最愛      | FavoritesRepository   |
 | `SettingsCubit`    | 設定      | SettingsRepository    |
 | `MapCubit`         | 地圖      | GeolocatorService     |
+| `TutorialCubit`    | 教學流程  | 記憶體                |
 
 ---
 

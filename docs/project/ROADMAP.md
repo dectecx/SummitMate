@@ -127,18 +127,19 @@
 
 ---
 
-## Phase 19: 教學導覽 (Tutorial Overlay) ✅
+## Phase 19: 互動教學系統 (Tutorial System) ✅
 
 ### 目標
 
-引導新用戶熟悉 App 各項功能。
+引導新用戶熟悉 App 各項功能，改用無定位依賴的卡片導航架構，並支援記憶體內的 Mock 資料注入。
 
 ### 任務
 
-- [x] TutorialService 步驟定義
-- [x] TutorialOverlay Widget (Spotlight 效果)
-- [x] 9 步驟互動式引導
-- [x] 首次使用自動觸發
+- [x] `TutorialCubit` 實作 (教學生命週期與 Mock 注入管理)
+- [x] `QuickTourSheet` 實作 (首次登入底部導覽卡片)
+- [x] `TutorialScreen` 實作 (分章節完整互動教學頁面)
+- [x] 各領域 Cubit (Trip, Gear, Meal) 支援 Mock 資料注入與寫入保護邏輯
+- [x] 清除過時的 `TutorialService` 與 `TutorialKeys` 定位機制
 
 ---
 

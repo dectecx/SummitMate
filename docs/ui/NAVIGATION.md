@@ -59,9 +59,12 @@ flowchart TB
         OfflineMap[離線地圖管理]
     end
 
-    Splash -->|首次使用| Onboard --> Login
     Splash -->|已登入| Main
     Splash -->|未登入| Login
+    Login -->|註冊| Register
+    Login -->|首次登入| QuickTour[QuickTourSheet]
+    Register --> Verify --> Main
+    Main -->|設定| Settings --> Tutorial[TutorialScreen]
     Login -->|註冊| Register
     Login -->|登入成功但未驗證| Verify
     Register --> Verify --> Main
@@ -150,4 +153,6 @@ flowchart LR
 | 地圖 | 地圖瀏覽           | `map_viewer_screen.dart`                      |
 | 地圖 | 地圖畫面           | `map/map_screen.dart`                         |
 | 地圖 | 離線地圖管理       | `map/offline_map_manager_screen.dart`         |
+| 教學 | 快速導覽 (Sheet)   | `tutorial/quick_tour_sheet.dart`              |
+| 教學 | 互動教學           | `tutorial/tutorial_screen.dart`               |
 | 錯誤 | 錯誤頁面           | `error_screen.dart`                           |
