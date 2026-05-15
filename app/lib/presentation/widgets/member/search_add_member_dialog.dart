@@ -3,7 +3,6 @@ import 'package:summitmate/core/core.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../../utils/tutorial_keys.dart';
 
 /// 搜尋類型枚舉
 enum SearchType { email, id }
@@ -199,7 +198,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
             errorText: _errorMsg,
             isDense: true,
           ),
-          key: TutorialKeys.memberSearchInput,
+          key: ValueKey(_searchType),
           onSubmitted: (_) => _performSearch(),
         ),
       ],
@@ -350,7 +349,6 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('取消')),
         FilledButton(
           onPressed: _isLoading ? null : _performSearch,
-          key: TutorialKeys.memberSearchBtn,
           child: const Text('搜尋'),
         ),
       ];
@@ -360,7 +358,6 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
         if (canAdd)
           FilledButton(
             onPressed: _isLoading ? null : _addMember,
-            key: TutorialKeys.memberConfirmBtn,
             child: const Text('確認加入'),
           ),
       ];

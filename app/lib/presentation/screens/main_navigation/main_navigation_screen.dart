@@ -41,7 +41,6 @@ import 'widgets/main_bottom_nav_bar.dart';
 import 'dialogs/trip_selection_dialog.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'utils/cloud_upload_helper.dart';
-import 'utils/tutorial_helper.dart';
 import '../../../presentation/widgets/trip/cloud_sync_bar.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
@@ -133,7 +132,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   void _showSettingsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => SettingsDialog(onRestartTutorial: (topic) => _showTutorial(context, topic)),
+      builder: (dialogContext) => SettingsDialog(onRestartTutorial: () => _showTutorialScreen(context)),
     );
   }
 
@@ -450,13 +449,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  void _showTutorial(BuildContext context, TutorialTopic topic) {
-    MainNavigationTutorialHelper.showTutorial(
-      context: context,
-      topic: topic,
-      onTabSwitch: (index) => setState(() => _currentIndex = index),
-      scaffoldKey: _scaffoldKey,
-    );
+  void _showTutorialScreen(BuildContext context) {
+    // TODO: launch new TutorialScreen (Step 4)
   }
 
   void _handleMapNavigation(BuildContext context) {

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/settings/settings_cubit.dart';
-import 'package:summitmate/infrastructure/tools/tutorial_service.dart';
 import 'package:summitmate/presentation/screens/main_navigation/dialogs/trip_selection_dialog.dart';
 
+/// 初次登入歡迎對話框
+///
+/// 顯示歡迎訊息，提供快速導覽或直接開始。
 class WelcomeDialog extends StatelessWidget {
   const WelcomeDialog({super.key});
 
@@ -14,28 +16,36 @@ class WelcomeDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('歡迎來到 SummitMate'),
-      content: const Text('為了讓您快速上手，我們準備了簡易的教學引導。\n您想要現在觀看嗎？'),
+      title: const Row(
+        children: [
+          Text('🏔️', style: TextStyle(fontSize: 24)),
+          SizedBox(width: 8),
+          Text('歡迎來到 SummitMate'),
+        ],
+      ),
+      content: const Text(
+        '為了讓您快速上手，我們準備了一個簡短的功能導覽。\n'
+        '這只需要大約 30 秒，您隨時也可以在設定中重看。',
+      ),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.pop(context);
-            // 略過教學：標記完成
             context.read<SettingsCubit>().completeOnboarding();
+            // 略過導覽後直接顯示匯入行程
+            TripSelectionDialog.show(context);
           },
-          child: const Text('直接開始 (略過)'),
+          child: const Text('略過'),
         ),
-        FilledButton(
-          onPressed: () async {
+        FilledButton.icon(
+          onPressed: () {
             Navigator.pop(context);
-            // 進入教學 -> 結束後顯示匯入行程
-            await TutorialService.start(topic: TutorialTopic.all);
-            if (context.mounted) {
-              // 教學結束後，自動跳出匯入選單
-              TripSelectionDialog.show(context);
-            }
+            context.read<SettingsCubit>().completeOnboarding();
+            // TODO: QuickTourSheet.show(context) 將在 Step 3 實作
+            TripSelectionDialog.show(context);
           },
-          child: const Text('教學引導'),
+          icon: const Icon(Icons.play_arrow),
+          label: const Text('快速導覽'),
         ),
       ],
     );
