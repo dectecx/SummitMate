@@ -86,6 +86,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 新增天數
   Future<void> addDay(String name) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip addDay', source: _source);
+      return;
+    }
+
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     final trip = tripResult is Success ? (tripResult as Success).value : null;
 
@@ -108,6 +113,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 重新命名天數
   Future<void> renameDay(String oldName, String newName) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip renameDay', source: _source);
+      return;
+    }
+
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
@@ -144,6 +154,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 移除天數
   Future<void> removeDay(String name, {bool confirmUnlink = false}) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip removeDay', source: _source);
+      return;
+    }
+
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
@@ -190,6 +205,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 重新排序天數
   Future<void> reorderDays(List<String> newOrder) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip reorderDays', source: _source);
+      return;
+    }
+
     final tripResult = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
     final trip = tripResult is Success ? (tripResult as Success).value : null;
     if (trip == null) return;
@@ -220,6 +240,13 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 簽到邏輯 (切換狀態)
   Future<void> checkIn(String id) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      final loaded = state as ItineraryLoaded;
+      final newItems = loaded.items.map((i) => i.id == id ? i.copyWith(isCheckedIn: !i.isCheckedIn) : i).toList();
+      emit(loaded.copyWith(items: newItems));
+      return;
+    }
+
     try {
       final result = await _repository.toggleCheckIn(id);
       if (result is Failure) throw result.exception;
@@ -234,6 +261,13 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 指定時間簽到
   Future<void> checkInWithTime(String id, DateTime time) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      final loaded = state as ItineraryLoaded;
+      final newItems = loaded.items.map((i) => i.id == id ? i.copyWith(isCheckedIn: true, checkedInAt: time, actualTime: time) : i).toList();
+      emit(loaded.copyWith(items: newItems));
+      return;
+    }
+
     try {
       final item = await _repository.getById(id);
       if (item == null) return;
@@ -259,6 +293,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 新增項目
   Future<void> addItem(ItineraryItem item) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip addItem', source: _source);
+      return;
+    }
+
     try {
       var itemToAdd = item;
       final currentTripId = await _getCurrentTripId();
@@ -288,6 +327,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 更新項目
   Future<void> updateItem(ItineraryItem item) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip updateItem', source: _source);
+      return;
+    }
+
     try {
       final userId = _authService.currentUserId;
       final itemToUpdate = userId != null
@@ -306,6 +350,11 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
   /// 刪除項目
   Future<void> deleteItem(String id) async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      LogService.info('Mock mode: skip deleteItem', source: _source);
+      return;
+    }
+
     try {
       final result = await _repository.delete(id);
       if (result is Failure) throw result.exception;
@@ -320,5 +369,34 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   /// 重置狀態
   void reset() {
     emit(const ItineraryInitial());
+  }
+
+  // ─────────────────────────────────────────────
+  // 教學導覽的 Mock 資料注入
+  // ─────────────────────────────────────────────
+
+  void injectMockData(List<ItineraryItem> mockItems, List<String> mockDayNames) {
+    if (state is ItineraryLoaded) {
+      final current = state as ItineraryLoaded;
+      emit(current.copyWith(
+        items: mockItems,
+        dayNames: mockDayNames,
+        selectedDay: mockDayNames.isNotEmpty ? mockDayNames.first : 'D1',
+        isMockMode: true,
+      ));
+    } else {
+      emit(ItineraryLoaded(
+        items: mockItems,
+        dayNames: mockDayNames,
+        selectedDay: mockDayNames.isNotEmpty ? mockDayNames.first : 'D1',
+        isMockMode: true,
+      ));
+    }
+  }
+
+  Future<void> clearMockData() async {
+    if (state is ItineraryLoaded && (state as ItineraryLoaded).isMockMode) {
+      await loadItinerary();
+    }
   }
 }
