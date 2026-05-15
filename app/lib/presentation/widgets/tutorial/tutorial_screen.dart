@@ -11,10 +11,9 @@ class TutorialScreen extends StatefulWidget {
   const TutorialScreen({super.key});
 
   static void show(BuildContext context) {
-    Navigator.of(context).push(PageRouteBuilder(
-      opaque: false,
-      pageBuilder: (context, _, __) => const TutorialScreen(),
-    ));
+    Navigator.of(
+      context,
+    ).push(PageRouteBuilder(opaque: false, pageBuilder: (context, _, __) => const TutorialScreen()));
   }
 
   @override
@@ -62,7 +61,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
         }
 
         final steps = TutorialContent.stepsForChapter(_currentChapter);
-        
+
         // Listen to TutorialCubit step changes to animate PageView
         if (_pageController.hasClients) {
           final page = _pageController.page?.round() ?? 0;
@@ -76,7 +75,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
         }
 
         return Scaffold(
-          backgroundColor: Colors.black.withOpacity(0.4), // Semi-transparent background
+          backgroundColor: Colors.black.withValues(alpha: 0.4), // Semi-transparent background
           body: SafeArea(
             child: Column(
               children: [
@@ -91,9 +90,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                           const SizedBox(width: 16),
                           Text(
                             '互動教學',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
                           IconButton(
@@ -104,14 +101,11 @@ class _TutorialScreenState extends State<TutorialScreen> {
                           ),
                         ],
                       ),
-                      TutorialChapterNav(
-                        activeChapter: _currentChapter,
-                        onChapterSelected: _onChapterSelected,
-                      ),
+                      TutorialChapterNav(activeChapter: _currentChapter, onChapterSelected: _onChapterSelected),
                     ],
                   ),
                 ),
-                
+
                 // Spacer to allow user to see the mock data behind
                 Expanded(
                   child: GestureDetector(
@@ -121,7 +115,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     child: Container(color: Colors.transparent),
                   ),
                 ),
-                
+
                 // Bottom Cards
                 SizedBox(
                   height: 280, // Fixed height for cards
@@ -136,7 +130,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     },
                   ),
                 ),
-                
+
                 // Card Controls
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -151,7 +145,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                         )
                       else
                         const SizedBox(width: 100),
-                        
+
                       // Page Indicators
                       Row(
                         children: List.generate(
@@ -163,13 +157,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
                             decoration: BoxDecoration(
                               color: i == state.currentStepIndex
                                   ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                  : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
                         ),
                       ),
-                      
+
                       if (state.currentStepIndex < steps.length - 1)
                         TextButton.icon(
                           onPressed: () => context.read<TutorialCubit>().nextStep(),
@@ -188,9 +182,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                               context.read<TutorialCubit>().endTutorial();
                             }
                           },
-                          label: Text(
-                            _currentChapter == TutorialChapter.values.last ? '完成' : '下一章',
-                          ),
+                          label: Text(_currentChapter == TutorialChapter.values.last ? '完成' : '下一章'),
                           icon: Icon(
                             _currentChapter == TutorialChapter.values.last ? Icons.check : Icons.arrow_forward,
                           ),
