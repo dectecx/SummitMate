@@ -35,6 +35,7 @@ class MealCubit extends Cubit<MealState> {
   void addMealItem(String dayId, MealType type, String name, double weight, double calories) {
     if (state is! MealLoaded) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
@@ -62,6 +63,7 @@ class MealCubit extends Cubit<MealState> {
   void removeMealItem(String dayId, MealType type, String itemId) {
     if (state is! MealLoaded) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
@@ -82,6 +84,7 @@ class MealCubit extends Cubit<MealState> {
   void updateMealItemQuantity(String dayId, MealType type, String itemId, int quantity) {
     if (state is! MealLoaded) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
     if (quantity < 1) quantity = 1;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
@@ -115,6 +118,7 @@ class MealCubit extends Cubit<MealState> {
   Future<void> addMealPlanDay(String name) async {
     if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final result = await _tripRepository.addMealPlanDay(_currentTripId!, name);
 
@@ -134,6 +138,7 @@ class MealCubit extends Cubit<MealState> {
   Future<void> renameMealPlanDay(String dayId, String newName) async {
     if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
@@ -164,6 +169,7 @@ class MealCubit extends Cubit<MealState> {
   Future<void> linkMealPlanDay(String dayId, String itineraryDay) async {
     if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
@@ -192,6 +198,7 @@ class MealCubit extends Cubit<MealState> {
   Future<void> unlinkMealPlanDay(String dayId) async {
     if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
@@ -221,6 +228,7 @@ class MealCubit extends Cubit<MealState> {
   Future<void> deleteMealPlanDay(String dayId) async {
     if (state is! MealLoaded || _currentTripId == null) return;
     final loadedState = state as MealLoaded;
+    if (loadedState.isMockMode) return;
 
     final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
     final planIndex = currentPlans.indexWhere((p) => p.dayInfo.id == dayId);
@@ -234,6 +242,29 @@ class MealCubit extends Cubit<MealState> {
       } else if (result is Failure<void, Exception>) {
         emit(MealError('刪除天數失敗: ${result.exception.toString()}'));
         emit(loadedState);
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // 教學導覽的 Mock 資料注入
+  // ─────────────────────────────────────────────
+
+  void injectMockData(List<DailyMealPlan> mockPlans) {
+    if (state is MealLoaded) {
+      final current = state as MealLoaded;
+      emit(current.copyWith(dailyPlans: mockPlans, isMockMode: true));
+    } else {
+      emit(MealLoaded(dailyPlans: mockPlans, isMockMode: true));
+    }
+  }
+
+  Future<void> clearMockData() async {
+    if (state is MealLoaded && (state as MealLoaded).isMockMode) {
+      if (_currentTripId != null) {
+        await loadMealPlans(_currentTripId!);
+      } else {
+        emit(const MealInitial());
       }
     }
   }

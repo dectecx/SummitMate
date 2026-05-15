@@ -14,11 +14,16 @@ class MealInitial extends MealState {
 
 class MealLoaded extends MealState {
   final List<DailyMealPlan> dailyPlans;
+  final bool isMockMode;
 
   /// 建構子
   ///
   /// [dailyPlans] 每日餐食計畫列表
-  const MealLoaded({required this.dailyPlans});
+  /// [isMockMode] 是否為教學展示模式
+  const MealLoaded({
+    required this.dailyPlans,
+    this.isMockMode = false,
+  });
 
   /// Get total weight in kg
   double get totalWeightKg {
@@ -29,12 +34,18 @@ class MealLoaded extends MealState {
     return totalGrams / 1000.0;
   }
 
-  MealLoaded copyWith({List<DailyMealPlan>? dailyPlans}) {
-    return MealLoaded(dailyPlans: dailyPlans ?? this.dailyPlans);
+  MealLoaded copyWith({
+    List<DailyMealPlan>? dailyPlans,
+    bool? isMockMode,
+  }) {
+    return MealLoaded(
+      dailyPlans: dailyPlans ?? this.dailyPlans,
+      isMockMode: isMockMode ?? this.isMockMode,
+    );
   }
 
   @override
-  List<Object> get props => [dailyPlans];
+  List<Object> get props => [dailyPlans, isMockMode];
 }
 
 class MealError extends MealState {
