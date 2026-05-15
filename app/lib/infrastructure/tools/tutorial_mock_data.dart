@@ -200,6 +200,57 @@ class TutorialMockData {
     ];
   }
 
+  /// 建立示範糧食計畫
+  static List<DailyMealPlan> createMockDailyMealPlans() {
+    return [
+      DailyMealPlan(
+        dayInfo: const MealPlanDay(
+          id: 'mock-meal-day-1',
+          name: '出發日',
+          linkedItineraryDay: 'D1',
+        ),
+        meals: {
+          MealType.breakfast: [
+            MealItem(id: 'mock-meal-1', name: '飯糰', weight: 150, calories: 350, quantity: 1),
+            MealItem(id: 'mock-meal-2', name: '豆漿', weight: 250, calories: 150, quantity: 1),
+          ],
+          MealType.lunch: [
+            MealItem(id: 'mock-meal-3', name: '肉包', weight: 120, calories: 300, quantity: 2),
+          ],
+          MealType.dinner: [
+            MealItem(id: 'mock-meal-4', name: '排骨飯', weight: 400, calories: 800, quantity: 1),
+          ],
+          MealType.action: [
+            MealItem(id: 'mock-meal-5', name: '能量棒', weight: 50, calories: 200, quantity: 2),
+          ],
+        },
+      ),
+      DailyMealPlan(
+        dayInfo: const MealPlanDay(
+          id: 'mock-meal-day-2',
+          name: '攻頂日',
+          linkedItineraryDay: 'D2',
+        ),
+        meals: {
+          MealType.breakfast: [
+            MealItem(id: 'mock-meal-6', name: '麵包', weight: 100, calories: 300, quantity: 2),
+            MealItem(id: 'mock-meal-7', name: '熱可可', weight: 25, calories: 100, quantity: 1),
+          ],
+          MealType.lunch: [
+            MealItem(id: 'mock-meal-8', name: '乾燥飯', weight: 100, calories: 400, quantity: 1),
+          ],
+          MealType.dinner: [
+            MealItem(id: 'mock-meal-9', name: '泡麵', weight: 100, calories: 450, quantity: 2),
+            MealItem(id: 'mock-meal-10', name: '茶包', weight: 10, calories: 0, quantity: 2),
+          ],
+          MealType.action: [
+            MealItem(id: 'mock-meal-11', name: '堅果', weight: 100, calories: 600, quantity: 1),
+          ],
+        },
+      ),
+    ];
+  }
+
   /// Mock Trip ID（可供其他模組識別是否為教學資料）
   static String get mockTripId => _mockTripId;
 }
