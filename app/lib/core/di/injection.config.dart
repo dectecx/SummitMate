@@ -173,6 +173,7 @@ import '../../presentation/cubits/poll/poll_cubit.dart' as _i1040;
 import '../../presentation/cubits/settings/settings_cubit.dart' as _i266;
 import '../../presentation/cubits/sync/sync_cubit.dart' as _i846;
 import '../../presentation/cubits/trip/trip_cubit.dart' as _i32;
+import '../../presentation/cubits/tutorial/tutorial_cubit.dart' as _i259;
 import '../location/i_location_resolver.dart' as _i887;
 import '../location/township_location_resolver.dart' as _i351;
 import '../services/permission_service.dart' as _i165;
@@ -305,17 +306,11 @@ extension GetItInjectableX on _i174.GetIt {
         db: gh<_i89.AppDatabase>(),
       ),
     );
-    gh.lazySingleton<_i684.IGearRepository>(
-      () => _i867.GearRepository(gh<_i691.IGearLocalDataSource>()),
-    );
     gh.lazySingleton<_i7.NetworkAwareClient>(
       () => _i7.NetworkAwareClient(
         apiClient: gh<_i418.IApiClient>(),
         connectivity: gh<_i751.IConnectivityService>(),
       ),
-    );
-    gh.factory<_i55.GearCubit>(
-      () => _i55.GearCubit(gh<_i684.IGearRepository>()),
     );
     gh.factory<_i266.SettingsCubit>(
       () => _i266.SettingsCubit(
@@ -398,6 +393,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i675.IGearSetCacheLocalDataSource>(),
       ),
     );
+    gh.lazySingleton<_i684.IGearRepository>(
+      () => _i867.GearRepository(
+        gh<_i691.IGearLocalDataSource>(),
+        gh<_i725.ITripGearRemoteDataSource>(),
+      ),
+    );
     gh.lazySingleton<_i644.IPollRemoteDataSource>(
       () => _i621.PollRemoteDataSource(gh<_i245.PollApiService>()),
     );
@@ -431,6 +432,9 @@ extension GetItInjectableX on _i174.GetIt {
         remoteDataSource: gh<_i342.IFavoritesRemoteDataSource>(),
         authService: gh<_i147.IAuthService>(),
       ),
+    );
+    gh.factory<_i55.GearCubit>(
+      () => _i55.GearCubit(gh<_i684.IGearRepository>()),
     );
     gh.lazySingleton<_i750.IItineraryRepository>(
       () => _i790.ItineraryRepository(
@@ -545,6 +549,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IItineraryRepository>(),
         gh<_i614.IAuthService>(),
         gh<_i614.ITripRepository>(),
+      ),
+    );
+    gh.factory<_i259.TutorialCubit>(
+      () => _i259.TutorialCubit(
+        gh<_i32.TripCubit>(),
+        gh<_i354.ItineraryCubit>(),
+        gh<_i55.GearCubit>(),
+        gh<_i694.MealCubit>(),
       ),
     );
     return this;
