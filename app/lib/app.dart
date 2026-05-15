@@ -24,7 +24,6 @@ import 'presentation/cubits/favorites/group_event/group_event_favorites_cubit.da
 import 'presentation/cubits/app_error/app_error_cubit.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
-import 'presentation/widgets/global_tutorial_wrapper.dart';
 
 import 'presentation/widgets/dev_tools/dev_tools_overlay.dart';
 
@@ -88,7 +87,7 @@ class SummitMateApp extends StatelessWidget {
           themeMode: ThemeMode.light, // 目前強制 Light Mode，由 Strategy 控制顏色
           // 錯誤監聽與 Overlay
           builder: (context, child) {
-            Widget content = GlobalTutorialWrapper(child: GlobalErrorListener(child: child ?? const SizedBox.shrink()));
+            Widget content = GlobalErrorListener(child: child ?? const SizedBox.shrink());
 
             if (!kReleaseMode) {
               content = DevToolsOverlay(child: content);

@@ -13,17 +13,14 @@ import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/log_viewer_sheet.dart';
 import '../widgets/clear_data_dialog.dart';
-import '../widgets/tutorial_topic_selection_dialog.dart';
-
-import '../utils/tutorial_keys.dart';
 
 /// 設定對話框
 ///
 /// 提供使用者設定個人資料、主題配色、離線模式等功能。
 /// 使用 [AuthCubit] 取得/更新使用者資訊，[SettingsCubit] 管理本地設定。
 class SettingsDialog extends StatefulWidget {
-  /// 教學重啟回調 (若為 null 則顯示提示訊息)
-  final void Function(TutorialTopic topic)? onRestartTutorial;
+  /// 開啟教學引導回調 (若為 null 則隱藏入口)
+  final VoidCallback? onRestartTutorial;
 
   const SettingsDialog({super.key, this.onRestartTutorial});
 
@@ -141,7 +138,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
                             ),
                           ),
                           IconButton(
-                            key: TutorialKeys.settingsCopyId,
                             icon: const Icon(Icons.copy, size: 16, color: Colors.grey),
                             tooltip: '複製 ID',
                             onPressed: () {
@@ -268,20 +264,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
                     // Tutorial
                     ListTile(
-                      leading: const Icon(Icons.help_outline),
-                      title: const Text('重看教學引導'),
-                      onTap: () async {
+                      leading: const Icon(Icons.school_outlined),
+                      title: const Text('互動教學'),
+                      subtitle: const Text('重新觀看功能說明'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
                         if (widget.onRestartTutorial != null) {
-                          // 先顯示主題選擇對話框 (context 尚有效)
-                          final topic = await showTutorialTopicSelectionDialog(context);
-                          if (topic != null && context.mounted) {
-                            // 關閉設定對話框後才啟動教學
-                            Navigator.pop(context);
-                            widget.onRestartTutorial!(topic);
-                          }
-                        } else {
                           Navigator.pop(context);
-                          ToastService.info('請在首頁重新觸發教學');
+                          widget.onRestartTutorial!();
                         }
                       },
                     ),

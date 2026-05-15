@@ -14,7 +14,6 @@ export 'services/weather_service.dart';
 // Tools
 export 'tools/log_service.dart';
 export 'tools/toast_service.dart';
-export 'tools/tutorial_service.dart';
 export 'tools/usage_tracking_service.dart';
 
 // Observers

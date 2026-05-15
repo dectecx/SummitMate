@@ -6,7 +6,6 @@ import '../../../cubits/settings/settings_state.dart';
 import '../../../cubits/auth/auth_cubit.dart';
 import '../../../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
-import '../../../utils/tutorial_keys.dart';
 import '../../../../presentation/widgets/responsive_layout.dart';
 
 import '../../../widgets/sync/sync_status_indicator.dart';
@@ -58,7 +57,6 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       leading: showLeading
           ? IconButton(
-              key: TutorialKeys.mainDrawerMenu,
               icon: const Icon(Icons.menu),
               onPressed: onMenuPressed,
               tooltip: '選單',
@@ -135,7 +133,6 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
         const SyncStatusIndicator(),
         // 設定按鈕
         IconButton(
-          key: TutorialKeys.mainSettings,
           icon: const Icon(Icons.settings),
           onPressed: onSettings,
           tooltip: '設定',
