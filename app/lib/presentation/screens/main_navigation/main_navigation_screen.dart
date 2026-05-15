@@ -132,7 +132,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   void _showSettingsDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => SettingsDialog(onRestartTutorial: () => _showTutorialScreen(context)),
+      builder: (dialogContext) => const SettingsDialog(),
     );
   }
 
@@ -449,9 +449,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  void _showTutorialScreen(BuildContext context) {
-    // TODO: launch new TutorialScreen (Step 4)
-  }
 
   void _handleMapNavigation(BuildContext context) {
     if (kIsWeb) {

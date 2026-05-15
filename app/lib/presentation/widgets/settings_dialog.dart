@@ -13,16 +13,15 @@ import 'package:summitmate/presentation/cubits/sync/sync_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/log_viewer_sheet.dart';
 import '../widgets/clear_data_dialog.dart';
+import 'package:summitmate/presentation/widgets/tutorial/quick_tour_sheet.dart';
+import 'package:summitmate/presentation/widgets/tutorial/tutorial_screen.dart';
 
 /// 設定對話框
 ///
 /// 提供使用者設定個人資料、主題配色、離線模式等功能。
 /// 使用 [AuthCubit] 取得/更新使用者資訊，[SettingsCubit] 管理本地設定。
 class SettingsDialog extends StatefulWidget {
-  /// 開啟教學引導回調 (若為 null 則隱藏入口)
-  final VoidCallback? onRestartTutorial;
-
-  const SettingsDialog({super.key, this.onRestartTutorial});
+  const SettingsDialog({super.key});
 
   @override
   State<SettingsDialog> createState() => _SettingsDialogState();
@@ -264,15 +263,23 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
                     // Tutorial
                     ListTile(
-                      leading: const Icon(Icons.school_outlined),
-                      title: const Text('互動教學'),
-                      subtitle: const Text('重新觀看功能說明'),
+                      leading: const Icon(Icons.rocket_launch_outlined),
+                      title: const Text('快速導覽'),
+                      subtitle: const Text('觀看簡短的功能介紹'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
-                        if (widget.onRestartTutorial != null) {
-                          Navigator.pop(context);
-                          widget.onRestartTutorial!();
-                        }
+                        Navigator.pop(context); // 關閉設定對話框
+                        QuickTourSheet.show(context); // 開啟快速導覽
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.school_outlined),
+                      title: const Text('互動教學'),
+                      subtitle: const Text('完整學習各項功能'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.pop(context); // 關閉設定對話框
+                        TutorialScreen.show(context); // 開啟完整教學
                       },
                     ),
 
