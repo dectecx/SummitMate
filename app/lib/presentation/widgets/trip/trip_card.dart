@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
@@ -32,9 +32,6 @@ class TripCard extends StatelessWidget {
   /// 管理成員回調
   final VoidCallback? onManageMembers;
 
-  /// 成員按鈕的 Key (用於教學導覽)
-  final Key? memberBtnKey;
-
   const TripCard({
     super.key,
     required this.trip,
@@ -45,7 +42,6 @@ class TripCard extends StatelessWidget {
     this.onDelete,
     this.onUpload,
     this.onManageMembers,
-    this.memberBtnKey,
   });
 
   @override
@@ -203,7 +199,6 @@ class TripCard extends StatelessWidget {
                       icon: Icons.people_outline,
                       label: '成員',
                       onTap: onManageMembers,
-                      keey: memberBtnKey,
                       color: colorScheme.primary,
                     ),
                     if (onEdit != null) ...[
@@ -258,17 +253,13 @@ class _ActionButton extends StatelessWidget {
   /// 按鈕顏色
   final Color? color;
 
-  /// 按鈕 Key (用於教學導覽)
-  final Key? keey;
-
-  const _ActionButton({required this.icon, required this.label, this.onTap, this.color, this.keey});
+  const _ActionButton({required this.icon, required this.label, this.onTap, this.color});
 
   @override
   Widget build(BuildContext context) {
     if (onTap == null) return const SizedBox.shrink();
 
     return InkWell(
-      key: keey,
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(

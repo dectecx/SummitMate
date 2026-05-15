@@ -10,7 +10,6 @@ import '../widgets/member/member_list_tile.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 
-import '../utils/tutorial_keys.dart';
 import '../widgets/cloud_guard.dart';
 
 /// 成員管理畫面
@@ -337,7 +336,6 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               onPressed: _showSearchAddMemberDialog,
               icon: const Icon(Icons.person_add),
               label: const Text('新增成員'),
-              key: TutorialKeys.memberFab,
             )
           : null,
       body: CloudGuard(

@@ -17,7 +17,6 @@ import '../widgets/common/modern_sliver_app_bar.dart';
 import '../widgets/trip/trip_card.dart';
 import '../widgets/trip/create_trip_dialog.dart';
 import '../widgets/trip/cloud_sync_bar.dart';
-import '../utils/tutorial_keys.dart';
 import '../widgets/responsive_layout.dart';
 
 /// 行程列表畫面
@@ -230,7 +229,6 @@ class TripListScreen extends StatelessWidget {
       onDelete: canDelete ? () => _confirmDelete(context, trip) : null,
       onUpload: canEdit ? () => _handleFullUpload(context, trip) : null,
       onManageMembers: () => _navigateToMembers(context, trip),
-      memberBtnKey: trip.id == activeTripId ? TutorialKeys.tripListActiveMemberBtn : null,
     );
   }
 
