@@ -55,6 +55,7 @@ void main() {
     // Default setup: active trip exists
     when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(testTrip));
     when(() => mockTripRepository.getTripById(any())).thenAnswer((_) async => Success(testTrip));
+    when(() => mockTripRepository.markTripAsPendingUpdate(any())).thenAnswer((_) async => const Success(null));
 
     cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);
   });

@@ -66,6 +66,7 @@ void main() {
 
     when(() => mockAuthService.currentUserId).thenReturn('user-1');
     when(() => mockAppErrorCubit.reportError(any())).thenReturn(false);
+    when(() => mockTripRepository.tripUpdateStream).thenAnswer((_) => const Stream<String>.empty());
   });
 
   group('TripCubit', () {

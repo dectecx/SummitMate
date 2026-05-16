@@ -44,6 +44,7 @@ void main() {
 
       setUp(() {
         when(() => mockTripRepository.getMealPlanDays(any())).thenAnswer((_) async => Success(initialDays));
+        when(() => mockTripRepository.markTripAsPendingUpdate(any())).thenAnswer((_) async => const Success(null));
       });
 
       blocTest<MealCubit, MealState>(

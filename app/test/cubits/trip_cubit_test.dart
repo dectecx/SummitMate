@@ -45,6 +45,7 @@ void main() {
     getIt.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
 
     when(() => mockAuthService.currentUserId).thenReturn('test-user');
+    when(() => mockTripRepository.tripUpdateStream).thenAnswer((_) => const Stream<String>.empty());
 
     tripCubit = TripCubit(
       mockTripRepository,
