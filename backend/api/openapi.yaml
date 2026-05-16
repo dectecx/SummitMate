@@ -2462,6 +2462,9 @@ paths:
                 status:
                   type: string
                   enum: [approved, rejected]
+                note:
+                  type: string
+                  description: 審核備註 (拒絕時可用)
       responses:
         "200":
           description: 成功更新狀態
@@ -3762,9 +3765,16 @@ components:
           type: integer
         is_liked:
           type: boolean
+        my_application_id:
+          type: string
+          format: uuid
+          nullable: true
         my_application_status:
           type: string
           enum: [pending, approved, rejected, cancelled]
+          nullable: true
+        my_application_reason:
+          type: string
           nullable: true
         created_at:
           type: string
@@ -3850,6 +3860,9 @@ components:
         status:
           type: string
           enum: [pending, approved, rejected, cancelled]
+        rejection_reason:
+          type: string
+          nullable: true
         message:
           type: string
         created_at:

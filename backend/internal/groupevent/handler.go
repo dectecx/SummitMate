@@ -288,26 +288,18 @@ func (h *GroupEventHandler) PatchGroupEventsApplicationsAppId(w http.ResponseWri
 		return
 	}
 
-	var req struct {
-		Status string `json:"status"`
-	}
+	var req api.PatchGroupEventsApplicationsAppIdJSONRequestBody
 	if err := apiutil.DecodeBody(r, &req); err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	// Fetch application to get event_id and user_id
-	app, err := h.service.GetApplication(r.Context(), appId.String())
-	if err != nil {
-		apiutil.SendError(w, r, err)
-		return
-	}
-	if app == nil {
-		apiutil.SendError(w, r, apperror.ErrResourceNotFound.WithMessage("找不到申請紀錄"))
-		return
+	note := ""
+	if req.Note != nil {
+		note = *req.Note
 	}
 
-	if err := h.service.ProcessApplication(r.Context(), app.EventID, app.UserID, req.Status, executorID); err != nil {
+	if err := h.service.ProcessApplication(r.Context(), appId.String(), string(req.Status), note, executorID); err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}

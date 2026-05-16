@@ -306,7 +306,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 mixin _$GroupEventResponse {
 
  String get id;@JsonKey(name: 'host_id') String get hostId;@JsonKey(name: 'host_name', defaultValue: '') String get hostName;@JsonKey(name: 'host_avatar', defaultValue: '🐻') String get hostAvatar; String get title;@JsonKey(defaultValue: '') String get description;@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory get category;@JsonKey(defaultValue: '') String get location;// start_date / end_date are date-only fields (format: date in OpenAPI)
-@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? get tripSnapshot;@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? get snapshotUpdatedAt;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime get startDate;@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? get endDate;@JsonKey(defaultValue: 'open') String get status;@JsonKey(name: 'max_members', defaultValue: 10) int get maxMembers;@JsonKey(name: 'application_count', defaultValue: 0) int get applicationCount;@JsonKey(name: 'total_application_count', defaultValue: 0) int get totalApplicationCount;@JsonKey(name: 'approval_required', defaultValue: false) bool get approvalRequired;@JsonKey(name: 'private_message', defaultValue: '') String get privateMessage;@JsonKey(name: 'linked_trip_id') String? get linkedTripId;@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? get tripSnapshot;@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? get snapshotUpdatedAt;@JsonKey(name: 'like_count', defaultValue: 0) int get likeCount;@JsonKey(name: 'comment_count', defaultValue: 0) int get commentCount;@JsonKey(name: 'is_liked', defaultValue: false) bool get isLiked;@JsonKey(name: 'my_application_id') String? get myApplicationId;@JsonKey(name: 'my_application_status') String? get myApplicationStatus;@JsonKey(name: 'my_application_reason') String? get myApplicationReason;@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -319,16 +319,16 @@ $GroupEventResponseCopyWith<GroupEventResponse> get copyWith => _$GroupEventResp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&const DeepCollectionEquality().equals(other.latestComments, latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationId, myApplicationId) || other.myApplicationId == myApplicationId)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.myApplicationReason, myApplicationReason) || other.myApplicationReason == myApplicationReason)&&const DeepCollectionEquality().equals(other.latestComments, latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationStatus,const DeepCollectionEquality().hash(latestComments),createdAt,createdBy,updatedAt,updatedBy]);
+int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationId,myApplicationStatus,myApplicationReason,const DeepCollectionEquality().hash(latestComments),createdAt,createdBy,updatedAt,updatedBy]);
 
 @override
 String toString() {
-  return 'GroupEventResponse(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventResponse(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationId: $myApplicationId, myApplicationStatus: $myApplicationStatus, myApplicationReason: $myApplicationReason, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -339,7 +339,7 @@ abstract mixin class $GroupEventResponseCopyWith<$Res>  {
   factory $GroupEventResponseCopyWith(GroupEventResponse value, $Res Function(GroupEventResponse) _then) = _$GroupEventResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'host_id') String hostId,@JsonKey(name: 'host_name', defaultValue: '') String hostName,@JsonKey(name: 'host_avatar', defaultValue: '🐻') String hostAvatar, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'host_id') String hostId,@JsonKey(name: 'host_name', defaultValue: '') String hostName,@JsonKey(name: 'host_avatar', defaultValue: '🐻') String hostAvatar, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_id') String? myApplicationId,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'my_application_reason') String? myApplicationReason,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -356,7 +356,7 @@ class _$GroupEventResponseCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationId = freezed,Object? myApplicationStatus = freezed,Object? myApplicationReason = freezed,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hostId: null == hostId ? _self.hostId : hostId // ignore: cast_nullable_to_non_nullable
@@ -380,7 +380,9 @@ as TripSnapshotResponse?,snapshotUpdatedAt: freezed == snapshotUpdatedAt ? _self
 as DateTime?,likeCount: null == likeCount ? _self.likeCount : likeCount // ignore: cast_nullable_to_non_nullable
 as int,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
 as int,isLiked: null == isLiked ? _self.isLiked : isLiked // ignore: cast_nullable_to_non_nullable
-as bool,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
+as bool,myApplicationId: freezed == myApplicationId ? _self.myApplicationId : myApplicationId // ignore: cast_nullable_to_non_nullable
+as String?,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
+as String?,myApplicationReason: freezed == myApplicationReason ? _self.myApplicationReason : myApplicationReason // ignore: cast_nullable_to_non_nullable
 as String?,latestComments: null == latestComments ? _self.latestComments : latestComments // ignore: cast_nullable_to_non_nullable
 as List<GroupEventCommentResponse>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
@@ -483,10 +485,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'host_id')  String hostId, @JsonKey(name: 'host_name', defaultValue: '')  String hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻')  String hostAvatar,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'host_id')  String hostId, @JsonKey(name: 'host_name', defaultValue: '')  String hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻')  String hostAvatar,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_id')  String? myApplicationId, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'my_application_reason')  String? myApplicationReason, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventResponse() when $default != null:
-return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationId,_that.myApplicationStatus,_that.myApplicationReason,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -504,10 +506,10 @@ return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.titl
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'host_id')  String hostId, @JsonKey(name: 'host_name', defaultValue: '')  String hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻')  String hostAvatar,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'host_id')  String hostId, @JsonKey(name: 'host_name', defaultValue: '')  String hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻')  String hostAvatar,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_id')  String? myApplicationId, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'my_application_reason')  String? myApplicationReason, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventResponse():
-return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationId,_that.myApplicationStatus,_that.myApplicationReason,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -524,10 +526,10 @@ return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.titl
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'host_id')  String hostId, @JsonKey(name: 'host_name', defaultValue: '')  String hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻')  String hostAvatar,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'host_id')  String hostId, @JsonKey(name: 'host_name', defaultValue: '')  String hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻')  String hostAvatar,  String title, @JsonKey(defaultValue: '')  String description, @JsonKey(defaultValue: GroupEventCategory.other)  GroupEventCategory category, @JsonKey(defaultValue: '')  String location, @JsonKey(name: 'start_date')@DateOnlyConverter()  DateTime startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter()  DateTime? endDate, @JsonKey(defaultValue: 'open')  String status, @JsonKey(name: 'max_members', defaultValue: 10)  int maxMembers, @JsonKey(name: 'application_count', defaultValue: 0)  int applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0)  int totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false)  bool approvalRequired, @JsonKey(name: 'private_message', defaultValue: '')  String privateMessage, @JsonKey(name: 'linked_trip_id')  String? linkedTripId, @JsonKey(name: 'trip_snapshot')  TripSnapshotResponse? tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter()  DateTime? snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0)  int likeCount, @JsonKey(name: 'comment_count', defaultValue: 0)  int commentCount, @JsonKey(name: 'is_liked', defaultValue: false)  bool isLiked, @JsonKey(name: 'my_application_id')  String? myApplicationId, @JsonKey(name: 'my_application_status')  String? myApplicationStatus, @JsonKey(name: 'my_application_reason')  String? myApplicationReason, @JsonKey(name: 'latest_comments', defaultValue: [])  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventResponse() when $default != null:
-return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationId,_that.myApplicationStatus,_that.myApplicationReason,_that.latestComments,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -539,7 +541,7 @@ return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.titl
 @JsonSerializable()
 
 class _GroupEventResponse implements GroupEventResponse {
-  const _GroupEventResponse({required this.id, @JsonKey(name: 'host_id') required this.hostId, @JsonKey(name: 'host_name', defaultValue: '') required this.hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻') required this.hostAvatar, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, @JsonKey(defaultValue: '') required this.location, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(defaultValue: 'open') required this.status, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'application_count', defaultValue: 0) required this.applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0) required this.totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message', defaultValue: '') required this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId, @JsonKey(name: 'trip_snapshot') this.tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() this.snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0) required this.likeCount, @JsonKey(name: 'comment_count', defaultValue: 0) required this.commentCount, @JsonKey(name: 'is_liked', defaultValue: false) required this.isLiked, @JsonKey(name: 'my_application_status') this.myApplicationStatus, @JsonKey(name: 'latest_comments', defaultValue: []) required final  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _latestComments = latestComments;
+  const _GroupEventResponse({required this.id, @JsonKey(name: 'host_id') required this.hostId, @JsonKey(name: 'host_name', defaultValue: '') required this.hostName, @JsonKey(name: 'host_avatar', defaultValue: '🐻') required this.hostAvatar, required this.title, @JsonKey(defaultValue: '') required this.description, @JsonKey(defaultValue: GroupEventCategory.other) required this.category, @JsonKey(defaultValue: '') required this.location, @JsonKey(name: 'start_date')@DateOnlyConverter() required this.startDate, @JsonKey(name: 'end_date')@NullableDateOnlyConverter() this.endDate, @JsonKey(defaultValue: 'open') required this.status, @JsonKey(name: 'max_members', defaultValue: 10) required this.maxMembers, @JsonKey(name: 'application_count', defaultValue: 0) required this.applicationCount, @JsonKey(name: 'total_application_count', defaultValue: 0) required this.totalApplicationCount, @JsonKey(name: 'approval_required', defaultValue: false) required this.approvalRequired, @JsonKey(name: 'private_message', defaultValue: '') required this.privateMessage, @JsonKey(name: 'linked_trip_id') this.linkedTripId, @JsonKey(name: 'trip_snapshot') this.tripSnapshot, @JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() this.snapshotUpdatedAt, @JsonKey(name: 'like_count', defaultValue: 0) required this.likeCount, @JsonKey(name: 'comment_count', defaultValue: 0) required this.commentCount, @JsonKey(name: 'is_liked', defaultValue: false) required this.isLiked, @JsonKey(name: 'my_application_id') this.myApplicationId, @JsonKey(name: 'my_application_status') this.myApplicationStatus, @JsonKey(name: 'my_application_reason') this.myApplicationReason, @JsonKey(name: 'latest_comments', defaultValue: []) required final  List<GroupEventCommentResponse> latestComments, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _latestComments = latestComments;
   factory _GroupEventResponse.fromJson(Map<String, dynamic> json) => _$GroupEventResponseFromJson(json);
 
 @override final  String id;
@@ -565,7 +567,9 @@ class _GroupEventResponse implements GroupEventResponse {
 @override@JsonKey(name: 'like_count', defaultValue: 0) final  int likeCount;
 @override@JsonKey(name: 'comment_count', defaultValue: 0) final  int commentCount;
 @override@JsonKey(name: 'is_liked', defaultValue: false) final  bool isLiked;
+@override@JsonKey(name: 'my_application_id') final  String? myApplicationId;
 @override@JsonKey(name: 'my_application_status') final  String? myApplicationStatus;
+@override@JsonKey(name: 'my_application_reason') final  String? myApplicationReason;
  final  List<GroupEventCommentResponse> _latestComments;
 @override@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> get latestComments {
   if (_latestComments is EqualUnmodifiableListView) return _latestComments;
@@ -591,16 +595,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&const DeepCollectionEquality().equals(other._latestComments, _latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationId, myApplicationId) || other.myApplicationId == myApplicationId)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.myApplicationReason, myApplicationReason) || other.myApplicationReason == myApplicationReason)&&const DeepCollectionEquality().equals(other._latestComments, _latestComments)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationStatus,const DeepCollectionEquality().hash(_latestComments),createdAt,createdBy,updatedAt,updatedBy]);
+int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationId,myApplicationStatus,myApplicationReason,const DeepCollectionEquality().hash(_latestComments),createdAt,createdBy,updatedAt,updatedBy]);
 
 @override
 String toString() {
-  return 'GroupEventResponse(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventResponse(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationId: $myApplicationId, myApplicationStatus: $myApplicationStatus, myApplicationReason: $myApplicationReason, latestComments: $latestComments, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -611,7 +615,7 @@ abstract mixin class _$GroupEventResponseCopyWith<$Res> implements $GroupEventRe
   factory _$GroupEventResponseCopyWith(_GroupEventResponse value, $Res Function(_GroupEventResponse) _then) = __$GroupEventResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'host_id') String hostId,@JsonKey(name: 'host_name', defaultValue: '') String hostName,@JsonKey(name: 'host_avatar', defaultValue: '🐻') String hostAvatar, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'host_id') String hostId,@JsonKey(name: 'host_name', defaultValue: '') String hostName,@JsonKey(name: 'host_avatar', defaultValue: '🐻') String hostAvatar, String title,@JsonKey(defaultValue: '') String description,@JsonKey(defaultValue: GroupEventCategory.other) GroupEventCategory category,@JsonKey(defaultValue: '') String location,@JsonKey(name: 'start_date')@DateOnlyConverter() DateTime startDate,@JsonKey(name: 'end_date')@NullableDateOnlyConverter() DateTime? endDate,@JsonKey(defaultValue: 'open') String status,@JsonKey(name: 'max_members', defaultValue: 10) int maxMembers,@JsonKey(name: 'application_count', defaultValue: 0) int applicationCount,@JsonKey(name: 'total_application_count', defaultValue: 0) int totalApplicationCount,@JsonKey(name: 'approval_required', defaultValue: false) bool approvalRequired,@JsonKey(name: 'private_message', defaultValue: '') String privateMessage,@JsonKey(name: 'linked_trip_id') String? linkedTripId,@JsonKey(name: 'trip_snapshot') TripSnapshotResponse? tripSnapshot,@JsonKey(name: 'snapshot_updated_at')@NullableDateTimeUtcConverter() DateTime? snapshotUpdatedAt,@JsonKey(name: 'like_count', defaultValue: 0) int likeCount,@JsonKey(name: 'comment_count', defaultValue: 0) int commentCount,@JsonKey(name: 'is_liked', defaultValue: false) bool isLiked,@JsonKey(name: 'my_application_id') String? myApplicationId,@JsonKey(name: 'my_application_status') String? myApplicationStatus,@JsonKey(name: 'my_application_reason') String? myApplicationReason,@JsonKey(name: 'latest_comments', defaultValue: []) List<GroupEventCommentResponse> latestComments,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -628,7 +632,7 @@ class __$GroupEventResponseCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationId = freezed,Object? myApplicationStatus = freezed,Object? myApplicationReason = freezed,Object? latestComments = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_GroupEventResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hostId: null == hostId ? _self.hostId : hostId // ignore: cast_nullable_to_non_nullable
@@ -652,7 +656,9 @@ as TripSnapshotResponse?,snapshotUpdatedAt: freezed == snapshotUpdatedAt ? _self
 as DateTime?,likeCount: null == likeCount ? _self.likeCount : likeCount // ignore: cast_nullable_to_non_nullable
 as int,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
 as int,isLiked: null == isLiked ? _self.isLiked : isLiked // ignore: cast_nullable_to_non_nullable
-as bool,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
+as bool,myApplicationId: freezed == myApplicationId ? _self.myApplicationId : myApplicationId // ignore: cast_nullable_to_non_nullable
+as String?,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
+as String?,myApplicationReason: freezed == myApplicationReason ? _self.myApplicationReason : myApplicationReason // ignore: cast_nullable_to_non_nullable
 as String?,latestComments: null == latestComments ? _self._latestComments : latestComments // ignore: cast_nullable_to_non_nullable
 as List<GroupEventCommentResponse>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
@@ -681,7 +687,7 @@ $TripSnapshotResponseCopyWith<$Res>? get tripSnapshot {
 /// @nodoc
 mixin _$GroupEventApplicationResponse {
 
- String get id;@JsonKey(name: 'event_id') String get eventId;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: 'pending') String get status;@JsonKey(defaultValue: '') String get message;@JsonKey(name: 'user_name', defaultValue: '') String get userName;@JsonKey(name: 'user_avatar', defaultValue: '🐻') String get userAvatar;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'event_id') String get eventId;@JsonKey(name: 'user_id') String get userId;@JsonKey(defaultValue: 'pending') String get status;@JsonKey(defaultValue: '') String get message;@JsonKey(name: 'rejection_reason', defaultValue: '') String get rejectionReason;@JsonKey(name: 'user_name', defaultValue: '') String get userName;@JsonKey(name: 'user_avatar', defaultValue: '🐻') String get userAvatar;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of GroupEventApplicationResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -694,16 +700,16 @@ $GroupEventApplicationResponseCopyWith<GroupEventApplicationResponse> get copyWi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventApplicationResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventApplicationResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,userName,userAvatar,createdAt,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,rejectionReason,userName,userAvatar,createdAt,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'GroupEventApplicationResponse(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, userName: $userName, userAvatar: $userAvatar, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventApplicationResponse(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, rejectionReason: $rejectionReason, userName: $userName, userAvatar: $userAvatar, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -714,7 +720,7 @@ abstract mixin class $GroupEventApplicationResponseCopyWith<$Res>  {
   factory $GroupEventApplicationResponseCopyWith(GroupEventApplicationResponse value, $Res Function(GroupEventApplicationResponse) _then) = _$GroupEventApplicationResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'rejection_reason', defaultValue: '') String rejectionReason,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -731,13 +737,14 @@ class _$GroupEventApplicationResponseCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventApplicationResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? userName = null,Object? userAvatar = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? rejectionReason = null,Object? userName = null,Object? userAvatar = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,rejectionReason: null == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,userAvatar: null == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -828,10 +835,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'rejection_reason', defaultValue: '')  String rejectionReason, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventApplicationResponse() when $default != null:
-return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.rejectionReason,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -849,10 +856,10 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'rejection_reason', defaultValue: '')  String rejectionReason, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventApplicationResponse():
-return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.rejectionReason,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -869,10 +876,10 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'event_id')  String eventId, @JsonKey(name: 'user_id')  String userId, @JsonKey(defaultValue: 'pending')  String status, @JsonKey(defaultValue: '')  String message, @JsonKey(name: 'rejection_reason', defaultValue: '')  String rejectionReason, @JsonKey(name: 'user_name', defaultValue: '')  String userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻')  String userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventApplicationResponse() when $default != null:
-return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.rejectionReason,_that.userName,_that.userAvatar,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -884,7 +891,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 @JsonSerializable()
 
 class _GroupEventApplicationResponse implements GroupEventApplicationResponse {
-  const _GroupEventApplicationResponse({required this.id, @JsonKey(name: 'event_id') required this.eventId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(defaultValue: 'pending') required this.status, @JsonKey(defaultValue: '') required this.message, @JsonKey(name: 'user_name', defaultValue: '') required this.userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻') required this.userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
+  const _GroupEventApplicationResponse({required this.id, @JsonKey(name: 'event_id') required this.eventId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(defaultValue: 'pending') required this.status, @JsonKey(defaultValue: '') required this.message, @JsonKey(name: 'rejection_reason', defaultValue: '') required this.rejectionReason, @JsonKey(name: 'user_name', defaultValue: '') required this.userName, @JsonKey(name: 'user_avatar', defaultValue: '🐻') required this.userAvatar, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy});
   factory _GroupEventApplicationResponse.fromJson(Map<String, dynamic> json) => _$GroupEventApplicationResponseFromJson(json);
 
 @override final  String id;
@@ -892,6 +899,7 @@ class _GroupEventApplicationResponse implements GroupEventApplicationResponse {
 @override@JsonKey(name: 'user_id') final  String userId;
 @override@JsonKey(defaultValue: 'pending') final  String status;
 @override@JsonKey(defaultValue: '') final  String message;
+@override@JsonKey(name: 'rejection_reason', defaultValue: '') final  String rejectionReason;
 @override@JsonKey(name: 'user_name', defaultValue: '') final  String userName;
 @override@JsonKey(name: 'user_avatar', defaultValue: '🐻') final  String userAvatar;
 @override@JsonKey(name: 'created_at')@DateTimeUtcConverter() final  DateTime createdAt;
@@ -911,16 +919,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventApplicationResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventApplicationResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,userName,userAvatar,createdAt,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,rejectionReason,userName,userAvatar,createdAt,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'GroupEventApplicationResponse(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, userName: $userName, userAvatar: $userAvatar, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventApplicationResponse(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, rejectionReason: $rejectionReason, userName: $userName, userAvatar: $userAvatar, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -931,7 +939,7 @@ abstract mixin class _$GroupEventApplicationResponseCopyWith<$Res> implements $G
   factory _$GroupEventApplicationResponseCopyWith(_GroupEventApplicationResponse value, $Res Function(_GroupEventApplicationResponse) _then) = __$GroupEventApplicationResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'event_id') String eventId,@JsonKey(name: 'user_id') String userId,@JsonKey(defaultValue: 'pending') String status,@JsonKey(defaultValue: '') String message,@JsonKey(name: 'rejection_reason', defaultValue: '') String rejectionReason,@JsonKey(name: 'user_name', defaultValue: '') String userName,@JsonKey(name: 'user_avatar', defaultValue: '🐻') String userAvatar,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -948,13 +956,14 @@ class __$GroupEventApplicationResponseCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventApplicationResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? userName = null,Object? userAvatar = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? rejectionReason = null,Object? userName = null,Object? userAvatar = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_GroupEventApplicationResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,rejectionReason: null == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,userAvatar: null == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -2644,7 +2653,7 @@ as String?,
 /// @nodoc
 mixin _$GroupEventReviewRequest {
 
- String get status;
+ String get status; String? get note;
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2657,16 +2666,16 @@ $GroupEventReviewRequestCopyWith<GroupEventReviewRequest> get copyWith => _$Grou
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventReviewRequest&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventReviewRequest&&(identical(other.status, status) || other.status == status)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status);
+int get hashCode => Object.hash(runtimeType,status,note);
 
 @override
 String toString() {
-  return 'GroupEventReviewRequest(status: $status)';
+  return 'GroupEventReviewRequest(status: $status, note: $note)';
 }
 
 
@@ -2677,7 +2686,7 @@ abstract mixin class $GroupEventReviewRequestCopyWith<$Res>  {
   factory $GroupEventReviewRequestCopyWith(GroupEventReviewRequest value, $Res Function(GroupEventReviewRequest) _then) = _$GroupEventReviewRequestCopyWithImpl;
 @useResult
 $Res call({
- String status
+ String status, String? note
 });
 
 
@@ -2694,10 +2703,11 @@ class _$GroupEventReviewRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? note = freezed,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,
+as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -2782,10 +2792,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status,  String? note)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventReviewRequest() when $default != null:
-return $default(_that.status);case _:
+return $default(_that.status,_that.note);case _:
   return orElse();
 
 }
@@ -2803,10 +2813,10 @@ return $default(_that.status);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status,  String? note)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventReviewRequest():
-return $default(_that.status);case _:
+return $default(_that.status,_that.note);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2823,10 +2833,10 @@ return $default(_that.status);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status,  String? note)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventReviewRequest() when $default != null:
-return $default(_that.status);case _:
+return $default(_that.status,_that.note);case _:
   return null;
 
 }
@@ -2838,10 +2848,11 @@ return $default(_that.status);case _:
 @JsonSerializable()
 
 class _GroupEventReviewRequest implements GroupEventReviewRequest {
-  const _GroupEventReviewRequest({required this.status});
+  const _GroupEventReviewRequest({required this.status, this.note});
   factory _GroupEventReviewRequest.fromJson(Map<String, dynamic> json) => _$GroupEventReviewRequestFromJson(json);
 
 @override final  String status;
+@override final  String? note;
 
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -2856,16 +2867,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventReviewRequest&&(identical(other.status, status) || other.status == status));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventReviewRequest&&(identical(other.status, status) || other.status == status)&&(identical(other.note, note) || other.note == note));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,status);
+int get hashCode => Object.hash(runtimeType,status,note);
 
 @override
 String toString() {
-  return 'GroupEventReviewRequest(status: $status)';
+  return 'GroupEventReviewRequest(status: $status, note: $note)';
 }
 
 
@@ -2876,7 +2887,7 @@ abstract mixin class _$GroupEventReviewRequestCopyWith<$Res> implements $GroupEv
   factory _$GroupEventReviewRequestCopyWith(_GroupEventReviewRequest value, $Res Function(_GroupEventReviewRequest) _then) = __$GroupEventReviewRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String status
+ String status, String? note
 });
 
 
@@ -2893,10 +2904,11 @@ class __$GroupEventReviewRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? note = freezed,}) {
   return _then(_GroupEventReviewRequest(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
-as String,
+as String,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

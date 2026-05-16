@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GroupEvent {
 
- String get id; String get hostId; String get hostName; String get hostAvatar; String get title; String get description; GroupEventCategory get category; String get location; DateTime get startDate; DateTime? get endDate; GroupEventStatus get status; int get maxMembers; int get applicationCount; int get totalApplicationCount; bool get approvalRequired; String get privateMessage; String? get linkedTripId; TripSnapshot? get tripSnapshot; DateTime? get snapshotUpdatedAt; int get likeCount; int get commentCount; bool get isLiked; GroupEventApplicationStatus? get myApplicationStatus; List<GroupEventComment> get latestComments; SyncStatus get syncStatus; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
+ String get id; String get hostId; String get hostName; String get hostAvatar; String get title; String get description; GroupEventCategory get category; String get location; DateTime get startDate; DateTime? get endDate; GroupEventStatus get status; int get maxMembers; int get applicationCount; int get totalApplicationCount; bool get approvalRequired; String get privateMessage; String? get linkedTripId; TripSnapshot? get tripSnapshot; DateTime? get snapshotUpdatedAt; int get likeCount; int get commentCount; bool get isLiked; String? get myApplicationId; GroupEventApplicationStatus? get myApplicationStatus; String? get myApplicationReason; List<GroupEventComment> get latestComments; SyncStatus get syncStatus; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
 /// Create a copy of GroupEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $GroupEventCopyWith<GroupEvent> get copyWith => _$GroupEventCopyWithImpl<GroupEv
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&const DeepCollectionEquality().equals(other.latestComments, latestComments)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationId, myApplicationId) || other.myApplicationId == myApplicationId)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.myApplicationReason, myApplicationReason) || other.myApplicationReason == myApplicationReason)&&const DeepCollectionEquality().equals(other.latestComments, latestComments)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationStatus,const DeepCollectionEquality().hash(latestComments),syncStatus,createdAt,createdBy,updatedAt,updatedBy]);
+int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationId,myApplicationStatus,myApplicationReason,const DeepCollectionEquality().hash(latestComments),syncStatus,createdAt,createdBy,updatedAt,updatedBy]);
 
 @override
 String toString() {
-  return 'GroupEvent(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, latestComments: $latestComments, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEvent(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationId: $myApplicationId, myApplicationStatus: $myApplicationStatus, myApplicationReason: $myApplicationReason, latestComments: $latestComments, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $GroupEventCopyWith<$Res>  {
   factory $GroupEventCopyWith(GroupEvent value, $Res Function(GroupEvent) _then) = _$GroupEventCopyWithImpl;
 @useResult
 $Res call({
- String id, String hostId, String hostName, String hostAvatar, String title, String description, GroupEventCategory category, String location, DateTime startDate, DateTime? endDate, GroupEventStatus status, int maxMembers, int applicationCount, int totalApplicationCount, bool approvalRequired, String privateMessage, String? linkedTripId, TripSnapshot? tripSnapshot, DateTime? snapshotUpdatedAt, int likeCount, int commentCount, bool isLiked, GroupEventApplicationStatus? myApplicationStatus, List<GroupEventComment> latestComments, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String hostId, String hostName, String hostAvatar, String title, String description, GroupEventCategory category, String location, DateTime startDate, DateTime? endDate, GroupEventStatus status, int maxMembers, int applicationCount, int totalApplicationCount, bool approvalRequired, String privateMessage, String? linkedTripId, TripSnapshot? tripSnapshot, DateTime? snapshotUpdatedAt, int likeCount, int commentCount, bool isLiked, String? myApplicationId, GroupEventApplicationStatus? myApplicationStatus, String? myApplicationReason, List<GroupEventComment> latestComments, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -62,7 +62,7 @@ class _$GroupEventCopyWithImpl<$Res>
 
 /// Create a copy of GroupEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? latestComments = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationId = freezed,Object? myApplicationStatus = freezed,Object? myApplicationReason = freezed,Object? latestComments = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hostId: null == hostId ? _self.hostId : hostId // ignore: cast_nullable_to_non_nullable
@@ -86,8 +86,10 @@ as TripSnapshot?,snapshotUpdatedAt: freezed == snapshotUpdatedAt ? _self.snapsho
 as DateTime?,likeCount: null == likeCount ? _self.likeCount : likeCount // ignore: cast_nullable_to_non_nullable
 as int,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
 as int,isLiked: null == isLiked ? _self.isLiked : isLiked // ignore: cast_nullable_to_non_nullable
-as bool,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
-as GroupEventApplicationStatus?,latestComments: null == latestComments ? _self.latestComments : latestComments // ignore: cast_nullable_to_non_nullable
+as bool,myApplicationId: freezed == myApplicationId ? _self.myApplicationId : myApplicationId // ignore: cast_nullable_to_non_nullable
+as String?,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
+as GroupEventApplicationStatus?,myApplicationReason: freezed == myApplicationReason ? _self.myApplicationReason : myApplicationReason // ignore: cast_nullable_to_non_nullable
+as String?,latestComments: null == latestComments ? _self.latestComments : latestComments // ignore: cast_nullable_to_non_nullable
 as List<GroupEventComment>,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
 as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
@@ -190,10 +192,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hostId,  String hostName,  String hostAvatar,  String title,  String description,  GroupEventCategory category,  String location,  DateTime startDate,  DateTime? endDate,  GroupEventStatus status,  int maxMembers,  int applicationCount,  int totalApplicationCount,  bool approvalRequired,  String privateMessage,  String? linkedTripId,  TripSnapshot? tripSnapshot,  DateTime? snapshotUpdatedAt,  int likeCount,  int commentCount,  bool isLiked,  GroupEventApplicationStatus? myApplicationStatus,  List<GroupEventComment> latestComments,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String hostId,  String hostName,  String hostAvatar,  String title,  String description,  GroupEventCategory category,  String location,  DateTime startDate,  DateTime? endDate,  GroupEventStatus status,  int maxMembers,  int applicationCount,  int totalApplicationCount,  bool approvalRequired,  String privateMessage,  String? linkedTripId,  TripSnapshot? tripSnapshot,  DateTime? snapshotUpdatedAt,  int likeCount,  int commentCount,  bool isLiked,  String? myApplicationId,  GroupEventApplicationStatus? myApplicationStatus,  String? myApplicationReason,  List<GroupEventComment> latestComments,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEvent() when $default != null:
-return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.latestComments,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationId,_that.myApplicationStatus,_that.myApplicationReason,_that.latestComments,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -211,10 +213,10 @@ return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.titl
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hostId,  String hostName,  String hostAvatar,  String title,  String description,  GroupEventCategory category,  String location,  DateTime startDate,  DateTime? endDate,  GroupEventStatus status,  int maxMembers,  int applicationCount,  int totalApplicationCount,  bool approvalRequired,  String privateMessage,  String? linkedTripId,  TripSnapshot? tripSnapshot,  DateTime? snapshotUpdatedAt,  int likeCount,  int commentCount,  bool isLiked,  GroupEventApplicationStatus? myApplicationStatus,  List<GroupEventComment> latestComments,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String hostId,  String hostName,  String hostAvatar,  String title,  String description,  GroupEventCategory category,  String location,  DateTime startDate,  DateTime? endDate,  GroupEventStatus status,  int maxMembers,  int applicationCount,  int totalApplicationCount,  bool approvalRequired,  String privateMessage,  String? linkedTripId,  TripSnapshot? tripSnapshot,  DateTime? snapshotUpdatedAt,  int likeCount,  int commentCount,  bool isLiked,  String? myApplicationId,  GroupEventApplicationStatus? myApplicationStatus,  String? myApplicationReason,  List<GroupEventComment> latestComments,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEvent():
-return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.latestComments,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationId,_that.myApplicationStatus,_that.myApplicationReason,_that.latestComments,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -231,10 +233,10 @@ return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.titl
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hostId,  String hostName,  String hostAvatar,  String title,  String description,  GroupEventCategory category,  String location,  DateTime startDate,  DateTime? endDate,  GroupEventStatus status,  int maxMembers,  int applicationCount,  int totalApplicationCount,  bool approvalRequired,  String privateMessage,  String? linkedTripId,  TripSnapshot? tripSnapshot,  DateTime? snapshotUpdatedAt,  int likeCount,  int commentCount,  bool isLiked,  GroupEventApplicationStatus? myApplicationStatus,  List<GroupEventComment> latestComments,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String hostId,  String hostName,  String hostAvatar,  String title,  String description,  GroupEventCategory category,  String location,  DateTime startDate,  DateTime? endDate,  GroupEventStatus status,  int maxMembers,  int applicationCount,  int totalApplicationCount,  bool approvalRequired,  String privateMessage,  String? linkedTripId,  TripSnapshot? tripSnapshot,  DateTime? snapshotUpdatedAt,  int likeCount,  int commentCount,  bool isLiked,  String? myApplicationId,  GroupEventApplicationStatus? myApplicationStatus,  String? myApplicationReason,  List<GroupEventComment> latestComments,  SyncStatus syncStatus,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEvent() when $default != null:
-return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationStatus,_that.latestComments,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.title,_that.description,_that.category,_that.location,_that.startDate,_that.endDate,_that.status,_that.maxMembers,_that.applicationCount,_that.totalApplicationCount,_that.approvalRequired,_that.privateMessage,_that.linkedTripId,_that.tripSnapshot,_that.snapshotUpdatedAt,_that.likeCount,_that.commentCount,_that.isLiked,_that.myApplicationId,_that.myApplicationStatus,_that.myApplicationReason,_that.latestComments,_that.syncStatus,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -246,7 +248,7 @@ return $default(_that.id,_that.hostId,_that.hostName,_that.hostAvatar,_that.titl
 
 
 class _GroupEvent extends GroupEvent {
-  const _GroupEvent({required this.id, required this.hostId, this.hostName = '', this.hostAvatar = '🐻', required this.title, this.description = '', this.category = GroupEventCategory.other, this.location = '', required this.startDate, this.endDate, this.status = GroupEventStatus.open, this.maxMembers = 10, this.applicationCount = 0, this.totalApplicationCount = 0, this.approvalRequired = false, this.privateMessage = '', this.linkedTripId, this.tripSnapshot, this.snapshotUpdatedAt, this.likeCount = 0, this.commentCount = 0, this.isLiked = false, this.myApplicationStatus, final  List<GroupEventComment> latestComments = const [], this.syncStatus = SyncStatus.synced, required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): _latestComments = latestComments,super._();
+  const _GroupEvent({required this.id, required this.hostId, this.hostName = '', this.hostAvatar = '🐻', required this.title, this.description = '', this.category = GroupEventCategory.other, this.location = '', required this.startDate, this.endDate, this.status = GroupEventStatus.open, this.maxMembers = 10, this.applicationCount = 0, this.totalApplicationCount = 0, this.approvalRequired = false, this.privateMessage = '', this.linkedTripId, this.tripSnapshot, this.snapshotUpdatedAt, this.likeCount = 0, this.commentCount = 0, this.isLiked = false, this.myApplicationId, this.myApplicationStatus, this.myApplicationReason, final  List<GroupEventComment> latestComments = const [], this.syncStatus = SyncStatus.synced, required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): _latestComments = latestComments,super._();
   
 
 @override final  String id;
@@ -271,7 +273,9 @@ class _GroupEvent extends GroupEvent {
 @override@JsonKey() final  int likeCount;
 @override@JsonKey() final  int commentCount;
 @override@JsonKey() final  bool isLiked;
+@override final  String? myApplicationId;
 @override final  GroupEventApplicationStatus? myApplicationStatus;
+@override final  String? myApplicationReason;
  final  List<GroupEventComment> _latestComments;
 @override@JsonKey() List<GroupEventComment> get latestComments {
   if (_latestComments is EqualUnmodifiableListView) return _latestComments;
@@ -295,16 +299,16 @@ _$GroupEventCopyWith<_GroupEvent> get copyWith => __$GroupEventCopyWithImpl<_Gro
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&const DeepCollectionEquality().equals(other._latestComments, _latestComments)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEvent&&(identical(other.id, id) || other.id == id)&&(identical(other.hostId, hostId) || other.hostId == hostId)&&(identical(other.hostName, hostName) || other.hostName == hostName)&&(identical(other.hostAvatar, hostAvatar) || other.hostAvatar == hostAvatar)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.category, category) || other.category == category)&&(identical(other.location, location) || other.location == location)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.status, status) || other.status == status)&&(identical(other.maxMembers, maxMembers) || other.maxMembers == maxMembers)&&(identical(other.applicationCount, applicationCount) || other.applicationCount == applicationCount)&&(identical(other.totalApplicationCount, totalApplicationCount) || other.totalApplicationCount == totalApplicationCount)&&(identical(other.approvalRequired, approvalRequired) || other.approvalRequired == approvalRequired)&&(identical(other.privateMessage, privateMessage) || other.privateMessage == privateMessage)&&(identical(other.linkedTripId, linkedTripId) || other.linkedTripId == linkedTripId)&&(identical(other.tripSnapshot, tripSnapshot) || other.tripSnapshot == tripSnapshot)&&(identical(other.snapshotUpdatedAt, snapshotUpdatedAt) || other.snapshotUpdatedAt == snapshotUpdatedAt)&&(identical(other.likeCount, likeCount) || other.likeCount == likeCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.isLiked, isLiked) || other.isLiked == isLiked)&&(identical(other.myApplicationId, myApplicationId) || other.myApplicationId == myApplicationId)&&(identical(other.myApplicationStatus, myApplicationStatus) || other.myApplicationStatus == myApplicationStatus)&&(identical(other.myApplicationReason, myApplicationReason) || other.myApplicationReason == myApplicationReason)&&const DeepCollectionEquality().equals(other._latestComments, _latestComments)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationStatus,const DeepCollectionEquality().hash(_latestComments),syncStatus,createdAt,createdBy,updatedAt,updatedBy]);
+int get hashCode => Object.hashAll([runtimeType,id,hostId,hostName,hostAvatar,title,description,category,location,startDate,endDate,status,maxMembers,applicationCount,totalApplicationCount,approvalRequired,privateMessage,linkedTripId,tripSnapshot,snapshotUpdatedAt,likeCount,commentCount,isLiked,myApplicationId,myApplicationStatus,myApplicationReason,const DeepCollectionEquality().hash(_latestComments),syncStatus,createdAt,createdBy,updatedAt,updatedBy]);
 
 @override
 String toString() {
-  return 'GroupEvent(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationStatus: $myApplicationStatus, latestComments: $latestComments, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEvent(id: $id, hostId: $hostId, hostName: $hostName, hostAvatar: $hostAvatar, title: $title, description: $description, category: $category, location: $location, startDate: $startDate, endDate: $endDate, status: $status, maxMembers: $maxMembers, applicationCount: $applicationCount, totalApplicationCount: $totalApplicationCount, approvalRequired: $approvalRequired, privateMessage: $privateMessage, linkedTripId: $linkedTripId, tripSnapshot: $tripSnapshot, snapshotUpdatedAt: $snapshotUpdatedAt, likeCount: $likeCount, commentCount: $commentCount, isLiked: $isLiked, myApplicationId: $myApplicationId, myApplicationStatus: $myApplicationStatus, myApplicationReason: $myApplicationReason, latestComments: $latestComments, syncStatus: $syncStatus, createdAt: $createdAt, createdBy: $createdBy, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -315,7 +319,7 @@ abstract mixin class _$GroupEventCopyWith<$Res> implements $GroupEventCopyWith<$
   factory _$GroupEventCopyWith(_GroupEvent value, $Res Function(_GroupEvent) _then) = __$GroupEventCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String hostId, String hostName, String hostAvatar, String title, String description, GroupEventCategory category, String location, DateTime startDate, DateTime? endDate, GroupEventStatus status, int maxMembers, int applicationCount, int totalApplicationCount, bool approvalRequired, String privateMessage, String? linkedTripId, TripSnapshot? tripSnapshot, DateTime? snapshotUpdatedAt, int likeCount, int commentCount, bool isLiked, GroupEventApplicationStatus? myApplicationStatus, List<GroupEventComment> latestComments, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String hostId, String hostName, String hostAvatar, String title, String description, GroupEventCategory category, String location, DateTime startDate, DateTime? endDate, GroupEventStatus status, int maxMembers, int applicationCount, int totalApplicationCount, bool approvalRequired, String privateMessage, String? linkedTripId, TripSnapshot? tripSnapshot, DateTime? snapshotUpdatedAt, int likeCount, int commentCount, bool isLiked, String? myApplicationId, GroupEventApplicationStatus? myApplicationStatus, String? myApplicationReason, List<GroupEventComment> latestComments, SyncStatus syncStatus, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -332,7 +336,7 @@ class __$GroupEventCopyWithImpl<$Res>
 
 /// Create a copy of GroupEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationStatus = freezed,Object? latestComments = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? hostId = null,Object? hostName = null,Object? hostAvatar = null,Object? title = null,Object? description = null,Object? category = null,Object? location = null,Object? startDate = null,Object? endDate = freezed,Object? status = null,Object? maxMembers = null,Object? applicationCount = null,Object? totalApplicationCount = null,Object? approvalRequired = null,Object? privateMessage = null,Object? linkedTripId = freezed,Object? tripSnapshot = freezed,Object? snapshotUpdatedAt = freezed,Object? likeCount = null,Object? commentCount = null,Object? isLiked = null,Object? myApplicationId = freezed,Object? myApplicationStatus = freezed,Object? myApplicationReason = freezed,Object? latestComments = null,Object? syncStatus = null,Object? createdAt = null,Object? createdBy = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_GroupEvent(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,hostId: null == hostId ? _self.hostId : hostId // ignore: cast_nullable_to_non_nullable
@@ -356,8 +360,10 @@ as TripSnapshot?,snapshotUpdatedAt: freezed == snapshotUpdatedAt ? _self.snapsho
 as DateTime?,likeCount: null == likeCount ? _self.likeCount : likeCount // ignore: cast_nullable_to_non_nullable
 as int,commentCount: null == commentCount ? _self.commentCount : commentCount // ignore: cast_nullable_to_non_nullable
 as int,isLiked: null == isLiked ? _self.isLiked : isLiked // ignore: cast_nullable_to_non_nullable
-as bool,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
-as GroupEventApplicationStatus?,latestComments: null == latestComments ? _self._latestComments : latestComments // ignore: cast_nullable_to_non_nullable
+as bool,myApplicationId: freezed == myApplicationId ? _self.myApplicationId : myApplicationId // ignore: cast_nullable_to_non_nullable
+as String?,myApplicationStatus: freezed == myApplicationStatus ? _self.myApplicationStatus : myApplicationStatus // ignore: cast_nullable_to_non_nullable
+as GroupEventApplicationStatus?,myApplicationReason: freezed == myApplicationReason ? _self.myApplicationReason : myApplicationReason // ignore: cast_nullable_to_non_nullable
+as String?,latestComments: null == latestComments ? _self._latestComments : latestComments // ignore: cast_nullable_to_non_nullable
 as List<GroupEventComment>,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
 as SyncStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
@@ -385,7 +391,7 @@ $TripSnapshotCopyWith<$Res>? get tripSnapshot {
 /// @nodoc
 mixin _$GroupEventApplication {
 
- String get id; String get eventId; String get userId; GroupEventApplicationStatus get status; String get message; String get userName; String get userAvatar; SyncStatus get syncStatus; DateTime get createdAt; DateTime get updatedAt; String get updatedBy;
+ String get id; String get eventId; String get userId; GroupEventApplicationStatus get status; String get message; String get rejectionReason; String get userName; String get userAvatar; SyncStatus get syncStatus; DateTime get createdAt; DateTime get updatedAt; String get updatedBy;
 /// Create a copy of GroupEventApplication
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -396,16 +402,16 @@ $GroupEventApplicationCopyWith<GroupEventApplication> get copyWith => _$GroupEve
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventApplication&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventApplication&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,userName,userAvatar,syncStatus,createdAt,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,rejectionReason,userName,userAvatar,syncStatus,createdAt,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'GroupEventApplication(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, userName: $userName, userAvatar: $userAvatar, syncStatus: $syncStatus, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventApplication(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, rejectionReason: $rejectionReason, userName: $userName, userAvatar: $userAvatar, syncStatus: $syncStatus, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -416,7 +422,7 @@ abstract mixin class $GroupEventApplicationCopyWith<$Res>  {
   factory $GroupEventApplicationCopyWith(GroupEventApplication value, $Res Function(GroupEventApplication) _then) = _$GroupEventApplicationCopyWithImpl;
 @useResult
 $Res call({
- String id, String eventId, String userId, GroupEventApplicationStatus status, String message, String userName, String userAvatar, SyncStatus syncStatus, DateTime createdAt, DateTime updatedAt, String updatedBy
+ String id, String eventId, String userId, GroupEventApplicationStatus status, String message, String rejectionReason, String userName, String userAvatar, SyncStatus syncStatus, DateTime createdAt, DateTime updatedAt, String updatedBy
 });
 
 
@@ -433,13 +439,14 @@ class _$GroupEventApplicationCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventApplication
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? userName = null,Object? userAvatar = null,Object? syncStatus = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? rejectionReason = null,Object? userName = null,Object? userAvatar = null,Object? syncStatus = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as GroupEventApplicationStatus,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,rejectionReason: null == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,userAvatar: null == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
@@ -531,10 +538,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String eventId,  String userId,  GroupEventApplicationStatus status,  String message,  String userName,  String userAvatar,  SyncStatus syncStatus,  DateTime createdAt,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String eventId,  String userId,  GroupEventApplicationStatus status,  String message,  String rejectionReason,  String userName,  String userAvatar,  SyncStatus syncStatus,  DateTime createdAt,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventApplication() when $default != null:
-return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.syncStatus,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.rejectionReason,_that.userName,_that.userAvatar,_that.syncStatus,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
   return orElse();
 
 }
@@ -552,10 +559,10 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String eventId,  String userId,  GroupEventApplicationStatus status,  String message,  String userName,  String userAvatar,  SyncStatus syncStatus,  DateTime createdAt,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String eventId,  String userId,  GroupEventApplicationStatus status,  String message,  String rejectionReason,  String userName,  String userAvatar,  SyncStatus syncStatus,  DateTime createdAt,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventApplication():
-return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.syncStatus,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.rejectionReason,_that.userName,_that.userAvatar,_that.syncStatus,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -572,10 +579,10 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String eventId,  String userId,  GroupEventApplicationStatus status,  String message,  String userName,  String userAvatar,  SyncStatus syncStatus,  DateTime createdAt,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String eventId,  String userId,  GroupEventApplicationStatus status,  String message,  String rejectionReason,  String userName,  String userAvatar,  SyncStatus syncStatus,  DateTime createdAt,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventApplication() when $default != null:
-return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.userName,_that.userAvatar,_that.syncStatus,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
+return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_that.rejectionReason,_that.userName,_that.userAvatar,_that.syncStatus,_that.createdAt,_that.updatedAt,_that.updatedBy);case _:
   return null;
 
 }
@@ -587,7 +594,7 @@ return $default(_that.id,_that.eventId,_that.userId,_that.status,_that.message,_
 
 
 class _GroupEventApplication extends GroupEventApplication {
-  const _GroupEventApplication({required this.id, required this.eventId, required this.userId, this.status = GroupEventApplicationStatus.pending, this.message = '', this.userName = '', this.userAvatar = '🐻', this.syncStatus = SyncStatus.synced, required this.createdAt, required this.updatedAt, required this.updatedBy}): super._();
+  const _GroupEventApplication({required this.id, required this.eventId, required this.userId, this.status = GroupEventApplicationStatus.pending, this.message = '', this.rejectionReason = '', this.userName = '', this.userAvatar = '🐻', this.syncStatus = SyncStatus.synced, required this.createdAt, required this.updatedAt, required this.updatedBy}): super._();
   
 
 @override final  String id;
@@ -595,6 +602,7 @@ class _GroupEventApplication extends GroupEventApplication {
 @override final  String userId;
 @override@JsonKey() final  GroupEventApplicationStatus status;
 @override@JsonKey() final  String message;
+@override@JsonKey() final  String rejectionReason;
 @override@JsonKey() final  String userName;
 @override@JsonKey() final  String userAvatar;
 @override@JsonKey() final  SyncStatus syncStatus;
@@ -612,16 +620,16 @@ _$GroupEventApplicationCopyWith<_GroupEventApplication> get copyWith => __$Group
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventApplication&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventApplication&&(identical(other.id, id) || other.id == id)&&(identical(other.eventId, eventId) || other.eventId == eventId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.message, message) || other.message == message)&&(identical(other.rejectionReason, rejectionReason) || other.rejectionReason == rejectionReason)&&(identical(other.userName, userName) || other.userName == userName)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.updatedBy, updatedBy) || other.updatedBy == updatedBy));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,userName,userAvatar,syncStatus,createdAt,updatedAt,updatedBy);
+int get hashCode => Object.hash(runtimeType,id,eventId,userId,status,message,rejectionReason,userName,userAvatar,syncStatus,createdAt,updatedAt,updatedBy);
 
 @override
 String toString() {
-  return 'GroupEventApplication(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, userName: $userName, userAvatar: $userAvatar, syncStatus: $syncStatus, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
+  return 'GroupEventApplication(id: $id, eventId: $eventId, userId: $userId, status: $status, message: $message, rejectionReason: $rejectionReason, userName: $userName, userAvatar: $userAvatar, syncStatus: $syncStatus, createdAt: $createdAt, updatedAt: $updatedAt, updatedBy: $updatedBy)';
 }
 
 
@@ -632,7 +640,7 @@ abstract mixin class _$GroupEventApplicationCopyWith<$Res> implements $GroupEven
   factory _$GroupEventApplicationCopyWith(_GroupEventApplication value, $Res Function(_GroupEventApplication) _then) = __$GroupEventApplicationCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String eventId, String userId, GroupEventApplicationStatus status, String message, String userName, String userAvatar, SyncStatus syncStatus, DateTime createdAt, DateTime updatedAt, String updatedBy
+ String id, String eventId, String userId, GroupEventApplicationStatus status, String message, String rejectionReason, String userName, String userAvatar, SyncStatus syncStatus, DateTime createdAt, DateTime updatedAt, String updatedBy
 });
 
 
@@ -649,13 +657,14 @@ class __$GroupEventApplicationCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventApplication
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? userName = null,Object? userAvatar = null,Object? syncStatus = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? eventId = null,Object? userId = null,Object? status = null,Object? message = null,Object? rejectionReason = null,Object? userName = null,Object? userAvatar = null,Object? syncStatus = null,Object? createdAt = null,Object? updatedAt = null,Object? updatedBy = null,}) {
   return _then(_GroupEventApplication(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,eventId: null == eventId ? _self.eventId : eventId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as GroupEventApplicationStatus,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,rejectionReason: null == rejectionReason ? _self.rejectionReason : rejectionReason // ignore: cast_nullable_to_non_nullable
 as String,userName: null == userName ? _self.userName : userName // ignore: cast_nullable_to_non_nullable
 as String,userAvatar: null == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable

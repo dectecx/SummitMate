@@ -231,7 +231,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                       ),
                                       const SizedBox(height: 24),
                                       if (_event.myApplicationStatus != null) ...[
-                                        StatusCard(status: _event.myApplicationStatus!),
+                                        StatusCard(
+                                          status: _event.myApplicationStatus!,
+                                          rejectionReason: _event.myApplicationReason,
+                                        ),
                                         const SizedBox(height: 24),
                                       ],
                                       PrivateMessageSection(
@@ -267,7 +270,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                               ),
                               const SizedBox(height: 24),
                               if (_event.myApplicationStatus != null) ...[
-                                StatusCard(status: _event.myApplicationStatus!),
+                                StatusCard(
+                                  status: _event.myApplicationStatus!,
+                                  rejectionReason: _event.myApplicationReason,
+                                ),
                                 const SizedBox(height: 24),
                               ],
                               PrivateMessageSection(
@@ -359,7 +365,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           );
         }
 
-        if (_event.myApplicationStatus != null) {
+        if (_event.myApplicationStatus != null && _event.myApplicationStatus != GroupEventApplicationStatus.rejected) {
           return FilledButton(
             onPressed: null,
             style: FilledButton.styleFrom(
@@ -384,7 +390,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : Text(_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入')),
+              : Text(_event.myApplicationStatus == GroupEventApplicationStatus.rejected
+                  ? '再次申請'
+                  : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入'))),
         );
       },
     );

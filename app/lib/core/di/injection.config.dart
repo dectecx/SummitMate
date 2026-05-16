@@ -287,14 +287,21 @@ extension GetItInjectableX on _i174.GetIt {
         localDataSource: gh<_i26.IAuthSessionLocalDataSource>(),
       ),
     );
-    gh.lazySingleton<_i27.AuthInterceptor>(
-      () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
-    );
     gh.lazySingleton<_i614.IAuthService>(
       () => _i227.AuthService(
         apiClient: gh<_i7.NetworkAwareClient>(),
         sessionRepository: gh<_i614.IAuthSessionRepository>(),
         tokenValidator: gh<_i614.ITokenValidator>(),
+        db: gh<_i89.AppDatabase>(),
+      ),
+    );
+    gh.lazySingleton<_i27.AuthInterceptor>(
+      () => _i27.AuthInterceptor(gh<_i43.IAuthSessionRepository>()),
+    );
+    gh.factory<_i33.AuthCubit>(
+      () => _i33.AuthCubit(
+        gh<_i614.IAuthService>(),
+        gh<_i342.UsageTrackingService>(),
       ),
     );
     gh.lazySingleton<_i165.PermissionService>(
@@ -332,12 +339,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<String>(instanceName: 'baseUrl'),
         gh<_i342.AuthInterceptor>(),
         gh<_i254.ConnectivityInterceptor>(),
-      ),
-    );
-    gh.factory<_i33.AuthCubit>(
-      () => _i33.AuthCubit(
-        gh<_i614.IAuthService>(),
-        gh<_i342.UsageTrackingService>(),
       ),
     );
     gh.lazySingleton<_i1035.FavoritesApiService>(

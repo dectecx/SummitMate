@@ -21,7 +21,8 @@ type GroupEventRepository interface {
 	ApplyToEvent(ctx context.Context, app *GroupEventApplication) error
 	GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error)
 	ListApplications(ctx context.Context, eventID string) ([]*GroupEventApplication, error)
-	UpdateApplicationStatus(ctx context.Context, eventID, userID, status, updatedBy string) error
+	UpdateApplicationStatus(ctx context.Context, id, status, rejectionReason, updatedBy string) error
+	GetPendingApplicationByEventAndUser(ctx context.Context, eventID, userID string) (*GroupEventApplication, error)
 	DeleteApplication(ctx context.Context, id string) error
 
 	AddComment(ctx context.Context, comment *GroupEventComment) error
@@ -75,7 +76,9 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, user
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
             (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
             EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $2) as is_liked,
-            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $2 LIMIT 1) as my_application_status
+            (SELECT id FROM group_event_applications WHERE event_id = e.id AND user_id = $2 ORDER BY created_at DESC LIMIT 1) as my_application_id,
+            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $2 ORDER BY created_at DESC LIMIT 1) as my_application_status,
+            (SELECT rejection_reason FROM group_event_applications WHERE event_id = e.id AND user_id = $2 ORDER BY created_at DESC LIMIT 1) as my_application_reason
         FROM group_events e
         WHERE e.id = $1
     `
@@ -92,7 +95,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, user
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 		&event.TripSnapshot, &event.SnapshotUpdatedAt,
 		&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
-		&event.ApplicationCount, &event.IsLiked, &event.MyApplicationStatus,
+		&event.ApplicationCount, &event.IsLiked, &event.MyApplicationID, &event.MyApplicationStatus, &event.MyApplicationReason,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -153,12 +156,14 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
             (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
             EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $%d) as is_liked,
-            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $%d LIMIT 1) as my_application_status
+            (SELECT id FROM group_event_applications WHERE event_id = e.id AND user_id = $%d ORDER BY created_at DESC LIMIT 1) as my_application_id,
+            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $%d ORDER BY created_at DESC LIMIT 1) as my_application_status,
+            (SELECT rejection_reason FROM group_event_applications WHERE event_id = e.id AND user_id = $%d ORDER BY created_at DESC LIMIT 1) as my_application_reason
         FROM group_events e
         %s
         ORDER BY e.created_at DESC, e.id DESC
         LIMIT $%d OFFSET $%d
-    `, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
+    `, len(args)+1, len(args)+1, len(args)+1, len(args)+1, whereClause, len(args)+2, len(args)+3)
 
 	rows, err := db.Query(ctx, mainQuery, dataArgs...)
 	if err != nil {
@@ -175,7 +180,7 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 			&event.TripSnapshot, &event.SnapshotUpdatedAt,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
-			&event.ApplicationCount, &event.IsLiked, &event.MyApplicationStatus,
+			&event.ApplicationCount, &event.IsLiked, &event.MyApplicationID, &event.MyApplicationStatus, &event.MyApplicationReason,
 		)
 		if err != nil {
 			return nil, 0, false, fmt.Errorf("scan group event row: %w", err)
@@ -226,7 +231,9 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
             (SELECT COUNT(*) FROM group_event_applications WHERE event_id = e.id AND status = 'approved') as application_count,
             EXISTS(SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1) as is_liked,
-            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $1 LIMIT 1) as my_application_status
+            (SELECT id FROM group_event_applications WHERE event_id = e.id AND user_id = $1 ORDER BY created_at DESC LIMIT 1) as my_application_id,
+            (SELECT status FROM group_event_applications WHERE event_id = e.id AND user_id = $1 ORDER BY created_at DESC LIMIT 1) as my_application_status,
+            (SELECT rejection_reason FROM group_event_applications WHERE event_id = e.id AND user_id = $1 ORDER BY created_at DESC LIMIT 1) as my_application_reason
         FROM group_events e
         %s
         ORDER BY e.created_at DESC, e.id DESC
@@ -248,7 +255,7 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 			&event.TripSnapshot, &event.SnapshotUpdatedAt,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
-			&event.ApplicationCount, &event.IsLiked, &event.MyApplicationStatus,
+			&event.ApplicationCount, &event.IsLiked, &event.MyApplicationID, &event.MyApplicationStatus, &event.MyApplicationReason,
 		)
 		if err != nil {
 			return nil, 0, false, fmt.Errorf("scan my group event row: %w", err)
@@ -308,10 +315,13 @@ func (r *groupEventRepository) ApplyToEvent(ctx context.Context, app *GroupEvent
 
 func (r *groupEventRepository) ListApplications(ctx context.Context, eventID string) ([]*GroupEventApplication, error) {
 	query := `
-        SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
-        FROM group_event_applications
-        WHERE event_id = $1
-        ORDER BY created_at ASC
+        SELECT
+            a.id, a.event_id, a.user_id, u.display_name as user_name, u.avatar as user_avatar,
+            a.status, a.message, a.rejection_reason, a.created_at, a.created_by, a.updated_at, a.updated_by
+        FROM group_event_applications a
+        JOIN users u ON a.user_id = u.id
+        WHERE a.event_id = $1
+        ORDER BY a.created_at ASC
     `
 	db := database.GetQuerier(ctx, r.db)
 	rows, err := db.Query(ctx, query, eventID)
@@ -324,7 +334,8 @@ func (r *groupEventRepository) ListApplications(ctx context.Context, eventID str
 	for rows.Next() {
 		app := &GroupEventApplication{}
 		err := rows.Scan(
-			&app.ID, &app.EventID, &app.UserID, &app.Status, &app.Message,
+			&app.ID, &app.EventID, &app.UserID, &app.UserName, &app.UserAvatar,
+			&app.Status, &app.Message, &app.RejectionReason,
 			&app.CreatedAt, &app.CreatedBy, &app.UpdatedAt, &app.UpdatedBy,
 		)
 		if err != nil {
@@ -338,30 +349,52 @@ func (r *groupEventRepository) ListApplications(ctx context.Context, eventID str
 	return apps, nil
 }
 
-func (r *groupEventRepository) UpdateApplicationStatus(ctx context.Context, eventID, userID, status, updatedBy string) error {
+func (r *groupEventRepository) UpdateApplicationStatus(ctx context.Context, id, status, rejectionReason, updatedBy string) error {
 	query := `
         UPDATE group_event_applications
-        SET status = $1, updated_at = NOW(), updated_by = $2
-        WHERE event_id = $3 AND user_id = $4
+        SET status = $1, rejection_reason = $2, updated_at = NOW(), updated_by = $3
+        WHERE id = $4
     `
 	db := database.GetQuerier(ctx, r.db)
-	_, err := db.Exec(ctx, query, status, updatedBy, eventID, userID)
+	_, err := db.Exec(ctx, query, status, rejectionReason, updatedBy, id)
 	if err != nil {
-		return fmt.Errorf("update application status for event %s, user %s: %w", eventID, userID, err)
+		return fmt.Errorf("update application status for %s: %w", id, err)
 	}
 	return nil
 }
 
+func (r *groupEventRepository) GetPendingApplicationByEventAndUser(ctx context.Context, eventID, userID string) (*GroupEventApplication, error) {
+	query := `
+        SELECT id, event_id, user_id, status, message, rejection_reason, created_at, created_by, updated_at, updated_by
+        FROM group_event_applications
+        WHERE event_id = $1 AND user_id = $2 AND status = 'pending'
+        LIMIT 1
+    `
+	app := &GroupEventApplication{}
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, eventID, userID).Scan(
+		&app.ID, &app.EventID, &app.UserID, &app.Status, &app.Message, &app.RejectionReason,
+		&app.CreatedAt, &app.CreatedBy, &app.UpdatedAt, &app.UpdatedBy,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get pending application for event %s, user %s: %w", eventID, userID, err)
+	}
+	return app, nil
+}
+
 func (r *groupEventRepository) GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error) {
 	query := `
-        SELECT id, event_id, user_id, status, message, created_at, created_by, updated_at, updated_by
+        SELECT id, event_id, user_id, status, message, rejection_reason, created_at, created_by, updated_at, updated_by
         FROM group_event_applications
         WHERE id = $1
     `
 	app := &GroupEventApplication{}
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query, id).Scan(
-		&app.ID, &app.EventID, &app.UserID, &app.Status, &app.Message,
+		&app.ID, &app.EventID, &app.UserID, &app.Status, &app.Message, &app.RejectionReason,
 		&app.CreatedAt, &app.CreatedBy, &app.UpdatedAt, &app.UpdatedBy,
 	)
 	if err != nil {

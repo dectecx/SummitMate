@@ -45,8 +45,9 @@ class StatusChip extends StatelessWidget {
 
 class StatusCard extends StatelessWidget {
   final GroupEventApplicationStatus status;
+  final String? rejectionReason;
 
-  const StatusCard({super.key, required this.status});
+  const StatusCard({super.key, required this.status, this.rejectionReason});
 
   @override
   Widget build(BuildContext context) {
@@ -84,14 +85,26 @@ class StatusCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                text,
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
+          if (status == GroupEventApplicationStatus.rejected && rejectionReason != null && rejectionReason!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '原因: $rejectionReason',
+              style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 13),
+            ),
+          ],
         ],
       ),
     );

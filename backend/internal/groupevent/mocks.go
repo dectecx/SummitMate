@@ -62,9 +62,17 @@ func (m *MockGroupEventRepository) ListApplications(ctx context.Context, eventID
 	return args.Get(0).([]*GroupEventApplication), args.Error(1)
 }
 
-func (m *MockGroupEventRepository) UpdateApplicationStatus(ctx context.Context, eventID, userID, status, updatedBy string) error {
-	args := m.Called(ctx, eventID, userID, status, updatedBy)
+func (m *MockGroupEventRepository) UpdateApplicationStatus(ctx context.Context, id, status, rejectionReason, updatedBy string) error {
+	args := m.Called(ctx, id, status, rejectionReason, updatedBy)
 	return args.Error(0)
+}
+
+func (m *MockGroupEventRepository) GetPendingApplicationByEventAndUser(ctx context.Context, eventID, userID string) (*GroupEventApplication, error) {
+	args := m.Called(ctx, eventID, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*GroupEventApplication), args.Error(1)
 }
 
 func (m *MockGroupEventRepository) GetApplicationByID(ctx context.Context, id string) (*GroupEventApplication, error) {

@@ -36,6 +36,12 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 		}
 	}
 
+	var myAppID *uuid.UUID
+	if e.MyApplicationID != nil {
+		id := uuid.MustParse(*e.MyApplicationID)
+		myAppID = &id
+	}
+
 	return api.GroupEvent{
 		Id:                  uuid.MustParse(e.ID),
 		HostId:              uuid.MustParse(e.HostID),
@@ -58,7 +64,9 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 		CommentCount:        e.CommentCount,
 		ApplicationCount:    &e.ApplicationCount,
 		IsLiked:             &e.IsLiked,
+		MyApplicationId:     myAppID,
 		MyApplicationStatus: (*api.GroupEventMyApplicationStatus)(e.MyApplicationStatus),
+		MyApplicationReason: e.MyApplicationReason,
 		CreatedAt:           e.CreatedAt,
 		CreatedBy:           uuid.MustParse(e.CreatedBy),
 		UpdatedAt:           e.UpdatedAt,
@@ -74,12 +82,13 @@ func ToGroupEventApplicationResponse(a *GroupEventApplication) api.GroupEventApp
 		UserId:     uuid.MustParse(a.UserID),
 		UserName:   a.UserName,
 		UserAvatar: a.UserAvatar,
-		Status:     api.GroupEventApplicationStatus(a.Status),
-		Message:    a.Message,
-		CreatedAt:  a.CreatedAt,
-		CreatedBy:  uuid.MustParse(a.CreatedBy),
-		UpdatedAt:  a.UpdatedAt,
-		UpdatedBy:  uuid.MustParse(a.UpdatedBy),
+		Status:          api.GroupEventApplicationStatus(a.Status),
+		Message:         a.Message,
+		RejectionReason: &a.RejectionReason,
+		CreatedAt:       a.CreatedAt,
+		CreatedBy:       uuid.MustParse(a.CreatedBy),
+		UpdatedAt:       a.UpdatedAt,
+		UpdatedBy:       uuid.MustParse(a.UpdatedBy),
 	}
 }
 

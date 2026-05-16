@@ -63,7 +63,9 @@ type GroupEvent struct {
 	CommentCount        int           `json:"comment_count" db:"comment_count"`
 	ApplicationCount    int           `json:"application_count" db:"application_count"`
 	IsLiked             bool          `json:"is_liked" db:"is_liked"`
+	MyApplicationID     *string       `json:"my_application_id" db:"my_application_id"`
 	MyApplicationStatus *string       `json:"my_application_status" db:"my_application_status"`
+	MyApplicationReason *string       `json:"my_application_reason" db:"my_application_reason"`
 	CreatedAt           time.Time     `json:"created_at" db:"created_at"`
 	CreatedBy           string        `json:"created_by" db:"created_by"`
 	UpdatedAt           time.Time     `json:"updated_at" db:"updated_at"`
@@ -71,15 +73,16 @@ type GroupEvent struct {
 }
 
 type GroupEventApplication struct {
-	ID        string    `json:"id" db:"id"`
-	EventID   string    `json:"event_id" db:"event_id"`
-	UserID    string    `json:"user_id" db:"user_id"`
-	Status    string    `json:"status" db:"status"`
-	Message   string    `json:"message" db:"message"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	CreatedBy string    `json:"created_by" db:"created_by"`
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
-	UpdatedBy string    `json:"updated_by" db:"updated_by"`
+	ID              string    `json:"id" db:"id"`
+	EventID         string    `json:"event_id" db:"event_id"`
+	UserID          string    `json:"user_id" db:"user_id"`
+	Status          string    `json:"status" db:"status"`
+	Message         string    `json:"message" db:"message"`
+	RejectionReason string    `json:"rejection_reason" db:"rejection_reason"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
+	CreatedBy       string    `json:"created_by" db:"created_by"`
+	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
+	UpdatedBy       string    `json:"updated_by" db:"updated_by"`
 
 	// Response-only: populated via AuthService or JOIN
 	UserName   string `json:"user_name" db:"-"`

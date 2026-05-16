@@ -88,6 +88,12 @@ class GroupEventReviewScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(app.message),
             ],
+            if (app.isRejected && app.rejectionReason.isNotEmpty) ...[
+              const Divider(height: 24),
+              const Text('拒絕原因:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.red)),
+              const SizedBox(height: 4),
+              Text(app.rejectionReason, style: const TextStyle(color: Colors.red)),
+            ],
             if (app.isPending) ...[
               const Divider(height: 24),
               Row(
@@ -96,8 +102,13 @@ class GroupEventReviewScreen extends StatelessWidget {
                   OutlinedButton(
                     onPressed: isSyncing
                         ? null
-                        : () {
-                            context.read<GroupEventReviewCubit>().reviewApplication(app.id, GroupEventReviewAction.reject);
+                        : () async {
+                            final reason = await _showRejectReasonDialog(context);
+                            if (reason != null) {
+                              context
+                                  .read<GroupEventReviewCubit>()
+                                  .reviewApplication(app.id, GroupEventReviewAction.reject, note: reason);
+                            }
                           },
                     style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
                     child: isSyncing
@@ -166,5 +177,29 @@ class GroupEventReviewScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.month}/${date.day} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<String?> _showRejectReasonDialog(BuildContext context) async {
+    String reason = '';
+    return showDialog<String>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('拒絕申請'),
+            content: TextField(
+              decoration: const InputDecoration(hintText: '請輸入拒絕原因 (選填)', border: OutlineInputBorder()),
+              maxLines: 3,
+              onChanged: (value) => reason = value,
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, reason),
+                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('確認拒絕'),
+              ),
+            ],
+          ),
+    );
   }
 }
