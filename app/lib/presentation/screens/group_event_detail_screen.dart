@@ -369,7 +369,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           );
         }
 
-        if (_event.myApplicationStatus != null && _event.myApplicationStatus != GroupEventApplicationStatus.rejected) {
+        if (_event.myApplicationStatus != null &&
+            _event.myApplicationStatus != GroupEventApplicationStatus.rejected &&
+            _event.myApplicationStatus != GroupEventApplicationStatus.cancelled) {
+          final buttonText = _event.myApplicationStatus == GroupEventApplicationStatus.pending ? '審核中' : '已加入';
           return FilledButton(
             onPressed: null,
             style: FilledButton.styleFrom(
@@ -378,7 +381,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
-            child: const Text('已報名'),
+            child: Text(buttonText),
           );
         }
 
@@ -394,9 +397,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : Text(_event.myApplicationStatus == GroupEventApplicationStatus.rejected
-                  ? '再次申請'
-                  : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入'))),
+              : Text((_event.myApplicationStatus == GroupEventApplicationStatus.rejected ||
+                          _event.myApplicationStatus == GroupEventApplicationStatus.cancelled)
+                      ? '再次申請'
+                      : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入'))),
         );
       },
     );
