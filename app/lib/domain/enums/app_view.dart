@@ -17,9 +17,6 @@ enum AppView {
 
   /// 從字串轉換為 AppView 列舉
   static AppView fromString(String value) {
-    return AppView.values.firstWhere(
-      (e) => e.name == value,
-      orElse: () => AppView.unknown,
-    );
+    return AppView.values.firstWhere((e) => e.name == value, orElse: () => AppView.unknown);
   }
 }

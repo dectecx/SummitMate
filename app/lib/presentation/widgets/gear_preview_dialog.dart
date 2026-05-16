@@ -86,7 +86,10 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(widget.gearSet.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('@${widget.gearSet.author}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                          Text(
+                            '@${widget.gearSet.author}',
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                          ),
                         ],
                       ),
                     ),
@@ -119,7 +122,11 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               _StatChip(icon: Icons.backpack, value: '${items.length}', label: '件裝備'),
-                              _StatChip(icon: Icons.fitness_center, value: WeightFormatter.format(totalWeight), label: '總重量'),
+                              _StatChip(
+                                icon: Icons.fitness_center,
+                                value: WeightFormatter.format(totalWeight),
+                                label: '總重量',
+                              ),
                             ],
                           ),
                         ),
@@ -156,7 +163,8 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                               ),
                               _StatChip(
                                 icon: Icons.local_fire_department,
-                                value: (widget.gearSet.meals?.fold<double>(0, (sum, p) => sum + p.totalCalories) ?? 0).toStringAsFixed(0),
+                                value: (widget.gearSet.meals?.fold<double>(0, (sum, p) => sum + p.totalCalories) ?? 0)
+                                    .toStringAsFixed(0),
                                 label: '總熱量',
                               ),
                             ],
@@ -171,8 +179,7 @@ class _GearPreviewDialogState extends State<GearPreviewDialog> {
                                     for (final plan in widget.gearSet.meals!) ...[
                                       _buildMealPlanHeader(plan),
                                       for (final entry in plan.meals.entries)
-                                        for (final meal in entry.value)
-                                          _MealItemTile(meal: meal, type: entry.key),
+                                        for (final meal in entry.value) _MealItemTile(meal: meal, type: entry.key),
                                     ],
                                   ],
                                 ),
@@ -308,11 +315,7 @@ class _MealItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
-      leading: Icon(
-        MealUIUtils.getMealIcon(type),
-        color: MealUIUtils.getMealColor(type),
-        size: 20,
-      ),
+      leading: Icon(MealUIUtils.getMealIcon(type), color: MealUIUtils.getMealColor(type), size: 20),
       title: Text(meal.name, style: const TextStyle(fontSize: 14)),
       subtitle: meal.note != null ? Text(meal.note!, style: const TextStyle(fontSize: 11)) : null,
       trailing: Text(

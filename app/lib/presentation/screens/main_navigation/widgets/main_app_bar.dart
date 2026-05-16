@@ -55,13 +55,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
           gradient: AppTheme.getStrategy(themeType).appBarGradient,
         ),
       ),
-      leading: showLeading
-          ? IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: onMenuPressed,
-              tooltip: '選單',
-            )
-          : null,
+      leading: showLeading ? IconButton(icon: const Icon(Icons.menu), onPressed: onMenuPressed, tooltip: '選單') : null,
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -132,11 +126,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
         // 同步狀態指示器
         const SyncStatusIndicator(),
         // 設定按鈕
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: onSettings,
-          tooltip: '設定',
-        ),
+        IconButton(icon: const Icon(Icons.settings), onPressed: onSettings, tooltip: '設定'),
       ],
     );
   }

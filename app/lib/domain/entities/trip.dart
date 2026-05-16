@@ -27,6 +27,7 @@ abstract class Trip with _$Trip {
     @Default([]) List<String> dayNames,
     @Default([]) List<MealPlanDay> mealPlanDays,
     @Default(SyncStatus.pendingCreate) SyncStatus syncStatus,
+
     /// 最後一次成功上傳至雲端的時間 (null 表示從未上傳)
     DateTime? cloudSyncedAt,
     required DateTime createdAt,

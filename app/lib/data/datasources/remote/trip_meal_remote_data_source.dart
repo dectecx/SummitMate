@@ -81,7 +81,12 @@ class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   }
 
   @override
-  Future<MealItem> addTripMeal(String tripId, MealItem item, {required String mealPlanDayId, required String mealType}) async {
+  Future<MealItem> addTripMeal(
+    String tripId,
+    MealItem item, {
+    required String mealPlanDayId,
+    required String mealType,
+  }) async {
     try {
       LogService.info('新增餐點至行程: $tripId', source: _source);
       final request = TripMealApiMapper.toRequest(item, mealPlanDayId: mealPlanDayId, mealType: mealType);
@@ -94,7 +99,12 @@ class TripMealRemoteDataSource implements ITripMealRemoteDataSource {
   }
 
   @override
-  Future<MealItem> updateTripMeal(String tripId, MealItem item, {required String mealPlanDayId, required String mealType}) async {
+  Future<MealItem> updateTripMeal(
+    String tripId,
+    MealItem item, {
+    required String mealPlanDayId,
+    required String mealType,
+  }) async {
     try {
       LogService.info('更新餐點: $tripId, 項目: ${item.id}', source: _source);
       final request = TripMealApiMapper.toRequest(item, mealPlanDayId: mealPlanDayId, mealType: mealType);

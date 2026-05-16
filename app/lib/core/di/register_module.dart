@@ -26,13 +26,15 @@ abstract class RegisterModule {
     AuthInterceptor authInterceptor,
     ConnectivityInterceptor connectivityInterceptor,
   ) {
-    final dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      sendTimeout: const Duration(seconds: 15),
-      contentType: Headers.jsonContentType,
-    ));
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
+        contentType: Headers.jsonContentType,
+      ),
+    );
     dio.interceptors.addAll([connectivityInterceptor, authInterceptor]);
     return dio;
   }

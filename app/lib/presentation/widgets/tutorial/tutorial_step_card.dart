@@ -14,13 +14,7 @@ class TutorialStepCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -33,9 +27,7 @@ class TutorialStepCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   step.title,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -45,10 +37,7 @@ class TutorialStepCard extends StatelessWidget {
             step.description,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  height: 1.4,
-                  fontSize: 15,
-                ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4, fontSize: 15),
           ),
           if (step.mockDataHint != null) ...[
             const SizedBox(height: 12),
@@ -57,9 +46,7 @@ class TutorialStepCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                ),
+                border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -68,9 +55,9 @@ class TutorialStepCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       step.mockDataHint!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.primary),
                     ),
                   ),
                 ],

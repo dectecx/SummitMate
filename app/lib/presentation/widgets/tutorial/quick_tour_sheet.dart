@@ -10,9 +10,10 @@ class QuickTourSheet extends StatelessWidget {
 
   /// 顯示快速導覽，並在開啟時切換到教學模式
   static void show(BuildContext context) {
+    final tutorialCubit = context.read<TutorialCubit>();
     // 啟動教學模式 (Quick Tour)
-    context.read<TutorialCubit>().startTutorial(chapterId: 'quick_tour', isQuickTour: true);
-    
+    tutorialCubit.startTutorial(chapterId: 'quick_tour', isQuickTour: true);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -20,11 +21,9 @@ class QuickTourSheet extends StatelessWidget {
       isDismissible: false,
       backgroundColor: Colors.transparent,
       builder: (context) => const QuickTourSheet(),
-    ).then((_) {
-      // 關閉時結束教學模式
-      if (context.mounted) {
-         context.read<TutorialCubit>().endTutorial();
-      }
+    ).whenComplete(() {
+      // 關閉時結束教學模式，確保不受 context.mounted 限制
+      tutorialCubit.endTutorial();
     });
   }
 
@@ -41,11 +40,7 @@ class QuickTourSheet extends StatelessWidget {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -5),
-              ),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, -5)),
             ],
           ),
           child: SafeArea(
@@ -73,18 +68,12 @@ class QuickTourSheet extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          '💡 快速導覽',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
+        Text('💡 快速導覽', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
         Text(
           '${stepIndex + 1} / 4',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -97,7 +86,7 @@ class QuickTourSheet extends StatelessWidget {
         return const _TourCard(
           icon: Icons.map_outlined,
           title: '探索行程',
-          description: '我們為您準備了一個「嘉明湖」的示範行程。\n您可以看到預排的路線、時間與距離資訊。',
+          description: '教學模式提供了一個「嘉明湖」的預覽畫面。\n您可以在背景看到預排的路線、時間與距離資訊。',
         );
       case 1:
         return const _TourCard(
@@ -128,18 +117,16 @@ class QuickTourSheet extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (stepIndex > 0)
-          TextButton(
-            onPressed: () => context.read<TutorialCubit>().previousStep(),
-            child: const Text('上一步'),
-          )
+          TextButton(onPressed: () => context.read<TutorialCubit>().previousStep(), child: const Text('上一步'))
         else
           const SizedBox(width: 80), // 佔位
-        
+
         Row(
           children: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                // 確保使用 Navigator.of(context, rootNavigator: true) 來 pop
+                Navigator.of(context).pop();
                 TripSelectionDialog.show(context);
               },
               child: const Text('略過'),
@@ -148,7 +135,7 @@ class QuickTourSheet extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 if (isLastStep) {
-                  Navigator.pop(context); // 關閉 Sheet 會自動觸發 endTutorial
+                  Navigator.of(context).pop(); // 關閉 Sheet 會自動觸發 whenComplete
                   TripSelectionDialog.show(context); // 導覽結束後，顯示行程選擇
                 } else {
                   context.read<TutorialCubit>().nextStep();
@@ -168,32 +155,23 @@ class _TourCard extends StatelessWidget {
   final String title;
   final String description;
 
-  const _TourCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
+  const _TourCard({required this.icon, required this.title, required this.description});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
             child: Icon(icon, color: Theme.of(context).colorScheme.onPrimary, size: 24),
           ),
           const SizedBox(width: 16),
@@ -204,17 +182,12 @@ class _TourCard extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        height: 1.5,
-                      ),
-                ),
+                Text(description, style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5)),
               ],
             ),
           ),

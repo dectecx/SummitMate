@@ -145,7 +145,10 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
                       children: [
                         const Icon(Icons.backpack, size: 16, color: Colors.grey),
                         const SizedBox(width: 8),
-                        Text('即將上傳 ${widget.items.length} 項裝備', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(
+                          '即將上傳 ${widget.items.length} 項裝備',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
                       ],
                     ),
                     if (widget.meals.isNotEmpty) ...[
@@ -155,8 +158,10 @@ class _GearUploadDialogState extends State<GearUploadDialog> {
                         children: [
                           const Icon(Icons.restaurant, size: 16, color: Colors.grey),
                           const SizedBox(width: 8),
-                          Text('即將上傳 ${widget.meals.length} 天糧食計畫',
-                              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(
+                            '即將上傳 ${widget.meals.length} 天糧食計畫',
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                         ],
                       ),
                     ],

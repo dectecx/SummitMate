@@ -551,9 +551,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.ITripRepository>(),
       ),
     );
-    gh.factory<_i259.TutorialCubit>(
-      () => _i259.TutorialCubit(),
-    );
+    gh.factory<_i259.TutorialCubit>(() => _i259.TutorialCubit());
     return this;
   }
 }

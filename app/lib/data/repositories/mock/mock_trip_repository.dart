@@ -133,12 +133,21 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<MealPlanDay, Exception>> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay}) async {
+  Future<Result<MealPlanDay, Exception>> addMealPlanDay(
+    String tripId,
+    String name, {
+    String? linkedItineraryDay,
+  }) async {
     return Success(MealPlanDay(id: 'day-1', name: name, linkedItineraryDay: linkedItineraryDay));
   }
 
   @override
-  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay}) async {
+  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(
+    String tripId,
+    String dayId,
+    String name, {
+    String? linkedItineraryDay,
+  }) async {
     return Success(MealPlanDay(id: dayId, name: name, linkedItineraryDay: linkedItineraryDay));
   }
 

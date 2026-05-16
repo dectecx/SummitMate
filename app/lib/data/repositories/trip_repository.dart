@@ -195,7 +195,11 @@ class TripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<MealPlanDay, Exception>> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay}) async {
+  Future<Result<MealPlanDay, Exception>> addMealPlanDay(
+    String tripId,
+    String name, {
+    String? linkedItineraryDay,
+  }) async {
     try {
       final day = await _mealRemoteDataSource.addMealPlanDay(tripId, name, linkedItineraryDay: linkedItineraryDay);
       await _localDataSource.saveMealPlanDay(day, tripId);
@@ -206,9 +210,19 @@ class TripRepository implements ITripRepository {
   }
 
   @override
-  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay}) async {
+  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(
+    String tripId,
+    String dayId,
+    String name, {
+    String? linkedItineraryDay,
+  }) async {
     try {
-      final day = await _mealRemoteDataSource.updateMealPlanDay(tripId, dayId, name, linkedItineraryDay: linkedItineraryDay);
+      final day = await _mealRemoteDataSource.updateMealPlanDay(
+        tripId,
+        dayId,
+        name,
+        linkedItineraryDay: linkedItineraryDay,
+      );
       await _localDataSource.saveMealPlanDay(day, tripId);
       return Success(day);
     } catch (e) {

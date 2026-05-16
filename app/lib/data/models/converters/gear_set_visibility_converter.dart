@@ -6,10 +6,7 @@ class GearSetVisibilityConverter extends TypeConverter<GearSetVisibility, String
 
   @override
   GearSetVisibility fromSql(String fromDb) {
-    return GearSetVisibility.values.firstWhere(
-      (v) => v.name == fromDb,
-      orElse: () => GearSetVisibility.public,
-    );
+    return GearSetVisibility.values.firstWhere((v) => v.name == fromDb, orElse: () => GearSetVisibility.public);
   }
 
   @override

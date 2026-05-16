@@ -112,7 +112,12 @@ abstract interface class ITripRepository {
   Future<Result<MealPlanDay, Exception>> addMealPlanDay(String tripId, String name, {String? linkedItineraryDay});
 
   /// 更新糧食計畫天數
-  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(String tripId, String dayId, String name, {String? linkedItineraryDay});
+  Future<Result<MealPlanDay, Exception>> updateMealPlanDay(
+    String tripId,
+    String dayId,
+    String name, {
+    String? linkedItineraryDay,
+  });
 
   /// 刪除糧食計畫天數
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId);

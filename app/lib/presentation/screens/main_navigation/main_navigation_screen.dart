@@ -118,10 +118,18 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     if (_usageTrackingService == null) return;
     AppView view = AppView.unknown;
     switch (index) {
-      case 0: view = AppView.itinerary; break;
-      case 1: view = AppView.gear; break;
-      case 2: view = AppView.collaboration; break;
-      case 3: view = AppView.info; break;
+      case 0:
+        view = AppView.itinerary;
+        break;
+      case 1:
+        view = AppView.gear;
+        break;
+      case 2:
+        view = AppView.collaboration;
+        break;
+      case 3:
+        view = AppView.info;
+        break;
     }
     _usageTrackingService!.updateView(view);
   }
@@ -133,10 +141,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _showSettingsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => const SettingsDialog(),
-    );
+    showDialog(context: context, builder: (dialogContext) => const SettingsDialog());
   }
 
   void _showWelcomeDialog(BuildContext context) {
@@ -181,6 +186,18 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 case 'collaboration':
                 case 'groupEvent':
                   targetIndex = 2;
+                  break;
+                case 'quick_tour':
+                  // 根據 Quick Tour 的步驟切換背景畫面，便於使用者對照
+                  if (state.currentStepIndex == 0) {
+                    targetIndex = 0; // 探索行程 -> 行程 Tab
+                  } else if (state.currentStepIndex == 1) {
+                    targetIndex = 1; // 準備裝備 -> 裝備 Tab
+                  } else if (state.currentStepIndex == 2) {
+                    targetIndex = 1; // 糧食計畫 -> 裝備 Tab (其中包含糧食區塊)
+                  } else if (state.currentStepIndex == 3) {
+                    targetIndex = 0; // 隨時同步 -> 切回行程 Tab (同步 Banner 皆可見)
+                  }
                   break;
               }
 
@@ -394,15 +411,15 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             bottomNavigationBar: ResponsiveLayout(
                               mobile: MainBottomNavigationBar(
                                 currentIndex: _currentIndex,
-                                  onDestinationSelected: (index) {
-                                    setState(() {
-                                      _currentIndex = index;
-                                      _updateTrackingView(index);
-                                    });
-                                    if (isEditMode) {
-                                      context.read<ItineraryCubit>().toggleEditMode();
-                                    }
-                                  },
+                                onDestinationSelected: (index) {
+                                  setState(() {
+                                    _currentIndex = index;
+                                    _updateTrackingView(index);
+                                  });
+                                  if (isEditMode) {
+                                    context.read<ItineraryCubit>().toggleEditMode();
+                                  }
+                                },
                               ),
                               desktop: const SizedBox.shrink(),
                             ),
@@ -478,7 +495,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
       itineraryCubit.addItem(item);
     }
   }
-
 
   void _handleMapNavigation(BuildContext context) {
     if (kIsWeb) {

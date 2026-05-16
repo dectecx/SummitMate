@@ -5,11 +5,7 @@ class TutorialChapterNav extends StatelessWidget {
   final TutorialChapter activeChapter;
   final ValueChanged<TutorialChapter> onChapterSelected;
 
-  const TutorialChapterNav({
-    super.key,
-    required this.activeChapter,
-    required this.onChapterSelected,
-  });
+  const TutorialChapterNav({super.key, required this.activeChapter, required this.onChapterSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +20,7 @@ class TutorialChapterNav extends StatelessWidget {
             child: ChoiceChip(
               label: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(chapter.emoji),
-                  const SizedBox(width: 4),
-                  Text(chapter.displayName),
-                ],
+                children: [Text(chapter.emoji), const SizedBox(width: 4), Text(chapter.displayName)],
               ),
               selected: isSelected,
               onSelected: (selected) {

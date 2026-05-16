@@ -347,19 +347,12 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
     if (_searchResult == null) {
       return [
         TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('取消')),
-        FilledButton(
-          onPressed: _isLoading ? null : _performSearch,
-          child: const Text('搜尋'),
-        ),
+        FilledButton(onPressed: _isLoading ? null : _performSearch, child: const Text('搜尋')),
       ];
     } else {
       return [
         TextButton(onPressed: _isLoading ? null : _resetSearch, child: const Text('重搜')),
-        if (canAdd)
-          FilledButton(
-            onPressed: _isLoading ? null : _addMember,
-            child: const Text('確認加入'),
-          ),
+        if (canAdd) FilledButton(onPressed: _isLoading ? null : _addMember, child: const Text('確認加入')),
       ];
     }
   }

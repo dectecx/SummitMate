@@ -86,16 +86,10 @@ class _CloudSyncBannerState extends State<CloudSyncBanner> {
         title: const Text('選擇同步方向'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('發現本地與雲端資料可能不一致，請選擇您想保留的版本：'),
-            SizedBox(height: 16),
-          ],
+          children: [Text('發現本地與雲端資料可能不一致，請選擇您想保留的版本：'), SizedBox(height: 16)],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('取消'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           OutlinedButton.icon(
             onPressed: () => Navigator.pop(ctx, SyncDirection.download),
             icon: const Icon(Icons.cloud_download, size: 18),

@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 
-
 class GearSetCacheTable extends Table {
   TextColumn get id => text()();
 

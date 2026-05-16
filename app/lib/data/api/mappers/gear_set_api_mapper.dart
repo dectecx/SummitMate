@@ -104,16 +104,15 @@ class GearSetApiMapper {
   static List<DailyMealPlan> _groupMeals(List<GearSetMealDto> dtos) {
     final Map<String, DailyMealPlan> byDay = {};
     for (final dto in dtos) {
-      final plan = byDay.putIfAbsent(dto.day, () => DailyMealPlan(dayInfo: MealPlanDay(id: dto.day, name: dto.day)));
+      final plan = byDay.putIfAbsent(
+        dto.day,
+        () => DailyMealPlan(
+          dayInfo: MealPlanDay(id: dto.day, name: dto.day),
+        ),
+      );
       final mealType = MealType.values.firstWhere((t) => t.name == dto.mealType, orElse: () => MealType.breakfast);
 
-      final mealItem = MealItem(
-        id: dto.id,
-        name: dto.name,
-        calories: dto.calories,
-        weight: 0,
-        note: dto.note,
-      );
+      final mealItem = MealItem(id: dto.id, name: dto.name, calories: dto.calories, weight: 0, note: dto.note);
 
       final meals = Map<MealType, List<MealItem>>.from(plan.meals);
       meals.putIfAbsent(mealType, () => []).add(mealItem);

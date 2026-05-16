@@ -34,14 +34,7 @@ class GearSetCacheDao extends DatabaseAccessor<AppDatabase>
 
       batch.insertAll(
         gearSetCacheTable,
-        sets
-            .map(
-              (s) => GearSetCacheTableCompanion.insert(
-                id: s.id,
-                rawJson: jsonEncode(s.toJson()),
-              ),
-            )
-            .toList(),
+        sets.map((s) => GearSetCacheTableCompanion.insert(id: s.id, rawJson: jsonEncode(s.toJson()))).toList(),
         mode: InsertMode.insertOrReplace,
       );
     });

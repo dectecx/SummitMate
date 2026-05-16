@@ -46,8 +46,7 @@ class ItineraryViewData {
   });
 
   List<ItineraryItem> get currentDayItems =>
-      items.where((item) => item.day == selectedDay).toList()
-        ..sort((a, b) => a.estTime.compareTo(b.estTime));
+      items.where((item) => item.day == selectedDay).toList()..sort((a, b) => a.estTime.compareTo(b.estTime));
 }
 
 /// 根據教學狀態決定行程資料來源
@@ -63,9 +62,7 @@ class TutorialAwareItineraryBuilder extends StatelessWidget {
         if (tutorialState is TutorialActive) {
           final data = ItineraryViewData(
             items: tutorialState.mockItineraryItems,
-            selectedDay: tutorialState.mockDayNames.isNotEmpty
-                ? tutorialState.mockDayNames.first
-                : 'D1',
+            selectedDay: tutorialState.mockDayNames.isNotEmpty ? tutorialState.mockDayNames.first : 'D1',
             dayNames: tutorialState.mockDayNames,
           );
           return builder(context, data);
@@ -73,10 +70,7 @@ class TutorialAwareItineraryBuilder extends StatelessWidget {
         return BlocBuilder<ItineraryCubit, ItineraryState>(
           builder: (context, state) {
             if (state is! ItineraryLoaded) {
-              return builder(
-                context,
-                const ItineraryViewData(items: [], selectedDay: 'D1', dayNames: []),
-              );
+              return builder(context, const ItineraryViewData(items: [], selectedDay: 'D1', dayNames: []));
             }
             final data = ItineraryViewData(
               items: state.items,
@@ -111,10 +105,7 @@ class TutorialAwareGearBuilder extends StatelessWidget {
         }
         return BlocBuilder<GearCubit, GearState>(
           builder: (context, state) {
-            return builder(
-              context,
-              state is GearLoaded ? state.items : [],
-            );
+            return builder(context, state is GearLoaded ? state.items : []);
           },
         );
       },
@@ -141,10 +132,7 @@ class TutorialAwareMealBuilder extends StatelessWidget {
         }
         return BlocBuilder<MealCubit, MealState>(
           builder: (context, state) {
-            return builder(
-              context,
-              state is MealLoaded ? state.dailyPlans : [],
-            );
+            return builder(context, state is MealLoaded ? state.dailyPlans : []);
           },
         );
       },
@@ -170,11 +158,7 @@ class TutorialAwareTripBuilder extends StatelessWidget {
     return BlocBuilder<TutorialCubit, TutorialState>(
       builder: (context, tutorialState) {
         if (tutorialState is TutorialActive && tutorialState.mockTrip != null) {
-          return builder(
-            context,
-            tutorialState.mockTrip,
-            [tutorialState.mockTrip!],
-          );
+          return builder(context, tutorialState.mockTrip, [tutorialState.mockTrip!]);
         }
         return BlocBuilder<TripCubit, TripState>(
           builder: (context, state) {

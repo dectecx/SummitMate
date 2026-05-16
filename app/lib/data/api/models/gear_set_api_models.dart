@@ -17,8 +17,7 @@ abstract class GearSetItemDto with _$GearSetItemDto {
     @JsonKey(name: 'order_index') @Default(0) int orderIndex,
   }) = _GearSetItemDto;
 
-  factory GearSetItemDto.fromJson(Map<String, dynamic> json) =>
-      _$GearSetItemDtoFromJson(json);
+  factory GearSetItemDto.fromJson(Map<String, dynamic> json) => _$GearSetItemDtoFromJson(json);
 }
 
 @freezed
@@ -32,8 +31,7 @@ abstract class GearSetMealDto with _$GearSetMealDto {
     String? note,
   }) = _GearSetMealDto;
 
-  factory GearSetMealDto.fromJson(Map<String, dynamic> json) =>
-      _$GearSetMealDtoFromJson(json);
+  factory GearSetMealDto.fromJson(Map<String, dynamic> json) => _$GearSetMealDtoFromJson(json);
 }
 
 @freezed
@@ -46,8 +44,7 @@ abstract class GearSetItemRequest with _$GearSetItemRequest {
     @JsonKey(name: 'order_index') @Default(0) int orderIndex,
   }) = _GearSetItemRequest;
 
-  factory GearSetItemRequest.fromJson(Map<String, dynamic> json) =>
-      _$GearSetItemRequestFromJson(json);
+  factory GearSetItemRequest.fromJson(Map<String, dynamic> json) => _$GearSetItemRequestFromJson(json);
 }
 
 @freezed
@@ -60,8 +57,7 @@ abstract class GearSetMealRequest with _$GearSetMealRequest {
     String? note,
   }) = _GearSetMealRequest;
 
-  factory GearSetMealRequest.fromJson(Map<String, dynamic> json) =>
-      _$GearSetMealRequestFromJson(json);
+  factory GearSetMealRequest.fromJson(Map<String, dynamic> json) => _$GearSetMealRequestFromJson(json);
 }
 
 // ── Response ──
@@ -84,18 +80,14 @@ abstract class GearSetResponse with _$GearSetResponse {
     @JsonKey(name: 'updated_by') required String updatedBy,
   }) = _GearSetResponse;
 
-  factory GearSetResponse.fromJson(Map<String, dynamic> json) =>
-      _$GearSetResponseFromJson(json);
+  factory GearSetResponse.fromJson(Map<String, dynamic> json) => _$GearSetResponseFromJson(json);
 }
 
 @freezed
 abstract class GearSetListResponse with _$GearSetListResponse {
-  const factory GearSetListResponse({
-    @Default([]) List<GearSetResponse> data,
-  }) = _GearSetListResponse;
+  const factory GearSetListResponse({@Default([]) List<GearSetResponse> data}) = _GearSetListResponse;
 
-  factory GearSetListResponse.fromJson(Map<String, dynamic> json) =>
-      _$GearSetListResponseFromJson(json);
+  factory GearSetListResponse.fromJson(Map<String, dynamic> json) => _$GearSetListResponseFromJson(json);
 }
 
 // ── Request ──
@@ -124,13 +116,13 @@ class GearSetCreateRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'title': title,
-        'author': author,
-        'visibility': visibility,
-        if (downloadKey != null) 'download_key': downloadKey,
-        'total_weight': totalWeight,
-        'item_count': itemCount,
-        'items': items.map((i) => i.toJson()).toList(),
-        if (meals != null) 'meals': meals!.map((m) => m.toJson()).toList(),
-      };
+    'title': title,
+    'author': author,
+    'visibility': visibility,
+    if (downloadKey != null) 'download_key': downloadKey,
+    'total_weight': totalWeight,
+    'item_count': itemCount,
+    'items': items.map((i) => i.toJson()).toList(),
+    if (meals != null) 'meals': meals!.map((m) => m.toJson()).toList(),
+  };
 }
