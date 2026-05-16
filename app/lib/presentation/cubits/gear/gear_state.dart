@@ -29,16 +29,9 @@ class GearLoaded extends GearState {
   final String? selectedCategory;
   final String searchQuery;
   final bool showUncheckedOnly;
-  final bool isMockMode;
 
   /// 建構子
-  const GearLoaded({
-    required this.items,
-    this.selectedCategory,
-    this.searchQuery = '',
-    this.showUncheckedOnly = false,
-    this.isMockMode = false,
-  });
+  const GearLoaded({required this.items, this.selectedCategory, this.searchQuery = '', this.showUncheckedOnly = false});
 
   /// CopyWith method for updating state
   GearLoaded copyWith({
@@ -47,14 +40,12 @@ class GearLoaded extends GearState {
     bool clearCategory = false,
     String? searchQuery,
     bool? showUncheckedOnly,
-    bool? isMockMode,
   }) {
     return GearLoaded(
       items: items ?? this.items,
       selectedCategory: clearCategory ? null : (selectedCategory ?? this.selectedCategory),
       searchQuery: searchQuery ?? this.searchQuery,
       showUncheckedOnly: showUncheckedOnly ?? this.showUncheckedOnly,
-      isMockMode: isMockMode ?? this.isMockMode,
     );
   }
 
@@ -110,7 +101,7 @@ class GearLoaded extends GearState {
   }
 
   @override
-  List<Object?> get props => [items, selectedCategory, searchQuery, showUncheckedOnly, isMockMode];
+  List<Object?> get props => [items, selectedCategory, searchQuery, showUncheckedOnly];
 }
 
 class GearError extends GearState {

@@ -12,7 +12,12 @@ import 'gear/gear_search_bar.dart';
 import 'gear/gear_summary_cards.dart';
 import 'gear/gear_category_section.dart';
 import 'gear/dialogs/add_gear_dialog.dart';
+import '../../../domain/domain.dart';
+import '../../../core/core.dart';
 import 'responsive_layout.dart';
+import '../cubits/tutorial/tutorial_cubit.dart';
+import '../cubits/tutorial/tutorial_state.dart';
+import 'tutorial/tutorial_aware_builder.dart';
 
 /// 裝備管理頁籤
 ///
@@ -84,28 +89,54 @@ class _GearTabState extends State<GearTab> {
           },
         ),
       ],
-      child: BlocBuilder<GearCubit, GearState>(
-        builder: (context, state) {
-          final totalWeight = (state is GearLoaded ? state.totalWeightKg : 0.0) + mealWeight;
+      child: TutorialAwareGearBuilder(
+        builder: (context, items) {
+          final totalWeight = items.fold(0.0, (sum, item) => sum + item.totalWeight) / 1000 + mealWeight;
 
-          // Checking loading state is tricky because we might want to show previous data while reloading?
-          // Assuming GearState tracks loading.
-          if (state is GearInitial) {
-            // Try load again if initial (e.g. came from background)
-            _loadGear();
-            return const Center(child: CircularProgressIndicator());
+          final gearState = context.watch<GearCubit>().state;
+          final isTutorial = context.watch<TutorialCubit>().state is TutorialActive;
+
+          if (!isTutorial) {
+            if (gearState is GearInitial) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (gearState is GearLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (gearState is GearError) {
+              return Center(child: Text('Error: ${gearState.message}'));
+            }
+
+            if (gearState is! GearLoaded) {
+              return const Center(child: CircularProgressIndicator());
+            }
           }
 
-          if (state is GearLoading) {
-            return const Center(child: CircularProgressIndicator());
+          // Generate itemsByCategory and filteredItems manually since we only have List<GearItem>
+          final selectedCategory = !isTutorial && gearState is GearLoaded ? gearState.selectedCategory : null;
+          final showUncheckedOnly = !isTutorial && gearState is GearLoaded ? gearState.showUncheckedOnly : false;
+          final searchQuery = !isTutorial && gearState is GearLoaded ? gearState.searchQuery : '';
+
+          var filteredItems = items;
+          if (selectedCategory != null) {
+            filteredItems = filteredItems.where((item) => item.category == selectedCategory).toList();
+          }
+          if (showUncheckedOnly) {
+            filteredItems = filteredItems.where((item) => !item.isChecked).toList();
+          }
+          if (searchQuery.isNotEmpty) {
+            final query = searchQuery.toLowerCase();
+            filteredItems = filteredItems.where((item) => item.name.toLowerCase().contains(query)).toList();
           }
 
-          if (state is GearError) {
-            return Center(child: Text('Error: ${state.message}'));
-          }
-
-          if (state is! GearLoaded) {
-            return const Center(child: CircularProgressIndicator());
+          final itemsByCategory = <String, List<GearItem>>{};
+          for (final cat in GearCategory.all) {
+            final filtered = filteredItems.where((item) => item.category == cat).toList();
+            if (filtered.isNotEmpty) {
+              itemsByCategory[cat] = filtered;
+            }
           }
 
           return Scaffold(
@@ -141,10 +172,10 @@ class _GearTabState extends State<GearTab> {
                         const SizedBox(height: 8),
                         GearMealCard(mealWeight: mealWeight),
                         const SizedBox(height: 16),
-                        if (state.items.isEmpty)
+                        if (items.isEmpty)
                           _buildEmptyState(context)
                         else
-                          ...state.itemsByCategory.entries.map(
+                          ...itemsByCategory.entries.map(
                             (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
                           ),
                         const SizedBox(height: 80),
@@ -204,10 +235,10 @@ class _GearTabState extends State<GearTab> {
                               child: ListView(
                                 padding: const EdgeInsets.all(16),
                                 children: [
-                                  if (state.items.isEmpty)
+                                  if (items.isEmpty)
                                     _buildEmptyState(context)
                                   else
-                                    ...state.itemsByCategory.entries.map(
+                                    ...itemsByCategory.entries.map(
                                       (entry) =>
                                           GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
                                     ),

@@ -18,6 +18,9 @@ import 'itinerary/itinerary_day_side_selector.dart';
 import '../screens/group_event_detail_screen.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'responsive_layout.dart';
+import '../cubits/tutorial/tutorial_cubit.dart';
+import '../cubits/tutorial/tutorial_state.dart';
+import 'tutorial/tutorial_aware_builder.dart';
 
 /// Tab 1: 行程頁
 class ItineraryTab extends StatefulWidget {
@@ -65,26 +68,27 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ItineraryCubit, ItineraryState>(
-      builder: (context, state) {
+    return TutorialAwareItineraryBuilder(
+      builder: (context, itineraryData) {
         return BlocBuilder<SyncCubit, SyncState>(
           builder: (context, syncState) {
-            bool isLoading = state is ItineraryLoading;
-            List<ItineraryItem> items = [];
-            String selectedDay = 'D1';
-            bool isEditMode = false;
+            final items = itineraryData.items;
+            final selectedDay = itineraryData.selectedDay;
+            final isEditMode = itineraryData.isEditMode;
+            final dayNames = itineraryData.dayNames;
 
-            if (state is ItineraryLoaded) {
-              items = state.currentDayItems;
-              selectedDay = state.selectedDay;
-              isEditMode = state.isEditMode;
-            }
+            // Notice that TutorialAwareBuilder does not expose 'isLoading' directly,
+            // but we can check if it's currently fetching from Cubit if needed.
+            // Since Tutorial mode has immediate data, we just assume false for loading
+            // unless we actually check the Cubit. To preserve the loading indicator for
+            // real data, we can still peek at the ItineraryCubit state.
+            bool isLoading =
+                context.read<TutorialCubit>().state is! TutorialActive &&
+                context.watch<ItineraryCubit>().state is ItineraryLoading;
 
             if (isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-
-            final dayNames = state is ItineraryLoaded ? state.dayNames : <String>[];
 
             Widget content = BlocBuilder<TripCubit, TripState>(
               builder: (context, tripState) {

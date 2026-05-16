@@ -9,8 +9,8 @@ class TutorialStepCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      padding: const EdgeInsets.all(24.0),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16.0),
@@ -28,8 +28,8 @@ class TutorialStepCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(step.emoji, style: const TextStyle(fontSize: 32)),
-              const SizedBox(width: 16),
+              Text(step.emoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   step.title,
@@ -40,18 +40,20 @@ class TutorialStepCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             step.description,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  height: 1.5,
-                  fontSize: 16,
+                  height: 1.4,
+                  fontSize: 15,
                 ),
           ),
           if (step.mockDataHint != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(8),

@@ -64,10 +64,6 @@ class TripCubit extends Cubit<TripState> {
     DateTime? endDate,
     String? description,
   }) async {
-    if (state is TripLoaded && (state as TripLoaded).isMockMode) {
-      LogService.info('Mock mode: skip addTrip', source: _source);
-      return null;
-    }
     try {
       final newTrip = Trip(
         id: const Uuid().v7(),
@@ -100,15 +96,6 @@ class TripCubit extends Cubit<TripState> {
 
   /// 更新行程
   Future<void> updateTrip(Trip trip) async {
-    if (state is TripLoaded && (state as TripLoaded).isMockMode) {
-      // Mock 模式下，只更新記憶體，不寫入 DB
-      final currentState = state as TripLoaded;
-      if (currentState.activeTrip?.id == trip.id) {
-        emit(currentState.copyWith(activeTrip: trip));
-      }
-      return;
-    }
-
     try {
       final updatedTrip = trip.copyWith(updatedAt: DateTime.now(), updatedBy: _authService.currentUserId ?? '');
       final result = await _tripRepository.saveTrip(updatedTrip);
@@ -199,11 +186,6 @@ class TripCubit extends Cubit<TripState> {
 
   /// 刪除行程
   Future<void> deleteTrip(String id) async {
-    if (state is TripLoaded && (state as TripLoaded).isMockMode) {
-      LogService.info('Mock mode: skip deleteTrip', source: _source);
-      return;
-    }
-
     try {
       final result = await _tripRepository.deleteTrip(id);
       if (result is Success) {
@@ -244,11 +226,7 @@ class TripCubit extends Cubit<TripState> {
 
       // 上傳成功後，更新本地行程的同步狀態
       final now = DateTime.now();
-      final updatedTrip = trip.copyWith(
-        syncStatus: SyncStatus.synced,
-        cloudSyncedAt: now,
-        updatedAt: now,
-      );
+      final updatedTrip = trip.copyWith(syncStatus: SyncStatus.synced, cloudSyncedAt: now, updatedAt: now);
       await _tripRepository.saveTrip(updatedTrip);
       await loadTrips(); // 刷新 UI 狀態
 
@@ -311,41 +289,9 @@ class TripCubit extends Cubit<TripState> {
   Future<bool> uploadActiveTrip() async {
     if (state is! TripLoaded) return false;
     final currentState = state as TripLoaded;
-    if (currentState.isMockMode) {
-      LogService.info('Mock mode: skip uploadActiveTrip', source: _source);
-      return false;
-    }
     final trip = currentState.activeTrip;
     if (trip == null) return false;
     return uploadFullTrip(trip);
-  }
-
-  // ─────────────────────────────────────────────
-  // 教學導覽的 Mock 資料注入
-  // ─────────────────────────────────────────────
-
-  /// 注入 Mock 行程資料（教學模式用）
-  ///
-  /// 這將暫時覆蓋目前的 TripLoaded 狀態，直到呼叫 `clearMockTrip()`
-  void injectMockTrip(Trip mockTrip) {
-    if (state is TripLoaded) {
-      final currentState = state as TripLoaded;
-      // 保留原本的列表，但將 activeTrip 替換成 mockTrip
-      emit(currentState.copyWith(
-        activeTrip: mockTrip,
-        isMockMode: true,
-      ));
-    } else {
-      emit(TripLoaded(trips: const [], activeTrip: mockTrip, isMockMode: true));
-    }
-  }
-
-  /// 移除 Mock 行程，恢復真實資料
-  Future<void> clearMockTrip() async {
-    if (state is TripLoaded && (state as TripLoaded).isMockMode) {
-      // 重新載入真實資料
-      await loadTrips();
-    }
   }
 }
 

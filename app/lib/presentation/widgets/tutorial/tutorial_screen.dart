@@ -49,7 +49,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<TutorialCubit, TutorialState>(
-      listenWhen: (previous, current) => current is TutorialInitial,
+      listenWhen: (previous, current) => current is TutorialInitial || current is TutorialActive,
       listener: (context, state) {
         if (state is TutorialInitial && ModalRoute.of(context)?.isCurrent == true) {
           Navigator.of(context).pop();
@@ -116,15 +116,15 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   ),
                 ),
 
-                // Bottom Cards
+                // Tutorial Cards (Steps)
                 SizedBox(
-                  height: 280, // Fixed height for cards
+                  height: 230,
                   child: PageView.builder(
                     controller: _pageController,
+                    itemCount: steps.length,
                     onPageChanged: (index) {
                       context.read<TutorialCubit>().goToStep(index);
                     },
-                    itemCount: steps.length,
                     itemBuilder: (context, index) {
                       return TutorialStepCard(step: steps[index]);
                     },
@@ -133,18 +133,38 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
                 // Card Controls
                 Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        width: 1,
+                      ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       if (state.currentStepIndex > 0)
-                        TextButton.icon(
+                        ElevatedButton.icon(
                           onPressed: () => context.read<TutorialCubit>().previousStep(),
                           icon: const Icon(Icons.arrow_back),
                           label: const Text('上一步'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.onSurface,
+                            backgroundColor: Theme.of(context).colorScheme.surface,
+                          ),
                         )
                       else
-                        const SizedBox(width: 100),
+                        const SizedBox(width: 110),
 
                       // Page Indicators
                       Row(
@@ -165,13 +185,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
                       ),
 
                       if (state.currentStepIndex < steps.length - 1)
-                        TextButton.icon(
+                        FilledButton.icon(
                           onPressed: () => context.read<TutorialCubit>().nextStep(),
                           label: const Text('下一步'),
                           icon: const Icon(Icons.arrow_forward),
                         )
                       else
-                        TextButton.icon(
+                        FilledButton.icon(
                           onPressed: () {
                             // Find next chapter index
                             final chapters = TutorialChapter.values;
@@ -185,6 +205,9 @@ class _TutorialScreenState extends State<TutorialScreen> {
                           label: Text(_currentChapter == TutorialChapter.values.last ? '完成' : '下一章'),
                           icon: Icon(
                             _currentChapter == TutorialChapter.values.last ? Icons.check : Icons.arrow_forward,
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                     ],
