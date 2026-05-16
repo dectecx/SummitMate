@@ -79,6 +79,18 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                     side: BorderSide(color: statusColor),
                     backgroundColor: statusColor.withValues(alpha: 0.1),
                   ),
+                  if (event.myApplicationStatus != null) ...[
+                    const SizedBox(width: 4),
+                    _buildMyApplicationStatusChip(event.myApplicationStatus!),
+                  ] else if (isHost) ...[
+                    const SizedBox(width: 4),
+                    Chip(
+                      label: const Text('主辦人', style: TextStyle(fontSize: 10, color: Colors.blue)),
+                      visualDensity: VisualDensity.compact,
+                      side: const BorderSide(color: Colors.blue),
+                      backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 8),
@@ -192,6 +204,37 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
       case GroupEventStatus.cancelled:
         return Colors.red;
     }
+  }
+
+  Widget _buildMyApplicationStatusChip(GroupEventApplicationStatus status) {
+    String text;
+    Color color;
+
+    switch (status) {
+      case GroupEventApplicationStatus.pending:
+        text = '審核中';
+        color = Colors.orange;
+        break;
+      case GroupEventApplicationStatus.approved:
+        text = '已加入';
+        color = Colors.green;
+        break;
+      case GroupEventApplicationStatus.rejected:
+        text = '未通過';
+        color = Colors.red;
+        break;
+      case GroupEventApplicationStatus.cancelled:
+        text = '已取消';
+        color = Colors.grey;
+        break;
+    }
+
+    return Chip(
+      label: Text(text, style: TextStyle(fontSize: 10, color: color)),
+      visualDensity: VisualDensity.compact,
+      side: BorderSide(color: color),
+      backgroundColor: color.withValues(alpha: 0.1),
+    );
   }
 
   String _getStatusText(GroupEventStatus status) {
