@@ -176,6 +176,16 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApp
 	app.CreatedBy = app.UserID
 	app.UpdatedBy = app.UserID
 
+	if !event.ApprovalRequired {
+		app.Status = ApplicationStatusApproved
+		// 如果活動有連結行程，自動加入行程成員
+		if event.LinkedTripID != nil {
+			_, _ = s.tripServ.AddMember(ctx, *event.LinkedTripID, event.CreatedBy, app.UserID)
+		}
+	} else {
+		app.Status = ApplicationStatusPending
+	}
+
 	// Fetch user details for the response
 	user, err := s.authServ.GetUserByID(ctx, app.UserID)
 	if err == nil && user != nil {
