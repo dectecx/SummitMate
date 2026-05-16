@@ -189,8 +189,9 @@ void main() {
         ).thenAnswer((_) async => Success(testTrip)); // For loadItinerary
         when(() => mockTripRepository.updateTrip(any())).thenAnswer((_) async => const Success(null));
 
-        // Also stub getByTripId for loadItinerary which is called after addDay
+        // Also stub getByTripId and getMealPlanDays for loadItinerary which is called after addDay
         when(() => mockItineraryRepository.getByTripId(any())).thenAnswer((_) async => []);
+        when(() => mockTripRepository.getMealPlanDays(any())).thenAnswer((_) async => const Success([]));
 
         // Re-initialize cubit with reset mocks
         cubit = ItineraryCubit(mockItineraryRepository, mockTripRepository, mockAuthService);

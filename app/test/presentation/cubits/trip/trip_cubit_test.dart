@@ -211,7 +211,11 @@ void main() {
 
     test('uploadFullTrip gathers data and calls repo', () async {
       when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => []);
+      when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
+      when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
       when(() => mockTripRepository.uploadToCloud(any())).thenAnswer((_) async => const Success('mock-id'));
+      when(() => mockTripRepository.updateLocalTripId(any(), any())).thenAnswer((_) async => const Success(null));
+      when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
       when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => const Success(null));
       when(() => mockTripGearRemoteDataSource.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());
 
@@ -227,7 +231,7 @@ void main() {
 
       expect(result, true);
       verify(() => mockTripRepository.uploadToCloud(trip1)).called(1);
-      verify(() => mockItineraryRepository.sync('trip1')).called(1);
+      verify(() => mockItineraryRepository.sync('mock-id')).called(1);
     });
 
     test('loadTrips emits TripError on failure', () async {
