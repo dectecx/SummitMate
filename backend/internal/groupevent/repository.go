@@ -13,7 +13,7 @@ import (
 type GroupEventRepository interface {
 	CreateEvent(ctx context.Context, event *GroupEvent) error
 	GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error)
-	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error)
+	ListEvents(ctx context.Context, status *string, category *Category, hostID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error)
 	ListEventsByUser(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error)
 	UpdateEvent(ctx context.Context, event *GroupEvent) error
 	DeleteEvent(ctx context.Context, id string) error
@@ -67,7 +67,7 @@ func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEven
 
 func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error) {
 	query := `
-        SELECT 
+        SELECT
             e.id, e.host_id, e.host_name, e.host_avatar,
             e.title, e.description, e.category, e.location, e.start_date, e.end_date,
             e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
@@ -103,7 +103,7 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, user
 	return event, nil
 }
 
-func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
+func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, category *Category, hostID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
 	if limit <= 0 {
 		limit = 20
 	}
@@ -122,9 +122,9 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 		args = append(args, *category)
 		whereClause += fmt.Sprintf(" AND e.category = $%d", len(args))
 	}
-	if creatorID != nil {
-		args = append(args, *creatorID)
-		whereClause += fmt.Sprintf(" AND e.created_by = $%d", len(args))
+	if hostID != nil {
+		args = append(args, *hostID)
+		whereClause += fmt.Sprintf(" AND e.host_id = $%d", len(args))
 	}
 	if search != "" {
 		args = append(args, "%"+search+"%")
@@ -200,14 +200,14 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 	whereClause := ""
 	switch listType {
 	case "host":
-		whereClause = "WHERE e.created_by = $1"
+		whereClause = "WHERE e.host_id = $1"
 	case "apply":
 		whereClause = "WHERE EXISTS (SELECT 1 FROM group_event_applications WHERE event_id = e.id AND user_id = $1)"
 	case "like":
 		whereClause = "WHERE EXISTS (SELECT 1 FROM group_event_likes WHERE event_id = e.id AND user_id = $1)"
 	default:
 		// Default to host if unknown
-		whereClause = "WHERE e.created_by = $1"
+		whereClause = "WHERE e.host_id = $1"
 	}
 
 	db := database.GetQuerier(ctx, r.db)
@@ -218,7 +218,7 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 	}
 
 	mainQuery := fmt.Sprintf(`
-        SELECT 
+        SELECT
             e.id, e.host_id, e.host_name, e.host_avatar,
             e.title, e.description, e.category, e.location, e.start_date, e.end_date,
             e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,

@@ -79,8 +79,8 @@ func (s *groupEventService) GetEvent(ctx context.Context, id string, userID stri
 	return s.repo.GetEventByID(ctx, id, userID)
 }
 
-func (s *groupEventService) ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
-	return s.repo.ListEvents(ctx, status, category, creatorID, page, limit, search, userID)
+func (s *groupEventService) ListEvents(ctx context.Context, status *string, category *Category, hostID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error) {
+	return s.repo.ListEvents(ctx, status, category, hostID, page, limit, search, userID)
 }
 
 func (s *groupEventService) ListMyEvents(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error) {
@@ -95,7 +95,7 @@ func (s *groupEventService) UpdateEvent(ctx context.Context, event *GroupEvent, 
 	if existing == nil {
 		return apperror.ErrEventNotFound
 	}
-	if existing.CreatedBy != userID {
+	if existing.HostID != userID {
 		s.logger.WarnContext(ctx, "更新活動權限不足", "event_id", event.ID, "user_id", userID)
 		return apperror.ErrEventAccessDenied
 	}
@@ -117,7 +117,7 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 	if existing == nil {
 		return apperror.ErrEventNotFound
 	}
-	if existing.CreatedBy != userID {
+	if existing.HostID != userID {
 		s.logger.WarnContext(ctx, "刪除活動權限不足", "event_id", id, "user_id", userID)
 		return apperror.ErrEventAccessDenied
 	}
@@ -228,7 +228,7 @@ func (s *groupEventService) ListApplications(ctx context.Context, id string, use
 	if event == nil {
 		return nil, apperror.ErrEventNotFound
 	}
-	if event.CreatedBy != userID {
+	if event.HostID != userID {
 		return nil, apperror.ErrEventAccessDenied
 	}
 
@@ -243,7 +243,7 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 	if event == nil {
 		return apperror.ErrEventNotFound
 	}
-	if event.CreatedBy != executorID {
+	if event.HostID != executorID {
 		s.logger.WarnContext(ctx, "審核活動報名權限不足", "event_id", eventID, "executor_id", executorID)
 		return apperror.ErrEventAccessDenied
 	}
@@ -314,7 +314,7 @@ func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, 
 	if event == nil {
 		return apperror.ErrEventNotFound
 	}
-	if event.CreatedBy != userID {
+	if event.HostID != userID {
 		return apperror.ErrEventAccessDenied
 	}
 
@@ -361,7 +361,7 @@ func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID stri
 	if event == nil {
 		return apperror.ErrEventNotFound
 	}
-	if event.CreatedBy != userID {
+	if event.HostID != userID {
 		return apperror.ErrEventAccessDenied
 	}
 	if event.LinkedTripID == nil {

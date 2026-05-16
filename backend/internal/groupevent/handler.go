@@ -22,14 +22,14 @@ func NewGroupEventHandler(service GroupEventService) *GroupEventHandler {
 }
 
 func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Request, params api.GetGroupEventsParams) {
-	var statusPtr, creatorIDPtr *string
+	var statusPtr, hostIDPtr *string
 	if params.Status != nil {
 		s := string(*params.Status)
 		statusPtr = &s
 	}
 	if params.CreatorId != nil {
 		c := params.CreatorId.String()
-		creatorIDPtr = &c
+		hostIDPtr = &c
 	}
 
 	page := 1
@@ -52,7 +52,7 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 	}
 
 	userID, _ := appMiddleware.GetUserIDFromContext(r.Context())
-	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, categoryPtr, creatorIDPtr, page, limit, search, userID)
+	events, total, hasMore, err := h.service.ListEvents(r.Context(), statusPtr, categoryPtr, hostIDPtr, page, limit, search, userID)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
