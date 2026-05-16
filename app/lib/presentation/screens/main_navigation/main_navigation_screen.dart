@@ -187,6 +187,9 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                 case 'groupEvent':
                   targetIndex = 2;
                   break;
+                case 'cloud':
+                  targetIndex = 0; // 在首頁較容易看到上傳雲端與指示燈
+                  break;
                 case 'quick_tour':
                   // 根據 Quick Tour 的步驟切換背景畫面，便於使用者對照
                   if (state.currentStepIndex == 0) {
