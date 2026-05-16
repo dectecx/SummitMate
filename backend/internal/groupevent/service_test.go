@@ -111,6 +111,7 @@ func TestGroupEventService_ApplyToEvent(t *testing.T) {
 
 		event := &GroupEvent{ID: eventID, Status: "open"}
 		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
+		mockAuth.On("GetUserByID", mock.Anything, userID).Return(&auth.User{DisplayName: "Applicant"}, nil).Once()
 		mockRepo.On("ApplyToEvent", mock.Anything, app).Return(nil).Once()
 
 		err := svc.ApplyToEvent(context.Background(), app)

@@ -21,6 +21,7 @@ type GroupEventService interface {
 
 	ApplyToEvent(ctx context.Context, app *GroupEventApplication) error
 	CancelApplication(ctx context.Context, appID string, userID string) error
+	GetApplication(ctx context.Context, id string) (*GroupEventApplication, error)
 	ListApplications(ctx context.Context, id string, userID string) ([]*GroupEventApplication, error)
 	ProcessApplication(ctx context.Context, eventID, userID, status, executorID string) error
 
@@ -213,6 +214,10 @@ func (s *groupEventService) CancelApplication(ctx context.Context, appID string,
 
 	s.logger.InfoContext(ctx, "取消報名成功", "app_id", appID, "user_id", userID)
 	return nil
+}
+
+func (s *groupEventService) GetApplication(ctx context.Context, id string) (*GroupEventApplication, error) {
+	return s.repo.GetApplicationByID(ctx, id)
 }
 
 func (s *groupEventService) ListApplications(ctx context.Context, id string, userID string) ([]*GroupEventApplication, error) {
