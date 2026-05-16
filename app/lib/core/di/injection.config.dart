@@ -134,6 +134,7 @@ import '../../domain/repositories/i_favorites_repository.dart' as _i571;
 import '../../domain/repositories/i_gear_repository.dart' as _i684;
 import '../../domain/repositories/i_itinerary_repository.dart' as _i750;
 import '../../domain/repositories/i_settings_repository.dart' as _i868;
+import '../../domain/repositories/i_trip_repository.dart' as _i634;
 import '../../infrastructure/clients/api_client.dart' as _i1019;
 import '../../infrastructure/clients/network_aware_client.dart' as _i7;
 import '../../infrastructure/database/app_database.dart' as _i89;
@@ -200,6 +201,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i77.MapCubit>(() => _i77.MapCubit());
     gh.factory<_i843.OfflineMapCubit>(() => _i843.OfflineMapCubit());
+    gh.factory<_i259.TutorialCubit>(() => _i259.TutorialCubit());
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => registerModule.secureStorage,
     );
@@ -433,9 +435,6 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i147.IAuthService>(),
       ),
     );
-    gh.factory<_i55.GearCubit>(
-      () => _i55.GearCubit(gh<_i684.IGearRepository>()),
-    );
     gh.lazySingleton<_i750.IItineraryRepository>(
       () => _i790.ItineraryRepository(
         localDataSource: gh<_i116.IItineraryLocalDataSource>(),
@@ -459,6 +458,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i774.ITripLocalDataSource>(),
         gh<_i941.ITripRemoteDataSource>(),
         gh<_i999.ITripMealRemoteDataSource>(),
+      ),
+    );
+    gh.factory<_i55.GearCubit>(
+      () => _i55.GearCubit(
+        gh<_i684.IGearRepository>(),
+        gh<_i634.ITripRepository>(),
       ),
     );
     gh.lazySingleton<_i614.IMessageRepository>(
@@ -551,7 +556,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.ITripRepository>(),
       ),
     );
-    gh.factory<_i259.TutorialCubit>(() => _i259.TutorialCubit());
     return this;
   }
 }

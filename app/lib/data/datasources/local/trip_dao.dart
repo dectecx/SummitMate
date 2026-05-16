@@ -206,4 +206,16 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
       await (delete(tripsTable)..where((t) => t.id.equals(oldId))).go();
     });
   }
+
+  @override
+  Future<void> markTripAsPendingUpdate(String tripId) async {
+    final trip = await (select(tripsTable)..where((t) => t.id.equals(tripId))).getSingleOrNull();
+    if (trip != null && trip.syncStatus == SyncStatus.synced) {
+      await (update(tripsTable)..where((t) => t.id.equals(tripId))).write(
+        const TripsTableCompanion(
+          syncStatus: Value(SyncStatus.pendingUpdate),
+        ),
+      );
+    }
+  }
 }

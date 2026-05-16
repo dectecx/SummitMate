@@ -27,7 +27,12 @@ class TripCubit extends Cubit<TripState> {
     this._gearRepository,
     this._itineraryRepository,
     this._gearRemoteDataSource,
-  ) : super(const TripInitial());
+  ) : super(const TripInitial()) {
+    _tripRepository.tripUpdateStream.listen((tripId) {
+      // 當行程更新時，重新載入列表以更新 UI 狀態 (如 SyncStatus)
+      loadTrips();
+    });
+  }
 
   /// 載入行程列表
   Future<void> loadTrips() async {
@@ -97,7 +102,12 @@ class TripCubit extends Cubit<TripState> {
   /// 更新行程
   Future<void> updateTrip(Trip trip) async {
     try {
-      final updatedTrip = trip.copyWith(updatedAt: DateTime.now(), updatedBy: _authService.currentUserId ?? '');
+      final newStatus = trip.syncStatus == SyncStatus.synced ? SyncStatus.pendingUpdate : trip.syncStatus;
+      final updatedTrip = trip.copyWith(
+        syncStatus: newStatus,
+        updatedAt: DateTime.now(),
+        updatedBy: _authService.currentUserId ?? '',
+      );
       final result = await _tripRepository.saveTrip(updatedTrip);
 
       // 手動更新當前狀態中的 trips 列表與 activeTrip，確保 UI 立即反映變更

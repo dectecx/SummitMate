@@ -59,4 +59,7 @@ abstract interface class ITripLocalDataSource {
 
   /// 遷移行程 ID (用於離線建立行程後，上傳至雲端取得新 ID 時，同步更新所有本地關聯資料)
   Future<void> migrateTripId(String oldId, String newId);
+
+  /// 將行程標記為待更新
+  Future<void> markTripAsPendingUpdate(String tripId);
 }
