@@ -8,7 +8,7 @@ import (
 )
 
 // ToGroupEventResponse converts GroupEvent to api.GroupEvent
-func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
+func ToGroupEventResponse(e *GroupEvent, requesterID string) api.GroupEvent {
 	var endDate *openapi_types.Date
 	if e.EndDate != nil {
 		d := openapi_types.Date{Time: *e.EndDate}
@@ -22,7 +22,10 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 	}
 
 	var privateMsg *string
-	if e.PrivateMessage != "" {
+	isApproved := e.MyApplicationStatus != nil && *e.MyApplicationStatus == ApplicationStatusApproved
+	isHost := e.HostID == requesterID
+
+	if (isApproved || isHost) && e.PrivateMessage != "" {
 		privateMsg = &e.PrivateMessage
 	}
 

@@ -80,6 +80,8 @@ class GroupEventRepository implements IGroupEventRepository {
     required int maxParticipants,
     required DateTime deadline,
     required String hostId,
+    bool approvalRequired = false,
+    String privateMessage = '',
     String? linkedTripId,
   }) async {
     return _remoteDataSource.createEvent(
@@ -90,6 +92,8 @@ class GroupEventRepository implements IGroupEventRepository {
       eventLocation: eventLocation,
       maxParticipants: maxParticipants,
       deadline: deadline,
+      approvalRequired: approvalRequired,
+      privateMessage: privateMessage,
       linkedTripId: linkedTripId,
     );
   }

@@ -131,6 +131,23 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     }
   }
 
+  /// 重新整理特定揪團資料
+  Future<void> refreshEvent(String eventId) async {
+    if (_isOffline) return;
+
+    try {
+      final result = await _groupEventRepository.syncEventById(eventId);
+      if (result is Success<GroupEvent, Exception> && state is GroupEventLoaded) {
+        final updatedEvent = result.value;
+        final currentState = state as GroupEventLoaded;
+        final updatedEvents = currentState.events.map((e) => e.id == eventId ? updatedEvent : e).toList();
+        emit(currentState.copyWith(events: updatedEvents));
+      }
+    } catch (e) {
+      LogService.error('Refresh event $eventId failed: $e', source: _source);
+    }
+  }
+
   /// 執行需要認證的遠端操作
   Future<bool> _executeRemoteAction(
     Future<Result<dynamic, Exception>> Function() action,
@@ -188,6 +205,8 @@ class GroupEventCubit extends Cubit<GroupEventState> {
         maxParticipants: maxMembers,
         deadline: endDate ?? startDate,
         hostId: _currentUserId,
+        approvalRequired: approvalRequired,
+        privateMessage: privateMessage,
         linkedTripId: linkedTripId,
       ),
       '離線模式無法建立揪團',

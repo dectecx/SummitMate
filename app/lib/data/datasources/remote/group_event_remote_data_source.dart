@@ -68,6 +68,8 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     required String eventLocation,
     required int maxParticipants,
     required DateTime deadline,
+    bool approvalRequired = false,
+    String privateMessage = '',
     String? linkedTripId,
   }) async {
     try {
@@ -78,7 +80,8 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
         location: eventLocation,
         startDate: eventDate,
         maxMembers: maxParticipants,
-        approvalRequired: true, // Default to true if not specified
+        approvalRequired: approvalRequired,
+        privateMessage: privateMessage,
         linkedTripId: linkedTripId,
       );
       final response = await _groupEventApi.createEvent(request);
