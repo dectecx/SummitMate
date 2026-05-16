@@ -38,6 +38,9 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		event := &GroupEvent{
 			Title:     "Hiking Trip",
+			HostID:    "user-1",
+			HostName:  "Host User",
+			HostAvatar: "avatar-1",
 			CreatedBy: "user-1",
 		}
 		mockRepo.On("CreateEvent", mock.Anything, event).Return(nil).Once()
@@ -71,7 +74,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		userID := "user-1"
 		event := &GroupEvent{ID: eventID, Title: "Updated Title"}
 
-		existing := &GroupEvent{ID: eventID, CreatedBy: userID}
+		existing := &GroupEvent{ID: eventID, HostID: userID}
 		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(existing, nil).Once()
 		mockRepo.On("UpdateEvent", mock.Anything, event).Return(nil).Once()
 
@@ -87,7 +90,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		userID := "user-other"
 		event := &GroupEvent{ID: eventID}
 
-		existing := &GroupEvent{ID: eventID, CreatedBy: "user-creator"}
+		existing := &GroupEvent{ID: eventID, HostID: "user-creator"}
 		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(existing, nil).Once()
 
 		err := svc.UpdateEvent(context.Background(), event, userID)
