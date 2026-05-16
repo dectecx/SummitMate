@@ -99,6 +99,19 @@ class TripCubit extends Cubit<TripState> {
     try {
       final updatedTrip = trip.copyWith(updatedAt: DateTime.now(), updatedBy: _authService.currentUserId ?? '');
       final result = await _tripRepository.saveTrip(updatedTrip);
+
+      // 手動更新當前狀態中的 trips 列表與 activeTrip，確保 UI 立即反映變更
+      if (result is Success && state is TripLoaded) {
+        final currentState = state as TripLoaded;
+        final updatedTrips = currentState.trips.map((t) => t.id == updatedTrip.id ? updatedTrip : t).toList();
+        emit(
+          currentState.copyWith(
+            trips: updatedTrips,
+            activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
+          ),
+        );
+      }
+
       if (result is Success) {
         await loadTrips();
       } else {
@@ -201,6 +214,11 @@ class TripCubit extends Cubit<TripState> {
 
   /// 上傳整個行程的資料到雲端 (Metadata + Itinerary + Gear)
   Future<bool> uploadFullTrip(Trip trip) async {
+    // 如果已經同步過且沒有待更新的變更，直接返回成功
+    if (trip.syncStatus == SyncStatus.synced && trip.cloudSyncedAt != null) {
+      return true;
+    }
+
     try {
       final allGear = await _gearRepository.getAllItems();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
@@ -220,7 +238,7 @@ class TripCubit extends Cubit<TripState> {
         LogService.info('Migrating local trip ID from ${trip.id} to $serverTripId', source: _source);
         final migrateResult = await _tripRepository.updateLocalTripId(trip.id, serverTripId);
         if (migrateResult is Failure) {
-          LogService.error('Local trip ID migration failed: ${(migrateResult as Failure).exception}', source: _source);
+          LogService.error('Local trip ID migration failed: ${migrateResult.exception}', source: _source);
           return false;
         }
         finalTripId = serverTripId;
@@ -251,7 +269,20 @@ class TripCubit extends Cubit<TripState> {
         cloudSyncedAt: now,
         updatedAt: now,
       );
-      await _tripRepository.saveTrip(updatedTrip);
+      final saveResult = await _tripRepository.saveTrip(updatedTrip);
+      if (saveResult is Failure) {
+        LogService.error('Failed to save updated trip: ${saveResult.exception}', source: _source);
+        return false;
+      }
+
+      // 手動更新當前狀態中的 trips 列表與 activeTrip，確保 UI 立即反映變更
+      if (state is TripLoaded) {
+        final currentState = state as TripLoaded;
+        final updatedTrips = currentState.trips
+            .map((t) => t.id == trip.id || t.id == finalTripId ? updatedTrip : t)
+            .toList();
+        emit(currentState.copyWith(trips: updatedTrips, activeTrip: updatedTrip));
+      }
 
       await loadTrips();
       LogService.info('Full trip upload successful: ${trip.name}', source: _source);

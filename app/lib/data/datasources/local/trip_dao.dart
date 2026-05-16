@@ -74,7 +74,7 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
 
   @override
   Future<void> addTrip(Trip trip) async {
-    await into(tripsTable).insert(trip.toCompanion());
+    await into(tripsTable).insertOnConflictUpdate(trip.toCompanion());
   }
 
   @override
