@@ -245,4 +245,9 @@ class SyncCubit extends Cubit<SyncState> {
   DateTime? _getLastSyncTime() {
     return _syncService.lastItinerarySync;
   }
+
+  /// 重置狀態
+  void reset() {
+    emit(const SyncInitial());
+  }
 }

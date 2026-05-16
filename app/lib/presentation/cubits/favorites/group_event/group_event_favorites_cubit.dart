@@ -59,4 +59,9 @@ class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
     }
     return false;
   }
+
+  /// 重置狀態
+  void reset() {
+    emit(GroupEventFavoritesInitial());
+  }
 }
