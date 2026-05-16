@@ -46,7 +46,7 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 
 		result, err := svc.AddTripMessage(context.Background(), tripID, userID, msg)
 
-		assert.ErrorIs(t, err, apperror.ErrAccessDenied)
+		assert.ErrorIs(t, err, apperror.ErrTripAccessDenied)
 		assert.Nil(t, result)
 	})
 }
