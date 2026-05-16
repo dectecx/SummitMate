@@ -1,4 +1,5 @@
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/core/constants/domain_constants.dart';
 
 /// 教學模式的完整 Mock 資料快照
 ///
@@ -142,7 +143,7 @@ class TutorialMockData {
         tripId: _mockTripId,
         name: '登山背包 65L',
         weight: 1800,
-        category: '背包',
+        category: GearCategory.wear,
         quantity: 1,
         createdAt: now,
         updatedAt: now,
@@ -152,7 +153,7 @@ class TutorialMockData {
         tripId: _mockTripId,
         name: '三季睡袋',
         weight: 1200,
-        category: '睡眠',
+        category: GearCategory.sleep,
         quantity: 1,
         createdAt: now,
         updatedAt: now,
@@ -162,7 +163,7 @@ class TutorialMockData {
         tripId: _mockTripId,
         name: '輕量帳篷',
         weight: 1500,
-        category: '住宿',
+        category: GearCategory.sleep,
         quantity: 1,
         createdAt: now,
         updatedAt: now,
@@ -172,7 +173,7 @@ class TutorialMockData {
         tripId: _mockTripId,
         name: '登山雨衣（上衣）',
         weight: 400,
-        category: '衣物',
+        category: GearCategory.wear,
         quantity: 1,
         createdAt: now,
         updatedAt: now,
