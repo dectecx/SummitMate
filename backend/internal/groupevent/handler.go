@@ -257,7 +257,7 @@ func (h *GroupEventHandler) PostGroupEventsIdApply(w http.ResponseWriter, r *htt
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	apiutil.SendJSON(w, http.StatusCreated, ToGroupEventApplicationResponse(app))
 }
 
 func (h *GroupEventHandler) GetGroupEventsIdApplications(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {

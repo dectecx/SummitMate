@@ -80,6 +80,10 @@ type GroupEventApplication struct {
 	CreatedBy string    `json:"created_by" db:"created_by"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 	UpdatedBy string    `json:"updated_by" db:"updated_by"`
+
+	// Response-only: populated via AuthService or JOIN
+	UserName   string `json:"user_name" db:"-"`
+	UserAvatar string `json:"user_avatar" db:"-"`
 }
 
 type GroupEventComment struct {

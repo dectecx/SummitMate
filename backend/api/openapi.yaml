@@ -3825,6 +3825,8 @@ components:
         - id
         - event_id
         - user_id
+        - user_name
+        - user_avatar
         - status
         - message
         - created_at
@@ -3841,6 +3843,10 @@ components:
         user_id:
           type: string
           format: uuid
+        user_name:
+          type: string
+        user_avatar:
+          type: string
         status:
           type: string
           enum: [pending, approved, rejected, cancelled]
