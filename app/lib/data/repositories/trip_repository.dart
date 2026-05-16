@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
 import '../../infrastructure/tools/log_service.dart';
@@ -8,14 +9,18 @@ import '../datasources/interfaces/i_trip_remote_data_source.dart';
 import '../datasources/interfaces/i_trip_meal_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 
-/// 行程 Repository (支援 Offline-First)
 @LazySingleton(as: ITripRepository)
 class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
   final ITripMealRemoteDataSource _mealRemoteDataSource;
 
+  final _tripUpdateController = StreamController<String>.broadcast();
+
   TripRepository(this._localDataSource, this._remoteDataSource, this._mealRemoteDataSource);
+
+  @override
+  Stream<String> get tripUpdateStream => _tripUpdateController.stream;
 
   @override
   Future<Result<void, Exception>> init() async {
@@ -60,6 +65,7 @@ class TripRepository implements ITripRepository {
   Future<Result<void, Exception>> saveTrip(Trip trip) async {
     try {
       await _localDataSource.addTrip(trip);
+      _tripUpdateController.add(trip.id);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -70,6 +76,7 @@ class TripRepository implements ITripRepository {
   Future<Result<void, Exception>> updateTrip(Trip trip) async {
     try {
       await _localDataSource.updateTrip(trip);
+      _tripUpdateController.add(trip.id);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -255,6 +262,17 @@ class TripRepository implements ITripRepository {
   Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId) async {
     try {
       await _localDataSource.migrateTripId(oldId, newId);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> markTripAsPendingUpdate(String tripId) async {
+    try {
+      await _localDataSource.markTripAsPendingUpdate(tripId);
+      _tripUpdateController.add(tripId);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

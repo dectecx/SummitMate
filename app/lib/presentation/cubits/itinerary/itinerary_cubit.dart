@@ -23,6 +23,13 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     };
   }
 
+  Future<void> _markCurrentTripDirty() async {
+    final tripId = await _getCurrentTripId();
+    if (tripId != null) {
+      await _tripRepository.markTripAsPendingUpdate(tripId);
+    }
+  }
+
   /// 載入當前行程的項目
   Future<void> loadItinerary() async {
     try {
@@ -217,6 +224,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       final result = await _repository.toggleCheckIn(id);
       if (result is Failure) throw result.exception;
       LogService.info('Toggle check-in: $id', source: _source);
+      await _markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Toggle check-in failed: $e', source: _source);
@@ -242,6 +250,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       final result = await _repository.update(updatedItem);
       if (result is Failure) throw result.exception;
       LogService.info('Check-in with time: $id at $time', source: _source);
+      await _markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Check-in with time failed: $e', source: _source);
@@ -272,6 +281,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       final result = await _repository.add(itemToAdd);
       if (result is Failure) throw result.exception;
       LogService.info('Added item: ${item.name}', source: _source);
+      await _markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Add item failed: $e', source: _source);
@@ -290,6 +300,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       final result = await _repository.update(itemToUpdate);
       if (result is Failure) throw result.exception;
       LogService.info('Updated item: ${item.name}', source: _source);
+      await _markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Update item failed: $e', source: _source);
@@ -303,6 +314,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       final result = await _repository.delete(id);
       if (result is Failure) throw result.exception;
       LogService.info('Deleted item: $id', source: _source);
+      await _markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Delete item failed: $e', source: _source);

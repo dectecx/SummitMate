@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../../domain/repositories/i_gear_repository.dart';
+import '../../../domain/repositories/i_trip_repository.dart';
 import '../../../core/error/app_error_handler.dart';
 import '../../../core/error/result.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -19,10 +20,11 @@ import '../../cubits/gear/gear_state.dart';
 @injectable
 class GearCubit extends Cubit<GearState> {
   final IGearRepository _repository;
+  final ITripRepository _tripRepository;
   String? _currentTripId;
   static const String _source = 'GearCubit';
 
-  GearCubit(this._repository) : super(const GearInitial());
+  GearCubit(this._repository, this._tripRepository) : super(const GearInitial());
 
   String? get currentTripId => _currentTripId;
 
@@ -57,6 +59,12 @@ class GearCubit extends Cubit<GearState> {
       } else {
         emit(GearLoaded(items: tripItems));
       }
+    }
+  }
+
+  Future<void> _markCurrentTripDirty() async {
+    if (_currentTripId != null) {
+      await _tripRepository.markTripAsPendingUpdate(_currentTripId!);
     }
   }
 
@@ -121,6 +129,7 @@ class GearCubit extends Cubit<GearState> {
 
       final result = await _repository.addItem(item);
       if (result is Failure) throw result.exception;
+      await _markCurrentTripDirty();
       await reload();
     } catch (e) {
       LogService.error('Failed to add item: $e', source: _source);
@@ -133,6 +142,7 @@ class GearCubit extends Cubit<GearState> {
     try {
       final result = await _repository.updateItem(item);
       if (result is Failure) throw result.exception;
+      await _markCurrentTripDirty();
       await reload();
     } catch (e) {
       LogService.error('Failed to update item: $e', source: _source);
@@ -161,6 +171,7 @@ class GearCubit extends Cubit<GearState> {
     try {
       final result = await _repository.deleteItem(id);
       if (result is Failure) throw result.exception;
+      await _markCurrentTripDirty();
       await reload();
     } catch (e) {
       LogService.error('Failed to delete item: $e', source: _source);
@@ -232,6 +243,7 @@ class GearCubit extends Cubit<GearState> {
         final itemToAdd = item.copyWith(tripId: _currentTripId!, isChecked: false, createdAt: DateTime.now());
         await _repository.addItem(itemToAdd);
       }
+      await _markCurrentTripDirty();
       await loadGear(_currentTripId!);
     } catch (e) {
       LogService.error('Failed to replace items: $e', source: _source);

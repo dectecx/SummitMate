@@ -9,6 +9,9 @@ abstract interface class ITripRepository {
   /// 初始化 Repository
   Future<Result<void, Exception>> init();
 
+  /// 監聽行程更新事件 (當本地資料變動時觸發)
+  Stream<String> get tripUpdateStream;
+
   // ========== Data Operations ==========
 
   /// 取得所有行程（本地）
@@ -126,4 +129,7 @@ abstract interface class ITripRepository {
 
   /// 更新本地行程 ID (遷移行程及其所有關聯資料)
   Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId);
+
+  /// 將行程標記為待更新狀態 (當關聯資料如裝備、行程節點變動時)
+  Future<Result<void, Exception>> markTripAsPendingUpdate(String tripId);
 }

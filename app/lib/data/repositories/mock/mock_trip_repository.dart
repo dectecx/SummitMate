@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
 import '../../../domain/domain.dart';
@@ -5,6 +6,8 @@ import 'mock_itinerary_repository.dart';
 
 /// 模擬行程清單資料庫
 class MockTripRepository implements ITripRepository {
+  @override
+  Stream<String> get tripUpdateStream => const Stream.empty();
   /// 模擬行程
   final Trip _mockTrip = Trip(
     id: MockItineraryRepository.mockTripId,
@@ -162,6 +165,11 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> markTripAsPendingUpdate(String tripId) async {
     return const Success(null);
   }
 }
