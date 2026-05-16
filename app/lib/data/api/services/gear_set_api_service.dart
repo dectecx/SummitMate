@@ -35,8 +35,5 @@ abstract class GearSetApiService {
 
   /// 更新裝備組合
   @PUT('/gear-sets/{id}')
-  Future<GearSetResponse> updateGearSet(
-    @Path('id') String id,
-    @Body() GearSetCreateRequest request,
-  );
+  Future<GearSetResponse> updateGearSet(@Path('id') String id, @Body() GearSetCreateRequest request);
 }

@@ -53,9 +53,9 @@ class LogDao extends DatabaseAccessor<AppDatabase> with _$LogDaoMixin {
   Future<void> deleteOldNonErrorLogs(int keepCount) async {
     // Count non-error logs (debug=0, info=1, warning=2; error=3)
     final countQuery = countAll();
-    final total = await (selectOnly(logsTable)..addColumns([countQuery]))
-        .map((row) => row.read(countQuery))
-        .getSingle();
+    final total = await (selectOnly(
+      logsTable,
+    )..addColumns([countQuery])).map((row) => row.read(countQuery)).getSingle();
 
     if (total == null || total <= keepCount) return;
 

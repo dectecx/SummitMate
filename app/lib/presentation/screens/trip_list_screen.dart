@@ -87,10 +87,7 @@ class TripListScreen extends StatelessWidget {
 
                   // 2. Cloud Sync Status
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: const CloudSyncBanner(),
-                    ),
+                    child: Padding(padding: const EdgeInsets.all(16), child: const CloudSyncBanner()),
                   ),
 
                   // 3. Content

@@ -8,6 +8,7 @@ import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_s
 
 // Mocks
 class MockGearLocalDataSource extends Mock implements IGearLocalDataSource {}
+
 class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
 
 void main() {

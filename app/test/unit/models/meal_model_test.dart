@@ -57,7 +57,9 @@ void main() {
     });
 
     test('should return 0 for empty plan', () {
-      final plan = DailyMealPlan(dayInfo: MealPlanDay(id: 'day_1', name: 'D1'));
+      final plan = DailyMealPlan(
+        dayInfo: MealPlanDay(id: 'day_1', name: 'D1'),
+      );
       expect(plan.totalWeight, 0);
       expect(plan.totalCalories, 0);
     });

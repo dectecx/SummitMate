@@ -41,18 +41,11 @@ class TripMealApiMapper {
 
   /// MealPlanDayResponse → MealPlanDay
   static MealPlanDay fromDayResponse(MealPlanDayResponse response) {
-    return MealPlanDay(
-      id: response.id,
-      name: response.name,
-      linkedItineraryDay: response.linkedItineraryDay,
-    );
+    return MealPlanDay(id: response.id, name: response.name, linkedItineraryDay: response.linkedItineraryDay);
   }
 
   /// 參數 → MealPlanDayRequest
   static MealPlanDayRequest toDayRequest(String name, {String? linkedItineraryDay}) {
-    return MealPlanDayRequest(
-      name: name,
-      linkedItineraryDay: linkedItineraryDay,
-    );
+    return MealPlanDayRequest(name: name, linkedItineraryDay: linkedItineraryDay);
   }
 }

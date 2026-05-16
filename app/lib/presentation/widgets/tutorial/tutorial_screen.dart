@@ -135,12 +135,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                 Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
-                    border: Border(
-                      top: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                        width: 1,
-                      ),
-                    ),
+                    border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 1)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.1),
@@ -206,9 +201,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                           icon: Icon(
                             _currentChapter == TutorialChapter.values.last ? Icons.check : Icons.arrow_forward,
                           ),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                          ),
+                          style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
                         ),
                     ],
                   ),

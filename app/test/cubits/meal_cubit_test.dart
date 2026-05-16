@@ -43,15 +43,15 @@ void main() {
       ];
 
       setUp(() {
-        when(() => mockTripRepository.getMealPlanDays(any()))
-            .thenAnswer((_) async => Success(initialDays));
+        when(() => mockTripRepository.getMealPlanDays(any())).thenAnswer((_) async => Success(initialDays));
       });
 
       blocTest<MealCubit, MealState>(
         'addMealPlanDay adds a new day',
         build: () {
-          when(() => mockTripRepository.addMealPlanDay(any(), any(), linkedItineraryDay: any(named: 'linkedItineraryDay')))
-              .thenAnswer((_) async => const Success(MealPlanDay(id: 'new-id', name: 'New Independent Day')));
+          when(
+            () => mockTripRepository.addMealPlanDay(any(), any(), linkedItineraryDay: any(named: 'linkedItineraryDay')),
+          ).thenAnswer((_) async => const Success(MealPlanDay(id: 'new-id', name: 'New Independent Day')));
           return mealCubit;
         },
         act: (cubit) async {
@@ -60,16 +60,18 @@ void main() {
         },
         expect: () => [
           isA<MealLoaded>().having((s) => s.dailyPlans.length, 'length', 2), // load
-          isA<MealLoaded>().having((s) => s.dailyPlans.length, 'length', 3)  // add
-                           .having((s) => s.dailyPlans.last.dayInfo.name, 'name', 'New Independent Day'),
+          isA<MealLoaded>()
+              .having((s) => s.dailyPlans.length, 'length', 3) // add
+              .having((s) => s.dailyPlans.last.dayInfo.name, 'name', 'New Independent Day'),
         ],
       );
 
       blocTest<MealCubit, MealState>(
         'renameMealPlanDay renames an unlinked day',
         build: () {
-          when(() => mockTripRepository.updateMealPlanDay(any(), 'day1', 'Renamed Day', linkedItineraryDay: null))
-              .thenAnswer((_) async => const Success(MealPlanDay(id: 'day1', name: 'Renamed Day')));
+          when(
+            () => mockTripRepository.updateMealPlanDay(any(), 'day1', 'Renamed Day', linkedItineraryDay: null),
+          ).thenAnswer((_) async => const Success(MealPlanDay(id: 'day1', name: 'Renamed Day')));
           return mealCubit;
         },
         act: (cubit) async {
@@ -97,8 +99,9 @@ void main() {
       blocTest<MealCubit, MealState>(
         'linkMealPlanDay links to itinerary day',
         build: () {
-          when(() => mockTripRepository.updateMealPlanDay(any(), 'day1', 'D2', linkedItineraryDay: 'D2'))
-              .thenAnswer((_) async => const Success(MealPlanDay(id: 'day1', name: 'D2', linkedItineraryDay: 'D2')));
+          when(
+            () => mockTripRepository.updateMealPlanDay(any(), 'day1', 'D2', linkedItineraryDay: 'D2'),
+          ).thenAnswer((_) async => const Success(MealPlanDay(id: 'day1', name: 'D2', linkedItineraryDay: 'D2')));
           return mealCubit;
         },
         act: (cubit) async {
@@ -114,8 +117,11 @@ void main() {
       blocTest<MealCubit, MealState>(
         'unlinkMealPlanDay unlinks from itinerary day',
         build: () {
-          when(() => mockTripRepository.updateMealPlanDay(any(), 'day2', 'Linked Day', linkedItineraryDay: null))
-              .thenAnswer((_) async => const Success(MealPlanDay(id: 'day2', name: 'Linked Day', linkedItineraryDay: null)));
+          when(
+            () => mockTripRepository.updateMealPlanDay(any(), 'day2', 'Linked Day', linkedItineraryDay: null),
+          ).thenAnswer(
+            (_) async => const Success(MealPlanDay(id: 'day2', name: 'Linked Day', linkedItineraryDay: null)),
+          );
           return mealCubit;
         },
         act: (cubit) async {
@@ -131,8 +137,7 @@ void main() {
       blocTest<MealCubit, MealState>(
         'deleteMealPlanDay removes the day',
         build: () {
-          when(() => mockTripRepository.deleteMealPlanDay(any(), 'day1'))
-              .thenAnswer((_) async => const Success(null));
+          when(() => mockTripRepository.deleteMealPlanDay(any(), 'day1')).thenAnswer((_) async => const Success(null));
           return mealCubit;
         },
         act: (cubit) async {
@@ -141,8 +146,9 @@ void main() {
         },
         expect: () => [
           isA<MealLoaded>().having((s) => s.dailyPlans.length, 'length', 2), // load
-          isA<MealLoaded>().having((s) => s.dailyPlans.length, 'length', 1)  // delete
-                           .having((s) => s.dailyPlans.first.dayInfo.id, 'id', 'day2'),
+          isA<MealLoaded>()
+              .having((s) => s.dailyPlans.length, 'length', 1) // delete
+              .having((s) => s.dailyPlans.first.dayInfo.id, 'id', 'day2'),
         ],
       );
     });
