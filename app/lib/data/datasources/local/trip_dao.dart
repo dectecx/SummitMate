@@ -6,10 +6,12 @@ import '../../../domain/entities/meal_plan_day.dart';
 import '../interfaces/i_trip_local_data_source.dart';
 import '../../models/trip_table.dart';
 import '../../models/meal_plan_day_table.dart';
+import '../../models/gear_item_table.dart';
+import '../../models/itinerary_item_table.dart';
 
 part 'trip_dao.g.dart';
 
-@DriftAccessor(tables: [TripsTable, MealPlanDaysTable])
+@DriftAccessor(tables: [TripsTable, MealPlanDaysTable, GearItemsTable, ItineraryItemsTable])
 @LazySingleton(as: ITripLocalDataSource)
 class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implements ITripLocalDataSource {
   TripDao(AppDatabase db) : super(db);
@@ -156,6 +158,52 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
       for (final day in days) {
         await into(mealPlanDaysTable).insert(day.toCompanion(tripId));
       }
+    });
+  }
+
+  @override
+  Future<void> migrateTripId(String oldId, String newId) async {
+    await transaction(() async {
+      // 1. 取得舊行程資料
+      final tripRow = await (select(tripsTable)..where((t) => t.id.equals(oldId))).getSingleOrNull();
+      if (tripRow == null) return;
+
+      // 2. 插入新 ID 的行程 (複本)
+      // 注意：由於 id 是 PK，不能直接 update id，必須先 insert 新的再 delete 舊的
+      await into(tripsTable).insert(
+        TripsTableCompanion.insert(
+          id: newId,
+          userId: tripRow.userId,
+          name: tripRow.name,
+          description: Value(tripRow.description),
+          startDate: tripRow.startDate,
+          endDate: Value(tripRow.endDate),
+          coverImage: Value(tripRow.coverImage),
+          isActive: Value(tripRow.isActive),
+          linkedEventId: Value(tripRow.linkedEventId),
+          dayNames: Value(tripRow.dayNames),
+          syncStatus: Value(tripRow.syncStatus),
+          cloudSyncedAt: Value(tripRow.cloudSyncedAt),
+          createdAt: tripRow.createdAt,
+          createdBy: tripRow.createdBy,
+          updatedAt: tripRow.updatedAt,
+          updatedBy: tripRow.updatedBy,
+        ),
+      );
+
+      // 3. 更新所有關聯表的 tripId
+      await (update(
+        itineraryItemsTable,
+      )..where((t) => t.tripId.equals(oldId))).write(ItineraryItemsTableCompanion(tripId: Value(newId)));
+      await (update(
+        gearItemsTable,
+      )..where((t) => t.tripId.equals(oldId))).write(GearItemsTableCompanion(tripId: Value(newId)));
+      await (update(
+        mealPlanDaysTable,
+      )..where((t) => t.tripId.equals(oldId))).write(MealPlanDaysTableCompanion(tripId: Value(newId)));
+
+      // 4. 刪除舊行程
+      await (delete(tripsTable)..where((t) => t.id.equals(oldId))).go();
     });
   }
 }

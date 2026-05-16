@@ -7,7 +7,6 @@ import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
 import '../datasources/interfaces/i_trip_meal_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 /// 行程 Repository (支援 Offline-First)
 @LazySingleton(as: ITripRepository)
@@ -246,6 +245,16 @@ class TripRepository implements ITripRepository {
     try {
       final remoteDays = await _mealRemoteDataSource.getMealPlanDays(tripId);
       await _localDataSource.replaceMealPlanDays(tripId, remoteDays);
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId) async {
+    try {
+      await _localDataSource.migrateTripId(oldId, newId);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

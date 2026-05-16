@@ -56,4 +56,7 @@ abstract interface class ITripLocalDataSource {
 
   /// 批量更新糧食計畫天數 (通常用於從雲端同步下來時，完整替換或更新)
   Future<void> replaceMealPlanDays(String tripId, List<MealPlanDay> days);
+
+  /// 遷移行程 ID (用於離線建立行程後，上傳至雲端取得新 ID 時，同步更新所有本地關聯資料)
+  Future<void> migrateTripId(String oldId, String newId);
 }

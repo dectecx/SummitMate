@@ -205,31 +205,55 @@ class TripCubit extends Cubit<TripState> {
       final allGear = await _gearRepository.getAllItems();
       final tripGear = allGear.where((g) => g.tripId == trip.id).toList();
 
+      // 1. 上傳行程 Metadata 並取得後端產生的 ID
       final uploadTripResult = await _tripRepository.uploadToCloud(trip);
       if (uploadTripResult is Failure) {
         LogService.error('Trip metadata upload failed: ${(uploadTripResult as Failure).exception}', source: _source);
         return false;
       }
 
+      final serverTripId = (uploadTripResult as Success<String, Exception>).value;
+      var finalTripId = trip.id;
+
+      // 2. 如果後端傳回的 ID 與本地不同，則需要進行本地資料遷移
+      if (serverTripId != trip.id) {
+        LogService.info('Migrating local trip ID from ${trip.id} to $serverTripId', source: _source);
+        final migrateResult = await _tripRepository.updateLocalTripId(trip.id, serverTripId);
+        if (migrateResult is Failure) {
+          LogService.error('Local trip ID migration failed: ${(migrateResult as Failure).exception}', source: _source);
+          return false;
+        }
+        finalTripId = serverTripId;
+      }
+
+      // 3. 同步行程節點
       try {
-        await _itineraryRepository.sync(trip.id);
+        await _itineraryRepository.sync(finalTripId);
       } catch (e) {
         LogService.warning('Trip Itinerary sync had issues: $e', source: _source);
       }
 
+      // 4. 上傳裝備
       try {
-        await _gearRemoteDataSource.replaceAllTripGear(trip.id, tripGear);
+        // 確保裝備物件也對應到新的 Trip ID
+        final updatedTripGear = tripGear.map((g) => g.copyWith(tripId: finalTripId)).toList();
+        await _gearRemoteDataSource.replaceAllTripGear(finalTripId, updatedTripGear);
       } catch (e) {
         LogService.error('Trip Gear upload failed: $e', source: _source);
         return false;
       }
 
-      // 上傳成功後，更新本地行程的同步狀態
+      // 5. 上傳成功後，更新本地行程的同步狀態
       final now = DateTime.now();
-      final updatedTrip = trip.copyWith(syncStatus: SyncStatus.synced, cloudSyncedAt: now, updatedAt: now);
+      final updatedTrip = trip.copyWith(
+        id: finalTripId,
+        syncStatus: SyncStatus.synced,
+        cloudSyncedAt: now,
+        updatedAt: now,
+      );
       await _tripRepository.saveTrip(updatedTrip);
-      await loadTrips(); // 刷新 UI 狀態
 
+      await loadTrips();
       LogService.info('Full trip upload successful: ${trip.name}', source: _source);
       return true;
     } catch (e) {

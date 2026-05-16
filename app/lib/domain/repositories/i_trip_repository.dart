@@ -1,7 +1,6 @@
 import '../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../domain.dart';
-import '../entities/meal_plan_day.dart';
 
 /// 行程資料倉庫介面（支援 Offline-First）
 ///
@@ -124,4 +123,7 @@ abstract interface class ITripRepository {
 
   /// 觸發糧食計畫同步 (Fetch from remote & update local)
   Future<Result<void, Exception>> syncMealPlan(String tripId);
+
+  /// 更新本地行程 ID (遷移行程及其所有關聯資料)
+  Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId);
 }
