@@ -34,7 +34,7 @@ abstract interface class IGroupEventRemoteDataSource {
   Future<Result<String, Exception>> applyEvent({required String eventId, String? note});
 
   /// 取消申請
-  Future<Result<void, Exception>> cancelApplication(String eventId);
+  Future<Result<void, Exception>> cancelApplication(String applicationId);
 
   /// 獲取我的揪團列表 (支援 host / apply / like 三種類型)
   Future<Result<PaginatedList<GroupEvent>, Exception>> getMyEvents({required String type, int? page, int? limit});
@@ -44,9 +44,8 @@ abstract interface class IGroupEventRemoteDataSource {
 
   /// 審核申請 (僅限建立者)
   Future<Result<void, Exception>> reviewApplication({
-    required String eventId,
-    required String applicantUserId,
-    required String action,
+    required String applicationId,
+    required GroupEventReviewAction action,
     String? note,
   });
 

@@ -154,14 +154,15 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
 
   @override
   Future<Result<void, Exception>> reviewApplication({
-    required String eventId,
-    required String applicantUserId,
-    required String action,
+    required String applicationId,
+    required GroupEventReviewAction action,
     String? note,
   }) async {
     try {
-      // action maps to 'approve', 'reject', etc.
-      await _groupEventApi.reviewApplication(applicantUserId, GroupEventReviewRequest(action: action));
+      await _groupEventApi.reviewApplication(
+        applicationId,
+        GroupEventReviewRequest(status: action.apiStatus),
+      );
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : GeneralException(e.toString()));

@@ -119,9 +119,9 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   @override
-  Future<Result<void, Exception>> cancelApplication({required String eventId, required String userId}) async {
-    final result = await _remoteDataSource.cancelApplication(eventId);
-    if (result is Success) {
+  Future<Result<void, Exception>> cancelApplication({String? eventId, required String applicationId}) async {
+    final result = await _remoteDataSource.cancelApplication(applicationId);
+    if (result is Success && eventId != null) {
       await syncEventById(eventId);
     }
     return result;
@@ -159,18 +159,20 @@ class GroupEventRepository implements IGroupEventRepository {
 
   @override
   Future<Result<void, Exception>> reviewApplication({
-    required String eventId,
-    required String applicantUserId,
-    required String reviewerId,
-    required String action,
+    String? eventId,
+    required String applicationId,
+    required GroupEventReviewAction action,
     String? note,
   }) async {
-    return _remoteDataSource.reviewApplication(
-      eventId: eventId,
-      applicantUserId: applicantUserId,
+    final result = await _remoteDataSource.reviewApplication(
+      applicationId: applicationId,
       action: action,
       note: note,
     );
+    if (result is Success && eventId != null) {
+      await syncEventById(eventId);
+    }
+    return result;
   }
 
   @override

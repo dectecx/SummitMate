@@ -64,7 +64,7 @@ abstract class GroupEventApiService {
   @DELETE('/group-events/applications/{applicationId}')
   Future<void> cancelApplication(@Path('applicationId') String applicationId);
 
-  @PUT('/group-events/applications/{applicationId}')
+  @PATCH('/group-events/applications/{applicationId}')
   Future<void> reviewApplication(@Path('applicationId') String applicationId, @Body() GroupEventReviewRequest request);
 
   // ── Likes ──

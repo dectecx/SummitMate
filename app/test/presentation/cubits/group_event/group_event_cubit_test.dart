@@ -105,14 +105,13 @@ class FakeGroupEventRepository implements IGroupEventRepository {
   Future<Result<void, Exception>> apply({required String eventId, required String userId, String? note}) async =>
       const Success(null);
   @override
-  Future<Result<void, Exception>> cancelApplication({required String eventId, required String userId}) async =>
+  Future<Result<void, Exception>> cancelApplication({String? eventId, required String applicationId}) async =>
       const Success(null);
   @override
   Future<Result<void, Exception>> reviewApplication({
-    required String eventId,
-    required String applicantUserId,
-    required String reviewerId,
-    required String action,
+    String? eventId,
+    required String applicationId,
+    required GroupEventReviewAction action,
     String? note,
   }) async => const Success(null);
   @override

@@ -35,21 +35,19 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
   /// 審核報名
   ///
   /// [appId] 報名 ID
-  /// [action] 動作 (approve/reject)
-  Future<void> reviewApplication(String appId, String action) async {
+  /// [action] 動作
+  Future<void> reviewApplication(String appId, GroupEventReviewAction action) async {
     final currentState = state;
     if (currentState is! GroupEventReviewLoaded) return;
 
     final currentApps = currentState.applications;
 
-    // Optimistic update (show syncing state with current data)
-    emit(GroupEventReviewSyncing(currentApps));
-
     try {
+      emit(GroupEventReviewSyncing(currentApps));
+
       final result = await _repository.reviewApplication(
-        eventId: appId, // Here appId serves as the ID to operate on
-        applicantUserId: "", // Not needed for remote
-        reviewerId: userId!,
+        eventId: eventId,
+        applicationId: appId,
         action: action,
       );
 
