@@ -120,9 +120,12 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          // 1. Expanded Header
+      body: RefreshIndicator(
+        onRefresh: () => context.read<GroupEventCubit>().refreshEvent(_event.id),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // 1. Expanded Header
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
@@ -300,6 +303,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           ),
         ],
       ),
+    ),
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
           if (MediaQuery.of(context).size.width > 800) return const SizedBox.shrink();

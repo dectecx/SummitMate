@@ -60,7 +60,7 @@ func (h *GroupEventHandler) GetGroupEvents(w http.ResponseWriter, r *http.Reques
 
 	items := make([]api.GroupEvent, len(events))
 	for i, e := range events {
-		items[i] = ToGroupEventResponse(e)
+		items[i] = ToGroupEventResponse(e, userID)
 	}
 
 	resp := api.GroupEventPaginationResponse{
@@ -137,7 +137,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusCreated, ToGroupEventResponse(event))
+	apiutil.SendJSON(w, http.StatusCreated, ToGroupEventResponse(event, userID))
 }
 
 func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
@@ -152,7 +152,7 @@ func (h *GroupEventHandler) GetGroupEventsId(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event))
+	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event, userID))
 }
 
 func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
@@ -215,7 +215,7 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event))
+	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event, userID))
 }
 
 func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
@@ -465,7 +465,7 @@ func (h *GroupEventHandler) GetGroupEventsMy(w http.ResponseWriter, r *http.Requ
 
 	items := make([]api.GroupEvent, len(events))
 	for i, e := range events {
-		items[i] = ToGroupEventResponse(e)
+		items[i] = ToGroupEventResponse(e, userID)
 	}
 
 	resp := api.GroupEventPaginationResponse{

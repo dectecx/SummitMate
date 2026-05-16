@@ -73,6 +73,8 @@ abstract interface class IGroupEventRepository {
     required int maxParticipants,
     required DateTime deadline,
     required String hostId,
+    bool approvalRequired = false,
+    String privateMessage = '',
     String? linkedTripId,
   });
 

@@ -24,6 +24,8 @@ abstract interface class IGroupEventRemoteDataSource {
     required String eventLocation,
     required int maxParticipants,
     required DateTime deadline,
+    bool approvalRequired = false,
+    String privateMessage = '',
     String? linkedTripId,
   });
 

@@ -94,6 +94,8 @@ class FakeGroupEventRepository implements IGroupEventRepository {
     required int maxParticipants,
     required DateTime deadline,
     required String hostId,
+    bool approvalRequired = false,
+    String privateMessage = '',
     String? linkedTripId,
   }) async => const Success('new_id');
   @override
