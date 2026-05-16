@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"summitmate/internal/apperror"
+	"summitmate/internal/auth"
 	"summitmate/internal/database"
 	"summitmate/internal/trip"
 )
@@ -37,14 +38,16 @@ type groupEventService struct {
 	db       database.Beginner
 	repo     GroupEventRepository
 	tripServ trip.TripService
+	authServ auth.AuthService
 }
 
-func NewGroupEventService(logger *slog.Logger, db database.Beginner, repo GroupEventRepository, tripServ trip.TripService) GroupEventService {
+func NewGroupEventService(logger *slog.Logger, db database.Beginner, repo GroupEventRepository, tripServ trip.TripService, authServ auth.AuthService) GroupEventService {
 	return &groupEventService{
 		logger:   logger.With("component", "group_event"),
 		db:       db,
 		repo:     repo,
 		tripServ: tripServ,
+		authServ: authServ,
 	}
 }
 
@@ -52,12 +55,22 @@ func (s *groupEventService) CreateEvent(ctx context.Context, event *GroupEvent) 
 	if event.Title == "" {
 		return apperror.ErrBadRequest.WithMessage("活動標題為必填")
 	}
+
+	// Fetch host details if not provided
+	if event.HostID != "" && (event.HostName == "" || event.HostAvatar == "") {
+		user, err := s.authServ.GetUserByID(ctx, event.HostID)
+		if err == nil && user != nil {
+			event.HostName = user.DisplayName
+			event.HostAvatar = user.Avatar
+		}
+	}
+
 	event.Status = "open"
 	if err := s.repo.CreateEvent(ctx, event); err != nil {
-		s.logger.ErrorContext(ctx, "建立活動失敗", "creator_id", event.CreatedBy, "title", event.Title, "error", err)
+		s.logger.ErrorContext(ctx, "建立活動失敗", "host_id", event.HostID, "title", event.Title, "error", err)
 		return err
 	}
-	s.logger.InfoContext(ctx, "活動建立成功", "event_id", event.ID, "creator_id", event.CreatedBy, "title", event.Title)
+	s.logger.InfoContext(ctx, "活動建立成功", "event_id", event.ID, "host_id", event.HostID, "title", event.Title)
 	return nil
 }
 

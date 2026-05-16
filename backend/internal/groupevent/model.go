@@ -54,6 +54,9 @@ type GroupEvent struct {
 	ApprovalRequired    bool          `json:"approval_required" db:"approval_required"`
 	PrivateMessage      string        `json:"private_message" db:"private_message"`
 	LinkedTripID        *string       `json:"linked_trip_id" db:"linked_trip_id"`
+	HostID              string        `json:"host_id" db:"host_id"`
+	HostName            string        `json:"host_name" db:"host_name"`
+	HostAvatar          string        `json:"host_avatar" db:"host_avatar"`
 	TripSnapshot        *TripSnapshot `json:"trip_snapshot" db:"trip_snapshot"`
 	SnapshotUpdatedAt   *time.Time    `json:"snapshot_updated_at" db:"snapshot_updated_at"`
 	LikeCount           int           `json:"like_count" db:"like_count"`

@@ -117,6 +117,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 	}
 
 	event := &GroupEvent{
+		HostID:           userID,
 		Title:            req.Title,
 		Description:      req.Description,
 		Category:         Category(req.Category),

@@ -25,7 +25,7 @@ void main() {
   group('GroupEventRepository.syncMyEvents', () {
     final tEvent = GroupEvent(
       id: 'evt-1',
-      creatorId: 'u1',
+      hostId: 'u1',
       title: 'My Event',
       startDate: DateTime.now(),
       createdAt: DateTime.now(),

@@ -5,18 +5,18 @@ import '../../../../domain/enums/group_event_application_status.dart';
 class PrivateMessageSection extends StatelessWidget {
   final String privateMessage;
   final GroupEventApplicationStatus? myApplicationStatus;
-  final bool isCreator;
+  final bool isHost;
 
   const PrivateMessageSection({
     super.key,
     required this.privateMessage,
     required this.myApplicationStatus,
-    required this.isCreator,
+    required this.isHost,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (!((myApplicationStatus != null || isCreator) && privateMessage.isNotEmpty)) {
+    if (!((myApplicationStatus != null || isHost) && privateMessage.isNotEmpty)) {
       return const SizedBox.shrink();
     }
 
@@ -44,7 +44,7 @@ class PrivateMessageSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          (isCreator || myApplicationStatus == GroupEventApplicationStatus.approved)
+          (isHost || myApplicationStatus == GroupEventApplicationStatus.approved)
               ? Text(privateMessage, style: TextStyle(color: colorScheme.onSurface))
               : ClipRect(
                   child: ImageFiltered(
@@ -52,7 +52,7 @@ class PrivateMessageSection extends StatelessWidget {
                     child: Text(privateMessage, style: TextStyle(color: colorScheme.onSurface)),
                   ),
                 ),
-          if (!isCreator && myApplicationStatus != GroupEventApplicationStatus.approved)
+          if (!isHost && myApplicationStatus != GroupEventApplicationStatus.approved)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(

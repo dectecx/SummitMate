@@ -8,7 +8,9 @@ class GroupEventApiMapper {
   static GroupEvent fromResponse(GroupEventResponse response) {
     return GroupEvent(
       id: response.id,
-      creatorId: response.creatorId,
+      hostId: response.hostId,
+      hostName: response.hostName,
+      hostAvatar: response.hostAvatar,
       title: response.title,
       description: response.description,
       category: response.category,
@@ -30,8 +32,6 @@ class GroupEventApiMapper {
       myApplicationStatus: response.myApplicationStatus != null
           ? _parseApplicationStatus(response.myApplicationStatus!)
           : null,
-      creatorName: response.creatorName,
-      creatorAvatar: response.creatorAvatar,
       latestComments: response.latestComments.map(fromCommentResponse).toList(),
       createdAt: response.createdAt.toLocal(),
       createdBy: response.createdBy,

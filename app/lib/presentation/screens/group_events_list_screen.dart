@@ -39,7 +39,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
   }
 
   Widget _buildEventCard(BuildContext context, GroupEvent event, String currentUserId, bool isGuest, bool isFavorite) {
-    final isCreator = event.creatorId == currentUserId;
+    final isHost = event.hostId == currentUserId;
     final statusColor = _getStatusColor(event.status);
     final statusText = _getStatusText(event.status);
 
@@ -113,9 +113,9 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
               Row(
                 children: [
                   // 主辦人
-                  Text(event.creatorAvatar, style: const TextStyle(fontSize: 16)),
+                  Text(event.hostAvatar, style: const TextStyle(fontSize: 16)),
                   const SizedBox(width: 4),
-                  Text(isCreator ? '我' : event.creatorName, style: Theme.of(context).textTheme.bodySmall),
+                  Text(isHost ? '我' : event.hostName, style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(width: 8),
                   const Text('·', style: TextStyle(color: Colors.grey)),
                   const SizedBox(width: 8),

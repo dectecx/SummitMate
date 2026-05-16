@@ -93,7 +93,7 @@ class FakeGroupEventRepository implements IGroupEventRepository {
     required String eventLocation,
     required int maxParticipants,
     required DateTime deadline,
-    required String creatorId,
+    required String hostId,
     String? linkedTripId,
   }) async => const Success('new_id');
   @override
@@ -189,7 +189,7 @@ void main() {
 
     final testEvent = GroupEvent(
       id: 'evt_1',
-      creatorId: 'creator_1',
+      hostId: 'creator_1',
       title: 'Test Event',
       startDate: DateTime.now(),
       createdAt: DateTime.now(),

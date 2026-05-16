@@ -66,7 +66,9 @@ class GroupEventDao extends DatabaseAccessor<AppDatabase>
   GroupEvent _mapToDomain(GroupEventsTableData row) {
     return GroupEvent(
       id: row.id,
-      creatorId: row.creatorId,
+      hostId: row.hostId,
+      hostName: row.hostName,
+      hostAvatar: row.hostAvatar,
       title: row.title,
       description: row.description,
       category: row.category,
@@ -85,8 +87,6 @@ class GroupEventDao extends DatabaseAccessor<AppDatabase>
       commentCount: row.commentCount,
       isLiked: row.isLiked,
       myApplicationStatus: row.myApplicationStatus,
-      creatorName: row.creatorName,
-      creatorAvatar: row.creatorAvatar,
       createdAt: row.createdAt,
       createdBy: row.createdBy,
       updatedAt: row.updatedAt,

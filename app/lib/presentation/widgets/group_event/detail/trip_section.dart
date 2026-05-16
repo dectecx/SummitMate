@@ -9,10 +9,10 @@ import '../../../screens/trip_snapshot_detail_screen.dart';
 
 class TripSection extends StatelessWidget {
   final GroupEvent event;
-  final bool isCreator;
+  final bool isHost;
   final bool isSyncing;
 
-  const TripSection({super.key, required this.event, required this.isCreator, required this.isSyncing});
+  const TripSection({super.key, required this.event, required this.isHost, required this.isSyncing});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class TripSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text('行程預覽', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            if (isCreator && event.linkedTripId != null)
+            if (isHost && event.linkedTripId != null)
               TextButton.icon(
                 onPressed: isSyncing
                     ? null
@@ -119,7 +119,7 @@ class TripSection extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () async {
-                      if (isCreator && event.linkedTripId != null) {
+                      if (isHost && event.linkedTripId != null) {
                         await context.read<TripCubit>().setActiveTrip(event.linkedTripId!);
                         if (context.mounted) {
                           ToastService.success('已切換至該行程');

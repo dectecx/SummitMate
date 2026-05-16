@@ -259,6 +259,9 @@ CREATE TABLE poll_votes (
 
 CREATE TABLE group_events (
     id                UUID PRIMARY KEY DEFAULT uuidv7(),
+    host_id           UUID         NOT NULL REFERENCES users(id),
+    host_name         VARCHAR(100) NOT NULL DEFAULT '',
+    host_avatar       VARCHAR(255) NOT NULL DEFAULT '🐻',
     title             VARCHAR(200) NOT NULL,
     description       TEXT         NOT NULL DEFAULT '',
     category          VARCHAR(50)  NOT NULL DEFAULT 'Other' CHECK (category IN ('Hiking', 'Camping', 'Bouldering', 'Other')),

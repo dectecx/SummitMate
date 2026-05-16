@@ -187,7 +187,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
         eventLocation: location,
         maxParticipants: maxMembers,
         deadline: endDate ?? startDate,
-        creatorId: _currentUserId,
+        hostId: _currentUserId,
         linkedTripId: linkedTripId,
       ),
       '離線模式無法建立揪團',

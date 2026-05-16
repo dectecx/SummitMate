@@ -44,15 +44,17 @@ func NewGroupEventRepository(db database.DB) GroupEventRepository {
 func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEvent) error {
 	query := `
         INSERT INTO group_events (
+            host_id, host_name, host_avatar,
             title, description, category, location, start_date, end_date,
             max_members, approval_required, private_message, linked_trip_id,
             created_by, updated_by
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
         ) RETURNING id, status, like_count, comment_count, created_at, updated_at
     `
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
+		event.HostID, event.HostName, event.HostAvatar,
 		event.Title, event.Description, event.Category, event.Location, event.StartDate, event.EndDate,
 		event.MaxMembers, event.ApprovalRequired, event.PrivateMessage, event.LinkedTripID,
 		event.CreatedBy, event.UpdatedBy,
@@ -66,7 +68,8 @@ func (r *groupEventRepository) CreateEvent(ctx context.Context, event *GroupEven
 func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error) {
 	query := `
         SELECT 
-            e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+            e.id, e.host_id, e.host_name, e.host_avatar,
+            e.title, e.description, e.category, e.location, e.start_date, e.end_date,
             e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
             e.trip_snapshot, e.snapshot_updated_at,
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
@@ -84,7 +87,8 @@ func (r *groupEventRepository) GetEventByID(ctx context.Context, id string, user
 
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query, id, userIDArg).Scan(
-		&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
+		&event.ID, &event.HostID, &event.HostName, &event.HostAvatar,
+		&event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 		&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 		&event.TripSnapshot, &event.SnapshotUpdatedAt,
 		&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
@@ -142,7 +146,8 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 	dataArgs := append(args, userIDArg, limit, (page-1)*limit)
 	mainQuery := fmt.Sprintf(`
         SELECT
-            e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+            e.id, e.host_id, e.host_name, e.host_avatar,
+            e.title, e.description, e.category, e.location, e.start_date, e.end_date,
             e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
             e.trip_snapshot, e.snapshot_updated_at,
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
@@ -165,7 +170,8 @@ func (r *groupEventRepository) ListEvents(ctx context.Context, status *string, c
 	for rows.Next() {
 		event := &GroupEvent{}
 		err := rows.Scan(
-			&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
+			&event.ID, &event.HostID, &event.HostName, &event.HostAvatar,
+			&event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 			&event.TripSnapshot, &event.SnapshotUpdatedAt,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,
@@ -213,7 +219,8 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 
 	mainQuery := fmt.Sprintf(`
         SELECT 
-            e.id, e.title, e.description, e.category, e.location, e.start_date, e.end_date,
+            e.id, e.host_id, e.host_name, e.host_avatar,
+            e.title, e.description, e.category, e.location, e.start_date, e.end_date,
             e.status, e.max_members, e.approval_required, e.private_message, e.linked_trip_id,
             e.trip_snapshot, e.snapshot_updated_at,
             e.like_count, e.comment_count, e.created_at, e.created_by, e.updated_at, e.updated_by,
@@ -236,7 +243,8 @@ func (r *groupEventRepository) ListEventsByUser(ctx context.Context, userID stri
 	for rows.Next() {
 		event := &GroupEvent{}
 		err := rows.Scan(
-			&event.ID, &event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
+			&event.ID, &event.HostID, &event.HostName, &event.HostAvatar,
+			&event.Title, &event.Description, &event.Category, &event.Location, &event.StartDate, &event.EndDate,
 			&event.Status, &event.MaxMembers, &event.ApprovalRequired, &event.PrivateMessage, &event.LinkedTripID,
 			&event.TripSnapshot, &event.SnapshotUpdatedAt,
 			&event.LikeCount, &event.CommentCount, &event.CreatedAt, &event.CreatedBy, &event.UpdatedAt, &event.UpdatedBy,

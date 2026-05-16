@@ -15,7 +15,9 @@ abstract class GroupEvent with _$GroupEvent {
 
   const factory GroupEvent({
     required String id,
-    required String creatorId,
+    required String hostId,
+    @Default('') String hostName,
+    @Default('🐻') String hostAvatar,
     required String title,
     @Default('') String description,
     @Default(GroupEventCategory.other) GroupEventCategory category,
@@ -35,8 +37,6 @@ abstract class GroupEvent with _$GroupEvent {
     @Default(0) int commentCount,
     @Default(false) bool isLiked,
     GroupEventApplicationStatus? myApplicationStatus,
-    @Default('') String creatorName,
-    @Default('🐻') String creatorAvatar,
     @Default([]) List<GroupEventComment> latestComments,
     @Default(SyncStatus.synced) SyncStatus syncStatus,
     required DateTime createdAt,
@@ -48,7 +48,7 @@ abstract class GroupEvent with _$GroupEvent {
   bool get isOpen => status == GroupEventStatus.open;
   bool get isFull => applicationCount >= maxMembers;
   bool get canApply => isOpen;
-  bool isCreator(String userId) => creatorId == userId;
+  bool isHost(String userId) => hostId == userId;
 
   int get durationDays {
     if (endDate == null) return 1;

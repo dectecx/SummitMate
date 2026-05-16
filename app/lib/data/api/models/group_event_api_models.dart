@@ -25,7 +25,9 @@ abstract class GroupEventPaginationResponse with _$GroupEventPaginationResponse 
 abstract class GroupEventResponse with _$GroupEventResponse {
   const factory GroupEventResponse({
     required String id,
-    @JsonKey(name: 'creator_id') required String creatorId,
+    @JsonKey(name: 'host_id') required String hostId,
+    @JsonKey(name: 'host_name', defaultValue: '') required String hostName,
+    @JsonKey(name: 'host_avatar', defaultValue: '🐻') required String hostAvatar,
     required String title,
     @JsonKey(defaultValue: '') required String description,
     @JsonKey(defaultValue: GroupEventCategory.other) required GroupEventCategory category,
@@ -46,8 +48,6 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'comment_count', defaultValue: 0) required int commentCount,
     @JsonKey(name: 'is_liked', defaultValue: false) required bool isLiked,
     @JsonKey(name: 'my_application_status') String? myApplicationStatus,
-    @JsonKey(name: 'creator_name', defaultValue: '') required String creatorName,
-    @JsonKey(name: 'creator_avatar', defaultValue: '🐻') required String creatorAvatar,
     @JsonKey(name: 'latest_comments', defaultValue: []) required List<GroupEventCommentResponse> latestComments,
     @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
