@@ -59,4 +59,9 @@ class MountainFavoritesCubit extends Cubit<MountainFavoritesState> {
     }
     return false;
   }
+
+  /// 重置狀態
+  void reset() {
+    emit(MountainFavoritesInitial());
+  }
 }
