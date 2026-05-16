@@ -1,7 +1,6 @@
 import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
 import '../../../domain/domain.dart';
-import '../../../domain/entities/meal_plan_day.dart';
 import 'mock_itinerary_repository.dart';
 
 /// 模擬行程清單資料庫
@@ -158,6 +157,11 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<Result<void, Exception>> syncMealPlan(String tripId) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId) async {
     return const Success(null);
   }
 }
