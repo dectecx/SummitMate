@@ -21,6 +21,8 @@ import '../../cubits/itinerary/itinerary_cubit.dart';
 import '../../cubits/itinerary/itinerary_state.dart';
 import '../../cubits/settings/settings_cubit.dart';
 import '../../cubits/settings/settings_state.dart';
+import '../../cubits/tutorial/tutorial_cubit.dart';
+import '../../cubits/tutorial/tutorial_state.dart';
 
 import '../map/map_screen.dart';
 
@@ -34,6 +36,7 @@ import '../../widgets/settings_dialog.dart';
 import '../../widgets/ads/banner_ad_widget.dart';
 import '../../widgets/responsive_layout.dart';
 
+import '../../widgets/tutorial/tutorial_aware_builder.dart';
 import '../collaboration_tab.dart';
 
 import 'widgets/main_app_bar.dart';
@@ -163,6 +166,33 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             }
           },
         ),
+        BlocListener<TutorialCubit, TutorialState>(
+          listener: (context, state) {
+            if (state is TutorialActive) {
+              // 根據教學章節切換底層 Tab
+              int targetIndex = -1;
+              switch (state.chapterId) {
+                case 'itinerary':
+                  targetIndex = 0;
+                  break;
+                case 'gear':
+                  targetIndex = 1;
+                  break;
+                case 'collaboration':
+                case 'groupEvent':
+                  targetIndex = 2;
+                  break;
+              }
+
+              if (targetIndex != -1 && targetIndex != _currentIndex) {
+                setState(() {
+                  _currentIndex = targetIndex;
+                  _updateTrackingView(targetIndex);
+                });
+              }
+            }
+          },
+        ),
       ],
       child: BlocBuilder<ItineraryCubit, ItineraryState>(
         builder: (context, itineraryState) {
@@ -170,13 +200,13 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             builder: (context, messageState) {
               return BlocBuilder<PollCubit, PollState>(
                 builder: (context, pollState) {
-                  return BlocBuilder<TripCubit, TripState>(
-                    builder: (context, tripState) {
+                  // TutorialAwareTripBuilder: 教學模式下使用 mock trip，解決 hasTrips 判斷問題
+                  return TutorialAwareTripBuilder(
+                    builder: (context, activeTrip, trips) {
                       return BlocBuilder<SyncCubit, SyncState>(
                         builder: (context, syncState) {
-                          final bool isTripLoading = tripState is TripLoading;
-                          final bool hasTrips = tripState is TripLoaded && tripState.trips.isNotEmpty;
-                          final Trip? activeTrip = tripState is TripLoaded ? tripState.activeTrip : null;
+                          final bool isTripLoading = context.watch<TripCubit>().state is TripLoading;
+                          final bool hasTrips = trips.isNotEmpty;
 
                           final bool isMessageSyncing = messageState is MessageLoaded && messageState.isSyncing;
                           final bool isPollSyncing = pollState is PollLoaded && pollState.isSyncing;

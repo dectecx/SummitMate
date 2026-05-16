@@ -1,48 +1,37 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'tutorial_state.dart';
-import '../trip/trip_cubit.dart';
-import '../itinerary/itinerary_cubit.dart';
-import '../gear/gear_cubit.dart';
-import '../meal/meal_cubit.dart';
 import '../../../infrastructure/tools/tutorial_mock_data.dart';
 
 @injectable
 class TutorialCubit extends Cubit<TutorialState> {
-  final TripCubit _tripCubit;
-  final ItineraryCubit _itineraryCubit;
-  final GearCubit _gearCubit;
-  final MealCubit _mealCubit;
-
-  TutorialCubit(
-    this._tripCubit,
-    this._itineraryCubit,
-    this._gearCubit,
-    this._mealCubit,
-  ) : super(const TutorialInitial());
+  TutorialCubit() : super(const TutorialInitial());
 
   /// 開啟教學模式 (Quick Tour 或一般章節教學)
-  Future<void> startTutorial({
-    required String chapterId,
-    bool isQuickTour = false,
-  }) async {
-    // 進入教學前，先注入 Mock 資料
-    _injectMockData();
-    
-    emit(TutorialActive(
-      chapterId: chapterId,
-      currentStepIndex: 0,
-      isQuickTour: isQuickTour,
-    ));
+  ///
+  /// 建立完整的 Mock 資料快照並放入 [TutorialActive] state，
+  /// UI 層的 TutorialAwareBuilder 將從此處讀取資料，
+  /// 業務 Cubit 完全不受影響。
+  Future<void> startTutorial({required String chapterId, bool isQuickTour = false}) async {
+    final snapshot = TutorialMockData.createSnapshot();
+    emit(
+      TutorialActive(
+        chapterId: chapterId,
+        isQuickTour: isQuickTour,
+        mockTrip: snapshot.trip,
+        mockItineraryItems: snapshot.itineraryItems,
+        mockDayNames: snapshot.dayNames,
+        mockGearItems: snapshot.gearItems,
+        mockMealPlans: snapshot.mealPlans,
+      ),
+    );
   }
 
   /// 關閉教學模式
+  ///
+  /// 恢復至初始狀態。UI 層的 TutorialAwareBuilder 將自動
+  /// 切換回讀取各業務 Cubit 的真實資料。
   Future<void> endTutorial() async {
-    emit(const TutorialLoading());
-
-    // 清除 Mock 資料，恢復原狀
-    await _clearMockData();
-
     emit(const TutorialInitial());
   }
 
@@ -51,9 +40,7 @@ class TutorialCubit extends Cubit<TutorialState> {
     if (state is TutorialActive) {
       final activeState = state as TutorialActive;
       if (activeState.currentStepIndex > 0) {
-        emit(activeState.copyWith(
-          currentStepIndex: activeState.currentStepIndex - 1,
-        ));
+        emit(activeState.copyWith(currentStepIndex: activeState.currentStepIndex - 1));
       }
     }
   }
@@ -62,44 +49,17 @@ class TutorialCubit extends Cubit<TutorialState> {
   void nextStep() {
     if (state is TutorialActive) {
       final activeState = state as TutorialActive;
-      emit(activeState.copyWith(
-        currentStepIndex: activeState.currentStepIndex + 1,
-      ));
+      emit(activeState.copyWith(currentStepIndex: activeState.currentStepIndex + 1));
     }
   }
-  
+
   /// 跳到特定步驟
   void goToStep(int index) {
     if (state is TutorialActive) {
       final activeState = state as TutorialActive;
       if (index >= 0) {
-        emit(activeState.copyWith(
-          currentStepIndex: index,
-        ));
+        emit(activeState.copyWith(currentStepIndex: index));
       }
     }
-  }
-
-  /// 注入四大功能模組的 Mock 資料
-  void _injectMockData() {
-    final mockTrip = TutorialMockData.createMockTrip();
-    _tripCubit.injectMockTrip(mockTrip);
-
-    final mockItinerary = TutorialMockData.createMockItineraryItems();
-    _itineraryCubit.injectMockData(mockItinerary, mockTrip.dayNames);
-
-    final mockGear = TutorialMockData.createMockGearItems();
-    _gearCubit.injectMockData(mockGear);
-
-    final mockMeals = TutorialMockData.createMockDailyMealPlans();
-    _mealCubit.injectMockData(mockMeals);
-  }
-
-  /// 清除四大功能模組的 Mock 資料
-  Future<void> _clearMockData() async {
-    await _tripCubit.clearMockTrip();
-    await _itineraryCubit.clearMockData();
-    await _gearCubit.clearMockData();
-    await _mealCubit.clearMockData();
   }
 }

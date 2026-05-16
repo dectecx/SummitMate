@@ -39,7 +39,6 @@ class GearCubit extends Cubit<GearState> {
 
     try {
       final tripItems = (await _repository.getAllItems()).where((i) => i.tripId == tripId).toList();
-
       emit(GearLoaded(items: tripItems));
       LogService.debug('Loaded ${tripItems.length} gear items for trip $tripId', source: _source);
     } catch (e) {
@@ -102,11 +101,6 @@ class GearCubit extends Cubit<GearState> {
     String? libraryItemId,
     int quantity = 1,
   }) async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      LogService.info('Mock mode: skip addItem', source: _source);
-      return;
-    }
-
     if (_currentTripId == null) {
       emit(const GearError('No active trip selected'));
       return;
@@ -136,11 +130,6 @@ class GearCubit extends Cubit<GearState> {
 
   /// 更新裝備
   Future<void> updateItem(GearItem item) async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      LogService.info('Mock mode: skip updateItem', source: _source);
-      return;
-    }
-
     try {
       final result = await _repository.updateItem(item);
       if (result is Failure) throw result.exception;
@@ -153,11 +142,6 @@ class GearCubit extends Cubit<GearState> {
 
   /// 更新數量
   Future<void> updateQuantity(GearItem item, int quantity) async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      LogService.info('Mock mode: skip updateQuantity', source: _source);
-      return;
-    }
-
     if (quantity < 1) quantity = 1;
     try {
       final updatedItem = item.copyWith(quantity: quantity);
@@ -174,11 +158,6 @@ class GearCubit extends Cubit<GearState> {
   ///
   /// [id] 裝備 ID
   Future<void> deleteItem(String id) async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      LogService.info('Mock mode: skip deleteItem', source: _source);
-      return;
-    }
-
     try {
       final result = await _repository.deleteItem(id);
       if (result is Failure) throw result.exception;
@@ -191,13 +170,6 @@ class GearCubit extends Cubit<GearState> {
 
   /// 切換勾選狀態
   Future<void> toggleChecked(String id) async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      final loaded = state as GearLoaded;
-      final newItems = loaded.items.map((i) => i.id == id ? i.copyWith(isChecked: !i.isChecked) : i).toList();
-      emit(loaded.copyWith(items: newItems));
-      return;
-    }
-
     try {
       final result = await _repository.toggleChecked(id);
       if (result is Failure) throw result.exception;
@@ -211,13 +183,8 @@ class GearCubit extends Cubit<GearState> {
   /// 重新排序裝備
   Future<void> reorderItem(int oldIndex, int newIndex, {String? category}) async {
     if (state is! GearLoaded) return;
-    
-    final currentState = state as GearLoaded;
-    if (currentState.isMockMode) {
-      LogService.info('Mock mode: skip reorderItem', source: _source);
-      return;
-    }
 
+    final currentState = state as GearLoaded;
     final items = currentState.items;
 
     try {
@@ -256,11 +223,6 @@ class GearCubit extends Cubit<GearState> {
 
   /// 匯入裝備列表
   Future<void> replaceItems(List<GearItem> newItems) async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      LogService.info('Mock mode: skip replaceItems', source: _source);
-      return;
-    }
-
     if (_currentTripId == null) return;
     try {
       emit(const GearLoading());
@@ -275,35 +237,6 @@ class GearCubit extends Cubit<GearState> {
       LogService.error('Failed to replace items: $e', source: _source);
       emit(GearError('匯入失敗: ${AppErrorHandler.getUserMessage(e)}'));
       await loadGear(_currentTripId!);
-    }
-  }
-
-  // ─────────────────────────────────────────────
-  // 教學導覽的 Mock 資料注入
-  // ─────────────────────────────────────────────
-
-  void injectMockData(List<GearItem> mockItems) {
-    if (state is GearLoaded) {
-      final current = state as GearLoaded;
-      emit(current.copyWith(
-        items: mockItems,
-        isMockMode: true,
-      ));
-    } else {
-      emit(GearLoaded(
-        items: mockItems,
-        isMockMode: true,
-      ));
-    }
-  }
-
-  Future<void> clearMockData() async {
-    if (state is GearLoaded && (state as GearLoaded).isMockMode) {
-      if (_currentTripId != null) {
-        await loadGear(_currentTripId!);
-      } else {
-        emit(const GearInitial());
-      }
     }
   }
 }

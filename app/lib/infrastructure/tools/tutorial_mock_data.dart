@@ -1,9 +1,29 @@
 import 'package:summitmate/domain/domain.dart';
 
+/// 教學模式的完整 Mock 資料快照
+///
+/// 由 [TutorialMockData.createSnapshot] 建立，直接存入 [TutorialActive] state，
+/// 讓 UI 層的 TutorialAwareBuilder 讀取。
+class TutorialMockSnapshot {
+  final Trip trip;
+  final List<ItineraryItem> itineraryItems;
+  final List<String> dayNames;
+  final List<GearItem> gearItems;
+  final List<DailyMealPlan> mealPlans;
+
+  const TutorialMockSnapshot({
+    required this.trip,
+    required this.itineraryItems,
+    required this.dayNames,
+    required this.gearItems,
+    required this.mealPlans,
+  });
+}
+
 /// 教學模式使用的 Mock 資料工廠
 ///
 /// 提供示範用的行程、行程項目與裝備資料。
-/// 所有資料均不寫入 DB，僅存活於 Cubit 記憶體。
+/// 所有資料均不寫入 DB，僅存活於 TutorialActive state。
 class TutorialMockData {
   TutorialMockData._();
 
@@ -204,48 +224,30 @@ class TutorialMockData {
   static List<DailyMealPlan> createMockDailyMealPlans() {
     return [
       DailyMealPlan(
-        dayInfo: const MealPlanDay(
-          id: 'mock-meal-day-1',
-          name: '出發日',
-          linkedItineraryDay: 'D1',
-        ),
+        dayInfo: const MealPlanDay(id: 'mock-meal-day-1', name: '出發日', linkedItineraryDay: 'D1'),
         meals: {
           MealType.breakfast: [
             MealItem(id: 'mock-meal-1', name: '飯糰', weight: 150, calories: 350, quantity: 1),
             MealItem(id: 'mock-meal-2', name: '豆漿', weight: 250, calories: 150, quantity: 1),
           ],
-          MealType.lunch: [
-            MealItem(id: 'mock-meal-3', name: '肉包', weight: 120, calories: 300, quantity: 2),
-          ],
-          MealType.dinner: [
-            MealItem(id: 'mock-meal-4', name: '排骨飯', weight: 400, calories: 800, quantity: 1),
-          ],
-          MealType.action: [
-            MealItem(id: 'mock-meal-5', name: '能量棒', weight: 50, calories: 200, quantity: 2),
-          ],
+          MealType.lunch: [MealItem(id: 'mock-meal-3', name: '肉包', weight: 120, calories: 300, quantity: 2)],
+          MealType.dinner: [MealItem(id: 'mock-meal-4', name: '排骨飯', weight: 400, calories: 800, quantity: 1)],
+          MealType.action: [MealItem(id: 'mock-meal-5', name: '能量棒', weight: 50, calories: 200, quantity: 2)],
         },
       ),
       DailyMealPlan(
-        dayInfo: const MealPlanDay(
-          id: 'mock-meal-day-2',
-          name: '攻頂日',
-          linkedItineraryDay: 'D2',
-        ),
+        dayInfo: const MealPlanDay(id: 'mock-meal-day-2', name: '攻頂日', linkedItineraryDay: 'D2'),
         meals: {
           MealType.breakfast: [
             MealItem(id: 'mock-meal-6', name: '麵包', weight: 100, calories: 300, quantity: 2),
             MealItem(id: 'mock-meal-7', name: '熱可可', weight: 25, calories: 100, quantity: 1),
           ],
-          MealType.lunch: [
-            MealItem(id: 'mock-meal-8', name: '乾燥飯', weight: 100, calories: 400, quantity: 1),
-          ],
+          MealType.lunch: [MealItem(id: 'mock-meal-8', name: '乾燥飯', weight: 100, calories: 400, quantity: 1)],
           MealType.dinner: [
             MealItem(id: 'mock-meal-9', name: '泡麵', weight: 100, calories: 450, quantity: 2),
             MealItem(id: 'mock-meal-10', name: '茶包', weight: 10, calories: 0, quantity: 2),
           ],
-          MealType.action: [
-            MealItem(id: 'mock-meal-11', name: '堅果', weight: 100, calories: 600, quantity: 1),
-          ],
+          MealType.action: [MealItem(id: 'mock-meal-11', name: '堅果', weight: 100, calories: 600, quantity: 1)],
         },
       ),
     ];
@@ -253,4 +255,19 @@ class TutorialMockData {
 
   /// Mock Trip ID（可供其他模組識別是否為教學資料）
   static String get mockTripId => _mockTripId;
+
+  /// 建立完整的 Mock 資料快照（供 TutorialCubit 使用）
+  ///
+  /// 將所有 Mock 資料整合成一個 [TutorialMockSnapshot]，
+  /// 直接存入 [TutorialActive] state，避免推送至各業務 Cubit。
+  static TutorialMockSnapshot createSnapshot() {
+    final trip = createMockTrip();
+    return TutorialMockSnapshot(
+      trip: trip,
+      itineraryItems: createMockItineraryItems(),
+      dayNames: trip.dayNames,
+      gearItems: createMockGearItems(),
+      mealPlans: createMockDailyMealPlans(),
+    );
+  }
 }

@@ -552,12 +552,7 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.factory<_i259.TutorialCubit>(
-      () => _i259.TutorialCubit(
-        gh<_i32.TripCubit>(),
-        gh<_i354.ItineraryCubit>(),
-        gh<_i55.GearCubit>(),
-        gh<_i694.MealCubit>(),
-      ),
+      () => _i259.TutorialCubit(),
     );
     return this;
   }

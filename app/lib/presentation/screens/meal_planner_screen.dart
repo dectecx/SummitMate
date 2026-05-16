@@ -9,6 +9,9 @@ import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import '../utils/meal_utils.dart';
 import '../widgets/meal/meal_day_management_dialog.dart';
+import '../cubits/tutorial/tutorial_cubit.dart';
+import '../cubits/tutorial/tutorial_state.dart';
+import '../widgets/tutorial/tutorial_aware_builder.dart';
 
 /// 糧食計畫畫面
 ///
@@ -43,13 +46,14 @@ class _MealPlannerScreenState extends State<MealPlannerScreen> {
           context.read<MealCubit>().loadMealPlans(tripState.activeTrip!.id);
         }
       },
-      child: BlocBuilder<MealCubit, MealState>(
-        builder: (context, state) {
-          if (state is! MealLoaded) {
+      child: TutorialAwareMealBuilder(
+        builder: (context, dailyPlans) {
+          final isTutorial = context.watch<TutorialCubit>().state is TutorialActive;
+          final mealState = context.watch<MealCubit>().state;
+
+          if (!isTutorial && mealState is! MealLoaded) {
             return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
-
-          final dailyPlans = state.dailyPlans;
           final cubit = context.read<MealCubit>();
 
           if (dailyPlans.isEmpty) {
