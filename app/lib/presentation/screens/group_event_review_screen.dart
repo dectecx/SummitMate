@@ -97,7 +97,7 @@ class GroupEventReviewScreen extends StatelessWidget {
                     onPressed: isSyncing
                         ? null
                         : () {
-                            context.read<GroupEventReviewCubit>().reviewApplication(app.id, 'reject');
+                            context.read<GroupEventReviewCubit>().reviewApplication(app.id, GroupEventReviewAction.reject);
                           },
                     style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
                     child: isSyncing
@@ -113,7 +113,7 @@ class GroupEventReviewScreen extends StatelessWidget {
                     onPressed: isSyncing
                         ? null
                         : () {
-                            context.read<GroupEventReviewCubit>().reviewApplication(app.id, 'approve');
+                            context.read<GroupEventReviewCubit>().reviewApplication(app.id, GroupEventReviewAction.approve);
                           },
                     style: FilledButton.styleFrom(backgroundColor: Colors.green),
                     child: isSyncing

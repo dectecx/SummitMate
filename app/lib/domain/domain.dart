@@ -7,6 +7,7 @@ library;
 // Enums
 export 'enums/group_event_status.dart';
 export 'enums/group_event_application_status.dart';
+export 'enums/group_event_review_action.dart';
 export 'enums/group_event_category.dart';
 export 'enums/sync_status.dart';
 export 'enums/favorite_type.dart';

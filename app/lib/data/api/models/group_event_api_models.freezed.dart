@@ -2644,7 +2644,7 @@ as String?,
 /// @nodoc
 mixin _$GroupEventReviewRequest {
 
- String get action;
+ String get status;
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2657,16 +2657,16 @@ $GroupEventReviewRequestCopyWith<GroupEventReviewRequest> get copyWith => _$Grou
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventReviewRequest&&(identical(other.action, action) || other.action == action));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GroupEventReviewRequest&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,action);
+int get hashCode => Object.hash(runtimeType,status);
 
 @override
 String toString() {
-  return 'GroupEventReviewRequest(action: $action)';
+  return 'GroupEventReviewRequest(status: $status)';
 }
 
 
@@ -2677,7 +2677,7 @@ abstract mixin class $GroupEventReviewRequestCopyWith<$Res>  {
   factory $GroupEventReviewRequestCopyWith(GroupEventReviewRequest value, $Res Function(GroupEventReviewRequest) _then) = _$GroupEventReviewRequestCopyWithImpl;
 @useResult
 $Res call({
- String action
+ String status
 });
 
 
@@ -2694,9 +2694,9 @@ class _$GroupEventReviewRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? action = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,}) {
   return _then(_self.copyWith(
-action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -2782,10 +2782,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String action)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GroupEventReviewRequest() when $default != null:
-return $default(_that.action);case _:
+return $default(_that.status);case _:
   return orElse();
 
 }
@@ -2803,10 +2803,10 @@ return $default(_that.action);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String action)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String status)  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventReviewRequest():
-return $default(_that.action);case _:
+return $default(_that.status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2823,10 +2823,10 @@ return $default(_that.action);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String action)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String status)?  $default,) {final _that = this;
 switch (_that) {
 case _GroupEventReviewRequest() when $default != null:
-return $default(_that.action);case _:
+return $default(_that.status);case _:
   return null;
 
 }
@@ -2838,10 +2838,10 @@ return $default(_that.action);case _:
 @JsonSerializable()
 
 class _GroupEventReviewRequest implements GroupEventReviewRequest {
-  const _GroupEventReviewRequest({required this.action});
+  const _GroupEventReviewRequest({required this.status});
   factory _GroupEventReviewRequest.fromJson(Map<String, dynamic> json) => _$GroupEventReviewRequestFromJson(json);
 
-@override final  String action;
+@override final  String status;
 
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -2856,16 +2856,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventReviewRequest&&(identical(other.action, action) || other.action == action));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GroupEventReviewRequest&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,action);
+int get hashCode => Object.hash(runtimeType,status);
 
 @override
 String toString() {
-  return 'GroupEventReviewRequest(action: $action)';
+  return 'GroupEventReviewRequest(status: $status)';
 }
 
 
@@ -2876,7 +2876,7 @@ abstract mixin class _$GroupEventReviewRequestCopyWith<$Res> implements $GroupEv
   factory _$GroupEventReviewRequestCopyWith(_GroupEventReviewRequest value, $Res Function(_GroupEventReviewRequest) _then) = __$GroupEventReviewRequestCopyWithImpl;
 @override @useResult
 $Res call({
- String action
+ String status
 });
 
 
@@ -2893,9 +2893,9 @@ class __$GroupEventReviewRequestCopyWithImpl<$Res>
 
 /// Create a copy of GroupEventReviewRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? action = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,}) {
   return _then(_GroupEventReviewRequest(
-action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
+status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

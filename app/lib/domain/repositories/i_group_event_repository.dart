@@ -96,22 +96,20 @@ abstract interface class IGroupEventRepository {
 
   /// 取消報名（雲端）
   ///
-  /// [eventId] 揪團 ID
-  /// [userId] 使用者 ID
-  Future<Result<void, Exception>> cancelApplication({required String eventId, required String userId});
+  /// [eventId] 揪團 ID (用於同步狀態)
+  /// [applicationId] 報名 ID
+  Future<Result<void, Exception>> cancelApplication({String? eventId, required String applicationId});
 
   /// 審核報名（雲端）
   ///
-  /// [eventId] 揪團 ID
-  /// [applicantUserId] 申請者 ID
-  /// [reviewerId] 審核者 ID
+  /// [eventId] 揪團 ID (用於同步狀態)
+  /// [applicationId] 報名 ID
   /// [action] 審核動作（approve/reject）
   /// [note] 審核備註（可選）
   Future<Result<void, Exception>> reviewApplication({
-    required String eventId,
-    required String applicantUserId,
-    required String reviewerId,
-    required String action,
+    String? eventId,
+    required String applicationId,
+    required GroupEventReviewAction action,
     String? note,
   });
 
