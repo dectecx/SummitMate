@@ -299,14 +299,14 @@ func (r *groupEventRepository) DeleteEvent(ctx context.Context, id string) error
 func (r *groupEventRepository) ApplyToEvent(ctx context.Context, app *GroupEventApplication) error {
 	query := `
         INSERT INTO group_event_applications (
-            event_id, user_id, message, created_by, updated_by
-        ) VALUES ($1, $2, $3, $4, $5)
-        RETURNING id, status, created_at, updated_at
+            event_id, user_id, status, message, created_by, updated_by
+        ) VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, created_at, updated_at
     `
 	db := database.GetQuerier(ctx, r.db)
 	err := db.QueryRow(ctx, query,
-		app.EventID, app.UserID, app.Message, app.CreatedBy, app.UpdatedBy,
-	).Scan(&app.ID, &app.Status, &app.CreatedAt, &app.UpdatedAt)
+		app.EventID, app.UserID, app.Status, app.Message, app.CreatedBy, app.UpdatedBy,
+	).Scan(&app.ID, &app.CreatedAt, &app.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("apply to group event %s by user %s: %w", app.EventID, app.UserID, err)
 	}
