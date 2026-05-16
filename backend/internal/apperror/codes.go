@@ -32,6 +32,7 @@ var (
 var (
 	ErrEventNotFound     = New(http.StatusNotFound, TypeInvalidReq, "event_not_found", "找不到該活動")
 	ErrEventAccessDenied = New(http.StatusForbidden, TypeAuth, "event_permission_denied", "無權限操作此活動")
+	ErrAlreadyApplied    = New(http.StatusConflict, TypeBusinessLogic, "already_applied", "您已經報名過此活動")
 )
 
 // Validation 相關

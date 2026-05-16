@@ -69,15 +69,17 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 // ToGroupEventApplicationResponse converts GroupEventApplication to api.GroupEventApplication
 func ToGroupEventApplicationResponse(a *GroupEventApplication) api.GroupEventApplication {
 	return api.GroupEventApplication{
-		Id:        uuid.MustParse(a.ID),
-		EventId:   uuid.MustParse(a.EventID),
-		UserId:    uuid.MustParse(a.UserID),
-		Status:    api.GroupEventApplicationStatus(a.Status),
-		Message:   a.Message,
-		CreatedAt: a.CreatedAt,
-		CreatedBy: uuid.MustParse(a.CreatedBy),
-		UpdatedAt: a.UpdatedAt,
-		UpdatedBy: uuid.MustParse(a.UpdatedBy),
+		Id:         uuid.MustParse(a.ID),
+		EventId:    uuid.MustParse(a.EventID),
+		UserId:     uuid.MustParse(a.UserID),
+		UserName:   a.UserName,
+		UserAvatar: a.UserAvatar,
+		Status:     api.GroupEventApplicationStatus(a.Status),
+		Message:    a.Message,
+		CreatedAt:  a.CreatedAt,
+		CreatedBy:  uuid.MustParse(a.CreatedBy),
+		UpdatedAt:  a.UpdatedAt,
+		UpdatedBy:  uuid.MustParse(a.UpdatedBy),
 	}
 }
 

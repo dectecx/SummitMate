@@ -153,6 +153,12 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApp
 	if event == nil {
 		return apperror.ErrEventNotFound
 	}
+
+	// Check if already applied
+	if event.MyApplicationStatus != nil {
+		return apperror.ErrAlreadyApplied
+	}
+
 	if event.Status != "open" {
 		return apperror.New(400, apperror.TypeBusinessLogic, "event_not_open", fmt.Sprintf("活動目前狀態為 %s，無法報名", event.Status))
 	}
@@ -162,6 +168,13 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApp
 
 	app.CreatedBy = app.UserID
 	app.UpdatedBy = app.UserID
+
+	// Fetch user details for the response
+	user, err := s.authServ.GetUserByID(ctx, app.UserID)
+	if err == nil && user != nil {
+		app.UserName = user.DisplayName
+		app.UserAvatar = user.Avatar
+	}
 
 	if err := s.repo.ApplyToEvent(ctx, app); err != nil {
 		s.logger.ErrorContext(ctx, "活動報名失敗", "event_id", app.EventID, "user_id", app.UserID, "error", err)
