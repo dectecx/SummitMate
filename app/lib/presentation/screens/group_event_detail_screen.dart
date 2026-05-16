@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/domain/domain.dart';
@@ -116,7 +116,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
       }
     }
 
-    final isCreator = _event.isCreator(cubitState is GroupEventLoaded ? cubitState.currentUserId : '');
+    final isHost = _event.isHost(cubitState is GroupEventLoaded ? cubitState.currentUserId : '');
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -129,7 +129,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
             backgroundColor: colorScheme.primary,
             leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
             actions: [
-              if (isCreator) ...[
+              if (isHost) ...[
                 _buildGlassIconButton(icon: Icons.delete_outline, onTap: () => _confirmDelete(context)),
                 const SizedBox(width: 8),
               ],
@@ -210,7 +210,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                       const SizedBox(height: 32),
                                       DescriptionSection(description: _event.description),
                                       const SizedBox(height: 32),
-                                      TripSection(event: _event, isCreator: isCreator, isSyncing: isSyncing),
+                                      TripSection(event: _event, isHost: isHost, isSyncing: isSyncing),
                                       const SizedBox(height: 32),
                                       CommentsSection(event: _event),
                                       const SizedBox(height: 100),
@@ -225,9 +225,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       OrganizerSection(
-                                        creatorName: _event.creatorName,
-                                        creatorAvatar: _event.creatorAvatar,
-                                        isCreator: isCreator,
+                                        hostName: _event.hostName,
+                                        hostAvatar: _event.hostAvatar,
+                                        isHost: isHost,
                                       ),
                                       const SizedBox(height: 24),
                                       if (_event.myApplicationStatus != null) ...[
@@ -237,10 +237,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                       PrivateMessageSection(
                                         privateMessage: _event.privateMessage,
                                         myApplicationStatus: _event.myApplicationStatus,
-                                        isCreator: isCreator,
+                                        isHost: isHost,
                                       ),
                                       const SizedBox(height: 32),
-                                      _buildDesktopActionButton(context, colorScheme, isCreator, isSyncing),
+                                      _buildDesktopActionButton(context, colorScheme, isHost, isSyncing),
                                     ],
                                   ),
                                 ),
@@ -261,9 +261,9 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                               ),
                               const SizedBox(height: 24),
                               OrganizerSection(
-                                creatorName: _event.creatorName,
-                                creatorAvatar: _event.creatorAvatar,
-                                isCreator: isCreator,
+                                hostName: _event.hostName,
+                                hostAvatar: _event.hostAvatar,
+                                isHost: isHost,
                               ),
                               const SizedBox(height: 24),
                               if (_event.myApplicationStatus != null) ...[
@@ -273,12 +273,12 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                               PrivateMessageSection(
                                 privateMessage: _event.privateMessage,
                                 myApplicationStatus: _event.myApplicationStatus,
-                                isCreator: isCreator,
+                                isHost: isHost,
                               ),
                               const SizedBox(height: 24),
                               DescriptionSection(description: _event.description),
                               const SizedBox(height: 24),
-                              TripSection(event: _event, isCreator: isCreator, isSyncing: isSyncing),
+                              TripSection(event: _event, isHost: isHost, isSyncing: isSyncing),
                               const SizedBox(height: 24),
                               CommentsSection(event: _event),
                               const SizedBox(height: 100),
@@ -304,7 +304,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
               color: theme.cardTheme.color,
               boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5))],
             ),
-            child: SafeArea(child: _buildActionContent(context, colorScheme, isCreator, isSyncing)),
+            child: SafeArea(child: _buildActionContent(context, colorScheme, isHost, isSyncing)),
           );
         },
       ),
@@ -322,20 +322,20 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     );
   }
 
-  Widget _buildDesktopActionButton(BuildContext context, ColorScheme colorScheme, bool isCreator, bool isSyncing) {
+  Widget _buildDesktopActionButton(BuildContext context, ColorScheme colorScheme, bool isHost, bool isSyncing) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [_buildActionContent(context, colorScheme, isCreator, isSyncing)],
+      children: [_buildActionContent(context, colorScheme, isHost, isSyncing)],
     );
   }
 
-  Widget _buildActionContent(BuildContext context, ColorScheme colorScheme, bool isCreator, bool isSyncing) {
+  Widget _buildActionContent(BuildContext context, ColorScheme colorScheme, bool isHost, bool isSyncing) {
     return BlocBuilder<SettingsCubit, SettingsState>(
       builder: (context, settingsState) {
         final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
         final cubitState = context.watch<GroupEventCubit>().state;
 
-        if (isCreator) {
+        if (isHost) {
           return FilledButton.icon(
             onPressed: () async {
               await Navigator.of(context).push(

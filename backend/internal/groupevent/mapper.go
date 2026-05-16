@@ -38,6 +38,9 @@ func ToGroupEventResponse(e *GroupEvent) api.GroupEvent {
 
 	return api.GroupEvent{
 		Id:                  uuid.MustParse(e.ID),
+		HostId:              uuid.MustParse(e.HostID),
+		HostName:            e.HostName,
+		HostAvatar:          e.HostAvatar,
 		Title:               e.Title,
 		Description:         e.Description,
 		Category:            string(e.Category),

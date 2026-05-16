@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"summitmate/internal/apperror"
+	"summitmate/internal/auth"
 	"summitmate/internal/trip"
 
 	"github.com/jackc/pgx/v5"
@@ -30,8 +31,9 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
 	mockTrip := new(trip.MockTripService)
+	mockAuth := new(auth.MockAuthService)
 	mockDB := new(MockBeginner)
-	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip)
+	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
 	t.Run("Success", func(t *testing.T) {
 		event := &GroupEvent{
@@ -60,8 +62,9 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
 	mockTrip := new(trip.MockTripService)
+	mockAuth := new(auth.MockAuthService)
 	mockDB := new(MockBeginner)
-	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip)
+	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
 	t.Run("Success", func(t *testing.T) {
 		eventID := "event-1"
@@ -97,8 +100,9 @@ func TestGroupEventService_ApplyToEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
 	mockTrip := new(trip.MockTripService)
+	mockAuth := new(auth.MockAuthService)
 	mockDB := new(MockBeginner)
-	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip)
+	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
 	t.Run("Success", func(t *testing.T) {
 		eventID := "event-1"

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class OrganizerSection extends StatelessWidget {
-  final String creatorName;
-  final String creatorAvatar;
-  final bool isCreator;
+  final String hostName;
+  final String hostAvatar;
+  final bool isHost;
 
-  const OrganizerSection({super.key, required this.creatorName, required this.creatorAvatar, required this.isCreator});
+  const OrganizerSection({super.key, required this.hostName, required this.hostAvatar, required this.isHost});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class OrganizerSection extends StatelessWidget {
                 height: 50,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: colorScheme.primaryContainer, shape: BoxShape.circle),
-                child: Text(creatorAvatar, style: const TextStyle(fontSize: 24)),
+                child: Text(hostAvatar, style: const TextStyle(fontSize: 24)),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -35,7 +35,7 @@ class OrganizerSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      creatorName,
+                      hostName,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: colorScheme.onSurface,
@@ -46,7 +46,7 @@ class OrganizerSection extends StatelessWidget {
                   ],
                 ),
               ),
-              if (isCreator)
+              if (isHost)
                 Chip(
                   label: const Text('我', style: TextStyle(color: Colors.white, fontSize: 12)),
                   backgroundColor: colorScheme.primary,

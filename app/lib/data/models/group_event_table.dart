@@ -8,7 +8,9 @@ import 'converters/sync_status_converter.dart';
 
 class GroupEventsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get creatorId => text()();
+  TextColumn get hostId => text()();
+  TextColumn get hostName => text().withDefault(const Constant(''))();
+  TextColumn get hostAvatar => text().withDefault(const Constant('🐻'))();
   TextColumn get title => text()();
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get category => text().map(const GroupEventCategoryConverter()).withDefault(const Constant('other'))();
@@ -27,8 +29,6 @@ class GroupEventsTable extends Table {
   IntColumn get commentCount => integer().withDefault(const Constant(0))();
   BoolColumn get isLiked => boolean().withDefault(const Constant(false))();
   TextColumn get myApplicationStatus => text().map(const GroupEventApplicationStatusConverter()).nullable()();
-  TextColumn get creatorName => text().withDefault(const Constant(''))();
-  TextColumn get creatorAvatar => text().withDefault(const Constant('🐻'))();
   TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
@@ -90,7 +90,9 @@ extension GroupEventMapping on GroupEvent {
   GroupEventsTableCompanion toCompanion() {
     return GroupEventsTableCompanion.insert(
       id: id,
-      creatorId: creatorId,
+      hostId: hostId,
+      hostName: Value(hostName),
+      hostAvatar: Value(hostAvatar),
       title: title,
       description: Value(description),
       category: Value(category),
@@ -109,8 +111,6 @@ extension GroupEventMapping on GroupEvent {
       commentCount: Value(commentCount),
       isLiked: Value(isLiked),
       myApplicationStatus: Value(myApplicationStatus),
-      creatorName: Value(creatorName),
-      creatorAvatar: Value(creatorAvatar),
       syncStatus: Value(syncStatus),
       createdAt: createdAt,
       createdBy: createdBy,

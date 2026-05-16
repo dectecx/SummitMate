@@ -79,7 +79,7 @@ class GroupEventRepository implements IGroupEventRepository {
     required String eventLocation,
     required int maxParticipants,
     required DateTime deadline,
-    required String creatorId,
+    required String hostId,
     String? linkedTripId,
   }) async {
     return _remoteDataSource.createEvent(

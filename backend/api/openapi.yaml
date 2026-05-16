@@ -3690,6 +3690,9 @@ components:
       type: object
       required:
         - id
+        - host_id
+        - host_name
+        - host_avatar
         - title
         - description
         - category
@@ -3708,6 +3711,13 @@ components:
         id:
           type: string
           format: uuid
+        host_id:
+          type: string
+          format: uuid
+        host_name:
+          type: string
+        host_avatar:
+          type: string
         title:
           type: string
           maxLength: 200
