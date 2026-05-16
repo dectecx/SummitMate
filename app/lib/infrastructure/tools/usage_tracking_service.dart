@@ -49,7 +49,12 @@ class UsageTrackingService {
 
     _username = username;
     _userId = userId;
-    _userType = userId != null ? 'member' : 'guest';
+    _userType = (userId != null && userId != 'guest') ? 'member' : 'guest';
+
+    if (_userType == 'guest') {
+      LogService.info('訪客模式：跳過心跳追蹤, User: $username', source: _source);
+      return;
+    }
 
     LogService.info('啟動心跳追蹤 (每 2 小時), User: $username ($_userType)', source: _source);
 
@@ -110,6 +115,10 @@ class UsageTrackingService {
   Future<void> _sendHeartbeat({bool isDebounced = false}) async {
     if (_username == null || _username!.isEmpty) {
       LogService.debug('跳過心跳 (使用者名稱為空)', source: _source);
+      return;
+    }
+
+    if (_userType == 'guest') {
       return;
     }
 
