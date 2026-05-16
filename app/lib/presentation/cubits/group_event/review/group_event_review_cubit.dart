@@ -36,7 +36,7 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
   ///
   /// [appId] 報名 ID
   /// [action] 動作
-  Future<void> reviewApplication(String appId, GroupEventReviewAction action) async {
+  Future<void> reviewApplication(String appId, GroupEventReviewAction action, {String? note}) async {
     final currentState = state;
     if (currentState is! GroupEventReviewLoaded) return;
 
@@ -49,6 +49,7 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
         eventId: eventId,
         applicationId: appId,
         action: action,
+        note: note,
       );
 
       if (result is Success) {

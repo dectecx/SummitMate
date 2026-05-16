@@ -28,7 +28,9 @@ class GroupEventsTable extends Table {
   IntColumn get likeCount => integer().withDefault(const Constant(0))();
   IntColumn get commentCount => integer().withDefault(const Constant(0))();
   BoolColumn get isLiked => boolean().withDefault(const Constant(false))();
+  TextColumn get myApplicationId => text().nullable()();
   TextColumn get myApplicationStatus => text().map(const GroupEventApplicationStatusConverter()).nullable()();
+  TextColumn get myApplicationReason => text().nullable()();
   TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
@@ -46,6 +48,7 @@ class GroupEventApplicationsTable extends Table {
   TextColumn get status =>
       text().map(const GroupEventApplicationStatusConverter()).withDefault(const Constant('pending'))();
   TextColumn get message => text().withDefault(const Constant(''))();
+  TextColumn get rejectionReason => text().withDefault(const Constant(''))();
   TextColumn get userName => text().withDefault(const Constant(''))();
   TextColumn get userAvatar => text().withDefault(const Constant('🐻'))();
   TextColumn get syncStatus => text().map(const SyncStatusConverter()).withDefault(const Constant('synced'))();
@@ -110,7 +113,9 @@ extension GroupEventMapping on GroupEvent {
       likeCount: Value(likeCount),
       commentCount: Value(commentCount),
       isLiked: Value(isLiked),
+      myApplicationId: Value(myApplicationId),
       myApplicationStatus: Value(myApplicationStatus),
+      myApplicationReason: Value(myApplicationReason),
       syncStatus: Value(syncStatus),
       createdAt: createdAt,
       createdBy: createdBy,
@@ -128,6 +133,7 @@ extension GroupEventApplicationMapping on GroupEventApplication {
       userId: userId,
       status: Value(status),
       message: Value(message),
+      rejectionReason: Value(rejectionReason),
       userName: Value(userName),
       userAvatar: Value(userAvatar),
       syncStatus: Value(syncStatus),

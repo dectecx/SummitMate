@@ -161,7 +161,7 @@ class GroupEventRemoteDataSource implements IGroupEventRemoteDataSource {
     try {
       await _groupEventApi.reviewApplication(
         applicationId,
-        GroupEventReviewRequest(status: action.apiStatus),
+        GroupEventReviewRequest(status: action.apiStatus, note: note),
       );
       return const Success(null);
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/infrastructure/clients/network_aware_client.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/services/auth_service.dart';
+import 'package:summitmate/infrastructure/database/app_database.dart';
 
 // ============================================================
 // === MOCKS ===
@@ -14,6 +15,8 @@ class MockNetworkAwareClient extends Mock implements NetworkAwareClient {}
 class MockAuthSessionRepository extends Mock implements IAuthSessionRepository {}
 
 class MockTokenValidator extends Mock implements ITokenValidator {}
+
+class MockAppDatabase extends Mock implements AppDatabase {}
 
 // ============================================================
 // === TEST DATA ===
@@ -48,18 +51,22 @@ void main() {
   late MockNetworkAwareClient mockApiClient;
   late MockAuthSessionRepository mockSessionRepo;
   late MockTokenValidator mockTokenValidator;
+  late MockAppDatabase mockDb;
 
   setUp(() {
     mockApiClient = MockNetworkAwareClient();
     mockSessionRepo = MockAuthSessionRepository();
     mockTokenValidator = MockTokenValidator();
+    mockDb = MockAppDatabase();
 
     when(() => mockSessionRepo.getUserProfile()).thenAnswer((_) async => null);
+    when(() => mockDb.clearAllData()).thenAnswer((_) async {});
 
     authService = AuthService(
       apiClient: mockApiClient,
       sessionRepository: mockSessionRepo,
       tokenValidator: mockTokenValidator,
+      db: mockDb,
     );
   });
 
@@ -165,10 +172,12 @@ void main() {
   group('AuthService.logout', () {
     test('clears session and resets state', () async {
       when(() => mockSessionRepo.clearSession()).thenAnswer((_) async {});
+      when(() => mockDb.clearAllData()).thenAnswer((_) async {});
 
       await authService.logout();
 
       verify(() => mockSessionRepo.clearSession()).called(1);
+      verify(() => mockDb.clearAllData()).called(1);
       expect(authService.currentUserId, isNull);
     });
   });

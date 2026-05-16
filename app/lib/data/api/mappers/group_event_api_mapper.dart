@@ -29,9 +29,11 @@ class GroupEventApiMapper {
       likeCount: response.likeCount,
       commentCount: response.commentCount,
       isLiked: response.isLiked,
+      myApplicationId: response.myApplicationId,
       myApplicationStatus: response.myApplicationStatus != null
           ? _parseApplicationStatus(response.myApplicationStatus!)
           : null,
+      myApplicationReason: response.myApplicationReason,
       latestComments: response.latestComments.map(fromCommentResponse).toList(),
       createdAt: response.createdAt.toLocal(),
       createdBy: response.createdBy,
@@ -48,6 +50,7 @@ class GroupEventApiMapper {
       userId: response.userId,
       status: _parseApplicationStatus(response.status),
       message: response.message,
+      rejectionReason: response.rejectionReason,
       userName: response.userName,
       userAvatar: response.userAvatar,
       createdAt: response.createdAt.toLocal(),

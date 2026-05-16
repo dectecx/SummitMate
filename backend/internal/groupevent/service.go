@@ -23,7 +23,7 @@ type GroupEventService interface {
 	CancelApplication(ctx context.Context, appID string, userID string) error
 	GetApplication(ctx context.Context, id string) (*GroupEventApplication, error)
 	ListApplications(ctx context.Context, id string, userID string) ([]*GroupEventApplication, error)
-	ProcessApplication(ctx context.Context, eventID, userID, status, executorID string) error
+	ProcessApplication(ctx context.Context, appID, status, rejectionReason, executorID string) error
 
 	AddComment(ctx context.Context, comment *GroupEventComment) error
 	ListComments(ctx context.Context, eventID string) ([]*GroupEventComment, error)
@@ -155,9 +155,15 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApp
 		return apperror.ErrEventNotFound
 	}
 
-	// Check if already applied
+	// Check if already approved or pending
 	if event.MyApplicationStatus != nil {
-		return apperror.ErrAlreadyApplied
+		status := *event.MyApplicationStatus
+		if status == "approved" {
+			return apperror.ErrAlreadyApplied.WithMessage("您已成功報名此活動，無需再次申請")
+		}
+		if status == "pending" {
+			return apperror.ErrBadRequest.WithMessage("您已有一筆報名申請正在審核中")
+		}
 	}
 
 	if event.Status != "open" {
@@ -235,8 +241,16 @@ func (s *groupEventService) ListApplications(ctx context.Context, id string, use
 	return s.repo.ListApplications(ctx, id)
 }
 
-func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, userID, status, executorID string) error {
-	event, err := s.repo.GetEventByID(ctx, eventID, executorID)
+func (s *groupEventService) ProcessApplication(ctx context.Context, appID, status, rejectionReason, executorID string) error {
+	app, err := s.repo.GetApplicationByID(ctx, appID)
+	if err != nil {
+		return err
+	}
+	if app == nil {
+		return apperror.ErrApplicationNotFound
+	}
+
+	event, err := s.repo.GetEventByID(ctx, app.EventID, executorID)
 	if err != nil {
 		return err
 	}
@@ -244,33 +258,33 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, eventID, use
 		return apperror.ErrEventNotFound
 	}
 	if event.HostID != executorID {
-		s.logger.WarnContext(ctx, "審核活動報名權限不足", "event_id", eventID, "executor_id", executorID)
+		s.logger.WarnContext(ctx, "審核活動報名權限不足", "event_id", app.EventID, "executor_id", executorID)
 		return apperror.ErrEventAccessDenied
 	}
 
-	if err := s.repo.UpdateApplicationStatus(ctx, eventID, userID, status, executorID); err != nil {
-		s.logger.ErrorContext(ctx, "更新活動報名狀態失敗", "event_id", eventID, "target_user_id", userID, "status", status, "executor_id", executorID, "error", err)
+	if err := s.repo.UpdateApplicationStatus(ctx, appID, status, rejectionReason, executorID); err != nil {
+		s.logger.ErrorContext(ctx, "更新活動報名狀態失敗", "app_id", appID, "status", status, "executor_id", executorID, "error", err)
 		return err
 	}
 
 	// 如果審核通過且活動有連結行程，自動將該成員加入行程 (Role: member)
 	if status == ApplicationStatusApproved && event.LinkedTripID != nil {
 		// 防呆：這裡 AddMember 內部已經有權限檢查與重複加入檢查，直接呼叫即可
-		_, err := s.tripServ.AddMember(ctx, *event.LinkedTripID, executorID, userID)
+		_, err := s.tripServ.AddMember(ctx, *event.LinkedTripID, executorID, app.UserID)
 		if err != nil {
-			s.logger.ErrorContext(ctx, "自動加入行程成員失敗", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID, "error", err)
+			s.logger.ErrorContext(ctx, "自動加入行程成員失敗", "event_id", app.EventID, "trip_id", *event.LinkedTripID, "user_id", app.UserID, "error", err)
 		} else {
-			s.logger.InfoContext(ctx, "自動加入行程成員完成", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID)
+			s.logger.InfoContext(ctx, "自動加入行程成員完成", "event_id", app.EventID, "trip_id", *event.LinkedTripID, "user_id", app.UserID)
 		}
 	} else if (status == ApplicationStatusRejected) && event.LinkedTripID != nil {
 		// 如果從 Approved 變為 Rejected，需移除行程權限
-		err := s.tripServ.RemoveMember(ctx, *event.LinkedTripID, executorID, userID)
+		err := s.tripServ.RemoveMember(ctx, *event.LinkedTripID, executorID, app.UserID)
 		if err != nil {
-			s.logger.WarnContext(ctx, "移除行程成員失敗 (可能本就不是成員)", "event_id", eventID, "trip_id", *event.LinkedTripID, "user_id", userID, "error", err)
+			s.logger.WarnContext(ctx, "移除行程成員失敗 (可能本就不是成員)", "event_id", app.EventID, "trip_id", *event.LinkedTripID, "user_id", app.UserID, "error", err)
 		}
 	}
 
-	s.logger.InfoContext(ctx, "活動報名狀態更新成功", "event_id", eventID, "target_user_id", userID, "status", status, "executor_id", executorID)
+	s.logger.InfoContext(ctx, "活動報名狀態更新成功", "event_id", app.EventID, "target_user_id", app.UserID, "status", status, "executor_id", executorID)
 	return nil
 }
 

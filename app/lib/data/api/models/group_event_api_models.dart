@@ -47,7 +47,9 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'like_count', defaultValue: 0) required int likeCount,
     @JsonKey(name: 'comment_count', defaultValue: 0) required int commentCount,
     @JsonKey(name: 'is_liked', defaultValue: false) required bool isLiked,
+    @JsonKey(name: 'my_application_id') String? myApplicationId,
     @JsonKey(name: 'my_application_status') String? myApplicationStatus,
+    @JsonKey(name: 'my_application_reason') String? myApplicationReason,
     @JsonKey(name: 'latest_comments', defaultValue: []) required List<GroupEventCommentResponse> latestComments,
     @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
     @JsonKey(name: 'created_by') required String createdBy,
@@ -67,6 +69,7 @@ abstract class GroupEventApplicationResponse with _$GroupEventApplicationRespons
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(defaultValue: 'pending') required String status,
     @JsonKey(defaultValue: '') required String message,
+    @JsonKey(name: 'rejection_reason', defaultValue: '') required String rejectionReason,
     @JsonKey(name: 'user_name', defaultValue: '') required String userName,
     @JsonKey(name: 'user_avatar', defaultValue: '🐻') required String userAvatar,
     @JsonKey(name: 'created_at') @DateTimeUtcConverter() required DateTime createdAt,
@@ -168,7 +171,10 @@ abstract class GroupEventApplyRequest with _$GroupEventApplyRequest {
 /// 審核申請請求
 @freezed
 abstract class GroupEventReviewRequest with _$GroupEventReviewRequest {
-  const factory GroupEventReviewRequest({required String status}) = _GroupEventReviewRequest;
+  const factory GroupEventReviewRequest({
+    required String status,
+    String? note,
+  }) = _GroupEventReviewRequest;
 
   factory GroupEventReviewRequest.fromJson(Map<String, dynamic> json) => _$GroupEventReviewRequestFromJson(json);
 }

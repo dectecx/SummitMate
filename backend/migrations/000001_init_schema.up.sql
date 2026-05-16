@@ -284,16 +284,16 @@ CREATE TABLE group_events (
 );
 
 CREATE TABLE group_event_applications (
-    id         UUID PRIMARY KEY DEFAULT uuidv7(),
-    event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
-    user_id    UUID        NOT NULL REFERENCES users(id),
-    status     VARCHAR(20) NOT NULL DEFAULT 'pending',
-    message    TEXT        NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID        NOT NULL REFERENCES users(id),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_by UUID        NOT NULL REFERENCES users(id),
-    UNIQUE (event_id, user_id)
+    id               UUID PRIMARY KEY DEFAULT uuidv7(),
+    event_id         UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
+    user_id          UUID        NOT NULL REFERENCES users(id),
+    status           VARCHAR(20) NOT NULL DEFAULT 'pending',
+    message          TEXT        NOT NULL DEFAULT '',
+    rejection_reason TEXT        NOT NULL DEFAULT '',
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by       UUID        NOT NULL REFERENCES users(id),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by       UUID        NOT NULL REFERENCES users(id)
 );
 
 CREATE TABLE group_event_comments (

@@ -9,6 +9,7 @@ import 'package:summitmate/domain/domain.dart';
 import 'jwt_token_validator.dart';
 import '../tools/log_service.dart';
 import 'package:dio/dio.dart';
+import '../database/app_database.dart';
 
 /// 認證服務
 ///
@@ -20,6 +21,7 @@ class AuthService implements IAuthService {
   final NetworkAwareClient _apiClient;
   final IAuthSessionRepository _sessionRepo;
   final ITokenValidator _tokenValidator;
+  final AppDatabase _db;
   bool _isOfflineMode = false;
   String? _currentUserId;
   String? _currentUserEmail;
@@ -30,13 +32,16 @@ class AuthService implements IAuthService {
   /// [apiClient] 網路請求客戶端
   /// [sessionRepository] 工作階段儲存倉儲
   /// [tokenValidator] Token 驗證器
+  /// [db] 本地資料庫 (用於登出時清除資料)
   AuthService({
     NetworkAwareClient? apiClient,
     required IAuthSessionRepository sessionRepository,
     ITokenValidator? tokenValidator,
+    required AppDatabase db,
   }) : _apiClient = apiClient ?? getIt<NetworkAwareClient>(),
        _sessionRepo = sessionRepository,
-       _tokenValidator = tokenValidator ?? JwtTokenValidator() {
+       _tokenValidator = tokenValidator ?? JwtTokenValidator(),
+       _db = db {
     // 初始載入快取狀態
     _initAuthState();
   }
@@ -422,6 +427,15 @@ class AuthService implements IAuthService {
 
   @override
   Future<void> logout() async {
+    // 1. 清除本地資料庫 (避免換帳號時看到舊資料)
+    try {
+      await _db.clearAllData();
+      LogService.info('本地資料庫已清除', source: _source);
+    } catch (e) {
+      LogService.error('清除本地資料庫失敗: $e', source: _source);
+    }
+
+    // 2. 清除 Session
     await _sessionRepo.clearSession();
     _isOfflineMode = false;
     _notifyAuthState(null);
