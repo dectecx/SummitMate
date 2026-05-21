@@ -70,6 +70,7 @@ func (a *App) InitRouter() (*chi.Mux, error) {
 	router.Use(middleware.ContextLogger(a.Logger))
 	router.Use(middleware.RequestLogger(a.Logger))
 	router.Use(middleware.CORS(a.Config.AllowedOrigins))
+	router.Use(chiMiddleware.Timeout(30 * time.Second))
 	router.Use(chiMiddleware.Recoverer)
 
 	// API Handler
