@@ -6,7 +6,7 @@ SummitMate 是一款 **Offline-First** 登山行程管理應用，支援 iOS、A
 
 ## 系統架構
 
-本專案採用前後端分離架構，後端正由 GAS 遷移至 Go。
+本專案採用前後端分離架構，後端為基於 Go 與 PostgreSQL 的 RESTful API 服務。
 
 ```mermaid
 graph TD
@@ -17,17 +17,12 @@ graph TD
         FlutterApp <--> SecureStorage[Secure Storage]
     end
 
-    subgraph GoBackend ["Go Backend (主要)"]
+    subgraph GoBackend ["Go Backend"]
         FlutterApp -- "REST (JSON)" --> ChiRouter[Chi Router]
         ChiRouter --> APIAdapter[API Adapters]
         APIAdapter --> Domain[Domain (Handlers, Services)]
         Domain --> Repo[Repositories]
         Repo --> PgPool[(PostgreSQL)]
-    end
-
-    subgraph GASBackend ["GAS Backend (Legacy)"]
-        FlutterApp -- "HTTP POST (JSON)" --> GAS[Google Apps Script]
-        GAS <--> GSheets[(Google Sheets)]
     end
 ```
 
@@ -70,8 +65,7 @@ graph LR
 | Tutorial System    | TutorialCubit + Memory Mock Injection             |
 | API Layer (FE)     | Retrofit + Dio + Freezed (Code-Gen)               |
 | DI / Service Loc.  | Injectable + GetIt                                |
-| Backend (Primary)  | Go 1.26 + Chi v5 + PostgreSQL                     |
-| Backend (Legacy)   | Google Apps Script + Google Sheets                |
+| Backend            | Go 1.26 + Chi v5 + PostgreSQL                     |
 | API Style          | OpenAPI 3.0 (Code-Gen via oapi-codegen)           |
 | Authentication     | JWT (Access + Refresh Token)                      |
 | Logging            | `log/slog` (JSON prod / Text dev)                 |
@@ -121,4 +115,4 @@ Go Backend 提供 `/api/v1` 前綴的 RESTful API，包含以下模組：
 - [模組關聯圖](./MODULE_DIAGRAM.md)
 - [離線架構](./OFFLINE.md)
 - [認證架構](./AUTH.md)
-- [API Contract (Legacy GAS)](../api/CONTRACT.md)
+- [API Contract](../api/CONTRACT.md)

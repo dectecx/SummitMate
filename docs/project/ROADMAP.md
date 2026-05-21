@@ -185,7 +185,7 @@
 
 ### 任務
 
-- [x] GAS 驗證碼生成與發送 (MailApp)
+- [x] Go Backend SMTP 伺服器驗證碼發送
 - [x] `authVerifyEmail` / `authResendCode` API
 - [x] `VerificationScreen` UI (6 位數輸入)
 - [x] `AuthCubit` 驗證狀態檢查 (`isVerified`)
@@ -244,7 +244,6 @@ SummitMate/
 │   ├── cmd/         # 執行入口 (api, migrate, weatherjob)
 │   ├── internal/    # 內部套件 (handler, service, repository, model)
 │   └── api/         # OpenAPI 生成碼
-├── gas/             # GAS 後端 (Legacy)
 └── docs/            # 專案文件
 ```
 

@@ -146,3 +146,33 @@ bool canDeleteTripSync(UserProfile? user, Trip trip) {
 - **觸發點**：取消揪團連結、刪除揪團、或成員退出揪團。
 - **動作**：後端移除對應的 `trip_members` 記錄。
 - **客戶端響應**：前端 Sync 時若回傳 403 Forbidden，應立即刪除本地對應的行程緩存及共享資訊 (聊天/投票)。
+
+### 4. 揪團權限與角色狀態矩陣
+
+揪團內的使用者角色狀態分為以下五類，對應不同的操作權限：
+
+| 使用者狀態 (Status) | 可看公開內容/快照 | 可看私密留言 | 可讀寫留言/投票 | 動作 (Actions) |
+| :----------------- | :--------------- | :----------- | :-------------- | :------------- |
+| **團長/主辦人 (Host)** | ✅ (擁有者) | ✅ (擁有者) | ✅ (可管理) | 編輯/刪除揪團、審核申請、移除成員 |
+| **已加入成員 (Approved)** | ✅ | ✅ | ✅ (透過 `trip_members`) | 退出揪團、瀏覽共享行程細節 |
+| **審核中 (Pending)** | ✅ | ❌ | ❌ | 取消申請、等待審核 |
+| **再次申請 (Rejected)** | ✅ | ❌ | ❌ | 查看 `rejection_reason`、再次發送申請 |
+| **一般非成員 (Public)** | ✅ | ❌ | ❌ | 申請加入 |
+
+#### 申請與審核狀態流轉
+```mermaid
+stateDiagram-v2
+    [*] --> Public: 未申請
+    Public --> Pending: 申請加入 (填寫 message)
+    Pending --> Approved: Host 批准 (後端加 trip_members)
+    Pending --> Rejected: Host 拒絕 (填寫 rejection_reason)
+    Rejected --> Pending: 再次申請 (重新填寫 message)
+    Approved --> Public: 退出揪團 / 被 Host 移除
+```
+
+### 5. 私密留言 (Private Message) 存取安全控制
+
+- **安全過濾 (Security Filtering)**: 
+  - 私密留言 (e.g. 集合地點、詳細通訊群組連結等) 儲存於 `group_events.private_message` 欄位。
+  - **後端安全防護**：後端在回傳 `GetGroupEventDetail` 的 API 響應時，**必須**進行權限過濾。若 `request.user_id` 不是該揪團的 `host_id`，且未存在於批准的申請人名單中，該欄位必須被過濾為空字串 `""` 或不回傳。
+  - **前端 UI 防護**：前端 APP 會依據目前的使用者狀態動態顯示私密留言卡片，若未被批准，私密卡片應顯示「審核通過後方可查看」並呈現鎖定狀態。
