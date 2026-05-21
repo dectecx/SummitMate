@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
 
@@ -223,6 +224,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     try {
       final result = await _repository.toggleCheckIn(id);
       if (result is Failure) throw result.exception;
+      HapticFeedback.mediumImpact();
       LogService.info('Toggle check-in: $id', source: _source);
       await _markCurrentTripDirty();
       await loadItinerary();
@@ -249,6 +251,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
       final result = await _repository.update(updatedItem);
       if (result is Failure) throw result.exception;
+      HapticFeedback.mediumImpact();
       LogService.info('Check-in with time: $id at $time', source: _source);
       await _markCurrentTripDirty();
       await loadItinerary();

@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../../domain/repositories/i_gear_repository.dart';
 import '../../../domain/repositories/i_trip_repository.dart';
@@ -184,6 +185,7 @@ class GearCubit extends Cubit<GearState> {
     try {
       final result = await _repository.toggleChecked(id);
       if (result is Failure) throw result.exception;
+      HapticFeedback.lightImpact();
       await reload();
     } catch (e) {
       LogService.error('Failed to toggle checked: $e', source: _source);
