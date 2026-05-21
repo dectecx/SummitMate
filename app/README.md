@@ -2,7 +2,7 @@
 
 ## 專案概述
 
-SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，支援 **iOS**, **Android** 與 **Web (PWA)**。核心設計原則為 **Offline First（離線優先）**，確保在無網路的高山環境下，仍能執行行程控管、裝備檢核與緊急資訊查詢。行前協作則透過 Google Sheets 作為 CMS，實現輕量化的團隊同步。
+SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，支援 **iOS**, **Android** 與 **Web (PWA)**。核心設計原則為 **Offline First（離線優先）**，確保在無網路的高山環境下，仍能執行行程控管、裝備檢核與緊急資訊查詢。
 
 ## 功能摘要
 
@@ -16,7 +16,7 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 ### 線上協作
 
 - **團隊留言板**：支援巢狀留言與分類顯示，可刪除自己的留言。
-- **Google Sheets 同步**：雙向同步留言，單向下載行程，並支援 Web 版跨域上傳。
+- **雲端雙向同步**：雙向同步留言、行程與裝備，支援離線快取與有網時自動同步。
 - **投票功能**：建立團隊投票，支援單選/多選、截止時間與開放新增選項。
 
 ### 雲端裝備庫
@@ -55,7 +55,6 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 - **Local Database**: Drift (SQLite, Web-Compatible via Wasm)
 - **State Management**: flutter_bloc (Cubit) + Provider
 - **Backend (Primary)**: Go 1.25 + Chi v5 + PostgreSQL
-- **Backend (Legacy)**: Google Sheets + Google Apps Script
 - **Architecture**: Clean Architecture (Domain, Data, Infrastructure, Presentation)
 
 ## 專案文件
@@ -79,8 +78,8 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 在 `app/` 目錄下建立 `.env.dev` 檔案：
 
 ```properties
-GAS_BASE_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
-# 若需測試氣象功能，請確保 CWA_API_KEY 已配置於 GAS Script Properties
+API_BASE_URL=http://localhost:8080/api/v1
+CWA_API_KEY=YOUR_CWA_API_KEY_HERE
 ```
 
 ### 2. 執行應用
