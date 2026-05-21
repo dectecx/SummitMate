@@ -185,13 +185,15 @@ CREATE TABLE role_permissions (
 | email         | VARCHAR(255) | **UK**, NN  | 登入帳號      |
 | password_hash | TEXT         | NN          | bcrypt        |
 | display_name  | VARCHAR(100) | NN          |               |
-| avatar        | VARCHAR(10)  | NN, Default | Emoji 頭像    |
+| avatar        | VARCHAR(255) | NN, Default | Emoji 頭像    |
 | **role_id**   | UUID         | **FK**      | Ref: roles.id |
 | is_active     | BOOLEAN      | NN, Default | 帳號啟用      |
 | is_verified   | BOOLEAN      | NN, Default | Email 已驗證  |
 | last_login_at | TIMESTAMPTZ  |             |               |
 | created_at    | TIMESTAMPTZ  | NN, Default |               |
+| created_by    | UUID         |             | 建立者        |
 | updated_at    | TIMESTAMPTZ  | NN, Default |               |
+| updated_by    | UUID         |             | 更新者        |
 
 ```sql
 CREATE TABLE users (
@@ -199,13 +201,15 @@ CREATE TABLE users (
     email               VARCHAR(255) NOT NULL UNIQUE,
     password_hash       TEXT         NOT NULL,
     display_name        VARCHAR(100) NOT NULL,
-    avatar              VARCHAR(10)  NOT NULL DEFAULT '🐻',
+    avatar              VARCHAR(255) NOT NULL DEFAULT '🐻',
     role_id             UUID REFERENCES roles(id),
     is_active           BOOLEAN      NOT NULL DEFAULT TRUE,
     is_verified         BOOLEAN      NOT NULL DEFAULT FALSE,
     last_login_at       TIMESTAMPTZ,
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    created_by          UUID,
+    updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_by          UUID
 );
 ```
 
@@ -247,6 +251,29 @@ CREATE TABLE trips (
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_by  UUID         NOT NULL REFERENCES users(id)
 );
+```
+
+#### Table: `trip_meal_plan_days`
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| **id** | UUID | **PK** | `uuidv7()` |
+| **trip_id** | UUID | **FK**, NN | Ref: trips.id (ON DELETE CASCADE) |
+| name | VARCHAR(50) | NN | 天數名稱 (e.g. `D1`, `D2`) |
+| linked_itinerary_day | VARCHAR(50) | | 連結行程天數名稱 (e.g. `D1前進營地`) |
+| created_at | TIMESTAMPTZ | Default | |
+| updated_at | TIMESTAMPTZ | Default | |
+
+```sql
+CREATE TABLE trip_meal_plan_days (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+    name VARCHAR(50) NOT NULL,
+    linked_itinerary_day VARCHAR(50),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_trip_meal_plan_days_trip_id ON trip_meal_plan_days(trip_id);
 ```
 
 #### Table: `trip_members`
@@ -467,7 +494,7 @@ CREATE TABLE meal_library_items (
 | **id**              | UUID             | **PK**      |                                       |
 | **trip_id**         | UUID             | **FK**, NN  | 屬於特定行程                          |
 | **library_item_id** | UUID             | **FK**      | 連結食物庫 (SET NULL on delete)       |
-| day                 | VARCHAR(10)      | NN          | `D0`, `D1`                            |
+| **meal_plan_day_id** | UUID            | **FK**, NN  | 連結餐食天數計畫 (CASCADE on delete)  |
 | meal_type           | VARCHAR(20)      | NN          | `breakfast`/`lunch`/`dinner`/`action` |
 | name                | VARCHAR(200)     | NN          |                                       |
 | weight              | DOUBLE PRECISION | NN, Default | 重量 (公克)                           |
@@ -484,7 +511,7 @@ CREATE TABLE meal_items (
     id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
     library_item_id UUID             REFERENCES meal_library_items(id) ON DELETE SET NULL,
-    day             VARCHAR(10)      NOT NULL,
+    meal_plan_day_id UUID            NOT NULL REFERENCES trip_meal_plan_days(id) ON DELETE CASCADE,
     meal_type       VARCHAR(20)      NOT NULL,
     name            VARCHAR(200)     NOT NULL,
     weight          DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -600,7 +627,6 @@ CREATE TABLE template_meal_items (
 | **trip_id**          | UUID         | **FK**      | 所屬行程           |
 | title                | VARCHAR(200) | NN          |                    |
 | description          | TEXT         | NN, Default |                    |
-| **creator_id**       | UUID         | **FK**, NN  |                    |
 | deadline             | TIMESTAMPTZ  |             |                    |
 | is_allow_add_option  | BOOLEAN      | NN, Default |                    |
 | max_option_limit     | INT          | NN, Default |                    |
@@ -618,7 +644,6 @@ CREATE TABLE polls (
     trip_id              UUID         REFERENCES trips(id) ON DELETE CASCADE,
     title                VARCHAR(200) NOT NULL,
     description          TEXT         NOT NULL DEFAULT '',
-    creator_id           UUID         NOT NULL REFERENCES users(id),
     deadline             TIMESTAMPTZ,
     is_allow_add_option  BOOLEAN      NOT NULL DEFAULT FALSE,
     max_option_limit     INT          NOT NULL DEFAULT 20,
@@ -639,7 +664,6 @@ CREATE TABLE poll_options (
     id         UUID PRIMARY KEY DEFAULT uuidv7(),
     poll_id    UUID         NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
     text       VARCHAR(500) NOT NULL,
-    creator_id UUID         NOT NULL REFERENCES users(id),
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     created_by UUID         NOT NULL REFERENCES users(id),
     updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -651,14 +675,15 @@ CREATE TABLE poll_options (
 
 > [!NOTE]
 > GAS 版本有 `user_name` 快照欄位。PostgreSQL 改為 JOIN `users`。
-> 複合主鍵 `(poll_option_id, user_id)` 確保每人每選項只能投一票。
+> 複合主鍵 `(poll_id, option_id, user_id)` 確保每人每選項只能投一票。
 
 ```sql
 CREATE TABLE poll_votes (
-    poll_option_id UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
+    poll_id        UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
+    option_id      UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
     user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (poll_option_id, user_id)
+    PRIMARY KEY (poll_id, option_id, user_id)
 );
 ```
 
@@ -668,12 +693,15 @@ CREATE TABLE poll_votes (
 
 #### Table: `group_events`
 
-| Column             | Type         | Constraints | Description                 |
+| Column              | Type         | Constraints | Description                 |
 | :----------------- | :----------- | :---------- | :-------------------------- |
 | **id**             | UUID         | **PK**      |                             |
-| **creator_id**     | UUID         | **FK**, NN  |                             |
+| **host_id**        | UUID         | **FK**, NN  | 揪團發起人 (Host)           |
+| host_name          | VARCHAR(100) | NN, Default | 發起人名稱                  |
+| host_avatar        | VARCHAR(255) | NN, Default | 發起人頭像                  |
 | title              | VARCHAR(200) | NN          |                             |
 | description        | TEXT         | NN, Default |                             |
+| category           | VARCHAR(50)  | NN, Default | 揪團分類 (Hiking, Camping, Bouldering, Other) |
 | location           | VARCHAR(200) | NN, Default |                             |
 | start_date         | DATE         | NN          |                             |
 | end_date           | DATE         |             |                             |
@@ -682,6 +710,8 @@ CREATE TABLE poll_votes (
 | approval_required  | BOOLEAN      | NN, Default |                             |
 | private_message    | TEXT         | NN, Default | 審核通過後顯示              |
 | **linked_trip_id** | UUID         | **FK**      | Ref: trips.id               |
+| trip_snapshot      | JSONB        |             | 關聯行程的快照              |
+| snapshot_updated_at| TIMESTAMPTZ  |             | 行程快照更新時間            |
 | like_count         | INT          | NN, Default | 快取計數 (Trigger 維護)     |
 | comment_count      | INT          | NN, Default | 快取計數 (Trigger 維護)     |
 | created_at         | TIMESTAMPTZ  | NN, Default |                             |
@@ -691,14 +721,17 @@ CREATE TABLE poll_votes (
 
 > [!NOTE]
 > `like_count` 和 `comment_count` 為非正規快取欄位，由 DB Trigger 或應用層維護。
-> GAS 版本的 `creator_name`/`creator_avatar` 快照改為 JOIN `users`。
+> `trip_snapshot` 包含被關聯行程的細節，方便非成員預覽揪團內容。
 
 ```sql
 CREATE TABLE group_events (
     id                UUID PRIMARY KEY DEFAULT uuidv7(),
-    creator_id        UUID         NOT NULL REFERENCES users(id),
+    host_id           UUID         NOT NULL REFERENCES users(id),
+    host_name         VARCHAR(100) NOT NULL DEFAULT '',
+    host_avatar       VARCHAR(255) NOT NULL DEFAULT '🐻',
     title             VARCHAR(200) NOT NULL,
     description       TEXT         NOT NULL DEFAULT '',
+    category          VARCHAR(50)  NOT NULL DEFAULT 'Other' CHECK (category IN ('Hiking', 'Camping', 'Bouldering', 'Other')),
     location          VARCHAR(200) NOT NULL DEFAULT '',
     start_date        DATE         NOT NULL,
     end_date          DATE,
@@ -706,7 +739,9 @@ CREATE TABLE group_events (
     max_members       INT          NOT NULL DEFAULT 10,
     approval_required BOOLEAN      NOT NULL DEFAULT FALSE,
     private_message   TEXT         NOT NULL DEFAULT '',
-    linked_trip_id    UUID         REFERENCES trips(id),
+    linked_trip_id    UUID         REFERENCES trips(id) ON DELETE SET NULL,
+    trip_snapshot     JSONB,
+    snapshot_updated_at TIMESTAMPTZ,
     like_count        INT          NOT NULL DEFAULT 0,
     comment_count     INT          NOT NULL DEFAULT 0,
     created_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -720,15 +755,16 @@ CREATE TABLE group_events (
 
 ```sql
 CREATE TABLE group_event_applications (
-    id         UUID PRIMARY KEY DEFAULT uuidv7(),
-    event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
-    user_id    UUID        NOT NULL REFERENCES users(id),
-    status     VARCHAR(20) NOT NULL DEFAULT 'pending',
-    message    TEXT        NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_by UUID        NOT NULL REFERENCES users(id),
-    UNIQUE (event_id, user_id)
+    id               UUID PRIMARY KEY DEFAULT uuidv7(),
+    event_id         UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
+    user_id          UUID        NOT NULL REFERENCES users(id),
+    status           VARCHAR(20) NOT NULL DEFAULT 'pending',
+    message          TEXT        NOT NULL DEFAULT '',
+    rejection_reason TEXT        NOT NULL DEFAULT '',
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by       UUID        NOT NULL REFERENCES users(id),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by       UUID        NOT NULL REFERENCES users(id)
 );
 ```
 
@@ -741,7 +777,9 @@ CREATE TABLE group_event_comments (
     user_id    UUID        NOT NULL REFERENCES users(id),
     content    TEXT        NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_by UUID        NOT NULL REFERENCES users(id),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID        NOT NULL REFERENCES users(id)
 );
 ```
 
@@ -752,6 +790,7 @@ CREATE TABLE group_event_likes (
     event_id   UUID NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID NOT NULL REFERENCES users(id),
     PRIMARY KEY (event_id, user_id)
 );
 ```
@@ -768,8 +807,8 @@ CREATE TABLE favorites (
     type       VARCHAR(30) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID        NOT NULL REFERENCES users(id),
-    updated_at TIMESTAMPTZ,
-    updated_by UUID        REFERENCES users(id),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID        NOT NULL REFERENCES users(id),
     UNIQUE (user_id, target_id, type)
 );
 ```
@@ -815,35 +854,35 @@ CREATE TABLE heartbeats (
 | Column       | Type             | Constraints | Description                      |
 | :----------- | :--------------- | :---------- | :------------------------------- |
 | **id**       | UUID             | **PK**      |                                  |
-| title        | VARCHAR(200)     | NN          | 組合名稱                         |
-| author       | VARCHAR(100)     | NN          | 作者名稱                         |
-| total_weight | DOUBLE PRECISION | NN, Default | 總重 (公克)                      |
-| item_count   | INT              | NN, Default | 項目數量                         |
-| visibility   | VARCHAR(20)      | NN, Default | `public`, `protected`, `private` |
-| download_key | VARCHAR(100)     |             | 受保護組合的下載金鑰             |
-| **user_id**  | UUID             | **FK**, NN  | 擁有者 ID (Auth UserID)          |
+| title        | VARCHAR(255)     | NN          | 組合名稱                         |
+| author       | VARCHAR(255)     | NN          | 作者名稱                         |
+| total_weight | NUMERIC(10,2)    | Default     | 總重 (公克)                      |
+| item_count   | INTEGER          | Default     | 項目數量                         |
+| visibility   | VARCHAR(20)      | NN, Default | `public`, `protected`, `private` (CHECK) |
+| download_key | VARCHAR(255)     |             | 受保護組合的下載金鑰             |
+| **user_id**  | UUID             | NN          | 擁有者 ID (Auth UserID)          |
 | created_at   | TIMESTAMPTZ      | NN, Default |                                  |
-| created_by   | UUID             | **FK**, NN  |                                  |
+| created_by   | UUID             | NN          |                                  |
 | updated_at   | TIMESTAMPTZ      | NN, Default |                                  |
-| updated_by   | UUID             | **FK**, NN  |                                  |
+| updated_by   | UUID             | NN          |
 
 ```sql
-CREATE TABLE gear_sets (
-    id           UUID PRIMARY KEY DEFAULT uuidv7(),
-    title        VARCHAR(200) NOT NULL,
-    author       VARCHAR(100) NOT NULL,
-    total_weight DOUBLE PRECISION NOT NULL DEFAULT 0,
-    item_count   INT NOT NULL DEFAULT 0,
-    visibility   VARCHAR(20) NOT NULL DEFAULT 'public',
-    download_key VARCHAR(100),
-    user_id      UUID NOT NULL REFERENCES users(id),
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by   UUID NOT NULL REFERENCES users(id),
-    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_by   UUID NOT NULL REFERENCES users(id)
+CREATE TABLE IF NOT EXISTS gear_sets (
+    id UUID PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    total_weight NUMERIC(10,2) DEFAULT 0,
+    item_count INTEGER DEFAULT 0,
+    visibility VARCHAR(20) NOT NULL CHECK (visibility IN ('public', 'protected', 'private')),
+    download_key VARCHAR(255),
+    user_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by UUID NOT NULL
 );
-CREATE INDEX idx_gear_sets_user_id ON gear_sets(user_id);
-CREATE INDEX idx_gear_sets_visibility ON gear_sets(visibility);
+CREATE INDEX IF NOT EXISTS idx_gear_sets_visibility ON gear_sets(visibility);
+CREATE INDEX IF NOT EXISTS idx_gear_sets_user_id ON gear_sets(user_id);
 ```
 
 #### Table: `gear_set_items`
@@ -852,23 +891,23 @@ CREATE INDEX idx_gear_sets_visibility ON gear_sets(visibility);
 | :-------------- | :--------------- | :---------- | :---------- |
 | **id**          | UUID             | **PK**      |             |
 | **gear_set_id** | UUID             | **FK**, NN  |             |
-| name            | VARCHAR(200)     | NN          | 裝備名稱    |
-| category        | VARCHAR(50)      | NN, Default | 裝備分類    |
-| weight          | DOUBLE PRECISION | NN, Default | 單件重量    |
-| quantity        | INT              | NN, Default | 數量        |
-| order_index     | INT              | NN, Default | 排序        |
+| name            | VARCHAR(255)     | NN          | 裝備名稱    |
+| category        | VARCHAR(100)     | NN          | 裝備分類    |
+| weight          | NUMERIC(10,2)    | NN, Default | 單件重量    |
+| quantity        | INTEGER          | NN, Default | 數量        |
+| order_index     | INTEGER          | Default     | 排序        |
 
 ```sql
-CREATE TABLE gear_set_items (
-    id          UUID PRIMARY KEY DEFAULT uuidv7(),
+CREATE TABLE IF NOT EXISTS gear_set_items (
+    id UUID PRIMARY KEY,
     gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
-    name        VARCHAR(200) NOT NULL,
-    category    VARCHAR(50) NOT NULL DEFAULT 'Other',
-    weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
-    quantity    INT NOT NULL DEFAULT 1,
-    order_index INT NOT NULL DEFAULT 0
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    weight NUMERIC(10,2) NOT NULL DEFAULT 0,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    order_index INTEGER DEFAULT 0
 );
-CREATE INDEX idx_gear_set_items_set_id ON gear_set_items(gear_set_id);
+CREATE INDEX IF NOT EXISTS idx_gear_set_items_set_id ON gear_set_items(gear_set_id);
 ```
 
 #### Table: `gear_set_meals`
@@ -879,21 +918,21 @@ CREATE INDEX idx_gear_set_items_set_id ON gear_set_items(gear_set_id);
 | **gear_set_id** | UUID             | **FK**, NN  |             |
 | day             | VARCHAR(50)      | NN          | 天數        |
 | meal_type       | VARCHAR(50)      | NN          | 餐別        |
-| name            | VARCHAR(200)     | NN          | 名稱        |
-| calories        | DOUBLE PRECISION | NN, Default | 熱量        |
+| name            | VARCHAR(255)     | NN          | 名稱        |
+| calories        | NUMERIC(10,2)    | Default     | 熱量        |
 | note            | TEXT             |             | 備註        |
 
 ```sql
-CREATE TABLE gear_set_meals (
-    id          UUID PRIMARY KEY DEFAULT uuidv7(),
+CREATE TABLE IF NOT EXISTS gear_set_meals (
+    id UUID PRIMARY KEY,
     gear_set_id UUID NOT NULL REFERENCES gear_sets(id) ON DELETE CASCADE,
-    day         VARCHAR(50) NOT NULL,
-    meal_type   VARCHAR(50) NOT NULL,
-    name        VARCHAR(200) NOT NULL,
-    calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
-    note        TEXT
+    day VARCHAR(50) NOT NULL,
+    meal_type VARCHAR(50) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    calories NUMERIC(10,2) DEFAULT 0,
+    note TEXT
 );
-CREATE INDEX idx_gear_set_meals_set_id ON gear_set_meals(gear_set_id);
+CREATE INDEX IF NOT EXISTS idx_gear_set_meals_set_id ON gear_set_meals(gear_set_id);
 ```
 
 ---
