@@ -18,6 +18,7 @@ type Querier interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
+	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
 }
 
 // Beginner defines the interface for starting a transaction.
