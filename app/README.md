@@ -41,7 +41,7 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 - **Web / PWA**：
   - **PWA 安裝**：支援 iOS (Safari Add to Home Screen) 與 Android 安裝。
   - **響應式設計**：電腦版自動適配寬度 (Max 600px)，保持最佳瀏覽比例。
-  - **離線支援**：Hive DB 支援 Web IndexedDB 持久化。
+  - **離線支援**：Drift (SQLite) 支援 Web (Wasm/IndexedDB) 與行動端持久化。
 
 ### 教學導覽
 
@@ -52,7 +52,7 @@ SummitMate 是一款針對嘉明湖登山行程設計的跨平台應用程式，
 
 - **Framework**: Flutter 3.x (Dart 3.x)
 - **Platforms**: iOS, Android, Web (HTML/CanvasKit)
-- **Local Database**: Hive (NoSQL, Web-Compatible)
+- **Local Database**: Drift (SQLite, Web-Compatible via Wasm)
 - **State Management**: flutter_bloc (Cubit) + Provider
 - **Backend (Primary)**: Go 1.25 + Chi v5 + PostgreSQL
 - **Backend (Legacy)**: Google Sheets + Google Apps Script

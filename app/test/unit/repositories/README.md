@@ -1,4 +1,4 @@
-// Repository tests require Hive initialization
+// Repository tests require Drift database initialization
 // These tests should be run as integration tests with proper setup
 // 
 // For now, Repository functionality is tested via:
@@ -6,4 +6,5 @@
 // 2. Manual E2E testing (full flow verification)
 // 3. Widget tests (UI integration)
 //
-// TODO: Add integration test setup with Hive.initFlutter()
+// TODO: Add integration test setup with Drift database
+
