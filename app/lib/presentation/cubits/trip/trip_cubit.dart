@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:uuid/uuid.dart';
@@ -21,6 +23,8 @@ class TripCubit extends Cubit<TripState> {
 
   static const String _source = 'TripCubit';
 
+  StreamSubscription<String>? _tripUpdateSubscription;
+
   TripCubit(
     this._tripRepository,
     this._authService,
@@ -28,10 +32,16 @@ class TripCubit extends Cubit<TripState> {
     this._itineraryRepository,
     this._gearRemoteDataSource,
   ) : super(const TripInitial()) {
-    _tripRepository.tripUpdateStream.listen((tripId) {
+    _tripUpdateSubscription = _tripRepository.tripUpdateStream.listen((tripId) {
       // 當行程更新時，重新載入列表以更新 UI 狀態 (如 SyncStatus)
       loadTrips();
     });
+  }
+
+  @override
+  Future<void> close() {
+    _tripUpdateSubscription?.cancel();
+    return super.close();
   }
 
   /// 載入行程列表
