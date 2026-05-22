@@ -9,6 +9,7 @@ import (
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth"
+	"summitmate/internal/common/ptrutil"
 	"summitmate/internal/database"
 )
 
@@ -190,24 +191,12 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 		return nil, apperror.ErrAccessDenied
 	}
 
-	if req.Name != nil {
-		existingTrip.Name = *req.Name
-	}
-	if req.Description != nil {
-		existingTrip.Description = req.Description
-	}
-	if req.StartDate != nil {
-		existingTrip.StartDate = *req.StartDate
-	}
-	if req.EndDate != nil {
-		existingTrip.EndDate = req.EndDate
-	}
-	if req.CoverImage != nil {
-		existingTrip.CoverImage = req.CoverImage
-	}
-	if req.IsActive != nil {
-		existingTrip.IsActive = *req.IsActive
-	}
+	ptrutil.AssignIfPresent(&existingTrip.Name, req.Name)
+	ptrutil.AssignPtrIfPresent(&existingTrip.Description, req.Description)
+	ptrutil.AssignIfPresent(&existingTrip.StartDate, req.StartDate)
+	ptrutil.AssignPtrIfPresent(&existingTrip.EndDate, req.EndDate)
+	ptrutil.AssignPtrIfPresent(&existingTrip.CoverImage, req.CoverImage)
+	ptrutil.AssignIfPresent(&existingTrip.IsActive, req.IsActive)
 	existingTrip.UpdatedBy = userID
 
 	var updatedTrip *Trip
