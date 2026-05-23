@@ -34,6 +34,9 @@ func (h *TripHandler) ListTrips(w http.ResponseWriter, r *http.Request, params a
 	limit := 20
 	if params.Limit != nil && *params.Limit > 0 {
 		limit = *params.Limit
+		if limit > 100 {
+			limit = 100
+		}
 	}
 	search := ""
 	if params.Search != nil {
