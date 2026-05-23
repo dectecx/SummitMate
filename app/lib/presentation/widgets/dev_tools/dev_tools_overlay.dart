@@ -11,6 +11,9 @@ import 'package:drift/drift.dart' as drift;
 import 'package:summitmate/app.dart';
 import 'package:summitmate/presentation/cubits/meal/meal_state.dart';
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+import 'package:summitmate/core/env_config.dart';
 
 class DevToolsOverlay extends StatelessWidget {
   final Widget child;
@@ -109,8 +112,27 @@ class _DevToolsFloatingButtonState extends State<_DevToolsFloatingButton> {
   }
 }
 
-class DevPanelContent extends StatelessWidget {
+class DevPanelContent extends StatefulWidget {
   const DevPanelContent({super.key});
+
+  @override
+  State<DevPanelContent> createState() => _DevPanelContentState();
+}
+
+class _DevPanelContentState extends State<DevPanelContent> {
+  late final TextEditingController _apiUrlController;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiUrlController = TextEditingController(text: EnvConfig.apiBaseUrl);
+  }
+
+  @override
+  void dispose() {
+    _apiUrlController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +152,121 @@ class DevPanelContent extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
+                  const Text('API 伺服器網址設定', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Card(
+                    color: Colors.grey[50],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    elevation: 0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('目前網址: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              Expanded(
+                                child: SelectableText(
+                                  EnvConfig.apiBaseUrl,
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 13,
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Text('配置來源: ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: EnvConfig.isUsingCustomApiUrl ? Colors.amber[100] : Colors.blue[100],
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  EnvConfig.isUsingCustomApiUrl ? '手機自訂' : '環境變數',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: EnvConfig.isUsingCustomApiUrl ? Colors.amber[800] : Colors.blue[800],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _apiUrlController,
+                            decoration: const InputDecoration(
+                              labelText: '自訂 API Base URL',
+                              hintText: 'http://192.168.x.x:8080/api/v1',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            ),
+                            style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (EnvConfig.isUsingCustomApiUrl)
+                                TextButton.icon(
+                                  icon: const Icon(Icons.restore, size: 18),
+                                  label: const Text('還原預設'),
+                                  onPressed: () async {
+                                    EnvConfig.setCustomApiUrl(null);
+                                    final prefs = getIt<SharedPreferences>();
+                                    await prefs.remove('custom_api_base_url');
+                                    getIt<Dio>().options.baseUrl = EnvConfig.apiBaseUrl;
+                                    setState(() {
+                                      _apiUrlController.text = EnvConfig.apiBaseUrl;
+                                    });
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(const SnackBar(content: Text('已還原為預設環境變數設定')));
+                                    }
+                                  },
+                                ),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.save, size: 18),
+                                label: const Text('儲存套用'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.deepPurple,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () async {
+                                  final newUrl = _apiUrlController.text.trim();
+                                  if (newUrl.isEmpty) return;
+                                  EnvConfig.setCustomApiUrl(newUrl);
+                                  final prefs = getIt<SharedPreferences>();
+                                  await prefs.setString('custom_api_base_url', newUrl);
+                                  getIt<Dio>().options.baseUrl = newUrl;
+                                  setState(() {});
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(SnackBar(content: Text('API 網址已更新為: $newUrl (立即生效)')));
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(),
                   const Text('快速登入/切換帳號', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   Wrap(

@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../infrastructure/infrastructure.dart';
+import '../env_config.dart';
 import 'injection.config.dart';
 
 final getIt = GetIt.instance;
@@ -14,7 +15,14 @@ Future<void> configureDependencies() async {
   // 1. 並行執行非依賴性異步任務 (Optimization)
   // 此處僅為「預熱」緩存，實際註冊將由 Stage 2 的 injectable 依據 RegisterModule 定義執行。
   LogService.info('🚀 [DI] Stage 1: Parallel Initialization (Prefs, PackageInfo)');
-  await Future.wait([SharedPreferences.getInstance(), PackageInfo.fromPlatform()]);
+  final results = await Future.wait([SharedPreferences.getInstance(), PackageInfo.fromPlatform()]);
+
+  final prefs = results[0] as SharedPreferences;
+  final customUrl = prefs.getString('custom_api_base_url');
+  if (customUrl != null && customUrl.isNotEmpty) {
+    EnvConfig.initCustomApiUrl(customUrl);
+    LogService.info('🚀 [DI] Loaded custom API URL from SharedPreferences: $customUrl');
+  }
 
   // 2. 執行產生的 init (處理依賴性註冊)
   LogService.info('🚀 [DI] Stage 2: Injectable Initialization');

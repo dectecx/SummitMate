@@ -233,13 +233,13 @@ class GroupEventCubit extends Cubit<GroupEventState> {
   }
 
   /// 審核報名 (approve/reject)
-  Future<bool> reviewApplication({String? eventId, required String applicationId, required GroupEventReviewAction action}) async {
+  Future<bool> reviewApplication({
+    String? eventId,
+    required String applicationId,
+    required GroupEventReviewAction action,
+  }) async {
     return await _executeRemoteAction(
-      () => _groupEventRepository.reviewApplication(
-        eventId: eventId,
-        applicationId: applicationId,
-        action: action,
-      ),
+      () => _groupEventRepository.reviewApplication(eventId: eventId, applicationId: applicationId, action: action),
       '離線模式無法審核報名',
       '請登入以審核報名',
     );

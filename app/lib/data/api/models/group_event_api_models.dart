@@ -171,10 +171,7 @@ abstract class GroupEventApplyRequest with _$GroupEventApplyRequest {
 /// 審核申請請求
 @freezed
 abstract class GroupEventReviewRequest with _$GroupEventReviewRequest {
-  const factory GroupEventReviewRequest({
-    required String status,
-    String? note,
-  }) = _GroupEventReviewRequest;
+  const factory GroupEventReviewRequest({required String status, String? note}) = _GroupEventReviewRequest;
 
   factory GroupEventReviewRequest.fromJson(Map<String, dynamic> json) => _$GroupEventReviewRequestFromJson(json);
 }

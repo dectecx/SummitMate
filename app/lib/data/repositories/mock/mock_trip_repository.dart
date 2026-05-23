@@ -8,6 +8,7 @@ import 'mock_itinerary_repository.dart';
 class MockTripRepository implements ITripRepository {
   @override
   Stream<String> get tripUpdateStream => const Stream.empty();
+
   /// 模擬行程
   final Trip _mockTrip = Trip(
     id: MockItineraryRepository.mockTripId,

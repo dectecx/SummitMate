@@ -212,9 +212,7 @@ class TripDao extends DatabaseAccessor<AppDatabase> with _$TripDaoMixin implemen
     final trip = await (select(tripsTable)..where((t) => t.id.equals(tripId))).getSingleOrNull();
     if (trip != null && trip.syncStatus == SyncStatus.synced) {
       await (update(tripsTable)..where((t) => t.id.equals(tripId))).write(
-        const TripsTableCompanion(
-          syncStatus: Value(SyncStatus.pendingUpdate),
-        ),
+        const TripsTableCompanion(syncStatus: Value(SyncStatus.pendingUpdate)),
       );
     }
   }

@@ -191,7 +191,11 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: (isOffline || _isLoading) ? null : _getCloudTrips, tooltip: '重新整理'),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: (isOffline || _isLoading) ? null : _getCloudTrips,
+            tooltip: '重新整理',
+          ),
         ],
       ),
       body: AbsorbPointer(

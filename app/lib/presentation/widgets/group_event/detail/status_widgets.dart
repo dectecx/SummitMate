@@ -98,12 +98,11 @@ class StatusCard extends StatelessWidget {
               ),
             ],
           ),
-          if (status == GroupEventApplicationStatus.rejected && rejectionReason != null && rejectionReason!.isNotEmpty) ...[
+          if (status == GroupEventApplicationStatus.rejected &&
+              rejectionReason != null &&
+              rejectionReason!.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(
-              '原因: $rejectionReason',
-              style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 13),
-            ),
+            Text('原因: $rejectionReason', style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 13)),
           ],
         ],
       ),
