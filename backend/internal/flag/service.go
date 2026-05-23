@@ -29,8 +29,10 @@ func NewFlagService(repo FlagRepository, logger *slog.Logger) FlagService {
 		logger: logger.With("component", "flag"),
 		cache:  make(map[string]bool),
 	}
-	// Initial fetch
-	_ = s.refreshCache(context.Background())
+	// Initial fetch with timeout protection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_ = s.refreshCache(ctx)
 	return s
 }
 

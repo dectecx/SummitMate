@@ -100,7 +100,7 @@ func (r *messageRepository) CreateMessage(ctx context.Context, msg *TripMessage)
 	msg.CreatedAt = createdAt
 	msg.UpdatedAt = updatedAt
 
-	// Fetch User info string immediately
+	// Fetch user info immediately after insert
 	userQuery := `SELECT display_name, avatar FROM users WHERE id = $1`
 	err = db.QueryRow(ctx, userQuery, msg.UserID).Scan(&msg.DisplayName, &msg.Avatar)
 	if err != nil {

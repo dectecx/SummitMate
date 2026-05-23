@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"time"
 
 	"summitmate/internal/config"
 	"summitmate/internal/database"
@@ -22,7 +23,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 
 	// 連線資料庫
 	pool, err := database.Connect(ctx, cfg.DatabaseURL)
