@@ -186,9 +186,12 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 		}
 		return nil, err
 	}
-	if existingTrip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		s.logger.WarnContext(ctx, "更新行程權限不足", "trip_id", tripID, "user_id", userID)
-		return nil, apperror.ErrAccessDenied
+	if existingTrip.UserID != userID {
+		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
+		if err != nil || role != "leader" {
+			s.logger.WarnContext(ctx, "更新行程權限不足", "trip_id", tripID, "user_id", userID)
+			return nil, apperror.ErrAccessDenied
+		}
 	}
 
 	ptrutil.AssignIfPresent(&existingTrip.Name, req.Name)
@@ -426,8 +429,11 @@ func (s *tripService) AddItineraryItem(ctx context.Context, tripID, userID strin
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if trip.UserID != userID {
+		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
+		if err != nil || (role != "leader" && role != "guide") {
+			return nil, apperror.ErrAccessDenied
+		}
 	}
 
 	item := &ItineraryItem{
@@ -451,8 +457,11 @@ func (s *tripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, u
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if trip.UserID != userID {
+		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
+		if err != nil || (role != "leader" && role != "guide") {
+			return nil, apperror.ErrAccessDenied
+		}
 	}
 
 	existingItem, err := s.itineraryRepo.GetByID(ctx, itemID)
