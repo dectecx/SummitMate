@@ -10,12 +10,34 @@
 /// flutter run --release --dart-define-from-file=.env.prod
 /// ```
 class EnvConfig {
-  // 後端 API 網址
+  // 後端預設 API 網址
   // 從 --dart-define 或環境變數讀取
-  static const String apiBaseUrl = String.fromEnvironment(
+  static const String _defaultApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'http://10.0.2.2:8080/api/v1', // 預設指向 Android Emulator
   );
+
+  // 執行期自訂 API 網址暫存
+  static String? _customApiBaseUrl;
+
+  // 取得目前有效的 API 網址 (自訂優先)
+  static String get apiBaseUrl => _customApiBaseUrl ?? _defaultApiBaseUrl;
+
+  // 初始化自訂網址 (通常於 DI 初始化時由 SharedPreferences 載入)
+  static void initCustomApiUrl(String? customUrl) {
+    _customApiBaseUrl = customUrl;
+  }
+
+  // 設定並更新自訂網址
+  static void setCustomApiUrl(String? customUrl) {
+    _customApiBaseUrl = customUrl;
+  }
+
+  // 是否正在使用自訂 API 網址
+  static bool get isUsingCustomApiUrl => _customApiBaseUrl != null;
+
+  // 取得預設的環境變數網址
+  static String get defaultApiBaseUrl => _defaultApiBaseUrl;
 
   // 是否為開發模式
   static const bool isDev = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev') == 'dev';

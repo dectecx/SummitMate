@@ -11,13 +11,19 @@ class ApiClient implements IApiClient {
   static const String _source = 'ApiClient';
 
   final Dio _dio;
-  final String _baseUrl;
+
+  // 動態讀取 _dio 的 baseUrl，確保 runtime 修改時同步生效
+  String get _baseUrl => _dio.options.baseUrl;
 
   /// 建立 API 用戶端實例
   ///
   /// [dio] Dio 客戶端實例
   /// [baseUrl] API 基礎 URL
-  ApiClient({Dio? dio, @Named('baseUrl') required String baseUrl}) : _dio = dio ?? Dio(), _baseUrl = baseUrl;
+  ApiClient({Dio? dio, @Named('baseUrl') required String baseUrl}) : _dio = dio ?? Dio() {
+    if (_dio.options.baseUrl.isEmpty) {
+      _dio.options.baseUrl = baseUrl;
+    }
+  }
 
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {

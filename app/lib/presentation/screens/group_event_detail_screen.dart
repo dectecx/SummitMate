@@ -126,184 +126,184 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             // 1. Expanded Header
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            backgroundColor: colorScheme.primary,
-            leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
-            actions: [
-              if (isHost) ...[
-                _buildGlassIconButton(icon: Icons.delete_outline, onTap: () => _confirmDelete(context)),
-                const SizedBox(width: 8),
-              ],
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: BlocBuilder<GroupEventFavoritesCubit, GroupEventFavoritesState>(
-                  builder: (context, state) {
-                    final isFavorite = context.read<GroupEventFavoritesCubit>().isFavorite(_event.id);
-                    return _buildGlassIconButton(
-                      icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.white,
-                      onTap: () {
-                        context.read<GroupEventFavoritesCubit>().toggleFavorite(_event.id);
-                        ScaffoldMessenger.of(context).clearSnackBars();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(isFavorite ? '已從感興趣移除' : '已加入感興趣'),
-                            duration: const Duration(seconds: 1),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [colorScheme.primary, colorScheme.secondary],
-                  ),
-                ),
-                child: Center(child: Icon(Icons.terrain, size: 80, color: Colors.white.withValues(alpha: 0.2))),
-              ),
-            ),
-          ),
-
-          // 2. Content Body
-          SliverToBoxAdapter(
-            child: Transform.translate(
-              offset: const Offset(0, -20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isDesktop = constraints.maxWidth > 800;
-
-                          if (isDesktop) {
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Main Content (Left)
-                                Expanded(
-                                  flex: 2,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildTitleSection(),
-                                      const SizedBox(height: 24),
-                                      InfoGrid(
-                                        startDate: _event.startDate,
-                                        location: _event.location,
-                                        maxMembers: _event.maxMembers,
-                                      ),
-                                      const SizedBox(height: 32),
-                                      DescriptionSection(description: _event.description),
-                                      const SizedBox(height: 32),
-                                      TripSection(event: _event, isHost: isHost, isSyncing: isSyncing),
-                                      const SizedBox(height: 32),
-                                      CommentsSection(event: _event),
-                                      const SizedBox(height: 100),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 40),
-                                // Sidebar Content (Right)
-                                Expanded(
-                                  flex: 1,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      OrganizerSection(
-                                        hostName: _event.hostName,
-                                        hostAvatar: _event.hostAvatar,
-                                        isHost: isHost,
-                                      ),
-                                      const SizedBox(height: 24),
-                                      if (_event.myApplicationStatus != null) ...[
-                                        StatusCard(
-                                          status: _event.myApplicationStatus!,
-                                          rejectionReason: _event.myApplicationReason,
-                                        ),
-                                        const SizedBox(height: 24),
-                                      ],
-                                      PrivateMessageSection(
-                                        privateMessage: _event.privateMessage,
-                                        myApplicationStatus: _event.myApplicationStatus,
-                                        isHost: isHost,
-                                      ),
-                                      const SizedBox(height: 32),
-                                      _buildDesktopActionButton(context, colorScheme, isHost, isSyncing),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
-
-                          // Mobile View
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildTitleSection(),
-                              const SizedBox(height: 24),
-                              InfoGrid(
-                                startDate: _event.startDate,
-                                location: _event.location,
-                                maxMembers: _event.maxMembers,
-                              ),
-                              const SizedBox(height: 24),
-                              OrganizerSection(
-                                hostName: _event.hostName,
-                                hostAvatar: _event.hostAvatar,
-                                isHost: isHost,
-                              ),
-                              const SizedBox(height: 24),
-                              if (_event.myApplicationStatus != null) ...[
-                                StatusCard(
-                                  status: _event.myApplicationStatus!,
-                                  rejectionReason: _event.myApplicationReason,
-                                ),
-                                const SizedBox(height: 24),
-                              ],
-                              PrivateMessageSection(
-                                privateMessage: _event.privateMessage,
-                                myApplicationStatus: _event.myApplicationStatus,
-                                isHost: isHost,
-                              ),
-                              const SizedBox(height: 24),
-                              DescriptionSection(description: _event.description),
-                              const SizedBox(height: 24),
-                              TripSection(event: _event, isHost: isHost, isSyncing: isSyncing),
-                              const SizedBox(height: 24),
-                              CommentsSection(event: _event),
-                              const SizedBox(height: 100),
-                            ],
+            SliverAppBar(
+              expandedHeight: 200,
+              pinned: true,
+              backgroundColor: colorScheme.primary,
+              leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
+              actions: [
+                if (isHost) ...[
+                  _buildGlassIconButton(icon: Icons.delete_outline, onTap: () => _confirmDelete(context)),
+                  const SizedBox(width: 8),
+                ],
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: BlocBuilder<GroupEventFavoritesCubit, GroupEventFavoritesState>(
+                    builder: (context, state) {
+                      final isFavorite = context.read<GroupEventFavoritesCubit>().isFavorite(_event.id);
+                      return _buildGlassIconButton(
+                        icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : Colors.white,
+                        onTap: () {
+                          context.read<GroupEventFavoritesCubit>().toggleFavorite(_event.id);
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(isFavorite ? '已從感興趣移除' : '已加入感興趣'),
+                              duration: const Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating,
+                            ),
                           );
                         },
+                      );
+                    },
+                  ),
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [colorScheme.primary, colorScheme.secondary],
+                    ),
+                  ),
+                  child: Center(child: Icon(Icons.terrain, size: 80, color: Colors.white.withValues(alpha: 0.2))),
+                ),
+              ),
+            ),
+
+            // 2. Content Body
+            SliverToBoxAdapter(
+              child: Transform.translate(
+                offset: const Offset(0, -20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                    boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))],
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isDesktop = constraints.maxWidth > 800;
+
+                            if (isDesktop) {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Main Content (Left)
+                                  Expanded(
+                                    flex: 2,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildTitleSection(),
+                                        const SizedBox(height: 24),
+                                        InfoGrid(
+                                          startDate: _event.startDate,
+                                          location: _event.location,
+                                          maxMembers: _event.maxMembers,
+                                        ),
+                                        const SizedBox(height: 32),
+                                        DescriptionSection(description: _event.description),
+                                        const SizedBox(height: 32),
+                                        TripSection(event: _event, isHost: isHost, isSyncing: isSyncing),
+                                        const SizedBox(height: 32),
+                                        CommentsSection(event: _event),
+                                        const SizedBox(height: 100),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 40),
+                                  // Sidebar Content (Right)
+                                  Expanded(
+                                    flex: 1,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        OrganizerSection(
+                                          hostName: _event.hostName,
+                                          hostAvatar: _event.hostAvatar,
+                                          isHost: isHost,
+                                        ),
+                                        const SizedBox(height: 24),
+                                        if (_event.myApplicationStatus != null) ...[
+                                          StatusCard(
+                                            status: _event.myApplicationStatus!,
+                                            rejectionReason: _event.myApplicationReason,
+                                          ),
+                                          const SizedBox(height: 24),
+                                        ],
+                                        PrivateMessageSection(
+                                          privateMessage: _event.privateMessage,
+                                          myApplicationStatus: _event.myApplicationStatus,
+                                          isHost: isHost,
+                                        ),
+                                        const SizedBox(height: 32),
+                                        _buildDesktopActionButton(context, colorScheme, isHost, isSyncing),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+
+                            // Mobile View
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildTitleSection(),
+                                const SizedBox(height: 24),
+                                InfoGrid(
+                                  startDate: _event.startDate,
+                                  location: _event.location,
+                                  maxMembers: _event.maxMembers,
+                                ),
+                                const SizedBox(height: 24),
+                                OrganizerSection(
+                                  hostName: _event.hostName,
+                                  hostAvatar: _event.hostAvatar,
+                                  isHost: isHost,
+                                ),
+                                const SizedBox(height: 24),
+                                if (_event.myApplicationStatus != null) ...[
+                                  StatusCard(
+                                    status: _event.myApplicationStatus!,
+                                    rejectionReason: _event.myApplicationReason,
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
+                                PrivateMessageSection(
+                                  privateMessage: _event.privateMessage,
+                                  myApplicationStatus: _event.myApplicationStatus,
+                                  isHost: isHost,
+                                ),
+                                const SizedBox(height: 24),
+                                DescriptionSection(description: _event.description),
+                                const SizedBox(height: 24),
+                                TripSection(event: _event, isHost: isHost, isSyncing: isSyncing),
+                                const SizedBox(height: 24),
+                                CommentsSection(event: _event),
+                                const SizedBox(height: 100),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
           if (MediaQuery.of(context).size.width > 800) return const SizedBox.shrink();
@@ -397,10 +397,12 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : Text((_event.myApplicationStatus == GroupEventApplicationStatus.rejected ||
+              : Text(
+                  (_event.myApplicationStatus == GroupEventApplicationStatus.rejected ||
                           _event.myApplicationStatus == GroupEventApplicationStatus.cancelled)
                       ? '再次申請'
-                      : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入'))),
+                      : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入')),
+                ),
         );
       },
     );

@@ -245,11 +245,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           ),
           const SizedBox(height: 16),
           const TextField(
-            decoration: InputDecoration(
-              labelText: '暱稱',
-              prefixIcon: Icon(Icons.person),
-              border: OutlineInputBorder(),
-            ),
+            decoration: InputDecoration(labelText: '暱稱', prefixIcon: Icon(Icons.person), border: OutlineInputBorder()),
             enabled: false,
           ),
           const SizedBox(height: 16),
@@ -263,7 +259,10 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'monospace'),
                 ),
               ),
-              IconButton(icon: const Icon(Icons.copy, size: 16, color: Colors.grey), onPressed: () {}),
+              IconButton(
+                icon: const Icon(Icons.copy, size: 16, color: Colors.grey),
+                onPressed: () {},
+              ),
             ],
           ),
         ],
@@ -290,11 +289,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.person_add),
-              label: const Text('邀請新成員'),
-            ),
+            child: FilledButton.icon(onPressed: () {}, icon: const Icon(Icons.person_add), label: const Text('邀請新成員')),
           ),
         ],
       );

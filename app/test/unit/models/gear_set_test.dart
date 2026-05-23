@@ -49,10 +49,7 @@ void main() {
         'updatedBy': 'User',
         'meals': [
           {
-            'dayInfo': {
-              'id': 'd1',
-              'name': 'D1',
-            },
+            'dayInfo': {'id': 'd1', 'name': 'D1'},
             'meals': {
               'breakfast': [
                 {'id': 'm1', 'name': 'Bread', 'weight': 100.0, 'calories': 300.0, 'quantity': 1},

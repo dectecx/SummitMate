@@ -168,11 +168,7 @@ class GroupEventRepository implements IGroupEventRepository {
     required GroupEventReviewAction action,
     String? note,
   }) async {
-    final result = await _remoteDataSource.reviewApplication(
-      applicationId: applicationId,
-      action: action,
-      note: note,
-    );
+    final result = await _remoteDataSource.reviewApplication(applicationId: applicationId, action: action, note: note);
     if (result is Success && eventId != null) {
       await syncEventById(eventId);
     }
