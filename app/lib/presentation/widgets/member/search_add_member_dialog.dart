@@ -86,14 +86,18 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
       if (mounted) {
         setState(() {
           _searchResult = user;
-          _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
           _errorMsg = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
         });
       }
     }
@@ -118,8 +122,13 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
           _errorMsg = '新增失敗: ${e.toString().replaceAll('Exception: ', '')}';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
         });
       }
     }
@@ -149,18 +158,21 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
       title: const Text('新增成員'),
       content: SizedBox(
         width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_searchResult == null) ...[
-              // --- Stage 1: Search ---
-              _buildSearchStage(),
-            ] else ...[
-              // --- Stage 2: Confirmation ---
-              _buildConfirmationStage(isSelf, isAlreadyMember, canAdd),
+        child: AbsorbPointer(
+          absorbing: _isLoading,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_searchResult == null) ...[
+                // --- Stage 1: Search ---
+                _buildSearchStage(),
+              ] else ...[
+                // --- Stage 2: Confirmation ---
+                _buildConfirmationStage(isSelf, isAlreadyMember, canAdd),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       actions: _buildActions(canAdd),

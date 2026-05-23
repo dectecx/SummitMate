@@ -81,13 +81,19 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
         LogService.error('Trip ${widget.trip.id} has no members!', source: 'MemberManagementScreen');
       }
 
-      setState(() {
-        _members = members;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _members = members;
+        });
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
       ToastService.error('無法載入成員列表: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -97,13 +103,20 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [newRole] 新角色代碼 (e.g., guide, member)
   /// [userName] 成員顯示名稱 (用於顯示 Toast)
   Future<void> _updateRole(String userId, String newRole, String userName) async {
-    final result = await _tripRepository.updateMemberRole(widget.trip.id, userId, newRole);
-    if (result is Failure) {
-      ToastService.error('權限更新失敗: ${result.exception}');
-      return;
+    setState(() => _isLoading = true);
+    try {
+      final result = await _tripRepository.updateMemberRole(widget.trip.id, userId, newRole);
+      if (result is Failure) {
+        ToastService.error('權限更新失敗: ${result.exception}');
+        return;
+      }
+      ToastService.success('已更新 $userName 的權限');
+      await _loadMembers();
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-    ToastService.success('已更新 $userName 的權限');
-    _loadMembers();
   }
 
   /// 移除成員
@@ -111,13 +124,20 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
   /// [userId] 目標成員 ID
   /// [userName] 成員顯示名稱 (用於顯示 Toast)
   Future<void> _removeMember(String userId, String userName) async {
-    final result = await _tripRepository.removeMember(widget.trip.id, userId);
-    if (result is Failure) {
-      ToastService.error('移除失敗: ${result.exception}');
-      return;
+    setState(() => _isLoading = true);
+    try {
+      final result = await _tripRepository.removeMember(widget.trip.id, userId);
+      if (result is Failure) {
+        ToastService.error('移除失敗: ${result.exception}');
+        return;
+      }
+      ToastService.success('已移除 $userName');
+      await _loadMembers();
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-    ToastService.success('已移除 $userName');
-    _loadMembers();
   }
 
   /// 顯示權限設定對話框
@@ -245,10 +265,13 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                 if (r2 is Failure) throw r2.exception;
 
                 ToastService.success('已移轉團長身分給 ${targetMember.name}');
-                _loadMembers();
+                await _loadMembers();
               } catch (e) {
-                setState(() => _isLoading = false);
                 ToastService.error('移轉失敗: $e');
+              } finally {
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                }
               }
             },
             child: const Text('確認移轉', style: TextStyle(color: Colors.black)),
@@ -329,60 +352,63 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     return Scaffold(
       appBar: SummitAppBar(
         title: const Text('成員管理'),
-        actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _loadMembers)],
+        actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _isLoading ? null : _loadMembers)],
       ),
       floatingActionButton: (canManage && widget.trip.isCloudReady)
           ? FloatingActionButton.extended(
-              onPressed: _showSearchAddMemberDialog,
+              onPressed: _isLoading ? null : _showSearchAddMemberDialog,
               icon: const Icon(Icons.person_add),
               label: const Text('新增成員'),
             )
           : null,
-      body: CloudGuard(
-        featureName: '成員管理',
-        icon: Icons.person_add_alt_1_outlined,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _members.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.group_off, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text('無成員', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                        const SizedBox(height: 8),
-                        TextButton.icon(
-                          onPressed: _loadMembers,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('重新載入'),
-                        ),
-                      ],
+      body: AbsorbPointer(
+        absorbing: _isLoading,
+        child: CloudGuard(
+          featureName: '成員管理',
+          icon: Icons.person_add_alt_1_outlined,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _members.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.group_off, size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          Text('無成員', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: _loadMembers,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('重新載入'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      itemCount: _members.length,
+                      itemBuilder: (context, index) {
+                        final member = _members[index];
+                        final isSelf = member.userId == _currentUserId;
+                        final isRowOwner = member.userId == widget.trip.userId;
+
+                        // Can edit this row?
+                        final canEditRow = canManage && !isSelf && !isRowOwner;
+
+                        return MemberListTile(
+                          member: member,
+                          isSelf: isSelf,
+                          isOwner: isRowOwner,
+                          canEdit: canEditRow,
+                          onSettingsTap: () => _showRoleDialog(member),
+                        );
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    itemCount: _members.length,
-                    itemBuilder: (context, index) {
-                      final member = _members[index];
-                      final isSelf = member.userId == _currentUserId;
-                      final isRowOwner = member.userId == widget.trip.userId;
-
-                      // Can edit this row?
-                      final canEditRow = canManage && !isSelf && !isRowOwner;
-
-                      return MemberListTile(
-                        member: member,
-                        isSelf: isSelf,
-                        isOwner: isRowOwner,
-                        canEdit: canEditRow,
-                        onSettingsTap: () => _showRoleDialog(member),
-                      );
-                    },
-                  ),
+            ),
           ),
         ),
       ),

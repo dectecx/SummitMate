@@ -59,15 +59,23 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
         Failure(exception: final e) => throw e,
       };
 
-      setState(() {
-        _isLoading = false;
-        _cloudTrips = trips;
-      });
+      if (mounted) {
+        setState(() {
+          _cloudTrips = trips;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = e.toString();
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -78,12 +86,14 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
       final result = await _tripRepository.uploadToCloud(trip);
       if (result case Failure(:final exception)) throw exception;
 
-      setState(() => _isLoading = false);
       ToastService.success('已上傳: ${trip.name}');
-      _getCloudTrips(); // 刷新列表
+      await _getCloudTrips(); // 刷新列表
     } catch (e) {
-      setState(() => _isLoading = false);
       ToastService.error('上傳失敗: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -148,12 +158,14 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
       final result = await _tripRepository.removeFromCloud(trip.id);
       if (result case Failure(:final exception)) throw exception;
 
-      setState(() => _isLoading = false);
       ToastService.success('已從雲端刪除: ${trip.name}');
-      _getCloudTrips();
+      await _getCloudTrips();
     } catch (e) {
-      setState(() => _isLoading = false);
       ToastService.error('刪除失敗: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -179,16 +191,19 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: isOffline ? null : _getCloudTrips, tooltip: '重新整理'),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: (isOffline || _isLoading) ? null : _getCloudTrips, tooltip: '重新整理'),
         ],
       ),
-      body: isOffline
-          ? _buildOfflineView()
-          : _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? _buildErrorView()
-          : _buildBody(),
+      body: AbsorbPointer(
+        absorbing: _isLoading,
+        child: isOffline
+            ? _buildOfflineView()
+            : _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+            ? _buildErrorView()
+            : _buildBody(),
+      ),
     );
   }
 
