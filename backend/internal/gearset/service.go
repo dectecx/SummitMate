@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"time"
 
+	"summitmate/internal/auth"
+
 	"github.com/google/uuid"
 )
 
@@ -19,14 +21,16 @@ type GearSetService interface {
 }
 
 type gearSetService struct {
-	logger *slog.Logger
-	repo   GearSetRepository
+	logger   *slog.Logger
+	repo     GearSetRepository
+	authServ auth.AuthService
 }
 
-func NewGearSetService(logger *slog.Logger, repo GearSetRepository) GearSetService {
+func NewGearSetService(logger *slog.Logger, repo GearSetRepository, authServ auth.AuthService) GearSetService {
 	return &gearSetService{
-		logger: logger.With("component", "gearset"),
-		repo:   repo,
+		logger:   logger.With("component", "gearset"),
+		repo:     repo,
+		authServ: authServ,
 	}
 }
 
@@ -38,11 +42,26 @@ func (s *gearSetService) Create(ctx context.Context, gs *GearSet) (*GearSet, err
 	gs.CreatedAt = now
 	gs.UpdatedAt = now
 
+	// Retrieve actual DisplayName for Author from auth service
+	user, err := s.authServ.GetUserByID(ctx, gs.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user display name for gear set author: %w", err)
+	}
+	gs.Author = user.DisplayName
+
+	// Calculate TotalWeight and ItemCount
+	var totalWeight float64
+	for _, item := range gs.Items {
+		totalWeight += item.Weight * float64(item.Quantity)
+	}
+	gs.TotalWeight = totalWeight
+	gs.ItemCount = len(gs.Items)
+
 	if err := s.validateGearSet(gs); err != nil {
 		return nil, err
 	}
 
-	err := s.repo.Create(ctx, gs)
+	err = s.repo.Create(ctx, gs)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +83,21 @@ func (s *gearSetService) Update(ctx context.Context, gs *GearSet, requestingUser
 	gs.CreatedBy = existing.CreatedBy
 	gs.UpdatedAt = time.Now()
 	gs.UpdatedBy = requestingUserID
+
+	// Retrieve actual DisplayName for Author from auth service
+	user, err := s.authServ.GetUserByID(ctx, gs.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch user display name for gear set author: %w", err)
+	}
+	gs.Author = user.DisplayName
+
+	// Calculate TotalWeight and ItemCount
+	var totalWeight float64
+	for _, item := range gs.Items {
+		totalWeight += item.Weight * float64(item.Quantity)
+	}
+	gs.TotalWeight = totalWeight
+	gs.ItemCount = len(gs.Items)
 
 	if err := s.validateGearSet(gs); err != nil {
 		return nil, err

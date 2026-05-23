@@ -5,6 +5,9 @@ import (
 	"log/slog"
 	"testing"
 
+	"summitmate/internal/auth"
+	authmocks "summitmate/internal/auth/mocks"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -12,7 +15,14 @@ import (
 
 func TestGearSetService_Create_UUIDv7(t *testing.T) {
 	mockRepo := new(MockGearSetRepository)
-	service := NewGearSetService(slog.Default(), mockRepo)
+	mockAuth := new(authmocks.MockAuthService)
+	service := NewGearSetService(slog.Default(), mockRepo, mockAuth)
+
+	// Expect the auth mock to return a user with a DisplayName
+	mockAuth.On("GetUserByID", mock.Anything, "user-1").Return(&auth.User{
+		ID:          "user-1",
+		DisplayName: "Test User",
+	}, nil).Once()
 
 	// Expect the mock to be called with a GearSet
 	// We capture the passed GearSet to verify its ID
@@ -23,7 +33,7 @@ func TestGearSetService_Create_UUIDv7(t *testing.T) {
 
 	gs := &GearSet{
 		Title:      "Test Gear Set",
-		Author:     "user-1",
+		UserID:     "user-1",
 		Visibility: VisibilityPublic,
 	}
 
@@ -34,6 +44,7 @@ func TestGearSetService_Create_UUIDv7(t *testing.T) {
 
 	// Verify the mock was called
 	mockRepo.AssertExpectations(t)
+	mockAuth.AssertExpectations(t)
 
 	// Verify the ID is a UUID v7
 	assert.NotEqual(t, uuid.Nil, capturedGS.ID)
