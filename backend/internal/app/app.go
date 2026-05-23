@@ -232,7 +232,7 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	weatherService := weather.NewWeatherService(logger, pool, weatherRepo, cfg.CWAApiKey, nil)
 	logService := log.NewLogService(logger, logRepo)
 	heartbeatService := heartbeat.NewHeartbeatService(logger, heartbeatRepo)
-	gearSetService := gearset.NewGearSetService(logger, gearSetRepo)
+	gearSetService := gearset.NewGearSetService(logger, gearSetRepo, authService)
 
 	// --- Handlers ---
 	authHandler := auth.NewAuthHandler(authService)

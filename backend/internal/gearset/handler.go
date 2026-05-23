@@ -90,22 +90,11 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 
 	gs := &GearSet{
 		Title:       req.Title,
-		Author:      req.Author,
 		Visibility:  GearSetVisibility(req.Visibility),
 		DownloadKey: req.DownloadKey,
 		UserID:      userID,
 		CreatedBy:   userID,
 		UpdatedBy:   userID,
-	}
-
-	if req.Id != nil {
-		gs.ID = *req.Id
-	}
-	if req.TotalWeight != nil {
-		gs.TotalWeight = *req.TotalWeight
-	}
-	if req.ItemCount != nil {
-		gs.ItemCount = *req.ItemCount
 	}
 
 	for _, item := range req.Items {
@@ -115,9 +104,6 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 			Category: item.Category,
 			Weight:   item.Weight,
 			Quantity: item.Quantity,
-		}
-		if item.Id != nil {
-			gi.ID = *item.Id
 		}
 		if item.OrderIndex != nil {
 			gi.OrderIndex = *item.OrderIndex
@@ -191,16 +177,8 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 	gs := &GearSet{
 		ID:          parsedID,
 		Title:       req.Title,
-		Author:      req.Author,
 		Visibility:  GearSetVisibility(req.Visibility),
 		DownloadKey: req.DownloadKey,
-	}
-
-	if req.TotalWeight != nil {
-		gs.TotalWeight = *req.TotalWeight
-	}
-	if req.ItemCount != nil {
-		gs.ItemCount = *req.ItemCount
 	}
 
 	for _, item := range req.Items {
@@ -210,9 +188,6 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 			Category: item.Category,
 			Weight:   item.Weight,
 			Quantity: item.Quantity,
-		}
-		if item.Id != nil {
-			gi.ID = *item.Id
 		}
 		if item.OrderIndex != nil {
 			gi.OrderIndex = *item.OrderIndex
