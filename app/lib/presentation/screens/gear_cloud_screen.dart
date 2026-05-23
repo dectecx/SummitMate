@@ -205,26 +205,34 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   }
 
   Future<void> _downloadGearSet(GearSet gearSet, {String? key}) async {
-    // 防止連續點擊
-    if (_busyGearSetId != null) return;
-    setState(() => _busyGearSetId = gearSet.id);
-
-    final result = await _repository.downloadGearSet(gearSet.id, key: key);
-
-    if (!mounted) return;
-    setState(() => _busyGearSetId = null);
-
-    if (result is Failure<GearSet, Exception>) {
-      ToastService.error(result.exception.toString());
-      return;
+    // 如果是從 _showKeyInputForDownload 過來的，_busyGearSetId 已經被設為 gearSet.id
+    // 如果是直接點選，我們在此將其標記為忙碌
+    if (_busyGearSetId != gearSet.id) {
+      if (_busyGearSetId != null) return; // 雙重防禦
+      setState(() => _busyGearSetId = gearSet.id);
     }
 
-    if (result is Success<GearSet, Exception>) {
-      if (result.value.items == null) {
-        ToastService.error('組合內容空白');
+    try {
+      final result = await _repository.downloadGearSet(gearSet.id, key: key);
+
+      if (!mounted) return;
+
+      if (result is Failure<GearSet, Exception>) {
+        ToastService.error(result.exception.toString());
         return;
       }
-      _showDownloadConfirmDialog(result.value);
+
+      if (result is Success<GearSet, Exception>) {
+        if (result.value.items == null) {
+          ToastService.error('組合內容空白');
+          return;
+        }
+        _showDownloadConfirmDialog(result.value);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _busyGearSetId = null);
+      }
     }
   }
 
@@ -322,9 +330,15 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       body: _buildBody(isOffline),
       floatingActionButton: _hasFetched && _gearSets.isNotEmpty
           ? FloatingActionButton.extended(
-              onPressed: isOffline ? null : () => _fetchGearSets(forceRefresh: true),
-              icon: const Icon(Icons.refresh),
-              label: const Text('抓取最新資料'),
+              onPressed: (isOffline || _isLoading) ? null : () => _fetchGearSets(forceRefresh: true),
+              icon: _isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.refresh),
+              label: Text(_isLoading ? '正在抓取...' : '抓取最新資料'),
               backgroundColor: isOffline ? Colors.grey : null,
             )
           : null,
@@ -548,6 +562,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   }
 
   void _onDownloadPressed(GearSet gearSet) {
+    if (_busyGearSetId != null) return; // 雙重防禦，避免下載期間觸發其他點擊
     if (gearSet.visibility == GearSetVisibility.protected) {
       _showKeyInputForDownload(gearSet);
     } else {
@@ -556,13 +571,27 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   }
 
   Future<void> _showKeyInputForDownload(GearSet gearSet) async {
-    final key = await showDialog<String>(
-      context: context,
-      builder: (context) => GearKeyDownloadDialog(gearSet: gearSet),
-    );
+    setState(() => _busyGearSetId = gearSet.id); // 點擊當下立即標記忙碌，鎖定該按鈕防重複
 
-    if (key != null) {
-      _downloadGearSet(gearSet, key: key);
+    try {
+      final key = await showDialog<String>(
+        context: context,
+        builder: (context) => GearKeyDownloadDialog(gearSet: gearSet),
+      );
+
+      if (!mounted) return;
+
+      if (key != null) {
+        // 繼續保持忙碌狀態，由 _downloadGearSet 執行並於 finally 中解鎖
+        await _downloadGearSet(gearSet, key: key);
+      } else {
+        // 使用者取消或關閉 Dialog，解鎖忙碌狀態
+        setState(() => _busyGearSetId = null);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busyGearSetId = null);
+      }
     }
   }
 }
