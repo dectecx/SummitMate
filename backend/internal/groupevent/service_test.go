@@ -78,10 +78,12 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		existing := &GroupEvent{ID: eventID, HostID: userID}
 		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(existing, nil).Once()
 		mockRepo.On("UpdateEvent", mock.Anything, event).Return(nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(event, nil).Once()
 
-		err := svc.UpdateEvent(context.Background(), event, userID)
+		updatedEvent, err := svc.UpdateEvent(context.Background(), event, userID)
 
 		assert.NoError(t, err)
+		assert.NotNil(t, updatedEvent)
 		assert.Equal(t, userID, event.UpdatedBy)
 		mockRepo.AssertExpectations(t)
 	})
@@ -94,7 +96,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		existing := &GroupEvent{ID: eventID, HostID: "user-creator"}
 		mockRepo.On("GetEventByID", mock.Anything, eventID, userID).Return(existing, nil).Once()
 
-		err := svc.UpdateEvent(context.Background(), event, userID)
+		_, err := svc.UpdateEvent(context.Background(), event, userID)
 
 		assert.ErrorIs(t, err, apperror.ErrEventAccessDenied)
 	})

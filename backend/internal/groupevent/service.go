@@ -16,7 +16,7 @@ type GroupEventService interface {
 	GetEvent(ctx context.Context, id string, userID string) (*GroupEvent, error)
 	ListEvents(ctx context.Context, status *string, category *Category, creatorID *string, page int, limit int, search string, userID string) ([]*GroupEvent, int, bool, error)
 	ListMyEvents(ctx context.Context, userID string, listType string, page int, limit int) ([]*GroupEvent, int, bool, error)
-	UpdateEvent(ctx context.Context, event *GroupEvent, userID string) error
+	UpdateEvent(ctx context.Context, event *GroupEvent, userID string) (*GroupEvent, error)
 	DeleteEvent(ctx context.Context, id string, userID string) error
 
 	ApplyToEvent(ctx context.Context, app *GroupEventApplication) error
@@ -87,26 +87,31 @@ func (s *groupEventService) ListMyEvents(ctx context.Context, userID string, lis
 	return s.repo.ListEventsByUser(ctx, userID, listType, page, limit)
 }
 
-func (s *groupEventService) UpdateEvent(ctx context.Context, event *GroupEvent, userID string) error {
+func (s *groupEventService) UpdateEvent(ctx context.Context, event *GroupEvent, userID string) (*GroupEvent, error) {
 	existing, err := s.repo.GetEventByID(ctx, event.ID, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if existing == nil {
-		return apperror.ErrEventNotFound
+		return nil, apperror.ErrEventNotFound
 	}
 	if existing.HostID != userID {
 		s.logger.WarnContext(ctx, "更新活動權限不足", "event_id", event.ID, "user_id", userID)
-		return apperror.ErrEventAccessDenied
+		return nil, apperror.ErrEventAccessDenied
 	}
 
 	event.UpdatedBy = userID
 	if err := s.repo.UpdateEvent(ctx, event); err != nil {
 		s.logger.ErrorContext(ctx, "更新活動失敗", "event_id", event.ID, "user_id", userID, "error", err)
-		return err
+		return nil, err
 	}
 	s.logger.InfoContext(ctx, "活動更新成功", "event_id", event.ID, "user_id", userID)
-	return nil
+
+	updated, err := s.repo.GetEventByID(ctx, event.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
 }
 
 func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID string) error {
@@ -305,6 +310,15 @@ func (s *groupEventService) AddComment(ctx context.Context, comment *GroupEventC
 	comment.CreatedBy = comment.UserID
 	comment.UpdatedBy = comment.UserID
 
+	// Verify event exists and user has access to it
+	event, err := s.repo.GetEventByID(ctx, comment.EventID, comment.UserID)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return apperror.ErrEventNotFound
+	}
+
 	return database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
 		return s.repo.AddComment(txCtx, comment)
 	})
@@ -315,6 +329,23 @@ func (s *groupEventService) ListComments(ctx context.Context, eventID string) ([
 }
 
 func (s *groupEventService) DeleteComment(ctx context.Context, commentID string, userID string) error {
+	comment, err := s.repo.GetCommentByID(ctx, commentID)
+	if err != nil {
+		return err
+	}
+	if comment == nil {
+		return apperror.ErrResourceNotFound.WithMessage("找不到留言")
+	}
+
+	// Verify user has access to the event the comment belongs to
+	event, err := s.repo.GetEventByID(ctx, comment.EventID, userID)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return apperror.ErrEventNotFound
+	}
+
 	return database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
 		return s.repo.DeleteComment(txCtx, commentID, userID)
 	})

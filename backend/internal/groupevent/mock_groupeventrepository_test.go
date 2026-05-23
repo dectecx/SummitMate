@@ -363,6 +363,65 @@ func (_c *MockGroupEventRepository_GetApplicationByID_Call) RunAndReturn(run fun
 	return _c
 }
 
+// GetCommentByID provides a mock function with given fields: ctx, id
+func (_m *MockGroupEventRepository) GetCommentByID(ctx context.Context, id string) (*GroupEventComment, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCommentByID")
+	}
+
+	var r0 *GroupEventComment
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*GroupEventComment, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *GroupEventComment); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*GroupEventComment)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockGroupEventRepository_GetCommentByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCommentByID'
+type MockGroupEventRepository_GetCommentByID_Call struct {
+	*mock.Call
+}
+
+// GetCommentByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockGroupEventRepository_Expecter) GetCommentByID(ctx interface{}, id interface{}) *MockGroupEventRepository_GetCommentByID_Call {
+	return &MockGroupEventRepository_GetCommentByID_Call{Call: _e.mock.On("GetCommentByID", ctx, id)}
+}
+
+func (_c *MockGroupEventRepository_GetCommentByID_Call) Run(run func(ctx context.Context, id string)) *MockGroupEventRepository_GetCommentByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockGroupEventRepository_GetCommentByID_Call) Return(_a0 *GroupEventComment, _a1 error) *MockGroupEventRepository_GetCommentByID_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockGroupEventRepository_GetCommentByID_Call) RunAndReturn(run func(context.Context, string) (*GroupEventComment, error)) *MockGroupEventRepository_GetCommentByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEventByID provides a mock function with given fields: ctx, id, userID
 func (_m *MockGroupEventRepository) GetEventByID(ctx context.Context, id string, userID string) (*GroupEvent, error) {
 	ret := _m.Called(ctx, id, userID)
