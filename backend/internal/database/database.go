@@ -94,3 +94,13 @@ func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 	slog.Info("Database connected")
 	return pool, nil
 }
+
+// SetSessionUser sets the custom app.current_user_id variable in the database session.
+// This is used by audit triggers to trace the user making the change.
+func SetSessionUser(ctx context.Context, q Querier, userID string) error {
+	if userID == "" {
+		return nil
+	}
+	_, err := q.Exec(ctx, "SELECT set_config('app.current_user_id', $1, true)", userID)
+	return err
+}

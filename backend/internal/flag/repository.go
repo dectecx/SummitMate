@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"summitmate/internal/database"
+	"summitmate/internal/middleware"
 )
 
 // FlagRepository 定義系統旗標資料存取介面。
@@ -57,6 +58,11 @@ func (r *flagRepository) GetAll(ctx context.Context) ([]Flag, error) {
 
 func (r *flagRepository) Update(ctx context.Context, key string, value bool) error {
 	db := database.GetQuerier(ctx, r.db)
+
+	if userID, ok := middleware.GetUserIDFromContext(ctx); ok {
+		_ = database.SetSessionUser(ctx, db, userID)
+	}
+
 	_, err := db.Exec(ctx, "UPDATE system_flags SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2", value, key)
 	if err != nil {
 		return fmt.Errorf("update system flag %s: %w", key, err)
