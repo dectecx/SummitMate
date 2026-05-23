@@ -1,6 +1,7 @@
 package email
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -19,7 +20,7 @@ func NewEmailService(mailer Mailer, tmplMgr TemplateManager) *EmailService {
 }
 
 // SendVerificationCode sends a verification code email.
-func (s *EmailService) SendVerificationCode(to string, code string, expireMinutes int) error {
+func (s *EmailService) SendVerificationCode(ctx context.Context, to string, code string, expireMinutes int) error {
 	data := map[string]any{
 		"Code":          code,
 		"ExpireMinutes": expireMinutes,
@@ -29,11 +30,11 @@ func (s *EmailService) SendVerificationCode(to string, code string, expireMinute
 		return fmt.Errorf("render template: %w", err)
 	}
 
-	return s.mailer.Send([]string{to}, "Your SummitMate Verification Code", body, true)
+	return s.mailer.Send(ctx, []string{to}, "Your SummitMate Verification Code", body, true)
 }
 
 // SendRegistrationSuccess sends a registration success email.
-func (s *EmailService) SendRegistrationSuccess(to string, username string, loginURL string) error {
+func (s *EmailService) SendRegistrationSuccess(ctx context.Context, to string, username string, loginURL string) error {
 	data := map[string]any{
 		"Username": username,
 		"LoginURL": loginURL,
@@ -43,11 +44,11 @@ func (s *EmailService) SendRegistrationSuccess(to string, username string, login
 		return fmt.Errorf("render template: %w", err)
 	}
 
-	return s.mailer.Send([]string{to}, "Welcome to SummitMate!", body, true)
+	return s.mailer.Send(ctx, []string{to}, "Welcome to SummitMate!", body, true)
 }
 
 // SendPasswordReset sends a password reset email.
-func (s *EmailService) SendPasswordReset(to string, resetURL string, expireHours int) error {
+func (s *EmailService) SendPasswordReset(ctx context.Context, to string, resetURL string, expireHours int) error {
 	data := map[string]any{
 		"ResetURL":    resetURL,
 		"ExpireHours": expireHours,
@@ -57,11 +58,11 @@ func (s *EmailService) SendPasswordReset(to string, resetURL string, expireHours
 		return fmt.Errorf("render template: %w", err)
 	}
 
-	return s.mailer.Send([]string{to}, "Reset Your SummitMate Password", body, true)
+	return s.mailer.Send(ctx, []string{to}, "Reset Your SummitMate Password", body, true)
 }
 
 // SendSystemNotification sends a general system notification email.
-func (s *EmailService) SendSystemNotification(to string, username string, title string, message string, actionText string, actionURL string) error {
+func (s *EmailService) SendSystemNotification(ctx context.Context, to string, username string, title string, message string, actionText string, actionURL string) error {
 	data := map[string]any{
 		"Username":   username,
 		"Title":      title,
@@ -74,5 +75,5 @@ func (s *EmailService) SendSystemNotification(to string, username string, title 
 		return fmt.Errorf("render template: %w", err)
 	}
 
-	return s.mailer.Send([]string{to}, title, body, true)
+	return s.mailer.Send(ctx, []string{to}, title, body, true)
 }

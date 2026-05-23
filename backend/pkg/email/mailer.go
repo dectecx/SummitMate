@@ -1,15 +1,17 @@
 package email
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/smtp"
 	"strings"
 )
 
 // Mailer defines the interface for sending emails.
 type Mailer interface {
-	Send(to []string, subject, body string, isHTML bool) error
+	Send(ctx context.Context, to []string, subject, body string, isHTML bool) error
 }
 
 type smtpMailer struct {
@@ -35,7 +37,7 @@ func NewMailer(config SMTPConfig) Mailer {
 }
 
 // Send sends an email to the specified recipients.
-func (m *smtpMailer) Send(to []string, subject, body string, isHTML bool) error {
+func (m *smtpMailer) Send(ctx context.Context, to []string, subject, body string, isHTML bool) error {
 	contentType := "text/plain"
 	if isHTML {
 		contentType = "text/html"
@@ -64,9 +66,14 @@ func (m *smtpMailer) Send(to []string, subject, body string, isHTML bool) error 
 			ServerName:         m.config.Host,
 		}
 
-		conn, err := tls.Dial("tcp", addr, tlsconfig)
+		dialer := &tls.Dialer{
+			NetDialer: &net.Dialer{},
+			Config:    tlsconfig,
+		}
+
+		conn, err := dialer.DialContext(ctx, "tcp", addr)
 		if err != nil {
-			return fmt.Errorf("tls dial: %w", err)
+			return fmt.Errorf("tls dial context: %w", err)
 		}
 		defer conn.Close()
 
@@ -108,12 +115,69 @@ func (m *smtpMailer) Send(to []string, subject, body string, isHTML bool) error 
 		return nil
 	}
 
-	// Port 587: standard STARTTLS (handled by net/smtp.SendMail)
-	return smtp.SendMail(addr, m.auth, m.config.Username, to, []byte(msg.String()))
+	// Port 587: standard STARTTLS (with DialContext for cancelable connection)
+	dialer := &net.Dialer{}
+	conn, err := dialer.DialContext(ctx, "tcp", addr)
+	if err != nil {
+		return fmt.Errorf("smtp dial: %w", err)
+	}
+	defer conn.Close()
+
+	c, err := smtp.NewClient(conn, m.config.Host)
+	if err != nil {
+		return fmt.Errorf("smtp new client: %w", err)
+	}
+	defer c.Quit()
+
+	if err = c.Hello("localhost"); err != nil {
+		return fmt.Errorf("smtp hello: %w", err)
+	}
+
+	if ok, _ := c.Extension("STARTTLS"); ok {
+		tlsconfig := &tls.Config{
+			ServerName: m.config.Host,
+		}
+		if err = c.StartTLS(tlsconfig); err != nil {
+			return fmt.Errorf("smtp starttls: %w", err)
+		}
+	}
+
+	if m.auth != nil {
+		if err = c.Auth(m.auth); err != nil {
+			return fmt.Errorf("smtp auth: %w", err)
+		}
+	}
+
+	if err = c.Mail(m.config.Username); err != nil {
+		return fmt.Errorf("smtp mail: %w", err)
+	}
+
+	for _, addr := range to {
+		if err = c.Rcpt(addr); err != nil {
+			return fmt.Errorf("smtp rcpt %s: %w", addr, err)
+		}
+	}
+
+	w, err := c.Data()
+	if err != nil {
+		return fmt.Errorf("smtp data: %w", err)
+	}
+
+	_, err = w.Write([]byte(msg.String()))
+	if err != nil {
+		return fmt.Errorf("smtp write: %w", err)
+	}
+
+	err = w.Close()
+	if err != nil {
+		return fmt.Errorf("smtp close: %w", err)
+	}
+
+	return nil
 }
 
 // Send logs the email to console instead of sending it.
-func (m *logMailer) Send(to []string, subject, body string, isHTML bool) error {
+func (m *logMailer) Send(ctx context.Context, to []string, subject, body string, isHTML bool) error {
 	fmt.Printf("\n--- [DEV EMAIL LOG] ---\n")
 	fmt.Printf("From: %s\n", m.config.From)
 	fmt.Printf("To: %s\n", strings.Join(to, ", "))

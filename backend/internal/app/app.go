@@ -45,7 +45,10 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
-	pool, err := database.Connect(context.Background(), cfg.DatabaseURL)
+	initCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	pool, err := database.Connect(initCtx, cfg.DatabaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("database connection failed: %w", err)
 	}

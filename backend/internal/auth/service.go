@@ -134,7 +134,9 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	// 非同步發送驗證信 (檢查旗標)
 	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		go func() {
-			if err := svc.emailService.SendVerificationCode(createdUser.Email, code, 10); err != nil {
+			mailCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			if err := svc.emailService.SendVerificationCode(mailCtx, createdUser.Email, code, 10); err != nil {
 				svc.logger.Error("發送驗證信失敗", "user_id", createdUser.ID, "error", err)
 			}
 		}()
@@ -330,7 +332,9 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 
 	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		go func() {
-			if err := svc.emailService.SendVerificationCode(user.Email, code, 10); err != nil {
+			mailCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			if err := svc.emailService.SendVerificationCode(mailCtx, user.Email, code, 10); err != nil {
 				svc.logger.Error("重發驗證信失敗", "user_id", user.ID, "error", err)
 			}
 		}()
