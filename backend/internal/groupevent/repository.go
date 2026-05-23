@@ -24,6 +24,7 @@ type GroupEventRepository interface {
 	UpdateApplicationStatus(ctx context.Context, id, status, rejectionReason, updatedBy string) error
 	GetPendingApplicationByEventAndUser(ctx context.Context, eventID, userID string) (*GroupEventApplication, error)
 	DeleteApplication(ctx context.Context, id string) error
+	GetCommentByID(ctx context.Context, id string) (*GroupEventComment, error)
 
 	AddComment(ctx context.Context, comment *GroupEventComment) error
 	ListComments(ctx context.Context, eventID string) ([]*GroupEventComment, error)
@@ -414,6 +415,27 @@ func (r *groupEventRepository) DeleteApplication(ctx context.Context, id string)
 		return fmt.Errorf("delete application %s: %w", id, err)
 	}
 	return nil
+}
+
+func (r *groupEventRepository) GetCommentByID(ctx context.Context, id string) (*GroupEventComment, error) {
+	query := `
+		SELECT id, event_id, user_id, content, created_at, created_by, updated_at, updated_by
+		FROM group_event_comments
+		WHERE id = $1
+	`
+	c := &GroupEventComment{}
+	db := database.GetQuerier(ctx, r.db)
+	err := db.QueryRow(ctx, query, id).Scan(
+		&c.ID, &c.EventID, &c.UserID, &c.Content,
+		&c.CreatedAt, &c.CreatedBy, &c.UpdatedAt, &c.UpdatedBy,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get comment %s: %w", id, err)
+	}
+	return c, nil
 }
 
 func (r *groupEventRepository) AddComment(ctx context.Context, comment *GroupEventComment) error {

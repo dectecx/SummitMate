@@ -809,21 +809,33 @@ func (_c *MockGroupEventService_ToggleLike_Call) RunAndReturn(run func(context.C
 }
 
 // UpdateEvent provides a mock function with given fields: ctx, event, userID
-func (_m *MockGroupEventService) UpdateEvent(ctx context.Context, event *groupevent.GroupEvent, userID string) error {
+func (_m *MockGroupEventService) UpdateEvent(ctx context.Context, event *groupevent.GroupEvent, userID string) (*groupevent.GroupEvent, error) {
 	ret := _m.Called(ctx, event, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateEvent")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *groupevent.GroupEvent, string) error); ok {
+	var r0 *groupevent.GroupEvent
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *groupevent.GroupEvent, string) (*groupevent.GroupEvent, error)); ok {
+		return rf(ctx, event, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *groupevent.GroupEvent, string) *groupevent.GroupEvent); ok {
 		r0 = rf(ctx, event, userID)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*groupevent.GroupEvent)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, *groupevent.GroupEvent, string) error); ok {
+		r1 = rf(ctx, event, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // MockGroupEventService_UpdateEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateEvent'
@@ -846,12 +858,12 @@ func (_c *MockGroupEventService_UpdateEvent_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *MockGroupEventService_UpdateEvent_Call) Return(_a0 error) *MockGroupEventService_UpdateEvent_Call {
-	_c.Call.Return(_a0)
+func (_c *MockGroupEventService_UpdateEvent_Call) Return(_a0 *groupevent.GroupEvent, _a1 error) *MockGroupEventService_UpdateEvent_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockGroupEventService_UpdateEvent_Call) RunAndReturn(run func(context.Context, *groupevent.GroupEvent, string) error) *MockGroupEventService_UpdateEvent_Call {
+func (_c *MockGroupEventService_UpdateEvent_Call) RunAndReturn(run func(context.Context, *groupevent.GroupEvent, string) (*groupevent.GroupEvent, error)) *MockGroupEventService_UpdateEvent_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -210,12 +210,13 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		UpdatedBy:        userID,
 	}
 
-	if err := h.service.UpdateEvent(r.Context(), event, userID); err != nil {
+	updated, err := h.service.UpdateEvent(r.Context(), event, userID)
+	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(event, userID))
+	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(updated, userID))
 }
 
 func (h *GroupEventHandler) DeleteGroupEventsId(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
