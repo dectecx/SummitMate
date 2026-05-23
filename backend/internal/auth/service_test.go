@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"context"
@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"summitmate/internal/apperror"
+	"summitmate/internal/auth"
+	authmocks "summitmate/internal/auth/mocks"
 	"summitmate/internal/auth/tokens"
-	"summitmate/internal/flag"
+	flagmocks "summitmate/internal/flag/mocks"
 	"summitmate/pkg/cache"
 
 	"github.com/stretchr/testify/assert"
@@ -22,25 +24,25 @@ func TestAuthService_Register(t *testing.T) {
 	tokenManager := tokens.NewTokenManager(secret)
 
 	t.Run("Success", func(t *testing.T) {
-		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockFlagService)
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
 		email := "test@example.com"
 		password := "password123"
 		displayName := "Test User"
 
 		// Mock GetByEmail returns ErrNotFound (email doesn't exist)
-		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, ErrNotFound)
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, auth.ErrNotFound)
 
 		// Mock GetRoleIDByCode returns a role-123
 		mockRepo.On("GetRoleIDByCode", mock.Anything, "MEMBER").Return("role-123", nil)
 
 		// Mock Create success
-		mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(u *User) bool {
+		mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(u *auth.User) bool {
 			return u.Email == email && u.DisplayName == displayName && *u.RoleID == "role-123"
-		})).Return(&User{ID: "user-123", Email: email, DisplayName: displayName, RoleCode: "MEMBER"}, nil)
+		})).Return(&auth.User{ID: "user-123", Email: email, DisplayName: displayName, RoleCode: "MEMBER"}, nil)
 
 		user, accessToken, refreshToken, err := svc.Register(context.Background(), email, password, displayName, nil)
 
@@ -54,13 +56,13 @@ func TestAuthService_Register(t *testing.T) {
 	})
 
 	t.Run("EmailAlreadyExists", func(t *testing.T) {
-		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockFlagService)
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
 		email := "existing@example.com"
-		mockRepo.On("GetByEmail", mock.Anything, email).Return(&User{ID: "existing-id"}, nil)
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(&auth.User{ID: "existing-id"}, nil)
 
 		user, accessToken, refreshToken, err := svc.Register(context.Background(), email, "password123", "any", nil)
 
@@ -72,7 +74,7 @@ func TestAuthService_Register(t *testing.T) {
 	})
 
 	t.Run("InvalidEmail", func(t *testing.T) {
-		svc := NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
+		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
 		user, accessToken, refreshToken, err := svc.Register(context.Background(), "invalid-email", "password123", "any", nil)
 		assert.Error(t, err)
 		assert.Equal(t, apperror.ErrInvalidEmail, err)
@@ -82,7 +84,7 @@ func TestAuthService_Register(t *testing.T) {
 	})
 
 	t.Run("WeakPassword", func(t *testing.T) {
-		svc := NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
+		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
 
 		// Too short
 		_, _, _, err := svc.Register(context.Background(), "test@example.com", "short1", "any", nil)
@@ -107,16 +109,16 @@ func TestAuthService_Login(t *testing.T) {
 	tokenManager := tokens.NewTokenManager(secret)
 
 	t.Run("Success", func(t *testing.T) {
-		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockFlagService)
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
 		email := "login@example.com"
 		password := "correct-password"
-		hashed, _ := HashPassword(password)
+		hashed, _ := auth.HashPassword(password)
 
-		mockUser := &User{
+		mockUser := &auth.User{
 			ID:           "user-1",
 			Email:        email,
 			PasswordHash: hashed,
@@ -134,13 +136,13 @@ func TestAuthService_Login(t *testing.T) {
 	})
 
 	t.Run("InvalidCredentials", func(t *testing.T) {
-		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockFlagService)
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
 		email := "wrong@example.com"
-		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, ErrNotFound)
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, auth.ErrNotFound)
 
 		user, accessToken, refreshToken, err := svc.Login(context.Background(), email, "any")
 
@@ -158,16 +160,16 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	tokenManager := tokens.NewTokenManager(secret)
 
 	t.Run("Success", func(t *testing.T) {
-		mockRepo := new(MockUserRepository)
-		mockFlag := new(flag.MockFlagService)
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
 
 		userID := "user-token"
 		email := "token@example.com"
 		oldToken, _ := tokenManager.GenerateToken(userID, email, "refresh", time.Hour)
 
-		mockRepo.On("GetByID", mock.Anything, userID).Return(&User{ID: userID, Email: email, IsActive: true}, nil)
+		mockRepo.On("GetByID", mock.Anything, userID).Return(&auth.User{ID: userID, Email: email, IsActive: true}, nil)
 
 		user, newAccessToken, newRefreshToken, err := svc.RefreshToken(context.Background(), oldToken)
 

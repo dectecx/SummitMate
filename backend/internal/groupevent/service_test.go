@@ -8,7 +8,8 @@ import (
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/auth"
-	"summitmate/internal/trip"
+	authmocks "summitmate/internal/auth/mocks"
+	tripmocks "summitmate/internal/trip/mocks"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -30,18 +31,18 @@ func (m *MockBeginner) Begin(ctx context.Context) (pgx.Tx, error) {
 func TestGroupEventService_CreateEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
-	mockTrip := new(trip.MockTripService)
-	mockAuth := new(auth.MockAuthService)
+	mockTrip := new(tripmocks.MockTripService)
+	mockAuth := new(authmocks.MockAuthService)
 	mockDB := new(MockBeginner)
 	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
 	t.Run("Success", func(t *testing.T) {
 		event := &GroupEvent{
-			Title:     "Hiking Trip",
-			HostID:    "user-1",
-			HostName:  "Host User",
+			Title:      "Hiking Trip",
+			HostID:     "user-1",
+			HostName:   "Host User",
 			HostAvatar: "avatar-1",
-			CreatedBy: "user-1",
+			CreatedBy:  "user-1",
 		}
 		mockRepo.On("CreateEvent", mock.Anything, event).Return(nil).Once()
 
@@ -64,8 +65,8 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 func TestGroupEventService_UpdateEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
-	mockTrip := new(trip.MockTripService)
-	mockAuth := new(auth.MockAuthService)
+	mockTrip := new(tripmocks.MockTripService)
+	mockAuth := new(authmocks.MockAuthService)
 	mockDB := new(MockBeginner)
 	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
@@ -102,8 +103,8 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 func TestGroupEventService_ApplyToEvent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockGroupEventRepository)
-	mockTrip := new(trip.MockTripService)
-	mockAuth := new(auth.MockAuthService)
+	mockTrip := new(tripmocks.MockTripService)
+	mockAuth := new(authmocks.MockAuthService)
 	mockDB := new(MockBeginner)
 	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 

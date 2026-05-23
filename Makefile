@@ -1,4 +1,4 @@
-.PHONY: dev-db dev-api dev-app api-gen app-gen app-get
+.PHONY: dev-db dev-api dev-app api-gen mock-gen app-gen app-get
 
 ## 啟動本地 PostgreSQL
 dev-db:
@@ -14,6 +14,10 @@ dev-app:
 
 ## 重新產生後端 API 程式碼 (from openapi.yaml)
 api-gen:
+	cd backend && go generate ./...
+
+## 重新產生後端 Mocks
+mock-gen:
 	cd backend && go generate ./...
 
 ## 安裝 Flutter 依賴
