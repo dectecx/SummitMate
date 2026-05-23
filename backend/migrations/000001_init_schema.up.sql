@@ -429,6 +429,50 @@ INSERT INTO system_flags (key, value, description) VALUES
     ('enable_email_sending',   TRUE,  'Whether to actually send emails')
 ON CONFLICT (key) DO NOTHING;
 
+CREATE TABLE IF NOT EXISTS system_flags_history (
+    id          BIGSERIAL PRIMARY KEY,
+    key         TEXT NOT NULL,
+    old_value   BOOLEAN,
+    new_value   BOOLEAN,
+    changed_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    changed_by  TEXT
+);
+
+CREATE OR REPLACE FUNCTION log_system_flags_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_user_id TEXT;
+BEGIN
+    BEGIN
+        current_user_id := current_setting('app.current_user_id', true);
+    EXCEPTION WHEN OTHERS THEN
+        current_user_id := NULL;
+    END;
+
+    IF current_user_id IS NULL OR current_user_id = '' THEN
+        current_user_id := SESSION_USER;
+    END IF;
+
+    IF (TG_OP = 'UPDATE' AND OLD.value IS DISTINCT FROM NEW.value) THEN
+        INSERT INTO system_flags_history (key, old_value, new_value, changed_by)
+        VALUES (NEW.key, OLD.value, NEW.value, current_user_id);
+    ELSIF (TG_OP = 'INSERT') THEN
+        INSERT INTO system_flags_history (key, old_value, new_value, changed_by)
+        VALUES (NEW.key, NULL, NEW.value, current_user_id);
+    ELSIF (TG_OP = 'DELETE') THEN
+        INSERT INTO system_flags_history (key, old_value, new_value, changed_by)
+        VALUES (OLD.key, OLD.value, NULL, current_user_id);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_system_flags_changes
+AFTER INSERT OR UPDATE OR DELETE ON system_flags
+FOR EACH ROW
+EXECUTE FUNCTION log_system_flags_changes();
+
 -- 3.10 Gear Cloud
 -- ============================================================
 
