@@ -160,6 +160,12 @@ func (h *AuthHandler) ResendVerificationCode(w http.ResponseWriter, r *http.Requ
 
 // SearchUserByEmail 處理搜尋使用者請求。
 func (h *AuthHandler) SearchUserByEmail(w http.ResponseWriter, r *http.Request, email string) {
+	_, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
 	if email == "" {
 		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("必須提供 email 參數"))
 		return
@@ -176,6 +182,12 @@ func (h *AuthHandler) SearchUserByEmail(w http.ResponseWriter, r *http.Request, 
 
 // GetUserByID 處理 GET /users/{userId} 請求。
 func (h *AuthHandler) GetUserByID(w http.ResponseWriter, r *http.Request, userID string) {
+	_, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
 	user, err := h.authService.GetUserByID(r.Context(), userID)
 	if err != nil {
 		apiutil.SendError(w, r, apperror.ErrUserNotFound)
