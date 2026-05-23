@@ -1,4 +1,4 @@
-package trip
+package trip_test
 
 import (
 	"bytes"
@@ -11,18 +11,20 @@ import (
 
 	"summitmate/api"
 	"summitmate/internal/middleware"
+	"summitmate/internal/trip"
+	tripmocks "summitmate/internal/trip/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestTripHandler_ListTrips(t *testing.T) {
-	mockSvc := new(MockTripService)
-	handler := NewTripHandler(mockSvc)
+	mockSvc := new(tripmocks.MockTripService)
+	handler := trip.NewTripHandler(mockSvc)
 
 	t.Run("Success", func(t *testing.T) {
 		userID := "00000000-0000-0000-0000-000000000001"
-		trips := []*Trip{
+		trips := []*trip.Trip{
 			{
 				ID:        "00000000-0000-0000-0000-000000000011",
 				Name:      "Trip 1",
@@ -56,8 +58,8 @@ func TestTripHandler_ListTrips(t *testing.T) {
 }
 
 func TestTripHandler_CreateTrip(t *testing.T) {
-	mockSvc := new(MockTripService)
-	handler := NewTripHandler(mockSvc)
+	mockSvc := new(tripmocks.MockTripService)
+	handler := trip.NewTripHandler(mockSvc)
 
 	t.Run("Success", func(t *testing.T) {
 		userID := "00000000-0000-0000-0000-000000000001"
@@ -66,7 +68,7 @@ func TestTripHandler_CreateTrip(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		trip := &Trip{
+		tTrip := &trip.Trip{
 			ID:        "00000000-0000-0000-0000-000000000012",
 			Name:      "My New Trip",
 			UserID:    userID,
@@ -74,7 +76,7 @@ func TestTripHandler_CreateTrip(t *testing.T) {
 			UpdatedBy: userID,
 		}
 
-		mockSvc.On("CreateTrip", mock.Anything, userID, mock.AnythingOfType("*trip.TripCreateRequest")).Return(trip, nil).Once()
+		mockSvc.On("CreateTrip", mock.Anything, userID, mock.AnythingOfType("*trip.TripCreateRequest")).Return(tTrip, nil).Once()
 
 		req := httptest.NewRequest("POST", "/trips", bytes.NewBuffer(jsonBody))
 		ctx := context.WithValue(req.Context(), middleware.UserIDKey, userID)

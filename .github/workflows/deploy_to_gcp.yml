@@ -45,6 +45,11 @@ jobs:
         # 如需完整整合測試，可另建獨立 job 並帶起測試用 PostgreSQL
         run: go test -v -short ./...
 
+      - name: 🔍 Verify Mocks are Up-to-Date
+        run: |
+          go generate ./...
+          git diff --exit-code
+
   # ─────────────────────────────────────────
   # Job 2: Build & Deploy (only after tests pass)
   # ─────────────────────────────────────────

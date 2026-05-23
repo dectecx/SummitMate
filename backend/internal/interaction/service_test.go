@@ -8,6 +8,7 @@ import (
 
 	"summitmate/internal/apperror"
 	"summitmate/internal/trip"
+	tripmocks "summitmate/internal/trip/mocks"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,8 +17,8 @@ import (
 func TestMessageService_AddTripMessage(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockMessageRepository)
-	mockTripRepo := new(trip.MockTripRepository)
-	mockMemberRepo := new(trip.MockTripMemberRepository)
+	mockTripRepo := new(tripmocks.MockTripRepository)
+	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := NewMessageService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
 	t.Run("Success", func(t *testing.T) {
@@ -54,8 +55,8 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 func TestPollService_VoteOption(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockPollRepository)
-	mockTripRepo := new(trip.MockTripRepository)
-	mockMemberRepo := new(trip.MockTripMemberRepository)
+	mockTripRepo := new(tripmocks.MockTripRepository)
+	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := NewPollService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
 	t.Run("Success", func(t *testing.T) {

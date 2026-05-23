@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"bytes"
@@ -9,6 +9,8 @@ import (
 
 	"summitmate/api"
 	"summitmate/internal/apperror"
+	"summitmate/internal/auth"
+	authmocks "summitmate/internal/auth/mocks"
 	"summitmate/internal/common/apiutil"
 
 	"github.com/stretchr/testify/assert"
@@ -16,8 +18,8 @@ import (
 )
 
 func TestAuthHandler_LoginUser(t *testing.T) {
-	mockService := new(MockAuthService)
-	handler := NewAuthHandler(mockService)
+	mockService := new(authmocks.MockAuthService)
+	handler := auth.NewAuthHandler(mockService)
 
 	t.Run("Success", func(t *testing.T) {
 		reqBody := api.LoginRequest{
@@ -26,7 +28,7 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		user := &User{ID: "00000000-0000-0000-0000-000000000001", Email: "test@example.com", DisplayName: "Tester"}
+		user := &auth.User{ID: "00000000-0000-0000-0000-000000000001", Email: "test@example.com", DisplayName: "Tester"}
 		token := "jwt-token"
 
 		mockService.On("Login", mock.Anything, "test@example.com", "password123").Return(user, token, "refresh-token", nil).Once()
@@ -52,7 +54,7 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		mockService.On("Login", mock.Anything, "test@example.com", "wrong").Return((*User)(nil), "", "", apperror.ErrInvalidCredentials).Once()
+		mockService.On("Login", mock.Anything, "test@example.com", "wrong").Return((*auth.User)(nil), "", "", apperror.ErrInvalidCredentials).Once()
 
 		req := httptest.NewRequest("POST", "/auth/login", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
@@ -64,8 +66,8 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 }
 
 func TestAuthHandler_RegisterUser(t *testing.T) {
-	mockService := new(MockAuthService)
-	handler := NewAuthHandler(mockService)
+	mockService := new(authmocks.MockAuthService)
+	handler := auth.NewAuthHandler(mockService)
 
 	t.Run("Success", func(t *testing.T) {
 		reqBody := api.RegisterRequest{
@@ -75,7 +77,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		user := &User{ID: "00000000-0000-0000-0000-000000000002", Email: "new@example.com", DisplayName: "New User"}
+		user := &auth.User{ID: "00000000-0000-0000-0000-000000000002", Email: "new@example.com", DisplayName: "New User"}
 		token := "jwt-token"
 
 		mockService.On("Register", mock.Anything, "new@example.com", "password123", "New User", (*string)(nil)).Return(user, token, "refresh-token", nil).Once()
@@ -96,7 +98,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return((*User)(nil), "", "", apperror.ErrPasswordTooShort).Once()
+		mockService.On("Register", mock.Anything, "new@example.com", "short", "", (*string)(nil)).Return((*auth.User)(nil), "", "", apperror.ErrPasswordTooShort).Once()
 
 		req := httptest.NewRequest("POST", "/auth/register", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()
@@ -112,8 +114,8 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 }
 
 func TestAuthHandler_RefreshToken(t *testing.T) {
-	mockService := new(MockAuthService)
-	handler := NewAuthHandler(mockService)
+	mockService := new(authmocks.MockAuthService)
+	handler := auth.NewAuthHandler(mockService)
 
 	t.Run("Success", func(t *testing.T) {
 		reqBody := api.RefreshTokenRequest{
@@ -121,7 +123,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		user := &User{ID: "00000000-0000-0000-0000-000000000001", Email: "test@example.com"}
+		user := &auth.User{ID: "00000000-0000-0000-0000-000000000001", Email: "test@example.com"}
 		newAccessToken := "new-access-token"
 		newRefreshToken := "new-refresh-token"
 
@@ -147,7 +149,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 		}
 		jsonBody, _ := json.Marshal(reqBody)
 
-		mockService.On("RefreshToken", mock.Anything, "invalid-token").Return((*User)(nil), "", "", apperror.ErrUnauthorized).Once()
+		mockService.On("RefreshToken", mock.Anything, "invalid-token").Return((*auth.User)(nil), "", "", apperror.ErrUnauthorized).Once()
 
 		req := httptest.NewRequest("POST", "/auth/refresh", bytes.NewBuffer(jsonBody))
 		w := httptest.NewRecorder()

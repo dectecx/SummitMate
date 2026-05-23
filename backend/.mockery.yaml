@@ -1,0 +1,89 @@
+with-expecter: true
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "mocks"
+filename: "mock_{{.InterfaceName | lower}}.go"
+dir: "{{.InterfaceDir}}/mocks"
+packages:
+  summitmate/internal/auth:
+    interfaces:
+      AuthService: {}
+      UserRepository: {}
+  summitmate/internal/trip:
+    interfaces:
+      TripService: {}
+      TripRepository: {}
+      TripMemberRepository: {}
+      ItineraryRepository: {}
+      TripMealPlanDayRepository: {}
+      TripGearRepository: {}
+      TripMealRepository: {}
+  summitmate/internal/groupevent:
+    interfaces:
+      GroupEventService: {}
+      GroupEventRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/favorite:
+    interfaces:
+      FavoriteRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/interaction:
+    interfaces:
+      MessageRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+      PollRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/weather:
+    interfaces:
+      WeatherRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/gearset:
+    interfaces:
+      GearSetRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/library:
+    interfaces:
+      GearLibraryRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+      MealLibraryRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/heartbeat:
+    interfaces:
+      HeartbeatRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/log:
+    interfaces:
+      LogRepository:
+        config:
+          inpackage: true
+          dir: "{{.InterfaceDir}}"
+          filename: "mock_{{.InterfaceName | lower}}_test.go"
+  summitmate/internal/flag:
+    interfaces:
+      FlagService: {}
