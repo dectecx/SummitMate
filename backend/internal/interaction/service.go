@@ -121,18 +121,15 @@ func (s *messageService) checkTripAccess(ctx context.Context, tripID, userID str
 		return nil
 	}
 
-	members, err := s.memberRepo.ListByTripID(ctx, tripID)
+	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
 	if err != nil {
 		return err
 	}
-
-	for _, m := range members {
-		if m.UserID == userID {
-			return nil
-		}
+	if !isMember {
+		return apperror.ErrTripAccessDenied
 	}
 
-	return apperror.ErrTripAccessDenied
+	return nil
 }
 
 func (s *messageService) buildMessageTree(messages []*TripMessage) []*TripMessage {
@@ -310,16 +307,13 @@ func (s *pollService) checkTripAccess(ctx context.Context, tripID, userID string
 		return nil
 	}
 
-	members, err := s.memberRepo.ListByTripID(ctx, tripID)
+	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
 	if err != nil {
 		return err
 	}
-
-	for _, m := range members {
-		if m.UserID == userID {
-			return nil
-		}
+	if !isMember {
+		return apperror.ErrTripAccessDenied
 	}
 
-	return apperror.ErrTripAccessDenied
+	return nil
 }

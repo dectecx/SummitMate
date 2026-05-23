@@ -43,7 +43,7 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 		msg := &TripMessage{Content: "Hello"}
 
 		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: "creator"}, nil).Once()
-		mockMemberRepo.On("ListByTripID", mock.Anything, tripID).Return([]*trip.TripMember{}, nil).Once()
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, userID).Return(false, nil).Once()
 
 		result, err := svc.AddTripMessage(context.Background(), tripID, userID, msg)
 
