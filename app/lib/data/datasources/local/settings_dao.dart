@@ -28,6 +28,7 @@ class SettingsDao extends DatabaseAccessor<AppDatabase> with _$SettingsDaoMixin 
       language: row.language,
       darkMode: row.darkMode,
       lastSyncTime: row.lastSyncTime,
+      autoSyncIntervalMinutes: row.autoSyncIntervalMinutes,
     );
   }
 

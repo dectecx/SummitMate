@@ -40,4 +40,7 @@ abstract interface class IGearLocalDataSource {
 
   /// 監聽資料變更流
   Stream<List<GearItem>> watch();
+
+  /// 遷移項目 ID (從舊 ID 到新 ID)
+  Future<void> migrateId(String oldId, String newId);
 }

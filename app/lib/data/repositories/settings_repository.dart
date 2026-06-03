@@ -73,6 +73,15 @@ class SettingsRepository implements ISettingsRepository {
   }
 
   @override
+  Future<void> updateAutoSyncInterval(int minutes) async {
+    final settings = await getSettings();
+    final newSettings = settings.copyWith(autoSyncIntervalMinutes: minutes);
+    await _localDataSource.saveSettings(newSettings);
+    _cachedSettings = newSettings;
+    _settingsController.add(null);
+  }
+
+  @override
   Future<void> updateTheme(AppThemeType theme) async {
     final settings = await getSettings();
     final newSettings = settings.copyWith(theme: theme);

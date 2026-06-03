@@ -1,27 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:summitmate/data/datasources/interfaces/i_itinerary_local_data_source.dart';
-import 'package:summitmate/data/datasources/interfaces/i_itinerary_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/itinerary_repository.dart';
 
 // Mocks
 class MockItineraryLocalDataSource extends Mock implements IItineraryLocalDataSource {}
 
-class MockItineraryRemoteDataSource extends Mock implements IItineraryRemoteDataSource {}
-
 void main() {
   late ItineraryRepository repository;
   late MockItineraryLocalDataSource mockLocalDataSource;
-  late MockItineraryRemoteDataSource mockRemoteDataSource;
 
   late ItineraryItem testItem;
 
   setUp(() {
     mockLocalDataSource = MockItineraryLocalDataSource();
-    mockRemoteDataSource = MockItineraryRemoteDataSource();
 
-    repository = ItineraryRepository(localDataSource: mockLocalDataSource, remoteDataSource: mockRemoteDataSource);
+    repository = ItineraryRepository(localDataSource: mockLocalDataSource);
 
     testItem = const ItineraryItem(id: 'item_1', tripId: 'trip_1', day: 'D1', name: 'Test Point', estTime: '08:00');
 

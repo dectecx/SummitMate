@@ -38,12 +38,22 @@ class SyncInProgress extends SyncState {
 class SyncSuccess extends SyncState {
   final DateTime timestamp;
   final String message;
+  final int pushedCount;
+  final int pulledCount;
+  final int conflictCount;
 
-  const SyncSuccess({required this.timestamp, required this.message, int pendingCount = 0, bool isOnline = true})
-    : super(pendingCount: pendingCount, isOnline: isOnline);
+  const SyncSuccess({
+    required this.timestamp,
+    required this.message,
+    this.pushedCount = 0,
+    this.pulledCount = 0,
+    this.conflictCount = 0,
+    int pendingCount = 0,
+    bool isOnline = true,
+  }) : super(pendingCount: pendingCount, isOnline: isOnline);
 
   @override
-  List<Object?> get props => [...super.props, timestamp, message];
+  List<Object?> get props => [...super.props, timestamp, message, pushedCount, pulledCount, conflictCount];
 }
 
 class SyncFailure extends SyncState {

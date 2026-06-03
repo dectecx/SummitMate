@@ -11,8 +11,6 @@ class MockMessageRepository extends Mock implements IMessageRepository {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
-class MockSyncService extends Mock implements ISyncService {}
-
 class MockAuthService extends Mock implements IAuthService {}
 
 class FakeMessage extends Fake implements Message {}

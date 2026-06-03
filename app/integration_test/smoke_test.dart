@@ -10,7 +10,7 @@ import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
-class MockSyncService extends Mock implements ISyncService {}
+class MockSyncEngine extends Mock implements ISyncEngine {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
@@ -20,7 +20,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late MockConnectivityService mockConnectivityService;
-  late MockSyncService mockSyncService;
+  late MockSyncEngine mockSyncEngine;
   late MockTripRepository mockTripRepository;
   late MockAuthService mockAuthService;
 
@@ -32,7 +32,7 @@ void main() {
   group('SummitMate Smoke Test (Full App Walkthrough)', () {
     testWidgets('Guest User Flow: Landing -> Guest Login -> Main Nav -> Settings', (tester) async {
       mockConnectivityService = MockConnectivityService();
-      mockSyncService = MockSyncService();
+      mockSyncEngine = MockSyncEngine();
       mockTripRepository = MockTripRepository();
       mockAuthService = MockAuthService();
 
@@ -43,7 +43,7 @@ void main() {
 
       // Override dependencies
       getIt.registerSingleton<IConnectivityService>(mockConnectivityService);
-      getIt.registerSingleton<ISyncService>(mockSyncService);
+      getIt.registerSingleton<ISyncEngine>(mockSyncEngine);
       getIt.registerSingleton<ITripRepository>(mockTripRepository);
       getIt.registerSingleton<IAuthService>(mockAuthService);
 
@@ -52,7 +52,7 @@ void main() {
       when(() => mockAuthService.currentUserId).thenReturn(null);
       when(() => mockConnectivityService.isOffline).thenReturn(false);
       when(() => mockConnectivityService.onConnectivityChanged).thenAnswer((_) => Stream.value(true));
-      when(() => mockSyncService.watchPendingSyncCount()).thenAnswer((_) => Stream.value(0));
+      when(() => mockSyncEngine.watchPendingSyncCount()).thenAnswer((_) => Stream.value(0));
       when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([]));
       when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
 

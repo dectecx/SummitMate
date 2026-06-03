@@ -1,4 +1,3 @@
-import '../../core/models/paginated_list.dart';
 import '../../core/error/result.dart';
 import '../domain.dart';
 
@@ -52,26 +51,6 @@ abstract interface class ITripRepository {
 
   // ========== Remote Operations ==========
 
-  /// 取得遠端行程列表（分頁）
-  ///
-  /// [page] 頁碼 / [limit] 每頁數量 / [search] 搜尋關鍵字
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search});
-
-  /// 上傳行程至遠端
-  ///
-  /// [trip] 要上傳的行程
-  Future<Result<String, Exception>> uploadToCloud(Trip trip);
-
-  /// 刪除遠端行程
-  ///
-  /// [tripId] 行程 ID
-  Future<Result<void, Exception>> removeFromCloud(String tripId);
-
-  /// 同步特定行程詳情（下載並存入本地）
-  ///
-  /// [tripId] 行程 ID
-  Future<Result<Trip, Exception>> syncTripDetails(String tripId);
-
   // ========== Member Management (Remote) ==========
 
   /// 取得行程成員列表
@@ -123,9 +102,6 @@ abstract interface class ITripRepository {
 
   /// 刪除糧食計畫天數
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId);
-
-  /// 觸發糧食計畫同步 (Fetch from remote & update local)
-  Future<Result<void, Exception>> syncMealPlan(String tripId);
 
   /// 更新本地行程 ID (遷移行程及其所有關聯資料)
   Future<Result<void, Exception>> updateLocalTripId(String oldId, String newId);

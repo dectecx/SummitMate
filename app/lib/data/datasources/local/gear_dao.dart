@@ -97,10 +97,38 @@ class GearDao extends DatabaseAccessor<AppDatabase> with _$GearDaoMixin implemen
       isChecked: row.isChecked,
       orderIndex: row.orderIndex,
       libraryItemId: row.libraryItemId,
+      syncStatus: row.syncStatus,
       createdAt: row.createdAt,
       createdBy: row.createdBy,
       updatedAt: row.updatedAt,
       updatedBy: row.updatedBy,
     );
+  }
+
+  @override
+  Future<void> migrateId(String oldId, String newId) async {
+    await transaction(() async {
+      final row = await (select(gearItemsTable)..where((t) => t.id.equals(oldId))).getSingleOrNull();
+      if (row == null) return;
+      await into(gearItemsTable).insert(
+        GearItemsTableCompanion.insert(
+          id: newId,
+          tripId: row.tripId,
+          name: row.name,
+          weight: row.weight,
+          category: row.category,
+          isChecked: Value(row.isChecked),
+          orderIndex: Value(row.orderIndex),
+          quantity: Value(row.quantity),
+          libraryItemId: Value(row.libraryItemId),
+          syncStatus: Value(row.syncStatus),
+          createdAt: Value(row.createdAt),
+          createdBy: Value(row.createdBy),
+          updatedAt: Value(row.updatedAt),
+          updatedBy: Value(row.updatedBy),
+        ),
+      );
+      await (delete(gearItemsTable)..where((t) => t.id.equals(oldId))).go();
+    });
   }
 }

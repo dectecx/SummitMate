@@ -18,6 +18,11 @@ abstract class Settings with _$Settings {
     @Default('zh') String language,
     @Default(false) bool darkMode,
     DateTime? lastSyncTime,
+    // 自動同步間隔 (分鐘)
+    // 0 = 關閉自動同步
+    // 5~10080 (5分鐘~7天) = 使用者可選範圍
+    // DevTools 模式下可設定 1~10080
+    @Default(5) int autoSyncIntervalMinutes,
   }) = _Settings;
 
   factory Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);

@@ -91,10 +91,41 @@ class ItineraryDao extends DatabaseAccessor<AppDatabase> with _$ItineraryDaoMixi
       imageAsset: row.imageAsset,
       isCheckedIn: row.isCheckedIn,
       checkedInAt: row.checkedInAt,
+      syncStatus: row.syncStatus,
       createdAt: row.createdAt,
       createdBy: row.createdBy,
       updatedAt: row.updatedAt,
       updatedBy: row.updatedBy,
     );
+  }
+
+  @override
+  Future<void> migrateId(String oldId, String newId) async {
+    await transaction(() async {
+      final row = await (select(itineraryItemsTable)..where((t) => t.id.equals(oldId))).getSingleOrNull();
+      if (row == null) return;
+      await into(itineraryItemsTable).insert(
+        ItineraryItemsTableCompanion.insert(
+          id: newId,
+          tripId: row.tripId,
+          day: row.day,
+          name: row.name,
+          estTime: row.estTime,
+          actualTime: Value(row.actualTime),
+          altitude: Value(row.altitude),
+          distance: Value(row.distance),
+          note: Value(row.note),
+          imageAsset: Value(row.imageAsset),
+          isCheckedIn: Value(row.isCheckedIn),
+          checkedInAt: Value(row.checkedInAt),
+          syncStatus: Value(row.syncStatus),
+          createdAt: Value(row.createdAt),
+          createdBy: Value(row.createdBy),
+          updatedAt: Value(row.updatedAt),
+          updatedBy: Value(row.updatedBy),
+        ),
+      );
+      await (delete(itineraryItemsTable)..where((t) => t.id.equals(oldId))).go();
+    });
   }
 }
