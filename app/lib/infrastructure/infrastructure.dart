@@ -8,7 +8,7 @@ export 'services/connectivity_service.dart';
 export 'services/auth_service.dart';
 export 'services/geolocator_service.dart';
 export 'services/jwt_token_validator.dart';
-export 'services/sync_service.dart';
+export 'services/sync_engine.dart';
 export 'services/weather_service.dart';
 
 // Tools

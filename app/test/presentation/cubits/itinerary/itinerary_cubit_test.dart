@@ -25,6 +25,7 @@ void main() {
   late ItineraryItem testItem;
 
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     registerFallbackValue(FakeTrip());
     registerFallbackValue(FakeItineraryItem());
   });

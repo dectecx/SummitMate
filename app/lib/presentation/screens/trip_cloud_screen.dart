@@ -25,7 +25,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
   // Use Repository directly for Cloud Operations (Facade)
   // Note: Ideally cloud viewing should also be in Cubit, but keeping it local to this screen
   // for now avoids polluting TripCubit with transient "view-only" cloud state.
-  final ITripRepository _tripRepository = getIt<ITripRepository>();
+  final ISyncEngine _syncEngine = getIt<ISyncEngine>();
 
   bool _isLoading = false;
   List<Trip> _cloudTrips = [];
@@ -53,7 +53,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     });
 
     try {
-      final result = await _tripRepository.getRemoteTrips();
+      final result = await _syncEngine.getCloudTrips();
       final trips = switch (result) {
         Success(value: final paginated) => paginated.items,
         Failure(exception: final e) => throw e,
@@ -83,7 +83,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _tripRepository.uploadToCloud(trip);
+      final result = await _syncEngine.uploadToCloud(trip);
       if (result case Failure(:final exception)) throw exception;
 
       ToastService.success('已上傳: ${trip.name}');
@@ -155,7 +155,7 @@ class _TripCloudScreenState extends State<TripCloudScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _tripRepository.removeFromCloud(trip.id);
+      final result = await _syncEngine.removeFromCloud(trip.id);
       if (result case Failure(:final exception)) throw exception;
 
       ToastService.success('已從雲端刪除: ${trip.name}');

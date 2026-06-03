@@ -63,6 +63,7 @@ export 'interfaces/i_data_service.dart';
 export 'interfaces/i_gear_library_cloud_service.dart';
 export 'interfaces/i_geolocator_service.dart';
 export 'interfaces/i_poll_service.dart';
-export 'interfaces/i_sync_service.dart';
+export 'interfaces/i_sync_adapter.dart';
+export 'interfaces/i_sync_engine.dart';
 export 'interfaces/i_token_validator.dart';
 export 'interfaces/i_weather_service.dart';

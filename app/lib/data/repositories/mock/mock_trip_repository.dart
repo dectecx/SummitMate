@@ -1,5 +1,4 @@
 import 'dart:async';
-import '../../../core/models/paginated_list.dart';
 import '../../../core/error/result.dart';
 import '../../../domain/domain.dart';
 import 'mock_itinerary_repository.dart';
@@ -69,26 +68,6 @@ class MockTripRepository implements ITripRepository {
 
   // ========== Remote Operations ==========
 
-  @override
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search}) async {
-    return Success(PaginatedList(items: [_mockTrip], page: page ?? 1, total: 1, hasMore: false));
-  }
-
-  @override
-  Future<Result<String, Exception>> uploadToCloud(Trip trip) async {
-    return Success(trip.id);
-  }
-
-  @override
-  Future<Result<void, Exception>> removeFromCloud(String tripId) async {
-    return const Success(null);
-  }
-
-  @override
-  Future<Result<Trip, Exception>> syncTripDetails(String tripId) async {
-    return Success(_mockTrip);
-  }
-
   // ========== Member Management (Remote Mock) ==========
 
   @override
@@ -156,11 +135,6 @@ class MockTripRepository implements ITripRepository {
 
   @override
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId) async {
-    return const Success(null);
-  }
-
-  @override
-  Future<Result<void, Exception>> syncMealPlan(String tripId) async {
     return const Success(null);
   }
 

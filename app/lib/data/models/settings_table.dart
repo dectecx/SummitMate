@@ -15,6 +15,7 @@ class SettingsTable extends Table {
   TextColumn get language => text().withDefault(const Constant('zh'))();
   BoolColumn get darkMode => boolean().withDefault(const Constant(false))();
   DateTimeColumn get lastSyncTime => dateTime().nullable()();
+  IntColumn get autoSyncIntervalMinutes => integer().withDefault(const Constant(5))();
 }
 
 /// 設定資料對映擴充
@@ -30,6 +31,7 @@ extension SettingsMapping on Settings {
       language: Value(language),
       darkMode: Value(darkMode),
       lastSyncTime: Value(lastSyncTime),
+      autoSyncIntervalMinutes: Value(autoSyncIntervalMinutes),
     );
   }
 }

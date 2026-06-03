@@ -1,23 +1,19 @@
 import 'dart:async';
 import 'package:injectable/injectable.dart';
-import 'package:dio/dio.dart';
-import '../../infrastructure/tools/log_service.dart';
-import '../../../core/models/paginated_list.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/error/result.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
-import '../datasources/interfaces/i_trip_meal_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 
 @LazySingleton(as: ITripRepository)
 class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
-  final ITripMealRemoteDataSource _mealRemoteDataSource;
 
   final _tripUpdateController = StreamController<String>.broadcast();
 
-  TripRepository(this._localDataSource, this._remoteDataSource, this._mealRemoteDataSource);
+  TripRepository(this._localDataSource, this._remoteDataSource);
 
   @override
   Stream<String> get tripUpdateStream => _tripUpdateController.stream;
@@ -64,7 +60,9 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> saveTrip(Trip trip) async {
     try {
-      await _localDataSource.addTrip(trip);
+      final now = DateTime.now();
+      final marked = trip.copyWith(syncStatus: SyncStatus.pendingCreate, updatedAt: now);
+      await _localDataSource.addTrip(marked);
       _tripUpdateController.add(trip.id);
       return const Success(null);
     } catch (e) {
@@ -75,7 +73,12 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> updateTrip(Trip trip) async {
     try {
-      await _localDataSource.updateTrip(trip);
+      final existing = await _localDataSource.getTripById(trip.id);
+      final newStatus = existing?.syncStatus == SyncStatus.pendingCreate
+          ? SyncStatus.pendingCreate
+          : SyncStatus.pendingUpdate;
+      final marked = trip.copyWith(syncStatus: newStatus, updatedAt: DateTime.now());
+      await _localDataSource.updateTrip(marked);
       _tripUpdateController.add(trip.id);
       return const Success(null);
     } catch (e) {
@@ -86,7 +89,18 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> deleteTrip(String id) async {
     try {
-      await _localDataSource.deleteTrip(id);
+      final existing = await _localDataSource.getTripById(id);
+      if (existing == null) {
+        return const Success(null);
+      }
+      if (existing.syncStatus == SyncStatus.pendingCreate) {
+        await _localDataSource.deleteTrip(id);
+      } else {
+        await _localDataSource.updateTrip(
+          existing.copyWith(syncStatus: SyncStatus.pendingDelete, updatedAt: DateTime.now()),
+        );
+      }
+      _tripUpdateController.add(id);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -106,50 +120,6 @@ class TripRepository implements ITripRepository {
   }
 
   // ========== Remote Operations ==========
-
-  @override
-  Future<Result<PaginatedList<Trip>, Exception>> getRemoteTrips({int? page, int? limit, String? search}) async {
-    try {
-      final result = await _remoteDataSource.getRemoteTrips(page: page, limit: limit, search: search);
-      if (result is Success<PaginatedList<Trip>, Exception>) {
-        for (final trip in result.value.items) {
-          await _localDataSource.addTrip(trip);
-        }
-      }
-      return result;
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<String, Exception>> uploadToCloud(Trip trip) async {
-    return _remoteDataSource.uploadTrip(trip);
-  }
-
-  @override
-  Future<Result<void, Exception>> removeFromCloud(String tripId) async {
-    return _remoteDataSource.deleteTrip(tripId);
-  }
-
-  @override
-  Future<Result<Trip, Exception>> syncTripDetails(String tripId) async {
-    try {
-      final result = await _remoteDataSource.getTripDetails(tripId);
-      if (result is Success<Trip, Exception>) {
-        await _localDataSource.updateTrip(result.value);
-      } else if (result is Failure<Trip, Exception>) {
-        final error = result.exception;
-        if (error is DioException && error.response?.statusCode == 403) {
-          LogService.warning('Trip $tripId access denied (403), deleting local data...', source: 'TripRepository');
-          await _localDataSource.deleteTrip(tripId);
-        }
-      }
-      return result;
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
 
   // ========== Member Management (Remote) ==========
 
@@ -207,7 +177,7 @@ class TripRepository implements ITripRepository {
     String? linkedItineraryDay,
   }) async {
     try {
-      final day = await _mealRemoteDataSource.addMealPlanDay(tripId, name, linkedItineraryDay: linkedItineraryDay);
+      final day = MealPlanDay(id: const Uuid().v7(), name: name, linkedItineraryDay: linkedItineraryDay);
       await _localDataSource.saveMealPlanDay(day, tripId);
       return Success(day);
     } catch (e) {
@@ -223,12 +193,7 @@ class TripRepository implements ITripRepository {
     String? linkedItineraryDay,
   }) async {
     try {
-      final day = await _mealRemoteDataSource.updateMealPlanDay(
-        tripId,
-        dayId,
-        name,
-        linkedItineraryDay: linkedItineraryDay,
-      );
+      final day = MealPlanDay(id: dayId, name: name, linkedItineraryDay: linkedItineraryDay);
       await _localDataSource.saveMealPlanDay(day, tripId);
       return Success(day);
     } catch (e) {
@@ -239,19 +204,7 @@ class TripRepository implements ITripRepository {
   @override
   Future<Result<void, Exception>> deleteMealPlanDay(String tripId, String dayId) async {
     try {
-      await _mealRemoteDataSource.deleteMealPlanDay(tripId, dayId);
       await _localDataSource.deleteMealPlanDay(dayId);
-      return const Success(null);
-    } catch (e) {
-      return Failure(e is Exception ? e : Exception(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<void, Exception>> syncMealPlan(String tripId) async {
-    try {
-      final remoteDays = await _mealRemoteDataSource.getMealPlanDays(tripId);
-      await _localDataSource.replaceMealPlanDays(tripId, remoteDays);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

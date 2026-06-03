@@ -30,6 +30,6 @@ abstract interface class IItineraryRepository {
   /// 切換打卡狀態
   Future<Result<void, Exception>> toggleCheckIn(String id);
 
-  /// 觸發同步 (Fetch & Update)
-  Future<Result<void, Exception>> sync(String tripId);
+  /// 更新本地行程項目 ID (ID 遷移)
+  Future<Result<void, Exception>> updateLocalId(String oldId, String newId);
 }

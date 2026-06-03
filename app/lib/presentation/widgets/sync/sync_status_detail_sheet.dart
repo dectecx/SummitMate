@@ -136,7 +136,7 @@ class SyncStatusDetailSheet extends StatelessWidget {
 
   Widget _buildTableSyncStatus(BuildContext context, String tableName, String label) {
     return StreamBuilder<SyncStatus>(
-      stream: getIt<ISyncService>().watchSyncStatus(tableName),
+      stream: getIt<ISyncEngine>().watchSyncStatus(tableName),
       builder: (context, snapshot) {
         final status = snapshot.data ?? SyncStatus.synced;
         final isPending = status != SyncStatus.synced;

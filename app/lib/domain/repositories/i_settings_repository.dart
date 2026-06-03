@@ -30,6 +30,11 @@ abstract interface class ISettingsRepository {
   /// [isOffline] 是否為離線模式
   Future<void> updateOfflineMode(bool isOffline);
 
+  /// 更新自動同步間隔
+  ///
+  /// [minutes] 自動同步間隔 (分鐘)，0 = 關閉
+  Future<void> updateAutoSyncInterval(int minutes);
+
   /// 更新主題
   ///
   /// [theme] 新的主題類型

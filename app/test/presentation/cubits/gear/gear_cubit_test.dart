@@ -17,6 +17,7 @@ void main() {
   late MockTripRepository mockTripRepository;
 
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     // Fallback registration
     registerFallbackValue(
       const GearItem(id: 'fallback', tripId: 'fallback', name: 'fallback', weight: 0, category: 'Other'),

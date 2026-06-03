@@ -34,4 +34,7 @@ abstract interface class IItineraryLocalDataSource {
 
   /// 取得最後同步時間
   Future<DateTime?> getLastSyncTime();
+
+  /// 遷移項目 ID (從舊 ID 到新 ID)
+  Future<void> migrateId(String oldId, String newId);
 }

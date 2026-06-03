@@ -1,21 +1,16 @@
 import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/itinerary_item.dart';
+import '../../domain/enums/sync_status.dart';
 import '../../domain/repositories/i_itinerary_repository.dart';
 import '../datasources/interfaces/i_itinerary_local_data_source.dart';
-import '../datasources/interfaces/i_itinerary_remote_data_source.dart';
 
 /// 行程節點 Repository 實作
 @LazySingleton(as: IItineraryRepository)
 class ItineraryRepository implements IItineraryRepository {
   final IItineraryLocalDataSource _localDataSource;
-  final IItineraryRemoteDataSource _remoteDataSource;
 
-  ItineraryRepository({
-    required IItineraryLocalDataSource localDataSource,
-    required IItineraryRemoteDataSource remoteDataSource,
-  }) : _localDataSource = localDataSource,
-       _remoteDataSource = remoteDataSource;
+  ItineraryRepository({required IItineraryLocalDataSource localDataSource}) : _localDataSource = localDataSource;
 
   @override
   Future<Result<void, Exception>> init() async {
@@ -35,7 +30,13 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> add(ItineraryItem item) async {
     try {
-      await _localDataSource.addItem(item);
+      final now = DateTime.now();
+      final marked = item.copyWith(
+        syncStatus: SyncStatus.pendingCreate,
+        createdAt: item.createdAt ?? now,
+        updatedAt: now,
+      );
+      await _localDataSource.addItem(marked);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -45,7 +46,12 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> update(ItineraryItem item) async {
     try {
-      await _localDataSource.updateItem(item);
+      final existing = await _localDataSource.getById(item.id);
+      final newStatus = existing?.syncStatus == SyncStatus.pendingCreate
+          ? SyncStatus.pendingCreate
+          : SyncStatus.pendingUpdate;
+      final marked = item.copyWith(syncStatus: newStatus, updatedAt: DateTime.now());
+      await _localDataSource.updateItem(marked);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -55,7 +61,17 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> delete(String id) async {
     try {
-      await _localDataSource.deleteById(id);
+      final existing = await _localDataSource.getById(id);
+      if (existing == null) {
+        return const Success(null);
+      }
+      if (existing.syncStatus == SyncStatus.pendingCreate) {
+        await _localDataSource.deleteById(id);
+      } else {
+        await _localDataSource.updateItem(
+          existing.copyWith(syncStatus: SyncStatus.pendingDelete, updatedAt: DateTime.now()),
+        );
+      }
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -65,7 +81,16 @@ class ItineraryRepository implements IItineraryRepository {
   @override
   Future<Result<void, Exception>> clearByTripId(String tripId) async {
     try {
-      await _localDataSource.clearByTripId(tripId);
+      final items = await _localDataSource.getByTripId(tripId);
+      for (final item in items) {
+        if (item.syncStatus == SyncStatus.pendingCreate) {
+          await _localDataSource.deleteById(item.id);
+        } else {
+          await _localDataSource.updateItem(
+            item.copyWith(syncStatus: SyncStatus.pendingDelete, updatedAt: DateTime.now()),
+          );
+        }
+      }
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -104,7 +129,15 @@ class ItineraryRepository implements IItineraryRepository {
     try {
       final item = await _localDataSource.getById(id);
       if (item != null) {
-        final updatedItem = item.copyWith(isCheckedIn: !item.isCheckedIn);
+        final newStatus = item.syncStatus == SyncStatus.pendingCreate
+            ? SyncStatus.pendingCreate
+            : SyncStatus.pendingUpdate;
+        final updatedItem = item.copyWith(
+          isCheckedIn: !item.isCheckedIn,
+          checkedInAt: !item.isCheckedIn ? DateTime.now() : null,
+          syncStatus: newStatus,
+          updatedAt: DateTime.now(),
+        );
         await _localDataSource.updateItem(updatedItem);
         return const Success(null);
       }
@@ -115,10 +148,9 @@ class ItineraryRepository implements IItineraryRepository {
   }
 
   @override
-  Future<Result<void, Exception>> sync(String tripId) async {
+  Future<Result<void, Exception>> updateLocalId(String oldId, String newId) async {
     try {
-      final remoteItems = await _remoteDataSource.getItinerary(tripId);
-      await saveAll(remoteItems);
+      await _localDataSource.migrateId(oldId, newId);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

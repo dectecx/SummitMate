@@ -86,5 +86,5 @@ class MockGearRepository implements IGearRepository {
       const Success(null);
 
   @override
-  Future<Result<void, Exception>> sync(String tripId) async => const Success(null);
+  Future<Result<void, Exception>> updateLocalId(String oldId, String newId) async => const Success(null);
 }

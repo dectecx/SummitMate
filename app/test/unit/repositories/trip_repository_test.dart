@@ -1,25 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/core/models/paginated_list.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/data/repositories/trip_repository.dart';
 import 'package:summitmate/core/error/result.dart';
-import 'package:summitmate/data/datasources/interfaces/i_trip_meal_remote_data_source.dart';
 
 // Mocks
 class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
 
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
 
-class MockTripMealRemoteDataSource extends Mock implements ITripMealRemoteDataSource {}
-
 void main() {
   late TripRepository repository;
   late MockTripLocalDataSource mockLocalDataSource;
   late MockTripRemoteDataSource mockRemoteDataSource;
-  late MockTripMealRemoteDataSource mockMealRemoteDataSource;
 
   late Trip testTrip;
 
@@ -41,8 +36,7 @@ void main() {
   setUp(() {
     mockLocalDataSource = MockTripLocalDataSource();
     mockRemoteDataSource = MockTripRemoteDataSource();
-    mockMealRemoteDataSource = MockTripMealRemoteDataSource();
-    repository = TripRepository(mockLocalDataSource, mockRemoteDataSource, mockMealRemoteDataSource);
+    repository = TripRepository(mockLocalDataSource, mockRemoteDataSource);
   });
 
   group('TripRepository', () {
@@ -63,9 +57,10 @@ void main() {
     });
 
     test('deleteTrip delegates to localDataSource', () async {
-      when(() => mockLocalDataSource.deleteTrip('trip_1')).thenAnswer((_) async => {});
+      when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => testTrip);
+      when(() => mockLocalDataSource.updateTrip(any())).thenAnswer((_) async => {});
       await repository.deleteTrip('trip_1');
-      verify(() => mockLocalDataSource.deleteTrip('trip_1')).called(1);
+      verify(() => mockLocalDataSource.updateTrip(any())).called(1);
     });
 
     test('Negative: getTripById returns null if not found', () async {
@@ -73,31 +68,6 @@ void main() {
       final result = await repository.getTripById('unknown');
       expect(result, isA<Success>());
       expect((result as Success).value, isNull);
-    });
-
-    test('Positive: getRemoteTrips fetches from remote and returns PaginatedList', () async {
-      const paginated = PaginatedList<Trip>(items: [], page: 1, total: 0, hasMore: false);
-      when(
-        () => mockRemoteDataSource.getRemoteTrips(
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-          search: any(named: 'search'),
-        ),
-      ).thenAnswer((_) async => const Success(paginated));
-
-      final result = await repository.getRemoteTrips();
-
-      expect(result, isA<Success>());
-      final value = (result as Success<PaginatedList<Trip>, Exception>).value;
-      expect(value.items, isEmpty);
-      expect(value.hasMore, false);
-      verify(
-        () => mockRemoteDataSource.getRemoteTrips(
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-          search: any(named: 'search'),
-        ),
-      ).called(1);
     });
 
     test('Extreme: getAllTrips handles large number of trips', () async {

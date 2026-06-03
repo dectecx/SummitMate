@@ -15,7 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Settings {
 
- String get username; String get avatar; AppThemeType get theme; bool get isOfflineMode; bool get enableNotifications; String get language; bool get darkMode; DateTime? get lastSyncTime;
+ String get username; String get avatar; AppThemeType get theme; bool get isOfflineMode; bool get enableNotifications; String get language; bool get darkMode; DateTime? get lastSyncTime;// 自動同步間隔 (分鐘)
+// 0 = 關閉自動同步
+// 5~10080 (5分鐘~7天) = 使用者可選範圍
+// DevTools 模式下可設定 1~10080
+ int get autoSyncIntervalMinutes;
 /// Create a copy of Settings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +32,16 @@ $SettingsCopyWith<Settings> get copyWith => _$SettingsCopyWithImpl<Settings>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Settings&&(identical(other.username, username) || other.username == username)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.isOfflineMode, isOfflineMode) || other.isOfflineMode == isOfflineMode)&&(identical(other.enableNotifications, enableNotifications) || other.enableNotifications == enableNotifications)&&(identical(other.language, language) || other.language == language)&&(identical(other.darkMode, darkMode) || other.darkMode == darkMode)&&(identical(other.lastSyncTime, lastSyncTime) || other.lastSyncTime == lastSyncTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Settings&&(identical(other.username, username) || other.username == username)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.isOfflineMode, isOfflineMode) || other.isOfflineMode == isOfflineMode)&&(identical(other.enableNotifications, enableNotifications) || other.enableNotifications == enableNotifications)&&(identical(other.language, language) || other.language == language)&&(identical(other.darkMode, darkMode) || other.darkMode == darkMode)&&(identical(other.lastSyncTime, lastSyncTime) || other.lastSyncTime == lastSyncTime)&&(identical(other.autoSyncIntervalMinutes, autoSyncIntervalMinutes) || other.autoSyncIntervalMinutes == autoSyncIntervalMinutes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,username,avatar,theme,isOfflineMode,enableNotifications,language,darkMode,lastSyncTime);
+int get hashCode => Object.hash(runtimeType,username,avatar,theme,isOfflineMode,enableNotifications,language,darkMode,lastSyncTime,autoSyncIntervalMinutes);
 
 @override
 String toString() {
-  return 'Settings(username: $username, avatar: $avatar, theme: $theme, isOfflineMode: $isOfflineMode, enableNotifications: $enableNotifications, language: $language, darkMode: $darkMode, lastSyncTime: $lastSyncTime)';
+  return 'Settings(username: $username, avatar: $avatar, theme: $theme, isOfflineMode: $isOfflineMode, enableNotifications: $enableNotifications, language: $language, darkMode: $darkMode, lastSyncTime: $lastSyncTime, autoSyncIntervalMinutes: $autoSyncIntervalMinutes)';
 }
 
 
@@ -48,7 +52,7 @@ abstract mixin class $SettingsCopyWith<$Res>  {
   factory $SettingsCopyWith(Settings value, $Res Function(Settings) _then) = _$SettingsCopyWithImpl;
 @useResult
 $Res call({
- String username, String avatar, AppThemeType theme, bool isOfflineMode, bool enableNotifications, String language, bool darkMode, DateTime? lastSyncTime
+ String username, String avatar, AppThemeType theme, bool isOfflineMode, bool enableNotifications, String language, bool darkMode, DateTime? lastSyncTime, int autoSyncIntervalMinutes
 });
 
 
@@ -65,7 +69,7 @@ class _$SettingsCopyWithImpl<$Res>
 
 /// Create a copy of Settings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? username = null,Object? avatar = null,Object? theme = null,Object? isOfflineMode = null,Object? enableNotifications = null,Object? language = null,Object? darkMode = null,Object? lastSyncTime = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? username = null,Object? avatar = null,Object? theme = null,Object? isOfflineMode = null,Object? enableNotifications = null,Object? language = null,Object? darkMode = null,Object? lastSyncTime = freezed,Object? autoSyncIntervalMinutes = null,}) {
   return _then(_self.copyWith(
 username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
@@ -75,7 +79,8 @@ as bool,enableNotifications: null == enableNotifications ? _self.enableNotificat
 as bool,language: null == language ? _self.language : language // ignore: cast_nullable_to_non_nullable
 as String,darkMode: null == darkMode ? _self.darkMode : darkMode // ignore: cast_nullable_to_non_nullable
 as bool,lastSyncTime: freezed == lastSyncTime ? _self.lastSyncTime : lastSyncTime // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,autoSyncIntervalMinutes: null == autoSyncIntervalMinutes ? _self.autoSyncIntervalMinutes : autoSyncIntervalMinutes // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -160,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String username,  String avatar,  AppThemeType theme,  bool isOfflineMode,  bool enableNotifications,  String language,  bool darkMode,  DateTime? lastSyncTime)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String username,  String avatar,  AppThemeType theme,  bool isOfflineMode,  bool enableNotifications,  String language,  bool darkMode,  DateTime? lastSyncTime,  int autoSyncIntervalMinutes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Settings() when $default != null:
-return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_that.enableNotifications,_that.language,_that.darkMode,_that.lastSyncTime);case _:
+return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_that.enableNotifications,_that.language,_that.darkMode,_that.lastSyncTime,_that.autoSyncIntervalMinutes);case _:
   return orElse();
 
 }
@@ -181,10 +186,10 @@ return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String username,  String avatar,  AppThemeType theme,  bool isOfflineMode,  bool enableNotifications,  String language,  bool darkMode,  DateTime? lastSyncTime)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String username,  String avatar,  AppThemeType theme,  bool isOfflineMode,  bool enableNotifications,  String language,  bool darkMode,  DateTime? lastSyncTime,  int autoSyncIntervalMinutes)  $default,) {final _that = this;
 switch (_that) {
 case _Settings():
-return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_that.enableNotifications,_that.language,_that.darkMode,_that.lastSyncTime);case _:
+return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_that.enableNotifications,_that.language,_that.darkMode,_that.lastSyncTime,_that.autoSyncIntervalMinutes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +206,10 @@ return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String username,  String avatar,  AppThemeType theme,  bool isOfflineMode,  bool enableNotifications,  String language,  bool darkMode,  DateTime? lastSyncTime)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String username,  String avatar,  AppThemeType theme,  bool isOfflineMode,  bool enableNotifications,  String language,  bool darkMode,  DateTime? lastSyncTime,  int autoSyncIntervalMinutes)?  $default,) {final _that = this;
 switch (_that) {
 case _Settings() when $default != null:
-return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_that.enableNotifications,_that.language,_that.darkMode,_that.lastSyncTime);case _:
+return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_that.enableNotifications,_that.language,_that.darkMode,_that.lastSyncTime,_that.autoSyncIntervalMinutes);case _:
   return null;
 
 }
@@ -216,7 +221,7 @@ return $default(_that.username,_that.avatar,_that.theme,_that.isOfflineMode,_tha
 @JsonSerializable()
 
 class _Settings extends Settings {
-  const _Settings({this.username = '', this.avatar = '🐻', this.theme = AppThemeType.nature, this.isOfflineMode = false, this.enableNotifications = true, this.language = 'zh', this.darkMode = false, this.lastSyncTime}): super._();
+  const _Settings({this.username = '', this.avatar = '🐻', this.theme = AppThemeType.nature, this.isOfflineMode = false, this.enableNotifications = true, this.language = 'zh', this.darkMode = false, this.lastSyncTime, this.autoSyncIntervalMinutes = 5}): super._();
   factory _Settings.fromJson(Map<String, dynamic> json) => _$SettingsFromJson(json);
 
 @override@JsonKey() final  String username;
@@ -227,6 +232,11 @@ class _Settings extends Settings {
 @override@JsonKey() final  String language;
 @override@JsonKey() final  bool darkMode;
 @override final  DateTime? lastSyncTime;
+// 自動同步間隔 (分鐘)
+// 0 = 關閉自動同步
+// 5~10080 (5分鐘~7天) = 使用者可選範圍
+// DevTools 模式下可設定 1~10080
+@override@JsonKey() final  int autoSyncIntervalMinutes;
 
 /// Create a copy of Settings
 /// with the given fields replaced by the non-null parameter values.
@@ -241,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Settings&&(identical(other.username, username) || other.username == username)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.isOfflineMode, isOfflineMode) || other.isOfflineMode == isOfflineMode)&&(identical(other.enableNotifications, enableNotifications) || other.enableNotifications == enableNotifications)&&(identical(other.language, language) || other.language == language)&&(identical(other.darkMode, darkMode) || other.darkMode == darkMode)&&(identical(other.lastSyncTime, lastSyncTime) || other.lastSyncTime == lastSyncTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Settings&&(identical(other.username, username) || other.username == username)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.theme, theme) || other.theme == theme)&&(identical(other.isOfflineMode, isOfflineMode) || other.isOfflineMode == isOfflineMode)&&(identical(other.enableNotifications, enableNotifications) || other.enableNotifications == enableNotifications)&&(identical(other.language, language) || other.language == language)&&(identical(other.darkMode, darkMode) || other.darkMode == darkMode)&&(identical(other.lastSyncTime, lastSyncTime) || other.lastSyncTime == lastSyncTime)&&(identical(other.autoSyncIntervalMinutes, autoSyncIntervalMinutes) || other.autoSyncIntervalMinutes == autoSyncIntervalMinutes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,username,avatar,theme,isOfflineMode,enableNotifications,language,darkMode,lastSyncTime);
+int get hashCode => Object.hash(runtimeType,username,avatar,theme,isOfflineMode,enableNotifications,language,darkMode,lastSyncTime,autoSyncIntervalMinutes);
 
 @override
 String toString() {
-  return 'Settings(username: $username, avatar: $avatar, theme: $theme, isOfflineMode: $isOfflineMode, enableNotifications: $enableNotifications, language: $language, darkMode: $darkMode, lastSyncTime: $lastSyncTime)';
+  return 'Settings(username: $username, avatar: $avatar, theme: $theme, isOfflineMode: $isOfflineMode, enableNotifications: $enableNotifications, language: $language, darkMode: $darkMode, lastSyncTime: $lastSyncTime, autoSyncIntervalMinutes: $autoSyncIntervalMinutes)';
 }
 
 
@@ -261,7 +271,7 @@ abstract mixin class _$SettingsCopyWith<$Res> implements $SettingsCopyWith<$Res>
   factory _$SettingsCopyWith(_Settings value, $Res Function(_Settings) _then) = __$SettingsCopyWithImpl;
 @override @useResult
 $Res call({
- String username, String avatar, AppThemeType theme, bool isOfflineMode, bool enableNotifications, String language, bool darkMode, DateTime? lastSyncTime
+ String username, String avatar, AppThemeType theme, bool isOfflineMode, bool enableNotifications, String language, bool darkMode, DateTime? lastSyncTime, int autoSyncIntervalMinutes
 });
 
 
@@ -278,7 +288,7 @@ class __$SettingsCopyWithImpl<$Res>
 
 /// Create a copy of Settings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? username = null,Object? avatar = null,Object? theme = null,Object? isOfflineMode = null,Object? enableNotifications = null,Object? language = null,Object? darkMode = null,Object? lastSyncTime = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? username = null,Object? avatar = null,Object? theme = null,Object? isOfflineMode = null,Object? enableNotifications = null,Object? language = null,Object? darkMode = null,Object? lastSyncTime = freezed,Object? autoSyncIntervalMinutes = null,}) {
   return _then(_Settings(
 username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String,avatar: null == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
@@ -288,7 +298,8 @@ as bool,enableNotifications: null == enableNotifications ? _self.enableNotificat
 as bool,language: null == language ? _self.language : language // ignore: cast_nullable_to_non_nullable
 as String,darkMode: null == darkMode ? _self.darkMode : darkMode // ignore: cast_nullable_to_non_nullable
 as bool,lastSyncTime: freezed == lastSyncTime ? _self.lastSyncTime : lastSyncTime // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,autoSyncIntervalMinutes: null == autoSyncIntervalMinutes ? _self.autoSyncIntervalMinutes : autoSyncIntervalMinutes // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

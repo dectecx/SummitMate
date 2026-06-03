@@ -5,31 +5,21 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_cubit.dart';
 import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 import 'package:summitmate/core/error/result.dart';
-
 import 'package:get_it/get_it.dart';
-import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
 import 'package:summitmate/presentation/cubits/app_error/app_error_cubit.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}
 
-class MockSyncService extends Mock implements ISyncService {}
-
 class MockAuthService extends Mock implements IAuthService {}
 
-class MockItineraryRepository extends Mock implements IItineraryRepository {}
-
-class MockGearRepository extends Mock implements IGearRepository {}
-
-class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
+class MockSyncEngine extends Mock implements ISyncEngine {}
 
 class MockAppErrorCubit extends Mock implements AppErrorCubit {}
 
 void main() {
   late MockTripRepository mockTripRepository;
   late MockAuthService mockAuthService;
-  late MockItineraryRepository mockItineraryRepository;
-  late MockGearRepository mockGearRepository;
-  late MockTripGearRemoteDataSource mockTripGearRemoteDataSource;
+  late MockSyncEngine mockSyncEngine;
   late MockAppErrorCubit mockAppErrorCubit;
 
   setUpAll(() {
@@ -50,18 +40,14 @@ void main() {
   setUp(() {
     mockTripRepository = MockTripRepository();
     mockAuthService = MockAuthService();
-    mockItineraryRepository = MockItineraryRepository();
-    mockGearRepository = MockGearRepository();
-    mockTripGearRemoteDataSource = MockTripGearRemoteDataSource();
+    mockSyncEngine = MockSyncEngine();
     mockAppErrorCubit = MockAppErrorCubit();
 
     GetIt.I.reset();
 
-    GetIt.I.registerSingleton<IItineraryRepository>(mockItineraryRepository);
-    GetIt.I.registerSingleton<IGearRepository>(mockGearRepository);
-    GetIt.I.registerSingleton<ITripGearRemoteDataSource>(mockTripGearRemoteDataSource);
     GetIt.I.registerSingleton<ITripRepository>(mockTripRepository);
     GetIt.I.registerSingleton<IAuthService>(mockAuthService);
+    GetIt.I.registerSingleton<ISyncEngine>(mockSyncEngine);
     GetIt.I.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
 
     when(() => mockAuthService.currentUserId).thenReturn('user-1');
@@ -94,16 +80,7 @@ void main() {
     );
 
     test('initial state is TripInitial', () {
-      expect(
-        TripCubit(
-          mockTripRepository,
-          mockAuthService,
-          mockGearRepository,
-          mockItineraryRepository,
-          mockTripGearRemoteDataSource,
-        ).state,
-        const TripInitial(),
-      );
+      expect(TripCubit(mockTripRepository, mockAuthService, mockSyncEngine).state, const TripInitial());
     });
 
     blocTest<TripCubit, TripState>(
@@ -111,13 +88,7 @@ void main() {
       build: () {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
-        return TripCubit(
-          mockTripRepository,
-          mockAuthService,
-          mockGearRepository,
-          mockItineraryRepository,
-          mockTripGearRemoteDataSource,
-        );
+        return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       act: (cubit) => cubit.loadTrips(),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
@@ -130,13 +101,7 @@ void main() {
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
         when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(
-          mockTripRepository,
-          mockAuthService,
-          mockGearRepository,
-          mockItineraryRepository,
-          mockTripGearRemoteDataSource,
-        );
+        return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       act: (cubit) => cubit.addTrip(name: 'New Trip', startDate: DateTime.now()),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
@@ -152,13 +117,7 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(
-          mockTripRepository,
-          mockAuthService,
-          mockGearRepository,
-          mockItineraryRepository,
-          mockTripGearRemoteDataSource,
-        );
+        return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       act: (cubit) => cubit.importTrip(trip2),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
@@ -173,13 +132,7 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1, trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
         when(() => mockTripRepository.setActiveTrip(any(), any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(
-          mockTripRepository,
-          mockAuthService,
-          mockGearRepository,
-          mockItineraryRepository,
-          mockTripGearRemoteDataSource,
-        );
+        return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       act: (cubit) => cubit.setActiveTrip('trip2'),
       expect: () => [const TripLoading(), isA<TripLoaded>()],
@@ -194,13 +147,7 @@ void main() {
         when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip2]));
         when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
         when(() => mockTripRepository.deleteTrip(any())).thenAnswer((_) async => const Success(null));
-        return TripCubit(
-          mockTripRepository,
-          mockAuthService,
-          mockGearRepository,
-          mockItineraryRepository,
-          mockTripGearRemoteDataSource,
-        );
+        return TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
       },
       seed: () => TripLoaded(trips: [trip1, trip2], activeTrip: trip2),
       act: (cubit) => cubit.deleteTrip('trip1'),
@@ -210,43 +157,12 @@ void main() {
       },
     );
 
-    test('uploadFullTrip gathers data and calls repo', () async {
-      when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => []);
-      when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([trip1]));
-      when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(trip1));
-      when(() => mockTripRepository.uploadToCloud(any())).thenAnswer((_) async => const Success('mock-id'));
-      when(() => mockTripRepository.updateLocalTripId(any(), any())).thenAnswer((_) async => const Success(null));
-      when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockTripGearRemoteDataSource.replaceAllTripGear(any(), any())).thenAnswer((_) async => Future.value());
-
-      final cubit = TripCubit(
-        mockTripRepository,
-        mockAuthService,
-        mockGearRepository,
-        mockItineraryRepository,
-        mockTripGearRemoteDataSource,
-      );
-
-      final result = await cubit.uploadFullTrip(trip1);
-
-      expect(result, true);
-      verify(() => mockTripRepository.uploadToCloud(trip1)).called(1);
-      verify(() => mockItineraryRepository.sync('mock-id')).called(1);
-    });
-
     test('loadTrips emits TripError on failure', () async {
       when(
         () => mockTripRepository.getAllTrips(any()),
       ).thenAnswer((_) async => Failure(GeneralException('Load failed')));
 
-      final cubit = TripCubit(
-        mockTripRepository,
-        mockAuthService,
-        mockGearRepository,
-        mockItineraryRepository,
-        mockTripGearRemoteDataSource,
-      );
+      final cubit = TripCubit(mockTripRepository, mockAuthService, mockSyncEngine);
 
       expectLater(cubit.stream, emitsInOrder([const TripLoading(), isA<TripError>()]));
 

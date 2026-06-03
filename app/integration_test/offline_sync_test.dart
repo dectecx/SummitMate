@@ -15,7 +15,7 @@ import 'package:summitmate/presentation/cubits/trip/trip_state.dart';
 
 class MockConnectivityService extends Mock implements IConnectivityService {}
 
-class MockSyncService extends Mock implements ISyncService {}
+class MockSyncEngine extends Mock implements ISyncEngine {}
 
 class MockAuthCubit extends MockCubit<AuthState> implements AuthCubit {}
 
@@ -29,7 +29,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late MockConnectivityService mockConnectivityService;
-  late MockSyncService mockSyncService;
+  late MockSyncEngine mockSyncEngine;
   late MockTripRepository mockTripRepository;
   late MockItineraryRepository mockItineraryRepository;
 
@@ -41,7 +41,7 @@ void main() {
   group('Offline Sync Flow Integration Test', () {
     testWidgets('Workflow: Offline creation -> Reconnect -> Sync to Cloud', (tester) async {
       mockConnectivityService = MockConnectivityService();
-      mockSyncService = MockSyncService();
+      mockSyncEngine = MockSyncEngine();
       mockTripRepository = MockTripRepository();
       mockItineraryRepository = MockItineraryRepository();
 
@@ -54,14 +54,14 @@ void main() {
 
       // Override with mocks for the test
       getIt.registerSingleton<IConnectivityService>(mockConnectivityService);
-      getIt.registerSingleton<ISyncService>(mockSyncService);
+      getIt.registerSingleton<ISyncEngine>(mockSyncEngine);
       getIt.registerSingleton<ITripRepository>(mockTripRepository);
       getIt.registerSingleton<IItineraryRepository>(mockItineraryRepository);
 
       // --- SETUP MOCK BEHAVIORS ---
       when(() => mockConnectivityService.isOffline).thenReturn(true);
       when(() => mockConnectivityService.onConnectivityChanged).thenAnswer((_) => Stream.value(false));
-      when(() => mockSyncService.watchPendingSyncCount()).thenAnswer((_) => Stream.value(0));
+      when(() => mockSyncEngine.watchPendingSyncCount()).thenAnswer((_) => Stream.value(0));
       when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([]));
       when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
       when(() => mockTripRepository.saveTrip(any())).thenAnswer((_) async => const Success(null));
@@ -116,15 +116,16 @@ void main() {
         expect(find.text('上傳'), findsOneWidget);
 
         // Mock sync result
-        when(() => mockSyncService.syncAll(isAuto: any(named: 'isAuto'))).thenAnswer((_) async => SyncResult.success());
-        when(() => mockItineraryRepository.sync(any())).thenAnswer((_) async => Success(null));
+        when(
+          () => mockSyncEngine.runSyncCycle(force: any(named: 'force')),
+        ).thenAnswer((_) async => SyncResult.success());
 
         // Tap Confirm Upload
         await tester.tap(find.text('上傳'));
         await tester.pumpAndSettle();
 
         // Verify that the sync services were called
-        verify(() => mockItineraryRepository.sync('trip-1')).called(1);
+        verify(() => mockSyncEngine.runSyncCycle(force: true)).called(1);
       }
     });
 

@@ -1,9 +1,9 @@
 import 'package:injectable/injectable.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/gear_item.dart';
+import '../../domain/enums/sync_status.dart';
 import '../../domain/repositories/i_gear_repository.dart';
 import '../datasources/interfaces/i_gear_local_data_source.dart';
-import '../datasources/interfaces/i_trip_gear_remote_data_source.dart';
 
 /// Gear Repository 實作
 ///
@@ -11,9 +11,8 @@ import '../datasources/interfaces/i_trip_gear_remote_data_source.dart';
 @LazySingleton(as: IGearRepository)
 class GearRepository implements IGearRepository {
   final IGearLocalDataSource _localDataSource;
-  final ITripGearRemoteDataSource _remoteDataSource;
 
-  GearRepository(this._localDataSource, this._remoteDataSource);
+  GearRepository(this._localDataSource);
 
   @override
   Future<Result<void, Exception>> init() async => const Success(null);
@@ -48,7 +47,13 @@ class GearRepository implements IGearRepository {
         newOrderIndex = maxOrder + 1;
       }
 
-      final itemToSave = item.copyWith(orderIndex: newOrderIndex);
+      final now = DateTime.now();
+      final itemToSave = item.copyWith(
+        orderIndex: newOrderIndex,
+        syncStatus: SyncStatus.pendingCreate,
+        createdAt: item.createdAt ?? now,
+        updatedAt: now,
+      );
       await _localDataSource.addItem(itemToSave);
       return const Success(null);
     } catch (e) {
@@ -60,7 +65,12 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> updateItem(GearItem item) async {
     try {
-      await _localDataSource.updateItem(item);
+      final existing = await _localDataSource.getById(item.id);
+      final newStatus = existing?.syncStatus == SyncStatus.pendingCreate
+          ? SyncStatus.pendingCreate
+          : SyncStatus.pendingUpdate;
+      final marked = item.copyWith(syncStatus: newStatus, updatedAt: DateTime.now());
+      await _localDataSource.updateItem(marked);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -71,7 +81,17 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> deleteItem(String id) async {
     try {
-      await _localDataSource.deleteById(id);
+      final existing = await _localDataSource.getById(id);
+      if (existing == null) {
+        return const Success(null);
+      }
+      if (existing.syncStatus == SyncStatus.pendingCreate) {
+        await _localDataSource.deleteById(id);
+      } else {
+        await _localDataSource.updateItem(
+          existing.copyWith(syncStatus: SyncStatus.pendingDelete, updatedAt: DateTime.now()),
+        );
+      }
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -84,7 +104,10 @@ class GearRepository implements IGearRepository {
     try {
       final item = await _localDataSource.getById(id);
       if (item != null) {
-        final updatedItem = item.copyWith(isChecked: !item.isChecked);
+        final newStatus = item.syncStatus == SyncStatus.pendingCreate
+            ? SyncStatus.pendingCreate
+            : SyncStatus.pendingUpdate;
+        final updatedItem = item.copyWith(isChecked: !item.isChecked, syncStatus: newStatus, updatedAt: DateTime.now());
         await _localDataSource.updateItem(updatedItem);
       }
       return const Success(null);
@@ -100,7 +123,12 @@ class GearRepository implements IGearRepository {
       final items = await _localDataSource.getAll();
       for (final item in items) {
         if (item.isChecked) {
-          await _localDataSource.updateItem(item.copyWith(isChecked: false));
+          final newStatus = item.syncStatus == SyncStatus.pendingCreate
+              ? SyncStatus.pendingCreate
+              : SyncStatus.pendingUpdate;
+          await _localDataSource.updateItem(
+            item.copyWith(isChecked: false, syncStatus: newStatus, updatedAt: DateTime.now()),
+          );
         }
       }
       return const Success(null);
@@ -116,7 +144,12 @@ class GearRepository implements IGearRepository {
       for (int i = 0; i < items.length; i++) {
         final item = items[i];
         if (item.orderIndex != i) {
-          await _localDataSource.updateItem(item.copyWith(orderIndex: i));
+          final newStatus = item.syncStatus == SyncStatus.pendingCreate
+              ? SyncStatus.pendingCreate
+              : SyncStatus.pendingUpdate;
+          await _localDataSource.updateItem(
+            item.copyWith(orderIndex: i, syncStatus: newStatus, updatedAt: DateTime.now()),
+          );
         }
       }
       return const Success(null);
@@ -129,7 +162,16 @@ class GearRepository implements IGearRepository {
   @override
   Future<Result<void, Exception>> clearByTripId(String tripId) async {
     try {
-      await _localDataSource.clearByTripId(tripId);
+      final items = await _localDataSource.getByTripId(tripId);
+      for (final item in items) {
+        if (item.syncStatus == SyncStatus.pendingCreate) {
+          await _localDataSource.deleteById(item.id);
+        } else {
+          await _localDataSource.updateItem(
+            item.copyWith(syncStatus: SyncStatus.pendingDelete, updatedAt: DateTime.now()),
+          );
+        }
+      }
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));
@@ -144,18 +186,9 @@ class GearRepository implements IGearRepository {
   }
 
   @override
-  Future<Result<void, Exception>> sync(String tripId) async {
+  Future<Result<void, Exception>> updateLocalId(String oldId, String newId) async {
     try {
-      final remoteItems = await _remoteDataSource.getTripGear(tripId);
-
-      // 先清除本地該行程的所有裝備
-      await _localDataSource.clearByTripId(tripId);
-
-      // 批次存入新的裝備
-      for (final item in remoteItems) {
-        await _localDataSource.addItem(item);
-      }
-
+      await _localDataSource.migrateId(oldId, newId);
       return const Success(null);
     } catch (e) {
       return Failure(e is Exception ? e : Exception(e.toString()));

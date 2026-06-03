@@ -31,6 +31,9 @@ class MockSettingsRepository implements ISettingsRepository {
   Future<void> updateOfflineMode(bool isOffline) async {}
 
   @override
+  Future<void> updateAutoSyncInterval(int minutes) async {}
+
+  @override
   Future<void> updateTheme(AppThemeType theme) async {}
 
   @override

@@ -102,6 +102,27 @@ class AppDatabase extends _$AppDatabase {
       if (weather) await delete(weatherDataTable).go();
     });
   }
+
+  /// 查詢所有待同步項目 (跨表通用)
+  Future<List<QueryRow>> getPendingItems(String tableName) async {
+    return customSelect("SELECT * FROM $tableName WHERE sync_status != 'synced'").get();
+  }
+
+  /// 將指定項目標記為 synced
+  Future<void> markAsSynced(String tableName, String id) async {
+    await customUpdate(
+      "UPDATE $tableName SET sync_status = 'synced' WHERE id = ?",
+      variables: [Variable.withString(id)],
+    );
+  }
+
+  /// 將指定項目標記為 error
+  Future<void> markAsError(String tableName, String id) async {
+    await customUpdate(
+      "UPDATE $tableName SET sync_status = 'error' WHERE id = ?",
+      variables: [Variable.withString(id)],
+    );
+  }
 }
 
 QueryExecutor _openConnection() {
