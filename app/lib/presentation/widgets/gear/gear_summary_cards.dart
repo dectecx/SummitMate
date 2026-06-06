@@ -90,25 +90,115 @@ class GearQuickLinks extends StatelessWidget {
 /// 總重量卡片
 ///
 /// 顯示裝備加糧食的總重量。
-class GearTotalWeightCard extends StatelessWidget {
-  /// 總重量 (公斤)
+class GearTotalWeightCard extends StatefulWidget {
   final double totalWeight;
 
   const GearTotalWeightCard({super.key, required this.totalWeight});
 
   @override
+  State<GearTotalWeightCard> createState() => _GearTotalWeightCardState();
+}
+
+class _GearTotalWeightCardState extends State<GearTotalWeightCard> {
+  double _comfortWeight = 15.0; // default 15 kg
+
+  void _showSetComfortWeightDialog() {
+    final controller = TextEditingController(text: _comfortWeight.toStringAsFixed(1));
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('自訂舒適重量'),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: '舒適重量 (kg)', suffixText: 'kg'),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                final val = double.tryParse(controller.text);
+                if (val != null && val > 0) {
+                  setState(() {
+                    _comfortWeight = val;
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('確定'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final double rawProgress = widget.totalWeight / _comfortWeight;
+    final double weightProgress = rawProgress.clamp(0.0, 1.0);
+    final Color progressColor =
+        Color.lerp(colorScheme.secondary, Colors.redAccent, rawProgress.clamp(0.0, 1.0)) ?? colorScheme.secondary;
+
     return Card(
-      color: Theme.of(context).colorScheme.primaryContainer,
+      color: colorScheme.primaryContainer,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('總重量 (含糧食)', style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onPrimaryContainer)),
-            Text(
-              '${totalWeight.toStringAsFixed(2)} kg',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('總重量 (含糧食)', style: TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer)),
+                Text(
+                  '${widget.totalWeight.toStringAsFixed(2)} kg',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.primary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  onTap: _showSetComfortWeightDialog,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '舒適重量 (${_comfortWeight.toStringAsFixed(1)}kg)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.edit, size: 11, color: colorScheme.onPrimaryContainer.withValues(alpha: 0.7)),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${(rawProgress * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(fontSize: 12, color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: weightProgress,
+                backgroundColor: colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                minHeight: 6,
+              ),
             ),
           ],
         ),
