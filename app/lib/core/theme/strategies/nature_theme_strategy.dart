@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../i_theme_strategy.dart';
 
 /// 自然山林主題 (Nature Theme)
@@ -110,13 +109,12 @@ class NatureThemeStrategy implements AppThemeStrategy {
     ),
 
     // 文字樣式
-    textTheme: GoogleFonts.outfitTextTheme(
-      const TextTheme(
-        headlineLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
-        bodyLarge: TextStyle(color: textMain),
-        bodyMedium: TextStyle(color: textBody),
-      ),
+    fontFamily: 'Outfit',
+    textTheme: const TextTheme(
+      headlineLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+      titleLarge: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(color: textMain),
+      bodyMedium: TextStyle(color: textBody),
     ),
   );
 

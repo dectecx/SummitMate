@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../i_theme_strategy.dart';
 
 /// 大地色 (Earth Theme)
@@ -86,12 +85,11 @@ class EarthThemeStrategy implements AppThemeStrategy {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
 
-    textTheme: GoogleFonts.outfitTextTheme(
-      const TextTheme(
-        bodyLarge: TextStyle(color: darkLoam),
-        bodyMedium: TextStyle(color: darkLoam),
-        titleLarge: TextStyle(color: darkLoam, fontWeight: FontWeight.bold),
-      ),
+    fontFamily: 'Outfit',
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: darkLoam),
+      bodyMedium: TextStyle(color: darkLoam),
+      titleLarge: TextStyle(color: darkLoam, fontWeight: FontWeight.bold),
     ),
   );
 

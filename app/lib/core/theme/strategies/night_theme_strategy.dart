@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../i_theme_strategy.dart';
 
 /// 月光夜 (Night Theme)
@@ -85,11 +84,10 @@ class NightThemeStrategy implements AppThemeStrategy {
     ),
 
     // Customizing text for better reading in dark mode
-    textTheme: GoogleFonts.outfitTextTheme(
-      const TextTheme(
-        bodyLarge: TextStyle(color: textLight),
-        bodyMedium: TextStyle(color: Color(0xFFB0BEC5)), // Blue Grey Lighter
-      ),
+    fontFamily: 'Outfit',
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: textLight),
+      bodyMedium: TextStyle(color: Color(0xFFB0BEC5)), // Blue Grey Lighter
     ),
   );
 
