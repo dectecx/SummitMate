@@ -41,7 +41,7 @@ void main() {
   );
 
   group('ItinerarySyncAdapter - pushItem', () {
-    test('should add item in remote when pendingCreate', () async {
+    test('Given pendingCreate, When calling pushItem, Then it should add item in remote', () async {
       when(() => mockRemote.addItem(any(), any())).thenAnswer((_) async => defaultItem);
 
       final result = await adapter.pushItem(defaultItem, SyncStatus.pendingCreate);
@@ -50,7 +50,7 @@ void main() {
       verify(() => mockRemote.addItem('trip1', defaultItem)).called(1);
     });
 
-    test('should migrate ID when remote ID differs in pendingCreate', () async {
+    test('Given remote ID differs in pendingCreate, When calling pushItem, Then it should migrate ID', () async {
       final remoteItem = defaultItem.copyWith(id: 'remote-item-id');
       when(() => mockRemote.addItem(any(), any())).thenAnswer((_) async => remoteItem);
 
@@ -62,7 +62,7 @@ void main() {
       expect(migration?.permanentId, 'remote-item-id');
     });
 
-    test('should update item in remote when pendingUpdate/conflict', () async {
+    test('Given pendingUpdate/conflict, When calling pushItem, Then it should update item in remote', () async {
       when(() => mockRemote.updateItem(any(), any())).thenAnswer((_) async => defaultItem);
 
       final result = await adapter.pushItem(defaultItem, SyncStatus.pendingUpdate);
@@ -71,7 +71,7 @@ void main() {
       verify(() => mockRemote.updateItem('trip1', defaultItem)).called(1);
     });
 
-    test('should delete item from remote and local when pendingDelete', () async {
+    test('Given pendingDelete, When calling pushItem, Then it should delete item from remote and local', () async {
       when(() => mockRemote.deleteItem(any(), any())).thenAnswer((_) async {});
       when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
 
@@ -84,7 +84,7 @@ void main() {
   });
 
   group('ItinerarySyncAdapter - pullAndMerge', () {
-    test('should add item to local if not exists in local', () async {
+    test('Given not exists in local, When calling pullAndMerge, Then it should add item to local', () async {
       when(() => mockRemote.getItinerary(any())).thenAnswer((_) async => [defaultItem]);
       when(() => mockLocal.getAll()).thenAnswer((_) async => []);
       when(() => mockLocal.getById(any())).thenAnswer((_) async => null);
@@ -99,31 +99,37 @@ void main() {
       verify(() => mockLocal.addItem(any())).called(1);
     });
 
-    test('should delete local item if remote deleted and local has pending changes (wasEverSynced)', () async {
-      final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
-      when(() => mockRemote.getItinerary(any())).thenAnswer((_) async => []);
-      when(() => mockLocal.getAll()).thenAnswer((_) async => [localItem]);
-      when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
+    test(
+      'Given remote deleted and local has pending changes (wasEverSynced), When calling pullAndMerge, Then it should delete local item',
+      () async {
+        final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
+        when(() => mockRemote.getItinerary(any())).thenAnswer((_) async => []);
+        when(() => mockLocal.getAll()).thenAnswer((_) async => [localItem]);
+        when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
 
-      final result = await adapter.pullAndMerge('trip1');
+        final result = await adapter.pullAndMerge('trip1');
 
-      expect(result, isA<Success<SyncMergeResult, Exception>>());
-      final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
-      expect(mergeResult.conflictCount, 1);
-      verify(() => mockLocal.deleteById('item1')).called(1);
-    });
+        expect(result, isA<Success<SyncMergeResult, Exception>>());
+        final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
+        expect(mergeResult.conflictCount, 1);
+        verify(() => mockLocal.deleteById('item1')).called(1);
+      },
+    );
 
-    test('should overwrite local if local is synced and remote is updated', () async {
-      final remoteItem = defaultItem.copyWith(name: 'Remote updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));
-      when(() => mockRemote.getItinerary(any())).thenAnswer((_) async => [remoteItem]);
-      when(() => mockLocal.getAll()).thenAnswer((_) async => [defaultItem]);
-      when(() => mockLocal.getById('item1')).thenAnswer((_) async => defaultItem);
-      when(() => mockLocal.updateItem(any())).thenAnswer((_) async {});
+    test(
+      'Given local is synced and remote is updated, When calling pullAndMerge, Then it should overwrite local',
+      () async {
+        final remoteItem = defaultItem.copyWith(name: 'Remote updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));
+        when(() => mockRemote.getItinerary(any())).thenAnswer((_) async => [remoteItem]);
+        when(() => mockLocal.getAll()).thenAnswer((_) async => [defaultItem]);
+        when(() => mockLocal.getById('item1')).thenAnswer((_) async => defaultItem);
+        when(() => mockLocal.updateItem(any())).thenAnswer((_) async {});
 
-      final result = await adapter.pullAndMerge('trip1');
+        final result = await adapter.pullAndMerge('trip1');
 
-      expect(result, isA<Success<SyncMergeResult, Exception>>());
-      verify(() => mockLocal.updateItem(any())).called(1);
-    });
+        expect(result, isA<Success<SyncMergeResult, Exception>>());
+        verify(() => mockLocal.updateItem(any())).called(1);
+      },
+    );
   });
 }

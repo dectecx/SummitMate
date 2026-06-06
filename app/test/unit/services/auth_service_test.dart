@@ -71,33 +71,36 @@ void main() {
   });
 
   group('AuthService.register', () {
-    test('returns success and saves session on valid registration', () async {
-      final userJson = createUserJson();
-      final responseData = {'user': userJson, 'token': 'test-token'};
+    test(
+      'Given valid registration, When calling AuthService.register, Then returns success and saves session',
+      () async {
+        final userJson = createUserJson();
+        final responseData = {'user': userJson, 'token': 'test-token'};
 
-      when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(path: '/auth/register'),
-          data: responseData,
-          statusCode: 201,
-        ),
-      );
+        when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
+          (_) async => Response(
+            requestOptions: RequestOptions(path: '/auth/register'),
+            data: responseData,
+            statusCode: 201,
+          ),
+        );
 
-      when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
+        when(() => mockSessionRepo.saveSession(any(), any())).thenAnswer((_) async {});
 
-      final result = await authService.register(
-        email: 'test@example.com',
-        password: 'password123',
-        displayName: 'Test User',
-      );
+        final result = await authService.register(
+          email: 'test@example.com',
+          password: 'password123',
+          displayName: 'Test User',
+        );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.user?.id, 'test-uuid');
-      expect(result.accessToken, 'test-token');
-      verify(() => mockSessionRepo.saveSession('test-token', any())).called(1);
-    });
+        expect(result.isSuccess, isTrue);
+        expect(result.user?.id, 'test-uuid');
+        expect(result.accessToken, 'test-token');
+        verify(() => mockSessionRepo.saveSession('test-token', any())).called(1);
+      },
+    );
 
-    test('returns failure on API error', () async {
+    test('Given API error, When calling AuthService.register, Then returns failure', () async {
       when(() => mockApiClient.post(any(), data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/register'),
@@ -118,7 +121,7 @@ void main() {
   });
 
   group('AuthService.login', () {
-    test('returns success and saves session on valid login', () async {
+    test('Given valid login, When calling AuthService.login, Then returns success and saves session', () async {
       final userJson = createUserJson();
       final responseData = {'user': userJson, 'token': 'login-token'};
 
@@ -142,7 +145,7 @@ void main() {
   });
 
   group('AuthService.validateSession', () {
-    test('returns failure when no token exists', () async {
+    test('Given no token exists, When calling AuthService.validateSession, Then returns failure', () async {
       when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => null);
 
       final result = await authService.validateSession();
@@ -151,7 +154,7 @@ void main() {
       expect(result.errorCode, 'NO_TOKEN');
     });
 
-    test('returns success when /auth/me is valid', () async {
+    test('Given /auth/me is valid, When calling AuthService.validateSession, Then returns success', () async {
       when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => 'valid-token');
       when(() => mockApiClient.get('/auth/me')).thenAnswer(
         (_) async => Response(
@@ -170,7 +173,7 @@ void main() {
   });
 
   group('AuthService.logout', () {
-    test('clears session and resets state', () async {
+    test('Given AuthService.logout, When executing, Then clears session and resets state', () async {
       when(() => mockSessionRepo.clearSession()).thenAnswer((_) async {});
       when(() => mockDb.clearAllData()).thenAnswer((_) async {});
 
@@ -183,16 +186,19 @@ void main() {
   });
 
   group('AuthService.loginWithProvider', () {
-    test('returns failure with NOT_IMPLEMENTED since it is pending design', () async {
-      final result = await authService.loginWithProvider(OAuthProvider.google);
+    test(
+      'Given AuthService.loginWithProvider, When executing, Then returns failure with NOT_IMPLEMENTED since it is pending design',
+      () async {
+        final result = await authService.loginWithProvider(OAuthProvider.google);
 
-      expect(result.isSuccess, isFalse);
-      expect(result.errorCode, 'NOT_IMPLEMENTED');
-    });
+        expect(result.isSuccess, isFalse);
+        expect(result.errorCode, 'NOT_IMPLEMENTED');
+      },
+    );
   });
 
   group('AuthService.verifyEmail', () {
-    test('returns success on 200', () async {
+    test('Given 200, When calling AuthService.verifyEmail, Then returns success', () async {
       when(
         () => mockApiClient.post('/auth/verify-email', data: any(named: 'data')),
       ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/auth/verify-email'), statusCode: 200));
@@ -201,7 +207,7 @@ void main() {
       expect(result.isSuccess, isTrue);
     });
 
-    test('returns failure on error', () async {
+    test('Given error, When calling AuthService.verifyEmail, Then returns failure', () async {
       when(() => mockApiClient.post('/auth/verify-email', data: any(named: 'data'))).thenThrow(
         DioException(
           requestOptions: RequestOptions(path: '/auth/verify-email'),
@@ -215,7 +221,7 @@ void main() {
   });
 
   group('AuthService.resendVerificationCode', () {
-    test('returns success on 200', () async {
+    test('Given 200, When calling AuthService.resendVerificationCode, Then returns success', () async {
       when(() => mockApiClient.post('/auth/resend-verification', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(requestOptions: RequestOptions(path: '/auth/resend-verification'), statusCode: 200),
       );
@@ -226,7 +232,7 @@ void main() {
   });
 
   group('AuthService.refreshToken', () {
-    test('returns success and saves new token', () async {
+    test('Given AuthService.refreshToken, When executing, Then returns success and saves new token', () async {
       when(() => mockSessionRepo.getRefreshToken()).thenAnswer((_) async => 'old-refresh-token');
       when(() => mockApiClient.post('/auth/refresh', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
@@ -246,7 +252,7 @@ void main() {
   });
 
   group('AuthService.deleteAccount', () {
-    test('returns success and logs out', () async {
+    test('Given AuthService.deleteAccount, When executing, Then returns success and logs out', () async {
       when(
         () => mockApiClient.delete('/auth/me'),
       ).thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '/auth/me'), statusCode: 204));
@@ -260,7 +266,7 @@ void main() {
   });
 
   group('AuthService.updateProfile', () {
-    test('returns success and updates session on 200', () async {
+    test('Given 200, When calling AuthService.updateProfile, Then returns success and updates session', () async {
       when(() => mockApiClient.put('/auth/me', data: any(named: 'data'))).thenAnswer(
         (_) async => Response(
           requestOptions: RequestOptions(path: '/auth/me'),

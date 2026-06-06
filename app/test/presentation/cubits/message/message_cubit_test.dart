@@ -82,7 +82,7 @@ void main() {
     cubit.close();
   });
 
-  test('initial state is MessageInitial', () {
+  test('Given triggering action, When executing, Then initial state is MessageInitial', () {
     expect(cubit.state, const MessageInitial());
   });
 

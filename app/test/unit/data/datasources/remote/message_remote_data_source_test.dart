@@ -35,7 +35,7 @@ void main() {
   });
 
   group('MessageRemoteDataSource.getMessages', () {
-    test('returns list of messages on success', () async {
+    test('Given success, When calling MessageRemoteDataSource.getMessages, Then returns list of messages', () async {
       final paginationResponse = MessagePaginationResponse.fromJson({
         'items': [
           {
@@ -69,7 +69,7 @@ void main() {
       expect(paginated.items[0].content, 'Hello world');
     });
 
-    test('returns failure on error', () async {
+    test('Given error, When calling MessageRemoteDataSource.getMessages, Then returns failure', () async {
       when(
         () => mockApiService.listTripMessages(
           any(),
@@ -85,7 +85,7 @@ void main() {
   });
 
   group('MessageRemoteDataSource operations', () {
-    test('addMessage calls api correctly', () async {
+    test('Given MessageRemoteDataSource operations, When executing, Then addMessage calls api correctly', () async {
       when(() => mockApiService.addMessage(any(), any())).thenAnswer((_) async => testResponse);
 
       final result = await dataSource.addMessage(tripId: 'trip-1', content: 'Hello world');
@@ -94,7 +94,7 @@ void main() {
       verify(() => mockApiService.addMessage('trip-1', any())).called(1);
     });
 
-    test('deleteMessage calls api correctly', () async {
+    test('Given MessageRemoteDataSource operations, When executing, Then deleteMessage calls api correctly', () async {
       when(() => mockApiService.deleteMessage('trip-1', 'msg-1')).thenAnswer((_) async {});
 
       final result = await dataSource.deleteMessage('trip-1', 'msg-1');

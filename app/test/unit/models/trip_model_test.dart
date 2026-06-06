@@ -4,7 +4,7 @@ import 'package:summitmate/domain/domain.dart';
 void main() {
   group('Trip Model Tests', () {
     group('Constructor', () {
-      test('creates Trip with required fields', () {
+      test('Given Constructor, When executing, Then creates Trip with required fields', () {
         final trip = Trip(
           id: 'trip-123',
           userId: 'user-1',
@@ -25,7 +25,7 @@ void main() {
         expect(trip.dayNames, isEmpty);
       });
 
-      test('creates Trip with all optional fields', () {
+      test('Given Constructor, When executing, Then creates Trip with all optional fields', () {
         final trip = Trip(
           id: 'trip-456',
           userId: 'user-1',
@@ -54,7 +54,7 @@ void main() {
     });
 
     group('durationDays', () {
-      test('returns 1 when endDate is null', () {
+      test('Given endDate is null, When calling durationDays, Then returns 1', () {
         final trip = Trip(
           id: 'trip-1',
           userId: 'u1',
@@ -69,7 +69,7 @@ void main() {
         expect(trip.durationDays, 1);
       });
 
-      test('calculates correct duration for same-day trip', () {
+      test('Given same-day trip, When calling durationDays, Then calculates correct duration', () {
         final trip = Trip(
           id: 'trip-1',
           userId: 'u1',
@@ -85,7 +85,7 @@ void main() {
         expect(trip.durationDays, 1);
       });
 
-      test('calculates correct duration for multi-day trip', () {
+      test('Given multi-day trip, When calling durationDays, Then calculates correct duration', () {
         final trip = Trip(
           id: 'trip-1',
           userId: 'u1',
@@ -103,7 +103,7 @@ void main() {
     });
 
     group('fromJson', () {
-      test('parses complete JSON correctly', () {
+      test('Given fromJson, When executing, Then parses complete JSON correctly', () {
         final json = {
           'id': 'trip-abc',
           'userId': 'user-123',
@@ -131,7 +131,7 @@ void main() {
         expect(trip.dayNames, ['D0', 'D1', 'D2']);
       });
 
-      test('parses JSON with "id" instead of "trip_id"', () {
+      test('Given fromJson, When executing, Then parses JSON with "id" instead of "trip_id"', () {
         final json = {
           'id': 'trip-xyz',
           'userId': 'u1',
@@ -147,7 +147,7 @@ void main() {
         expect(trip.id, 'trip-xyz');
       });
 
-      test('handles missing optional fields', () {
+      test('Given fromJson, When executing, Then handles missing optional fields', () {
         final json = {
           'id': 'trip-min',
           'userId': 'min-user',
@@ -174,7 +174,7 @@ void main() {
     });
 
     group('toJson', () {
-      test('serializes to JSON correctly', () {
+      test('Given toJson, When executing, Then serializes to JSON correctly', () {
         final trip = Trip(
           id: 'trip-ser',
           userId: 'user-1',
@@ -206,7 +206,7 @@ void main() {
         expect(json['dayNames'], ['D1', 'D2']);
       });
 
-      test('serializes null endDate as null', () {
+      test('Given toJson, When executing, Then serializes null endDate as null', () {
         final trip = Trip(
           id: 'trip-null',
           userId: 'u1',
@@ -224,7 +224,7 @@ void main() {
     });
 
     group('toString', () {
-      test('returns formatted string', () {
+      test('Given toString, When executing, Then returns formatted string', () {
         final trip = Trip(
           id: 'trip-str',
           userId: 'u1',

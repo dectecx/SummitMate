@@ -32,22 +32,25 @@ void main() {
       'totalVotes': 5,
     };
 
-    test('Positive: Should parse Poll and PollOption from JSON', () {
-      final poll = Poll.fromJson(testPollJson);
+    test(
+      'Given Poll & PollOption Model Tests, When executing, Then Positive: Should parse Poll and PollOption from JSON',
+      () {
+        final poll = Poll.fromJson(testPollJson);
 
-      expect(poll.id, 'poll-1');
-      expect(poll.title, 'Test Poll');
-      expect(poll.options.length, 1);
+        expect(poll.id, 'poll-1');
+        expect(poll.title, 'Test Poll');
+        expect(poll.options.length, 1);
 
-      final option = poll.options.first;
-      expect(option.id, 'opt-1');
-      expect(option.text, 'Option 1');
-      expect(option.voteCount, 5);
-      expect(option.voters.first['userName'], 'User 1');
-      expect(poll.myVotes, contains('opt-1'));
-    });
+        final option = poll.options.first;
+        expect(option.id, 'opt-1');
+        expect(option.text, 'Option 1');
+        expect(option.voteCount, 5);
+        expect(option.voters.first['userName'], 'User 1');
+        expect(poll.myVotes, contains('opt-1'));
+      },
+    );
 
-    test('Positive: Should convert Poll to JSON', () {
+    test('Given Poll & PollOption Model Tests, When executing, Then Positive: Should convert Poll to JSON', () {
       final poll = Poll(
         id: 'poll-1',
         title: 'Title',
@@ -79,47 +82,56 @@ void main() {
       expect(json['totalVotes'], 1);
     });
 
-    test('Edge: Should handle empty options and my_votes', () {
-      final minimalJson = {
-        'id': 'poll-2',
-        'title': 'Empty Poll',
-        'creatorId': 'u2',
-        'createdAt': '2024-01-01T00:00:00Z',
-        'createdBy': 'u2',
-        'updatedAt': '2024-01-01T00:00:00Z',
-        'updatedBy': 'u2',
-      };
+    test(
+      'Given Poll & PollOption Model Tests, When executing, Then Edge: Should handle empty options and my_votes',
+      () {
+        final minimalJson = {
+          'id': 'poll-2',
+          'title': 'Empty Poll',
+          'creatorId': 'u2',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'createdBy': 'u2',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          'updatedBy': 'u2',
+        };
 
-      final poll = Poll.fromJson(minimalJson);
+        final poll = Poll.fromJson(minimalJson);
 
-      expect(poll.options, isEmpty);
-      expect(poll.myVotes, isEmpty);
-      expect(poll.totalVotes, 0);
-    });
+        expect(poll.options, isEmpty);
+        expect(poll.myVotes, isEmpty);
+        expect(poll.totalVotes, 0);
+      },
+    );
 
-    test('Extreme: Should handle very large vote counts (as int)', () {
-      final poll = Poll.fromJson({
-        'id': 'p',
-        'title': 'T',
-        'creatorId': 'c',
-        'createdAt': '2024-01-01T00:00:00Z',
-        'createdBy': 'c',
-        'updatedAt': '2024-01-01T00:00:00Z',
-        'updatedBy': 'c',
-        'totalVotes': 999999999,
-      });
+    test(
+      'Given Poll & PollOption Model Tests, When executing, Then Extreme: Should handle very large vote counts (as int)',
+      () {
+        final poll = Poll.fromJson({
+          'id': 'p',
+          'title': 'T',
+          'creatorId': 'c',
+          'createdAt': '2024-01-01T00:00:00Z',
+          'createdBy': 'c',
+          'updatedAt': '2024-01-01T00:00:00Z',
+          'updatedBy': 'c',
+          'totalVotes': 999999999,
+        });
 
-      expect(poll.totalVotes, 999999999);
-    });
+        expect(poll.totalVotes, 999999999);
+      },
+    );
 
-    test('Exception: Should handle malformed dates gracefully (if possible)', () {
-      // JsonSerializable by default throws if it can't parse DateTime unless handled
-      final badDateJson = {'id': 'p', 'title': 'T', 'creatorId': 'c', 'createdAt': 'not-a-date'};
+    test(
+      'Given Poll & PollOption Model Tests, When executing, Then Exception: Should handle malformed dates gracefully (if possible)',
+      () {
+        // JsonSerializable by default throws if it can't parse DateTime unless handled
+        final badDateJson = {'id': 'p', 'title': 'T', 'creatorId': 'c', 'createdAt': 'not-a-date'};
 
-      expect(() => Poll.fromJson(badDateJson), throwsA(isA<FormatException>()));
-    });
+        expect(() => Poll.fromJson(badDateJson), throwsA(isA<FormatException>()));
+      },
+    );
 
-    test('Logic: isActive and isExpired', () {
+    test('Given Poll & PollOption Model Tests, When executing, Then Logic: isActive and isExpired', () {
       final now = DateTime.now();
 
       final activePoll = Poll(

@@ -38,17 +38,20 @@ void main() {
   final testMeal = MealItem(id: 'meal-1', name: 'Rice', weight: 500, calories: 500);
 
   group('TripMealRemoteDataSource.getTripMeals', () {
-    test('returns list of meal items on success', () async {
-      when(() => mockApiService.listMeals('trip-1')).thenAnswer((_) async => [testResponse]);
+    test(
+      'Given success, When calling TripMealRemoteDataSource.getTripMeals, Then returns list of meal items',
+      () async {
+        when(() => mockApiService.listMeals('trip-1')).thenAnswer((_) async => [testResponse]);
 
-      final result = await dataSource.getTripMeals('trip-1');
+        final result = await dataSource.getTripMeals('trip-1');
 
-      expect(result.length, 1);
-      expect(result[0].name, 'Rice');
-      verify(() => mockApiService.listMeals('trip-1')).called(1);
-    });
+        expect(result.length, 1);
+        expect(result[0].name, 'Rice');
+        verify(() => mockApiService.listMeals('trip-1')).called(1);
+      },
+    );
 
-    test('rethrows exception on failure', () async {
+    test('Given failure, When calling TripMealRemoteDataSource.getTripMeals, Then rethrows exception', () async {
       when(() => mockApiService.listMeals(any())).thenThrow(Exception('Network error'));
 
       expect(() => dataSource.getTripMeals('trip-1'), throwsException);
@@ -56,25 +59,36 @@ void main() {
   });
 
   group('TripMealRemoteDataSource CRUD', () {
-    test('addTripMeal calls api and returns mapped item', () async {
-      when(() => mockApiService.addMeal('trip-1', any())).thenAnswer((_) async => testResponse);
+    test(
+      'Given TripMealRemoteDataSource CRUD, When executing, Then addTripMeal calls api and returns mapped item',
+      () async {
+        when(() => mockApiService.addMeal('trip-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.addTripMeal('trip-1', testMeal, mealPlanDayId: 'day-1', mealType: 'breakfast');
+        final result = await dataSource.addTripMeal('trip-1', testMeal, mealPlanDayId: 'day-1', mealType: 'breakfast');
 
-      expect(result.name, 'Rice');
-      verify(() => mockApiService.addMeal('trip-1', any())).called(1);
-    });
+        expect(result.name, 'Rice');
+        verify(() => mockApiService.addMeal('trip-1', any())).called(1);
+      },
+    );
 
-    test('updateTripMeal calls api and returns mapped item', () async {
-      when(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).thenAnswer((_) async => testResponse);
+    test(
+      'Given TripMealRemoteDataSource CRUD, When executing, Then updateTripMeal calls api and returns mapped item',
+      () async {
+        when(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.updateTripMeal('trip-1', testMeal, mealPlanDayId: 'day-1', mealType: 'breakfast');
+        final result = await dataSource.updateTripMeal(
+          'trip-1',
+          testMeal,
+          mealPlanDayId: 'day-1',
+          mealType: 'breakfast',
+        );
 
-      expect(result.name, 'Rice');
-      verify(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).called(1);
-    });
+        expect(result.name, 'Rice');
+        verify(() => mockApiService.updateMeal('trip-1', 'meal-1', any())).called(1);
+      },
+    );
 
-    test('deleteTripMeal calls api', () async {
+    test('Given TripMealRemoteDataSource CRUD, When executing, Then deleteTripMeal calls api', () async {
       when(() => mockApiService.deleteMeal('trip-1', 'meal-1')).thenAnswer((_) async {});
 
       await dataSource.deleteTripMeal('trip-1', 'meal-1');

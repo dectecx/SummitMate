@@ -4,7 +4,9 @@ import 'package:summitmate/presentation/widgets/error_dialog.dart';
 
 void main() {
   group('ErrorDialog Widget Test', () {
-    testWidgets('Should display title and message correctly', (WidgetTester tester) async {
+    testWidgets('Given ErrorDialog Widget Test, When triggered, Then it should display title and message correctly', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       const testTitle = 'Authentication Error';
       const testMessage = 'Please login again.';
@@ -24,21 +26,26 @@ void main() {
       expect(find.byIcon(Icons.error_outline), findsOneWidget);
     });
 
-    testWidgets('Should display "Close" button when no callbacks are provided', (WidgetTester tester) async {
-      // Act
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ErrorDialog(message: 'Error')),
-        ),
-      );
+    testWidgets(
+      'Given no callbacks are provided, When calling ErrorDialog Widget Test, Then it should display "Close" button',
+      (WidgetTester tester) async {
+        // Act
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(body: ErrorDialog(message: 'Error')),
+          ),
+        );
 
-      // Assert
-      expect(find.text('關閉'), findsOneWidget);
-      expect(find.text('取消'), findsNothing);
-      expect(find.text('重試'), findsNothing);
-    });
+        // Assert
+        expect(find.text('關閉'), findsOneWidget);
+        expect(find.text('取消'), findsNothing);
+        expect(find.text('重試'), findsNothing);
+      },
+    );
 
-    testWidgets('Should call onRetry when retry button is pressed', (WidgetTester tester) async {
+    testWidgets('Given retry button is pressed, When calling ErrorDialog Widget Test, Then it should call onRetry', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       bool isRetryCalled = false;
 
@@ -74,7 +81,9 @@ void main() {
       expect(isRetryCalled, true);
     });
 
-    testWidgets('Should call onDismiss when cancel button is pressed', (WidgetTester tester) async {
+    testWidgets('Given cancel button is pressed, When calling ErrorDialog Widget Test, Then it should call onDismiss', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       bool isDismissCalled = false;
 

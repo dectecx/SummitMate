@@ -21,7 +21,7 @@ import (
 func TestTripService_CreateTrip(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripService CreateTrip, Then it returns success without error", func(t *testing.T) {
 		mockTripRepo := new(tripmocks.MockTripRepository)
 		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 		mockBeginner := new(MockBeginner)
@@ -57,7 +57,7 @@ func TestTripService_CreateTrip(t *testing.T) {
 		mockMemberRepo.AssertExpectations(t)
 	})
 
-	t.Run("RepoError", func(t *testing.T) {
+	t.Run("Given database error, When calling TripService CreateTrip, Then it returns corresponding database error", func(t *testing.T) {
 		mockTripRepo := new(tripmocks.MockTripRepository)
 		mockBeginner := new(MockBeginner)
 		mockTx := new(MockTx)
@@ -80,7 +80,7 @@ func TestTripService_CreateTrip(t *testing.T) {
 func TestTripService_GetTrip(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	t.Run("Success_AsCreator", func(t *testing.T) {
+	t.Run("Given Success AsCreator, When calling TripService GetTrip, Then it behaves as expected", func(t *testing.T) {
 		mockTripRepo := new(tripmocks.MockTripRepository)
 		mockMealDayRepo := new(tripmocks.MockTripMealPlanDayRepository)
 		svc := trip.NewTripService(logger, nil, mockTripRepo, nil, nil, mockMealDayRepo, nil)
@@ -98,7 +98,7 @@ func TestTripService_GetTrip(t *testing.T) {
 		assert.Equal(t, mockTrip, tTrip)
 	})
 
-	t.Run("NotFound", func(t *testing.T) {
+	t.Run("Given resource is not found, When calling TripService GetTrip, Then it returns not found error", func(t *testing.T) {
 		mockTripRepo := new(tripmocks.MockTripRepository)
 		mockMealDayRepo := new(tripmocks.MockTripMealPlanDayRepository)
 		svc := trip.NewTripService(logger, nil, mockTripRepo, nil, nil, mockMealDayRepo, nil)
@@ -116,7 +116,7 @@ func TestTripService_GetTrip(t *testing.T) {
 func TestTripService_AddMember(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripService AddMember, Then it returns success without error", func(t *testing.T) {
 		mockTripRepo := new(tripmocks.MockTripRepository)
 		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 		mockUserRepo := new(authmocks.MockUserRepository)
@@ -149,7 +149,7 @@ func TestTripService_AddMember(t *testing.T) {
 func TestTripService_DeleteMealPlanDay(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	t.Run("Success_Unlinked", func(t *testing.T) {
+	t.Run("Given Success Unlinked, When calling TripService DeleteMealPlanDay, Then it behaves as expected", func(t *testing.T) {
 		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 		mockMealDayRepo := new(tripmocks.MockTripMealPlanDayRepository)
 		svc := trip.NewTripService(logger, nil, nil, mockMemberRepo, nil, mockMealDayRepo, nil)
@@ -172,7 +172,7 @@ func TestTripService_DeleteMealPlanDay(t *testing.T) {
 		mockMealDayRepo.AssertExpectations(t)
 	})
 
-	t.Run("Fail_Linked", func(t *testing.T) {
+	t.Run("Given Fail Linked, When calling TripService DeleteMealPlanDay, Then it behaves as expected", func(t *testing.T) {
 		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 		mockMealDayRepo := new(tripmocks.MockTripMealPlanDayRepository)
 		svc := trip.NewTripService(logger, nil, nil, mockMemberRepo, nil, mockMealDayRepo, nil)

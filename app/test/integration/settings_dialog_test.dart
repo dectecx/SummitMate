@@ -48,7 +48,7 @@ void main() {
   }
 
   group('SettingsDialog Integration', () {
-    testWidgets('renders User ID when authenticated', (tester) async {
+    testWidgets('Given authenticated, When calling SettingsDialog Integration, Then renders User ID', (tester) async {
       // Arrange
       const userId = 'user_123';
       const userName = 'Test User';
@@ -101,7 +101,9 @@ void main() {
       expect(find.widgetWithText(TextField, userName), findsOneWidget);
     });
 
-    testWidgets('calls updateProfile on save', (tester) async {
+    testWidgets('Given SettingsDialog Integration, When save is triggered, Then it should calls updateProfile', (
+      tester,
+    ) async {
       // Arrange
       const userId = 'user_123';
       const initialName = 'Old Name';

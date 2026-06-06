@@ -15,7 +15,9 @@ void main() {
       mockTripRepo = MockTripRepository();
     });
 
-    testWidgets('Should display initial search UI', (WidgetTester tester) async {
+    testWidgets('Given SearchAddMemberDialog Widget Test, When triggered, Then it should display initial search UI', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -35,36 +37,39 @@ void main() {
       expect(find.text('搜尋'), findsOneWidget);
     });
 
-    testWidgets('Should search user and display result', (WidgetTester tester) async {
-      final user = UserProfile(id: 'u2', email: 'test@example.com', displayName: 'Test User', avatar: '');
+    testWidgets(
+      'Given SearchAddMemberDialog Widget Test, When triggered, Then it should search user and display result',
+      (WidgetTester tester) async {
+        final user = UserProfile(id: 'u2', email: 'test@example.com', displayName: 'Test User', avatar: '');
 
-      when(() => mockTripRepo.searchUserByEmail(any())).thenAnswer((_) async => Success(user));
+        when(() => mockTripRepo.searchUserByEmail(any())).thenAnswer((_) async => Success(user));
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SearchAddMemberDialog(
-              tripId: 't1',
-              tripRepository: mockTripRepo,
-              currentUserId: 'u1',
-              existingMemberIds: const ['u1'],
-              onMemberAdded: () {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SearchAddMemberDialog(
+                tripId: 't1',
+                tripRepository: mockTripRepo,
+                currentUserId: 'u1',
+                existingMemberIds: const ['u1'],
+                onMemberAdded: () {},
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Enter email
-      await tester.enterText(find.byType(TextField), 'test@example.com');
-      await tester.pump();
+        // Enter email
+        await tester.enterText(find.byType(TextField), 'test@example.com');
+        await tester.pump();
 
-      // Tap Search
-      await tester.tap(find.widgetWithText(FilledButton, '搜尋'));
-      await tester.pump();
-      await tester.pump(); // For Future completion
+        // Tap Search
+        await tester.tap(find.widgetWithText(FilledButton, '搜尋'));
+        await tester.pump();
+        await tester.pump(); // For Future completion
 
-      expect(find.text('Test User'), findsOneWidget);
-      expect(find.text('確認加入'), findsOneWidget);
-    });
+        expect(find.text('Test User'), findsOneWidget);
+        expect(find.text('確認加入'), findsOneWidget);
+      },
+    );
   });
 }

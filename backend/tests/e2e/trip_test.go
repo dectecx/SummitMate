@@ -93,113 +93,121 @@ func (s *APITestSuite) sendAuthRequest(method, path string, token string, body i
 // ============================================================
 
 func (s *APITestSuite) TestTrip_CreateAndGet() {
-	client := s.setupTestUser()
-
-	// 1. 建立 Trip
-	endDateStr := time.Now().AddDate(0, 0, 3).Format("2006-01-02")
-	createPayload := map[string]interface{}{
-		"name":        "百岳挑戰",
-		"description": "玉山三天兩夜",
-		"start_date":  time.Now().Format("2006-01-02"),
-		"end_date":    endDateStr,
-		"cover_image": "http://example.com/yushan.jpg",
-	}
-
-	resp := s.sendAuthRequest("POST", "/trips", client.Token, createPayload)
-	defer resp.Body.Close()
-	s.Require().Equal(http.StatusCreated, resp.StatusCode)
-
-	var trip api.TripCreateResponse
-	err := json.NewDecoder(resp.Body).Decode(&trip)
-	s.Require().NoError(err)
-
-	s.NotEmpty(trip.Id)
-	s.Equal("百岳挑戰", trip.Name)
-	s.Equal("玉山三天兩夜", *trip.Description)
-	s.Equal("http://example.com/yushan.jpg", *trip.CoverImage)
-	s.Equal(client.UserID, trip.UserId.String())
-	s.False(trip.IsActive)
-
-	// 2. 獲取單一 Trip
-	getResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
-	defer getResp.Body.Close()
-	s.Require().Equal(http.StatusOK, getResp.StatusCode)
-
-	var getTrip api.TripGetResponse
-	json.NewDecoder(getResp.Body).Decode(&getTrip)
-	s.Equal(trip.Id, getTrip.Id)
-	s.Equal(trip.Name, getTrip.Name)
-	s.Equal(*trip.Description, *getTrip.Description)
+	s.Run("Given default context, When calling Trip CreateAndGet, Then it should perform successfully", func() {
+		client := s.setupTestUser()
+	
+		// 1. 建立 Trip
+		endDateStr := time.Now().AddDate(0, 0, 3).Format("2006-01-02")
+		createPayload := map[string]interface{}{
+			"name":        "百岳挑戰",
+			"description": "玉山三天兩夜",
+			"start_date":  time.Now().Format("2006-01-02"),
+			"end_date":    endDateStr,
+			"cover_image": "http://example.com/yushan.jpg",
+		}
+	
+		resp := s.sendAuthRequest("POST", "/trips", client.Token, createPayload)
+		defer resp.Body.Close()
+		s.Require().Equal(http.StatusCreated, resp.StatusCode)
+	
+		var trip api.TripCreateResponse
+		err := json.NewDecoder(resp.Body).Decode(&trip)
+		s.Require().NoError(err)
+	
+		s.NotEmpty(trip.Id)
+		s.Equal("百岳挑戰", trip.Name)
+		s.Equal("玉山三天兩夜", *trip.Description)
+		s.Equal("http://example.com/yushan.jpg", *trip.CoverImage)
+		s.Equal(client.UserID, trip.UserId.String())
+		s.False(trip.IsActive)
+	
+		// 2. 獲取單一 Trip
+		getResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
+		defer getResp.Body.Close()
+		s.Require().Equal(http.StatusOK, getResp.StatusCode)
+	
+		var getTrip api.TripGetResponse
+		json.NewDecoder(getResp.Body).Decode(&getTrip)
+		s.Equal(trip.Id, getTrip.Id)
+		s.Equal(trip.Name, getTrip.Name)
+		s.Equal(*trip.Description, *getTrip.Description)
+	})
 }
 
 func (s *APITestSuite) TestTrip_ListMyTrips() {
-	client := s.setupTestUser()
-
-	// 建立兩筆 Trip
-	s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
-		"name": "Trip 1", "start_date": "2026-05-01",
+	s.Run("Given default context, When calling Trip ListMyTrips, Then it should perform successfully", func() {
+		client := s.setupTestUser()
+	
+		// 建立兩筆 Trip
+		s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
+			"name": "Trip 1", "start_date": "2026-05-01",
+		})
+		s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
+			"name": "Trip 2", "start_date": "2026-06-01",
+		})
+	
+		// List Trips
+		resp := s.sendAuthRequest("GET", "/trips", client.Token, nil)
+		defer resp.Body.Close()
+		s.Require().Equal(http.StatusOK, resp.StatusCode)
+	
+		var listResp api.TripListPaginationResponse
+		err := json.NewDecoder(resp.Body).Decode(&listResp)
+		s.Require().NoError(err)
+		s.Len(listResp.Items, 2, "應該回傳兩筆資料")
 	})
-	s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
-		"name": "Trip 2", "start_date": "2026-06-01",
-	})
-
-	// List Trips
-	resp := s.sendAuthRequest("GET", "/trips", client.Token, nil)
-	defer resp.Body.Close()
-	s.Require().Equal(http.StatusOK, resp.StatusCode)
-
-	var listResp api.TripListPaginationResponse
-	err := json.NewDecoder(resp.Body).Decode(&listResp)
-	s.Require().NoError(err)
-	s.Len(listResp.Items, 2, "應該回傳兩筆資料")
 }
 
 func (s *APITestSuite) TestTrip_Update() {
-	client := s.setupTestUser()
-
-	// Create
-	createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
-		"name": "Old Trip Name", "start_date": "2026-05-01",
+	s.Run("Given default context, When calling Trip Update, Then it should perform successfully", func() {
+		client := s.setupTestUser()
+	
+		// Create
+		createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
+			"name": "Old Trip Name", "start_date": "2026-05-01",
+		})
+		var trip api.TripCreateResponse
+		json.NewDecoder(createResp.Body).Decode(&trip)
+		createResp.Body.Close()
+	
+		// Update
+		updatePayload := map[string]interface{}{
+			"name":        "New Trip Name",
+			"description": "Updated Description",
+		}
+		updateResp := s.sendAuthRequest("PUT", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, updatePayload)
+		defer updateResp.Body.Close()
+		s.Require().Equal(http.StatusOK, updateResp.StatusCode)
+	
+		var updatedTrip api.TripUpdateResponse
+		json.NewDecoder(updateResp.Body).Decode(&updatedTrip)
+		s.Equal("New Trip Name", updatedTrip.Name)
+		s.Equal("Updated Description", *updatedTrip.Description)
 	})
-	var trip api.TripCreateResponse
-	json.NewDecoder(createResp.Body).Decode(&trip)
-	createResp.Body.Close()
-
-	// Update
-	updatePayload := map[string]interface{}{
-		"name":        "New Trip Name",
-		"description": "Updated Description",
-	}
-	updateResp := s.sendAuthRequest("PUT", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, updatePayload)
-	defer updateResp.Body.Close()
-	s.Require().Equal(http.StatusOK, updateResp.StatusCode)
-
-	var updatedTrip api.TripUpdateResponse
-	json.NewDecoder(updateResp.Body).Decode(&updatedTrip)
-	s.Equal("New Trip Name", updatedTrip.Name)
-	s.Equal("Updated Description", *updatedTrip.Description)
 }
 
 func (s *APITestSuite) TestTrip_Delete() {
-	client := s.setupTestUser()
-
-	// Create
-	createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
-		"name": "To be deleted", "start_date": "2026-05-01",
+	s.Run("Given default context, When calling Trip Delete, Then it should perform successfully", func() {
+		client := s.setupTestUser()
+	
+		// Create
+		createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
+			"name": "To be deleted", "start_date": "2026-05-01",
+		})
+		var trip api.TripCreateResponse
+		json.NewDecoder(createResp.Body).Decode(&trip)
+		createResp.Body.Close()
+	
+		// Delete
+		deleteResp := s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
+		defer deleteResp.Body.Close()
+		s.Require().Equal(http.StatusNoContent, deleteResp.StatusCode)
+	
+		// Get again to ensure it's deleted
+		getResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
+		defer getResp.Body.Close()
+		s.Require().Equal(http.StatusNotFound, getResp.StatusCode)
 	})
-	var trip api.TripCreateResponse
-	json.NewDecoder(createResp.Body).Decode(&trip)
-	createResp.Body.Close()
-
-	// Delete
-	deleteResp := s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
-	defer deleteResp.Body.Close()
-	s.Require().Equal(http.StatusNoContent, deleteResp.StatusCode)
-
-	// Get again to ensure it's deleted
-	getResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s", trip.Id.String()), client.Token, nil)
-	defer getResp.Body.Close()
-	s.Require().Equal(http.StatusNotFound, getResp.StatusCode)
 }
 
 // ============================================================
@@ -207,49 +215,51 @@ func (s *APITestSuite) TestTrip_Delete() {
 // ============================================================
 
 func (s *APITestSuite) TestTrip_Members() {
-	ownerClient := s.setupTestUser()
-	targetClient := s.setupTestUser()
-
-	// 1. Owner creates trip
-	createResp := s.sendAuthRequest("POST", "/trips", ownerClient.Token, map[string]interface{}{
-		"name": "Member Test Trip", "start_date": "2026-05-01",
-	})
-	var trip api.TripCreateResponse
-	json.NewDecoder(createResp.Body).Decode(&trip)
-	createResp.Body.Close()
-
-	tripID := trip.Id.String()
-
-	// 2. Add member (targetClient Email)
-	addPayload := map[string]interface{}{
-		"email": targetClient.Email,
-	}
-	addResp := s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/members", tripID), ownerClient.Token, addPayload)
-	defer addResp.Body.Close()
-	s.Require().Equal(http.StatusCreated, addResp.StatusCode)
-
-	// 3. List members
-	listResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/members", tripID), ownerClient.Token, nil)
-	defer listResp.Body.Close()
-	s.Require().Equal(http.StatusOK, listResp.StatusCode)
-
-	var members []api.TripMemberListItemResponse
-	json.NewDecoder(listResp.Body).Decode(&members)
-
-	// Ensure targetClient is in the list
-	found := false
-	for _, m := range members {
-		if m.UserId.String() == targetClient.UserID {
-			found = true
-			break
+	s.Run("Given default context, When calling Trip Members, Then it should perform successfully", func() {
+		ownerClient := s.setupTestUser()
+		targetClient := s.setupTestUser()
+	
+		// 1. Owner creates trip
+		createResp := s.sendAuthRequest("POST", "/trips", ownerClient.Token, map[string]interface{}{
+			"name": "Member Test Trip", "start_date": "2026-05-01",
+		})
+		var trip api.TripCreateResponse
+		json.NewDecoder(createResp.Body).Decode(&trip)
+		createResp.Body.Close()
+	
+		tripID := trip.Id.String()
+	
+		// 2. Add member (targetClient Email)
+		addPayload := map[string]interface{}{
+			"email": targetClient.Email,
 		}
-	}
-	s.True(found, "應該在成員列表中找到剛加入的 UserID")
-
-	// 4. Remove member
-	removeResp := s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s/members/%s", tripID, targetClient.UserID), ownerClient.Token, nil)
-	defer removeResp.Body.Close()
-	s.Require().Equal(http.StatusNoContent, removeResp.StatusCode)
+		addResp := s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/members", tripID), ownerClient.Token, addPayload)
+		defer addResp.Body.Close()
+		s.Require().Equal(http.StatusCreated, addResp.StatusCode)
+	
+		// 3. List members
+		listResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/members", tripID), ownerClient.Token, nil)
+		defer listResp.Body.Close()
+		s.Require().Equal(http.StatusOK, listResp.StatusCode)
+	
+		var members []api.TripMemberListItemResponse
+		json.NewDecoder(listResp.Body).Decode(&members)
+	
+		// Ensure targetClient is in the list
+		found := false
+		for _, m := range members {
+			if m.UserId.String() == targetClient.UserID {
+				found = true
+				break
+			}
+		}
+		s.True(found, "應該在成員列表中找到剛加入的 UserID")
+	
+		// 4. Remove member
+		removeResp := s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s/members/%s", tripID, targetClient.UserID), ownerClient.Token, nil)
+		defer removeResp.Body.Close()
+		s.Require().Equal(http.StatusNoContent, removeResp.StatusCode)
+	})
 }
 
 // ============================================================
@@ -257,73 +267,75 @@ func (s *APITestSuite) TestTrip_Members() {
 // ============================================================
 
 func (s *APITestSuite) TestTrip_Itinerary() {
-	client := s.setupTestUser()
-
-	// 1. Create trip
-	createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
-		"name": "Itinerary Test Trip", "start_date": "2026-05-01",
+	s.Run("Given default context, When calling Trip Itinerary, Then it should perform successfully", func() {
+		client := s.setupTestUser()
+	
+		// 1. Create trip
+		createResp := s.sendAuthRequest("POST", "/trips", client.Token, map[string]interface{}{
+			"name": "Itinerary Test Trip", "start_date": "2026-05-01",
+		})
+		var trip api.TripCreateResponse
+		json.NewDecoder(createResp.Body).Decode(&trip)
+		createResp.Body.Close()
+		tripID := trip.Id.String()
+	
+		// 2. Add Itinerary Item
+		itemPayload := map[string]interface{}{
+			"name":     "登上主峰",
+			"day":      "1",
+			"est_time": "06:00",
+			"note":     "Itinerary Note",
+		}
+		addResp := s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, itemPayload)
+		defer addResp.Body.Close()
+		s.Require().Equal(http.StatusCreated, addResp.StatusCode)
+	
+		var item struct {
+			Id   string `json:"id"`
+			Name string `json:"name"`
+		}
+		json.NewDecoder(addResp.Body).Decode(&item)
+		s.NotEmpty(item.Id)
+		itemID := item.Id
+	
+		// 3. List Itinerary Items
+		listResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, nil)
+		defer listResp.Body.Close()
+		s.Require().Equal(http.StatusOK, listResp.StatusCode)
+	
+		var items []map[string]interface{}
+		json.NewDecoder(listResp.Body).Decode(&items)
+		s.Len(items, 1)
+		s.Equal("登上主峰", items[0]["name"])
+	
+		// 4. Update Itinerary Item
+		updatePayload := map[string]interface{}{
+			"name":     "改成登上前峰",
+			"day":      "2",
+			"est_time": "07:00",
+		}
+		updateResp := s.sendAuthRequest("PUT", fmt.Sprintf("/trips/%s/itinerary/%s", tripID, itemID), client.Token, updatePayload)
+		defer updateResp.Body.Close()
+		s.Require().Equal(http.StatusOK, updateResp.StatusCode)
+	
+		// Double check the update value
+		listResp2 := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, nil)
+		var updatedItems []map[string]interface{}
+		json.NewDecoder(listResp2.Body).Decode(&updatedItems)
+		listResp2.Body.Close()
+		s.Equal("改成登上前峰", updatedItems[0]["name"])
+		s.Equal("2", updatedItems[0]["day"])
+	
+		// 5. Delete Itinerary Item
+		deleteResp := s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s/itinerary/%s", tripID, itemID), client.Token, nil)
+		defer deleteResp.Body.Close()
+		s.Require().Equal(http.StatusNoContent, deleteResp.StatusCode)
+	
+		// List again should be empty
+		listResp3 := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, nil)
+		defer listResp3.Body.Close()
+		var finalItems []map[string]interface{}
+		json.NewDecoder(listResp3.Body).Decode(&finalItems)
+		s.Len(finalItems, 0)
 	})
-	var trip api.TripCreateResponse
-	json.NewDecoder(createResp.Body).Decode(&trip)
-	createResp.Body.Close()
-	tripID := trip.Id.String()
-
-	// 2. Add Itinerary Item
-	itemPayload := map[string]interface{}{
-		"name":     "登上主峰",
-		"day":      "1",
-		"est_time": "06:00",
-		"note":     "Itinerary Note",
-	}
-	addResp := s.sendAuthRequest("POST", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, itemPayload)
-	defer addResp.Body.Close()
-	s.Require().Equal(http.StatusCreated, addResp.StatusCode)
-
-	var item struct {
-		Id   string `json:"id"`
-		Name string `json:"name"`
-	}
-	json.NewDecoder(addResp.Body).Decode(&item)
-	s.NotEmpty(item.Id)
-	itemID := item.Id
-
-	// 3. List Itinerary Items
-	listResp := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, nil)
-	defer listResp.Body.Close()
-	s.Require().Equal(http.StatusOK, listResp.StatusCode)
-
-	var items []map[string]interface{}
-	json.NewDecoder(listResp.Body).Decode(&items)
-	s.Len(items, 1)
-	s.Equal("登上主峰", items[0]["name"])
-
-	// 4. Update Itinerary Item
-	updatePayload := map[string]interface{}{
-		"name":     "改成登上前峰",
-		"day":      "2",
-		"est_time": "07:00",
-	}
-	updateResp := s.sendAuthRequest("PUT", fmt.Sprintf("/trips/%s/itinerary/%s", tripID, itemID), client.Token, updatePayload)
-	defer updateResp.Body.Close()
-	s.Require().Equal(http.StatusOK, updateResp.StatusCode)
-
-	// Double check the update value
-	listResp2 := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, nil)
-	var updatedItems []map[string]interface{}
-	json.NewDecoder(listResp2.Body).Decode(&updatedItems)
-	listResp2.Body.Close()
-	s.Equal("改成登上前峰", updatedItems[0]["name"])
-	s.Equal("2", updatedItems[0]["day"])
-
-	// 5. Delete Itinerary Item
-	deleteResp := s.sendAuthRequest("DELETE", fmt.Sprintf("/trips/%s/itinerary/%s", tripID, itemID), client.Token, nil)
-	defer deleteResp.Body.Close()
-	s.Require().Equal(http.StatusNoContent, deleteResp.StatusCode)
-
-	// List again should be empty
-	listResp3 := s.sendAuthRequest("GET", fmt.Sprintf("/trips/%s/itinerary", tripID), client.Token, nil)
-	defer listResp3.Body.Close()
-	var finalItems []map[string]interface{}
-	json.NewDecoder(listResp3.Body).Decode(&finalItems)
-	s.Len(finalItems, 0)
 }

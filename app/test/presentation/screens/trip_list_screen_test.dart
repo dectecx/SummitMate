@@ -77,7 +77,9 @@ void main() {
     );
   }
 
-  testWidgets('Should display loading indicator when state is TripLoading', (tester) async {
+  testWidgets('Given state is TripLoading, When calling triggering action, Then it should display loading indicator', (
+    tester,
+  ) async {
     when(
       () => mockAuthCubit.state,
     ).thenReturn(const AuthAuthenticated(userId: 'u1', email: 'test@example.com', userName: 'TestUser'));
@@ -88,7 +90,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
-  testWidgets('Should display empty state when no trips', (tester) async {
+  testWidgets('Given no trips, When calling triggering action, Then it should display empty state', (tester) async {
     when(
       () => mockAuthCubit.state,
     ).thenReturn(const AuthAuthenticated(userId: 'u1', email: 'test@example.com', userName: 'TestUser'));
@@ -101,7 +103,7 @@ void main() {
     expect(find.text('新增行程'), findsOneWidget);
   });
 
-  testWidgets('Should display list of trips when loaded', (tester) async {
+  testWidgets('Given loaded, When calling triggering action, Then it should display list of trips', (tester) async {
     final trip = Trip(
       id: 't1',
       userId: 'u1',

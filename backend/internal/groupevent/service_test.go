@@ -36,7 +36,7 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 	mockDB := new(MockBeginner)
 	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling GroupEventService CreateEvent, Then it returns success without error", func(t *testing.T) {
 		event := &GroupEvent{
 			Title:      "Hiking Trip",
 			HostID:     "user-1",
@@ -53,7 +53,7 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("EmptyTitle", func(t *testing.T) {
+	t.Run("Given EmptyTitle, When calling GroupEventService CreateEvent, Then it behaves as expected", func(t *testing.T) {
 		event := &GroupEvent{Title: ""}
 		err := svc.CreateEvent(context.Background(), event)
 
@@ -70,7 +70,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 	mockDB := new(MockBeginner)
 	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling GroupEventService UpdateEvent, Then it returns success without error", func(t *testing.T) {
 		eventID := "event-1"
 		userID := "user-1"
 		event := &GroupEvent{ID: eventID, Title: "Updated Title"}
@@ -88,7 +88,7 @@ func TestGroupEventService_UpdateEvent(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("Unauthorized", func(t *testing.T) {
+	t.Run("Given unauthorized request, When calling GroupEventService UpdateEvent, Then it returns unauthorized error", func(t *testing.T) {
 		eventID := "event-1"
 		userID := "user-other"
 		event := &GroupEvent{ID: eventID}
@@ -110,7 +110,7 @@ func TestGroupEventService_ApplyToEvent(t *testing.T) {
 	mockDB := new(MockBeginner)
 	svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling GroupEventService ApplyToEvent, Then it returns success without error", func(t *testing.T) {
 		eventID := "event-1"
 		userID := "applicant-1"
 		app := &GroupEventApplication{EventID: eventID, UserID: userID}
@@ -127,7 +127,7 @@ func TestGroupEventService_ApplyToEvent(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("EventNotOpen", func(t *testing.T) {
+	t.Run("Given EventNotOpen, When calling GroupEventService ApplyToEvent, Then it behaves as expected", func(t *testing.T) {
 		eventID := "event-1"
 		app := &GroupEventApplication{EventID: eventID}
 

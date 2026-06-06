@@ -3,7 +3,7 @@ import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('GearItem Domain Entity Tests', () {
-    test('should create with required values', () {
+    test('Given GearItem Domain Entity Tests, When triggered, Then it should create with required values', () {
       const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 2000, category: 'Sleep');
 
       expect(item.name, equals('Tent'));
@@ -12,7 +12,7 @@ void main() {
       expect(item.isChecked, isFalse); // Default value
     });
 
-    test('should handle copyWith', () {
+    test('Given GearItem Domain Entity Tests, When triggered, Then it should handle copyWith', () {
       const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 2000, category: 'Sleep');
 
       final updatedItem = item.copyWith(isChecked: true);
@@ -20,19 +20,19 @@ void main() {
       expect(updatedItem.name, equals('Tent'));
     });
 
-    test('should calculate totalWeight correctly', () {
+    test('Given GearItem Domain Entity Tests, When triggered, Then it should calculate totalWeight correctly', () {
       const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 2000, category: 'Sleep', quantity: 2);
 
       expect(item.totalWeight, equals(4000));
     });
 
-    test('should calculate weightInKg correctly', () {
+    test('Given GearItem Domain Entity Tests, When triggered, Then it should calculate weightInKg correctly', () {
       const item = GearItem(id: '1', tripId: 't1', name: 'Tent', weight: 1500, category: 'Sleep');
 
       expect(item.weightInKg, equals(1.5));
     });
 
-    test('should convert to/from JSON', () {
+    test('Given GearItem Domain Entity Tests, When triggered, Then it should convert to/from JSON', () {
       // Note: This requires the generated code to be present
       final item = GearItem(
         id: '1',

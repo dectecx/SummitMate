@@ -79,7 +79,7 @@ void main() {
       isActive: false,
     );
 
-    test('initial state is TripInitial', () {
+    test('Given TripCubit, When executing, Then initial state is TripInitial', () {
       expect(TripCubit(mockTripRepository, mockAuthService, mockSyncEngine).state, const TripInitial());
     });
 
@@ -157,7 +157,7 @@ void main() {
       },
     );
 
-    test('loadTrips emits TripError on failure', () async {
+    test('Given failure, When calling TripCubit, Then loadTrips emits TripError', () async {
       when(
         () => mockTripRepository.getAllTrips(any()),
       ).thenAnswer((_) async => Failure(GeneralException('Load failed')));

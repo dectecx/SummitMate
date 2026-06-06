@@ -42,7 +42,7 @@ void main() {
 
   group('GearRepository', () {
     group('getAllItems', () {
-      test('returns sorted items', () async {
+      test('Given getAllItems, When executing, Then returns sorted items', () async {
         // Arrange
         final item1 = testItem1.copyWith(orderIndex: 1);
         final item2 = testItem2.copyWith(orderIndex: 0);
@@ -58,7 +58,7 @@ void main() {
         expect(result[1].id, item1.id);
       });
 
-      test('handles fallback orderIndex sorting', () async {
+      test('Given getAllItems, When executing, Then handles fallback orderIndex sorting', () async {
         final item1 = testItem1.copyWith(orderIndex: 999);
         final item2 = testItem2.copyWith(orderIndex: 0);
 
@@ -72,7 +72,7 @@ void main() {
     });
 
     group('addItem', () {
-      test('calculates max orderIndex', () async {
+      test('Given addItem, When executing, Then calculates max orderIndex', () async {
         when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testItem2]); // item2 has index 1
         when(() => mockLocalDataSource.addItem(any())).thenAnswer((_) async => 0);
 
@@ -83,7 +83,7 @@ void main() {
         verify(() => mockLocalDataSource.addItem(any())).called(1);
       });
 
-      test('delegates add call', () async {
+      test('Given addItem, When executing, Then delegates add call', () async {
         when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => []);
         when(() => mockLocalDataSource.addItem(any())).thenAnswer((_) async => 0);
 
@@ -92,14 +92,14 @@ void main() {
       });
     });
 
-    test('getTotalWeight calculates correctly', () async {
+    test('Given triggering action, When executing, Then getTotalWeight calculates correctly', () async {
       when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testItem1, testItem2]); // 2000 + 1000
       final result = await repository.getAllItems();
       final total = result.fold<double>(0, (sum, item) => sum + (item.weight * item.quantity));
       expect(total, 3000.0);
     });
 
-    test('resetAllChecked updates all items', () async {
+    test('Given triggering action, When executing, Then resetAllChecked updates all items', () async {
       final item1 = testItem1.copyWith(isChecked: true);
       final item2 = testItem2.copyWith(isChecked: true);
 

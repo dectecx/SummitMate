@@ -44,15 +44,18 @@ void main() {
   });
 
   group('MessageRepository', () {
-    test('getByTripId delegates to localDataSource getAll and filters', () async {
-      when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testMessage]);
-      final result = await repository.getByTripId('trip_1');
-      expect(result, [testMessage]);
-      verify(() => mockLocalDataSource.getAll()).called(1);
-    });
+    test(
+      'Given MessageRepository, When executing, Then getByTripId delegates to localDataSource getAll and filters',
+      () async {
+        when(() => mockLocalDataSource.getAll()).thenAnswer((_) async => [testMessage]);
+        final result = await repository.getByTripId('trip_1');
+        expect(result, [testMessage]);
+        verify(() => mockLocalDataSource.getAll()).called(1);
+      },
+    );
 
     group('getRemoteMessages', () {
-      test('fetches from remote and saves to local', () async {
+      test('Given getRemoteMessages, When executing, Then fetches from remote and saves to local', () async {
         final paginated = PaginatedList(items: [testMessage], page: 1, total: 1, hasMore: false);
         when(
           () => mockRemoteDataSource.getMessages(
@@ -78,7 +81,7 @@ void main() {
     });
 
     group('addMessage', () {
-      test('adds to remote and triggers sync', () async {
+      test('Given addMessage, When executing, Then adds to remote and triggers sync', () async {
         // Arrange
         when(
           () => mockRemoteDataSource.addMessage(
@@ -115,7 +118,7 @@ void main() {
     });
 
     group('deleteById', () {
-      test('deletes from local and remote', () async {
+      test('Given deleteById, When executing, Then deletes from local and remote', () async {
         // Arrange
         when(() => mockLocalDataSource.deleteById(any())).thenAnswer((_) async {});
         when(() => mockRemoteDataSource.deleteMessage(any(), any())).thenAnswer((_) async => const Success(null));

@@ -50,20 +50,23 @@ void main() {
     final tException = Exception('Test Error');
 
     group('getGearSets', () {
-      test('should return list of GearSet when remote call is successful', () async {
-        // Arrange
-        when(() => mockRemoteDataSource.getGearSets()).thenAnswer((_) async => Success([tGearSet]));
+      test(
+        'Given remote call is successful, When calling getGearSets, Then it should return list of GearSet',
+        () async {
+          // Arrange
+          when(() => mockRemoteDataSource.getGearSets()).thenAnswer((_) async => Success([tGearSet]));
 
-        // Act
-        final result = await repository.getGearSets();
+          // Act
+          final result = await repository.getGearSets();
 
-        // Assert
-        expect(result, isA<Success<List<GearSet>, Exception>>());
-        expect((result as Success<List<GearSet>, Exception>).value, [tGearSet]);
-        verify(() => mockRemoteDataSource.getGearSets()).called(1);
-      });
+          // Assert
+          expect(result, isA<Success<List<GearSet>, Exception>>());
+          expect((result as Success<List<GearSet>, Exception>).value, [tGearSet]);
+          verify(() => mockRemoteDataSource.getGearSets()).called(1);
+        },
+      );
 
-      test('should return Failure when remote call fails', () async {
+      test('Given remote call fails, When calling getGearSets, Then it should return Failure', () async {
         // Arrange
         when(() => mockRemoteDataSource.getGearSets()).thenAnswer((_) async => Failure(tException));
 
@@ -78,7 +81,7 @@ void main() {
     });
 
     group('downloadGearSet', () {
-      test('should return GearSet when successful', () async {
+      test('Given successful, When calling downloadGearSet, Then it should return GearSet', () async {
         // Arrange
         when(() => mockRemoteDataSource.downloadGearSet('uuid', key: tKey)).thenAnswer((_) async => Success(tGearSet));
 
@@ -95,64 +98,73 @@ void main() {
     group('uploadGearSet', () {
       final tItems = [const GearItem(id: 'i1', tripId: 'trip1', name: 'Item', weight: 10, category: 'Cat')];
 
-      test('should call remoteDataSource with correct parameters', () async {
-        // Arrange
-        when(
-          () => mockRemoteDataSource.uploadGearSet(
+      test(
+        'Given uploadGearSet, When triggered, Then it should call remoteDataSource with correct parameters',
+        () async {
+          // Arrange
+          when(
+            () => mockRemoteDataSource.uploadGearSet(
+              tripId: 'trip1',
+              title: 'Title',
+              author: 'Author',
+              visibility: GearSetVisibility.public,
+              items: tItems,
+              meals: null,
+              key: null,
+            ),
+          ).thenAnswer((_) async => Success(tGearSet));
+
+          // Act
+          await repository.uploadGearSet(
             tripId: 'trip1',
             title: 'Title',
             author: 'Author',
             visibility: GearSetVisibility.public,
             items: tItems,
-            meals: null,
-            key: null,
-          ),
-        ).thenAnswer((_) async => Success(tGearSet));
+          );
 
-        // Act
-        await repository.uploadGearSet(
-          tripId: 'trip1',
-          title: 'Title',
-          author: 'Author',
-          visibility: GearSetVisibility.public,
-          items: tItems,
-        );
-
-        // Assert
-        verify(
-          () => mockRemoteDataSource.uploadGearSet(
-            tripId: 'trip1',
-            title: 'Title',
-            author: 'Author',
-            visibility: GearSetVisibility.public,
-            items: tItems,
-            meals: null,
-            key: null,
-          ),
-        ).called(1);
-      });
+          // Assert
+          verify(
+            () => mockRemoteDataSource.uploadGearSet(
+              tripId: 'trip1',
+              title: 'Title',
+              author: 'Author',
+              visibility: GearSetVisibility.public,
+              items: tItems,
+              meals: null,
+              key: null,
+            ),
+          ).called(1);
+        },
+      );
     });
 
     group('Key Management (Local)', () {
       final tUploadedAt = DateTime.now();
       final tEntityRecords = [GearKeyRecord(key: '1234', title: 'Test', visibility: 'public', uploadedAt: tUploadedAt)];
 
-      test('getUploadedKeys should delegates to localDataSource and map to domain', () async {
-        when(() => mockLocalDataSource.getUploadedKeys()).thenAnswer((_) async => tEntityRecords);
+      test(
+        'Given Key Management (Local), When executing, Then getUploadedKeys should delegates to localDataSource and map to domain',
+        () async {
+          when(() => mockLocalDataSource.getUploadedKeys()).thenAnswer((_) async => tEntityRecords);
 
-        final result = await repository.getUploadedKeys();
+          final result = await repository.getUploadedKeys();
 
-        expect(result, tEntityRecords);
-        verify(() => mockLocalDataSource.getUploadedKeys()).called(1);
-      });
+          expect(result, tEntityRecords);
+          verify(() => mockLocalDataSource.getUploadedKeys()).called(1);
+        },
+      );
 
-      test('saveUploadedKey should delegates to localDataSource', () async {
-        when(() => mockLocalDataSource.saveUploadedKey(any(), any(), any())).thenAnswer((_) async {});
+      test(
+        'Given Key Management (Local), When executing, Then saveUploadedKey should delegates to localDataSource',
+        () async {
+          when(() => mockLocalDataSource.saveUploadedKey(any(), any(), any())).thenAnswer((_) async {});
 
-        await repository.saveUploadedKey('k', 't', 'v');
+          await repository.saveUploadedKey('k', 't', 'v');
 
-        verify(() => mockLocalDataSource.saveUploadedKey('k', 't', 'v')).called(1);
-      });
+          verify(() => mockLocalDataSource.saveUploadedKey('k', 't', 'v')).called(1);
+        },
+      );
     });
   });
 }

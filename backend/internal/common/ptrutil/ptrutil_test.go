@@ -7,30 +7,30 @@ import (
 )
 
 func TestSafeGet(t *testing.T) {
-	t.Run("nil string pointer", func(t *testing.T) {
+	t.Run("Given nil string pointer, When calling SafeGet, Then it handles nil value gracefully", func(t *testing.T) {
 		var ptr *string
 		assert.Equal(t, "", SafeGet(ptr))
 	})
 
-	t.Run("non-nil string pointer", func(t *testing.T) {
+	t.Run("Given non-nil string pointer, When calling SafeGet, Then it handles nil value gracefully", func(t *testing.T) {
 		val := "hello"
 		ptr := &val
 		assert.Equal(t, "hello", SafeGet(ptr))
 	})
 
-	t.Run("nil int pointer", func(t *testing.T) {
+	t.Run("Given nil int pointer, When calling SafeGet, Then it handles nil value gracefully", func(t *testing.T) {
 		var ptr *int
 		assert.Equal(t, 0, SafeGet(ptr))
 	})
 }
 
 func TestSafeGetDefault(t *testing.T) {
-	t.Run("nil string pointer with default", func(t *testing.T) {
+	t.Run("Given nil string pointer with default, When calling SafeGetDefault, Then it handles nil value gracefully", func(t *testing.T) {
 		var ptr *string
 		assert.Equal(t, "default", SafeGetDefault(ptr, "default"))
 	})
 
-	t.Run("non-nil string pointer with default", func(t *testing.T) {
+	t.Run("Given non-nil string pointer with default, When calling SafeGetDefault, Then it handles nil value gracefully", func(t *testing.T) {
 		val := "hello"
 		ptr := &val
 		assert.Equal(t, "hello", SafeGetDefault(ptr, "default"))
@@ -38,14 +38,14 @@ func TestSafeGetDefault(t *testing.T) {
 }
 
 func TestAssignIfPresent(t *testing.T) {
-	t.Run("nil source pointer", func(t *testing.T) {
+	t.Run("Given nil source pointer, When calling AssignIfPresent, Then it handles nil value gracefully", func(t *testing.T) {
 		dest := "original"
 		var src *string
 		AssignIfPresent(&dest, src)
 		assert.Equal(t, "original", dest)
 	})
 
-	t.Run("non-nil source pointer", func(t *testing.T) {
+	t.Run("Given non-nil source pointer, When calling AssignIfPresent, Then it handles nil value gracefully", func(t *testing.T) {
 		dest := "original"
 		srcVal := "updated"
 		src := &srcVal
@@ -53,7 +53,7 @@ func TestAssignIfPresent(t *testing.T) {
 		assert.Equal(t, "updated", dest)
 	})
 
-	t.Run("nil destination pointer", func(t *testing.T) {
+	t.Run("Given nil destination pointer, When calling AssignIfPresent, Then it handles nil value gracefully", func(t *testing.T) {
 		var dest *string
 		srcVal := "updated"
 		src := &srcVal
@@ -65,7 +65,7 @@ func TestAssignIfPresent(t *testing.T) {
 }
 
 func TestAssignPtrIfPresent(t *testing.T) {
-	t.Run("nil source pointer", func(t *testing.T) {
+	t.Run("Given nil source pointer, When calling AssignPtrIfPresent, Then it handles nil value gracefully", func(t *testing.T) {
 		orig := "original"
 		var dest *string = &orig
 		var src *string
@@ -73,7 +73,7 @@ func TestAssignPtrIfPresent(t *testing.T) {
 		assert.Equal(t, "original", *dest)
 	})
 
-	t.Run("non-nil source pointer", func(t *testing.T) {
+	t.Run("Given non-nil source pointer, When calling AssignPtrIfPresent, Then it handles nil value gracefully", func(t *testing.T) {
 		orig := "original"
 		var dest *string = &orig
 		srcVal := "updated"
@@ -82,7 +82,7 @@ func TestAssignPtrIfPresent(t *testing.T) {
 		assert.Equal(t, "updated", *dest)
 	})
 
-	t.Run("nil destination pointer", func(t *testing.T) {
+	t.Run("Given nil destination pointer, When calling AssignPtrIfPresent, Then it handles nil value gracefully", func(t *testing.T) {
 		var dest **string
 		srcVal := "updated"
 		src := &srcVal

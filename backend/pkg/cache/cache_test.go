@@ -9,15 +9,17 @@ import (
 )
 
 func TestMemoryCache(t *testing.T) {
-	c := NewMemoryCache[string]()
-	testCache(t, c)
+	t.Run("Given default context, When calling MemoryCache, Then it should perform successfully", func(t *testing.T) {
+		c := NewMemoryCache[string]()
+		testCache(t, c)
+	})
 }
 
 func testCache(t *testing.T, c Cache[string]) {
 	ctx := context.Background()
 	key := Key{Module: ModuleAuth, Domain: "test", ID: "123"}
 
-	t.Run("SetAndGet", func(t *testing.T) {
+	t.Run("Given SetAndGet, When calling testCache, Then it behaves as expected", func(t *testing.T) {
 		err := c.Set(ctx, key, "value", time.Minute)
 		assert.NoError(t, err)
 
@@ -26,12 +28,12 @@ func testCache(t *testing.T, c Cache[string]) {
 		assert.Equal(t, "value", val)
 	})
 
-	t.Run("GetNotFound", func(t *testing.T) {
+	t.Run("Given GetNotFound, When calling testCache, Then it behaves as expected", func(t *testing.T) {
 		_, err := c.Get(ctx, Key{Module: ModuleAuth, Domain: "test", ID: "not-exists"})
 		assert.ErrorIs(t, err, ErrKeyNotFound)
 	})
 
-	t.Run("Delete", func(t *testing.T) {
+	t.Run("Given Delete, When calling testCache, Then it behaves as expected", func(t *testing.T) {
 		err := c.Set(ctx, key, "value", time.Minute)
 		assert.NoError(t, err)
 
@@ -42,7 +44,7 @@ func testCache(t *testing.T, c Cache[string]) {
 		assert.ErrorIs(t, err, ErrKeyNotFound)
 	})
 
-	t.Run("Expiration", func(t *testing.T) {
+	t.Run("Given Expiration, When calling testCache, Then it behaves as expected", func(t *testing.T) {
 		if _, ok := c.(*memoryCache[string]); ok {
 			err := c.Set(ctx, key, "value", time.Millisecond*100)
 			assert.NoError(t, err)
@@ -59,7 +61,7 @@ func TestIncrement(t *testing.T) {
 	ctx := context.Background()
 	key := Key{Module: ModuleAuth, Domain: "test", ID: "counter"}
 
-	t.Run("MemoryCache_Increment_String", func(t *testing.T) {
+	t.Run("Given MemoryCache Increment String, When calling Increment, Then it behaves as expected", func(t *testing.T) {
 		c := NewMemoryCache[string]()
 		val, err := c.Increment(ctx, key, time.Minute)
 		assert.NoError(t, err)
@@ -75,7 +77,7 @@ func TestIncrement(t *testing.T) {
 		assert.Equal(t, int64(2), val)
 	})
 
-	t.Run("MemoryCache_Increment_Int64", func(t *testing.T) {
+	t.Run("Given MemoryCache Increment Int64, When calling Increment, Then it behaves as expected", func(t *testing.T) {
 		c := NewMemoryCache[int64]()
 		val, err := c.Increment(ctx, key, time.Minute)
 		assert.NoError(t, err)

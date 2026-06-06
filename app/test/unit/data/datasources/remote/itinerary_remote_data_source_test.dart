@@ -36,17 +36,20 @@ void main() {
   });
 
   group('ItineraryRemoteDataSource.getItinerary', () {
-    test('returns list of itinerary items on success', () async {
-      when(() => mockApiService.listItinerary('trip-1')).thenAnswer((_) async => [testResponse]);
+    test(
+      'Given success, When calling ItineraryRemoteDataSource.getItinerary, Then returns list of itinerary items',
+      () async {
+        when(() => mockApiService.listItinerary('trip-1')).thenAnswer((_) async => [testResponse]);
 
-      final result = await dataSource.getItinerary('trip-1');
+        final result = await dataSource.getItinerary('trip-1');
 
-      expect(result.length, 1);
-      expect(result[0].id, '1');
-      expect(result[0].name, 'Trailhead');
-    });
+        expect(result.length, 1);
+        expect(result[0].id, '1');
+        expect(result[0].name, 'Trailhead');
+      },
+    );
 
-    test('throws exception on error', () async {
+    test('Given error, When calling ItineraryRemoteDataSource.getItinerary, Then throws exception', () async {
       when(() => mockApiService.listItinerary('fail')).thenThrow(Exception('Error'));
 
       expect(() => dataSource.getItinerary('fail'), throwsException);

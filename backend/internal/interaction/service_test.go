@@ -21,7 +21,7 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := NewMessageService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling MessageService AddTripMessage, Then it returns success without error", func(t *testing.T) {
 		tripID := "trip-1"
 		userID := "user-1"
 		msg := &TripMessage{Content: "Hello"}
@@ -37,7 +37,7 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("AccessDenied", func(t *testing.T) {
+	t.Run("Given AccessDenied, When calling MessageService AddTripMessage, Then it behaves as expected", func(t *testing.T) {
 		tripID := "trip-1"
 		userID := "user-other"
 		msg := &TripMessage{Content: "Hello"}
@@ -59,7 +59,7 @@ func TestPollService_VoteOption(t *testing.T) {
 	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := NewPollService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling PollService VoteOption, Then it returns success without error", func(t *testing.T) {
 		tripID := "trip-1"
 		pollID := "poll-1"
 		optionID := "opt-1"
@@ -77,7 +77,7 @@ func TestPollService_VoteOption(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("PollClosed", func(t *testing.T) {
+	t.Run("Given PollClosed, When calling PollService VoteOption, Then it behaves as expected", func(t *testing.T) {
 		tripID := "trip-1"
 		pollID := "poll-1"
 		userID := "user-1"

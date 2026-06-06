@@ -51,7 +51,7 @@ func TestFlagService_IsEnabled_Cache(t *testing.T) {
 
 	svc := NewFlagService(mockRepo, logger)
 
-	t.Run("GetFromCache", func(t *testing.T) {
+	t.Run("Given GetFromCache, When calling FlagService IsEnabled Cache, Then it behaves as expected", func(t *testing.T) {
 		// 呼叫 IsEnabled 時不需要調用 repo，因為已經被 cache
 		valA := svc.IsEnabled(context.Background(), "feature-a")
 		valB := svc.IsEnabled(context.Background(), "feature-b")
@@ -60,7 +60,7 @@ func TestFlagService_IsEnabled_Cache(t *testing.T) {
 		assert.False(t, valB)
 	})
 
-	t.Run("CacheExpirationRefresh", func(t *testing.T) {
+	t.Run("Given CacheExpirationRefresh, When calling FlagService IsEnabled Cache, Then it behaves as expected", func(t *testing.T) {
 		// 將 lastFetch 時間調為 10 分鐘前，使其過期
 		impl := svc.(*flagService)
 		impl.cacheMutex.Lock()
@@ -81,7 +81,7 @@ func TestFlagService_IsEnabled_Cache(t *testing.T) {
 		assert.True(t, valB)
 	})
 
-	t.Run("CacheRefreshErrorFallback", func(t *testing.T) {
+	t.Run("Given CacheRefreshErrorFallback, When calling FlagService IsEnabled Cache, Then it behaves as expected", func(t *testing.T) {
 		// 再次讓快取過期
 		impl := svc.(*flagService)
 		impl.cacheMutex.Lock()
@@ -109,7 +109,7 @@ func TestFlagService_SetFlag(t *testing.T) {
 
 	svc := NewFlagService(mockRepo, logger)
 
-	t.Run("SuccessUpdateAndCacheWrite", func(t *testing.T) {
+	t.Run("Given SuccessUpdateAndCacheWrite, When calling FlagService SetFlag, Then it behaves as expected", func(t *testing.T) {
 		mockRepo.On("Update", mock.Anything, "feature-x", true).Return(nil).Once()
 
 		err := svc.SetFlag(context.Background(), "feature-x", true)
@@ -120,7 +120,7 @@ func TestFlagService_SetFlag(t *testing.T) {
 		assert.True(t, val)
 	})
 
-	t.Run("UpdateError", func(t *testing.T) {
+	t.Run("Given UpdateError, When calling FlagService SetFlag, Then it behaves as expected", func(t *testing.T) {
 		mockRepo.On("Update", mock.Anything, "feature-x", false).Return(errors.New("db error")).Once()
 
 		err := svc.SetFlag(context.Background(), "feature-x", false)
@@ -142,7 +142,7 @@ func TestFlagService_GetAll(t *testing.T) {
 	mockRepo.On("GetAll", mock.Anything).Return([]Flag{}, nil).Once()
 	svc := NewFlagService(mockRepo, logger)
 
-	t.Run("CallRepoGetAll", func(t *testing.T) {
+	t.Run("Given CallRepoGetAll, When calling FlagService GetAll, Then it behaves as expected", func(t *testing.T) {
 		expected := []Flag{
 			{Key: "1", Value: true},
 			{Key: "2", Value: false},

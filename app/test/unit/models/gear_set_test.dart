@@ -3,7 +3,7 @@ import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('GearSet', () {
-    test('fromJson handles actual numbers for weight and count', () {
+    test('Given weight and count, When calling GearSet, Then fromJson handles actual numbers', () {
       final json = {
         'id': 'uuid-123',
         'title': 'Test Set',
@@ -25,7 +25,7 @@ void main() {
       expect(gearSet.itemCount, 10);
     });
 
-    test('fromJson throws when required fields are missing', () {
+    test('Given required fields are missing, When calling GearSet, Then fromJson throws', () {
       final json = {
         'id': 'uuid-123',
         // title missing
@@ -34,7 +34,7 @@ void main() {
       expect(() => GearSet.fromJson(json), throwsA(anything));
     });
 
-    test('fromJson handles meals correctly', () {
+    test('Given GearSet, When executing, Then fromJson handles meals correctly', () {
       final json = {
         'id': 'uuid-123',
         'title': 'Test Set',
@@ -66,7 +66,7 @@ void main() {
       expect(gearSet.meals![0].meals[MealType.breakfast]!.first.name, 'Bread');
     });
 
-    test('toJson converts correctly', () {
+    test('Given GearSet, When executing, Then toJson converts correctly', () {
       final gearSet = GearSet(
         id: 'uuid-123',
         title: 'Test Set',

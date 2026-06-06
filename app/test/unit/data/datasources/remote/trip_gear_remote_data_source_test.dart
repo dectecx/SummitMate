@@ -38,7 +38,7 @@ void main() {
   final testItem = GearItem(id: 'gear-1', tripId: 'trip-1', name: 'Tent', category: 'Sleep', weight: 2000);
 
   group('TripGearRemoteDataSource.getTripGear', () {
-    test('returns list of gear items on success', () async {
+    test('Given success, When calling TripGearRemoteDataSource.getTripGear, Then returns list of gear items', () async {
       when(() => mockApiService.listGear('trip-1')).thenAnswer((_) async => [testResponse]);
 
       final result = await dataSource.getTripGear('trip-1');
@@ -48,7 +48,7 @@ void main() {
       verify(() => mockApiService.listGear('trip-1')).called(1);
     });
 
-    test('rethrows exception on failure', () async {
+    test('Given failure, When calling TripGearRemoteDataSource.getTripGear, Then rethrows exception', () async {
       when(() => mockApiService.listGear(any())).thenThrow(Exception('Network error'));
 
       expect(() => dataSource.getTripGear('trip-1'), throwsException);
@@ -56,25 +56,31 @@ void main() {
   });
 
   group('TripGearRemoteDataSource CRUD', () {
-    test('addTripGear calls api and returns mapped item', () async {
-      when(() => mockApiService.addGear('trip-1', any())).thenAnswer((_) async => testResponse);
+    test(
+      'Given TripGearRemoteDataSource CRUD, When executing, Then addTripGear calls api and returns mapped item',
+      () async {
+        when(() => mockApiService.addGear('trip-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.addTripGear('trip-1', testItem);
+        final result = await dataSource.addTripGear('trip-1', testItem);
 
-      expect(result.name, 'Tent');
-      verify(() => mockApiService.addGear('trip-1', any())).called(1);
-    });
+        expect(result.name, 'Tent');
+        verify(() => mockApiService.addGear('trip-1', any())).called(1);
+      },
+    );
 
-    test('updateTripGear calls api and returns mapped item', () async {
-      when(() => mockApiService.updateGear('trip-1', 'gear-1', any())).thenAnswer((_) async => testResponse);
+    test(
+      'Given TripGearRemoteDataSource CRUD, When executing, Then updateTripGear calls api and returns mapped item',
+      () async {
+        when(() => mockApiService.updateGear('trip-1', 'gear-1', any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.updateTripGear('trip-1', testItem);
+        final result = await dataSource.updateTripGear('trip-1', testItem);
 
-      expect(result.name, 'Tent');
-      verify(() => mockApiService.updateGear('trip-1', 'gear-1', any())).called(1);
-    });
+        expect(result.name, 'Tent');
+        verify(() => mockApiService.updateGear('trip-1', 'gear-1', any())).called(1);
+      },
+    );
 
-    test('deleteTripGear calls api', () async {
+    test('Given TripGearRemoteDataSource CRUD, When executing, Then deleteTripGear calls api', () async {
       when(() => mockApiService.deleteGear('trip-1', 'gear-1')).thenAnswer((_) async {});
 
       await dataSource.deleteTripGear('trip-1', 'gear-1');
@@ -82,12 +88,15 @@ void main() {
       verify(() => mockApiService.deleteGear('trip-1', 'gear-1')).called(1);
     });
 
-    test('replaceAllTripGear calls api with mapped requests', () async {
-      when(() => mockApiService.replaceAllGear('trip-1', any())).thenAnswer((_) async {});
+    test(
+      'Given TripGearRemoteDataSource CRUD, When executing, Then replaceAllTripGear calls api with mapped requests',
+      () async {
+        when(() => mockApiService.replaceAllGear('trip-1', any())).thenAnswer((_) async {});
 
-      await dataSource.replaceAllTripGear('trip-1', [testItem]);
+        await dataSource.replaceAllTripGear('trip-1', [testItem]);
 
-      verify(() => mockApiService.replaceAllGear('trip-1', any())).called(1);
-    });
+        verify(() => mockApiService.replaceAllGear('trip-1', any())).called(1);
+      },
+    );
   });
 }

@@ -22,7 +22,7 @@ func TestTripHandler_ListTrips(t *testing.T) {
 	mockSvc := new(tripmocks.MockTripService)
 	handler := trip.NewTripHandler(mockSvc)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripHandler ListTrips, Then it returns success without error", func(t *testing.T) {
 		userID := "00000000-0000-0000-0000-000000000001"
 		trips := []*trip.Trip{
 			{
@@ -61,7 +61,7 @@ func TestTripHandler_CreateTrip(t *testing.T) {
 	mockSvc := new(tripmocks.MockTripService)
 	handler := trip.NewTripHandler(mockSvc)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripHandler CreateTrip, Then it returns success without error", func(t *testing.T) {
 		userID := "00000000-0000-0000-0000-000000000001"
 		reqBody := api.TripCreateRequest{
 			Name: "My New Trip",

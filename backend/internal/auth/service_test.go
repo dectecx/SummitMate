@@ -23,7 +23,7 @@ func TestAuthService_Register(t *testing.T) {
 	secret := "test-secret"
 	tokenManager := tokens.NewTokenManager(secret)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid registration details, When registering, Then it creates user and returns tokens", func(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
@@ -55,7 +55,7 @@ func TestAuthService_Register(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("EmailAlreadyExists", func(t *testing.T) {
+	t.Run("Given email already exists, When registering, Then it returns email already exists error", func(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
@@ -73,7 +73,7 @@ func TestAuthService_Register(t *testing.T) {
 		assert.Empty(t, refreshToken)
 	})
 
-	t.Run("InvalidEmail", func(t *testing.T) {
+	t.Run("Given invalid email format, When registering, Then it returns invalid email error", func(t *testing.T) {
 		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
 		user, accessToken, refreshToken, err := svc.Register(context.Background(), "invalid-email", "password123", "any", nil)
 		assert.Error(t, err)
@@ -83,7 +83,7 @@ func TestAuthService_Register(t *testing.T) {
 		assert.Empty(t, refreshToken)
 	})
 
-	t.Run("WeakPassword", func(t *testing.T) {
+	t.Run("Given weak password, When registering, Then it returns weak password error", func(t *testing.T) {
 		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
 
 		// Too short
@@ -108,7 +108,7 @@ func TestAuthService_Login(t *testing.T) {
 	secret := "test-secret"
 	tokenManager := tokens.NewTokenManager(secret)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given correct credentials, When logging in, Then it returns user profile and token", func(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
@@ -135,7 +135,7 @@ func TestAuthService_Login(t *testing.T) {
 		assert.NotEmpty(t, refreshToken)
 	})
 
-	t.Run("InvalidCredentials", func(t *testing.T) {
+	t.Run("Given incorrect credentials, When logging in, Then it returns invalid credentials error", func(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
@@ -159,7 +159,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	secret := "test-secret"
 	tokenManager := tokens.NewTokenManager(secret)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid refresh token, When refreshing token, Then it returns new access token", func(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)

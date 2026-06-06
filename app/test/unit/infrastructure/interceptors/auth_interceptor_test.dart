@@ -53,7 +53,7 @@ void main() {
   });
 
   group('AuthInterceptor.onRequest', () {
-    test('injects Authorization header when token exists', () async {
+    test('Given token exists, When calling AuthInterceptor.onRequest, Then injects Authorization header', () async {
       final options = RequestOptions(path: '/test');
       when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => 'valid-token');
 
@@ -70,7 +70,7 @@ void main() {
       verify(() => handler.next(options)).called(1);
     });
 
-    test('skips injection when requiresAuth is false', () async {
+    test('Given requiresAuth is false, When calling AuthInterceptor.onRequest, Then skips injection', () async {
       final options = RequestOptions(path: '/test', extra: {'requiresAuth': false});
 
       final handler = MockRequestInterceptorHandler();
@@ -89,35 +89,40 @@ void main() {
   });
 
   group('AuthInterceptor.onError', () {
-    test('retries request when 401 occurs and refresh is successful', () async {
-      final options = RequestOptions(path: '/protected');
-      final error = DioException(
-        requestOptions: options,
-        response: Response(requestOptions: options, statusCode: 401),
-      );
+    test(
+      'Given 401 occurs and refresh is successful, When calling AuthInterceptor.onError, Then retries request',
+      () async {
+        final options = RequestOptions(path: '/protected');
+        final error = DioException(
+          requestOptions: options,
+          response: Response(requestOptions: options, statusCode: 401),
+        );
 
-      when(() => mockAuthService.refreshToken()).thenAnswer((_) async => AuthResult.success(accessToken: 'new-token'));
+        when(
+          () => mockAuthService.refreshToken(),
+        ).thenAnswer((_) async => AuthResult.success(accessToken: 'new-token'));
 
-      when(
-        () => mockDio.fetch(any()),
-      ).thenAnswer((_) async => Response(requestOptions: options, statusCode: 200, data: {'success': true}));
+        when(
+          () => mockDio.fetch(any()),
+        ).thenAnswer((_) async => Response(requestOptions: options, statusCode: 200, data: {'success': true}));
 
-      final handler = MockErrorInterceptorHandler();
-      final completer = Completer<void>();
-      when(() => handler.resolve(any())).thenAnswer((_) {
-        completer.complete();
-      });
+        final handler = MockErrorInterceptorHandler();
+        final completer = Completer<void>();
+        when(() => handler.resolve(any())).thenAnswer((_) {
+          completer.complete();
+        });
 
-      interceptor.onError(error, handler);
+        interceptor.onError(error, handler);
 
-      await completer.future;
+        await completer.future;
 
-      verify(() => mockAuthService.refreshToken()).called(1);
-      verify(() => mockDio.fetch(any())).called(1);
-      verify(() => handler.resolve(any())).called(1);
-    });
+        verify(() => mockAuthService.refreshToken()).called(1);
+        verify(() => mockDio.fetch(any())).called(1);
+        verify(() => handler.resolve(any())).called(1);
+      },
+    );
 
-    test('clears session and fails when refresh fails', () async {
+    test('Given refresh fails, When calling AuthInterceptor.onError, Then clears session and fails', () async {
       final options = RequestOptions(path: '/protected');
       final error = DioException(
         requestOptions: options,
@@ -144,27 +149,30 @@ void main() {
       verify(() => handler.next(error)).called(1);
     });
 
-    test('avoids infinite loop when 401 occurs on refresh endpoint', () async {
-      final options = RequestOptions(path: '/auth/refresh');
-      final error = DioException(
-        requestOptions: options,
-        response: Response(requestOptions: options, statusCode: 401),
-      );
+    test(
+      'Given 401 occurs on refresh endpoint, When calling AuthInterceptor.onError, Then avoids infinite loop',
+      () async {
+        final options = RequestOptions(path: '/auth/refresh');
+        final error = DioException(
+          requestOptions: options,
+          response: Response(requestOptions: options, statusCode: 401),
+        );
 
-      final handler = MockErrorInterceptorHandler();
-      final completer = Completer<void>();
-      when(() => handler.next(any())).thenAnswer((_) {
-        completer.complete();
-      });
+        final handler = MockErrorInterceptorHandler();
+        final completer = Completer<void>();
+        when(() => handler.next(any())).thenAnswer((_) {
+          completer.complete();
+        });
 
-      interceptor.onError(error, handler);
+        interceptor.onError(error, handler);
 
-      await completer.future;
+        await completer.future;
 
-      verify(() => mockAuthService.logout()).called(1);
-      verify(() => mockAppErrorCubit.reportAuthExpired()).called(1);
-      verifyNever(() => mockAuthService.refreshToken());
-      verify(() => handler.next(error)).called(1);
-    });
+        verify(() => mockAuthService.logout()).called(1);
+        verify(() => mockAppErrorCubit.reportAuthExpired()).called(1);
+        verifyNever(() => mockAuthService.refreshToken());
+        verify(() => handler.next(error)).called(1);
+      },
+    );
   });
 }

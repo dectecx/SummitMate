@@ -32,7 +32,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 	handlerToTest := middleware(nextHandler)
 
-	t.Run("PublicRoute_NoToken_Bypass", func(t *testing.T) {
+	t.Run("Given public route and no token, When executing middleware, Then it passes successfully", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/public", nil)
 		w := httptest.NewRecorder()
 
@@ -42,7 +42,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.Equal(t, "anonymous", w.Body.String())
 	})
 
-	t.Run("RequiredRoute_NoToken_Unauthorized", func(t *testing.T) {
+	t.Run("Given required route and no token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/private", nil)
 		// 注入 BearerAuthScopes 模擬私有路徑
 		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
@@ -55,7 +55,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "未授權")
 	})
 
-	t.Run("RequiredRoute_InvalidTokenFormat_Unauthorized", func(t *testing.T) {
+	t.Run("Given invalid token format, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/private", nil)
 		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
 		req = req.WithContext(ctx)
@@ -68,7 +68,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "Token 格式錯誤")
 	})
 
-	t.Run("RequiredRoute_EmptyBearerToken_Unauthorized", func(t *testing.T) {
+	t.Run("Given empty bearer token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/private", nil)
 		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
 		req = req.WithContext(ctx)
@@ -81,7 +81,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "未提供認證 Token")
 	})
 
-	t.Run("PublicRoute_InvalidToken_Unauthorized", func(t *testing.T) {
+	t.Run("Given public route and invalid token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/public", nil)
 		// 雖然是公開路徑，但如果帶了無效 Token，也應被拒絕，避免客戶端誤解
 		req.Header.Set("Authorization", "Bearer wrong_token_key")
@@ -93,7 +93,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.Contains(t, w.Body.String(), "Token 無效或已過期")
 	})
 
-	t.Run("Success_InjectUserID", func(t *testing.T) {
+	t.Run("Given valid token, When executing middleware, Then it injects user ID into context and passes", func(t *testing.T) {
 		userID := "user-12345-uuid"
 		email := "test@example.com"
 		tokenStr, err := tokenManager.GenerateToken(userID, email, "access", time.Hour)

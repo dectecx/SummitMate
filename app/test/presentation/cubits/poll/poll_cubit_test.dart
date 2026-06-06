@@ -66,7 +66,7 @@ void main() {
     cubit.close();
   });
 
-  test('initial state is correct', () {
+  test('Given triggering action, When executing, Then initial state is correct', () {
     expect(cubit.state, const PollInitial());
   });
 

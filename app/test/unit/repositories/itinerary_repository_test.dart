@@ -25,7 +25,7 @@ void main() {
 
   group('ItineraryRepository', () {
     group('add', () {
-      test('should call localDataSource.addItem', () async {
+      test('Given add, When triggered, Then it should call localDataSource.addItem', () async {
         // Arrange
         when(() => mockLocalDataSource.addItem(any())).thenAnswer((_) async => {});
 
@@ -38,7 +38,7 @@ void main() {
     });
 
     group('update', () {
-      test('should call localDataSource.updateItem', () async {
+      test('Given update, When triggered, Then it should call localDataSource.updateItem', () async {
         // Arrange
         when(() => mockLocalDataSource.updateItem(any())).thenAnswer((_) async => {});
 
@@ -50,7 +50,7 @@ void main() {
       });
     });
 
-    test('getByTripId delegates to localDataSource', () async {
+    test('Given triggering action, When executing, Then getByTripId delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getByTripId(any())).thenAnswer((_) async => []);
       final result = await repository.getByTripId('trip_1');
       expect(result, isEmpty);
