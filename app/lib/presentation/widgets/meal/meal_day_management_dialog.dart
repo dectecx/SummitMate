@@ -77,34 +77,38 @@ class MealDayManagementDialog extends StatelessWidget {
     );
   }
 
-  void _showAddDayDialog(BuildContext context) {
+  void _showAddDayDialog(BuildContext context) async {
     final mealCubit = context.read<MealCubit>();
     final controller = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新增天數'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: '天數名稱', hintText: '例如：行前準備'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                mealCubit.addMealPlanDay(name);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('新增'),
+    try {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('新增天數'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '天數名稱', hintText: '例如：行前準備'),
+            autofocus: true,
           ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  mealCubit.addMealPlanDay(name);
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('新增'),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 }
 
@@ -240,33 +244,37 @@ class _DayItemCard extends StatelessWidget {
     );
   }
 
-  void _showRenameDialog(BuildContext context, MealCubit mealCubit) {
+  void _showRenameDialog(BuildContext context, MealCubit mealCubit) async {
     final controller = TextEditingController(text: dayInfo.name);
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('重新命名'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: '新名稱'),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            onPressed: () {
-              final newName = controller.text.trim();
-              if (newName.isNotEmpty && newName != dayInfo.name) {
-                mealCubit.renameMealPlanDay(dayInfo.id, newName);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('儲存'),
+    try {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('重新命名'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: '新名稱'),
+            autofocus: true,
           ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            FilledButton(
+              onPressed: () {
+                final newName = controller.text.trim();
+                if (newName.isNotEmpty && newName != dayInfo.name) {
+                  mealCubit.renameMealPlanDay(dayInfo.id, newName);
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('儲存'),
+            ),
+          ],
+        ),
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   void _showLinkDialog(BuildContext context, MealCubit mealCubit) {

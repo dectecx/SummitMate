@@ -97,42 +97,46 @@ class _GearCloudManagementDialogState extends State<GearCloudManagementDialog> {
 
   Future<void> _onEditKey(GearSet gearSet) async {
     final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('修改 4 位數 Key'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          maxLength: 4,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 24, letterSpacing: 8),
-          decoration: const InputDecoration(hintText: '____', counterText: '', border: OutlineInputBorder()),
+    try {
+      final result = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('修改 4 位數 Key'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            maxLength: 4,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, letterSpacing: 8),
+            decoration: const InputDecoration(hintText: '____', counterText: '', border: OutlineInputBorder()),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('儲存')),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text), child: const Text('儲存')),
-        ],
-      ),
-    );
-
-    if (result != null && result.length == 4) {
-      final updateResult = await widget.repository.updateGearSet(
-        id: gearSet.id,
-        title: gearSet.title,
-        author: gearSet.author,
-        visibility: GearSetVisibility.protected,
-        items: gearSet.items ?? [],
-        meals: gearSet.meals,
-        key: result,
       );
 
-      if (updateResult is Success<GearSet, Exception>) {
-        ToastService.success('Key 已修改');
-        _fetchMySets();
-      } else if (updateResult is Failure<GearSet, Exception>) {
-        ToastService.error(updateResult.exception.toString());
+      if (result != null && result.length == 4) {
+        final updateResult = await widget.repository.updateGearSet(
+          id: gearSet.id,
+          title: gearSet.title,
+          author: gearSet.author,
+          visibility: GearSetVisibility.protected,
+          items: gearSet.items ?? [],
+          meals: gearSet.meals,
+          key: result,
+        );
+
+        if (updateResult is Success<GearSet, Exception>) {
+          ToastService.success('Key 已修改');
+          _fetchMySets();
+        } else if (updateResult is Failure<GearSet, Exception>) {
+          ToastService.error(updateResult.exception.toString());
+        }
       }
+    } finally {
+      controller.dispose();
     }
   }
 

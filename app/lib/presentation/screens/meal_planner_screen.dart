@@ -12,6 +12,7 @@ import '../widgets/meal/meal_day_management_dialog.dart';
 import '../cubits/tutorial/tutorial_cubit.dart';
 import '../cubits/tutorial/tutorial_state.dart';
 import '../widgets/tutorial/tutorial_aware_builder.dart';
+import '../widgets/meal/add_meal_dialog.dart';
 
 /// 糧食計畫畫面
 ///
@@ -338,60 +339,12 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
   }
 
   void _showAddMealDialog(BuildContext context, MealCubit cubit, String dayId, MealType type) {
-    final nameCtrl = TextEditingController();
-    final weightCtrl = TextEditingController();
-    final calCtrl = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('新增 ${type.label}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: '食物名稱', hintText: '例如：乾燥飯'),
-              autofocus: true,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: weightCtrl,
-                    decoration: const InputDecoration(labelText: '重量 (g)', hintText: '100'),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextField(
-                    controller: calCtrl,
-                    decoration: const InputDecoration(labelText: '熱量 (kcal)', hintText: '350'),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            onPressed: () {
-              final name = nameCtrl.text.trim();
-              final weight = double.tryParse(weightCtrl.text) ?? 0;
-              final cal = double.tryParse(calCtrl.text) ?? 0;
-              if (name.isNotEmpty) {
-                cubit.addMealItem(dayId, type, name, weight, cal);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('新增'),
-          ),
-        ],
-      ),
+    AddMealDialog.show(
+      context,
+      mealType: type,
+      onAdd: (name, weight, calories) {
+        cubit.addMealItem(dayId, type, name, weight, calories);
+      },
     );
   }
 }
