@@ -180,3 +180,72 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		assert.NotEqual(t, oldToken, newRefreshToken)
 	})
 }
+
+func TestAuthService_Logout(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	secret := "test-secret"
+	tokenManager := tokens.NewTokenManager(secret)
+
+	t.Run("Given valid token, When logging out, Then it blacklists the token", func(t *testing.T) {
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+		svc := auth.NewAuthService(logger, nil, tokenManager, nil, mockCache, mockFlag, secret)
+
+		userID := "user-token"
+		email := "token@example.com"
+		tokenStr, _ := tokenManager.GenerateToken(userID, email, "access", time.Hour)
+
+		err := svc.Logout(context.Background(), tokenStr)
+		assert.NoError(t, err)
+
+		blacklistKey := cache.Key{
+			Module: cache.ModuleAuth,
+			Domain: "blacklist",
+			ID:     tokenStr,
+		}
+		val, err := mockCache.Get(context.Background(), blacklistKey)
+		assert.NoError(t, err)
+		assert.Equal(t, "1", val)
+	})
+}
+
+func TestAuthService_ChangePassword(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	secret := "test-secret"
+	tokenManager := tokens.NewTokenManager(secret)
+
+	t.Run("Given correct old password and valid new password, When changing password, Then it updates database and blacklists token", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret)
+
+		userID := "user-token"
+		email := "token@example.com"
+		oldPassword := "oldPassword123"
+		newPassword := "newPassword456"
+
+		hashedOld, _ := auth.HashPassword(oldPassword)
+		mockUser := &auth.User{ID: userID, Email: email, PasswordHash: hashedOld}
+		tokenStr, _ := tokenManager.GenerateToken(userID, email, "access", time.Hour)
+
+		mockRepo.On("GetByID", mock.Anything, userID).Return(mockUser, nil)
+		mockRepo.On("UpdatePassword", mock.Anything, userID, mock.AnythingOfType("string")).Return(nil)
+
+		err := svc.ChangePassword(context.Background(), userID, oldPassword, newPassword, tokenStr)
+		assert.NoError(t, err)
+
+		blacklistKey := cache.Key{
+			Module: cache.ModuleAuth,
+			Domain: "blacklist",
+			ID:     tokenStr,
+		}
+		val, err := mockCache.Get(context.Background(), blacklistKey)
+		assert.NoError(t, err)
+		assert.Equal(t, "1", val)
+
+		mockRepo.AssertExpectations(t)
+	})
+}

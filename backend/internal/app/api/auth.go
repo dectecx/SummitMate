@@ -35,3 +35,11 @@ func (s *Server) DeleteCurrentUser(w http.ResponseWriter, r *http.Request) {
 func (s *Server) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	s.AuthHandler.RefreshToken(w, r)
 }
+
+func (s *Server) LogoutUser(w http.ResponseWriter, r *http.Request) {
+	s.AuthHandler.LogoutUser(w, r)
+}
+
+func (s *Server) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	s.AuthHandler.ChangePassword(w, r)
+}

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"strings"
 
 	"summitmate/api"
 	"summitmate/internal/apperror"
@@ -195,6 +196,56 @@ func (h *AuthHandler) GetUserByID(w http.ResponseWriter, r *http.Request, userID
 	}
 
 	apiutil.SendJSON(w, http.StatusOK, ToUserResponse(user))
+}
+
+// LogoutUser 處理 POST /auth/logout 請求。
+func (h *AuthHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
+	// 從 Authorization 取得 token
+	header := r.Header.Get("Authorization")
+	parts := strings.SplitN(header, " ", 2)
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+	tokenStr := strings.TrimSpace(parts[1])
+
+	if err := h.authService.Logout(r.Context(), tokenStr); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "登出成功"})
+}
+
+// ChangePassword 處理 POST /auth/change-password 請求。
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok || userID == "" {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	// 取得當前 token 以進行註銷
+	header := r.Header.Get("Authorization")
+	var tokenStr string
+	parts := strings.SplitN(header, " ", 2)
+	if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
+		tokenStr = strings.TrimSpace(parts[1])
+	}
+
+	var req api.ChangePasswordRequest
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	err := h.authService.ChangePassword(r.Context(), userID, req.OldPassword, req.NewPassword, tokenStr)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "密碼修改成功"})
 }
 
 // --- 回應輔助函式 ---

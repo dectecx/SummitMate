@@ -9,6 +9,7 @@ import (
 
 	"summitmate/api"
 	"summitmate/internal/auth/tokens"
+	"summitmate/pkg/cache"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +17,7 @@ import (
 func TestJWTAuth_Middleware(t *testing.T) {
 	secret := "super_secret_test_key_12345"
 	tokenManager := tokens.NewTokenManager(secret)
-	middleware := JWTAuth(tokenManager)
+	middleware := JWTAuth(tokenManager, nil)
 
 	// 一個簡單的測試 handler，如果成功讀取到 user_id 就回傳 200 OK + UserID，否則回傳 200 + Empty
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -109,5 +110,31 @@ func TestJWTAuth_Middleware(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, userID, w.Body.String())
+	})
+
+	t.Run("Given blacklisted token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
+		memoryCache := cache.NewMemoryCache[string]()
+		middlewareWithCache := JWTAuth(tokenManager, memoryCache)
+		handlerToTestWithCache := middlewareWithCache(nextHandler)
+
+		userID := "user-12345-uuid"
+		email := "test@example.com"
+		tokenStr, err := tokenManager.GenerateToken(userID, email, "access", time.Hour)
+		assert.NoError(t, err)
+
+		// Blacklist the token
+		err = memoryCache.Set(context.Background(), authBlacklistKey(tokenStr), "1", time.Hour)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/private", nil)
+		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
+		req = req.WithContext(ctx)
+		req.Header.Set("Authorization", "Bearer "+tokenStr)
+		w := httptest.NewRecorder()
+
+		handlerToTestWithCache.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+		assert.Contains(t, w.Body.String(), "Token 已被註銷")
 	})
 }

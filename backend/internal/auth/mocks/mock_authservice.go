@@ -22,6 +22,56 @@ func (_m *MockAuthService) EXPECT() *MockAuthService_Expecter {
 	return &MockAuthService_Expecter{mock: &_m.Mock}
 }
 
+// ChangePassword provides a mock function with given fields: ctx, userID, oldPassword, newPassword, currentToken
+func (_m *MockAuthService) ChangePassword(ctx context.Context, userID string, oldPassword string, newPassword string, currentToken string) error {
+	ret := _m.Called(ctx, userID, oldPassword, newPassword, currentToken)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ChangePassword")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
+		r0 = rf(ctx, userID, oldPassword, newPassword, currentToken)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockAuthService_ChangePassword_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ChangePassword'
+type MockAuthService_ChangePassword_Call struct {
+	*mock.Call
+}
+
+// ChangePassword is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - oldPassword string
+//   - newPassword string
+//   - currentToken string
+func (_e *MockAuthService_Expecter) ChangePassword(ctx interface{}, userID interface{}, oldPassword interface{}, newPassword interface{}, currentToken interface{}) *MockAuthService_ChangePassword_Call {
+	return &MockAuthService_ChangePassword_Call{Call: _e.mock.On("ChangePassword", ctx, userID, oldPassword, newPassword, currentToken)}
+}
+
+func (_c *MockAuthService_ChangePassword_Call) Run(run func(ctx context.Context, userID string, oldPassword string, newPassword string, currentToken string)) *MockAuthService_ChangePassword_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string), args[4].(string))
+	})
+	return _c
+}
+
+func (_c *MockAuthService_ChangePassword_Call) Return(_a0 error) *MockAuthService_ChangePassword_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockAuthService_ChangePassword_Call) RunAndReturn(run func(context.Context, string, string, string, string) error) *MockAuthService_ChangePassword_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteAccount provides a mock function with given fields: ctx, id
 func (_m *MockAuthService) DeleteAccount(ctx context.Context, id string) error {
 	ret := _m.Called(ctx, id)
@@ -198,6 +248,53 @@ func (_c *MockAuthService_Login_Call) Return(_a0 *auth.User, _a1 string, _a2 str
 }
 
 func (_c *MockAuthService_Login_Call) RunAndReturn(run func(context.Context, string, string) (*auth.User, string, string, error)) *MockAuthService_Login_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Logout provides a mock function with given fields: ctx, token
+func (_m *MockAuthService) Logout(ctx context.Context, token string) error {
+	ret := _m.Called(ctx, token)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Logout")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, token)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockAuthService_Logout_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Logout'
+type MockAuthService_Logout_Call struct {
+	*mock.Call
+}
+
+// Logout is a helper method to define mock.On call
+//   - ctx context.Context
+//   - token string
+func (_e *MockAuthService_Expecter) Logout(ctx interface{}, token interface{}) *MockAuthService_Logout_Call {
+	return &MockAuthService_Logout_Call{Call: _e.mock.On("Logout", ctx, token)}
+}
+
+func (_c *MockAuthService_Logout_Call) Run(run func(ctx context.Context, token string)) *MockAuthService_Logout_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockAuthService_Logout_Call) Return(_a0 error) *MockAuthService_Logout_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockAuthService_Logout_Call) RunAndReturn(run func(context.Context, string) error) *MockAuthService_Logout_Call {
 	_c.Call.Return(run)
 	return _c
 }

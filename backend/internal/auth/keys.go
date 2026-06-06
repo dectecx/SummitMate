@@ -12,3 +12,12 @@ func authVerificationKey(email string) cache.Key {
 		ID:     email,
 	}
 }
+
+// authBlacklistKey returns the cache key for blacklisted JWT tokens.
+func authBlacklistKey(token string) cache.Key {
+	return cache.Key{
+		Module: cache.ModuleAuth,
+		Domain: "blacklist",
+		ID:     token,
+	}
+}

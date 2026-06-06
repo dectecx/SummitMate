@@ -7,6 +7,7 @@ import (
 
 	"summitmate/api"
 	"summitmate/internal/auth/tokens"
+	"summitmate/pkg/cache"
 )
 
 // contextKey 為自訂型別，避免 context key 與其他套件衝突。
@@ -15,11 +16,19 @@ type contextKey string
 // UserIDKey 是存放在 context 中的使用者 ID 鍵值。
 const UserIDKey contextKey = "user_id"
 
+func authBlacklistKey(token string) cache.Key {
+	return cache.Key{
+		Module: cache.ModuleAuth,
+		Domain: "blacklist",
+		ID:     token,
+	}
+}
+
 // JWTAuth 目標：
 // 1. 自動偵測 oapi-codegen 注入的 BearerAuthScopes (Context Key)
 // 2. 如果不存在，表示為公開路徑，直接放行。
 // 3. 如果存在，執行 Bearer Token 驗證並注入 UserID。
-func JWTAuth(tokenManager *tokens.TokenManager) func(http.Handler) http.Handler {
+func JWTAuth(tokenManager *tokens.TokenManager, authCache cache.Cache[string]) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			// 檢查 oapi-codegen 注入的 Security Scopes
@@ -70,6 +79,16 @@ func JWTAuth(tokenManager *tokens.TokenManager) func(http.Handler) http.Handler 
 				// 如果有提供 Token 但無效，一律回傳 401，避免客戶端誤解
 				http.Error(writer, `{"message":"Token 無效或已過期"}`, http.StatusUnauthorized)
 				return
+			}
+
+			// 檢查 Token 是否在黑名單中
+			if authCache != nil {
+				_, err := authCache.Get(request.Context(), authBlacklistKey(tokenStr))
+				if err == nil {
+					// 找到 Key 代表已被註銷/列入黑名單
+					http.Error(writer, `{"message":"Token 已被註銷"}`, http.StatusUnauthorized)
+					return
+				}
 			}
 
 			// 將 user_id 注入 context，供下游 handler 使用
