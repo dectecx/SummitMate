@@ -18,6 +18,7 @@ import '../cubits/connectivity/connectivity_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../screens/group_events_list_screen.dart';
 import '../screens/my_group_events_screen.dart';
+import '../screens/auth/change_password_screen.dart';
 import 'sync/sync_status_indicator.dart';
 
 /// 應用程式側邊欄內容 (抽離出來以便在 Drawer 與 Sidebar 共用)
@@ -236,6 +237,14 @@ class AppDrawerContent extends StatelessWidget {
                   ),
                   title: Text(username, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(email ?? '', style: const TextStyle(fontSize: 12)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.lock_outline),
+                  title: const Text('修改密碼'),
+                  onTap: () {
+                    if (!isSidebar) Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()));
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),

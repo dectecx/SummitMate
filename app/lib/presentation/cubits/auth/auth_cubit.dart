@@ -211,6 +211,21 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// 修改密碼
+  ///
+  /// [oldPassword] 舊密碼
+  /// [newPassword] 新密碼
+  Future<AuthResult> changePassword({required String oldPassword, required String newPassword}) async {
+    LogService.info('Changing password', source: _source);
+    try {
+      final result = await _authService.changePassword(oldPassword: oldPassword, newPassword: newPassword);
+      return result;
+    } catch (e) {
+      LogService.error('Change password failed: $e', source: _source);
+      return AuthResult.failure(errorCode: 'PASSWORD_CHANGE_FAILED', errorMessage: e.toString());
+    }
+  }
+
   /// 發送已認證狀態並啟動追蹤
   void _emitAuthenticated(UserProfile user, bool isGuest, {bool isOffline = false}) {
     LogService.info('User authenticated: ${user.id} (${user.displayName})', source: _source);
