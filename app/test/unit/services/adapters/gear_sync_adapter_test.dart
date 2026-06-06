@@ -9,7 +9,9 @@ import 'package:summitmate/domain/interfaces/i_sync_adapter.dart';
 import 'package:summitmate/infrastructure/services/adapters/gear_sync_adapter.dart';
 
 class MockGearLocalDataSource extends Mock implements IGearLocalDataSource {}
+
 class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
+
 class FakeGearItem extends Fake implements GearItem {}
 
 void main() {

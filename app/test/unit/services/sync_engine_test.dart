@@ -12,20 +12,35 @@ import 'package:summitmate/infrastructure/services/adapters/gear_sync_adapter.da
 import 'package:summitmate/infrastructure/services/sync_engine.dart';
 
 class MockTripRepository extends Mock implements ITripRepository {}
+
 class MockItineraryRepository extends Mock implements IItineraryRepository {}
+
 class MockGearRepository extends Mock implements IGearRepository {}
+
 class MockMessageRepository extends Mock implements IMessageRepository {}
+
 class MockGroupEventRepository extends Mock implements IGroupEventRepository {}
+
 class MockSettingsRepository extends Mock implements ISettingsRepository {}
+
 class MockConnectivityService extends Mock implements IConnectivityService {}
+
 class MockAuthService extends Mock implements IAuthService {}
+
 class MockAppDatabase extends Mock implements AppDatabase {}
+
 class MockItineraryLocalDataSource extends Mock implements IItineraryLocalDataSource {}
+
 class MockGearLocalDataSource extends Mock implements IGearLocalDataSource {}
+
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
+
 class MockTripSyncAdapter extends Mock implements TripSyncAdapter {}
+
 class MockItinerarySyncAdapter extends Mock implements ItinerarySyncAdapter {}
+
 class MockGearSyncAdapter extends Mock implements GearSyncAdapter {}
+
 class MockSettings extends Mock implements Settings {}
 
 void main() {
@@ -114,12 +129,15 @@ void main() {
       when(() => mockGearLocal.getAll()).thenAnswer((_) async => []);
 
       // Stub Pull
-      when(() => mockTripSync.pullAndMerge(any())).thenAnswer((_) async => const Success(SyncMergeResult(pulledCount: 0, conflictCount: 0, localWinsCount: 0, remoteWinsCount: 0)));
-      
+      when(() => mockTripSync.pullAndMerge(any())).thenAnswer(
+        (_) async =>
+            const Success(SyncMergeResult(pulledCount: 0, conflictCount: 0, localWinsCount: 0, remoteWinsCount: 0)),
+      );
+
       // Stub T2 syncs
       when(() => mockTripRepo.getActiveTrip(any())).thenAnswer((_) async => const Success(null));
       when(() => mockEventRepo.syncEvents()).thenAnswer((_) async => const Success([]));
-      
+
       // Stub settings update
       when(() => mockSettingsRepo.updateLastSyncTime(any())).thenAnswer((_) async {});
 

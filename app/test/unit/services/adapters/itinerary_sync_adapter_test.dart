@@ -9,7 +9,9 @@ import 'package:summitmate/domain/interfaces/i_sync_adapter.dart';
 import 'package:summitmate/infrastructure/services/adapters/itinerary_sync_adapter.dart';
 
 class MockItineraryLocalDataSource extends Mock implements IItineraryLocalDataSource {}
+
 class MockItineraryRemoteDataSource extends Mock implements IItineraryRemoteDataSource {}
+
 class FakeItineraryItem extends Fake implements ItineraryItem {}
 
 void main() {
