@@ -237,32 +237,95 @@ class _DailyPlanViewState extends State<_DailyPlanView> with AutomaticKeepAliveC
 
   Widget _buildSummaryCard(BuildContext context, DailyMealPlan plan) {
     final theme = Theme.of(context);
-    return Card(
+    final colorScheme = theme.colorScheme;
+
+    // 假定輕量化登山打包的安全糧食重量為 1500g
+    final double weightProgress = (plan.totalWeight / 1500.0).clamp(0.0, 1.0);
+
+    return Container(
       margin: const EdgeInsets.all(16),
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildSummaryItem(
-              context,
-              icon: Icons.scale_outlined,
-              label: '總重量',
-              value: '${plan.totalWeight.toStringAsFixed(0)} g',
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
-            Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
-            _buildSummaryItem(
-              context,
-              icon: Icons.local_fire_department_outlined,
-              label: '總熱量',
-              value: '${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal',
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
-          ],
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [colorScheme.primaryContainer, colorScheme.primaryContainer.withValues(alpha: 0.7)],
+        ),
+        boxShadow: [
+          BoxShadow(color: colorScheme.primary.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 6)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildSummaryItem(
+                    context,
+                    icon: Icons.scale_rounded,
+                    label: '打包總重',
+                    value: '${plan.totalWeight.toStringAsFixed(0)} g',
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                  Container(width: 1, height: 48, color: colorScheme.onPrimaryContainer.withValues(alpha: 0.15)),
+                  _buildSummaryItem(
+                    context,
+                    icon: Icons.local_fire_department_rounded,
+                    label: '預估熱量',
+                    value: '${plan.totalCalories.toStringAsFixed(1).replaceAll(RegExp(r"([.]*0)(?!.*\d)"), "")} kcal',
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // 📊 輕量化指示進度條
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '輕量化目標進度 (基準 1.5kg)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '${(weightProgress * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: weightProgress,
+                      backgroundColor: colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        weightProgress > 0.8
+                            ? Colors
+                                  .orangeAccent // 快超重時給予視覺警示色
+                            : colorScheme.secondary,
+                      ),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
