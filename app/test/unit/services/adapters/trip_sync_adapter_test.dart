@@ -10,7 +10,9 @@ import 'package:summitmate/domain/interfaces/i_sync_adapter.dart';
 import 'package:summitmate/infrastructure/services/adapters/trip_sync_adapter.dart';
 
 class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
+
 class MockTripRemoteDataSource extends Mock implements ITripRemoteDataSource {}
+
 class FakeTrip extends Fake implements Trip {}
 
 void main() {
@@ -76,7 +78,9 @@ void main() {
   group('TripSyncAdapter - pullAndMerge', () {
     test('should add trip to local if not exists in local', () async {
       final remoteTrip = defaultTrip.copyWith(name: 'Remote Trip');
-      when(() => mockRemote.getRemoteTrips()).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
+      when(
+        () => mockRemote.getRemoteTrips(),
+      ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
       when(() => mockLocal.getAllTrips()).thenAnswer((_) async => []);
       when(() => mockLocal.getTripById(any())).thenAnswer((_) async => null);
       when(() => mockLocal.addTrip(any())).thenAnswer((_) async {});
@@ -95,7 +99,9 @@ void main() {
 
     test('should perform local delete if remote deleted and local has pending changes (wasEverSynced)', () async {
       final localTrip = defaultTrip.copyWith(syncStatus: SyncStatus.pendingUpdate, cloudSyncedAt: DateTime.now());
-      when(() => mockRemote.getRemoteTrips()).thenAnswer((_) async => Success(PaginatedList(items: [], total: 0, page: 1, hasMore: false)));
+      when(
+        () => mockRemote.getRemoteTrips(),
+      ).thenAnswer((_) async => Success(PaginatedList(items: [], total: 0, page: 1, hasMore: false)));
       when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
       when(() => mockLocal.deleteTrip(any())).thenAnswer((_) async {});
 
@@ -109,7 +115,9 @@ void main() {
 
     test('should overwrite local if local is synced and remote is updated', () async {
       final remoteTrip = defaultTrip.copyWith(name: 'Remote Updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));
-      when(() => mockRemote.getRemoteTrips()).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
+      when(
+        () => mockRemote.getRemoteTrips(),
+      ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
       when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [defaultTrip]);
       when(() => mockLocal.getTripById('1')).thenAnswer((_) async => defaultTrip);
       when(() => mockLocal.updateTrip(any())).thenAnswer((_) async {});
@@ -122,44 +130,66 @@ void main() {
       verify(() => mockLocal.updateTrip(any())).called(1);
     });
 
-    test('should resolve remote-wins conflict if local is pendingUpdate and remote is newer (> 5s difference)', () async {
-      final localTrip = defaultTrip.copyWith(syncStatus: SyncStatus.pendingUpdate, updatedAt: DateTime(2026, 6, 6, 12, 0, 0));
-      final remoteTrip = defaultTrip.copyWith(name: 'Remote Newer', updatedAt: DateTime(2026, 6, 6, 12, 0, 10)); // 10s newer
-      
-      when(() => mockRemote.getRemoteTrips()).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
-      when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
-      when(() => mockLocal.getTripById('1')).thenAnswer((_) async => localTrip);
-      when(() => mockLocal.updateTrip(any())).thenAnswer((_) async {});
+    test(
+      'should resolve remote-wins conflict if local is pendingUpdate and remote is newer (> 5s difference)',
+      () async {
+        final localTrip = defaultTrip.copyWith(
+          syncStatus: SyncStatus.pendingUpdate,
+          updatedAt: DateTime(2026, 6, 6, 12, 0, 0),
+        );
+        final remoteTrip = defaultTrip.copyWith(
+          name: 'Remote Newer',
+          updatedAt: DateTime(2026, 6, 6, 12, 0, 10),
+        ); // 10s newer
 
-      final result = await adapter.pullAndMerge('scopeId');
+        when(
+          () => mockRemote.getRemoteTrips(),
+        ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
+        when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
+        when(() => mockLocal.getTripById('1')).thenAnswer((_) async => localTrip);
+        when(() => mockLocal.updateTrip(any())).thenAnswer((_) async {});
 
-      expect(result, isA<Success<SyncMergeResult, Exception>>());
-      final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
-      expect(mergeResult.conflictCount, 1);
-      expect(mergeResult.remoteWinsCount, 1);
-      expect(mergeResult.localWinsCount, 0);
+        final result = await adapter.pullAndMerge('scopeId');
 
-      verify(() => mockLocal.updateTrip(any())).called(1);
-    });
+        expect(result, isA<Success<SyncMergeResult, Exception>>());
+        final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
+        expect(mergeResult.conflictCount, 1);
+        expect(mergeResult.remoteWinsCount, 1);
+        expect(mergeResult.localWinsCount, 0);
 
-    test('should resolve local-wins conflict if local is pendingUpdate and remote is older or within tolerance window (<= 5s difference)', () async {
-      final localTrip = defaultTrip.copyWith(syncStatus: SyncStatus.pendingUpdate, updatedAt: DateTime(2026, 6, 6, 12, 0, 0));
-      final remoteTrip = defaultTrip.copyWith(name: 'Remote Close', updatedAt: DateTime(2026, 6, 6, 12, 0, 4)); // 4s newer (within tolerance)
-      
-      when(() => mockRemote.getRemoteTrips()).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
-      when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
-      when(() => mockLocal.getTripById('1')).thenAnswer((_) async => localTrip);
-      when(() => mockLocal.updateTrip(any())).thenAnswer((_) async {});
+        verify(() => mockLocal.updateTrip(any())).called(1);
+      },
+    );
 
-      final result = await adapter.pullAndMerge('scopeId');
+    test(
+      'should resolve local-wins conflict if local is pendingUpdate and remote is older or within tolerance window (<= 5s difference)',
+      () async {
+        final localTrip = defaultTrip.copyWith(
+          syncStatus: SyncStatus.pendingUpdate,
+          updatedAt: DateTime(2026, 6, 6, 12, 0, 0),
+        );
+        final remoteTrip = defaultTrip.copyWith(
+          name: 'Remote Close',
+          updatedAt: DateTime(2026, 6, 6, 12, 0, 4),
+        ); // 4s newer (within tolerance)
 
-      expect(result, isA<Success<SyncMergeResult, Exception>>());
-      final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
-      expect(mergeResult.conflictCount, 1);
-      expect(mergeResult.localWinsCount, 1);
-      expect(mergeResult.remoteWinsCount, 0);
+        when(
+          () => mockRemote.getRemoteTrips(),
+        ).thenAnswer((_) async => Success(PaginatedList(items: [remoteTrip], total: 1, page: 1, hasMore: false)));
+        when(() => mockLocal.getAllTrips()).thenAnswer((_) async => [localTrip]);
+        when(() => mockLocal.getTripById('1')).thenAnswer((_) async => localTrip);
+        when(() => mockLocal.updateTrip(any())).thenAnswer((_) async {});
 
-      verify(() => mockLocal.updateTrip(any())).called(1);
-    });
+        final result = await adapter.pullAndMerge('scopeId');
+
+        expect(result, isA<Success<SyncMergeResult, Exception>>());
+        final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
+        expect(mergeResult.conflictCount, 1);
+        expect(mergeResult.localWinsCount, 1);
+        expect(mergeResult.remoteWinsCount, 0);
+
+        verify(() => mockLocal.updateTrip(any())).called(1);
+      },
+    );
   });
 }

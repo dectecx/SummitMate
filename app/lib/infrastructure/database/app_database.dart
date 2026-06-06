@@ -51,6 +51,8 @@ part 'app_database.g.dart';
   daos: [],
 )
 class AppDatabase extends _$AppDatabase {
+  static const String databaseName = 'summitmate_db';
+
   AppDatabase() : super(_openConnection());
 
   @override
@@ -127,7 +129,7 @@ class AppDatabase extends _$AppDatabase {
 
 QueryExecutor _openConnection() {
   return driftDatabase(
-    name: 'summitmate_db',
+    name: AppDatabase.databaseName,
     native: const DriftNativeOptions(),
     web: DriftWebOptions(
       sqlite3Wasm: Uri.parse('sqlite3.wasm'),

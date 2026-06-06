@@ -42,7 +42,7 @@ void main() {
         final local = DateTime(2026, 6, 6, 12, 0, 0);
         // remote is null -> epoch 0 -> older than local
         expect(SyncConflictResolver.remoteIsNewer(local, null), isFalse);
-        
+
         // local is null -> epoch 0 -> remote is newer and diff > 5s
         expect(SyncConflictResolver.remoteIsNewer(null, local), isTrue);
       });
