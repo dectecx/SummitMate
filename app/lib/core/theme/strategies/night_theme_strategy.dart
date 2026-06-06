@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../i_theme_strategy.dart';
+import '../theme_extensions.dart';
 
 /// 月光夜 (Night Theme)
 ///
@@ -19,6 +20,22 @@ class NightThemeStrategy implements AppThemeStrategy {
   ThemeData get themeData => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
+
+    extensions: <ThemeExtension<dynamic>>[
+      const CategoryColors(
+        preBreakfast: Color(0xFF8C9EFF),
+        breakfast: Color(0xFFFFD180),
+        lunch: Color(0xFFB9F6CA),
+        teatime: Color(0xFFFFE082),
+        dinner: Color(0xFFEA80FC),
+        action: Color(0xFF82B1FF),
+        emergency: Color(0xFFFF8A80),
+        sleep: Color(0xFF8C9EFF),
+        cook: Color(0xFFFFD180),
+        wear: Color(0xFFA7FFEB),
+        other: Colors.grey,
+      ),
+    ],
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryNeon,

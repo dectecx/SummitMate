@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants.dart';
+import '../../core/theme/theme_extensions.dart';
 
 /// 裝備分類輔助工具
 /// 集中管理分類相關的 icon、名稱、顏色等，避免重複定義
@@ -39,7 +40,11 @@ class GearCategoryHelper {
   }
 
   /// 取得分類顏色
-  static Color getColor(String category) {
+  static Color getColor(String category, BuildContext context) {
+    final categoryColors = Theme.of(context).extension<CategoryColors>();
+    if (categoryColors != null) {
+      return categoryColors.getGearColor(category);
+    }
     switch (category) {
       case GearCategory.sleep:
         return Colors.indigo;

@@ -315,7 +315,7 @@ class _MealItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
-      leading: Icon(MealUIUtils.getMealIcon(type), color: MealUIUtils.getMealColor(type), size: 20),
+      leading: Icon(MealUIUtils.getMealIcon(type), color: MealUIUtils.getMealColor(type, context), size: 20),
       title: Text(meal.name, style: const TextStyle(fontSize: 14)),
       subtitle: meal.note != null ? Text(meal.note!, style: const TextStyle(fontSize: 11)) : null,
       trailing: Text(

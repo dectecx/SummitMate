@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:summitmate/core/constants.dart';
 import 'package:summitmate/presentation/utils/gear_utils.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockBuildContext extends Mock implements BuildContext {}
 
 void main() {
+  final mockContext = MockBuildContext();
+
   group('GearCategoryHelper Tests', () {
     test('Given GearCategoryHelper Tests, When executing, Then allCategories constant contains expected values', () {
       expect(
@@ -30,11 +35,11 @@ void main() {
     });
 
     test('Given each category, When calling GearCategoryHelper Tests, Then getColor returns correct color', () {
-      expect(GearCategoryHelper.getColor(GearCategory.sleep), Colors.indigo);
-      expect(GearCategoryHelper.getColor(GearCategory.cook), Colors.orange);
-      expect(GearCategoryHelper.getColor(GearCategory.wear), Colors.teal);
-      expect(GearCategoryHelper.getColor(GearCategory.other), Colors.grey);
-      expect(GearCategoryHelper.getColor('Unknown'), Colors.grey);
+      expect(GearCategoryHelper.getColor(GearCategory.sleep, mockContext), Colors.indigo);
+      expect(GearCategoryHelper.getColor(GearCategory.cook, mockContext), Colors.orange);
+      expect(GearCategoryHelper.getColor(GearCategory.wear, mockContext), Colors.teal);
+      expect(GearCategoryHelper.getColor(GearCategory.other, mockContext), Colors.grey);
+      expect(GearCategoryHelper.getColor('Unknown', mockContext), Colors.grey);
     });
 
     test('Given GearCategoryHelper Tests, When executing, Then compareCategories sorts categories correctly', () {

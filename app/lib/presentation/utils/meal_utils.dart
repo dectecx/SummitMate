@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/enums/meal_type.dart';
+import '../../core/theme/theme_extensions.dart';
 
 /// 糧食相關的 UI 工具類
 class MealUIUtils {
@@ -24,7 +25,11 @@ class MealUIUtils {
   }
 
   /// 取得餐別對應的顏色
-  static Color getMealColor(MealType type) {
+  static Color getMealColor(MealType type, BuildContext context) {
+    final categoryColors = Theme.of(context).extension<CategoryColors>();
+    if (categoryColors != null) {
+      return categoryColors.getMealColor(type);
+    }
     switch (type) {
       case MealType.preBreakfast:
         return Colors.indigo;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../i_theme_strategy.dart';
+import '../theme_extensions.dart';
 
 /// 大地色 (Earth Theme)
 ///
@@ -19,6 +20,22 @@ class EarthThemeStrategy implements AppThemeStrategy {
   ThemeData get themeData => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+
+    extensions: <ThemeExtension<dynamic>>[
+      const CategoryColors(
+        preBreakfast: Colors.indigo,
+        breakfast: Colors.orange,
+        lunch: Colors.green,
+        teatime: Colors.brown,
+        dinner: Colors.deepPurple,
+        action: Colors.blue,
+        emergency: Colors.red,
+        sleep: Colors.indigo,
+        cook: Colors.orange,
+        wear: Colors.teal,
+        other: Colors.grey,
+      ),
+    ],
 
     colorScheme: ColorScheme.fromSeed(
       seedColor: clayBrown,
