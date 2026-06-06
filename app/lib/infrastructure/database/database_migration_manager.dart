@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqlite3/sqlite3.dart' as sqlite;
+import 'sqlite3_helper.dart';
 import 'package:drift/drift.dart';
 import 'app_database.dart';
 
@@ -131,10 +131,10 @@ class DatabaseMigrationManager {
     // 1. 實例化新資料庫（此時會觸發 onCreate 建立全新且乾淨的所有表）
     final newDb = AppDatabase();
 
-    sqlite.Database? oldDb;
+    SqliteDbWrapper? oldDb;
     try {
       // 2. 使用 sqlite3 直接開啟舊的唯讀備份資料庫
-      oldDb = sqlite.sqlite3.open(backupPath);
+      oldDb = openSqliteDb(backupPath);
 
       final tables = newDb.allTables.toList();
       final totalTables = tables.length;
