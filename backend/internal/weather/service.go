@@ -35,16 +35,14 @@ type weatherService struct {
 	httpClient *http.Client
 }
 
-func NewWeatherService(logger *slog.Logger, db database.Beginner, repo WeatherRepository, cwaAPIKey string, locations []string) WeatherService {
+func NewWeatherService(logger *slog.Logger, db database.Beginner, repo WeatherRepository, httpClient *http.Client, cwaAPIKey string, locations []string) WeatherService {
 	return &weatherService{
-		logger:    logger.With("component", "weather"),
-		db:        db,
-		repo:      repo,
-		cwaAPIKey: cwaAPIKey,
-		locations: locations,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		logger:     logger.With("component", "weather"),
+		db:         db,
+		repo:       repo,
+		cwaAPIKey:  cwaAPIKey,
+		locations:  locations,
+		httpClient: httpClient,
 	}
 }
 

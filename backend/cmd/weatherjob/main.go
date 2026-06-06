@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
@@ -36,7 +37,10 @@ func main() {
 
 	// 執行 ETL
 	weatherRepo := weather.NewWeatherRepository(pool)
-	weatherSvc := weather.NewWeatherService(logger, pool, weatherRepo, cfg.CWAApiKey, nil)
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	weatherSvc := weather.NewWeatherService(logger, pool, weatherRepo, httpClient, cfg.CWAApiKey, nil)
 
 	slog.Info("開始執行天氣 ETL")
 	if err := weatherSvc.FetchAndStore(ctx); err != nil {
