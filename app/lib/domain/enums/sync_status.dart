@@ -12,6 +12,11 @@ enum SyncStatus {
   /// 等待刪除 (本地刪除)
   pendingDelete,
 
+  /// 衝突：本地有未同步修改，但遠端版本較新，本地勝出待推送
+  ///
+  /// 下一輪 Push 時應優先推送此狀態的資料
+  conflict,
+
   /// 同步中
   syncing,
 

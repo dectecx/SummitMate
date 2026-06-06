@@ -50,6 +50,12 @@ class OfflineConfig {
   /// Pull 合併策略 (LWW = Last-Writer-Wins)
   static const String mergeStrategy = 'lww';
 
+  /// LWW 衝突容忍時間閾值 (秒)
+  ///
+  /// 當本地與遠端的 `updatedAt` 時間差在此閾值以內時，視為本地勝出。
+  /// 這是為了容忍不同裝置之間的系統時鐘誤差，避免秒級差距導致使用者修改被意外覆蓋。
+  static const int conflictToleranceSeconds = 5;
+
   /// 自動 Push 延遲 (寫入後等待幾秒再 Push，避免頻繁操作)
   static const int autoPushDelaySeconds = 3;
 
