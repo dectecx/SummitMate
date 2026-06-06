@@ -137,6 +137,10 @@ func (s *weatherService) fetchFromCWA(ctx context.Context) ([]rawRow, *time.Time
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, nil, fmt.Errorf("CWA API returned unexpected status code: %d", resp.StatusCode)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, nil, err
