@@ -39,6 +39,10 @@ import '../../widgets/responsive_layout.dart';
 import '../../widgets/tutorial/tutorial_aware_builder.dart';
 import '../collaboration_tab.dart';
 
+import '../../widgets/common/offline_status_banner.dart';
+import '../../../domain/interfaces/i_connectivity_service.dart';
+import 'dart:async';
+
 import 'widgets/main_app_bar.dart';
 import 'widgets/main_bottom_nav_bar.dart';
 import 'dialogs/trip_selection_dialog.dart';
@@ -59,10 +63,16 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
   UsageTrackingService? _usageTrackingService;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
+    _connectivitySubscription = getIt<IConnectivityService>().onConnectivityChanged.listen((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -137,6 +147,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void dispose() {
     _usageTrackingService?.dispose();
+    _connectivitySubscription?.cancel();
     super.dispose();
   }
 
@@ -233,11 +244,11 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           final bool isSyncInProgress = syncState is SyncInProgress;
                           final isLoading = isMessageSyncing || isPollSyncing || isTripLoading || isSyncInProgress;
 
-                          final settingsState = context.watch<SettingsCubit>().state;
-                          final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+                          final isOffline = getIt<IConnectivityService>().isOffline;
                           final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
 
                           if (!hasTrips && !isTripLoading) {
+                            final theme = Theme.of(context);
                             return Scaffold(
                               key: _scaffoldKey,
                               appBar: AppBar(
@@ -261,32 +272,49 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                 ],
                               ),
                               drawer: const AppDrawer(),
-                              body: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.hiking, size: 80, color: Colors.grey),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      '歡迎使用 SummitMate',
-                                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                              body: Column(
+                                children: [
+                                  const OfflineStatusBanner(),
+                                  Expanded(
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.hiking, size: 80, color: Colors.grey),
+                                          const SizedBox(height: 16),
+                                          const Text(
+                                            '歡迎使用 SummitMate',
+                                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
+                                          const SizedBox(height: 32),
+                                          FilledButton.icon(
+                                            onPressed: isOffline
+                                                ? () => ToastService.error('離線模式下無法從雲端匯入行程')
+                                                : () => TripSelectionDialog.show(context),
+                                            icon: const Icon(Icons.cloud_download),
+                                            label: const Text('從雲端匯入行程'),
+                                            style: isOffline
+                                                ? FilledButton.styleFrom(
+                                                    backgroundColor: theme.disabledColor,
+                                                    foregroundColor: theme.colorScheme.onSurface.withValues(
+                                                      alpha: 0.38,
+                                                    ),
+                                                  )
+                                                : null,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          OutlinedButton.icon(
+                                            onPressed: () => context.read<TripCubit>().createDefaultTrip(),
+                                            icon: const Icon(Icons.add),
+                                            label: const Text('建立新行程'),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
-                                    const SizedBox(height: 32),
-                                    FilledButton.icon(
-                                      onPressed: () => TripSelectionDialog.show(context),
-                                      icon: const Icon(Icons.cloud_download),
-                                      label: const Text('從雲端匯入行程'),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    OutlinedButton.icon(
-                                      onPressed: () => context.read<TripCubit>().createDefaultTrip(),
-                                      icon: const Icon(Icons.add),
-                                      label: const Text('建立新行程'),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             );
                           }
@@ -311,6 +339,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             body: ResponsiveLayout(
                               mobile: Column(
                                 children: [
+                                  const OfflineStatusBanner(),
                                   const CloudSyncBanner(),
                                   Expanded(
                                     child: AnimatedSwitcher(
@@ -343,6 +372,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                   Expanded(
                                     child: Column(
                                       children: [
+                                        const OfflineStatusBanner(),
                                         const CloudSyncBanner(),
                                         Expanded(child: _buildTabContent(_currentIndex)),
                                         const BannerAdWidget(location: 'navigation_bottom'),
@@ -403,6 +433,8 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                                   Expanded(
                                     child: Column(
                                       children: [
+                                        const OfflineStatusBanner(),
+                                        const CloudSyncBanner(),
                                         Expanded(child: _buildTabContent(_currentIndex)),
                                         const BannerAdWidget(location: 'navigation_bottom'),
                                       ],

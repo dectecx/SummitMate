@@ -6,6 +6,7 @@ import '../../../cubits/settings/settings_state.dart';
 import '../../../cubits/auth/auth_cubit.dart';
 import '../../../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../../presentation/widgets/responsive_layout.dart';
 
 import '../../../widgets/sync/sync_status_indicator.dart';
@@ -120,7 +121,11 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
             onPressed: onEditToggle,
           ),
           if (isEditMode)
-            IconButton(icon: const Icon(Icons.cloud_upload_outlined), tooltip: '上傳至雲端', onPressed: onUpload),
+            IconButton(
+              icon: Icon(Icons.cloud_upload_outlined, color: isOffline ? Theme.of(context).disabledColor : null),
+              tooltip: isOffline ? '離線模式下無法上傳' : '上傳至雲端',
+              onPressed: isOffline ? () => ToastService.error('離線模式下無法使用雲端上傳功能') : onUpload,
+            ),
           if (!isEditMode) ...[IconButton(icon: const Icon(Icons.map_outlined), tooltip: '查看地圖', onPressed: onMap)],
         ],
         // 同步狀態指示器

@@ -459,7 +459,10 @@ class _MealSectionCardState extends State<_MealSectionCard> {
                       color: MealUIUtils.getMealColor(widget.type, context).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(MealUIUtils.getMealIcon(widget.type), color: MealUIUtils.getMealColor(widget.type, context)),
+                    child: Icon(
+                      MealUIUtils.getMealIcon(widget.type),
+                      color: MealUIUtils.getMealColor(widget.type, context),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
