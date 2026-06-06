@@ -4,7 +4,7 @@ import 'package:summitmate/core/error/app_error.dart';
 
 void main() {
   group('ApiException', () {
-    test('fromAppError parses valid AppError correctly', () {
+    test('Given ApiException, When executing, Then fromAppError parses valid AppError correctly', () {
       final appError = AppError(
         type: 'validation_error',
         code: 'invalid_input',
@@ -21,7 +21,7 @@ void main() {
       expect(exception.param, 'email');
     });
 
-    test('fromAppError maps unknown type to ApiErrorType.unknown', () {
+    test('Given ApiException, When executing, Then fromAppError maps unknown type to ApiErrorType.unknown', () {
       final appError = AppError(type: 'some_weird_type', code: 'unknown_code', message: 'Something went wrong');
 
       final exception = ApiException.fromAppError(500, appError);
@@ -32,13 +32,13 @@ void main() {
       expect(exception.param, null);
     });
 
-    test('tryParse returns null for non-map data', () {
+    test('Given non-map data, When calling ApiException, Then tryParse returns null', () {
       final exception = ApiException.tryParse(400, 'Just a regular string error');
 
       expect(exception, isNull);
     });
 
-    test('tryParse returns null for map data missing typical keys', () {
+    test('Given map data missing typical keys, When calling ApiException, Then tryParse returns null', () {
       final json = {'data': 'Some data'}; // No "error" wrapper AND no "type"/"message"
 
       final exception = ApiException.tryParse(400, json);
@@ -46,7 +46,7 @@ void main() {
       expect(exception, isNull);
     });
 
-    test('tryParse successfully parses wrapped error {"error": {...}}', () {
+    test('Given ApiException, When executing, Then tryParse successfully parses wrapped error {"error": {...}}', () {
       final json = {
         'error': {'type': 'business_logic_error', 'code': 'item_not_found', 'message': 'Item not found in database'},
       };

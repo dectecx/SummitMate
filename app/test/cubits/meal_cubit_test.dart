@@ -24,7 +24,7 @@ void main() {
       mealCubit.close();
     });
 
-    test('initial state is MealInitial', () {
+    test('Given MealCubit, When executing, Then initial state is MealInitial', () {
       expect(mealCubit.state, isA<MealInitial>());
     });
 

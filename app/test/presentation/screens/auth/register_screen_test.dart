@@ -45,7 +45,9 @@ void main() {
   }
 
   group('RegisterScreen Validation', () {
-    testWidgets('should show error for invalid email', (tester) async {
+    testWidgets('Given invalid email, When calling RegisterScreen Validation, Then it should show error', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final emailField = find.byType(TextFormField).at(1);
@@ -59,7 +61,9 @@ void main() {
       expect(find.text('請輸入有效的 Email 格式'), findsOneWidget);
     });
 
-    testWidgets('should show error for weak password', (tester) async {
+    testWidgets('Given weak password, When calling RegisterScreen Validation, Then it should show error', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final passwordField = find.byType(TextFormField).at(2);
@@ -74,7 +78,9 @@ void main() {
       expect(find.text('密碼至少需要 8 個字元'), findsOneWidget);
     });
 
-    testWidgets('should show password strength indicator', (tester) async {
+    testWidgets('Given RegisterScreen Validation, When triggered, Then it should show password strength indicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final passwordField = find.byType(TextFormField).at(2);
@@ -95,7 +101,9 @@ void main() {
       expect(find.text('強'), findsOneWidget);
     });
 
-    testWidgets('should show error when passwords do not match', (tester) async {
+    testWidgets('Given passwords do not match, When calling RegisterScreen Validation, Then it should show error', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       final passwordField = find.byType(TextFormField).at(2);

@@ -29,7 +29,7 @@ func TestFavoriteService_AddFavorite(t *testing.T) {
 	mockDB := new(MockBeginner)
 	svc := NewFavoriteService(logger, mockDB, mockRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling FavoriteService AddFavorite, Then it returns success without error", func(t *testing.T) {
 		userID := "user-1"
 		targetID := "target-1"
 		favType := "trip"
@@ -52,7 +52,7 @@ func TestFavoriteService_RemoveFavorite(t *testing.T) {
 	mockDB := new(MockBeginner)
 	svc := NewFavoriteService(logger, mockDB, mockRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling FavoriteService RemoveFavorite, Then it returns success without error", func(t *testing.T) {
 		userID := "user-1"
 		targetID := "target-1"
 

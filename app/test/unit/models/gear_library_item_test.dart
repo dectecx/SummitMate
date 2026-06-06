@@ -3,7 +3,7 @@ import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('GearLibraryItem Model Tests', () {
-    test('should create with default values', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should create with default values', () {
       final item = GearLibraryItem(
         id: 'test-id',
         name: '',
@@ -26,7 +26,7 @@ void main() {
       expect(item.createdAt, isNotNull);
     });
 
-    test('should use provided id', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should use provided id', () {
       const customId = 'custom-id-12345';
       final item = GearLibraryItem(
         id: customId,
@@ -43,7 +43,7 @@ void main() {
       expect(item.id, equals(customId));
     });
 
-    test('should create with all named parameters', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should create with all named parameters', () {
       final now = DateTime.now();
       final item = GearLibraryItem(
         id: 'test-id-all',
@@ -66,7 +66,7 @@ void main() {
       expect(item.updatedAt, equals(now));
     });
 
-    test('should calculate weightInKg correctly', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should calculate weightInKg correctly', () {
       final item = GearLibraryItem(
         id: 'w1',
         name: '睡袋',
@@ -82,7 +82,7 @@ void main() {
       expect(item.weightInKg, equals(1.5));
     });
 
-    test('should handle zero weight', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should handle zero weight', () {
       final item = GearLibraryItem(
         id: 'z1',
         name: '地圖',
@@ -99,7 +99,7 @@ void main() {
       expect(item.weightInKg, equals(0));
     });
 
-    test('should validate category values', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should validate category values', () {
       final validCategories = ['Sleep', 'Cook', 'Wear', 'Other'];
 
       for (final cat in validCategories) {
@@ -118,7 +118,7 @@ void main() {
       }
     });
 
-    test('should convert to JSON correctly', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should convert to JSON correctly', () {
       final item = GearLibraryItem(
         id: 'test-id',
         userId: 'user1',
@@ -144,7 +144,7 @@ void main() {
       expect(json['updatedAt'], isNotNull);
     });
 
-    test('should create from JSON correctly', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should create from JSON correctly', () {
       final json = {
         'id': 'json-id',
         'userId': 'user2',
@@ -168,30 +168,33 @@ void main() {
       expect(item.notes, equals('MSR Hubba'));
     });
 
-    test('should handle JSON with missing optional fields', () {
-      final json = {
-        'id': 'opt-1',
-        'userId': 'guest',
-        'name': '爐頭',
-        'weight': 300.0,
-        'category': 'Cook',
-        'createdAt': '2024-01-01T00:00:00.000Z',
-        'createdBy': 'guest',
-        'updatedAt': '2024-01-02T00:00:00.000Z',
-        'updatedBy': 'guest',
-      };
+    test(
+      'Given GearLibraryItem Model Tests, When triggered, Then it should handle JSON with missing optional fields',
+      () {
+        final json = {
+          'id': 'opt-1',
+          'userId': 'guest',
+          'name': '爐頭',
+          'weight': 300.0,
+          'category': 'Cook',
+          'createdAt': '2024-01-01T00:00:00.000Z',
+          'createdBy': 'guest',
+          'updatedAt': '2024-01-02T00:00:00.000Z',
+          'updatedBy': 'guest',
+        };
 
-      final item = GearLibraryItem.fromJson(json);
+        final item = GearLibraryItem.fromJson(json);
 
-      expect(item.name, equals('爐頭'));
-      expect(item.weight, equals(300));
-      expect(item.category, equals('Cook'));
-      expect(item.notes, isNull);
-      expect(item.id, equals('opt-1'));
-      expect(item.userId, equals('guest'));
-    });
+        expect(item.name, equals('爐頭'));
+        expect(item.weight, equals(300));
+        expect(item.category, equals('Cook'));
+        expect(item.notes, isNull);
+        expect(item.id, equals('opt-1'));
+        expect(item.userId, equals('guest'));
+      },
+    );
 
-    test('should round-trip JSON conversion', () {
+    test('Given GearLibraryItem Model Tests, When triggered, Then it should round-trip JSON conversion', () {
       final original = GearLibraryItem(
         id: 'rt-1',
         name: '睡袋',
@@ -215,7 +218,7 @@ void main() {
       expect(restored.notes, equals(original.notes));
     });
 
-    test('should calculate total weight for multiple items', () {
+    test('Given multiple items, When calling GearLibraryItem Model Tests, Then it should calculate total weight', () {
       final items = [
         GearLibraryItem(
           id: 't1',

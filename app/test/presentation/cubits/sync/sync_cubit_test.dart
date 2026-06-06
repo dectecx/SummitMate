@@ -29,7 +29,7 @@ void main() {
   });
 
   group('SyncCubit', () {
-    test('initial state is SyncInitial', () {
+    test('Given SyncCubit, When executing, Then initial state is SyncInitial', () {
       when(() => mockConnectivityService.isOffline).thenReturn(false);
 
       cubit = SyncCubit(mockSyncEngine, mockConnectivityService);

@@ -40,7 +40,7 @@ void main() {
 
     final gearItem2 = GearItem(id: 'item2', tripId: 'trip2', name: 'Stove', weight: 500, category: 'Cook');
 
-    test('initial state is GearInitial', () {
+    test('Given GearCubit, When executing, Then initial state is GearInitial', () {
       expect(GearCubit(mockGearRepository, mockTripRepository).state, const GearInitial());
     });
 
@@ -163,7 +163,7 @@ void main() {
       },
     );
 
-    test('loadGear emits GearError on failure', () async {
+    test('Given failure, When calling GearCubit, Then loadGear emits GearError', () async {
       when(() => mockGearRepository.getAllItems()).thenThrow(Exception('DB Error'));
 
       final cubit = GearCubit(mockGearRepository, mockTripRepository);
@@ -176,7 +176,7 @@ void main() {
       await cubit.loadGear('trip1');
     });
 
-    test('addItem fails gracefully', () async {
+    test('Given GearCubit, When executing, Then addItem fails gracefully', () async {
       when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => Failure(Exception('Add Failed')));
       when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => []);
 

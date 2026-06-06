@@ -5,16 +5,19 @@ void main() {
   group('DateTimeUtcConverter', () {
     const converter = DateTimeUtcConverter();
 
-    test('fromJson should parse ISO8601 string and convert to local time', () {
-      const json = '2024-05-10T10:00:00Z';
-      final result = converter.fromJson(json);
+    test(
+      'Given DateTimeUtcConverter, When executing, Then fromJson should parse ISO8601 string and convert to local time',
+      () {
+        const json = '2024-05-10T10:00:00Z';
+        final result = converter.fromJson(json);
 
-      expect(result.isUtc, isFalse);
-      // Since result is local, we compare with a DateTime created from UTC
-      expect(result, DateTime.parse(json).toLocal());
-    });
+        expect(result.isUtc, isFalse);
+        // Since result is local, we compare with a DateTime created from UTC
+        expect(result, DateTime.parse(json).toLocal());
+      },
+    );
 
-    test('toJson should convert DateTime to UTC ISO8601 string', () {
+    test('Given DateTimeUtcConverter, When executing, Then toJson should convert DateTime to UTC ISO8601 string', () {
       final date = DateTime(2024, 5, 10, 10, 0, 0); // Local time
       final result = converter.toJson(date);
 
@@ -30,29 +33,32 @@ void main() {
   group('NullableDateTimeUtcConverter', () {
     const converter = NullableDateTimeUtcConverter();
 
-    test('fromJson should return null when input is null', () {
+    test('Given input is null, When calling NullableDateTimeUtcConverter, Then fromJson should return null', () {
       expect(converter.fromJson(null), isNull);
     });
 
-    test('fromJson should parse non-null string', () {
+    test('Given NullableDateTimeUtcConverter, When executing, Then fromJson should parse non-null string', () {
       const json = '2024-05-10T10:00:00Z';
       expect(converter.fromJson(json), DateTime.parse(json).toLocal());
     });
 
-    test('toJson should return null when input is null', () {
+    test('Given input is null, When calling NullableDateTimeUtcConverter, Then toJson should return null', () {
       expect(converter.toJson(null), isNull);
     });
 
-    test('toJson should convert non-null DateTime to UTC string', () {
-      final date = DateTime(2024, 5, 10, 10, 0, 0);
-      expect(converter.toJson(date), date.toUtc().toIso8601String());
-    });
+    test(
+      'Given NullableDateTimeUtcConverter, When executing, Then toJson should convert non-null DateTime to UTC string',
+      () {
+        final date = DateTime(2024, 5, 10, 10, 0, 0);
+        expect(converter.toJson(date), date.toUtc().toIso8601String());
+      },
+    );
   });
 
   group('DateOnlyConverter', () {
     const converter = DateOnlyConverter();
 
-    test('fromJson should parse YYYY-MM-DD string', () {
+    test('Given DateOnlyConverter, When executing, Then fromJson should parse YYYY-MM-DD string', () {
       const json = '2024-05-10';
       final result = converter.fromJson(json);
 
@@ -61,40 +67,43 @@ void main() {
       expect(result.day, 10);
     });
 
-    test('toJson should serialize to YYYY-MM-DD string', () {
+    test('Given DateOnlyConverter, When executing, Then toJson should serialize to YYYY-MM-DD string', () {
       final date = DateTime(2024, 5, 10, 15, 30, 0);
       final result = converter.toJson(date);
 
       expect(result, '2024-05-10');
     });
 
-    test('toJson should handle single digit month and day with padding', () {
-      final date = DateTime(2024, 1, 5);
-      final result = converter.toJson(date);
+    test(
+      'Given DateOnlyConverter, When executing, Then toJson should handle single digit month and day with padding',
+      () {
+        final date = DateTime(2024, 1, 5);
+        final result = converter.toJson(date);
 
-      expect(result, '2024-01-05');
-    });
+        expect(result, '2024-01-05');
+      },
+    );
   });
 
   group('NullableDateOnlyConverter', () {
     const converter = NullableDateOnlyConverter();
 
-    test('fromJson should return null when input is null', () {
+    test('Given input is null, When calling NullableDateOnlyConverter, Then fromJson should return null', () {
       expect(converter.fromJson(null), isNull);
     });
 
-    test('fromJson should parse non-null string', () {
+    test('Given NullableDateOnlyConverter, When executing, Then fromJson should parse non-null string', () {
       const json = '2024-05-10';
       final result = converter.fromJson(json);
       expect(result?.year, 2024);
       expect(result?.day, 10);
     });
 
-    test('toJson should return null when input is null', () {
+    test('Given input is null, When calling NullableDateOnlyConverter, Then toJson should return null', () {
       expect(converter.toJson(null), isNull);
     });
 
-    test('toJson should serialize non-null to YYYY-MM-DD', () {
+    test('Given NullableDateOnlyConverter, When executing, Then toJson should serialize non-null to YYYY-MM-DD', () {
       final date = DateTime(2024, 5, 10);
       expect(converter.toJson(date), '2024-05-10');
     });

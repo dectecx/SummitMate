@@ -46,7 +46,7 @@ void main() {
   });
 
   group('SettingsCubit', () {
-    test('initial state is SettingsInitial', () {
+    test('Given SettingsCubit, When executing, Then initial state is SettingsInitial', () {
       expect(settingsCubit.state, isA<SettingsInitial>());
     });
 

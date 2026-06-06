@@ -41,7 +41,7 @@ void main() {
   });
 
   group('TripRemoteDataSource', () {
-    test('getRemoteTrips returns list of trips on success', () async {
+    test('Given success, When calling TripRemoteDataSource, Then getRemoteTrips returns list of trips', () async {
       final paginationResponse = TripListPaginationResponse.fromJson({
         'items': [
           {
@@ -74,7 +74,7 @@ void main() {
       expect(paginated.items.first.id, 'trip-123');
     });
 
-    test('uploadTrip returns new id on success', () async {
+    test('Given success, When calling TripRemoteDataSource, Then uploadTrip returns new id', () async {
       when(() => mockTripApi.createTrip(any())).thenAnswer((_) async => testTripResponse);
 
       final trip = Trip.fromJson({
@@ -94,7 +94,7 @@ void main() {
       expect((result as Success).value, 'trip-123');
     });
 
-    test('deleteTrip calls api', () async {
+    test('Given TripRemoteDataSource, When executing, Then deleteTrip calls api', () async {
       when(() => mockTripApi.deleteTrip('trip-123')).thenAnswer((_) async {});
 
       final result = await dataSource.deleteTrip('trip-123');
@@ -103,7 +103,7 @@ void main() {
       verify(() => mockTripApi.deleteTrip('trip-123')).called(1);
     });
 
-    test('getTripDetails returns trip on success', () async {
+    test('Given success, When calling TripRemoteDataSource, Then getTripDetails returns trip', () async {
       when(() => mockTripApi.getTrip('trip-123')).thenAnswer((_) async => testTripResponse);
 
       final result = await dataSource.getTripDetails('trip-123');

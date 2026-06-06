@@ -6,7 +6,7 @@ import 'package:summitmate/core/gpx_utils.dart';
 void main() {
   group('GpxUtils', () {
     group('extractTrackPoints', () {
-      test('extracts points from single track with single segment', () {
+      test('Given extractTrackPoints, When executing, Then extracts points from single track with single segment', () {
         final gpx = Gpx();
         final trk = Trk();
         final seg = Trkseg();
@@ -22,7 +22,7 @@ void main() {
         expect(points[2].latitude, 23.7);
       });
 
-      test('extracts points from multiple tracks', () {
+      test('Given extractTrackPoints, When executing, Then extracts points from multiple tracks', () {
         final gpx = Gpx();
 
         final trk1 = Trk();
@@ -42,7 +42,7 @@ void main() {
         expect(points.length, 2);
       });
 
-      test('extracts points from multiple segments in one track', () {
+      test('Given extractTrackPoints, When executing, Then extracts points from multiple segments in one track', () {
         final gpx = Gpx();
         final trk = Trk();
 
@@ -60,7 +60,7 @@ void main() {
         expect(points.length, 2);
       });
 
-      test('returns empty list for empty GPX', () {
+      test('Given empty GPX, When calling extractTrackPoints, Then returns empty list', () {
         final gpx = Gpx();
 
         final points = GpxUtils.extractTrackPoints(gpx);
@@ -68,7 +68,7 @@ void main() {
         expect(points, isEmpty);
       });
 
-      test('filters out points with null lat', () {
+      test('Given extractTrackPoints, When executing, Then filters out points with null lat', () {
         final gpx = Gpx();
         final trk = Trk();
         final seg = Trkseg();
@@ -85,7 +85,7 @@ void main() {
         expect(points.length, 2);
       });
 
-      test('filters out points with null lon', () {
+      test('Given extractTrackPoints, When executing, Then filters out points with null lon', () {
         final gpx = Gpx();
         final trk = Trk();
         final seg = Trkseg();
@@ -104,17 +104,17 @@ void main() {
     });
 
     group('calculateTotalDistance', () {
-      test('returns 0 for empty list', () {
+      test('Given empty list, When calling calculateTotalDistance, Then returns 0', () {
         final distance = GpxUtils.calculateTotalDistance([]);
         expect(distance, 0.0);
       });
 
-      test('returns 0 for single point', () {
+      test('Given single point, When calling calculateTotalDistance, Then returns 0', () {
         final distance = GpxUtils.calculateTotalDistance([LatLng(23.5, 121.0)]);
         expect(distance, 0.0);
       });
 
-      test('calculates distance between two points', () {
+      test('Given calculateTotalDistance, When executing, Then calculates distance between two points', () {
         // 約 11km 的距離 (緯度差 0.1 度)
         final points = [LatLng(23.5, 121.0), LatLng(23.6, 121.0)];
 
@@ -124,7 +124,7 @@ void main() {
         expect(distance, lessThan(12));
       });
 
-      test('calculates cumulative distance for multiple points', () {
+      test('Given multiple points, When calling calculateTotalDistance, Then calculates cumulative distance', () {
         final points = [LatLng(23.5, 121.0), LatLng(23.6, 121.0), LatLng(23.7, 121.0)];
 
         final distance = GpxUtils.calculateTotalDistance(points);
@@ -136,18 +136,18 @@ void main() {
     });
 
     group('calculateCenter', () {
-      test('returns null for empty list', () {
+      test('Given empty list, When calling calculateCenter, Then returns null', () {
         final center = GpxUtils.calculateCenter([]);
         expect(center, isNull);
       });
 
-      test('returns the point for single point', () {
+      test('Given single point, When calling calculateCenter, Then returns the point', () {
         final center = GpxUtils.calculateCenter([LatLng(23.5, 121.0)]);
         expect(center?.latitude, 23.5);
         expect(center?.longitude, 121.0);
       });
 
-      test('calculates center of two points', () {
+      test('Given calculateCenter, When executing, Then calculates center of two points', () {
         final points = [LatLng(23.0, 121.0), LatLng(24.0, 122.0)];
 
         final center = GpxUtils.calculateCenter(points);
@@ -156,7 +156,7 @@ void main() {
         expect(center?.longitude, 121.5);
       });
 
-      test('calculates center of multiple points', () {
+      test('Given calculateCenter, When executing, Then calculates center of multiple points', () {
         final points = [LatLng(23.0, 121.0), LatLng(24.0, 121.0), LatLng(23.0, 122.0), LatLng(24.0, 122.0)];
 
         final center = GpxUtils.calculateCenter(points);

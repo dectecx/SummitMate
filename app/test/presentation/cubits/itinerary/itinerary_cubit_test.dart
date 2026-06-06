@@ -66,7 +66,7 @@ void main() {
   });
 
   group('ItineraryCubit', () {
-    test('initial state is ItineraryInitial', () {
+    test('Given ItineraryCubit, When executing, Then initial state is ItineraryInitial', () {
       expect(cubit.state, const ItineraryInitial());
     });
 

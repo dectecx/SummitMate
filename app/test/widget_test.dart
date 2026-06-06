@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Basic Widget Tests', () {
-    testWidgets('MaterialApp can be created', (WidgetTester tester) async {
+    testWidgets('Given MaterialApp, When pumped, Then it should be created successfully', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           title: 'SummitMate Test',
@@ -19,7 +19,7 @@ void main() {
       expect(find.text('SummitMate'), findsOneWidget);
     });
 
-    testWidgets('BottomNavigationBar renders correctly', (WidgetTester tester) async {
+    testWidgets('Given BottomNavigationBar, When pumped, Then it should render correctly', (WidgetTester tester) async {
       int selectedIndex = 0;
 
       await tester.pumpWidget(
@@ -54,7 +54,9 @@ void main() {
       // Tab 應該可以正常點擊
     });
 
-    testWidgets('Onboarding TextField renders', (WidgetTester tester) async {
+    testWidgets('Given Onboarding TextField, When pumped, Then it should render successfully', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

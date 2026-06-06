@@ -58,7 +58,7 @@ void main() {
   });
 
   group('GroupEventRemoteDataSource.getEvents', () {
-    test('returns list of events on success', () async {
+    test('Given success, When calling GroupEventRemoteDataSource.getEvents, Then returns list of events', () async {
       final paginationResponse = GroupEventPaginationResponse.fromJson({
         'items': [
           {
@@ -107,56 +107,59 @@ void main() {
   });
 
   group('GroupEventRemoteDataSource.getMyEvents', () {
-    test('returns paginated list of my events on success', () async {
-      final paginationResponse = GroupEventPaginationResponse.fromJson({
-        'items': [
-          {
-            'id': 'evt-1',
-            'title': 'My Hosted Event',
-            'host_id': 'u1',
-            'host_name': 'Me',
-            'host_avatar': '',
-            'status': 'open',
-            'start_date': '2024-01-01T00:00:00Z',
-            'location': 'Mountain',
-            'description': 'A test trip',
-            'max_members': 10,
-            'application_count': 0,
-            'total_application_count': 0,
-            'approval_required': false,
-            'private_message': '',
-            'like_count': 0,
-            'comment_count': 0,
-            'is_liked': false,
-            'latest_comments': [],
-            'created_at': '2024-01-01T00:00:00Z',
-            'created_by': 'u1',
-            'updated_at': '2024-01-01T00:00:00Z',
-            'updated_by': 'u1',
-          },
-        ],
-        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
-      });
+    test(
+      'Given success, When calling GroupEventRemoteDataSource.getMyEvents, Then returns paginated list of my events',
+      () async {
+        final paginationResponse = GroupEventPaginationResponse.fromJson({
+          'items': [
+            {
+              'id': 'evt-1',
+              'title': 'My Hosted Event',
+              'host_id': 'u1',
+              'host_name': 'Me',
+              'host_avatar': '',
+              'status': 'open',
+              'start_date': '2024-01-01T00:00:00Z',
+              'location': 'Mountain',
+              'description': 'A test trip',
+              'max_members': 10,
+              'application_count': 0,
+              'total_application_count': 0,
+              'approval_required': false,
+              'private_message': '',
+              'like_count': 0,
+              'comment_count': 0,
+              'is_liked': false,
+              'latest_comments': [],
+              'created_at': '2024-01-01T00:00:00Z',
+              'created_by': 'u1',
+              'updated_at': '2024-01-01T00:00:00Z',
+              'updated_by': 'u1',
+            },
+          ],
+          'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
+        });
 
-      when(
-        () => mockApiService.listMyEvents(
-          any(),
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer((_) async => paginationResponse);
+        when(
+          () => mockApiService.listMyEvents(
+            any(),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => paginationResponse);
 
-      final result = await dataSource.getMyEvents(type: 'host', page: 1, limit: 10);
+        final result = await dataSource.getMyEvents(type: 'host', page: 1, limit: 10);
 
-      expect(result, isA<Success>());
-      final paginated = (result as Success).value;
-      expect(paginated.items.length, 1);
-      expect(paginated.items[0].title, 'My Hosted Event');
+        expect(result, isA<Success>());
+        final paginated = (result as Success).value;
+        expect(paginated.items.length, 1);
+        expect(paginated.items[0].title, 'My Hosted Event');
 
-      verify(() => mockApiService.listMyEvents('host', page: 1, limit: 10)).called(1);
-    });
+        verify(() => mockApiService.listMyEvents('host', page: 1, limit: 10)).called(1);
+      },
+    );
 
-    test('returns failure on error', () async {
+    test('Given error, When calling GroupEventRemoteDataSource.getMyEvents, Then returns failure', () async {
       when(
         () => mockApiService.listMyEvents(
           any(),
@@ -172,7 +175,7 @@ void main() {
   });
 
   group('GroupEventRemoteDataSource CRUD', () {
-    test('createEvent returns ID', () async {
+    test('Given GroupEventRemoteDataSource CRUD, When executing, Then createEvent returns ID', () async {
       when(() => mockApiService.createEvent(any())).thenAnswer((_) async => testEventResponse);
 
       final result = await dataSource.createEvent(
@@ -189,7 +192,7 @@ void main() {
       expect((result as Success).value, 'evt-999');
     });
 
-    test('deleteEvent calls delete', () async {
+    test('Given GroupEventRemoteDataSource CRUD, When executing, Then deleteEvent calls delete', () async {
       when(() => mockApiService.deleteEvent('evt-1')).thenAnswer((_) async {});
 
       final result = await dataSource.deleteEvent('evt-1');
@@ -200,7 +203,7 @@ void main() {
   });
 
   group('Application and Comments', () {
-    test('applyEvent returns application ID', () async {
+    test('Given Application and Comments, When executing, Then applyEvent returns application ID', () async {
       final appResponse = GroupEventApplicationResponse.fromJson({
         'id': 'app-123',
         'event_id': 'evt-1',
@@ -222,7 +225,7 @@ void main() {
       expect((result as Success).value, 'app-123');
     });
 
-    test('addComment returns comment object', () async {
+    test('Given Application and Comments, When executing, Then addComment returns comment object', () async {
       final commentResponse = GroupEventCommentResponse.fromJson({
         'id': 'c1',
         'event_id': 'e1',

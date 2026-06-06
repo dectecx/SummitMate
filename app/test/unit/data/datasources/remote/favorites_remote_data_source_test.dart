@@ -34,38 +34,41 @@ void main() {
   });
 
   group('FavoritesRemoteDataSource.getFavorites', () {
-    test('returns success with list on success', () async {
-      final paginationResponse = FavoritePaginationResponse.fromJson({
-        'items': [
-          {
-            'id': 'fav-1',
-            'target_id': '1',
-            'type': 'trip',
-            'created_at': '2024-01-01T00:00:00Z',
-            'created_by': 'user-1',
-            'updated_at': '2024-01-01T00:00:00Z',
-            'updated_by': 'user-1',
-          },
-        ],
-        'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
-      });
-      when(
-        () => mockApi.listFavorites(
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer((_) async => paginationResponse);
+    test(
+      'Given success, When calling FavoritesRemoteDataSource.getFavorites, Then returns success with list',
+      () async {
+        final paginationResponse = FavoritePaginationResponse.fromJson({
+          'items': [
+            {
+              'id': 'fav-1',
+              'target_id': '1',
+              'type': 'trip',
+              'created_at': '2024-01-01T00:00:00Z',
+              'created_by': 'user-1',
+              'updated_at': '2024-01-01T00:00:00Z',
+              'updated_by': 'user-1',
+            },
+          ],
+          'pagination': {'next_cursor': null, 'has_more': false, 'page': 1, 'limit': 20, 'total': 1},
+        });
+        when(
+          () => mockApi.listFavorites(
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => paginationResponse);
 
-      final result = await dataSource.getFavorites();
+        final result = await dataSource.getFavorites();
 
-      expect(result, isA<Success>());
-      final paginated = (result as Success).value;
-      expect(paginated.items.length, 1);
-      expect(paginated.page, 1);
-      expect(paginated.total, 1);
-    });
+        expect(result, isA<Success>());
+        final paginated = (result as Success).value;
+        expect(paginated.items.length, 1);
+        expect(paginated.page, 1);
+        expect(paginated.total, 1);
+      },
+    );
 
-    test('returns failure on exception', () async {
+    test('Given exception, When calling FavoritesRemoteDataSource.getFavorites, Then returns failure', () async {
       when(
         () => mockApi.listFavorites(
           page: any(named: 'page'),
@@ -80,22 +83,28 @@ void main() {
   });
 
   group('FavoritesRemoteDataSource.updateFavorite', () {
-    test('calls addFavorite when isFavorite is true', () async {
-      when(() => mockApi.addFavorite(any())).thenAnswer((_) async => testResponse);
+    test(
+      'Given isFavorite is true, When calling FavoritesRemoteDataSource.updateFavorite, Then calls addFavorite',
+      () async {
+        when(() => mockApi.addFavorite(any())).thenAnswer((_) async => testResponse);
 
-      final result = await dataSource.updateFavorite('1', FavoriteType.mountain, true);
+        final result = await dataSource.updateFavorite('1', FavoriteType.mountain, true);
 
-      expect(result, isA<Success>());
-      verify(() => mockApi.addFavorite(any())).called(1);
-    });
+        expect(result, isA<Success>());
+        verify(() => mockApi.addFavorite(any())).called(1);
+      },
+    );
 
-    test('calls removeFavorite when isFavorite is false', () async {
-      when(() => mockApi.removeFavorite('1')).thenAnswer((_) async {});
+    test(
+      'Given isFavorite is false, When calling FavoritesRemoteDataSource.updateFavorite, Then calls removeFavorite',
+      () async {
+        when(() => mockApi.removeFavorite('1')).thenAnswer((_) async {});
 
-      final result = await dataSource.updateFavorite('1', FavoriteType.mountain, false);
+        final result = await dataSource.updateFavorite('1', FavoriteType.mountain, false);
 
-      expect(result, isA<Success>());
-      verify(() => mockApi.removeFavorite('1')).called(1);
-    });
+        expect(result, isA<Success>());
+        verify(() => mockApi.removeFavorite('1')).called(1);
+      },
+    );
   });
 }

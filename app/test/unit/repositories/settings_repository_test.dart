@@ -28,7 +28,7 @@ void main() {
   });
 
   group('SettingsRepository', () {
-    test('getSettings() returns existing settings if present', () async {
+    test('Given present, When calling SettingsRepository, Then getSettings() returns existing settings', () async {
       // Arrange
       const model = Settings(username: 'Test User');
       when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
@@ -40,7 +40,7 @@ void main() {
       expect(result.username, 'Test User');
     });
 
-    test('getSettings() creates default settings if missing', () async {
+    test('Given missing, When calling SettingsRepository, Then getSettings() creates default settings', () async {
       // Arrange
       when(() => mockDataSource.getSettings()).thenAnswer((_) async => null);
       when(() => mockDataSource.saveSettings(any())).thenAnswer((_) async {});
@@ -54,7 +54,7 @@ void main() {
       verify(() => mockDataSource.saveSettings(any())).called(1);
     });
 
-    test('updateUsername() updates settings and saves', () async {
+    test('Given SettingsRepository, When executing, Then updateUsername() updates settings and saves', () async {
       // Arrange
       const model = Settings();
       when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
@@ -69,7 +69,7 @@ void main() {
       ).called(1);
     });
 
-    test('updateOfflineMode() updates value and saves', () async {
+    test('Given SettingsRepository, When executing, Then updateOfflineMode() updates value and saves', () async {
       // Arrange
       const model = Settings();
       when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
@@ -86,7 +86,7 @@ void main() {
       ).called(1);
     });
 
-    test('updateAvatar() updates avatar and saves', () async {
+    test('Given SettingsRepository, When executing, Then updateAvatar() updates avatar and saves', () async {
       // Arrange
       const model = Settings();
       when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
@@ -101,7 +101,7 @@ void main() {
       ).called(1);
     });
 
-    test('updateLastSyncTime() updates time and saves', () async {
+    test('Given SettingsRepository, When executing, Then updateLastSyncTime() updates time and saves', () async {
       // Arrange
       const model = Settings();
       when(() => mockDataSource.getSettings()).thenAnswer((_) async => model);
@@ -118,7 +118,7 @@ void main() {
       ).called(1);
     });
 
-    test('resetSettings() clears via DataSource', () async {
+    test('Given SettingsRepository, When executing, Then resetSettings() clears via DataSource', () async {
       // Arrange
       when(() => mockDataSource.clear()).thenAnswer((_) async {});
 

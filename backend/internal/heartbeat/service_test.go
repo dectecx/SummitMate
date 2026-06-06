@@ -14,7 +14,7 @@ import (
 func TestHeartbeatService_HandleHeartbeat(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	t.Run("NewRecordSuccess", func(t *testing.T) {
+	t.Run("Given NewRecordSuccess, When calling HeartbeatService HandleHeartbeat, Then it behaves as expected", func(t *testing.T) {
 		mockRepo := new(MockHeartbeatRepository)
 		svc := NewHeartbeatService(logger, mockRepo)
 
@@ -52,7 +52,7 @@ func TestHeartbeatService_HandleHeartbeat(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("ExistingRecordServerSideWin", func(t *testing.T) {
+	t.Run("Given ExistingRecordServerSideWin, When calling HeartbeatService HandleHeartbeat, Then it behaves as expected", func(t *testing.T) {
 		mockRepo := new(MockHeartbeatRepository)
 		svc := NewHeartbeatService(logger, mockRepo)
 
@@ -102,7 +102,7 @@ func TestHeartbeatService_HandleHeartbeat(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("UpsertError", func(t *testing.T) {
+	t.Run("Given UpsertError, When calling HeartbeatService HandleHeartbeat, Then it behaves as expected", func(t *testing.T) {
 		mockRepo := new(MockHeartbeatRepository)
 		svc := NewHeartbeatService(logger, mockRepo)
 

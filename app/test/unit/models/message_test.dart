@@ -3,7 +3,7 @@ import 'package:summitmate/domain/domain.dart';
 
 void main() {
   group('Message Model Tests', () {
-    test('should create with default values', () {
+    test('Given Message Model Tests, When triggered, Then it should create with default values', () {
       final message = Message(
         id: 'default-id',
         timestamp: DateTime.now(),
@@ -21,7 +21,7 @@ void main() {
       expect(message.timestamp, isNotNull);
     });
 
-    test('should create with named parameters', () {
+    test('Given Message Model Tests, When triggered, Then it should create with named parameters', () {
       final timestamp = DateTime(2024, 12, 15, 10, 30);
       final message = Message(
         id: 'test-uuid-123',
@@ -44,7 +44,7 @@ void main() {
       expect(message.timestamp, equals(timestamp));
     });
 
-    test('should report isReply false when parentId is null', () {
+    test('Given parentId is null, When calling Message Model Tests, Then it should report isReply false', () {
       final message = Message(
         id: 'no-reply-id',
         timestamp: DateTime.now(),
@@ -57,7 +57,7 @@ void main() {
       expect(message.isReply, isFalse);
     });
 
-    test('should report isReply true when parentId is set', () {
+    test('Given parentId is set, When calling Message Model Tests, Then it should report isReply true', () {
       final message = Message(
         id: 'test-id-3',
         parentId: 'parent-uuid',
@@ -71,7 +71,7 @@ void main() {
       expect(message.isReply, isTrue);
     });
 
-    test('should convert to/from JSON', () {
+    test('Given Message Model Tests, When triggered, Then it should convert to/from JSON', () {
       final message = Message(
         id: 'test-uuid',
         user: 'Bob',
@@ -93,7 +93,7 @@ void main() {
       expect(restored.content, equals(message.content));
     });
 
-    test('should handle nested reply structure', () {
+    test('Given Message Model Tests, When triggered, Then it should handle nested reply structure', () {
       final parent = Message(
         id: 'parent-uuid',
         content: '主留言',

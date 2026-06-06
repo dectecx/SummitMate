@@ -33,7 +33,7 @@ void main() {
   });
 
   group('UserRemoteDataSource', () {
-    test('searchUserByEmail returns mapped user', () async {
+    test('Given UserRemoteDataSource, When executing, Then searchUserByEmail returns mapped user', () async {
       when(() => mockUserApi.searchUserByEmail('test@example.com')).thenAnswer((_) async => testUserResponse);
 
       final result = await dataSource.searchUserByEmail('test@example.com');
@@ -43,7 +43,7 @@ void main() {
       verify(() => mockUserApi.searchUserByEmail('test@example.com')).called(1);
     });
 
-    test('getUserById returns mapped user', () async {
+    test('Given UserRemoteDataSource, When executing, Then getUserById returns mapped user', () async {
       when(() => mockUserApi.getUserById('user-1')).thenAnswer((_) async => testUserResponse);
 
       final result = await dataSource.getUserById('user-1');
@@ -52,7 +52,7 @@ void main() {
       verify(() => mockUserApi.getUserById('user-1')).called(1);
     });
 
-    test('getCurrentUser returns mapped user', () async {
+    test('Given UserRemoteDataSource, When executing, Then getCurrentUser returns mapped user', () async {
       when(() => mockUserApi.getCurrentUser()).thenAnswer((_) async => testUserResponse);
 
       final result = await dataSource.getCurrentUser();
@@ -61,7 +61,7 @@ void main() {
       verify(() => mockUserApi.getCurrentUser()).called(1);
     });
 
-    test('updateProfile returns mapped updated user', () async {
+    test('Given UserRemoteDataSource, When executing, Then updateProfile returns mapped updated user', () async {
       when(() => mockUserApi.updateProfile(any())).thenAnswer((_) async => testUserResponse);
 
       final profile = UserProfile(id: 'user-1', email: 'test@example.com', displayName: 'New Name');

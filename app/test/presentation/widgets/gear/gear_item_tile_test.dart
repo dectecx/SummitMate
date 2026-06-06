@@ -16,7 +16,9 @@ void main() {
       quantity: 1,
     );
 
-    testWidgets('View mode displays checkbox and info', (WidgetTester tester) async {
+    testWidgets('Given GearItemTile Widget Test, When executing, Then View mode displays checkbox and info', (
+      WidgetTester tester,
+    ) async {
       bool toggled = false;
 
       await tester.pumpWidget(
@@ -47,44 +49,47 @@ void main() {
       expect(toggled, true);
     });
 
-    testWidgets('Edit mode displays quantity controls and delete button', (WidgetTester tester) async {
-      bool increased = false;
-      bool decreased = false;
-      bool deleted = false;
+    testWidgets(
+      'Given GearItemTile Widget Test, When executing, Then Edit mode displays quantity controls and delete button',
+      (WidgetTester tester) async {
+        bool increased = false;
+        bool decreased = false;
+        bool deleted = false;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: GearItemTile(
-              item: gearItem,
-              mode: GearListMode.edit,
-              onToggle: () {},
-              onTap: () {},
-              onDelete: () => deleted = true,
-              onIncrease: () => increased = true,
-              onDecrease: () => decreased = true,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: GearItemTile(
+                item: gearItem,
+                mode: GearListMode.edit,
+                onToggle: () {},
+                onTap: () {},
+                onDelete: () => deleted = true,
+                onIncrease: () => increased = true,
+                onDecrease: () => decreased = true,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Verify controls
-      expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
-      expect(find.byIcon(Icons.remove_circle_outline), findsOneWidget);
-      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+        // Verify controls
+        expect(find.byIcon(Icons.add_circle_outline), findsOneWidget);
+        expect(find.byIcon(Icons.remove_circle_outline), findsOneWidget);
+        expect(find.byIcon(Icons.delete_outline), findsOneWidget);
 
-      // Verify checkbox is ABSENT in edit mode
-      expect(find.byType(Checkbox), findsNothing);
+        // Verify checkbox is ABSENT in edit mode
+        expect(find.byType(Checkbox), findsNothing);
 
-      // Verify interactions
-      await tester.tap(find.byIcon(Icons.add_circle_outline));
-      expect(increased, true);
+        // Verify interactions
+        await tester.tap(find.byIcon(Icons.add_circle_outline));
+        expect(increased, true);
 
-      await tester.tap(find.byIcon(Icons.remove_circle_outline));
-      expect(decreased, true);
+        await tester.tap(find.byIcon(Icons.remove_circle_outline));
+        expect(decreased, true);
 
-      await tester.tap(find.byIcon(Icons.delete_outline));
-      expect(deleted, true);
-    });
+        await tester.tap(find.byIcon(Icons.delete_outline));
+        expect(deleted, true);
+      },
+    );
   });
 }

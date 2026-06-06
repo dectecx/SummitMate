@@ -18,7 +18,9 @@ void main() {
       updatedBy: 'u1',
     );
 
-    testWidgets('Should display basic trip info correctly', (WidgetTester tester) async {
+    testWidgets('Given TripCard Widget Test, When triggered, Then it should display basic trip info correctly', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -33,7 +35,9 @@ void main() {
       expect(find.text('進行中'), findsNothing);
     });
 
-    testWidgets('Should show "進行中" badge when isActive is true', (WidgetTester tester) async {
+    testWidgets('Given isActive is true, When calling TripCard Widget Test, Then it should show "進行中" badge', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -50,48 +54,53 @@ void main() {
       expect(find.text('進行中'), findsOneWidget);
     });
 
-    testWidgets('Should display action buttons and trigger callbacks', (WidgetTester tester) async {
-      bool editCalled = false;
-      bool deleteCalled = false;
-      bool uploadCalled = false;
-      bool manageMembersCalled = false;
+    testWidgets(
+      'Given TripCard Widget Test, When triggered, Then it should display action buttons and trigger callbacks',
+      (WidgetTester tester) async {
+        bool editCalled = false;
+        bool deleteCalled = false;
+        bool uploadCalled = false;
+        bool manageMembersCalled = false;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TripCard(
-              trip: testTrip,
-              isActive: false,
-              roleLabel: 'Member',
-              onTap: () {},
-              onEdit: () => editCalled = true,
-              onDelete: () => deleteCalled = true,
-              onUpload: () => uploadCalled = true,
-              onManageMembers: () => manageMembersCalled = true,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: TripCard(
+                trip: testTrip,
+                isActive: false,
+                roleLabel: 'Member',
+                onTap: () {},
+                onEdit: () => editCalled = true,
+                onDelete: () => deleteCalled = true,
+                onUpload: () => uploadCalled = true,
+                onManageMembers: () => manageMembersCalled = true,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('編輯'), findsOneWidget);
-      expect(find.text('刪除'), findsOneWidget);
-      expect(find.text('同步'), findsOneWidget);
-      expect(find.text('成員'), findsOneWidget);
+        expect(find.text('編輯'), findsOneWidget);
+        expect(find.text('刪除'), findsOneWidget);
+        expect(find.text('同步'), findsOneWidget);
+        expect(find.text('成員'), findsOneWidget);
 
-      await tester.tap(find.text('編輯'));
-      expect(editCalled, true);
+        await tester.tap(find.text('編輯'));
+        expect(editCalled, true);
 
-      await tester.tap(find.text('刪除'));
-      expect(deleteCalled, true);
+        await tester.tap(find.text('刪除'));
+        expect(deleteCalled, true);
 
-      await tester.tap(find.text('同步'));
-      expect(uploadCalled, true);
+        await tester.tap(find.text('同步'));
+        expect(uploadCalled, true);
 
-      await tester.tap(find.text('成員'));
-      expect(manageMembersCalled, true);
-    });
+        await tester.tap(find.text('成員'));
+        expect(manageMembersCalled, true);
+      },
+    );
 
-    testWidgets('Should hide action buttons if callbacks are null', (WidgetTester tester) async {
+    testWidgets('Given callbacks are null, When calling TripCard Widget Test, Then it should hide action buttons', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

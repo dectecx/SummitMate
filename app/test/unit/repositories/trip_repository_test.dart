@@ -40,7 +40,7 @@ void main() {
   });
 
   group('TripRepository', () {
-    test('getAllTrips delegates to localDataSource', () async {
+    test('Given TripRepository, When executing, Then getAllTrips delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getAllTrips()).thenAnswer((_) async => [testTrip]);
       final result = await repository.getAllTrips('user_1');
       expect(result, isA<Success>());
@@ -48,7 +48,7 @@ void main() {
       verify(() => mockLocalDataSource.getAllTrips()).called(1);
     });
 
-    test('getTripById delegates to localDataSource', () async {
+    test('Given TripRepository, When executing, Then getTripById delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => testTrip);
       final result = await repository.getTripById('trip_1');
       expect(result, isA<Success>());
@@ -56,21 +56,21 @@ void main() {
       verify(() => mockLocalDataSource.getTripById('trip_1')).called(1);
     });
 
-    test('deleteTrip delegates to localDataSource', () async {
+    test('Given TripRepository, When executing, Then deleteTrip delegates to localDataSource', () async {
       when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => testTrip);
       when(() => mockLocalDataSource.updateTrip(any())).thenAnswer((_) async => {});
       await repository.deleteTrip('trip_1');
       verify(() => mockLocalDataSource.updateTrip(any())).called(1);
     });
 
-    test('Negative: getTripById returns null if not found', () async {
+    test('Given not found, When calling TripRepository, Then Negative: getTripById returns null', () async {
       when(() => mockLocalDataSource.getTripById('unknown')).thenAnswer((_) async => null);
       final result = await repository.getTripById('unknown');
       expect(result, isA<Success>());
       expect((result as Success).value, isNull);
     });
 
-    test('Extreme: getAllTrips handles large number of trips', () async {
+    test('Given TripRepository, When executing, Then Extreme: getAllTrips handles large number of trips', () async {
       final manyTrips = List.generate(
         100,
         (i) => Trip(

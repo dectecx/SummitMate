@@ -20,7 +20,7 @@ func TestTripMealService_ListItems(t *testing.T) {
 	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := trip.NewTripMealService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripMealService ListItems, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
 		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
@@ -42,7 +42,7 @@ func TestTripMealService_CreateItem(t *testing.T) {
 	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := trip.NewTripMealService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripMealService CreateItem, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
 		item := &trip.TripMealItem{Name: "Lunch Day 1"}
@@ -64,7 +64,7 @@ func TestTripMealService_ReplaceAllItems(t *testing.T) {
 	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
 	svc := trip.NewTripMealService(logger, mockRepo, mockTripRepo, mockMemberRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling TripMealService ReplaceAllItems, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
 		items := []*trip.TripMealItem{

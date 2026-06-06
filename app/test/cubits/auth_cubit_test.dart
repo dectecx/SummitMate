@@ -44,7 +44,7 @@ void main() {
   });
 
   group('AuthCubit', () {
-    test('initial state is AuthInitial', () {
+    test('Given AuthCubit, When executing, Then initial state is AuthInitial', () {
       expect(authCubit.state, isA<AuthInitial>());
     });
 

@@ -3,7 +3,7 @@ import 'package:summitmate/infrastructure/tools/log_service.dart';
 
 void main() {
   group('LogEntry', () {
-    test('should create from constructor', () {
+    test('Given LogEntry, When triggered, Then it should create from constructor', () {
       final entry = LogEntry(
         timestamp: DateTime(2024, 12, 16, 10, 30, 0),
         level: LogLevel.info,
@@ -16,7 +16,7 @@ void main() {
       expect(entry.source, 'TestSource');
     });
 
-    test('should format correctly', () {
+    test('Given LogEntry, When triggered, Then it should format correctly', () {
       final entry = LogEntry(
         timestamp: DateTime(2024, 12, 16, 10, 30, 45),
         level: LogLevel.warning,
@@ -27,7 +27,7 @@ void main() {
       expect(entry.formatted, '10:30:45 [WARNING] [Test] Warning message');
     });
 
-    test('should format without source', () {
+    test('Given LogEntry, When triggered, Then it should format without source', () {
       final entry = LogEntry(
         timestamp: DateTime(2024, 12, 16, 10, 30, 45),
         level: LogLevel.error,
@@ -37,7 +37,7 @@ void main() {
       expect(entry.formatted, '10:30:45 [ERROR  ] Error occurred');
     });
 
-    test('should convert to/from JSON', () {
+    test('Given LogEntry, When triggered, Then it should convert to/from JSON', () {
       final original = LogEntry(
         timestamp: DateTime(2024, 12, 16, 10, 30, 0),
         level: LogLevel.debug,
@@ -58,11 +58,11 @@ void main() {
   });
 
   group('LogLevel', () {
-    test('should have 4 levels', () {
+    test('Given LogLevel, When triggered, Then it should have 4 levels', () {
       expect(LogLevel.values.length, 4);
     });
 
-    test('should have correct values', () {
+    test('Given LogLevel, When triggered, Then it should have correct values', () {
       expect(LogLevel.debug.name, 'debug');
       expect(LogLevel.info.name, 'info');
       expect(LogLevel.warning.name, 'warning');

@@ -30,70 +30,73 @@ void main() {
   });
 
   group('SummitMate Smoke Test (Full App Walkthrough)', () {
-    testWidgets('Guest User Flow: Landing -> Guest Login -> Main Nav -> Settings', (tester) async {
-      mockConnectivityService = MockConnectivityService();
-      mockSyncEngine = MockSyncEngine();
-      mockTripRepository = MockTripRepository();
-      mockAuthService = MockAuthService();
+    testWidgets(
+      'Given SummitMate Smoke Test (Full App Walkthrough), When executing, Then Guest User Flow: Landing -> Guest Login -> Main Nav -> Settings',
+      (tester) async {
+        mockConnectivityService = MockConnectivityService();
+        mockSyncEngine = MockSyncEngine();
+        mockTripRepository = MockTripRepository();
+        mockAuthService = MockAuthService();
 
-      getIt.allowReassignment = true;
+        getIt.allowReassignment = true;
 
-      await app.main();
-      await tester.pumpAndSettle();
-
-      // Override dependencies
-      getIt.registerSingleton<IConnectivityService>(mockConnectivityService);
-      getIt.registerSingleton<ISyncEngine>(mockSyncEngine);
-      getIt.registerSingleton<ITripRepository>(mockTripRepository);
-      getIt.registerSingleton<IAuthService>(mockAuthService);
-
-      // --- MOCK SETUP ---
-      when(() => mockAuthService.onAuthStateChanged).thenAnswer((_) => const Stream.empty());
-      when(() => mockAuthService.currentUserId).thenReturn(null);
-      when(() => mockConnectivityService.isOffline).thenReturn(false);
-      when(() => mockConnectivityService.onConnectivityChanged).thenAnswer((_) => Stream.value(true));
-      when(() => mockSyncEngine.watchPendingSyncCount()).thenAnswer((_) => Stream.value(0));
-      when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([]));
-      when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
-
-      await tester.pumpAndSettle();
-
-      // 1. Verify Welcome/Login Screen
-      // expect(find.text('歡迎使用 SummitMate'), findsOneWidget); // Assuming welcome text
-
-      // 2. Guest Login
-      final guestButton = find.text('訪客登入');
-      if (guestButton.evaluate().isNotEmpty) {
-        await tester.tap(guestButton);
+        await app.main();
         await tester.pumpAndSettle();
-      } else {
-        // If already logged in or different UI, skip to main navigation
-      }
 
-      // 3. Verify Main Navigation (Trip Tab)
-      expect(find.byIcon(Icons.map_outlined), findsOneWidget); // Trip tab icon
-      expect(find.text('行程'), findsOneWidget);
+        // Override dependencies
+        getIt.registerSingleton<IConnectivityService>(mockConnectivityService);
+        getIt.registerSingleton<ISyncEngine>(mockSyncEngine);
+        getIt.registerSingleton<ITripRepository>(mockTripRepository);
+        getIt.registerSingleton<IAuthService>(mockAuthService);
 
-      // 4. Navigate to Gear Tab
-      await tester.tap(find.byIcon(Icons.backpack_outlined));
-      await tester.pumpAndSettle();
-      expect(find.text('裝備'), findsOneWidget);
+        // --- MOCK SETUP ---
+        when(() => mockAuthService.onAuthStateChanged).thenAnswer((_) => const Stream.empty());
+        when(() => mockAuthService.currentUserId).thenReturn(null);
+        when(() => mockConnectivityService.isOffline).thenReturn(false);
+        when(() => mockConnectivityService.onConnectivityChanged).thenAnswer((_) => Stream.value(true));
+        when(() => mockSyncEngine.watchPendingSyncCount()).thenAnswer((_) => Stream.value(0));
+        when(() => mockTripRepository.getAllTrips(any())).thenAnswer((_) async => Success([]));
+        when(() => mockTripRepository.getActiveTrip(any())).thenAnswer((_) async => Success(null));
 
-      // 5. Navigate to Settings
-      final settingsButton = find.byIcon(Icons.settings_outlined);
-      if (settingsButton.evaluate().isNotEmpty) {
-        await tester.tap(settingsButton);
         await tester.pumpAndSettle();
-        expect(find.text('系統設定'), findsOneWidget);
 
-        // Toggle Theme or something
-        // await tester.tap(find.text('切換主題'));
-        // await tester.pumpAndSettle();
-      }
+        // 1. Verify Welcome/Login Screen
+        // expect(find.text('歡迎使用 SummitMate'), findsOneWidget); // Assuming welcome text
 
-      // 6. Back to Trip
-      await tester.tap(find.byIcon(Icons.map_outlined));
-      await tester.pumpAndSettle();
-    });
+        // 2. Guest Login
+        final guestButton = find.text('訪客登入');
+        if (guestButton.evaluate().isNotEmpty) {
+          await tester.tap(guestButton);
+          await tester.pumpAndSettle();
+        } else {
+          // If already logged in or different UI, skip to main navigation
+        }
+
+        // 3. Verify Main Navigation (Trip Tab)
+        expect(find.byIcon(Icons.map_outlined), findsOneWidget); // Trip tab icon
+        expect(find.text('行程'), findsOneWidget);
+
+        // 4. Navigate to Gear Tab
+        await tester.tap(find.byIcon(Icons.backpack_outlined));
+        await tester.pumpAndSettle();
+        expect(find.text('裝備'), findsOneWidget);
+
+        // 5. Navigate to Settings
+        final settingsButton = find.byIcon(Icons.settings_outlined);
+        if (settingsButton.evaluate().isNotEmpty) {
+          await tester.tap(settingsButton);
+          await tester.pumpAndSettle();
+          expect(find.text('系統設定'), findsOneWidget);
+
+          // Toggle Theme or something
+          // await tester.tap(find.text('切換主題'));
+          // await tester.pumpAndSettle();
+        }
+
+        // 6. Back to Trip
+        await tester.tap(find.byIcon(Icons.map_outlined));
+        await tester.pumpAndSettle();
+      },
+    );
   });
 }

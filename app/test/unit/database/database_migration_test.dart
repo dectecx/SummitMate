@@ -76,7 +76,7 @@ void main() {
   }
 
   group('DatabaseMigrationManager 遷移整合測試', () {
-    test('狀況三：全新安裝 - 資料庫不存在時，直接設定版號並不執行遷移', () async {
+    test('Given DatabaseMigrationManager 遷移整合測試, When 執行測試, Then 狀況三：全新安裝 - 資料庫不存在時，直接設定版號並不執行遷移', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final manager = DatabaseMigrationManager(prefs);
@@ -99,7 +99,7 @@ void main() {
       expect(File(dbPath).existsSync(), isFalse); // 全新安裝只寫入版號，實際連線建立檔案
     });
 
-    test('狀況四：常規更新遷移 - 舊資料庫成功備份、重建、欄位交集對應與遷移', () async {
+    test('Given DatabaseMigrationManager 遷移整合測試, When 執行測試, Then 狀況四：常規更新遷移 - 舊資料庫成功備份、重建、欄位交集對應與遷移', () async {
       // 1. 建立舊資料庫
       createOldDatabaseWithSchema1(dbPath);
       expect(File(dbPath).existsSync(), isTrue);
@@ -142,39 +142,42 @@ void main() {
       await newDb.close();
     });
 
-    test('狀況一：中斷自我修復 - 偵測到遷移狀態為 started，自動清理半殘主庫並從備份重新移轉', () async {
-      // 1. 建立舊備份資料庫檔案
-      createOldDatabaseWithSchema1(backupPath);
-      expect(File(backupPath).existsSync(), isTrue);
+    test(
+      'Given DatabaseMigrationManager 遷移整合測試, When 執行測試, Then 狀況一：中斷自我修復 - 偵測到遷移狀態為 started，自動清理半殘主庫並從備份重新移轉',
+      () async {
+        // 1. 建立舊備份資料庫檔案
+        createOldDatabaseWithSchema1(backupPath);
+        expect(File(backupPath).existsSync(), isTrue);
 
-      // 2. 建立一個損毀/半殘的主資料庫檔案
-      final brokenDbFile = File(dbPath);
-      await brokenDbFile.writeAsString('corrupted data half written');
+        // 2. 建立一個損毀/半殘的主資料庫檔案
+        final brokenDbFile = File(dbPath);
+        await brokenDbFile.writeAsString('corrupted data half written');
 
-      // 3. 設定 SharedPreferences 起始狀態為 started (代表先前中斷)
-      SharedPreferences.setMockInitialValues({
-        'db_schema_version': 1,
-        'db_migration_status': 'started',
-        'db_backup_path': backupPath,
-      });
-      final prefs = await SharedPreferences.getInstance();
-      final manager = DatabaseMigrationManager(prefs);
+        // 3. 設定 SharedPreferences 起始狀態為 started (代表先前中斷)
+        SharedPreferences.setMockInitialValues({
+          'db_schema_version': 1,
+          'db_migration_status': 'started',
+          'db_backup_path': backupPath,
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final manager = DatabaseMigrationManager(prefs);
 
-      // 4. 重新執行檢查
-      await manager.checkAndMigrate(currentVersion: 2);
+        // 4. 重新執行檢查
+        await manager.checkAndMigrate(currentVersion: 2);
 
-      // 驗證遷移重啟成功
-      expect(prefs.getInt('db_schema_version'), 2);
-      expect(prefs.getString('db_migration_status'), 'completed');
-      expect(File(backupPath).existsSync(), isFalse);
+        // 驗證遷移重啟成功
+        expect(prefs.getInt('db_schema_version'), 2);
+        expect(prefs.getString('db_migration_status'), 'completed');
+        expect(File(backupPath).existsSync(), isFalse);
 
-      // 5. 驗證資料是否最終正確恢復
-      final newDb = AppDatabase();
-      final allTrips = await newDb.select(newDb.tripsTable).get();
-      expect(allTrips.length, 1);
-      expect(allTrips.first.id, 'trip_123');
-      expect(allTrips.first.name, '舊行程名稱');
-      await newDb.close();
-    });
+        // 5. 驗證資料是否最終正確恢復
+        final newDb = AppDatabase();
+        final allTrips = await newDb.select(newDb.tripsTable).get();
+        expect(allTrips.length, 1);
+        expect(allTrips.first.id, 'trip_123');
+        expect(allTrips.first.name, '舊行程名稱');
+        await newDb.close();
+      },
+    );
   });
 }

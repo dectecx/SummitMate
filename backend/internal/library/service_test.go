@@ -15,7 +15,7 @@ func TestGearLibraryService_CreateItem(t *testing.T) {
 	mockRepo := new(MockGearLibraryRepository)
 	svc := NewGearLibraryService(logger, mockRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling GearLibraryService CreateItem, Then it returns success without error", func(t *testing.T) {
 		userID := "user-1"
 		req := &GearLibraryItem{Name: "Tent"}
 		expected := &GearLibraryItem{ID: "item-1", Name: "Tent", UserID: userID}
@@ -35,7 +35,7 @@ func TestMealLibraryService_CreateItem(t *testing.T) {
 	mockRepo := new(MockMealLibraryRepository)
 	svc := NewMealLibraryService(logger, mockRepo)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid setup, When calling MealLibraryService CreateItem, Then it returns success without error", func(t *testing.T) {
 		userID := "user-1"
 		req := &MealLibraryItem{Name: "Pasta"}
 		expected := &MealLibraryItem{ID: "item-1", Name: "Pasta", UserID: userID}

@@ -73,7 +73,7 @@ void main() {
       cubit.close();
     });
 
-    test('initial state is GearLibraryInitial', () {
+    test('Given GearLibraryCubit, When executing, Then initial state is GearLibraryInitial', () {
       expect(cubit.state, isA<GearLibraryInitial>());
     });
 

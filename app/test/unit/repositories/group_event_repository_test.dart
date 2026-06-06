@@ -36,63 +36,72 @@ void main() {
 
     final tPaginatedList = PaginatedList<GroupEvent>(items: [tEvent], page: 1, total: 1, hasMore: false);
 
-    test('should sync my events from remote and save to local on success', () async {
-      // Arrange
-      when(
-        () => mockRemoteDataSource.getMyEvents(
-          type: any(named: 'type'),
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer((_) async => Success(tPaginatedList));
-      when(() => mockLocalDataSource.saveEvents(any())).thenAnswer((_) async {});
+    test(
+      'Given success, When calling GroupEventRepository.syncMyEvents, Then it should sync my events from remote and save to local',
+      () async {
+        // Arrange
+        when(
+          () => mockRemoteDataSource.getMyEvents(
+            type: any(named: 'type'),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => Success(tPaginatedList));
+        when(() => mockLocalDataSource.saveEvents(any())).thenAnswer((_) async {});
 
-      // Act
-      final result = await repository.syncMyEvents(type: 'host', page: 1, limit: 10);
+        // Act
+        final result = await repository.syncMyEvents(type: 'host', page: 1, limit: 10);
 
-      // Assert
-      expect(result, isA<Success<PaginatedList<GroupEvent>, Exception>>());
-      expect((result as Success).value, tPaginatedList);
+        // Assert
+        expect(result, isA<Success<PaginatedList<GroupEvent>, Exception>>());
+        expect((result as Success).value, tPaginatedList);
 
-      verify(() => mockRemoteDataSource.getMyEvents(type: 'host', page: 1, limit: 10)).called(1);
-      verify(() => mockLocalDataSource.saveEvents([tEvent])).called(1);
-    });
+        verify(() => mockRemoteDataSource.getMyEvents(type: 'host', page: 1, limit: 10)).called(1);
+        verify(() => mockLocalDataSource.saveEvents([tEvent])).called(1);
+      },
+    );
 
-    test('should return failure when remote sync fails', () async {
-      // Arrange
-      final tException = Exception('Remote Error');
-      when(
-        () => mockRemoteDataSource.getMyEvents(
-          type: any(named: 'type'),
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenAnswer((_) async => Failure(tException));
+    test(
+      'Given remote sync fails, When calling GroupEventRepository.syncMyEvents, Then it should return failure',
+      () async {
+        // Arrange
+        final tException = Exception('Remote Error');
+        when(
+          () => mockRemoteDataSource.getMyEvents(
+            type: any(named: 'type'),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenAnswer((_) async => Failure(tException));
 
-      // Act
-      final result = await repository.syncMyEvents(type: 'host');
+        // Act
+        final result = await repository.syncMyEvents(type: 'host');
 
-      // Assert
-      expect(result, isA<Failure<PaginatedList<GroupEvent>, Exception>>());
-      expect((result as Failure).exception, tException);
-      verifyNever(() => mockLocalDataSource.saveEvents(any()));
-    });
+        // Assert
+        expect(result, isA<Failure<PaginatedList<GroupEvent>, Exception>>());
+        expect((result as Failure).exception, tException);
+        verifyNever(() => mockLocalDataSource.saveEvents(any()));
+      },
+    );
 
-    test('should return failure when exception occurs', () async {
-      // Arrange
-      when(
-        () => mockRemoteDataSource.getMyEvents(
-          type: any(named: 'type'),
-          page: any(named: 'page'),
-          limit: any(named: 'limit'),
-        ),
-      ).thenThrow(Exception('Unexpected Error'));
+    test(
+      'Given exception occurs, When calling GroupEventRepository.syncMyEvents, Then it should return failure',
+      () async {
+        // Arrange
+        when(
+          () => mockRemoteDataSource.getMyEvents(
+            type: any(named: 'type'),
+            page: any(named: 'page'),
+            limit: any(named: 'limit'),
+          ),
+        ).thenThrow(Exception('Unexpected Error'));
 
-      // Act
-      final result = await repository.syncMyEvents(type: 'host');
+        // Act
+        final result = await repository.syncMyEvents(type: 'host');
 
-      // Assert
-      expect(result, isA<Failure<PaginatedList<GroupEvent>, Exception>>());
-    });
+        // Assert
+        expect(result, isA<Failure<PaginatedList<GroupEvent>, Exception>>());
+      },
+    );
   });
 }

@@ -11,7 +11,7 @@ func TestTemplateManager_Render(t *testing.T) {
 	tm, err := NewTemplateManager()
 	assert.NoError(t, err)
 
-	t.Run("Verification Code", func(t *testing.T) {
+	t.Run("Given Verification Code, When calling TemplateManager Render, Then it behaves as expected", func(t *testing.T) {
 		data := map[string]any{
 			"Code":          "123456",
 			"ExpireMinutes": 10,
@@ -22,7 +22,7 @@ func TestTemplateManager_Render(t *testing.T) {
 		assert.True(t, strings.Contains(html, "10 minutes"))
 	})
 
-	t.Run("Registration Success", func(t *testing.T) {
+	t.Run("Given Registration Success, When calling TemplateManager Render, Then it behaves as expected", func(t *testing.T) {
 		data := map[string]any{
 			"Username": "johndoe",
 			"LoginURL": "https://summitmate.com/login",
@@ -33,7 +33,7 @@ func TestTemplateManager_Render(t *testing.T) {
 		assert.True(t, strings.Contains(html, "https://summitmate.com/login"))
 	})
 
-	t.Run("Password Reset", func(t *testing.T) {
+	t.Run("Given Password Reset, When calling TemplateManager Render, Then it behaves as expected", func(t *testing.T) {
 		data := map[string]any{
 			"ResetURL":    "https://summitmate.com/reset?token=abc",
 			"ExpireHours": 2,
@@ -44,7 +44,7 @@ func TestTemplateManager_Render(t *testing.T) {
 		assert.True(t, strings.Contains(html, "2 hours"))
 	})
 
-	t.Run("System Notification", func(t *testing.T) {
+	t.Run("Given System Notification, When calling TemplateManager Render, Then it behaves as expected", func(t *testing.T) {
 		data := map[string]any{
 			"Username":   "user123",
 			"Title":      "Update Available",

@@ -110,7 +110,7 @@ void main() {
   });
 
   group('SyncEngine - runSyncCycle', () {
-    test('should return failure when connectivity is offline', () async {
+    test('Given connectivity is offline, When calling runSyncCycle, Then it should return failure', () async {
       when(() => mockConnectivity.isOffline).thenReturn(true);
 
       final result = await engine.runSyncCycle();
@@ -119,33 +119,36 @@ void main() {
       expect(result.errorMessage, contains('離線模式'));
     });
 
-    test('should call adapters and repos during normal sync cycle', () async {
-      when(() => mockConnectivity.isOffline).thenReturn(false);
-      when(() => mockAuthService.currentUserId).thenReturn('user1');
+    test(
+      'Given runSyncCycle, When triggered, Then it should call adapters and repos during normal sync cycle',
+      () async {
+        when(() => mockConnectivity.isOffline).thenReturn(false);
+        when(() => mockAuthService.currentUserId).thenReturn('user1');
 
-      // Stub Push
-      when(() => mockTripRepo.getAllTrips(any())).thenAnswer((_) async => const Success([]));
-      when(() => mockItineraryLocal.getAll()).thenAnswer((_) async => []);
-      when(() => mockGearLocal.getAll()).thenAnswer((_) async => []);
+        // Stub Push
+        when(() => mockTripRepo.getAllTrips(any())).thenAnswer((_) async => const Success([]));
+        when(() => mockItineraryLocal.getAll()).thenAnswer((_) async => []);
+        when(() => mockGearLocal.getAll()).thenAnswer((_) async => []);
 
-      // Stub Pull
-      when(() => mockTripSync.pullAndMerge(any())).thenAnswer(
-        (_) async =>
-            const Success(SyncMergeResult(pulledCount: 0, conflictCount: 0, localWinsCount: 0, remoteWinsCount: 0)),
-      );
+        // Stub Pull
+        when(() => mockTripSync.pullAndMerge(any())).thenAnswer(
+          (_) async =>
+              const Success(SyncMergeResult(pulledCount: 0, conflictCount: 0, localWinsCount: 0, remoteWinsCount: 0)),
+        );
 
-      // Stub T2 syncs
-      when(() => mockTripRepo.getActiveTrip(any())).thenAnswer((_) async => const Success(null));
-      when(() => mockEventRepo.syncEvents()).thenAnswer((_) async => const Success([]));
+        // Stub T2 syncs
+        when(() => mockTripRepo.getActiveTrip(any())).thenAnswer((_) async => const Success(null));
+        when(() => mockEventRepo.syncEvents()).thenAnswer((_) async => const Success([]));
 
-      // Stub settings update
-      when(() => mockSettingsRepo.updateLastSyncTime(any())).thenAnswer((_) async {});
+        // Stub settings update
+        when(() => mockSettingsRepo.updateLastSyncTime(any())).thenAnswer((_) async {});
 
-      final result = await engine.runSyncCycle();
+        final result = await engine.runSyncCycle();
 
-      expect(result.isSuccess, isTrue);
-      verify(() => mockTripSync.pullAndMerge('user1')).called(1);
-      verify(() => mockSettingsRepo.updateLastSyncTime(any())).called(1);
-    });
+        expect(result.isSuccess, isTrue);
+        verify(() => mockTripSync.pullAndMerge('user1')).called(1);
+        verify(() => mockSettingsRepo.updateLastSyncTime(any())).called(1);
+      },
+    );
   });
 }

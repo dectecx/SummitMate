@@ -97,61 +97,67 @@ void main() {
     );
   }
 
-  testWidgets('WeatherAlertCard displays info correctly for high rain probability', (WidgetTester tester) async {
-    // Arrange
-    fakeWeatherService.setMockResponse(
-      WeatherData(
-        temperature: 25.0,
-        humidity: 80.0,
-        rainProbability: 65,
-        windSpeed: 10.0,
-        condition: '陰短暫雨',
-        sunrise: DateTime.now(),
-        sunset: DateTime.now(),
-        timestamp: DateTime.now(),
-        locationName: '測試鄉鎮',
-        dailyForecasts: [],
-        apparentTemperature: 28.0,
-        issueTime: DateTime.now(),
-      ),
-    );
+  testWidgets(
+    'Given high rain probability, When calling triggering action, Then WeatherAlertCard displays info correctly',
+    (WidgetTester tester) async {
+      // Arrange
+      fakeWeatherService.setMockResponse(
+        WeatherData(
+          temperature: 25.0,
+          humidity: 80.0,
+          rainProbability: 65,
+          windSpeed: 10.0,
+          condition: '陰短暫雨',
+          sunrise: DateTime.now(),
+          sunset: DateTime.now(),
+          timestamp: DateTime.now(),
+          locationName: '測試鄉鎮',
+          dailyForecasts: [],
+          apparentTemperature: 28.0,
+          issueTime: DateTime.now(),
+        ),
+      );
 
-    // Act
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump();
+      // Act
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
 
-    // Assert
-    expect(find.text('測試鄉鎮'), findsOneWidget);
-    expect(find.textContaining('降雨率 65%'), findsOneWidget);
-    expect(find.text('攜帶雨具'), findsOneWidget);
-    expect(find.byIcon(Icons.umbrella), findsOneWidget);
-  });
+      // Assert
+      expect(find.text('測試鄉鎮'), findsOneWidget);
+      expect(find.textContaining('降雨率 65%'), findsOneWidget);
+      expect(find.text('攜帶雨具'), findsOneWidget);
+      expect(find.byIcon(Icons.umbrella), findsOneWidget);
+    },
+  );
 
-  testWidgets('WeatherAlertCard displays red alert for critical rain probability', (WidgetTester tester) async {
-    // Arrange
-    fakeWeatherService.setMockResponse(
-      WeatherData(
-        temperature: 25.0,
-        humidity: 90.0,
-        rainProbability: 85,
-        windSpeed: 20.0,
-        condition: '豪雨',
-        sunrise: DateTime.now(),
-        sunset: DateTime.now(),
-        timestamp: DateTime.now(),
-        locationName: '危險鄉鎮',
-        dailyForecasts: [],
-        apparentTemperature: 28.0,
-        issueTime: DateTime.now(),
-      ),
-    );
+  testWidgets(
+    'Given critical rain probability, When calling triggering action, Then WeatherAlertCard displays red alert',
+    (WidgetTester tester) async {
+      // Arrange
+      fakeWeatherService.setMockResponse(
+        WeatherData(
+          temperature: 25.0,
+          humidity: 90.0,
+          rainProbability: 85,
+          windSpeed: 20.0,
+          condition: '豪雨',
+          sunrise: DateTime.now(),
+          sunset: DateTime.now(),
+          timestamp: DateTime.now(),
+          locationName: '危險鄉鎮',
+          dailyForecasts: [],
+          apparentTemperature: 28.0,
+          issueTime: DateTime.now(),
+        ),
+      );
 
-    // Act
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump();
+      // Act
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
 
-    // Assert
-    expect(find.text('危險鄉鎮'), findsOneWidget);
-    expect(find.text('豪雨特報'), findsOneWidget);
-  });
+      // Assert
+      expect(find.text('危險鄉鎮'), findsOneWidget);
+      expect(find.text('豪雨特報'), findsOneWidget);
+    },
+  );
 }

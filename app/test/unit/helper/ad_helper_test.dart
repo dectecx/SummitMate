@@ -10,16 +10,19 @@ import 'package:summitmate/core/config/ad_helper.dart';
 
 void main() {
   group('AdHelper', () {
-    test('Should throw UnsupportedError if platform is not Android/iOS (unit test context)', () {
-      // In pure unit test (not integration), defaultTargetPlatform might be linux/windows/macos
-      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
-      final id = AdHelper.bannerAdUnitId;
-      expect(id, isEmpty);
-      debugDefaultTargetPlatformOverride = null;
-    });
+    test(
+      'Given platform is not Android/iOS (unit test context), When calling AdHelper, Then it should throw UnsupportedError',
+      () {
+        // In pure unit test (not integration), defaultTargetPlatform might be linux/windows/macos
+        debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+        final id = AdHelper.bannerAdUnitId;
+        expect(id, isEmpty);
+        debugDefaultTargetPlatformOverride = null;
+      },
+    );
 
     // To test Android/iOS logic, we need to override the platform.
-    test('Should return Test ID in Debug Mode (Android)', () {
+    test('Given AdHelper, When triggered, Then it should return Test ID in Debug Mode (Android)', () {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       // We are in debug mode by default in tests? Yes, kDebugMode is true in 'flutter test'.
       // Note: kDebugMode is hardcoded const bool in foundation, usually true in JIT/Debug builds.
@@ -33,7 +36,7 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
 
-    test('Should return Test ID in Debug Mode (iOS)', () {
+    test('Given AdHelper, When triggered, Then it should return Test ID in Debug Mode (iOS)', () {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       if (kDebugMode) {
         final id = AdHelper.bannerAdUnitId;

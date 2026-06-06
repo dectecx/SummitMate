@@ -11,55 +11,67 @@ void main() {
       helper = WeatherServiceTestHelper();
     });
 
-    test('calculateSunTimes returns valid sunrise and sunset', () {
-      // 測試台灣嘉明湖區域 (緯度 23.29, 經度 121.03)
-      final date = DateTime(2024, 6, 21); // 夏至
-      final result = helper.calculateSunTimes(date, 23.29, 121.03);
+    test(
+      'Given WeatherService Sun Calculation Tests, When executing, Then calculateSunTimes returns valid sunrise and sunset',
+      () {
+        // 測試台灣嘉明湖區域 (緯度 23.29, 經度 121.03)
+        final date = DateTime(2024, 6, 21); // 夏至
+        final result = helper.calculateSunTimes(date, 23.29, 121.03);
 
-      expect(result['sunrise'], isNotNull);
-      expect(result['sunset'], isNotNull);
+        expect(result['sunrise'], isNotNull);
+        expect(result['sunset'], isNotNull);
 
-      // 日出應在凌晨 (4-6 點之間)
-      expect(result['sunrise']!.hour, inInclusiveRange(4, 6));
-      // 日落應在傍晚 (17-20 點之間)
-      expect(result['sunset']!.hour, inInclusiveRange(17, 20));
-    });
+        // 日出應在凌晨 (4-6 點之間)
+        expect(result['sunrise']!.hour, inInclusiveRange(4, 6));
+        // 日落應在傍晚 (17-20 點之間)
+        expect(result['sunset']!.hour, inInclusiveRange(17, 20));
+      },
+    );
 
-    test('calculateSunTimes winter has shorter days', () {
-      final summer = DateTime(2024, 6, 21);
-      final winter = DateTime(2024, 12, 21);
+    test(
+      'Given WeatherService Sun Calculation Tests, When executing, Then calculateSunTimes winter has shorter days',
+      () {
+        final summer = DateTime(2024, 6, 21);
+        final winter = DateTime(2024, 12, 21);
 
-      final summerTimes = helper.calculateSunTimes(summer, 23.29, 121.03);
-      final winterTimes = helper.calculateSunTimes(winter, 23.29, 121.03);
+        final summerTimes = helper.calculateSunTimes(summer, 23.29, 121.03);
+        final winterTimes = helper.calculateSunTimes(winter, 23.29, 121.03);
 
-      final summerDayLength = summerTimes['sunset']!.difference(summerTimes['sunrise']!);
-      final winterDayLength = winterTimes['sunset']!.difference(winterTimes['sunrise']!);
+        final summerDayLength = summerTimes['sunset']!.difference(summerTimes['sunrise']!);
+        final winterDayLength = winterTimes['sunset']!.difference(winterTimes['sunrise']!);
 
-      // 夏天白天比冬天長
-      expect(summerDayLength.inMinutes, greaterThan(winterDayLength.inMinutes));
-    });
+        // 夏天白天比冬天長
+        expect(summerDayLength.inMinutes, greaterThan(winterDayLength.inMinutes));
+      },
+    );
 
-    test('calculateSunTimes handles equator latitude', () {
-      final date = DateTime(2024, 3, 20); // 春分
-      final result = helper.calculateSunTimes(date, 0.0, 121.0);
+    test(
+      'Given WeatherService Sun Calculation Tests, When executing, Then calculateSunTimes handles equator latitude',
+      () {
+        final date = DateTime(2024, 3, 20); // 春分
+        final result = helper.calculateSunTimes(date, 0.0, 121.0);
 
-      expect(result['sunrise'], isNotNull);
-      expect(result['sunset'], isNotNull);
+        expect(result['sunrise'], isNotNull);
+        expect(result['sunset'], isNotNull);
 
-      // 赤道上白天約 12 小時
-      final dayLength = result['sunset']!.difference(result['sunrise']!);
-      expect(dayLength.inHours, closeTo(12, 1));
-    });
+        // 赤道上白天約 12 小時
+        final dayLength = result['sunset']!.difference(result['sunrise']!);
+        expect(dayLength.inHours, closeTo(12, 1));
+      },
+    );
 
-    test('calculateSunTimes handles extreme latitude', () {
-      // 高緯度地區 (北極圈附近)
-      final date = DateTime(2024, 6, 21);
-      final result = helper.calculateSunTimes(date, 66.5, 121.0);
+    test(
+      'Given WeatherService Sun Calculation Tests, When executing, Then calculateSunTimes handles extreme latitude',
+      () {
+        // 高緯度地區 (北極圈附近)
+        final date = DateTime(2024, 6, 21);
+        final result = helper.calculateSunTimes(date, 66.5, 121.0);
 
-      // 不應該拋出異常
-      expect(result['sunrise'], isNotNull);
-      expect(result['sunset'], isNotNull);
-    });
+        // 不應該拋出異常
+        expect(result['sunrise'], isNotNull);
+        expect(result['sunset'], isNotNull);
+      },
+    );
   });
 
   group('WeatherService Data Parsing Tests', () {
@@ -69,13 +81,13 @@ void main() {
       helper = WeatherServiceTestHelper();
     });
 
-    test('parseCloudWeatherData throws on empty location', () {
+    test('Given empty location, When calling WeatherService Data Parsing Tests, Then parseCloudWeatherData throws', () {
       final emptyList = <Map<String, dynamic>>[];
 
       expect(() => helper.parseCloudWeatherData(emptyList, '向陽山'), throwsException);
     });
 
-    test('parseCloudWeatherData throws on wrong location', () {
+    test('Given wrong location, When calling WeatherService Data Parsing Tests, Then parseCloudWeatherData throws', () {
       final mockData = [
         {
           'Location': '玉山',
@@ -95,118 +107,127 @@ void main() {
       expect(() => helper.parseCloudWeatherData(mockData, '雪山'), throwsException);
     });
 
-    test('parseCloudWeatherData correctly parses temperature', () {
-      final mockData = [
-        {
-          'Location': '向陽山',
-          'StartTime': '2024-01-01T06:00:00',
-          'T': '15.5',
-          'RH': '75',
-          'PoP': '20',
-          'WS': '3.5',
-          'Wx': '多雲',
-          'MaxT': '18',
-          'MinT': '12',
-          'MaxAT': '16',
-          'MinAT': '10',
-        },
-      ];
+    test(
+      'Given WeatherService Data Parsing Tests, When executing, Then parseCloudWeatherData correctly parses temperature',
+      () {
+        final mockData = [
+          {
+            'Location': '向陽山',
+            'StartTime': '2024-01-01T06:00:00',
+            'T': '15.5',
+            'RH': '75',
+            'PoP': '20',
+            'WS': '3.5',
+            'Wx': '多雲',
+            'MaxT': '18',
+            'MinT': '12',
+            'MaxAT': '16',
+            'MinAT': '10',
+          },
+        ];
 
-      final result = helper.parseCloudWeatherData(mockData, '向陽山');
+        final result = helper.parseCloudWeatherData(mockData, '向陽山');
 
-      expect(result.temperature, 15.5);
-      expect(result.humidity, 75.0);
-      expect(result.rainProbability, 20);
-      expect(result.windSpeed, 3.5);
-      expect(result.condition, '多雲');
-      expect(result.locationName, '向陽山');
-    });
+        expect(result.temperature, 15.5);
+        expect(result.humidity, 75.0);
+        expect(result.rainProbability, 20);
+        expect(result.windSpeed, 3.5);
+        expect(result.condition, '多雲');
+        expect(result.locationName, '向陽山');
+      },
+    );
 
-    test('parseCloudWeatherData handles invalid numeric values gracefully', () {
-      final mockData = [
-        {
-          'Location': '向陽山',
-          'StartTime': '2024-01-01T06:00:00',
-          'T': 'invalid',
-          'RH': '',
-          'PoP': 'N/A',
-          'WS': null,
-          'Wx': '晴',
-          'MaxT': '',
-          'MinT': '',
-          'MaxAT': '',
-          'MinAT': '',
-        },
-      ];
+    test(
+      'Given WeatherService Data Parsing Tests, When executing, Then parseCloudWeatherData handles invalid numeric values gracefully',
+      () {
+        final mockData = [
+          {
+            'Location': '向陽山',
+            'StartTime': '2024-01-01T06:00:00',
+            'T': 'invalid',
+            'RH': '',
+            'PoP': 'N/A',
+            'WS': null,
+            'Wx': '晴',
+            'MaxT': '',
+            'MinT': '',
+            'MaxAT': '',
+            'MinAT': '',
+          },
+        ];
 
-      // 應該不拋出異常，使用預設值
-      final result = helper.parseCloudWeatherData(mockData, '向陽山');
+        // 應該不拋出異常，使用預設值
+        final result = helper.parseCloudWeatherData(mockData, '向陽山');
 
-      expect(result.temperature, 0.0);
-      expect(result.humidity, 0.0);
-      expect(result.rainProbability, 0);
-    });
+        expect(result.temperature, 0.0);
+        expect(result.humidity, 0.0);
+        expect(result.rainProbability, 0);
+      },
+    );
 
-    test('parseCloudWeatherData builds daily forecasts correctly', () {
-      final mockData = [
-        {
-          'Location': '向陽山',
-          'StartTime': '2024-01-01T06:00:00',
-          'T': '10',
-          'RH': '80',
-          'PoP': '30',
-          'WS': '5',
-          'Wx': '晴',
-          'MaxT': '15',
-          'MinT': '5',
-          'MaxAT': '13',
-          'MinAT': '3',
-        },
-        {
-          'Location': '向陽山',
-          'StartTime': '2024-01-01T18:00:00',
-          'T': '8',
-          'RH': '90',
-          'PoP': '40',
-          'WS': '3',
-          'Wx': '多雲',
-          'MaxT': '15',
-          'MinT': '5',
-          'MaxAT': '13',
-          'MinAT': '3',
-        },
-        {
-          'Location': '向陽山',
-          'StartTime': '2024-01-02T06:00:00',
-          'T': '12',
-          'RH': '70',
-          'PoP': '10',
-          'WS': '2',
-          'Wx': '晴時多雲',
-          'MaxT': '16',
-          'MinT': '6',
-          'MaxAT': '14',
-          'MinAT': '4',
-        },
-      ];
+    test(
+      'Given WeatherService Data Parsing Tests, When executing, Then parseCloudWeatherData builds daily forecasts correctly',
+      () {
+        final mockData = [
+          {
+            'Location': '向陽山',
+            'StartTime': '2024-01-01T06:00:00',
+            'T': '10',
+            'RH': '80',
+            'PoP': '30',
+            'WS': '5',
+            'Wx': '晴',
+            'MaxT': '15',
+            'MinT': '5',
+            'MaxAT': '13',
+            'MinAT': '3',
+          },
+          {
+            'Location': '向陽山',
+            'StartTime': '2024-01-01T18:00:00',
+            'T': '8',
+            'RH': '90',
+            'PoP': '40',
+            'WS': '3',
+            'Wx': '多雲',
+            'MaxT': '15',
+            'MinT': '5',
+            'MaxAT': '13',
+            'MinAT': '3',
+          },
+          {
+            'Location': '向陽山',
+            'StartTime': '2024-01-02T06:00:00',
+            'T': '12',
+            'RH': '70',
+            'PoP': '10',
+            'WS': '2',
+            'Wx': '晴時多雲',
+            'MaxT': '16',
+            'MinT': '6',
+            'MaxAT': '14',
+            'MinAT': '4',
+          },
+        ];
 
-      final result = helper.parseCloudWeatherData(mockData, '向陽山');
+        final result = helper.parseCloudWeatherData(mockData, '向陽山');
 
-      // 應該有 2 天預報
-      expect(result.dailyForecasts.length, 2);
+        // 應該有 2 天預報
+        expect(result.dailyForecasts.length, 2);
 
-      // 第一天
-      expect(result.dailyForecasts[0].date.day, 1);
-      expect(result.dailyForecasts[0].dayCondition, '晴');
-      expect(result.dailyForecasts[0].nightCondition, '多雲');
-      expect(result.dailyForecasts[0].maxTemp, 15.0);
-      expect(result.dailyForecasts[0].minTemp, 5.0);
-      expect(result.dailyForecasts[0].rainProbability, 40); // 取最大值
+        // 第一天
+        expect(result.dailyForecasts[0].date.day, 1);
+        expect(result.dailyForecasts[0].dayCondition, '晴');
+        expect(result.dailyForecasts[0].nightCondition, '多雲');
+        expect(result.dailyForecasts[0].maxTemp, 15.0);
+        expect(result.dailyForecasts[0].minTemp, 5.0);
+        expect(result.dailyForecasts[0].rainProbability, 40); // 取最大值
 
-      // 第二天
-      expect(result.dailyForecasts[1].date.day, 2);
-      expect(result.dailyForecasts[1].dayCondition, '晴時多雲');
-    });
+        // 第二天
+        expect(result.dailyForecasts[1].date.day, 2);
+        expect(result.dailyForecasts[1].dayCondition, '晴時多雲');
+      },
+    );
   });
 }
 

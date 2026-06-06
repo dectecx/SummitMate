@@ -81,7 +81,9 @@ class TestAssetBundle extends CachingAssetBundle {
 
 void main() {
   group('ZoomableImage Widget Tests', () {
-    testWidgets('renders fallback when asset not found', (WidgetTester tester) async {
+    testWidgets('Given asset not found, When calling ZoomableImage Widget Tests, Then renders fallback', (
+      WidgetTester tester,
+    ) async {
       const errorKey = Key('error-widget');
 
       await tester.pumpWidget(
@@ -101,7 +103,9 @@ void main() {
       expect(find.byKey(errorKey), findsOneWidget);
     });
 
-    testWidgets('shows zoom hint icon by default', (WidgetTester tester) async {
+    testWidgets('Given default configuration, When calling ZoomableImage Widget Tests, Then shows zoom hint icon', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         DefaultAssetBundle(
           bundle: TestAssetBundle(),
@@ -114,7 +118,9 @@ void main() {
       expect(find.byIcon(Icons.zoom_in), findsOneWidget);
     });
 
-    testWidgets('hides zoom hint icon when showZoomHint is false', (WidgetTester tester) async {
+    testWidgets('Given showZoomHint is false, When calling ZoomableImage Widget Tests, Then hides zoom hint icon', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         DefaultAssetBundle(
           bundle: TestAssetBundle(),
@@ -127,27 +133,31 @@ void main() {
       expect(find.byIcon(Icons.zoom_in), findsNothing);
     });
 
-    testWidgets('opens ImageViewerDialog on tap', skip: true, (WidgetTester tester) async {
-      await tester.pumpWidget(
-        DefaultAssetBundle(
-          bundle: TestAssetBundle(),
-          child: const MaterialApp(
-            home: Scaffold(
-              body: SizedBox(
-                width: 300,
-                height: 300,
-                child: ZoomableImage(assetPath: 'assets/images/test.png', title: 'Test Image'),
+    testWidgets(
+      'Given ZoomableImage Widget Tests, When tap is triggered, Then it should opens ImageViewerDialog',
+      skip: true,
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          DefaultAssetBundle(
+            bundle: TestAssetBundle(),
+            child: const MaterialApp(
+              home: Scaffold(
+                body: SizedBox(
+                  width: 300,
+                  height: 300,
+                  child: ZoomableImage(assetPath: 'assets/images/test.png', title: 'Test Image'),
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.byType(ZoomableImage));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byType(ZoomableImage));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(ImageViewerDialog), findsOneWidget);
-      expect(find.text('Test Image'), findsOneWidget);
-    });
+        expect(find.byType(ImageViewerDialog), findsOneWidget);
+        expect(find.text('Test Image'), findsOneWidget);
+      },
+    );
   });
 }

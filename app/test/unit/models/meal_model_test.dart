@@ -4,7 +4,7 @@ import 'package:summitmate/domain/entities/meal_plan_day.dart';
 
 void main() {
   group('MealItem Tests', () {
-    test('should create MealItem correctly', () {
+    test('Given MealItem Tests, When triggered, Then it should create MealItem correctly', () {
       final item = MealItem(id: '1', name: 'Rice', weight: 100, calories: 350);
 
       expect(item.id, '1');
@@ -14,7 +14,7 @@ void main() {
       expect(item.quantity, 1);
     });
 
-    test('should copyWith correctly', () {
+    test('Given MealItem Tests, When triggered, Then it should copyWith correctly', () {
       final item = MealItem(id: '1', name: 'Rice', weight: 100, calories: 350);
 
       final copy = item.copyWith(quantity: 2, name: 'Big Rice');
@@ -27,7 +27,7 @@ void main() {
   });
 
   group('DailyMealPlan Tests', () {
-    test('should calculate total weight and calories correctly', () {
+    test('Given DailyMealPlan Tests, When triggered, Then it should calculate total weight and calories correctly', () {
       final item1 = MealItem(
         id: '1',
         name: 'Rice',
@@ -56,7 +56,7 @@ void main() {
       expect(plan.totalCalories, 800); // 700 + 100
     });
 
-    test('should return 0 for empty plan', () {
+    test('Given empty plan, When calling DailyMealPlan Tests, Then it should return 0', () {
       final plan = DailyMealPlan(
         dayInfo: MealPlanDay(id: 'day_1', name: 'D1'),
       );

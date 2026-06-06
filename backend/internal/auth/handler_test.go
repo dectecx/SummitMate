@@ -21,7 +21,7 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 	mockService := new(authmocks.MockAuthService)
 	handler := auth.NewAuthHandler(mockService)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid credentials, When logging in, Then it returns 200 OK and auth tokens", func(t *testing.T) {
 		reqBody := api.LoginRequest{
 			Email:    "test@example.com",
 			Password: "password123",
@@ -47,7 +47,7 @@ func TestAuthHandler_LoginUser(t *testing.T) {
 		mockService.AssertExpectations(t)
 	})
 
-	t.Run("InvalidCredentials", func(t *testing.T) {
+	t.Run("Given invalid credentials, When logging in, Then it returns 401 Unauthorized", func(t *testing.T) {
 		reqBody := api.LoginRequest{
 			Email:    "test@example.com",
 			Password: "wrong",
@@ -69,7 +69,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 	mockService := new(authmocks.MockAuthService)
 	handler := auth.NewAuthHandler(mockService)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid registration info, When registering, Then it returns 201 Created and auth tokens", func(t *testing.T) {
 		reqBody := api.RegisterRequest{
 			Email:       "new@example.com",
 			Password:    "password123",
@@ -91,7 +91,7 @@ func TestAuthHandler_RegisterUser(t *testing.T) {
 		mockService.AssertExpectations(t)
 	})
 
-	t.Run("PasswordTooShort", func(t *testing.T) {
+	t.Run("Given short password, When registering, Then it returns 400 Bad Request", func(t *testing.T) {
 		reqBody := api.RegisterRequest{
 			Email:    "new@example.com",
 			Password: "short",
@@ -117,7 +117,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 	mockService := new(authmocks.MockAuthService)
 	handler := auth.NewAuthHandler(mockService)
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Given valid refresh token, When refreshing token, Then it returns 200 OK and new tokens", func(t *testing.T) {
 		reqBody := api.RefreshTokenRequest{
 			RefreshToken: "old-refresh-token",
 		}
@@ -143,7 +143,7 @@ func TestAuthHandler_RefreshToken(t *testing.T) {
 		mockService.AssertExpectations(t)
 	})
 
-	t.Run("InvalidToken", func(t *testing.T) {
+	t.Run("Given invalid refresh token, When refreshing token, Then it returns 401 Unauthorized", func(t *testing.T) {
 		reqBody := api.RefreshTokenRequest{
 			RefreshToken: "invalid-token",
 		}

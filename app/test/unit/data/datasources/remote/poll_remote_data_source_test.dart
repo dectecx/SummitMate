@@ -46,7 +46,7 @@ void main() {
   });
 
   group('PollRemoteDataSource.getPolls', () {
-    test('returns list of polls on success', () async {
+    test('Given success, When calling PollRemoteDataSource.getPolls, Then returns list of polls', () async {
       final paginationResponse = PollPaginationResponse.fromJson({
         'items': [
           {
@@ -90,7 +90,7 @@ void main() {
   });
 
   group('PollRemoteDataSource.createPoll', () {
-    test('returns new poll ID on success', () async {
+    test('Given success, When calling PollRemoteDataSource.createPoll, Then returns new poll ID', () async {
       when(() => mockApiService.createPoll('trip-1', any())).thenAnswer((_) async => testPollResponse);
 
       final result = await dataSource.createPoll(tripId: 'trip-1', title: 'Test Poll', options: ['Op 1', 'Op 2']);
@@ -102,7 +102,7 @@ void main() {
   });
 
   group('PollRemoteDataSource Operations', () {
-    test('vote calls api correctly', () async {
+    test('Given PollRemoteDataSource Operations, When executing, Then vote calls api correctly', () async {
       when(() => mockApiService.voteOption('t1', 'p1', any())).thenAnswer((_) async {});
 
       final result = await dataSource.vote('t1', 'p1', ['o1']);
@@ -111,7 +111,7 @@ void main() {
       verify(() => mockApiService.voteOption('t1', 'p1', any())).called(1);
     });
 
-    test('addOption calls api correctly', () async {
+    test('Given PollRemoteDataSource Operations, When executing, Then addOption calls api correctly', () async {
       final optionResponse = PollOptionResponse.fromJson({
         'id': 'o1',
         'poll_id': 'p1',
