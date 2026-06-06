@@ -1,12 +1,12 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
-import '../../../../core/offline_config.dart';
 import '../../../../domain/entities/trip.dart';
 import '../../../../domain/enums/sync_status.dart';
 import '../../../../domain/interfaces/i_sync_adapter.dart';
 import '../../../../data/datasources/interfaces/i_trip_local_data_source.dart';
 import '../../../../data/datasources/interfaces/i_trip_remote_data_source.dart';
 import '../../../../core/models/paginated_list.dart';
+import '../sync_conflict_resolver.dart';
 
 @lazySingleton
 class TripSyncAdapter implements ISyncAdapter<Trip> {
@@ -66,8 +66,7 @@ class TripSyncAdapter implements ISyncAdapter<Trip> {
       // 偵測遠端已刪除：本地有 pending 資料但遠端 ID 集合中找不到
       final allLocalTrips = await _localDataSource.getAllTrips();
       for (final localTrip in allLocalTrips) {
-        final hasPendingChanges =
-            localTrip.syncStatus == SyncStatus.pendingUpdate || localTrip.syncStatus == SyncStatus.conflict;
+        final hasPendingChanges = SyncConflictResolver.hasPendingChanges(localTrip.syncStatus);
         final isNotInRemote = !remoteIds.contains(localTrip.id);
         final isCloudReady = localTrip.cloudSyncedAt != null; // 曾經上傳過才算「遠端刪除」
 
@@ -92,9 +91,7 @@ class TripSyncAdapter implements ISyncAdapter<Trip> {
           } else {
             // 本地有未同步變更，發生衝突
             conflictCount++;
-            final timeDiff = remoteTrip.updatedAt.difference(localTrip.updatedAt).abs().inSeconds;
-            final remoteIsNewer =
-                remoteTrip.updatedAt.isAfter(localTrip.updatedAt) && timeDiff > OfflineConfig.conflictToleranceSeconds;
+            final remoteIsNewer = SyncConflictResolver.remoteIsNewer(localTrip.updatedAt, remoteTrip.updatedAt);
 
             if (remoteIsNewer) {
               // 遠端明顯較新（超過容忍閾值），遠端勝出

@@ -1,11 +1,11 @@
 import 'package:injectable/injectable.dart';
 import '../../../../core/error/result.dart';
-import '../../../../core/offline_config.dart';
 import '../../../../domain/entities/itinerary_item.dart';
 import '../../../../domain/enums/sync_status.dart';
 import '../../../../domain/interfaces/i_sync_adapter.dart';
 import '../../../../data/datasources/interfaces/i_itinerary_local_data_source.dart';
 import '../../../../data/datasources/interfaces/i_itinerary_remote_data_source.dart';
+import '../sync_conflict_resolver.dart';
 
 @lazySingleton
 class ItinerarySyncAdapter implements ISyncAdapter<ItineraryItem> {
@@ -54,8 +54,7 @@ class ItinerarySyncAdapter implements ISyncAdapter<ItineraryItem> {
       final allLocalItems = await _localDataSource.getAll();
       final scopeItems = allLocalItems.where((i) => i.tripId == scopeId).toList();
       for (final localItem in scopeItems) {
-        final hasPendingChanges =
-            localItem.syncStatus == SyncStatus.pendingUpdate || localItem.syncStatus == SyncStatus.conflict;
+        final hasPendingChanges = SyncConflictResolver.hasPendingChanges(localItem.syncStatus);
         final isNotInRemote = !remoteIds.contains(localItem.id);
         // 曾被成功推送過才算「遠端刪除」（pendingCreate 本地才有的不算）
         final wasEverSynced = localItem.syncStatus != SyncStatus.pendingCreate;
@@ -81,10 +80,9 @@ class ItinerarySyncAdapter implements ISyncAdapter<ItineraryItem> {
           } else {
             // 本地有未同步變更，發生衝突
             conflictCount++;
-            final localTime = localItem.updatedAt ?? localItem.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final remoteTime = remoteItem.updatedAt ?? remoteItem.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final timeDiff = remoteTime.difference(localTime).abs().inSeconds;
-            final remoteIsNewer = remoteTime.isAfter(localTime) && timeDiff > OfflineConfig.conflictToleranceSeconds;
+            final localTime = localItem.updatedAt ?? localItem.createdAt;
+            final remoteTime = remoteItem.updatedAt ?? remoteItem.createdAt;
+            final remoteIsNewer = SyncConflictResolver.remoteIsNewer(localTime, remoteTime);
 
             if (remoteIsNewer) {
               // 遠端明顯較新（超過容忍閾值），遠端勝出
