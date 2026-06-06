@@ -3,6 +3,7 @@ package weather
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -28,7 +29,7 @@ func TestWeatherService_ListByLocation(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockWeatherRepository)
 	mockDB := new(MockBeginner)
-	svc := NewWeatherService(logger, mockDB, mockRepo, "key", []string{"玉山"})
+	svc := NewWeatherService(logger, mockDB, mockRepo, http.DefaultClient, "key", []string{"玉山"})
 
 	t.Run("Given valid setup, When calling WeatherService ListByLocation, Then it returns success without error", func(t *testing.T) {
 		location := "玉山"

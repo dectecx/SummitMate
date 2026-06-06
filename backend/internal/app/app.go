@@ -232,7 +232,11 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
 	favoriteService := favorite.NewFavoriteService(logger, pool, favoriteRepo)
 	groupService := groupevent.NewGroupEventService(logger, pool, groupRepo, tripService, authService)
-	weatherService := weather.NewWeatherService(logger, pool, weatherRepo, cfg.CWAApiKey, nil)
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	weatherService := weather.NewWeatherService(logger, pool, weatherRepo, httpClient, cfg.CWAApiKey, nil)
 	logService := log.NewLogService(logger, logRepo)
 	heartbeatService := heartbeat.NewHeartbeatService(logger, heartbeatRepo)
 	gearSetService := gearset.NewGearSetService(logger, gearSetRepo, authService)
