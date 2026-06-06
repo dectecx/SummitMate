@@ -6,6 +6,7 @@ import '../../cubits/auth/auth_state.dart'
     show AuthState, AuthLoading, AuthAuthenticated, AuthError, AuthRequiresVerification;
 import '../../cubits/settings/settings_cubit.dart';
 import '../../../core/utils/validators.dart';
+import '../../widgets/common/password_strength_indicator.dart';
 import 'verification_screen.dart';
 
 /// Register Screen
@@ -225,48 +226,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Password Strength Indicator
                     if (_passwordController.text.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: _passwordStrength,
-                                backgroundColor: Colors.grey.shade200,
-                                color: _passwordStrength <= 0.2
-                                    ? Colors.red
-                                    : _passwordStrength <= 0.4
-                                    ? Colors.orange
-                                    : _passwordStrength <= 0.7
-                                    ? Colors.yellow.shade700
-                                    : Colors.green,
-                                minHeight: 6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _passwordStrength <= 0.2
-                                ? '太短'
-                                : _passwordStrength <= 0.4
-                                ? '弱'
-                                : _passwordStrength <= 0.7
-                                ? '中'
-                                : '強',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: _passwordStrength <= 0.2
-                                  ? Colors.red
-                                  : _passwordStrength <= 0.4
-                                  ? Colors.orange
-                                  : _passwordStrength <= 0.7
-                                  ? Colors.yellow.shade800
-                                  : Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
+                      PasswordStrengthIndicator(strength: _passwordStrength),
                       const SizedBox(height: 16),
                     ] else
                       const SizedBox(height: 16),

@@ -427,6 +427,15 @@ class AuthService implements IAuthService {
 
   @override
   Future<void> logout() async {
+    // 0. 通知後端註銷 Token (發送登出請求)
+    try {
+      await _apiClient.post('/auth/logout');
+      LogService.info('後端 Token 註銷成功', source: _source);
+    } catch (e) {
+      // 離線或伺服器異常時，僅記錄 Log，本地端仍繼續執行登出
+      LogService.warning('遠端登出請求失敗 (可能處於離線狀態): $e', source: _source);
+    }
+
     // 1. 清除本地資料庫 (避免換帳號時看到舊資料)
     try {
       await _db.clearAllData();
@@ -440,6 +449,34 @@ class AuthService implements IAuthService {
     _isOfflineMode = false;
     _notifyAuthState(null);
     LogService.info('已登出', source: _source);
+  }
+
+  @override
+  Future<AuthResult> changePassword({required String oldPassword, required String newPassword}) async {
+    try {
+      LogService.info('嘗試修改密碼', source: _source);
+      final response = await _apiClient.post(
+        '/auth/change-password',
+        data: {'old_password': oldPassword, 'new_password': newPassword},
+      );
+
+      if (response.statusCode == 200) {
+        LogService.info('密碼修改成功', source: _source);
+        return AuthResult.success();
+      } else {
+        final msg = response.data is Map ? response.data['error'] : 'Unknown Error';
+        return AuthResult.failure(errorCode: 'PASSWORD_CHANGE_FAILED', errorMessage: msg ?? '修改密碼失敗');
+      }
+    } on DioException catch (e) {
+      final apiError = AppErrorHandler.parseApiException(e);
+      return AuthResult.failure(
+        errorCode: apiError?.code ?? 'HTTP_ERROR',
+        errorMessage: apiError?.message ?? e.message ?? '修改密碼錯誤',
+      );
+    } catch (e, stackTrace) {
+      LogService.error('修改密碼例外: $e', source: _source, stackTrace: stackTrace);
+      return AuthResult.failure(errorCode: 'NETWORK_ERROR', errorMessage: '網路錯誤，請稍後再試');
+    }
   }
 
   @override

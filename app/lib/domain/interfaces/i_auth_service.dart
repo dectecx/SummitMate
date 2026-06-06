@@ -123,6 +123,12 @@ abstract class IAuthService {
   /// 登出並清除 Session
   Future<void> logout();
 
+  /// 修改使用者密碼
+  ///
+  /// [oldPassword] 舊密碼
+  /// [newPassword] 新密碼
+  Future<AuthResult> changePassword({required String oldPassword, required String newPassword});
+
   /// 刪除使用者帳號 (軟刪除)
   Future<AuthResult> deleteAccount();
 
