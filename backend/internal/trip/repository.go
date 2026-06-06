@@ -41,12 +41,23 @@ func (repo *tripRepository) Create(ctx context.Context, trip *Trip) (*Trip, erro
 			day_names, created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.db)
-	row := db.QueryRow(ctx, query,
+	rows, err := db.Query(ctx, query,
 		trip.UserID, trip.Name, trip.Description, trip.StartDate, trip.EndDate,
 		trip.CoverImage, trip.IsActive, trip.DayNames, trip.CreatedBy, trip.UpdatedBy,
 	)
+	if err != nil {
+		return nil, fmt.Errorf("create trip query: %w", err)
+	}
+	defer rows.Close()
 
-	t, err := repo.scanTrip(row)
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("create trip row check: %w", err)
+		}
+		return nil, fmt.Errorf("create trip: %w", ErrNotFound)
+	}
+
+	t, err := repo.scanTrip(rows)
 	if err != nil {
 		return nil, fmt.Errorf("create trip: %w", err)
 	}
@@ -63,8 +74,20 @@ func (repo *tripRepository) GetByID(ctx context.Context, id string) (*Trip, erro
 		WHERE id = $1
 	`
 	db := database.GetQuerier(ctx, repo.db)
-	row := db.QueryRow(ctx, query, id)
-	t, err := repo.scanTrip(row)
+	rows, err := db.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("get trip %s query: %w", id, err)
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("get trip %s row check: %w", id, err)
+		}
+		return nil, fmt.Errorf("get trip %s: %w", id, ErrNotFound)
+	}
+
+	t, err := repo.scanTrip(rows)
 	if err != nil {
 		return nil, fmt.Errorf("get trip %s: %w", id, err)
 	}
@@ -174,12 +197,22 @@ func (repo *tripRepository) Update(ctx context.Context, trip *Trip, lastUpdatedA
 	query += " RETURNING id, user_id, name, description, start_date, end_date, cover_image, is_active, " +
 		"(SELECT id FROM group_events WHERE linked_trip_id = trips.id LIMIT 1) as linked_event_id, " +
 		"day_names, created_at, created_by, updated_at, updated_by"
-	// Note: We use a subquery in RETURNING to fetch the linked_event_id.
 
 	db := database.GetQuerier(ctx, repo.db)
-	row := db.QueryRow(ctx, query, args...)
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("update trip %s query: %w", trip.ID, err)
+	}
+	defer rows.Close()
 
-	t, err := repo.scanTrip(row)
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("update trip %s row check: %w", trip.ID, err)
+		}
+		return nil, fmt.Errorf("update trip %s: %w", trip.ID, ErrNotFound)
+	}
+
+	t, err := repo.scanTrip(rows)
 	if err != nil {
 		return nil, fmt.Errorf("update trip %s: %w", trip.ID, err)
 	}
@@ -196,20 +229,49 @@ func (repo *tripRepository) DeleteByID(ctx context.Context, id string) error {
 	return nil
 }
 
-// scanTrip 是共用掃描行列輔助函式。
-func (repo *tripRepository) scanTrip(row pgx.Row) (*Trip, error) {
+// scanTrip 是共用掃描行列輔助函式，支援動態欄位掃描以提高健壯性。
+func (repo *tripRepository) scanTrip(rows pgx.Rows) (*Trip, error) {
+	fields := rows.FieldDescriptions()
 	var t Trip
-	err := row.Scan(
-		&t.ID, &t.UserID, &t.Name, &t.Description, &t.StartDate, &t.EndDate,
-		&t.CoverImage, &t.IsActive, &t.LinkedEventID, &t.DayNames,
-		&t.CreatedAt, &t.CreatedBy, &t.UpdatedAt, &t.UpdatedBy,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNotFound
+	dest := make([]any, len(fields))
+
+	for i, f := range fields {
+		switch f.Name {
+		case "id":
+			dest[i] = &t.ID
+		case "user_id":
+			dest[i] = &t.UserID
+		case "name":
+			dest[i] = &t.Name
+		case "description":
+			dest[i] = &t.Description
+		case "start_date":
+			dest[i] = &t.StartDate
+		case "end_date":
+			dest[i] = &t.EndDate
+		case "cover_image":
+			dest[i] = &t.CoverImage
+		case "is_active":
+			dest[i] = &t.IsActive
+		case "linked_event_id":
+			dest[i] = &t.LinkedEventID
+		case "day_names":
+			dest[i] = &t.DayNames
+		case "created_at":
+			dest[i] = &t.CreatedAt
+		case "created_by":
+			dest[i] = &t.CreatedBy
+		case "updated_at":
+			dest[i] = &t.UpdatedAt
+		case "updated_by":
+			dest[i] = &t.UpdatedBy
+		default:
+			var discard any
+			dest[i] = &discard
 		}
-		// TODO: If error is because of missing LinkedEventID column (e.g. from RETURNING in Update)
-		// We might need to handle it (e.g. by providing a default value or a different scan function).
+	}
+
+	if err := rows.Scan(dest...); err != nil {
 		return nil, fmt.Errorf("scan trip: %w", err)
 	}
 	return &t, nil
