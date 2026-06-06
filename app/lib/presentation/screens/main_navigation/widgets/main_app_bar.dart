@@ -5,6 +5,7 @@ import '../../../cubits/settings/settings_cubit.dart';
 import '../../../cubits/settings/settings_state.dart';
 import '../../../cubits/auth/auth_cubit.dart';
 import '../../../cubits/auth/auth_state.dart';
+import '../../../cubits/connectivity/connectivity_cubit.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../../../../presentation/widgets/responsive_layout.dart';
@@ -13,7 +14,6 @@ import '../../../widgets/sync/sync_status_indicator.dart';
 
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Trip? activeTrip;
-  final bool isOffline;
   final bool isLoading;
   final int currentIndex;
   final bool isEditMode;
@@ -27,7 +27,6 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   const MainAppBar({
     super.key,
     required this.activeTrip,
-    required this.isOffline,
     required this.isLoading,
     required this.currentIndex,
     required this.isEditMode,
@@ -44,6 +43,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
     final settingsState = context.watch<SettingsCubit>().state;
     final themeType = settingsState is SettingsLoaded ? settingsState.settings.theme : AppThemeType.nature;
 

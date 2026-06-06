@@ -40,7 +40,7 @@ import '../../widgets/tutorial/tutorial_aware_builder.dart';
 import '../collaboration_tab.dart';
 
 import '../../widgets/common/offline_status_banner.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
 import 'dart:async';
 
 import 'widgets/main_app_bar.dart';
@@ -63,16 +63,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
   UsageTrackingService? _usageTrackingService;
-  StreamSubscription<bool>? _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
-    _connectivitySubscription = getIt<IConnectivityService>().onConnectivityChanged.listen((_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
     // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -147,7 +141,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void dispose() {
     _usageTrackingService?.dispose();
-    _connectivitySubscription?.cancel();
     super.dispose();
   }
 
@@ -244,7 +237,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                           final bool isSyncInProgress = syncState is SyncInProgress;
                           final isLoading = isMessageSyncing || isPollSyncing || isTripLoading || isSyncInProgress;
 
-                          final isOffline = getIt<IConnectivityService>().isOffline;
+                          final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
                           final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
 
                           if (!hasTrips && !isTripLoading) {
@@ -325,7 +318,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
                             drawerEnableOpenDragGesture: !ResponsiveLayout.isDesktop(context),
                             appBar: MainAppBar(
                               activeTrip: activeTrip,
-                              isOffline: isOffline,
                               isLoading: isLoading,
                               currentIndex: _currentIndex,
                               isEditMode: isEditMode,

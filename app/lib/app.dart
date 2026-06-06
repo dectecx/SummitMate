@@ -23,6 +23,7 @@ import 'presentation/cubits/favorites/mountain/mountain_favorites_cubit.dart';
 import 'presentation/cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import 'presentation/cubits/app_error/app_error_cubit.dart';
 import 'presentation/cubits/tutorial/tutorial_cubit.dart';
+import 'presentation/cubits/connectivity/connectivity_cubit.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/widgets/global_error_listener.dart';
 
@@ -38,6 +39,7 @@ class SummitMateApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (_) => getIt<ConnectivityCubit>()),
         BlocProvider(create: (_) => getIt<AuthCubit>()..checkAuthStatus()),
         BlocProvider(create: (_) => getIt<SyncCubit>()),
         BlocProvider(create: (_) => getIt<TripCubit>()..loadTrips()),

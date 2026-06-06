@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/di/injection.dart';
 import '../../core/theme.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/trip/trip_cubit.dart';
@@ -15,6 +14,7 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
 import '../cubits/meal/meal_cubit.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 import '../screens/trip_list_screen.dart';
 import '../screens/group_events_list_screen.dart';
 import '../screens/my_group_events_screen.dart';
@@ -251,7 +251,7 @@ class AppDrawerContent extends StatelessWidget {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
-    final hasConnection = getIt<IConnectivityService>().hasConnection;
+    final hasConnection = !context.read<ConnectivityCubit>().state.isOffline;
 
     if (!hasConnection) {
       if (context.mounted) {

@@ -1,43 +1,15 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import '../../../core/di/injection.dart';
-import '../../../domain/interfaces/i_connectivity_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
 
-class OfflineStatusBanner extends StatefulWidget {
+class OfflineStatusBanner extends StatelessWidget {
   const OfflineStatusBanner({super.key});
 
   @override
-  State<OfflineStatusBanner> createState() => _OfflineStatusBannerState();
-}
-
-class _OfflineStatusBannerState extends State<OfflineStatusBanner> {
-  late final IConnectivityService _connectivityService;
-  StreamSubscription<bool>? _subscription;
-  bool _isOffline = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _connectivityService = getIt<IConnectivityService>();
-    _isOffline = _connectivityService.isOffline;
-    _subscription = _connectivityService.onConnectivityChanged.listen((isOnline) {
-      if (mounted) {
-        setState(() {
-          _isOffline = !isOnline;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (!_isOffline) {
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
+
+    if (!isOffline) {
       return const SizedBox.shrink();
     }
 
