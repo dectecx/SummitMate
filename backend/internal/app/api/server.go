@@ -13,6 +13,7 @@ import (
 	"summitmate/internal/log"
 	"summitmate/internal/trip"
 	"summitmate/internal/weather"
+	"summitmate/pkg/cache"
 )
 
 // Server 實作 api.ServerInterface，作為各個 Domain Handler 的聚合器 (Glue Layer)
@@ -36,6 +37,7 @@ type Server struct {
 	GearSetHandler *gearset.GearSetHandler
 
 	TokenManager *tokens.TokenManager
+	AuthCache    cache.Cache[string]
 }
 
 func NewServer(
@@ -53,6 +55,7 @@ func NewServer(
 	flagH *flag.FlagHandler,
 	gearSetH *gearset.GearSetHandler,
 	tm *tokens.TokenManager,
+	authCache cache.Cache[string],
 ) *Server {
 	return &Server{
 		AuthHandler:        authH,
@@ -69,5 +72,6 @@ func NewServer(
 		HeartbeatHandler:   hbH,
 		GearSetHandler:     gearSetH,
 		TokenManager:       tm,
+		AuthCache:          authCache,
 	}
 }

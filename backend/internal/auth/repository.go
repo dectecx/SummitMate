@@ -6,8 +6,9 @@ import (
 
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"summitmate/internal/database"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // ErrNotFound 代表查詢結果為空 (無符合條件的資料列)。
@@ -22,6 +23,7 @@ type UserRepository interface {
 	Update(ctx context.Context, id string, displayName, avatar *string) (*User, error)
 	SoftDelete(ctx context.Context, id string) error
 	SetVerified(ctx context.Context, id string) error
+	UpdatePassword(ctx context.Context, id string, passwordHash string) error
 	GetRoleIDByCode(ctx context.Context, code string) (string, error)
 }
 
@@ -119,7 +121,7 @@ func (repo *userRepository) Update(ctx context.Context, id string, displayName, 
 		          created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.db)
- 	row := db.QueryRow(ctx, query, displayName, avatar, id)
+	row := db.QueryRow(ctx, query, displayName, avatar, id)
 
 	var user User
 	err := row.Scan(
@@ -186,7 +188,7 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 		WHERE u.` + column + ` = $1
 	`
 	db := database.GetQuerier(ctx, repo.db)
- 	row := db.QueryRow(ctx, query, value)
+	row := db.QueryRow(ctx, query, value)
 
 	var user User
 	err := row.Scan(
@@ -213,6 +215,7 @@ func (repo *userRepository) getOneUser(ctx context.Context, column string, value
 
 	return &user, nil
 }
+
 // GetRoleIDByCode 透過角色代碼取得角色 ID。
 func (repo *userRepository) GetRoleIDByCode(ctx context.Context, code string) (string, error) {
 	var id string
@@ -226,4 +229,18 @@ func (repo *userRepository) GetRoleIDByCode(ctx context.Context, code string) (s
 		return "", fmt.Errorf("get role id by code %s: %w", code, err)
 	}
 	return id, nil
+}
+
+// UpdatePassword 更新使用者的密碼。
+func (repo *userRepository) UpdatePassword(ctx context.Context, id string, passwordHash string) error {
+	query := "UPDATE users SET password_hash = $1, updated_at = NOW(), updated_by = $2 WHERE id = $2"
+	db := database.GetQuerier(ctx, repo.db)
+	result, err := db.Exec(ctx, query, passwordHash, id)
+	if err != nil {
+		return fmt.Errorf("update password for user %s: %w", id, err)
+	}
+	if result.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

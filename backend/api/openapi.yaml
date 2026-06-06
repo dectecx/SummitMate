@@ -232,6 +232,73 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /auth/logout:
+    post:
+      summary: User Logout
+      description: 登出並將 JWT Token 加入黑名單
+      operationId: logoutUser
+      tags:
+        - auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 登出成功
+        "401":
+          description: 未登入或 Token 無效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/change-password:
+    post:
+      summary: Change Password
+      description: 修改密碼並將當前 JWT Token 加入黑名單
+      operationId: changePassword
+      tags:
+        - auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: 密碼修改成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 密碼修改成功
+        "400":
+          description: 參數錯誤或新密碼強度不足
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未登入或舊密碼錯誤
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
   /users/search:
     get:
       summary: Search User by Email
@@ -3948,8 +4015,23 @@ components:
           type: string
           maxLength: 255
 
+    ChangePasswordRequest:
+      type: object
+      required:
+        - old_password
+        - new_password
+      properties:
+        old_password:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          minLength: 8
+          description: 新密碼，長度至少8位並包含英數字
+
     RefreshTokenRequest:
       type: object
+
       required:
         - refresh_token
       properties:

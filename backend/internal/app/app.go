@@ -80,7 +80,7 @@ func (a *App) InitRouter() (*chi.Mux, error) {
 	apiHandler := api.HandlerWithOptions(apiServer, api.ChiServerOptions{
 		BaseURL: "/api/v1",
 		Middlewares: []api.MiddlewareFunc{
-			middleware.JWTAuth(apiServer.TokenManager),
+			middleware.JWTAuth(apiServer.TokenManager, apiServer.AuthCache),
 		},
 	})
 	router.Mount("/", apiHandler)
@@ -264,5 +264,6 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 		groupHandler, weatherHandler, logHandler, heartbeatHandler,
 		flagHandler, gearSetHandler,
 		tokenManager,
+		authCache,
 	), nil
 }

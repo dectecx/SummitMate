@@ -17,15 +17,24 @@ import (
 
 // AuthService 定義認證相關的業務邏輯介面。
 type AuthService interface {
+	// Registration & Verification
 	Register(ctx context.Context, email, password, displayName string, avatar *string) (*User, string, string, error)
+	VerifyEmail(ctx context.Context, emailAddr, code string) error
+	ResendVerificationCode(ctx context.Context, emailAddr string) error
+
+	// Session
 	Login(ctx context.Context, email, password string) (*User, string, string, error)
+	Logout(ctx context.Context, token string) error
+	RefreshToken(ctx context.Context, tokenString string) (*User, string, string, error)
+
+	// Credentials
+	ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string, currentToken string) error
+
+	// User Profile
 	GetUserByID(ctx context.Context, id string) (*User, error)
-	UpdateProfile(ctx context.Context, id string, displayName, avatar *string) (*User, error)
-	DeleteAccount(ctx context.Context, id string) error
-	RefreshToken(ctx context.Context, oldToken string) (*User, string, string, error)
-	VerifyEmail(ctx context.Context, email, code string) error
-	ResendVerificationCode(ctx context.Context, email string) error
-	SearchUserByEmail(ctx context.Context, email string) (*User, error)
+	SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error)
+	UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*User, error)
+	DeleteAccount(ctx context.Context, userID string) error
 }
 
 type authService struct {
@@ -157,109 +166,6 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	return createdUser, accessToken, refreshToken, nil
 }
 
-// Login 處理使用者登入流程：
-//  1. 以 Email 查詢使用者
-//  2. 驗證密碼
-//  3. 簽發 JWT Token
-//
-// 回傳 User、JWT Token、或錯誤。
-func (svc *authService) Login(ctx context.Context, email, password string) (*User, string, string, error) {
-	// 查詢使用者
-	user, err := svc.userRepo.GetByEmail(ctx, email)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			svc.logger.WarnContext(ctx, "登入失敗: 找不到使用者", "email", email)
-			return nil, "", "", apperror.ErrInvalidCredentials
-		}
-		svc.logger.ErrorContext(ctx, "登入時資料庫查詢失敗", "email", email, "error", err)
-		return nil, "", "", err
-	}
-
-	// 驗證密碼
-	if !CheckPasswordHash(password, user.PasswordHash) {
-		svc.logger.WarnContext(ctx, "登入失敗: 密碼不正確", "user_id", user.ID, "email", email)
-		return nil, "", "", apperror.ErrInvalidCredentials
-	}
-
-	svc.logger.InfoContext(ctx, "使用者登入成功", "user_id", user.ID, "email", email)
-
-	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
-	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
-	if err != nil {
-		return nil, "", "", err
-	}
-	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	return user, accessToken, refreshToken, nil
-}
-
-// GetUserByID 依 ID 取得使用者資料。
-func (svc *authService) GetUserByID(ctx context.Context, id string) (*User, error) {
-	return svc.userRepo.GetByID(ctx, id)
-}
-
-// UpdateProfile 更新使用者的個人資料 (display_name, avatar)。
-func (svc *authService) UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*User, error) {
-	user, err := svc.userRepo.Update(ctx, userID, displayName, avatar)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return nil, apperror.ErrUserNotFound
-		}
-		return nil, err
-	}
-	return user, nil
-}
-
-// DeleteAccount 軟刪除使用者帳號 (設定 is_active = false)。
-func (svc *authService) DeleteAccount(ctx context.Context, userID string) error {
-	err := svc.userRepo.SoftDelete(ctx, userID)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return apperror.ErrUserNotFound
-		}
-		return err
-	}
-	return nil
-}
-
-// RefreshToken 解析現有的 Refresh Token 並簽發新的 JWT Tokens。
-func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*User, string, string, error) {
-	claims, err := svc.tokenManager.ParseToken(tokenString)
-	if err != nil {
-		return nil, "", "", apperror.ErrTokenExpired
-	}
-
-	if claims.TokenType != "refresh" {
-		return nil, "", "", apperror.ErrUnauthorized.WithMessage("無效的 Token 類型")
-	}
-
-	user, err := svc.userRepo.GetByID(ctx, claims.UserID)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			return nil, "", "", apperror.ErrUserNotFound
-		}
-		return nil, "", "", err
-	}
-
-	if !user.IsActive {
-		return nil, "", "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
-	}
-
-	newAccessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
-	if err != nil {
-		return nil, "", "", err
-	}
-	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	return user, newAccessToken, newRefreshToken, nil
-}
-
 // VerifyEmail 驗證使用者的 Email。
 func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string) error {
 	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
@@ -345,9 +251,178 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 	return nil
 }
 
+// Login 處理使用者登入流程：
+//  1. 以 Email 查詢使用者
+//  2. 驗證密碼
+//  3. 簽發 JWT Token
+//
+// 回傳 User、JWT Token、或錯誤。
+func (svc *authService) Login(ctx context.Context, email, password string) (*User, string, string, error) {
+	// 查詢使用者
+	user, err := svc.userRepo.GetByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			svc.logger.WarnContext(ctx, "登入失敗: 找不到使用者", "email", email)
+			return nil, "", "", apperror.ErrInvalidCredentials
+		}
+		svc.logger.ErrorContext(ctx, "登入時資料庫查詢失敗", "email", email, "error", err)
+		return nil, "", "", err
+	}
+
+	// 驗證密碼
+	if !CheckPasswordHash(password, user.PasswordHash) {
+		svc.logger.WarnContext(ctx, "登入失敗: 密碼不正確", "user_id", user.ID, "email", email)
+		return nil, "", "", apperror.ErrInvalidCredentials
+	}
+
+	svc.logger.InfoContext(ctx, "使用者登入成功", "user_id", user.ID, "email", email)
+
+	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
+	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
+	if err != nil {
+		return nil, "", "", err
+	}
+	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return user, accessToken, refreshToken, nil
+}
+
+// Logout 註銷指定 Token，將其加入黑名單。
+func (svc *authService) Logout(ctx context.Context, tokenStr string) error {
+	claims, err := svc.tokenManager.ParseToken(tokenStr)
+	if err != nil {
+		// Token 已經無效或過期，不需要再加入黑名單
+		return nil
+	}
+
+	// 計算 Token 剩餘存活時間 (TTL)
+	expiration := claims.ExpiresAt.Time
+	ttl := time.Until(expiration)
+	if ttl <= 0 {
+		return nil
+	}
+
+	// 存入黑名單，值可以使用 "1"
+	if err := svc.authCache.Set(ctx, authBlacklistKey(tokenStr), "1", ttl); err != nil {
+		svc.logger.ErrorContext(ctx, "寫入 Token 黑名單失敗", "error", err)
+		return err
+	}
+
+	return nil
+}
+
+// RefreshToken 解析現有的 Refresh Token 並簽發新的 JWT Tokens。
+func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*User, string, string, error) {
+	claims, err := svc.tokenManager.ParseToken(tokenString)
+	if err != nil {
+		return nil, "", "", apperror.ErrTokenExpired
+	}
+
+	if claims.TokenType != "refresh" {
+		return nil, "", "", apperror.ErrUnauthorized.WithMessage("無效的 Token 類型")
+	}
+
+	user, err := svc.userRepo.GetByID(ctx, claims.UserID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, "", "", apperror.ErrUserNotFound
+		}
+		return nil, "", "", err
+	}
+
+	if !user.IsActive {
+		return nil, "", "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
+	}
+
+	newAccessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
+	if err != nil {
+		return nil, "", "", err
+	}
+	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return user, newAccessToken, newRefreshToken, nil
+}
+
+// ChangePassword 修改使用者密碼，並將當前使用的 Token 註銷。
+func (svc *authService) ChangePassword(ctx context.Context, userID string, oldPassword, newPassword string, currentToken string) error {
+	// 驗證密碼強度
+	if err := validatePasswordStrength(newPassword); err != nil {
+		return err
+	}
+
+	// 取得使用者
+	user, err := svc.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return apperror.ErrUserNotFound
+		}
+		return err
+	}
+
+	// 驗證舊密碼
+	if !CheckPasswordHash(oldPassword, user.PasswordHash) {
+		return apperror.ErrUnauthorized.WithMessage("舊密碼不正確")
+	}
+
+	// 雜湊新密碼
+	newHash, err := HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	// 更新資料庫
+	if err := svc.userRepo.UpdatePassword(ctx, userID, newHash); err != nil {
+		return err
+	}
+
+	// 註銷當前使用的 Token
+	if currentToken != "" {
+		if err := svc.Logout(ctx, currentToken); err != nil {
+			svc.logger.WarnContext(ctx, "修改密碼後註銷當前 Token 失敗", "error", err)
+		}
+	}
+
+	return nil
+}
+
+// GetUserByID 依 ID 取得使用者資料。
+func (svc *authService) GetUserByID(ctx context.Context, id string) (*User, error) {
+	return svc.userRepo.GetByID(ctx, id)
+}
+
 // SearchUserByEmail 透過 Email 搜尋使用者。
 func (svc *authService) SearchUserByEmail(ctx context.Context, emailAddr string) (*User, error) {
 	return svc.userRepo.GetByEmail(ctx, emailAddr)
+}
+
+// UpdateProfile 更新使用者的個人資料 (display_name, avatar)。
+func (svc *authService) UpdateProfile(ctx context.Context, userID string, displayName, avatar *string) (*User, error) {
+	user, err := svc.userRepo.Update(ctx, userID, displayName, avatar)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, apperror.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+// DeleteAccount 軟刪除使用者帳號 (設定 is_active = false)。
+func (svc *authService) DeleteAccount(ctx context.Context, userID string) error {
+	err := svc.userRepo.SoftDelete(ctx, userID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return apperror.ErrUserNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 // --- Validation Helpers ---
