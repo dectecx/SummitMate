@@ -150,20 +150,17 @@ func (s *tripService) GetTrip(ctx context.Context, tripID, userID string) (*Trip
 		s.logger.ErrorContext(ctx, "載入糧食計畫天數失敗", "trip_id", tripID, "error", err)
 		return nil, apperror.InternalError("載入糧食計畫失敗").Wrap(err)
 	}
+	dayNamesMap := make(map[string]bool, len(trip.DayNames))
+	for _, dn := range trip.DayNames {
+		dayNamesMap[dn] = true
+	}
 	trip.MealPlanDays = make([]MealPlanDay, len(mealDays))
 	for i, d := range mealDays {
 		// 如果有綁定行程天數，確保名稱同步
 		if d.LinkedItineraryDay != nil {
-			found := false
-			for _, dn := range trip.DayNames {
-				if dn == *d.LinkedItineraryDay {
-					d.Name = dn
-					found = true
-					break
-				}
-			}
-			// 如果沒找到對應的行程天數，表示該連結已失效（可能行程天數被改名或刪除）
-			if !found {
+			if dayNamesMap[*d.LinkedItineraryDay] {
+				d.Name = *d.LinkedItineraryDay
+			} else {
 				s.logger.WarnContext(ctx, "糧食計畫天數綁定的行程天數已不存在", "trip_id", tripID, "meal_plan_day_id", d.ID, "linked_day", *d.LinkedItineraryDay)
 				d.LinkedItineraryDay = nil
 			}
@@ -215,16 +212,13 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 			// 檢查是否有糧食計畫天數綁定了已不存在的行程天數
 			mealDays, err := s.mealDayRepo.ListByTripID(txCtx, tripID)
 			if err == nil {
+				dayNamesMap := make(map[string]bool, len(existingTrip.DayNames))
+				for _, dn := range existingTrip.DayNames {
+					dayNamesMap[dn] = true
+				}
 				for _, md := range mealDays {
 					if md.LinkedItineraryDay != nil {
-						found := false
-						for _, dn := range existingTrip.DayNames {
-							if dn == *md.LinkedItineraryDay {
-								found = true
-								break
-							}
-						}
-						if !found {
+						if !dayNamesMap[*md.LinkedItineraryDay] {
 							// 取消連結
 							md.LinkedItineraryDay = nil
 							if _, err := s.mealDayRepo.Update(txCtx, md); err != nil {
