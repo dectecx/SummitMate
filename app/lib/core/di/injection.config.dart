@@ -157,6 +157,8 @@ import '../../infrastructure/services/weather_service.dart' as _i27;
 import '../../infrastructure/tools/usage_tracking_service.dart' as _i755;
 import '../../presentation/cubits/app_error/app_error_cubit.dart' as _i958;
 import '../../presentation/cubits/auth/auth_cubit.dart' as _i33;
+import '../../presentation/cubits/connectivity/connectivity_cubit.dart'
+    as _i472;
 import '../../presentation/cubits/favorites/group_event/group_event_favorites_cubit.dart'
     as _i115;
 import '../../presentation/cubits/favorites/mountain/mountain_favorites_cubit.dart'
@@ -307,6 +309,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IAuthService>(),
         gh<_i342.UsageTrackingService>(),
       ),
+    );
+    gh.factory<_i472.ConnectivityCubit>(
+      () => _i472.ConnectivityCubit(gh<_i614.IConnectivityService>()),
     );
     gh.lazySingleton<_i165.PermissionService>(
       () => _i165.PermissionService(gh<_i614.IAuthService>()),
