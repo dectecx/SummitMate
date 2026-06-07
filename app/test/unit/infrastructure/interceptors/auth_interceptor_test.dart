@@ -174,5 +174,31 @@ void main() {
         verify(() => handler.next(error)).called(1);
       },
     );
+
+    test(
+      'Given 401 occurs on logout endpoint, When calling AuthInterceptor.onError, Then passes error through without triggering logout or refresh',
+      () async {
+        final options = RequestOptions(path: '/auth/logout');
+        final error = DioException(
+          requestOptions: options,
+          response: Response(requestOptions: options, statusCode: 401),
+        );
+
+        final handler = MockErrorInterceptorHandler();
+        final completer = Completer<void>();
+        when(() => handler.next(any())).thenAnswer((_) {
+          completer.complete();
+        });
+
+        interceptor.onError(error, handler);
+
+        await completer.future;
+
+        verifyNever(() => mockAuthService.logout());
+        verifyNever(() => mockAppErrorCubit.reportAuthExpired());
+        verifyNever(() => mockAuthService.refreshToken());
+        verify(() => handler.next(error)).called(1);
+      },
+    );
   });
 }
