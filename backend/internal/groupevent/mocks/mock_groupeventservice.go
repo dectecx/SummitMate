@@ -918,21 +918,33 @@ func (_c *MockGroupEventService_UpdateTripLink_Call) RunAndReturn(run func(conte
 }
 
 // UpdateTripSnapshot provides a mock function with given fields: ctx, eventID, userID
-func (_m *MockGroupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) error {
+func (_m *MockGroupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) (*groupevent.GroupEvent, error) {
 	ret := _m.Called(ctx, eventID, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateTripSnapshot")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+	var r0 *groupevent.GroupEvent
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*groupevent.GroupEvent, error)); ok {
+		return rf(ctx, eventID, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *groupevent.GroupEvent); ok {
 		r0 = rf(ctx, eventID, userID)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*groupevent.GroupEvent)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, eventID, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // MockGroupEventService_UpdateTripSnapshot_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTripSnapshot'
@@ -955,12 +967,12 @@ func (_c *MockGroupEventService_UpdateTripSnapshot_Call) Run(run func(ctx contex
 	return _c
 }
 
-func (_c *MockGroupEventService_UpdateTripSnapshot_Call) Return(_a0 error) *MockGroupEventService_UpdateTripSnapshot_Call {
-	_c.Call.Return(_a0)
+func (_c *MockGroupEventService_UpdateTripSnapshot_Call) Return(_a0 *groupevent.GroupEvent, _a1 error) *MockGroupEventService_UpdateTripSnapshot_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockGroupEventService_UpdateTripSnapshot_Call) RunAndReturn(run func(context.Context, string, string) error) *MockGroupEventService_UpdateTripSnapshot_Call {
+func (_c *MockGroupEventService_UpdateTripSnapshot_Call) RunAndReturn(run func(context.Context, string, string) (*groupevent.GroupEvent, error)) *MockGroupEventService_UpdateTripSnapshot_Call {
 	_c.Call.Return(run)
 	return _c
 }

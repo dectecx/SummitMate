@@ -432,12 +432,13 @@ func (h *GroupEventHandler) PostGroupEventsIdTripSnapshot(w http.ResponseWriter,
 		return
 	}
 
-	if err := h.service.UpdateTripSnapshot(r.Context(), id.String(), userID); err != nil {
+	updated, err := h.service.UpdateTripSnapshot(r.Context(), id.String(), userID)
+	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	apiutil.SendJSON(w, http.StatusOK, ToGroupEventResponse(updated, userID))
 }
 
 func (h *GroupEventHandler) GetGroupEventsMy(w http.ResponseWriter, r *http.Request, params api.GetGroupEventsMyParams) {
