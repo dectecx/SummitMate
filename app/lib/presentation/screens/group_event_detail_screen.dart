@@ -5,6 +5,7 @@ import 'package:summitmate/domain/domain.dart';
 import '../cubits/group_event/group_event_state.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/connectivity/connectivity_state.dart';
+import '../widgets/common/offline_gate.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
@@ -134,9 +135,16 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
               leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
               actions: [
                 if (isHost) ...[
-                  _buildGlassIconButton(
-                    icon: Icons.delete_outline,
-                    onTap: isOffline ? null : () => _confirmDelete(context),
+                  OfflineGate(
+                    onOfflineTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('⚠️ 離線模式下無法刪除揪團'), backgroundColor: Colors.red),
+                      );
+                    },
+                    child: _buildGlassIconButton(
+                      icon: Icons.delete_outline,
+                      onTap: () => _confirmDelete(context),
+                    ),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -354,31 +362,35 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
   Widget _buildActionContent(BuildContext context, ColorScheme colorScheme, bool isHost, bool isSyncing) {
     return BlocBuilder<ConnectivityCubit, ConnectivityState>(
       builder: (context, connectivityState) {
-        final isOffline = connectivityState.isOffline;
         final cubitState = context.watch<GroupEventCubit>().state;
 
         if (isHost) {
-          return FilledButton.icon(
-            onPressed: isOffline
-                ? null
-                : () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => GroupEventReviewScreen(
-                          eventId: _event.id,
-                          currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
-                        ),
-                      ),
-                    );
-                    if (context.mounted) {
-                      context.read<GroupEventCubit>().fetchEvents(isAuto: false);
-                    }
-                  },
-            icon: const Icon(Icons.rate_review_rounded),
-            label: const Text('審核報名'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          return OfflineGate(
+            onOfflineTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('⚠️ 離線模式下無法審核報名'), backgroundColor: Colors.red),
+              );
+            },
+            child: FilledButton.icon(
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => GroupEventReviewScreen(
+                      eventId: _event.id,
+                      currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
+                    ),
+                  ),
+                );
+                if (context.mounted) {
+                  context.read<GroupEventCubit>().fetchEvents(isAuto: false);
+                }
+              },
+              icon: const Icon(Icons.rate_review_rounded),
+              label: const Text('審核報名'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
             ),
           );
         }
@@ -399,24 +411,31 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
           );
         }
 
-        return FilledButton(
-          onPressed: isOffline || !_event.canApply || isSyncing ? null : _handleApply,
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        return OfflineGate(
+          onOfflineTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('⚠️ 離線模式下無法申請加入'), backgroundColor: Colors.red),
+            );
+          },
+          child: FilledButton(
+            onPressed: !_event.canApply || isSyncing ? null : _handleApply,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: isSyncing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Text(
+                    (_event.myApplicationStatus == GroupEventApplicationStatus.rejected ||
+                            _event.myApplicationStatus == GroupEventApplicationStatus.cancelled)
+                        ? '再次申請'
+                        : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入')),
+                  ),
           ),
-          child: isSyncing
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : Text(
-                  (_event.myApplicationStatus == GroupEventApplicationStatus.rejected ||
-                          _event.myApplicationStatus == GroupEventApplicationStatus.cancelled)
-                      ? '再次申請'
-                      : (_event.isFull ? '已額滿' : (_event.approvalRequired ? '申請加入' : '立即加入')),
-                ),
         );
       },
     );

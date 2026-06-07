@@ -9,6 +9,8 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
+import '../widgets/common/offline_gate.dart';
+
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import '../cubits/gear/gear_cubit.dart';
@@ -329,17 +331,23 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       ),
       body: _buildBody(isOffline),
       floatingActionButton: _hasFetched && _gearSets.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: (isOffline || _isLoading) ? null : () => _fetchGearSets(forceRefresh: true),
-              icon: _isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.refresh),
-              label: Text(_isLoading ? '正在抓取...' : '抓取最新資料'),
-              backgroundColor: isOffline ? Colors.grey : null,
+          ? OfflineGate(
+              onOfflineTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('⚠️ 離線模式下無法同步抓取資料'), backgroundColor: Colors.red),
+                );
+              },
+              child: FloatingActionButton.extended(
+                onPressed: _isLoading ? null : () => _fetchGearSets(forceRefresh: true),
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.refresh),
+                label: Text(_isLoading ? '正在抓取...' : '抓取最新資料'),
+              ),
             )
           : null,
     );
@@ -389,10 +397,17 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                           const SizedBox(height: 24),
                           SizedBox(
                             width: 200,
-                            child: FilledButton.icon(
-                              onPressed: isOffline ? null : () => _fetchGearSets(forceRefresh: true),
-                              icon: const Icon(Icons.download),
-                              label: const Text('抓取最新資料'),
+                            child: OfflineGate(
+                              onOfflineTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('⚠️ 離線模式下無法下載雲端資料'), backgroundColor: Colors.red),
+                                );
+                              },
+                              child: FilledButton.icon(
+                                onPressed: () => _fetchGearSets(forceRefresh: true),
+                                icon: const Icon(Icons.download),
+                                label: const Text('抓取最新資料'),
+                              ),
                             ),
                           ),
                         ],
@@ -444,10 +459,17 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
   Widget _buildGearSetCard(int index, bool isOffline) {
     final gearSet = _filteredGearSets[index];
     final isBusy = _busyGearSetId == gearSet.id;
-    return _GearSetCard(
-      gearSet: gearSet,
-      isLoading: isBusy,
-      onDownload: isBusy || isOffline ? null : () => _onDownloadPressed(gearSet),
+    return OfflineGate(
+      onOfflineTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('⚠️ 離線模式下無法下載或查看雲端裝備'), backgroundColor: Colors.red),
+        );
+      },
+      child: _GearSetCard(
+        gearSet: gearSet,
+        isLoading: isBusy,
+        onDownload: isBusy ? null : () => _onDownloadPressed(gearSet),
+      ),
     );
   }
 
@@ -492,20 +514,32 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _ToolButton(
-                    icon: Icons.upload,
-                    label: '上傳裝備與糧食計畫',
-                    onTap: isOffline ? null : _showUploadDialog,
-                    disabled: isOffline,
+                  child: OfflineGate(
+                    onOfflineTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('⚠️ 離線模式下無法上傳裝備'), backgroundColor: Colors.red),
+                      );
+                    },
+                    child: _ToolButton(
+                      icon: Icons.upload,
+                      label: '上傳裝備與糧食計畫',
+                      onTap: _showUploadDialog,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _ToolButton(
-                    icon: Icons.cloud_done,
-                    label: '管理雲端裝備',
-                    onTap: isOffline ? null : _showManagementDialog,
-                    disabled: isOffline,
+                  child: OfflineGate(
+                    onOfflineTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('⚠️ 離線模式下無法管理雲端裝備'), backgroundColor: Colors.red),
+                      );
+                    },
+                    child: _ToolButton(
+                      icon: Icons.cloud_done,
+                      label: '管理雲端裝備',
+                      onTap: _showManagementDialog,
+                    ),
                   ),
                 ),
               ],
@@ -694,31 +728,27 @@ class _ToolButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
-  final bool disabled;
 
-  const _ToolButton({required this.icon, required this.label, this.onTap, this.disabled = false});
+  const _ToolButton({required this.icon, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: disabled ? null : onTap,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
-      child: Opacity(
-        opacity: disabled ? 0.5 : 1.0,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18),
-              const SizedBox(width: 6),
-              Text(label, style: const TextStyle(fontSize: 13)),
-            ],
-          ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18),
+            const SizedBox(width: 6),
+            Text(label, style: const TextStyle(fontSize: 13)),
+          ],
         ),
       ),
     );

@@ -12,6 +12,7 @@ import '../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../core/services/permission_service.dart';
 import '../../core/di/injection.dart';
+import '../widgets/common/offline_gate.dart';
 
 /// 留言板畫面 (Tab 3 - 協作)
 ///
@@ -127,23 +128,23 @@ class _MessageListScreenState extends State<MessageListScreen> {
                         ),
                       ),
                     ),
-                    floatingActionButton: FloatingActionButton(
-                      backgroundColor: isOfflineMode ? Colors.grey : null,
-                      onPressed: isOfflineMode
-                          ? () {
-                              ScaffoldMessenger.of(
-                                context,
-                              ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
-                            }
-                          : () => _showAddMessageDialog(
-                              context,
-                              context.read<MessageCubit>(),
-                              selectedCategory,
-                              username,
-                              avatar,
-                              null,
-                            ),
-                      child: const Icon(Icons.add_comment),
+                    floatingActionButton: OfflineGate(
+                      onOfflineTap: () {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('⚠️ 離線模式下無法新增留言')));
+                      },
+                      child: FloatingActionButton(
+                        onPressed: () => _showAddMessageDialog(
+                          context,
+                          context.read<MessageCubit>(),
+                          selectedCategory,
+                          username,
+                          avatar,
+                          null,
+                        ),
+                        child: const Icon(Icons.add_comment),
+                      ),
                     ),
                   );
                 },
@@ -251,27 +252,27 @@ class _MessageListScreenState extends State<MessageListScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (replies.isNotEmpty) Text('${replies.length}', style: Theme.of(context).textTheme.bodySmall),
-            IconButton(
-              icon: const Icon(Icons.reply, size: 20),
-              onPressed: isOfflineMode
-                  ? null
-                  : () => _showReplyDialog(
-                      context,
-                      context.read<MessageCubit>(),
-                      selectedCategory,
-                      username,
-                      avatar,
-                      msg.id,
-                    ),
-              tooltip: '回覆',
+            OfflineGate(
+              child: IconButton(
+                icon: const Icon(Icons.reply, size: 20),
+                onPressed: () => _showReplyDialog(
+                  context,
+                  context.read<MessageCubit>(),
+                  selectedCategory,
+                  username,
+                  avatar,
+                  msg.id,
+                ),
+                tooltip: '回覆',
+              ),
             ),
             if (canDelete)
-              IconButton(
-                icon: const Icon(Icons.delete_outline, size: 20),
-                onPressed: isOfflineMode
-                    ? null
-                    : () => _confirmDelete(context, context.read<MessageCubit>(), msg.id),
-                tooltip: '刪除',
+              OfflineGate(
+                child: IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: () => _confirmDelete(context, context.read<MessageCubit>(), msg.id),
+                  tooltip: '刪除',
+                ),
               ),
           ],
         ),
@@ -286,11 +287,11 @@ class _MessageListScreenState extends State<MessageListScreen> {
             title: Text(reply.content),
             subtitle: Text('${reply.user} · ${reply.timestamp.month}/${reply.timestamp.day}'),
             trailing: canDeleteReply
-                ? IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 18),
-                    onPressed: isOfflineMode
-                        ? null
-                        : () => _confirmDelete(context, context.read<MessageCubit>(), reply.id),
+                ? OfflineGate(
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      onPressed: () => _confirmDelete(context, context.read<MessageCubit>(), reply.id),
+                    ),
                   )
                 : null,
           );
