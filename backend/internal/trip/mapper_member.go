@@ -20,6 +20,7 @@ func ToTripMemberGetResponse(m *TripMember) api.TripMemberGetResponse {
 	return api.TripMemberGetResponse{
 		TripId:       uuid.MustParse(m.TripID),
 		UserId:       uuid.MustParse(m.UserID),
+		RoleCode:     m.RoleCode,
 		JoinedAt:     m.JoinedAt,
 		UserMetadata: apiUser,
 	}

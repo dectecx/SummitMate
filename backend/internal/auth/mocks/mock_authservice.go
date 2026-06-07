@@ -72,9 +72,9 @@ func (_c *MockAuthService_ChangePassword_Call) RunAndReturn(run func(context.Con
 	return _c
 }
 
-// DeleteAccount provides a mock function with given fields: ctx, id
-func (_m *MockAuthService) DeleteAccount(ctx context.Context, id string) error {
-	ret := _m.Called(ctx, id)
+// DeleteAccount provides a mock function with given fields: ctx, userID
+func (_m *MockAuthService) DeleteAccount(ctx context.Context, userID string) error {
+	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteAccount")
@@ -82,7 +82,7 @@ func (_m *MockAuthService) DeleteAccount(ctx context.Context, id string) error {
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, id)
+		r0 = rf(ctx, userID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -97,12 +97,12 @@ type MockAuthService_DeleteAccount_Call struct {
 
 // DeleteAccount is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
-func (_e *MockAuthService_Expecter) DeleteAccount(ctx interface{}, id interface{}) *MockAuthService_DeleteAccount_Call {
-	return &MockAuthService_DeleteAccount_Call{Call: _e.mock.On("DeleteAccount", ctx, id)}
+//   - userID string
+func (_e *MockAuthService_Expecter) DeleteAccount(ctx interface{}, userID interface{}) *MockAuthService_DeleteAccount_Call {
+	return &MockAuthService_DeleteAccount_Call{Call: _e.mock.On("DeleteAccount", ctx, userID)}
 }
 
-func (_c *MockAuthService_DeleteAccount_Call) Run(run func(ctx context.Context, id string)) *MockAuthService_DeleteAccount_Call {
+func (_c *MockAuthService_DeleteAccount_Call) Run(run func(ctx context.Context, userID string)) *MockAuthService_DeleteAccount_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
@@ -299,9 +299,9 @@ func (_c *MockAuthService_Logout_Call) RunAndReturn(run func(context.Context, st
 	return _c
 }
 
-// RefreshToken provides a mock function with given fields: ctx, oldToken
-func (_m *MockAuthService) RefreshToken(ctx context.Context, oldToken string) (*auth.User, string, string, error) {
-	ret := _m.Called(ctx, oldToken)
+// RefreshToken provides a mock function with given fields: ctx, tokenString
+func (_m *MockAuthService) RefreshToken(ctx context.Context, tokenString string) (*auth.User, string, string, error) {
+	ret := _m.Called(ctx, tokenString)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RefreshToken")
@@ -312,10 +312,10 @@ func (_m *MockAuthService) RefreshToken(ctx context.Context, oldToken string) (*
 	var r2 string
 	var r3 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) (*auth.User, string, string, error)); ok {
-		return rf(ctx, oldToken)
+		return rf(ctx, tokenString)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) *auth.User); ok {
-		r0 = rf(ctx, oldToken)
+		r0 = rf(ctx, tokenString)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*auth.User)
@@ -323,19 +323,19 @@ func (_m *MockAuthService) RefreshToken(ctx context.Context, oldToken string) (*
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) string); ok {
-		r1 = rf(ctx, oldToken)
+		r1 = rf(ctx, tokenString)
 	} else {
 		r1 = ret.Get(1).(string)
 	}
 
 	if rf, ok := ret.Get(2).(func(context.Context, string) string); ok {
-		r2 = rf(ctx, oldToken)
+		r2 = rf(ctx, tokenString)
 	} else {
 		r2 = ret.Get(2).(string)
 	}
 
 	if rf, ok := ret.Get(3).(func(context.Context, string) error); ok {
-		r3 = rf(ctx, oldToken)
+		r3 = rf(ctx, tokenString)
 	} else {
 		r3 = ret.Error(3)
 	}
@@ -350,12 +350,12 @@ type MockAuthService_RefreshToken_Call struct {
 
 // RefreshToken is a helper method to define mock.On call
 //   - ctx context.Context
-//   - oldToken string
-func (_e *MockAuthService_Expecter) RefreshToken(ctx interface{}, oldToken interface{}) *MockAuthService_RefreshToken_Call {
-	return &MockAuthService_RefreshToken_Call{Call: _e.mock.On("RefreshToken", ctx, oldToken)}
+//   - tokenString string
+func (_e *MockAuthService_Expecter) RefreshToken(ctx interface{}, tokenString interface{}) *MockAuthService_RefreshToken_Call {
+	return &MockAuthService_RefreshToken_Call{Call: _e.mock.On("RefreshToken", ctx, tokenString)}
 }
 
-func (_c *MockAuthService_RefreshToken_Call) Run(run func(ctx context.Context, oldToken string)) *MockAuthService_RefreshToken_Call {
+func (_c *MockAuthService_RefreshToken_Call) Run(run func(ctx context.Context, tokenString string)) *MockAuthService_RefreshToken_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
@@ -448,9 +448,9 @@ func (_c *MockAuthService_Register_Call) RunAndReturn(run func(context.Context, 
 	return _c
 }
 
-// ResendVerificationCode provides a mock function with given fields: ctx, email
-func (_m *MockAuthService) ResendVerificationCode(ctx context.Context, email string) error {
-	ret := _m.Called(ctx, email)
+// ResendVerificationCode provides a mock function with given fields: ctx, emailAddr
+func (_m *MockAuthService) ResendVerificationCode(ctx context.Context, emailAddr string) error {
+	ret := _m.Called(ctx, emailAddr)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ResendVerificationCode")
@@ -458,7 +458,7 @@ func (_m *MockAuthService) ResendVerificationCode(ctx context.Context, email str
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, email)
+		r0 = rf(ctx, emailAddr)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -473,12 +473,12 @@ type MockAuthService_ResendVerificationCode_Call struct {
 
 // ResendVerificationCode is a helper method to define mock.On call
 //   - ctx context.Context
-//   - email string
-func (_e *MockAuthService_Expecter) ResendVerificationCode(ctx interface{}, email interface{}) *MockAuthService_ResendVerificationCode_Call {
-	return &MockAuthService_ResendVerificationCode_Call{Call: _e.mock.On("ResendVerificationCode", ctx, email)}
+//   - emailAddr string
+func (_e *MockAuthService_Expecter) ResendVerificationCode(ctx interface{}, emailAddr interface{}) *MockAuthService_ResendVerificationCode_Call {
+	return &MockAuthService_ResendVerificationCode_Call{Call: _e.mock.On("ResendVerificationCode", ctx, emailAddr)}
 }
 
-func (_c *MockAuthService_ResendVerificationCode_Call) Run(run func(ctx context.Context, email string)) *MockAuthService_ResendVerificationCode_Call {
+func (_c *MockAuthService_ResendVerificationCode_Call) Run(run func(ctx context.Context, emailAddr string)) *MockAuthService_ResendVerificationCode_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
@@ -495,9 +495,9 @@ func (_c *MockAuthService_ResendVerificationCode_Call) RunAndReturn(run func(con
 	return _c
 }
 
-// SearchUserByEmail provides a mock function with given fields: ctx, email
-func (_m *MockAuthService) SearchUserByEmail(ctx context.Context, email string) (*auth.User, error) {
-	ret := _m.Called(ctx, email)
+// SearchUserByEmail provides a mock function with given fields: ctx, emailAddr
+func (_m *MockAuthService) SearchUserByEmail(ctx context.Context, emailAddr string) (*auth.User, error) {
+	ret := _m.Called(ctx, emailAddr)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SearchUserByEmail")
@@ -506,10 +506,10 @@ func (_m *MockAuthService) SearchUserByEmail(ctx context.Context, email string) 
 	var r0 *auth.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) (*auth.User, error)); ok {
-		return rf(ctx, email)
+		return rf(ctx, emailAddr)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) *auth.User); ok {
-		r0 = rf(ctx, email)
+		r0 = rf(ctx, emailAddr)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*auth.User)
@@ -517,7 +517,7 @@ func (_m *MockAuthService) SearchUserByEmail(ctx context.Context, email string) 
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, email)
+		r1 = rf(ctx, emailAddr)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -532,12 +532,12 @@ type MockAuthService_SearchUserByEmail_Call struct {
 
 // SearchUserByEmail is a helper method to define mock.On call
 //   - ctx context.Context
-//   - email string
-func (_e *MockAuthService_Expecter) SearchUserByEmail(ctx interface{}, email interface{}) *MockAuthService_SearchUserByEmail_Call {
-	return &MockAuthService_SearchUserByEmail_Call{Call: _e.mock.On("SearchUserByEmail", ctx, email)}
+//   - emailAddr string
+func (_e *MockAuthService_Expecter) SearchUserByEmail(ctx interface{}, emailAddr interface{}) *MockAuthService_SearchUserByEmail_Call {
+	return &MockAuthService_SearchUserByEmail_Call{Call: _e.mock.On("SearchUserByEmail", ctx, emailAddr)}
 }
 
-func (_c *MockAuthService_SearchUserByEmail_Call) Run(run func(ctx context.Context, email string)) *MockAuthService_SearchUserByEmail_Call {
+func (_c *MockAuthService_SearchUserByEmail_Call) Run(run func(ctx context.Context, emailAddr string)) *MockAuthService_SearchUserByEmail_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
@@ -554,9 +554,9 @@ func (_c *MockAuthService_SearchUserByEmail_Call) RunAndReturn(run func(context.
 	return _c
 }
 
-// UpdateProfile provides a mock function with given fields: ctx, id, displayName, avatar
-func (_m *MockAuthService) UpdateProfile(ctx context.Context, id string, displayName *string, avatar *string) (*auth.User, error) {
-	ret := _m.Called(ctx, id, displayName, avatar)
+// UpdateProfile provides a mock function with given fields: ctx, userID, displayName, avatar
+func (_m *MockAuthService) UpdateProfile(ctx context.Context, userID string, displayName *string, avatar *string) (*auth.User, error) {
+	ret := _m.Called(ctx, userID, displayName, avatar)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateProfile")
@@ -565,10 +565,10 @@ func (_m *MockAuthService) UpdateProfile(ctx context.Context, id string, display
 	var r0 *auth.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, *string, *string) (*auth.User, error)); ok {
-		return rf(ctx, id, displayName, avatar)
+		return rf(ctx, userID, displayName, avatar)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string, *string, *string) *auth.User); ok {
-		r0 = rf(ctx, id, displayName, avatar)
+		r0 = rf(ctx, userID, displayName, avatar)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*auth.User)
@@ -576,7 +576,7 @@ func (_m *MockAuthService) UpdateProfile(ctx context.Context, id string, display
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, *string, *string) error); ok {
-		r1 = rf(ctx, id, displayName, avatar)
+		r1 = rf(ctx, userID, displayName, avatar)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -591,14 +591,14 @@ type MockAuthService_UpdateProfile_Call struct {
 
 // UpdateProfile is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - userID string
 //   - displayName *string
 //   - avatar *string
-func (_e *MockAuthService_Expecter) UpdateProfile(ctx interface{}, id interface{}, displayName interface{}, avatar interface{}) *MockAuthService_UpdateProfile_Call {
-	return &MockAuthService_UpdateProfile_Call{Call: _e.mock.On("UpdateProfile", ctx, id, displayName, avatar)}
+func (_e *MockAuthService_Expecter) UpdateProfile(ctx interface{}, userID interface{}, displayName interface{}, avatar interface{}) *MockAuthService_UpdateProfile_Call {
+	return &MockAuthService_UpdateProfile_Call{Call: _e.mock.On("UpdateProfile", ctx, userID, displayName, avatar)}
 }
 
-func (_c *MockAuthService_UpdateProfile_Call) Run(run func(ctx context.Context, id string, displayName *string, avatar *string)) *MockAuthService_UpdateProfile_Call {
+func (_c *MockAuthService_UpdateProfile_Call) Run(run func(ctx context.Context, userID string, displayName *string, avatar *string)) *MockAuthService_UpdateProfile_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(*string), args[3].(*string))
 	})
@@ -615,9 +615,9 @@ func (_c *MockAuthService_UpdateProfile_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
-// VerifyEmail provides a mock function with given fields: ctx, email, code
-func (_m *MockAuthService) VerifyEmail(ctx context.Context, email string, code string) error {
-	ret := _m.Called(ctx, email, code)
+// VerifyEmail provides a mock function with given fields: ctx, emailAddr, code
+func (_m *MockAuthService) VerifyEmail(ctx context.Context, emailAddr string, code string) error {
+	ret := _m.Called(ctx, emailAddr, code)
 
 	if len(ret) == 0 {
 		panic("no return value specified for VerifyEmail")
@@ -625,7 +625,7 @@ func (_m *MockAuthService) VerifyEmail(ctx context.Context, email string, code s
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, email, code)
+		r0 = rf(ctx, emailAddr, code)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -640,13 +640,13 @@ type MockAuthService_VerifyEmail_Call struct {
 
 // VerifyEmail is a helper method to define mock.On call
 //   - ctx context.Context
-//   - email string
+//   - emailAddr string
 //   - code string
-func (_e *MockAuthService_Expecter) VerifyEmail(ctx interface{}, email interface{}, code interface{}) *MockAuthService_VerifyEmail_Call {
-	return &MockAuthService_VerifyEmail_Call{Call: _e.mock.On("VerifyEmail", ctx, email, code)}
+func (_e *MockAuthService_Expecter) VerifyEmail(ctx interface{}, emailAddr interface{}, code interface{}) *MockAuthService_VerifyEmail_Call {
+	return &MockAuthService_VerifyEmail_Call{Call: _e.mock.On("VerifyEmail", ctx, emailAddr, code)}
 }
 
-func (_c *MockAuthService_VerifyEmail_Call) Run(run func(ctx context.Context, email string, code string)) *MockAuthService_VerifyEmail_Call {
+func (_c *MockAuthService_VerifyEmail_Call) Run(run func(ctx context.Context, emailAddr string, code string)) *MockAuthService_VerifyEmail_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
