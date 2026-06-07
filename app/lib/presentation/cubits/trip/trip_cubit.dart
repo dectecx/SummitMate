@@ -109,7 +109,7 @@ class TripCubit extends Cubit<TripState> {
         updatedAt: DateTime.now(),
         updatedBy: _authService.currentUserId ?? '',
       );
-      final result = await _tripRepository.saveTrip(updatedTrip);
+      final result = await _tripRepository.updateTrip(updatedTrip);
 
       // 手動更新當前狀態中的 trips 列表與 activeTrip，確保 UI 立即反映變更
       if (result is Success && state is TripLoaded) {
@@ -174,12 +174,12 @@ class TripCubit extends Cubit<TripState> {
     emit(const TripLoading());
     try {
       final newTrip = trip.copyWith(
-        id: const Uuid().v7(),
+        id: trip.id,
         userId: _authService.currentUserId ?? '',
         isActive: false,
-        syncStatus: SyncStatus.pendingCreate,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        syncStatus: SyncStatus.synced,
+        createdAt: trip.createdAt,
+        updatedAt: trip.updatedAt,
       );
 
       final result = await _tripRepository.saveTrip(newTrip);

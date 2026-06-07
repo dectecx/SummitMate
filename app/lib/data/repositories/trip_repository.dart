@@ -67,7 +67,8 @@ class TripRepository implements ITripRepository {
   Future<Result<void, Exception>> saveTrip(Trip trip) async {
     try {
       final now = DateTime.now();
-      final marked = trip.copyWith(syncStatus: SyncStatus.pendingCreate, updatedAt: now);
+      final newStatus = trip.syncStatus == SyncStatus.synced ? SyncStatus.synced : SyncStatus.pendingCreate;
+      final marked = trip.copyWith(syncStatus: newStatus, updatedAt: now);
       await _localDataSource.addTrip(marked);
       _tripUpdateController.add(trip.id);
       return const Success(null);
