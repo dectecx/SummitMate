@@ -85,8 +85,10 @@ class TripSyncAdapter implements ISyncAdapter<Trip> {
           remoteWinsCount++;
         } else {
           if (localTrip.syncStatus == SyncStatus.synced) {
-            // 本地已同步，直接以遠端更新（非衝突，正常覆蓋）
-            await _localDataSource.updateTrip(remoteTrip.copyWith(syncStatus: SyncStatus.synced));
+            // 本地已同步，直接以遠端更新（非衝突，正常覆蓋），但保留本地的 isActive 狀態
+            await _localDataSource.updateTrip(
+              remoteTrip.copyWith(isActive: localTrip.isActive, syncStatus: SyncStatus.synced),
+            );
             remoteWinsCount++;
           } else {
             // 本地有未同步變更，發生衝突
@@ -94,8 +96,10 @@ class TripSyncAdapter implements ISyncAdapter<Trip> {
             final remoteIsNewer = SyncConflictResolver.remoteIsNewer(localTrip.updatedAt, remoteTrip.updatedAt);
 
             if (remoteIsNewer) {
-              // 遠端明顯較新（超過容忍閾值），遠端勝出
-              await _localDataSource.updateTrip(remoteTrip.copyWith(syncStatus: SyncStatus.synced));
+              // 遠端明顯較新（超過容忍閾值），遠端勝出，但保留本地的 isActive 狀態
+              await _localDataSource.updateTrip(
+                remoteTrip.copyWith(isActive: localTrip.isActive, syncStatus: SyncStatus.synced),
+              );
               remoteWinsCount++;
             } else {
               // 本地較新或差距在容忍閾值內，本地勝出，標記為 conflict 等待下次 Push
