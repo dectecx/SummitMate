@@ -248,21 +248,14 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
               Navigator.pop(ctx);
               setState(() => _isLoading = true);
               try {
-                // 1. Promote Target to Leader
-                final r1 = await _tripRepository.updateMemberRole(
+                final result = await _tripRepository.transferOwnership(
                   widget.trip.id,
                   targetMember.userId,
-                  RoleConstants.leader,
-                );
-                if (r1 is Failure) throw r1.exception;
-
-                // 2. Demote Self to Member
-                final r2 = await _tripRepository.updateMemberRole(
-                  widget.trip.id,
-                  _currentUserId!,
                   RoleConstants.member,
                 );
-                if (r2 is Failure) throw r2.exception;
+                if (result is Failure) {
+                  throw result.exception;
+                }
 
                 ToastService.success('已移轉團長身分給 ${targetMember.name}');
                 await _loadMembers();

@@ -488,3 +488,125 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
+func TestTripService_TransferOwnership(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	t.Run("Given valid parameters, When calling TransferOwnership, Then it updates trip owner and roles successfully", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		mockBeginner := new(MockBeginner)
+		mockTx := new(MockTx)
+
+		svc := trip.NewTripService(logger, mockBeginner, mockTripRepo, mockMemberRepo, nil, nil, nil)
+
+		tripID := "trip-1"
+		ownerID := "owner-1"
+		targetID := "target-1"
+		role := trip.RoleMember
+
+		tripObj := &trip.Trip{ID: tripID, UserID: ownerID}
+		updatedTripObj := &trip.Trip{ID: tripID, UserID: targetID}
+
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(tripObj, nil).Once()
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, targetID).Return(true, nil).Once()
+
+		mockBeginner.On("Begin", mock.Anything).Return(mockTx, nil).Once()
+		mockTripRepo.On("UpdateOwner", mock.Anything, tripID, targetID).Return(nil).Once()
+		mockMemberRepo.On("UpdateMemberRole", mock.Anything, tripID, targetID, trip.RoleLeader).Return(nil).Once()
+		mockMemberRepo.On("UpdateMemberRole", mock.Anything, tripID, ownerID, role).Return(nil).Once()
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(updatedTripObj, nil).Once()
+		mockTx.On("Commit", mock.Anything).Return(nil).Once()
+
+		resTrip, err := svc.TransferOwnership(context.Background(), tripID, ownerID, targetID, role)
+		assert.NoError(t, err)
+		assert.NotNil(t, resTrip)
+		assert.Equal(t, targetID, resTrip.UserID)
+
+		mockTripRepo.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+		mockBeginner.AssertExpectations(t)
+		mockTx.AssertExpectations(t)
+	})
+
+	t.Run("Given non-existent trip, When calling TransferOwnership, Then it returns not found error", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, nil, nil)
+
+		tripID := "trip-none"
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(nil, trip.ErrNotFound).Once()
+
+		resTrip, err := svc.TransferOwnership(context.Background(), tripID, "any", "target", trip.RoleGuide)
+		assert.ErrorIs(t, err, apperror.ErrTripNotFound)
+		assert.Nil(t, resTrip)
+	})
+
+	t.Run("Given non-owner requester, When calling TransferOwnership, Then it returns permission denied error", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, nil, nil)
+
+		tripID := "trip-1"
+		ownerID := "owner-1"
+		tripObj := &trip.Trip{ID: tripID, UserID: ownerID}
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(tripObj, nil).Once()
+
+		resTrip, err := svc.TransferOwnership(context.Background(), tripID, "not-owner", "target", trip.RoleGuide)
+		assert.ErrorIs(t, err, apperror.ErrAccessDenied)
+		assert.Nil(t, resTrip)
+	})
+
+	t.Run("Given transfer to self, When calling TransferOwnership, Then it returns bad request error", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, nil, nil)
+
+		tripID := "trip-1"
+		ownerID := "owner-1"
+		tripObj := &trip.Trip{ID: tripID, UserID: ownerID}
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(tripObj, nil).Once()
+
+		resTrip, err := svc.TransferOwnership(context.Background(), tripID, ownerID, ownerID, trip.RoleGuide)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "不能將行程所有權轉移給自己")
+		assert.Nil(t, resTrip)
+	})
+
+	t.Run("Given non-member target, When calling TransferOwnership, Then it returns bad request error", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, nil, nil)
+
+		tripID := "trip-1"
+		ownerID := "owner-1"
+		targetID := "target-1"
+		tripObj := &trip.Trip{ID: tripID, UserID: ownerID}
+
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(tripObj, nil).Once()
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, targetID).Return(false, nil).Once()
+
+		resTrip, err := svc.TransferOwnership(context.Background(), tripID, ownerID, targetID, trip.RoleGuide)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "目標使用者不是此行程成員")
+		assert.Nil(t, resTrip)
+	})
+
+	t.Run("Given invalid role, When calling TransferOwnership, Then it returns bad request error", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, nil, nil)
+
+		tripID := "trip-1"
+		ownerID := "owner-1"
+		targetID := "target-1"
+		tripObj := &trip.Trip{ID: tripID, UserID: ownerID}
+
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(tripObj, nil).Once()
+		mockMemberRepo.On("IsMember", mock.Anything, tripID, targetID).Return(true, nil).Once()
+
+		resTrip, err := svc.TransferOwnership(context.Background(), tripID, ownerID, targetID, "invalid-role")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "無效的退位角色")
+		assert.Nil(t, resTrip)
+	})
+}

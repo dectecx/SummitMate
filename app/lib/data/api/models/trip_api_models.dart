@@ -139,3 +139,14 @@ abstract class UpdateMemberRoleRequest with _$UpdateMemberRoleRequest {
 
   factory UpdateMemberRoleRequest.fromJson(Map<String, dynamic> json) => _$UpdateMemberRoleRequestFromJson(json);
 }
+
+/// 移轉所有權請求 (TransferOwnershipRequest)
+@freezed
+abstract class TransferOwnershipRequest with _$TransferOwnershipRequest {
+  const factory TransferOwnershipRequest({
+    @JsonKey(name: 'target_user_id') required String targetUserId,
+    @JsonKey(name: 'current_owner_role') String? currentOwnerRole,
+  }) = _TransferOwnershipRequest;
+
+  factory TransferOwnershipRequest.fromJson(Map<String, dynamic> json) => _$TransferOwnershipRequestFromJson(json);
+}

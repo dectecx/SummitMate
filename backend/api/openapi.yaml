@@ -576,6 +576,54 @@ paths:
         "403":
           description: 無權限新增成員
 
+  /trips/{tripId}/transfer:
+    post:
+      summary: Transfer Trip Ownership
+      description: 移交行程擁有權給另一位成員。只有行程擁有者 (Owner) 可執行。
+      operationId: transferTripOwnership
+      tags:
+        - trips
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferOwnershipRequest"
+      responses:
+        "200":
+          description: 移交成功，回傳更新後的行程資料
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripGetResponse"
+        "400":
+          description: 無效的請求 (例如目標使用者不是該行程的成員，或不能轉移給自己)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 無權限移交 (非擁有者)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: 找不到該行程或使用者
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /trips/{tripId}/members/{userId}:
     delete:
       summary: Remove Trip Member
@@ -3092,6 +3140,19 @@ components:
         email:
           type: string
           format: email
+
+    TransferOwnershipRequest:
+      type: object
+      required:
+        - target_user_id
+      properties:
+        target_user_id:
+          type: string
+          format: uuid
+        current_owner_role:
+          type: string
+          enum: [guide, member]
+          default: guide
 
     ItineraryItemListItemResponse:
       type: object

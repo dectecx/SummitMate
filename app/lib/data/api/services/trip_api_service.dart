@@ -50,4 +50,7 @@ abstract class TripApiService {
 
   @DELETE('/trips/{tripId}/members/{userId}')
   Future<void> removeMember(@Path('tripId') String tripId, @Path('userId') String userId);
+
+  @POST('/trips/{tripId}/transfer')
+  Future<TripResponse> transferOwnership(@Path('tripId') String tripId, @Body() TransferOwnershipRequest request);
 }

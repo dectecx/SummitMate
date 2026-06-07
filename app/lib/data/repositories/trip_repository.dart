@@ -146,6 +146,34 @@ class TripRepository implements ITripRepository {
   }
 
   @override
+  Future<Result<void, Exception>> transferOwnership(
+    String tripId,
+    String targetUserId,
+    String currentOwnerRole,
+  ) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'transferOwnership'));
+    }
+
+    try {
+      final remoteResult = await _remoteDataSource.transferOwnership(tripId, targetUserId, currentOwnerRole);
+      if (remoteResult is Failure) {
+        return Failure((remoteResult as Failure).exception);
+      }
+
+      final updatedTrip = (remoteResult as Success<Trip, Exception>).value;
+
+      await _localDataSource.updateTrip(updatedTrip.copyWith(syncStatus: SyncStatus.synced));
+      _tripUpdateController.add(tripId);
+
+      return const Success(null);
+    } catch (e) {
+      return Failure(e is Exception ? e : Exception(e.toString()));
+    }
+  }
+
+
+  @override
   Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
     if (_connectivityService.isOffline) {
       return const Failure(OfflineException('此功能在離線時不可用', operationName: 'removeMember'));

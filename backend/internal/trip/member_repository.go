@@ -19,6 +19,7 @@ type TripMemberRepository interface {
 	GetRole(ctx context.Context, tripID string, userID string) (string, error)
 	BatchAddMembers(ctx context.Context, tripID string, userIDs []string) error
 	BatchRemoveMembers(ctx context.Context, tripID string, userIDs []string) error
+	UpdateMemberRole(ctx context.Context, tripID string, userID string, role string) error
 }
 
 type tripMemberRepository struct {
@@ -152,4 +153,15 @@ func (repo *tripMemberRepository) GetRole(ctx context.Context, tripID string, us
 		return "", fmt.Errorf("get member role for user %s in trip %s: %w", userID, tripID, err)
 	}
 	return role, nil
+}
+
+// UpdateMemberRole 更新行程成員角色。
+func (repo *tripMemberRepository) UpdateMemberRole(ctx context.Context, tripID string, userID string, role string) error {
+	query := `UPDATE trip_members SET role_code = $1 WHERE trip_id = $2 AND user_id = $3`
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, query, role, tripID, userID)
+	if err != nil {
+		return fmt.Errorf("update member %s role in trip %s to %s: %w", userID, tripID, role, err)
+	}
+	return nil
 }

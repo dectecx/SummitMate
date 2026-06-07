@@ -21,6 +21,7 @@ type TripRepository interface {
 	ListByUserID(ctx context.Context, userID string, page int, limit int, search string) ([]*Trip, int, bool, error)
 	Update(ctx context.Context, trip *Trip, lastUpdatedAt *time.Time) (*Trip, error)
 	DeleteByID(ctx context.Context, id string) error
+	UpdateOwner(ctx context.Context, id string, nextOwnerID string) error
 }
 
 type tripRepository struct {
@@ -225,6 +226,16 @@ func (repo *tripRepository) DeleteByID(ctx context.Context, id string) error {
 	_, err := db.Exec(ctx, "DELETE FROM trips WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("delete trip %s: %w", id, err)
+	}
+	return nil
+}
+
+// UpdateOwner 更新行程擁有者。
+func (repo *tripRepository) UpdateOwner(ctx context.Context, id string, nextOwnerID string) error {
+	db := database.GetQuerier(ctx, repo.db)
+	_, err := db.Exec(ctx, "UPDATE trips SET user_id = $1, updated_at = NOW() WHERE id = $2", nextOwnerID, id)
+	if err != nil {
+		return fmt.Errorf("update trip owner %s to %s: %w", id, nextOwnerID, err)
 	}
 	return nil
 }

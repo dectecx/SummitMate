@@ -63,6 +63,13 @@ abstract interface class ITripRepository {
   /// [tripId] 行程 ID / [userId] 使用者 ID / [role] 角色
   Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role);
 
+  /// 移轉行程所有權
+  ///
+  /// [tripId] 行程 ID
+  /// [targetUserId] 目標使用者 ID
+  /// [currentOwnerRole] 當前擁有者退位後的角色
+  Future<Result<void, Exception>> transferOwnership(String tripId, String targetUserId, String currentOwnerRole);
+
   /// 移除成員
   ///
   /// [tripId] 行程 ID / [userId] 使用者 ID

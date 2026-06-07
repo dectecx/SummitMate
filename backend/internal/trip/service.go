@@ -35,6 +35,7 @@ type TripService interface {
 	AddMealPlanDay(ctx context.Context, tripID, userID string, name string, linkedDay *string) (*MealPlanDay, error)
 	UpdateMealPlanDay(ctx context.Context, tripID, dayID, userID string, name string, linkedDay *string) (*MealPlanDay, error)
 	DeleteMealPlanDay(ctx context.Context, tripID, dayID, userID string) error
+	TransferOwnership(ctx context.Context, tripID, currentOwnerID, targetUserID, oldOwnerNewRole string) (*Trip, error)
 }
 
 type tripService struct {
@@ -609,6 +610,77 @@ func (s *tripService) DeleteMealPlanDay(ctx context.Context, tripID, dayID, user
 	// 實作建議：資料庫已設定 ON DELETE CASCADE，故刪除天數時會自動刪除相關餐點。
 	return s.mealDayRepo.Delete(ctx, dayID, tripID)
 }
+
+func (s *tripService) TransferOwnership(ctx context.Context, tripID, currentOwnerID, targetUserID, oldOwnerNewRole string) (*Trip, error) {
+	// 1. 載入行程
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, apperror.ErrTripNotFound
+		}
+		return nil, err
+	}
+
+	// 2. 驗證權限：只有當前擁有者可以發起轉讓
+	if err := s.requireTripOwner(trip, currentOwnerID); err != nil {
+		return nil, err
+	}
+
+	// 3. 檢查 targetUserID != currentOwnerID (不能轉讓給自己)
+	if targetUserID == currentOwnerID {
+		return nil, apperror.ErrBadRequest.WithMessage("不能將行程所有權轉移給自己")
+	}
+
+	// 4. 檢查目標對象是否已是行程成員
+	isTargetMember, err := s.memberRepo.IsMember(ctx, tripID, targetUserID)
+	if err != nil {
+		return nil, err
+	}
+	if !isTargetMember {
+		return nil, apperror.ErrBadRequest.WithMessage("目標使用者不是此行程成員")
+	}
+
+	// 5. 驗證降級角色是否為 guide 或 member
+	if oldOwnerNewRole != RoleGuide && oldOwnerNewRole != RoleMember {
+		return nil, apperror.ErrBadRequest.WithMessage("無效的退位角色")
+	}
+
+	var updatedTrip *Trip
+	// 6. DB Transaction 中執行更新
+	err = database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		// a. 更新 trips.user_id = targetUserID
+		if err := s.tripRepo.UpdateOwner(txCtx, tripID, targetUserID); err != nil {
+			return err
+		}
+
+		// b. 將新 Owner 的成員角色更新為 leader
+		if err := s.memberRepo.UpdateMemberRole(txCtx, tripID, targetUserID, RoleLeader); err != nil {
+			return err
+		}
+
+		// c. 將舊 Owner 的成員角色更新為 oldOwnerNewRole
+		if err := s.memberRepo.UpdateMemberRole(txCtx, tripID, currentOwnerID, oldOwnerNewRole); err != nil {
+			return err
+		}
+
+		// d. 載入更新後的行程資訊
+		updatedTrip, err = s.tripRepo.GetByID(txCtx, tripID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		s.logger.ErrorContext(ctx, "行程所有權轉移失敗", "trip_id", tripID, "current_owner", currentOwnerID, "target_user", targetUserID, "error", err)
+		return nil, err
+	}
+
+	s.logger.InfoContext(ctx, "行程所有權轉移成功", "trip_id", tripID, "from", currentOwnerID, "to", targetUserID)
+	return updatedTrip, nil
+}
+
 
 // isTripMember 判斷給定的 userID 是否已加入該行程。
 func (s *tripService) isTripMember(ctx context.Context, tripID, userID string) bool {
