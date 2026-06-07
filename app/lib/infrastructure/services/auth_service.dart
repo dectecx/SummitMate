@@ -23,6 +23,8 @@ class AuthService implements IAuthService {
   final ITokenValidator _tokenValidator;
   final AppDatabase _db;
   bool _isOfflineMode = false;
+  bool _isLoggingOut = false;
+  Future<AuthResult>? _ongoingRefreshFuture;
   String? _currentUserId;
   String? _currentUserEmail;
   final _authStateController = StreamController<UserProfile?>.broadcast();
@@ -313,10 +315,18 @@ class AuthService implements IAuthService {
 
   @override
   Future<AuthResult> refreshToken() async {
+    if (_ongoingRefreshFuture != null) {
+      LogService.info('已有正在進行的 Token 刷新請求，等待其完成', source: _source);
+      return _ongoingRefreshFuture!;
+    }
+
     final currentRefreshToken = await getRefreshToken();
     if (currentRefreshToken == null) {
       return AuthResult.failure(errorCode: 'NO_TOKEN', errorMessage: '無 Refresh Token');
     }
+
+    final completer = Completer<AuthResult>();
+    _ongoingRefreshFuture = completer.future;
 
     try {
       final response = await _apiClient.post('/auth/refresh', data: {'refresh_token': currentRefreshToken});
@@ -336,25 +346,37 @@ class AuthService implements IAuthService {
           );
           await _sessionRepo.saveSession(newAccessToken, user, refreshToken: newRefreshToken);
           _notifyAuthState(user);
-          return AuthResult.success(user: user, accessToken: newAccessToken);
+          final res = AuthResult.success(user: user, accessToken: newAccessToken);
+          completer.complete(res);
+          return res;
         }
       }
 
       await logout();
-      return AuthResult.failure(errorCode: 'REFRESH_FAILED', errorMessage: 'Token 刷新失敗');
+      final res = AuthResult.failure(errorCode: 'REFRESH_FAILED', errorMessage: 'Token 刷新失敗');
+      completer.complete(res);
+      return res;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401 || e.response?.statusCode == 400) {
         await logout();
-        return AuthResult.failure(errorCode: 'REFRESH_EXPIRED', errorMessage: '授權已過期');
+        final res = AuthResult.failure(errorCode: 'REFRESH_EXPIRED', errorMessage: '授權已過期');
+        completer.complete(res);
+        return res;
       }
       final apiError = AppErrorHandler.parseApiException(e);
-      return AuthResult.failure(
+      final res = AuthResult.failure(
         errorCode: apiError?.code ?? 'NETWORK_ERROR',
         errorMessage: apiError?.message ?? '連線失敗',
       );
+      completer.complete(res);
+      return res;
     } catch (e) {
       LogService.error('Refresh Token 例外: $e', source: _source);
-      return AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+      final res = AuthResult.failure(errorCode: 'UNKNOWN_ERROR', errorMessage: '系統錯誤');
+      completer.complete(res);
+      return res;
+    } finally {
+      _ongoingRefreshFuture = null;
     }
   }
 
@@ -427,28 +449,43 @@ class AuthService implements IAuthService {
 
   @override
   Future<void> logout() async {
-    // 0. 通知後端註銷 Token (發送登出請求)
-    try {
-      await _apiClient.post('/auth/logout');
-      LogService.info('後端 Token 註銷成功', source: _source);
-    } catch (e) {
-      // 離線或伺服器異常時，僅記錄 Log，本地端仍繼續執行登出
-      LogService.warning('遠端登出請求失敗 (可能處於離線狀態): $e', source: _source);
+    if (_isLoggingOut) {
+      LogService.info('登出程序已在進行中，忽略重複呼叫', source: _source);
+      return;
     }
 
-    // 1. 清除本地資料庫 (避免換帳號時看到舊資料)
+    _isLoggingOut = true;
     try {
-      await _db.clearAllData();
-      LogService.info('本地資料庫已清除', source: _source);
-    } catch (e) {
-      LogService.error('清除本地資料庫失敗: $e', source: _source);
-    }
+      final token = await _sessionRepo.getAccessToken();
+      if (token != null) {
+        // 0. 通知後端註銷 Token (發送登出請求)
+        try {
+          await _apiClient.post('/auth/logout');
+          LogService.info('後端 Token 註銷成功', source: _source);
+        } catch (e) {
+          // 離線或伺服器異常時，僅記錄 Log，本地端仍繼續執行登出
+          LogService.warning('遠端登出請求失敗 (可能處於離線狀態): $e', source: _source);
+        }
+      } else {
+        LogService.info('Token 為空，跳過遠端登出請求', source: _source);
+      }
 
-    // 2. 清除 Session
-    await _sessionRepo.clearSession();
-    _isOfflineMode = false;
-    _notifyAuthState(null);
-    LogService.info('已登出', source: _source);
+      // 1. 清除本地資料庫 (避免換帳號時看到舊資料)
+      try {
+        await _db.clearAllData();
+        LogService.info('本地資料庫已清除', source: _source);
+      } catch (e) {
+        LogService.error('清除本地資料庫失敗: $e', source: _source);
+      }
+
+      // 2. 清除 Session
+      await _sessionRepo.clearSession();
+      _isOfflineMode = false;
+      _notifyAuthState(null);
+      LogService.info('已登出', source: _source);
+    } finally {
+      _isLoggingOut = false;
+    }
   }
 
   @override

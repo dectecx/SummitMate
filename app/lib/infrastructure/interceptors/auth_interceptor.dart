@@ -54,6 +54,16 @@ class AuthInterceptor extends Interceptor {
     // 處理 401 Unauthorized 錯誤
     if (err.response?.statusCode == 401) {
       final path = err.requestOptions.path;
+
+      // 避免無限迴圈：若本身是 logout 介面 401，直接透傳錯誤，以防在登出過程中重複觸發刷新或登出
+      if (path.contains('/auth/logout')) {
+        LogService.warning(
+          '[AuthInterceptor] 401 on logout endpoint ($path). Passing through to allow local cleanup.',
+          source: _source,
+        );
+        return handler.next(err);
+      }
+
       // 避免無限迴圈：若本身是 refresh 或 login 介面 401，直接清除 Session 並回傳錯誤
       if (path.contains('/auth/refresh') || path.contains('/auth/login')) {
         LogService.warning('[AuthInterceptor] 401 on auth endpoint ($path). Triggering logout.', source: _source);

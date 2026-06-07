@@ -60,6 +60,7 @@ void main() {
     mockDb = MockAppDatabase();
 
     when(() => mockSessionRepo.getUserProfile()).thenAnswer((_) async => null);
+    when(() => mockSessionRepo.getAccessToken()).thenAnswer((_) async => null);
     when(() => mockDb.clearAllData()).thenAnswer((_) async {});
 
     authService = AuthService(
