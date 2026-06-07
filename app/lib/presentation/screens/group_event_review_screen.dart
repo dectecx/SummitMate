@@ -4,6 +4,8 @@ import '../../../core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/group_event/review/group_event_review_cubit.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
+import '../widgets/common/offline_gate.dart';
+
 
 class GroupEventReviewScreen extends StatelessWidget {
   final String eventId;
@@ -85,7 +87,6 @@ class GroupEventReviewScreen extends StatelessWidget {
   }
 
   Widget _buildApplicationCard(BuildContext context, GroupEventApplication app, bool isSyncing) {
-    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -126,51 +127,58 @@ class GroupEventReviewScreen extends StatelessWidget {
             ],
             if (app.isPending) ...[
               const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: isSyncing || isOffline
-                        ? null
-                        : () async {
-                            final reason = await _showRejectReasonDialog(context);
-                            if (reason != null) {
+              OfflineGate(
+                onOfflineTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('⚠️ 離線模式中，無法進行審核操作'), backgroundColor: Colors.red),
+                  );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: isSyncing
+                          ? null
+                          : () async {
+                              final reason = await _showRejectReasonDialog(context);
+                              if (reason != null) {
+                                context.read<GroupEventReviewCubit>().reviewApplication(
+                                  app.id,
+                                  GroupEventReviewAction.reject,
+                                  note: reason,
+                                );
+                              }
+                            },
+                      style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                      child: isSyncing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
+                            )
+                          : const Text('拒絕'),
+                    ),
+                    const SizedBox(width: 12),
+                    FilledButton(
+                      onPressed: isSyncing
+                          ? null
+                          : () {
                               context.read<GroupEventReviewCubit>().reviewApplication(
                                 app.id,
-                                GroupEventReviewAction.reject,
-                                note: reason,
+                                GroupEventReviewAction.approve,
                               );
-                            }
-                          },
-                    style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                    child: isSyncing
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red),
-                          )
-                        : const Text('拒絕'),
-                  ),
-                  const SizedBox(width: 12),
-                  FilledButton(
-                    onPressed: isSyncing || isOffline
-                        ? null
-                        : () {
-                            context.read<GroupEventReviewCubit>().reviewApplication(
-                              app.id,
-                              GroupEventReviewAction.approve,
-                            );
-                          },
-                    style: FilledButton.styleFrom(backgroundColor: Colors.green),
-                    child: isSyncing
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('通過'),
-                  ),
-                ],
+                            },
+                      style: FilledButton.styleFrom(backgroundColor: Colors.green),
+                      child: isSyncing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('通過'),
+                    ),
+                  ],
+                ),
               ),
             ],
           ],

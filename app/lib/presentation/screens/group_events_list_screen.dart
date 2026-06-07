@@ -13,6 +13,8 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_detail_screen.dart';
 import 'create_group_event_screen.dart';
 import '../widgets/common/summit_app_bar.dart';
+import '../widgets/common/offline_gate.dart';
+
 import '../widgets/responsive_layout.dart';
 
 /// 揪團列表畫面
@@ -564,29 +566,19 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                   ),
                 ],
               ),
-              floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
-                builder: (context, connectivityState) {
-                  final isOffline = connectivityState.isOffline;
-
-                  // 訪客模式下隱藏 FAB
-                  if (isGuest) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return FloatingActionButton.extended(
-                    onPressed: () {
-                      if (isOffline) {
-                        ToastService.warning('離線模式無法建立揪團');
-                        return;
-                      }
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()));
-                    },
-                    backgroundColor: isOffline ? Colors.grey : null,
-                    icon: const Icon(Icons.add),
-                    label: const Text('建立揪團'),
-                  );
-                },
-              ),
+              floatingActionButton: isGuest
+                  ? const SizedBox.shrink()
+                  : OfflineGate(
+                      onOfflineTap: () => ToastService.warning('離線模式無法建立揪團'),
+                      child: FloatingActionButton.extended(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CreateGroupEventScreen()),
+                        ),
+                        icon: const Icon(Icons.add),
+                        label: const Text('建立揪團'),
+                      ),
+                    ),
             );
           },
         );

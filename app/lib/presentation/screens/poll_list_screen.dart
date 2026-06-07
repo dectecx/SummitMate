@@ -12,6 +12,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/common/offline_gate.dart';
+
 
 /// 投票列表畫面
 ///
@@ -321,22 +323,13 @@ class _PollListScreenState extends State<PollListScreen> {
               ),
             ),
           ),
-          floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
-            builder: (context, connectivityState) {
-              final isOffline = connectivityState.isOffline;
-              return FloatingActionButton.extended(
-                onPressed: () {
-                  if (isOffline) {
-                    ToastService.warning('離線模式無法發起投票');
-                    return;
-                  }
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatePollScreen()));
-                },
-                backgroundColor: isOffline ? Colors.grey : null,
-                icon: const Icon(Icons.add),
-                label: const Text('發起投票'),
-              );
-            },
+          floatingActionButton: OfflineGate(
+            onOfflineTap: () => ToastService.warning('離線模式無法發起投票'),
+            child: FloatingActionButton.extended(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatePollScreen())),
+              icon: const Icon(Icons.add),
+              label: const Text('發起投票'),
+            ),
           ),
         );
       },

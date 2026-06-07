@@ -6,6 +6,7 @@ import 'package:summitmate/domain/domain.dart';
 import '../../cubits/group_event/comment/group_event_comment_cubit.dart';
 import '../../cubits/group_event/comment/group_event_comment_state.dart';
 import '../../cubits/connectivity/connectivity_cubit.dart';
+import '../common/offline_gate.dart';
 
 class GroupEventCommentSheet extends StatefulWidget {
   final String eventId;
@@ -186,15 +187,17 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      IconButton.filled(
-                        icon: isSending
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Icon(Icons.send),
-                        onPressed: isInputEnabled ? () => _sendMessage(context) : null,
+                      OfflineGate(
+                        child: IconButton.filled(
+                          icon: isSending
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Icon(Icons.send),
+                          onPressed: isSending ? null : () => _sendMessage(context),
+                        ),
                       ),
                     ],
                   ),
@@ -301,9 +304,16 @@ class _CommentItem extends StatelessWidget {
                 if (isMe)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: InkWell(
-                      onTap: onDelete,
-                      child: const Text('刪除', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    child: OfflineGate(
+                      onOfflineTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('⚠️ 離線模式下無法刪除留言'), backgroundColor: Colors.red),
+                        );
+                      },
+                      child: InkWell(
+                        onTap: onDelete,
+                        child: const Text('刪除', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                      ),
                     ),
                   ),
               ],
