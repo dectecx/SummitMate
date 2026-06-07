@@ -39,6 +39,9 @@ class GlobalErrorListener extends StatelessWidget {
         BlocListener<AppErrorCubit, AppErrorState>(
           listener: (context, state) {
             state.whenOrNull(
+              initial: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
               showToast: (message, isPersistent, isError) {
                 if (isError) {
                   ErrorSnackbar.show(context, message: message, isPersistent: isPersistent);

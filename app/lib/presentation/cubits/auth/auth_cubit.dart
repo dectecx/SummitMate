@@ -8,6 +8,8 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import 'auth_state.dart';
+import 'package:summitmate/core/di/injection.dart';
+import '../app_error/app_error_cubit.dart';
 
 /// 管理認證狀態的 Cubit
 ///
@@ -129,6 +131,7 @@ class AuthCubit extends Cubit<AuthState> {
     LogService.info('Login as guest', source: _source);
     // 訪客沒有 UserProfile，手動建構 AuthAuthenticated
     _usageTrackingService.start('訪客', userId: 'guest');
+    getIt<AppErrorCubit>().clearError();
     emit(AuthAuthenticated(userId: 'guest', userName: '訪客', isGuest: true, isOffline: _authService.isOfflineMode));
   }
 
@@ -188,9 +191,11 @@ class AuthCubit extends Cubit<AuthState> {
 
     try {
       await _authService.logout();
+      getIt<AppErrorCubit>().clearError();
       // 成功路徑會經由 Stream 自動發送 AuthUnauthenticated
     } catch (e, stack) {
       LogService.error('Logout failed: $e', source: _source, stackTrace: stack);
+      getIt<AppErrorCubit>().clearError();
       emit(AuthUnauthenticated()); // 保底
     }
   }
@@ -232,6 +237,8 @@ class AuthCubit extends Cubit<AuthState> {
 
     // 啟動使用追蹤
     _usageTrackingService.start(user.displayName, userId: user.id);
+
+    getIt<AppErrorCubit>().clearError();
 
     emit(
       AuthAuthenticated(
