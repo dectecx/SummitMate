@@ -453,26 +453,17 @@ extension GetItInjectableX on _i174.GetIt {
         authService: gh<_i147.IAuthService>(),
       ),
     );
-    gh.lazySingleton<_i614.ITripRepository>(
-      () => _i564.TripRepository(
-        gh<_i774.ITripLocalDataSource>(),
-        gh<_i941.ITripRemoteDataSource>(),
-      ),
-    );
-    gh.factory<_i354.ItineraryCubit>(
-      () => _i354.ItineraryCubit(
-        gh<_i614.IItineraryRepository>(),
-        gh<_i614.ITripRepository>(),
-        gh<_i614.IAuthService>(),
-      ),
-    );
-    gh.factory<_i694.MealCubit>(
-      () => _i694.MealCubit(gh<_i614.ITripRepository>()),
-    );
     gh.lazySingleton<_i614.IGearLibraryRepository>(
       () => _i540.GearLibraryRepository(
         localDataSource: gh<_i240.IGearLibraryLocalDataSource>(),
         remoteDataSource: gh<_i31.IGearLibraryRemoteDataSource>(),
+      ),
+    );
+    gh.lazySingleton<_i614.ITripRepository>(
+      () => _i564.TripRepository(
+        gh<_i774.ITripLocalDataSource>(),
+        gh<_i941.ITripRemoteDataSource>(),
+        gh<_i614.IConnectivityService>(),
       ),
     );
     gh.lazySingleton<_i745.ItinerarySyncAdapter>(
@@ -560,6 +551,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.IConnectivityService>(),
         gh<_i614.IAuthService>(),
       ),
+    );
+    gh.factory<_i354.ItineraryCubit>(
+      () => _i354.ItineraryCubit(
+        gh<_i614.IItineraryRepository>(),
+        gh<_i614.ITripRepository>(),
+        gh<_i614.IAuthService>(),
+      ),
+    );
+    gh.factory<_i694.MealCubit>(
+      () => _i694.MealCubit(gh<_i614.ITripRepository>()),
     );
     gh.factoryParam<_i10.GroupEventCommentCubit, String?, dynamic>(
       (eventId, _) => _i10.GroupEventCommentCubit(
