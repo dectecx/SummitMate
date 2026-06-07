@@ -96,7 +96,7 @@ func (s *tripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 			return err
 		}
 
-		err = s.memberRepo.AddMember(txCtx, createdTrip.ID, userID)
+		err = s.memberRepo.AddMember(txCtx, createdTrip.ID, userID, RoleOwner)
 		if err != nil {
 			s.logger.ErrorContext(txCtx, "建立者加入行程成員失敗", "trip_id", createdTrip.ID, "user_id", userID, "error", err)
 			return err
@@ -302,7 +302,7 @@ func (s *tripService) InviteMemberByEmail(ctx context.Context, tripID, userID, t
 		return nil, err
 	}
 
-	err = s.memberRepo.AddMember(ctx, tripID, targetUser.ID)
+	err = s.memberRepo.AddMember(ctx, tripID, targetUser.ID, RoleMember)
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +334,7 @@ func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetUserI
 	if err == nil && isMember {
 		s.logger.DebugContext(ctx, "使用者已在行程中", "trip_id", tripID, "user_id", targetUserID)
 	} else {
-		if err := s.memberRepo.AddMember(ctx, tripID, targetUserID); err != nil {
+		if err := s.memberRepo.AddMember(ctx, tripID, targetUserID, RoleMember); err != nil {
 			return nil, err
 		}
 	}

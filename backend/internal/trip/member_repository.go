@@ -12,7 +12,7 @@ import (
 
 // TripMemberRepository 定義行程成員資料存取介面。
 type TripMemberRepository interface {
-	AddMember(ctx context.Context, tripID string, userID string) error
+	AddMember(ctx context.Context, tripID string, userID string, role string) error
 	RemoveMember(ctx context.Context, tripID string, userID string) error
 	ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error)
 	IsMember(ctx context.Context, tripID string, userID string) (bool, error)
@@ -30,16 +30,16 @@ func NewTripMemberRepository(db database.DB) TripMemberRepository {
 }
 
 // AddMember 新增一位成員到指定行程中。
-func (repo *tripMemberRepository) AddMember(ctx context.Context, tripID string, userID string) error {
+func (repo *tripMemberRepository) AddMember(ctx context.Context, tripID string, userID string, role string) error {
 	query := `
-		INSERT INTO trip_members (trip_id, user_id)
-		VALUES ($1, $2)
+		INSERT INTO trip_members (trip_id, user_id, role_code)
+		VALUES ($1, $2, $3)
 		ON CONFLICT (trip_id, user_id) DO NOTHING
 	`
 	db := database.GetQuerier(ctx, repo.db)
-	_, err := db.Exec(ctx, query, tripID, userID)
+	_, err := db.Exec(ctx, query, tripID, userID, role)
 	if err != nil {
-		return fmt.Errorf("add member %s to trip %s: %w", userID, tripID, err)
+		return fmt.Errorf("add member %s to trip %s with role %s: %w", userID, tripID, role, err)
 	}
 	return nil
 }
