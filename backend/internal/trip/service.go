@@ -96,7 +96,7 @@ func (s *tripService) CreateTrip(ctx context.Context, userID string, req *TripCr
 			return err
 		}
 
-		err = s.memberRepo.AddMember(txCtx, createdTrip.ID, userID, RoleOwner)
+		err = s.memberRepo.AddMember(txCtx, createdTrip.ID, userID, RoleLeader)
 		if err != nil {
 			s.logger.ErrorContext(txCtx, "建立者加入行程成員失敗", "trip_id", createdTrip.ID, "user_id", userID, "error", err)
 			return err
@@ -140,8 +140,8 @@ func (s *tripService) GetTrip(ctx context.Context, tripID, userID string) (*Trip
 		}
 		return nil, err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return nil, err
 	}
 
 	// 載入糧食計畫天數
@@ -183,12 +183,9 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 		}
 		return nil, err
 	}
-	if existingTrip.UserID != userID {
-		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
-		if err != nil || role != "leader" {
-			s.logger.WarnContext(ctx, "更新行程權限不足", "trip_id", tripID, "user_id", userID)
-			return nil, apperror.ErrAccessDenied
-		}
+	if err := s.requireTripRole(ctx, existingTrip, userID, RoleLeader, RoleGuide); err != nil {
+		s.logger.WarnContext(ctx, "更新行程權限不足", "trip_id", tripID, "user_id", userID)
+		return nil, err
 	}
 
 	ptrutil.AssignIfPresent(&existingTrip.Name, req.Name)
@@ -257,9 +254,9 @@ func (s *tripService) DeleteTrip(ctx context.Context, tripID, userID string) err
 		}
 		return err
 	}
-	if trip.UserID != userID {
+	if err := s.requireTripOwner(trip, userID); err != nil {
 		s.logger.WarnContext(ctx, "刪除行程權限不足", "trip_id", tripID, "user_id", userID)
-		return apperror.ErrAccessDenied
+		return err
 	}
 
 	if err := s.tripRepo.DeleteByID(ctx, tripID); err != nil {
@@ -278,8 +275,8 @@ func (s *tripService) ListMembers(ctx context.Context, tripID, userID string) ([
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return nil, err
 	}
 	return s.memberRepo.ListByTripID(ctx, tripID)
 }
@@ -289,9 +286,8 @@ func (s *tripService) InviteMemberByEmail(ctx context.Context, tripID, userID, t
 	if err != nil {
 		return nil, err
 	}
-	// 只有團長可邀請
-	if trip.UserID != userID {
-		return nil, apperror.ErrAccessDenied
+	if err := s.requireTripOwner(trip, userID); err != nil {
+		return nil, err
 	}
 
 	targetUser, err := s.authService.SearchUserByEmail(ctx, targetEmail)
@@ -324,9 +320,8 @@ func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetUserI
 	if err != nil {
 		return nil, err
 	}
-	// 只有團長可加人
-	if trip.UserID != userID {
-		return nil, apperror.ErrAccessDenied
+	if err := s.requireTripOwner(trip, userID); err != nil {
+		return nil, err
 	}
 
 	// 防呆：先檢查是否已是成員
@@ -358,8 +353,10 @@ func (s *tripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 	}
 
 	isSelfExit := actionUserID == targetUserID
-	if !isSelfExit && trip.UserID != actionUserID {
-		return apperror.ErrAccessDenied
+	if !isSelfExit {
+		if err := s.requireTripOwner(trip, actionUserID); err != nil {
+			return err
+		}
 	}
 
 	if trip.UserID == targetUserID {
@@ -375,12 +372,14 @@ func (s *tripService) BatchAddMembers(ctx context.Context, tripID, actionUserID 
 		return nil
 	}
 
-	// 檢查權限 (只有 Owner 可以批次新增成員)
-	role, err := s.memberRepo.GetRole(ctx, tripID, actionUserID)
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return apperror.ErrTripNotFound
+		}
 		return err
 	}
-	if role != RoleOwner {
+	if err := s.requireTripOwner(trip, actionUserID); err != nil {
 		return apperror.ErrTripAccessDenied
 	}
 
@@ -393,12 +392,14 @@ func (s *tripService) BatchRemoveMembers(ctx context.Context, tripID, actionUser
 		return nil
 	}
 
-	// 檢查權限 (只有 Owner 可以批次移除成員)
-	role, err := s.memberRepo.GetRole(ctx, tripID, actionUserID)
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return apperror.ErrTripNotFound
+		}
 		return err
 	}
-	if role != RoleOwner {
+	if err := s.requireTripOwner(trip, actionUserID); err != nil {
 		return apperror.ErrTripAccessDenied
 	}
 
@@ -412,8 +413,8 @@ func (s *tripService) ListItinerary(ctx context.Context, tripID, userID string) 
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID && !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return nil, err
 	}
 	return s.itineraryRepo.ListByTripID(ctx, tripID)
 }
@@ -423,11 +424,8 @@ func (s *tripService) AddItineraryItem(ctx context.Context, tripID, userID strin
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID {
-		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
-		if err != nil || (role != "leader" && role != "guide") {
-			return nil, apperror.ErrAccessDenied
-		}
+	if err := s.requireTripRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
+		return nil, err
 	}
 
 	item := &ItineraryItem{
@@ -451,11 +449,8 @@ func (s *tripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, u
 	if err != nil {
 		return nil, err
 	}
-	if trip.UserID != userID {
-		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
-		if err != nil || (role != "leader" && role != "guide") {
-			return nil, apperror.ErrAccessDenied
-		}
+	if err := s.requireTripRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
+		return nil, err
 	}
 
 	existingItem, err := s.itineraryRepo.GetByID(ctx, itemID)
@@ -484,11 +479,8 @@ func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 	if err != nil {
 		return err
 	}
-	if trip.UserID != userID {
-		role, err := s.memberRepo.GetRole(ctx, tripID, userID)
-		if err != nil || (role != "leader" && role != "guide") {
-			return apperror.ErrAccessDenied
-		}
+	if err := s.requireTripRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
+		return err
 	}
 
 	existingItem, err := s.itineraryRepo.GetByID(ctx, itemID)
@@ -505,23 +497,33 @@ func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 // --- Meal Plan Days ---
 
 func (s *tripService) ListMealPlanDays(ctx context.Context, tripID, userID string) ([]*MealPlanDay, error) {
-	if !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, apperror.ErrTripNotFound
+		}
+		return nil, err
+	}
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return nil, err
 	}
 	return s.mealDayRepo.ListByTripID(ctx, tripID)
 }
 
 func (s *tripService) AddMealPlanDay(ctx context.Context, tripID, userID string, name string, linkedDay *string) (*MealPlanDay, error) {
-	if !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, apperror.ErrTripNotFound
+		}
+		return nil, err
+	}
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return nil, err
 	}
 
 	// 驗證連結的天數是否存在
 	if linkedDay != nil {
-		trip, err := s.tripRepo.GetByID(ctx, tripID)
-		if err != nil {
-			return nil, err
-		}
 		found := false
 		for _, dn := range trip.DayNames {
 			if dn == *linkedDay {
@@ -545,8 +547,15 @@ func (s *tripService) AddMealPlanDay(ctx context.Context, tripID, userID string,
 }
 
 func (s *tripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, userID string, name string, linkedDay *string) (*MealPlanDay, error) {
-	if !s.isTripMember(ctx, tripID, userID) {
-		return nil, apperror.ErrAccessDenied
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, apperror.ErrTripNotFound
+		}
+		return nil, err
+	}
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return nil, err
 	}
 
 	existing, err := s.mealDayRepo.GetByID(ctx, dayID, tripID)
@@ -556,10 +565,6 @@ func (s *tripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, user
 
 	// 驗證連結的天數是否存在
 	if linkedDay != nil {
-		trip, err := s.tripRepo.GetByID(ctx, tripID)
-		if err != nil {
-			return nil, err
-		}
 		found := false
 		for _, dn := range trip.DayNames {
 			if dn == *linkedDay {
@@ -580,8 +585,15 @@ func (s *tripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, user
 }
 
 func (s *tripService) DeleteMealPlanDay(ctx context.Context, tripID, dayID, userID string) error {
-	if !s.isTripMember(ctx, tripID, userID) {
-		return apperror.ErrAccessDenied
+	trip, err := s.tripRepo.GetByID(ctx, tripID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return apperror.ErrTripNotFound
+		}
+		return err
+	}
+	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+		return err
 	}
 
 	existing, err := s.mealDayRepo.GetByID(ctx, dayID, tripID)
@@ -605,6 +617,41 @@ func (s *tripService) isTripMember(ctx context.Context, tripID, userID string) b
 		return false
 	}
 	return isMember
+}
+
+// requireTripOwner verifies that the user is the creator/owner of the trip.
+func (s *tripService) requireTripOwner(trip *Trip, userID string) error {
+	if trip.UserID != userID {
+		return apperror.ErrAccessDenied
+	}
+	return nil
+}
+
+// requireTripRole verifies that the user is a member with one of the allowed roles.
+func (s *tripService) requireTripRole(ctx context.Context, trip *Trip, userID string, allowedRoles ...string) error {
+	role, err := s.memberRepo.GetRole(ctx, trip.ID, userID)
+	if err != nil {
+		if trip.UserID == userID {
+			role = RoleLeader
+		} else {
+			return apperror.ErrAccessDenied
+		}
+	}
+
+	for _, allowed := range allowedRoles {
+		if role == allowed {
+			return nil
+		}
+	}
+	return apperror.ErrAccessDenied
+}
+
+// requireTripMember verifies that the user is a member of the trip or the owner.
+func (s *tripService) requireTripMember(ctx context.Context, trip *Trip, userID string) error {
+	if trip.UserID == userID || s.isTripMember(ctx, trip.ID, userID) {
+		return nil
+	}
+	return apperror.ErrAccessDenied
 }
 
 // --- Requests models used in service logic ---
