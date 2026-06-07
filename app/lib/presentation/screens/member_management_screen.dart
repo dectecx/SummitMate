@@ -11,6 +11,8 @@ import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 
 import '../widgets/cloud_guard.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 
 /// 成員管理畫面
 ///
@@ -349,12 +351,15 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     // Permission Logic: Owner OR Leader
     final canManage = isOwner || myRole == RoleConstants.leader || myRole == RoleConstants.admin;
 
+    final settingsState = context.watch<SettingsCubit>().state;
+    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+
     return Scaffold(
       appBar: SummitAppBar(
         title: const Text('成員管理'),
         actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _isLoading ? null : _loadMembers)],
       ),
-      floatingActionButton: (canManage && widget.trip.isCloudReady)
+      floatingActionButton: (canManage && widget.trip.isCloudReady && !isOffline)
           ? FloatingActionButton.extended(
               onPressed: _isLoading ? null : _showSearchAddMemberDialog,
               icon: const Icon(Icons.person_add),
@@ -397,7 +402,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
                         final isRowOwner = member.userId == widget.trip.userId;
 
                         // Can edit this row?
-                        final canEditRow = canManage && !isSelf && !isRowOwner;
+                        final canEditRow = canManage && !isSelf && !isRowOwner && !isOffline;
 
                         return MemberListTile(
                           member: member,

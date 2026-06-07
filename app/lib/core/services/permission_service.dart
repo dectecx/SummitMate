@@ -89,6 +89,9 @@ class PermissionService {
     if (user == null) return false;
     if (user.role == RoleConstants.admin) return true;
 
+    // 行程擁有者 (Owner) 具有成員管理權限
+    if (trip.userId == user.id) return true;
+
     return user.permissions.contains('member.manage');
   }
 
