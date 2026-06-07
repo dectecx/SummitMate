@@ -531,7 +531,7 @@ func (s *tripService) AddMealPlanDay(ctx context.Context, tripID, userID string,
 			}
 		}
 		if !found {
-			return nil, errors.New("綁定的行程天數不存在")
+			return nil, apperror.ErrLinkedDayNotFound
 		}
 	}
 
@@ -569,7 +569,7 @@ func (s *tripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, user
 			}
 		}
 		if !found {
-			return nil, errors.New("綁定的行程天數不存在")
+			return nil, apperror.ErrLinkedDayNotFound
 		}
 	}
 
