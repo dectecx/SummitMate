@@ -9,8 +9,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/gear_library/gear_library_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 import '../widgets/ads/banner_ad_widget.dart';
 import '../widgets/common/summit_app_bar.dart';
 import '../widgets/responsive_layout.dart';
@@ -640,8 +639,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   }
 
   Future<void> _handleUpload() async {
-    final settingsState = context.read<SettingsCubit>().state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.read<ConnectivityCubit>().state.isOffline;
     if (isOffline) {
       ToastService.warning('離線模式，無法上傳');
       return;
@@ -689,8 +687,7 @@ class _CloudSyncDialogState extends State<_CloudSyncDialog> {
   }
 
   Future<void> _handleDownload() async {
-    final settingsState = context.read<SettingsCubit>().state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.read<ConnectivityCubit>().state.isOffline;
     if (isOffline) {
       ToastService.warning('離線模式，無法下載');
       return;

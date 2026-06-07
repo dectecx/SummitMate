@@ -7,8 +7,7 @@ import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/itinerary/itinerary_cubit.dart';
 import '../cubits/itinerary/itinerary_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import 'itinerary_edit_dialog.dart';
@@ -43,10 +42,7 @@ class _ItineraryTabState extends State<ItineraryTab> {
   Future<void> _autoSync() async {
     if (!mounted) return;
     final cubit = context.read<SyncCubit>();
-    final settingsCubit = context.read<SettingsCubit>();
-
-    final settingsState = settingsCubit.state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.read<ConnectivityCubit>().state.isOffline;
     if (isOffline) return;
 
     if (!mounted) return;

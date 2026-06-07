@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import 'package:summitmate/domain/domain.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
+import '../cubits/connectivity/connectivity_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
@@ -450,9 +450,9 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                         ),
                         const SizedBox(width: 8),
                         // Sync indicator
-                        BlocBuilder<SettingsCubit, SettingsState>(
-                          builder: (context, settingsState) {
-                            final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+                        BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                          builder: (context, connectivityState) {
+                            final isOffline = connectivityState.isOffline;
                             return Material(
                               color: Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
@@ -564,9 +564,9 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                   ),
                 ],
               ),
-              floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
-                builder: (context, settingsState) {
-                  final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+              floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                builder: (context, connectivityState) {
+                  final isOffline = connectivityState.isOffline;
 
                   // 訪客模式下隱藏 FAB
                   if (isGuest) {

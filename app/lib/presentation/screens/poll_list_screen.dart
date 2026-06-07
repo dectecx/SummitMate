@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
+import '../cubits/connectivity/connectivity_state.dart';
 import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
 
@@ -225,9 +225,9 @@ class _PollListScreenState extends State<PollListScreen> {
                         ),
                         const SizedBox(width: 8),
                         // Sync time + refresh button
-                        BlocBuilder<SettingsCubit, SettingsState>(
-                          builder: (context, settingsState) {
-                            final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+                        BlocBuilder<ConnectivityCubit, ConnectivityState>(
+                          builder: (context, connectivityState) {
+                            final isOffline = connectivityState.isOffline;
                             return Material(
                               color: isOffline
                                   ? Colors.grey.withValues(alpha: 0.2)
@@ -321,9 +321,9 @@ class _PollListScreenState extends State<PollListScreen> {
               ),
             ),
           ),
-          floatingActionButton: BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, settingsState) {
-              final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+          floatingActionButton: BlocBuilder<ConnectivityCubit, ConnectivityState>(
+            builder: (context, connectivityState) {
+              final isOffline = connectivityState.isOffline;
               return FloatingActionButton.extended(
                 onPressed: () {
                   if (isOffline) {
@@ -345,8 +345,7 @@ class _PollListScreenState extends State<PollListScreen> {
 
   Widget _buildPollItem(BuildContext context, Poll poll, String currentUserId, {bool isGrid = false}) {
     final isCreator = poll.creatorId == currentUserId;
-    final settingsState = context.read<SettingsCubit>().state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.read<ConnectivityCubit>().state.isOffline;
 
     if (!isCreator || isOffline || isGrid) {
       return Card(

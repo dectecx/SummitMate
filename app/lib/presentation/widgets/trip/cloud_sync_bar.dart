@@ -6,8 +6,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../../cubits/trip/trip_cubit.dart';
 import '../../cubits/trip/trip_state.dart';
-import '../../cubits/settings/settings_cubit.dart';
-import '../../cubits/settings/settings_state.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
 
 /// 雲端同步狀態橫幅
 ///
@@ -118,8 +117,7 @@ class _CloudSyncBannerState extends State<CloudSyncBanner> {
         final trip = state.activeTrip!;
         final syncStatus = trip.syncStatus;
 
-        final settingsState = context.watch<SettingsCubit>().state;
-        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+        final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 
         // 判斷狀態
         final isLocalOnly = trip.isLocalOnly;

@@ -4,8 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/common/summit_app_bar.dart';
 
@@ -96,8 +95,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     return BlocConsumer<PollCubit, PollState>(
       listener: (context, state) {},
       builder: (context, state) {
-        final settingsState = context.watch<SettingsCubit>().state;
-        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+        final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 
         Poll freshPoll = widget.poll;
         if (state is PollLoaded) {

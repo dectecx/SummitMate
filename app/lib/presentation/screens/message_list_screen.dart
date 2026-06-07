@@ -5,8 +5,8 @@ import '../cubits/sync/sync_cubit.dart';
 import '../cubits/sync/sync_state.dart';
 import '../cubits/message/message_cubit.dart';
 import '../cubits/message/message_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
+import '../cubits/connectivity/connectivity_state.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -43,12 +43,9 @@ class _MessageListScreenState extends State<MessageListScreen> {
           },
         ),
       ],
-      child: BlocBuilder<SettingsCubit, SettingsState>(
-        builder: (context, settingsState) {
-          bool isOfflineMode = false;
-          if (settingsState is SettingsLoaded) {
-            isOfflineMode = settingsState.isOfflineMode;
-          }
+      child: BlocBuilder<ConnectivityCubit, ConnectivityState>(
+        builder: (context, connectivityState) {
+          final isOfflineMode = connectivityState.isOffline;
 
           return BlocBuilder<AuthCubit, AuthState>(
             builder: (context, authState) {
@@ -271,7 +268,9 @@ class _MessageListScreenState extends State<MessageListScreen> {
             if (canDelete)
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 20),
-                onPressed: () => _confirmDelete(context, context.read<MessageCubit>(), msg.id),
+                onPressed: isOfflineMode
+                    ? null
+                    : () => _confirmDelete(context, context.read<MessageCubit>(), msg.id),
                 tooltip: '刪除',
               ),
           ],
@@ -289,7 +288,9 @@ class _MessageListScreenState extends State<MessageListScreen> {
             trailing: canDeleteReply
                 ? IconButton(
                     icon: const Icon(Icons.delete_outline, size: 18),
-                    onPressed: () => _confirmDelete(context, context.read<MessageCubit>(), reply.id),
+                    onPressed: isOfflineMode
+                        ? null
+                        : () => _confirmDelete(context, context.read<MessageCubit>(), reply.id),
                   )
                 : null,
           );
