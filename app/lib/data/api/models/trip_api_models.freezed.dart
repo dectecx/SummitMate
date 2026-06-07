@@ -911,7 +911,7 @@ as String,
 /// @nodoc
 mixin _$TripMemberResponse {
 
-@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime get joinedAt;@JsonKey(name: 'user_metadata') TripMemberUserMetadata get userMetadata;
+@JsonKey(name: 'trip_id') String get tripId;@JsonKey(name: 'user_id') String get userId;@JsonKey(name: 'role_code') String get roleCode;@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime get joinedAt;@JsonKey(name: 'user_metadata') TripMemberUserMetadata get userMetadata;
 /// Create a copy of TripMemberResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -924,16 +924,16 @@ $TripMemberResponseCopyWith<TripMemberResponse> get copyWith => _$TripMemberResp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripMemberResponse&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.userMetadata, userMetadata) || other.userMetadata == userMetadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TripMemberResponse&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.roleCode, roleCode) || other.roleCode == roleCode)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.userMetadata, userMetadata) || other.userMetadata == userMetadata));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,tripId,userId,joinedAt,userMetadata);
+int get hashCode => Object.hash(runtimeType,tripId,userId,roleCode,joinedAt,userMetadata);
 
 @override
 String toString() {
-  return 'TripMemberResponse(tripId: $tripId, userId: $userId, joinedAt: $joinedAt, userMetadata: $userMetadata)';
+  return 'TripMemberResponse(tripId: $tripId, userId: $userId, roleCode: $roleCode, joinedAt: $joinedAt, userMetadata: $userMetadata)';
 }
 
 
@@ -944,7 +944,7 @@ abstract mixin class $TripMemberResponseCopyWith<$Res>  {
   factory $TripMemberResponseCopyWith(TripMemberResponse value, $Res Function(TripMemberResponse) _then) = _$TripMemberResponseCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
+@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'role_code') String roleCode,@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
 });
 
 
@@ -961,10 +961,11 @@ class _$TripMemberResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripMemberResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? tripId = null,Object? userId = null,Object? joinedAt = null,Object? userMetadata = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? tripId = null,Object? userId = null,Object? roleCode = null,Object? joinedAt = null,Object? userMetadata = null,}) {
   return _then(_self.copyWith(
 tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,roleCode: null == roleCode ? _self.roleCode : roleCode // ignore: cast_nullable_to_non_nullable
 as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,userMetadata: null == userMetadata ? _self.userMetadata : userMetadata // ignore: cast_nullable_to_non_nullable
 as TripMemberUserMetadata,
@@ -1061,10 +1062,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'role_code')  String roleCode, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TripMemberResponse() when $default != null:
-return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);case _:
+return $default(_that.tripId,_that.userId,_that.roleCode,_that.joinedAt,_that.userMetadata);case _:
   return orElse();
 
 }
@@ -1082,10 +1083,10 @@ return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'role_code')  String roleCode, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)  $default,) {final _that = this;
 switch (_that) {
 case _TripMemberResponse():
-return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);case _:
+return $default(_that.tripId,_that.userId,_that.roleCode,_that.joinedAt,_that.userMetadata);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1102,10 +1103,10 @@ return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);cas
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'trip_id')  String tripId, @JsonKey(name: 'user_id')  String userId, @JsonKey(name: 'role_code')  String roleCode, @JsonKey(name: 'joined_at')@DateTimeUtcConverter()  DateTime joinedAt, @JsonKey(name: 'user_metadata')  TripMemberUserMetadata userMetadata)?  $default,) {final _that = this;
 switch (_that) {
 case _TripMemberResponse() when $default != null:
-return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);case _:
+return $default(_that.tripId,_that.userId,_that.roleCode,_that.joinedAt,_that.userMetadata);case _:
   return null;
 
 }
@@ -1117,11 +1118,12 @@ return $default(_that.tripId,_that.userId,_that.joinedAt,_that.userMetadata);cas
 @JsonSerializable()
 
 class _TripMemberResponse implements TripMemberResponse {
-  const _TripMemberResponse({@JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'joined_at')@DateTimeUtcConverter() required this.joinedAt, @JsonKey(name: 'user_metadata') required this.userMetadata});
+  const _TripMemberResponse({@JsonKey(name: 'trip_id') required this.tripId, @JsonKey(name: 'user_id') required this.userId, @JsonKey(name: 'role_code') required this.roleCode, @JsonKey(name: 'joined_at')@DateTimeUtcConverter() required this.joinedAt, @JsonKey(name: 'user_metadata') required this.userMetadata});
   factory _TripMemberResponse.fromJson(Map<String, dynamic> json) => _$TripMemberResponseFromJson(json);
 
 @override@JsonKey(name: 'trip_id') final  String tripId;
 @override@JsonKey(name: 'user_id') final  String userId;
+@override@JsonKey(name: 'role_code') final  String roleCode;
 @override@JsonKey(name: 'joined_at')@DateTimeUtcConverter() final  DateTime joinedAt;
 @override@JsonKey(name: 'user_metadata') final  TripMemberUserMetadata userMetadata;
 
@@ -1138,16 +1140,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripMemberResponse&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.userMetadata, userMetadata) || other.userMetadata == userMetadata));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TripMemberResponse&&(identical(other.tripId, tripId) || other.tripId == tripId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.roleCode, roleCode) || other.roleCode == roleCode)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.userMetadata, userMetadata) || other.userMetadata == userMetadata));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,tripId,userId,joinedAt,userMetadata);
+int get hashCode => Object.hash(runtimeType,tripId,userId,roleCode,joinedAt,userMetadata);
 
 @override
 String toString() {
-  return 'TripMemberResponse(tripId: $tripId, userId: $userId, joinedAt: $joinedAt, userMetadata: $userMetadata)';
+  return 'TripMemberResponse(tripId: $tripId, userId: $userId, roleCode: $roleCode, joinedAt: $joinedAt, userMetadata: $userMetadata)';
 }
 
 
@@ -1158,7 +1160,7 @@ abstract mixin class _$TripMemberResponseCopyWith<$Res> implements $TripMemberRe
   factory _$TripMemberResponseCopyWith(_TripMemberResponse value, $Res Function(_TripMemberResponse) _then) = __$TripMemberResponseCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
+@JsonKey(name: 'trip_id') String tripId,@JsonKey(name: 'user_id') String userId,@JsonKey(name: 'role_code') String roleCode,@JsonKey(name: 'joined_at')@DateTimeUtcConverter() DateTime joinedAt,@JsonKey(name: 'user_metadata') TripMemberUserMetadata userMetadata
 });
 
 
@@ -1175,10 +1177,11 @@ class __$TripMemberResponseCopyWithImpl<$Res>
 
 /// Create a copy of TripMemberResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? tripId = null,Object? userId = null,Object? joinedAt = null,Object? userMetadata = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? tripId = null,Object? userId = null,Object? roleCode = null,Object? joinedAt = null,Object? userMetadata = null,}) {
   return _then(_TripMemberResponse(
 tripId: null == tripId ? _self.tripId : tripId // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,roleCode: null == roleCode ? _self.roleCode : roleCode // ignore: cast_nullable_to_non_nullable
 as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,userMetadata: null == userMetadata ? _self.userMetadata : userMetadata // ignore: cast_nullable_to_non_nullable
 as TripMemberUserMetadata,
