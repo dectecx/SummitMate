@@ -108,7 +108,7 @@ func (repo *tripMemberRepository) IsMember(ctx context.Context, tripID string, u
 // ListByTripID 取得行程的所有成員，同時結合 users 表的顯示名稱與 Email 等資訊。
 func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID string) ([]*TripMember, error) {
 	query := `
-		SELECT tm.trip_id, tm.user_id, tm.joined_at, u.email, u.display_name, u.avatar
+		SELECT tm.trip_id, tm.user_id, tm.role_code, tm.joined_at, u.email, u.display_name, u.avatar
 		FROM trip_members tm
 		JOIN users u ON tm.user_id = u.id
 		WHERE tm.trip_id = $1
@@ -125,7 +125,7 @@ func (repo *tripMemberRepository) ListByTripID(ctx context.Context, tripID strin
 	for rows.Next() {
 		var m TripMember
 		err := rows.Scan(
-			&m.TripID, &m.UserID, &m.JoinedAt,
+			&m.TripID, &m.UserID, &m.RoleCode, &m.JoinedAt,
 			&m.UserEmail, &m.UserDisplayName, &m.UserAvatar,
 		)
 		if err != nil {

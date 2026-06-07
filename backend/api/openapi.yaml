@@ -3062,6 +3062,7 @@ components:
       required:
         - trip_id
         - user_id
+        - role_code
         - joined_at
         - user_metadata
       properties:
@@ -3071,6 +3072,9 @@ components:
         user_id:
           type: string
           format: uuid
+        role_code:
+          type: string
+          example: member
         joined_at:
           type: string
           format: date-time
