@@ -5,7 +5,6 @@ import (
 )
 
 const (
-	RoleOwner  = "owner"
 	RoleLeader = "leader"
 	RoleGuide  = "guide"
 	RoleMember = "member"
