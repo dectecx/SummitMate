@@ -4,8 +4,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 
 /// 雲端功能防呆元件
 ///
@@ -51,8 +50,7 @@ class CloudGuard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final settingsState = context.watch<SettingsCubit>().state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 
     return Center(
       child: Padding(

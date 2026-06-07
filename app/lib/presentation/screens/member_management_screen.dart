@@ -9,10 +9,8 @@ import '../widgets/member/search_add_member_dialog.dart';
 import '../widgets/member/member_list_tile.dart';
 import '../cubits/auth/auth_cubit.dart';
 import '../cubits/auth/auth_state.dart';
-
+import '../cubits/connectivity/connectivity_cubit.dart';
 import '../widgets/cloud_guard.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
 
 /// 成員管理畫面
 ///
@@ -351,8 +349,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     // Permission Logic: Owner OR Leader
     final canManage = isOwner || myRole == RoleConstants.leader || myRole == RoleConstants.admin;
 
-    final settingsState = context.watch<SettingsCubit>().state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 
     return Scaffold(
       appBar: SummitAppBar(

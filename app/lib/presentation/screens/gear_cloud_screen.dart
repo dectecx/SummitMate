@@ -8,6 +8,7 @@ import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/settings/settings_cubit.dart';
 import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import '../cubits/gear/gear_cubit.dart';
@@ -307,8 +308,7 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final settingsState = context.watch<SettingsCubit>().state;
-    final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 
     return Scaffold(
       appBar: SummitAppBar(
@@ -501,7 +501,12 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _ToolButton(icon: Icons.cloud_done, label: '管理雲端裝備', onTap: _showManagementDialog),
+                  child: _ToolButton(
+                    icon: Icons.cloud_done,
+                    label: '管理雲端裝備',
+                    onTap: isOffline ? null : _showManagementDialog,
+                    disabled: isOffline,
+                  ),
                 ),
               ],
             ),

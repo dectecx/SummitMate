@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/group_event/group_event_state.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
+import '../cubits/connectivity/connectivity_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
@@ -106,6 +106,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
     final cubitState = context.watch<GroupEventCubit>().state;
     final isSyncing = cubitState is GroupEventLoaded && cubitState.isSyncing;
 
@@ -133,7 +134,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
               leading: _buildGlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.pop(context)),
               actions: [
                 if (isHost) ...[
-                  _buildGlassIconButton(icon: Icons.delete_outline, onTap: () => _confirmDelete(context)),
+                  _buildGlassIconButton(
+                    icon: Icons.delete_outline,
+                    onTap: isOffline ? null : () => _confirmDelete(context),
+                  ),
                   const SizedBox(width: 8),
                 ],
                 Padding(
@@ -203,6 +207,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
+                                        if (isOffline) ...[
+                                          _buildOfflineWarning(),
+                                          const SizedBox(height: 16),
+                                        ],
                                         _buildTitleSection(),
                                         const SizedBox(height: 24),
                                         InfoGrid(
@@ -258,6 +266,10 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (isOffline) ...[
+                                  _buildOfflineWarning(),
+                                  const SizedBox(height: 16),
+                                ],
                                 _buildTitleSection(),
                                 const SizedBox(height: 24),
                                 InfoGrid(
@@ -340,26 +352,28 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
   }
 
   Widget _buildActionContent(BuildContext context, ColorScheme colorScheme, bool isHost, bool isSyncing) {
-    return BlocBuilder<SettingsCubit, SettingsState>(
-      builder: (context, settingsState) {
-        final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+    return BlocBuilder<ConnectivityCubit, ConnectivityState>(
+      builder: (context, connectivityState) {
+        final isOffline = connectivityState.isOffline;
         final cubitState = context.watch<GroupEventCubit>().state;
 
         if (isHost) {
           return FilledButton.icon(
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => GroupEventReviewScreen(
-                    eventId: _event.id,
-                    currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
-                  ),
-                ),
-              );
-              if (context.mounted) {
-                context.read<GroupEventCubit>().fetchEvents(isAuto: false);
-              }
-            },
+            onPressed: isOffline
+                ? null
+                : () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => GroupEventReviewScreen(
+                          eventId: _event.id,
+                          currentUserId: cubitState is GroupEventLoaded ? cubitState.currentUserId : '',
+                        ),
+                      ),
+                    );
+                    if (context.mounted) {
+                      context.read<GroupEventCubit>().fetchEvents(isAuto: false);
+                    }
+                  },
             icon: const Icon(Icons.rate_review_rounded),
             label: const Text('審核報名'),
             style: FilledButton.styleFrom(
@@ -408,8 +422,31 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
     );
   }
 
+  Widget _buildOfflineWarning() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.wifi_off, size: 16, color: Colors.orange.shade800),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '離線模式中，無法申請、審核或編輯揪團',
+              style: TextStyle(color: Colors.orange.shade900, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Helper Widgets
-  Widget _buildGlassIconButton({required IconData icon, required VoidCallback onTap, Color color = Colors.white}) {
+  Widget _buildGlassIconButton({required IconData icon, required VoidCallback? onTap, Color color = Colors.white}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
@@ -417,7 +454,7 @@ class _GroupEventDetailScreenState extends State<GroupEventDetailScreen> {
         border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: IconButton(
-        icon: Icon(icon, color: color),
+        icon: Icon(icon, color: onTap == null ? color.withValues(alpha: 0.4) : color),
         onPressed: onTap,
         constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
         padding: EdgeInsets.zero,

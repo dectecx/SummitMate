@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../cubits/group_event/comment/group_event_comment_cubit.dart';
 import '../../cubits/group_event/comment/group_event_comment_state.dart';
+import '../../cubits/connectivity/connectivity_cubit.dart';
 
 class GroupEventCommentSheet extends StatefulWidget {
   final String eventId;
@@ -37,6 +38,8 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
+
     return BlocProvider(
       create: (_) => getIt<GroupEventCommentCubit>(param1: widget.eventId)..loadComments(),
       child: Container(
@@ -71,6 +74,25 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
               ),
             ),
             const Divider(height: 1),
+
+            if (isOffline)
+              Container(
+                color: Colors.orange.shade50,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    Icon(Icons.wifi_off_rounded, size: 16, color: Colors.orange.shade800),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '離線模式中，無法發送或刪除留言',
+                        style: TextStyle(color: Colors.orange.shade900, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             // Content
             Expanded(
@@ -124,6 +146,7 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
             BlocBuilder<GroupEventCommentCubit, GroupEventCommentState>(
               builder: (context, state) {
                 final isSending = state is GroupEventCommentLoaded && state.isSending;
+                final isInputEnabled = !isOffline && !isSending;
                 return Container(
                   padding: EdgeInsets.only(
                     left: 16,
@@ -146,9 +169,9 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
                       Expanded(
                         child: TextField(
                           controller: _controller,
-                          enabled: !isSending,
+                          enabled: isInputEnabled,
                           decoration: InputDecoration(
-                            hintText: '輸入留言...',
+                            hintText: isOffline ? '離線模式下無法留言' : '輸入留言...',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24),
                               borderSide: BorderSide.none,
@@ -159,7 +182,7 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
                           ),
                           maxLines: null,
                           textInputAction: TextInputAction.send,
-                          onSubmitted: (_) => _sendMessage(context),
+                          onSubmitted: isInputEnabled ? (_) => _sendMessage(context) : null,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -171,7 +194,7 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
                             : const Icon(Icons.send),
-                        onPressed: isSending ? null : () => _sendMessage(context),
+                        onPressed: isInputEnabled ? () => _sendMessage(context) : null,
                       ),
                     ],
                   ),
@@ -198,6 +221,12 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
   }
 
   void _confirmDelete(BuildContext context, GroupEventComment comment) {
+    if (context.read<ConnectivityCubit>().state.isOffline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('⚠️ 離線模式下無法刪除留言'), backgroundColor: Colors.red),
+      );
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(

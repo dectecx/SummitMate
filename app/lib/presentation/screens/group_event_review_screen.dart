@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/group_event/review/group_event_review_cubit.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 
 class GroupEventReviewScreen extends StatelessWidget {
   final String eventId;
@@ -12,53 +13,79 @@ class GroupEventReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
+
     return BlocProvider(
       create: (context) => getIt<GroupEventReviewCubit>(param1: eventId, param2: currentUserId)..loadApplications(),
       child: Scaffold(
         appBar: AppBar(title: const Text('審核報名')),
-        body: BlocConsumer<GroupEventReviewCubit, GroupEventReviewState>(
-          listener: (context, state) {
-            if (state is GroupEventReviewError) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
-            }
-          },
-          builder: (context, state) {
-            if (state is GroupEventReviewLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state is GroupEventReviewLoaded || state is GroupEventReviewSyncing) {
-              final applications = state is GroupEventReviewLoaded
-                  ? state.applications
-                  : (state as GroupEventReviewSyncing).applications;
-
-              if (applications.isEmpty) {
-                return const Center(child: Text('目前沒有報名申請'));
-              }
-
-              final isSyncing = state is GroupEventReviewSyncing;
-
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: applications.length,
-                itemBuilder: (context, index) {
-                  final app = applications[index];
-                  return _buildApplicationCard(context, app, isSyncing);
+        body: Column(
+          children: [
+            if (isOffline)
+              Container(
+                color: Colors.orange.shade50,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    Icon(Icons.wifi_off_rounded, size: 16, color: Colors.orange.shade800),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '離線模式中，無法進行審核操作',
+                        style: TextStyle(color: Colors.orange.shade900, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: BlocConsumer<GroupEventReviewCubit, GroupEventReviewState>(
+                listener: (context, state) {
+                  if (state is GroupEventReviewError) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
+                  }
                 },
-              );
-            }
+                builder: (context, state) {
+                  if (state is GroupEventReviewLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-            return const Center(child: Text('無法載入資料'));
-          },
+                  if (state is GroupEventReviewLoaded || state is GroupEventReviewSyncing) {
+                    final applications = state is GroupEventReviewLoaded
+                        ? state.applications
+                        : (state as GroupEventReviewSyncing).applications;
+
+                    if (applications.isEmpty) {
+                      return const Center(child: Text('目前沒有報名申請'));
+                    }
+
+                    final isSyncing = state is GroupEventReviewSyncing;
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: applications.length,
+                      itemBuilder: (context, index) {
+                        final app = applications[index];
+                        return _buildApplicationCard(context, app, isSyncing);
+                      },
+                    );
+                  }
+
+                  return const Center(child: Text('無法載入資料'));
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// 建構報名者卡片
   Widget _buildApplicationCard(BuildContext context, GroupEventApplication app, bool isSyncing) {
+    final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -103,7 +130,7 @@ class GroupEventReviewScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   OutlinedButton(
-                    onPressed: isSyncing
+                    onPressed: isSyncing || isOffline
                         ? null
                         : () async {
                             final reason = await _showRejectReasonDialog(context);
@@ -126,7 +153,7 @@ class GroupEventReviewScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   FilledButton(
-                    onPressed: isSyncing
+                    onPressed: isSyncing || isOffline
                         ? null
                         : () {
                             context.read<GroupEventReviewCubit>().reviewApplication(

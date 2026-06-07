@@ -4,8 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/di/injection.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
-import '../cubits/settings/settings_cubit.dart';
-import '../cubits/settings/settings_state.dart';
+import '../cubits/connectivity/connectivity_cubit.dart';
 import 'zoomable_image.dart';
 import 'weather/weather_alert_card.dart';
 import 'info/weather_forecast_content.dart';
@@ -47,8 +46,7 @@ class InfoTabState extends State<InfoTab> {
   Future<void> _refreshWeather({bool force = false}) async {
     // 離線模式禁止手動更新
     if (force) {
-      final settingsState = context.read<SettingsCubit>().state;
-      final isOffline = settingsState is SettingsLoaded && settingsState.isOfflineMode;
+      final isOffline = context.read<ConnectivityCubit>().state.isOffline;
       if (isOffline) {
         ToastService.warning('離線模式無法更新天氣資料');
         return;
