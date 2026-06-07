@@ -40,6 +40,7 @@ void main() {
     group('update', () {
       test('Given update, When triggered, Then it should call localDataSource.updateItem', () async {
         // Arrange
+        when(() => mockLocalDataSource.getById(any())).thenAnswer((_) async => testItem);
         when(() => mockLocalDataSource.updateItem(any())).thenAnswer((_) async => {});
 
         // Act

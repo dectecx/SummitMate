@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/error/result.dart';
+import '../../core/exceptions/offline_exception.dart';
 import '../datasources/interfaces/i_trip_local_data_source.dart';
 import '../datasources/interfaces/i_trip_remote_data_source.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -10,10 +11,15 @@ import 'package:summitmate/domain/domain.dart';
 class TripRepository implements ITripRepository {
   final ITripLocalDataSource _localDataSource;
   final ITripRemoteDataSource _remoteDataSource;
+  final IConnectivityService _connectivityService;
 
   final _tripUpdateController = StreamController<String>.broadcast();
 
-  TripRepository(this._localDataSource, this._remoteDataSource);
+  TripRepository(
+    this._localDataSource,
+    this._remoteDataSource,
+    this._connectivityService,
+  );
 
   @override
   Stream<String> get tripUpdateStream => _tripUpdateController.stream;
@@ -125,36 +131,57 @@ class TripRepository implements ITripRepository {
 
   @override
   Future<Result<List<TripMember>, Exception>> getTripMembers(String tripId) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'getTripMembers'));
+    }
     return _remoteDataSource.getTripMembers(tripId);
   }
 
   @override
   Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'updateMemberRole'));
+    }
     return _remoteDataSource.updateMemberRole(tripId, userId, role);
   }
 
   @override
   Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'removeMember'));
+    }
     return _remoteDataSource.removeMember(tripId, userId);
   }
 
   @override
   Future<Result<void, Exception>> addMemberByEmail(String tripId, String email, {String role = 'member'}) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'addMemberByEmail'));
+    }
     return _remoteDataSource.addMemberByEmail(tripId, email, role: role);
   }
 
   @override
   Future<Result<void, Exception>> addMemberById(String tripId, String userId, {String role = 'member'}) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'addMemberById'));
+    }
     return _remoteDataSource.addMemberById(tripId, userId, role: role);
   }
 
   @override
   Future<Result<UserProfile, Exception>> searchUserByEmail(String email) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'searchUserByEmail'));
+    }
     return _remoteDataSource.searchUserByEmail(email);
   }
 
   @override
   Future<Result<UserProfile, Exception>> searchUserById(String userId) async {
+    if (_connectivityService.isOffline) {
+      return const Failure(OfflineException('此功能在離線時不可用', operationName: 'searchUserById'));
+    }
     return _remoteDataSource.searchUserById(userId);
   }
 
