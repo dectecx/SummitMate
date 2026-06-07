@@ -45,7 +45,7 @@ func TestTripService_CreateTrip(t *testing.T) {
 			UserID: userID,
 		}, nil)
 
-		mockMemberRepo.On("AddMember", mock.Anything, "trip-1", userID).Return(nil)
+		mockMemberRepo.On("AddMember", mock.Anything, "trip-1", userID, trip.RoleOwner).Return(nil)
 		mockMealDayRepo.On("Create", mock.Anything, mock.Anything).Return(&trip.MealPlanDay{ID: "day-1"}, nil)
 
 		tTrip, err := svc.CreateTrip(context.Background(), userID, req)
@@ -132,7 +132,7 @@ func TestTripService_AddMember(t *testing.T) {
 
 		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(mockTrip, nil)
 		mockMemberRepo.On("IsMember", mock.Anything, tripID, targetUserID).Return(false, nil)
-		mockMemberRepo.On("AddMember", mock.Anything, tripID, targetUserID).Return(nil)
+		mockMemberRepo.On("AddMember", mock.Anything, tripID, targetUserID, trip.RoleMember).Return(nil)
 		mockMemberRepo.On("ListByTripID", mock.Anything, tripID).Return([]*trip.TripMember{
 			{UserID: targetUserID, UserDisplayName: mockTargetUser.DisplayName, UserEmail: mockTargetUser.Email},
 		}, nil)
@@ -216,7 +216,7 @@ func TestTripService_InviteMemberByEmail(t *testing.T) {
 
 		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(mockTrip, nil)
 		mockAuthService.On("SearchUserByEmail", mock.Anything, targetEmail).Return(mockTargetUser, nil)
-		mockMemberRepo.On("AddMember", mock.Anything, tripID, targetUserID).Return(nil)
+		mockMemberRepo.On("AddMember", mock.Anything, tripID, targetUserID, trip.RoleMember).Return(nil)
 		mockMemberRepo.On("ListByTripID", mock.Anything, tripID).Return([]*trip.TripMember{
 			{UserID: targetUserID, UserEmail: targetEmail},
 		}, nil)

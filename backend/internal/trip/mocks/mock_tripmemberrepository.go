@@ -22,17 +22,17 @@ func (_m *MockTripMemberRepository) EXPECT() *MockTripMemberRepository_Expecter 
 	return &MockTripMemberRepository_Expecter{mock: &_m.Mock}
 }
 
-// AddMember provides a mock function with given fields: ctx, tripID, userID
-func (_m *MockTripMemberRepository) AddMember(ctx context.Context, tripID string, userID string) error {
-	ret := _m.Called(ctx, tripID, userID)
+// AddMember provides a mock function with given fields: ctx, tripID, userID, role
+func (_m *MockTripMemberRepository) AddMember(ctx context.Context, tripID string, userID string, role string) error {
+	ret := _m.Called(ctx, tripID, userID, role)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddMember")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, tripID, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, tripID, userID, role)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -49,13 +49,14 @@ type MockTripMemberRepository_AddMember_Call struct {
 //   - ctx context.Context
 //   - tripID string
 //   - userID string
-func (_e *MockTripMemberRepository_Expecter) AddMember(ctx interface{}, tripID interface{}, userID interface{}) *MockTripMemberRepository_AddMember_Call {
-	return &MockTripMemberRepository_AddMember_Call{Call: _e.mock.On("AddMember", ctx, tripID, userID)}
+//   - role string
+func (_e *MockTripMemberRepository_Expecter) AddMember(ctx interface{}, tripID interface{}, userID interface{}, role interface{}) *MockTripMemberRepository_AddMember_Call {
+	return &MockTripMemberRepository_AddMember_Call{Call: _e.mock.On("AddMember", ctx, tripID, userID, role)}
 }
 
-func (_c *MockTripMemberRepository_AddMember_Call) Run(run func(ctx context.Context, tripID string, userID string)) *MockTripMemberRepository_AddMember_Call {
+func (_c *MockTripMemberRepository_AddMember_Call) Run(run func(ctx context.Context, tripID string, userID string, role string)) *MockTripMemberRepository_AddMember_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -65,7 +66,7 @@ func (_c *MockTripMemberRepository_AddMember_Call) Return(_a0 error) *MockTripMe
 	return _c
 }
 
-func (_c *MockTripMemberRepository_AddMember_Call) RunAndReturn(run func(context.Context, string, string) error) *MockTripMemberRepository_AddMember_Call {
+func (_c *MockTripMemberRepository_AddMember_Call) RunAndReturn(run func(context.Context, string, string, string) error) *MockTripMemberRepository_AddMember_Call {
 	_c.Call.Return(run)
 	return _c
 }
