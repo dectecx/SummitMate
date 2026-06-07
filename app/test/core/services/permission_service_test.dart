@@ -170,7 +170,9 @@ void main() {
     group('canManageMembers()', () {
       final myTrip = MockTrip();
 
-      setUp(() {});
+      setUp(() {
+        when(() => myTrip.userId).thenReturn('default-owner');
+      });
 
       test('Given canManageMembers(), When executing, Then Admin can always manage members', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => adminUser);
@@ -180,6 +182,27 @@ void main() {
       test('Given valid member, When calling canManageMembers(), Then Leader can manage members', () async {
         when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => leaderUser);
         expect(await permissionService.canManageMembers(myTrip), isTrue);
+      });
+
+      test('Given no permission but is Owner, When calling canManageMembers(), Then Owner can manage members', () async {
+        final ownerUser = UserProfile(
+          id: 'owner-id',
+          email: '',
+          displayName: '',
+          role: RoleConstants.member,
+          permissions: [], // No permissions
+        );
+        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => ownerUser);
+        when(() => myTrip.userId).thenReturn('owner-id');
+
+        expect(await permissionService.canManageMembers(myTrip), isTrue);
+      });
+
+      test('Given no permission and is not Owner, When calling canManageMembers(), Then cannot manage members', () async {
+        when(() => mockAuthService.getCachedUserProfile()).thenAnswer((_) async => memberUser);
+        when(() => myTrip.userId).thenReturn('owner-id'); // memberUser.id is 'member-id'
+
+        expect(await permissionService.canManageMembers(myTrip), isFalse);
       });
     });
   });
