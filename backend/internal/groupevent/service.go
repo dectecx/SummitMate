@@ -31,7 +31,7 @@ type GroupEventService interface {
 
 	ToggleLike(ctx context.Context, eventID, userID string) (bool, error)
 	UpdateTripLink(ctx context.Context, eventID string, tripID *string, userID string) error
-	UpdateTripSnapshot(ctx context.Context, eventID string, userID string) error
+	UpdateTripSnapshot(ctx context.Context, eventID string, userID string) (*GroupEvent, error)
 }
 
 type groupEventService struct {
@@ -408,28 +408,28 @@ func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, 
 	return s.repo.UpdateTripLink(ctx, eventID, tripID, userID)
 }
 
-func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) error {
+func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) (*GroupEvent, error) {
 	event, err := s.repo.GetEventByID(ctx, eventID, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if event == nil {
-		return apperror.ErrEventNotFound
+		return nil, apperror.ErrEventNotFound
 	}
 	if event.HostID != userID {
-		return apperror.ErrEventAccessDenied
+		return nil, apperror.ErrEventAccessDenied
 	}
 	if event.LinkedTripID == nil {
-		return apperror.ErrBadRequest.WithMessage("活動尚未連結行程")
+		return nil, apperror.ErrBadRequest.WithMessage("活動尚未連結行程")
 	}
 
 	tripObj, err := s.tripServ.GetTrip(ctx, *event.LinkedTripID, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	itinerary, err := s.tripServ.ListItinerary(ctx, *event.LinkedTripID, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	snapshot := &TripSnapshot{
@@ -441,5 +441,9 @@ func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID stri
 		snapshot.Itinerary = append(snapshot.Itinerary, item.Name)
 	}
 
-	return s.repo.UpdateTripSnapshot(ctx, eventID, snapshot, userID)
+	if err := s.repo.UpdateTripSnapshot(ctx, eventID, snapshot, userID); err != nil {
+		return nil, err
+	}
+
+	return s.repo.GetEventByID(ctx, eventID, userID)
 }
