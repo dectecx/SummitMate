@@ -119,9 +119,8 @@ func TestTripService_AddMember(t *testing.T) {
 	t.Run("Given valid setup, When calling TripService AddMember, Then it returns success without error", func(t *testing.T) {
 		mockTripRepo := new(tripmocks.MockTripRepository)
 		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-		mockUserRepo := new(authmocks.MockUserRepository)
 		mockMealDayRepo := new(tripmocks.MockTripMealPlanDayRepository)
-		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, mockMealDayRepo, mockUserRepo)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, mockMealDayRepo, nil)
 
 		tripID := "trip-1"
 		requesterID := "creator"
@@ -196,3 +195,39 @@ func TestTripService_DeleteMealPlanDay(t *testing.T) {
 		assert.Contains(t, err.Error(), "已綁定行程")
 	})
 }
+
+func TestTripService_InviteMemberByEmail(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	t.Run("Given valid setup, When calling InviteMemberByEmail, Then it returns success", func(t *testing.T) {
+		mockTripRepo := new(tripmocks.MockTripRepository)
+		mockMemberRepo := new(tripmocks.MockTripMemberRepository)
+		mockAuthService := new(authmocks.MockAuthService)
+		mockMealDayRepo := new(tripmocks.MockTripMealPlanDayRepository)
+		svc := trip.NewTripService(logger, nil, mockTripRepo, mockMemberRepo, nil, mockMealDayRepo, mockAuthService)
+
+		tripID := "trip-1"
+		requesterID := "creator"
+		targetEmail := "new@example.com"
+		targetUserID := "user-new"
+
+		mockTrip := &trip.Trip{ID: tripID, UserID: requesterID}
+		mockTargetUser := &auth.User{ID: targetUserID, Email: targetEmail}
+
+		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(mockTrip, nil)
+		mockAuthService.On("SearchUserByEmail", mock.Anything, targetEmail).Return(mockTargetUser, nil)
+		mockMemberRepo.On("AddMember", mock.Anything, tripID, targetUserID).Return(nil)
+		mockMemberRepo.On("ListByTripID", mock.Anything, tripID).Return([]*trip.TripMember{
+			{UserID: targetUserID, UserEmail: targetEmail},
+		}, nil)
+
+		member, err := svc.InviteMemberByEmail(context.Background(), tripID, requesterID, targetEmail)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, member)
+		assert.Equal(t, targetUserID, member.UserID)
+		mockAuthService.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+	})
+}
+

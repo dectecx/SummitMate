@@ -44,7 +44,7 @@ type tripService struct {
 	memberRepo    TripMemberRepository
 	itineraryRepo ItineraryRepository
 	mealDayRepo   TripMealPlanDayRepository
-	userRepo      auth.UserRepository
+	authService   auth.AuthService
 }
 
 func NewTripService(
@@ -54,7 +54,7 @@ func NewTripService(
 	memberRepo TripMemberRepository,
 	itineraryRepo ItineraryRepository,
 	mealDayRepo TripMealPlanDayRepository,
-	userRepo auth.UserRepository,
+	authService auth.AuthService,
 ) TripService {
 	return &tripService{
 		logger:        logger.With("component", "trip"),
@@ -63,7 +63,7 @@ func NewTripService(
 		memberRepo:    memberRepo,
 		itineraryRepo: itineraryRepo,
 		mealDayRepo:   mealDayRepo,
-		userRepo:      userRepo,
+		authService:   authService,
 	}
 }
 
@@ -294,7 +294,7 @@ func (s *tripService) InviteMemberByEmail(ctx context.Context, tripID, userID, t
 		return nil, apperror.ErrAccessDenied
 	}
 
-	targetUser, err := s.userRepo.GetByEmail(ctx, targetEmail)
+	targetUser, err := s.authService.SearchUserByEmail(ctx, targetEmail)
 	if err != nil {
 		if errors.Is(err, auth.ErrNotFound) {
 			return nil, apperror.ErrResourceNotFound.WithMessage("找不到該使用者")
