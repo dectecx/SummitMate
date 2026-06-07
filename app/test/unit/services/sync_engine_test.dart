@@ -89,6 +89,8 @@ void main() {
     // Stub getSettings
     when(() => mockSettings.autoSyncIntervalMinutes).thenReturn(15);
     when(() => mockSettingsRepo.getSettings()).thenAnswer((_) async => mockSettings);
+    // Stub currentUserId default
+    when(() => mockAuthService.currentUserId).thenReturn('user1');
 
     engine = SyncEngine(
       tripRepo: mockTripRepo,
@@ -117,6 +119,15 @@ void main() {
 
       expect(result.isSuccess, isFalse);
       expect(result.errorMessage, contains('離線模式'));
+    });
+
+    test('Given user is guest, When calling runSyncCycle, Then it should bypass and return failure', () async {
+      when(() => mockAuthService.currentUserId).thenReturn('guest');
+
+      final result = await engine.runSyncCycle();
+
+      expect(result.isSuccess, isFalse);
+      expect(result.errorMessage, contains('訪客或未登入狀態'));
     });
 
     test(

@@ -93,6 +93,12 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Future<SyncResult> runSyncCycle({bool force = false}) async {
+    final userId = _authService.currentUserId;
+    if (userId == null || userId == 'guest') {
+      LogService.info('SyncEngine: 訪客或未登入狀態，跳過雲端同步', source: 'SyncEngine');
+      return SyncResult.failure('訪客或未登入狀態，跳過雲端同步');
+    }
+
     if (_connectivity.isOffline) {
       return SyncResult.failure('目前為離線模式，無法同步');
     }
@@ -398,6 +404,10 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({int? page, int? limit}) async {
+    final userId = _authService.currentUserId;
+    if (userId == null || userId == 'guest') {
+      return Failure(Exception('訪客或未登入狀態，無法取得雲端行程列表'));
+    }
     if (_connectivity.isOffline) {
       return Failure(Exception('離線模式無法取得行程列表'));
     }
@@ -416,6 +426,10 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Future<Result<String, Exception>> uploadToCloud(Trip trip) async {
+    final userId = _authService.currentUserId;
+    if (userId == null || userId == 'guest') {
+      return Failure(Exception('訪客或未登入狀態，無法上傳行程至雲端'));
+    }
     if (_connectivity.isOffline) {
       return Failure(Exception('離線模式無法上傳'));
     }
@@ -424,6 +438,10 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Future<Result<void, Exception>> removeFromCloud(String tripId) async {
+    final userId = _authService.currentUserId;
+    if (userId == null || userId == 'guest') {
+      return Failure(Exception('訪客或未登入狀態，無法自雲端刪除行程'));
+    }
     if (_connectivity.isOffline) {
       return Failure(Exception('離線模式無法刪除'));
     }

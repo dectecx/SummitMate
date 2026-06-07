@@ -10,13 +10,19 @@ import 'package:summitmate/presentation/cubits/auth/auth_state.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/constants/role_constants.dart';
 
+import 'package:summitmate/core/di/injection.dart';
+import 'package:summitmate/presentation/cubits/app_error/app_error_cubit.dart';
+
 class MockAuthService extends Mock implements IAuthService {}
 
 class MockUsageTrackingService extends Mock implements UsageTrackingService {}
 
+class MockAppErrorCubit extends Mock implements AppErrorCubit {}
+
 void main() {
   late MockAuthService mockAuthService;
   late MockUsageTrackingService mockUsageTrackingService;
+  late MockAppErrorCubit mockAppErrorCubit;
   late AuthCubit authCubit;
   late StreamController<UserProfile?> authStateController;
 
@@ -37,9 +43,14 @@ void main() {
     isVerified: false,
   );
 
-  setUp(() {
+  setUp(() async {
+    await getIt.reset();
     mockAuthService = MockAuthService();
     mockUsageTrackingService = MockUsageTrackingService();
+    mockAppErrorCubit = MockAppErrorCubit();
+
+    getIt.registerSingleton<AppErrorCubit>(mockAppErrorCubit);
+
     authStateController = StreamController<UserProfile?>.broadcast();
 
     when(() => mockAuthService.onAuthStateChanged).thenAnswer((_) => authStateController.stream);
@@ -47,6 +58,7 @@ void main() {
     // Default mock behavior
     when(() => mockUsageTrackingService.start(any(), userId: any(named: 'userId'))).thenAnswer((_) async {});
     when(() => mockAuthService.isOfflineMode).thenReturn(false);
+    when(() => mockAppErrorCubit.clearError()).thenReturn(null);
 
     authCubit = AuthCubit(mockAuthService, mockUsageTrackingService);
   });
