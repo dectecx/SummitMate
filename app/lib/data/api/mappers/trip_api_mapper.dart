@@ -77,7 +77,7 @@ class TripApiMapper {
       userId: response.userMetadata.id,
       name: response.userMetadata.nickname,
       avatar: response.userMetadata.avatar,
-      role: response.userMetadata.role,
+      role: response.roleCode,
       joinedAt: response.joinedAt.toLocal(),
     );
   }

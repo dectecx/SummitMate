@@ -68,6 +68,7 @@ abstract class TripMemberResponse with _$TripMemberResponse {
   const factory TripMemberResponse({
     @JsonKey(name: 'trip_id') required String tripId,
     @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'role_code') required String roleCode,
     @JsonKey(name: 'joined_at') @DateTimeUtcConverter() required DateTime joinedAt,
     @JsonKey(name: 'user_metadata') required TripMemberUserMetadata userMetadata,
   }) = _TripMemberResponse;
