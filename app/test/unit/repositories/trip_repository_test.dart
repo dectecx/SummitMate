@@ -63,20 +63,26 @@ void main() {
       verify(() => mockLocalDataSource.getTripById('trip_1')).called(1);
     });
 
-    test('Given TripRepository and trip is pendingCreate, When deleteTrip is called, Then it should call deleteTrip on localDataSource', () async {
-      when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => testTrip);
-      when(() => mockLocalDataSource.deleteTrip('trip_1')).thenAnswer((_) async => {});
-      await repository.deleteTrip('trip_1');
-      verify(() => mockLocalDataSource.deleteTrip('trip_1')).called(1);
-    });
+    test(
+      'Given TripRepository and trip is pendingCreate, When deleteTrip is called, Then it should call deleteTrip on localDataSource',
+      () async {
+        when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => testTrip);
+        when(() => mockLocalDataSource.deleteTrip('trip_1')).thenAnswer((_) async => {});
+        await repository.deleteTrip('trip_1');
+        verify(() => mockLocalDataSource.deleteTrip('trip_1')).called(1);
+      },
+    );
 
-    test('Given TripRepository and trip is synced, When deleteTrip is called, Then it should update syncStatus to pendingDelete and call updateTrip', () async {
-      final syncedTrip = testTrip.copyWith(syncStatus: SyncStatus.synced);
-      when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => syncedTrip);
-      when(() => mockLocalDataSource.updateTrip(any())).thenAnswer((_) async => {});
-      await repository.deleteTrip('trip_1');
-      verify(() => mockLocalDataSource.updateTrip(any())).called(1);
-    });
+    test(
+      'Given TripRepository and trip is synced, When deleteTrip is called, Then it should update syncStatus to pendingDelete and call updateTrip',
+      () async {
+        final syncedTrip = testTrip.copyWith(syncStatus: SyncStatus.synced);
+        when(() => mockLocalDataSource.getTripById('trip_1')).thenAnswer((_) async => syncedTrip);
+        when(() => mockLocalDataSource.updateTrip(any())).thenAnswer((_) async => {});
+        await repository.deleteTrip('trip_1');
+        verify(() => mockLocalDataSource.updateTrip(any())).called(1);
+      },
+    );
 
     test('Given not found, When calling TripRepository, Then Negative: getTripById returns null', () async {
       when(() => mockLocalDataSource.getTripById('unknown')).thenAnswer((_) async => null);
@@ -115,41 +121,107 @@ void main() {
         when(() => mockConnectivityService.isOffline).thenReturn(true);
       });
 
-      test('Given offline status, When calling getTripMembers, Then it should return Failure with OfflineException', () async {
-        final result = await repository.getTripMembers('trip_1');
-        expect(result, isA<Failure>());
-        final exception = (result as Failure).exception;
-        expect(exception, isA<OfflineException>());
-        expect((exception as OfflineException).message, '此功能在離線時不可用');
-      });
+      test(
+        'Given offline status, When calling getTripMembers, Then it should return Failure with OfflineException',
+        () async {
+          final result = await repository.getTripMembers('trip_1');
+          expect(result, isA<Failure>());
+          final exception = (result as Failure).exception;
+          expect(exception, isA<OfflineException>());
+          expect((exception as OfflineException).message, '此功能在離線時不可用');
+        },
+      );
 
-      test('Given offline status, When calling updateMemberRole, Then it should return Failure with OfflineException', () async {
-        final result = await repository.updateMemberRole('trip_1', 'user_1', 'member');
-        expect(result, isA<Failure>());
-        final exception = (result as Failure).exception;
-        expect(exception, isA<OfflineException>());
-      });
+      test(
+        'Given offline status, When calling updateMemberRole, Then it should return Failure with OfflineException',
+        () async {
+          final result = await repository.updateMemberRole('trip_1', 'user_1', 'member');
+          expect(result, isA<Failure>());
+          final exception = (result as Failure).exception;
+          expect(exception, isA<OfflineException>());
+        },
+      );
 
-      test('Given offline status, When calling removeMember, Then it should return Failure with OfflineException', () async {
-        final result = await repository.removeMember('trip_1', 'user_1');
-        expect(result, isA<Failure>());
-        final exception = (result as Failure).exception;
-        expect(exception, isA<OfflineException>());
-      });
+      test(
+        'Given offline status, When calling removeMember, Then it should return Failure with OfflineException',
+        () async {
+          final result = await repository.removeMember('trip_1', 'user_1');
+          expect(result, isA<Failure>());
+          final exception = (result as Failure).exception;
+          expect(exception, isA<OfflineException>());
+        },
+      );
 
-      test('Given offline status, When calling addMemberByEmail, Then it should return Failure with OfflineException', () async {
-        final result = await repository.addMemberByEmail('trip_1', 'test@test.com');
-        expect(result, isA<Failure>());
-        final exception = (result as Failure).exception;
-        expect(exception, isA<OfflineException>());
-      });
+      test(
+        'Given offline status, When calling addMemberByEmail, Then it should return Failure with OfflineException',
+        () async {
+          final result = await repository.addMemberByEmail('trip_1', 'test@test.com');
+          expect(result, isA<Failure>());
+          final exception = (result as Failure).exception;
+          expect(exception, isA<OfflineException>());
+        },
+      );
 
-      test('Given offline status, When calling searchUserByEmail, Then it should return Failure with OfflineException', () async {
-        final result = await repository.searchUserByEmail('test@test.com');
-        expect(result, isA<Failure>());
-        final exception = (result as Failure).exception;
-        expect(exception, isA<OfflineException>());
-      });
+      test(
+        'Given offline status, When calling searchUserByEmail, Then it should return Failure with OfflineException',
+        () async {
+          final result = await repository.searchUserByEmail('test@test.com');
+          expect(result, isA<Failure>());
+          final exception = (result as Failure).exception;
+          expect(exception, isA<OfflineException>());
+        },
+      );
+
+      test(
+        'Given offline status, When calling transferOwnership, Then it should return Failure with OfflineException',
+        () async {
+          final result = await repository.transferOwnership('trip_1', 'user_2', 'member');
+          expect(result, isA<Failure>());
+          final exception = (result as Failure).exception;
+          expect(exception, isA<OfflineException>());
+        },
+      );
+    });
+
+    group('transferOwnership', () {
+      test(
+        'Given online status, When calling transferOwnership, Then it should call remote, update local data, and return Success',
+        () async {
+          final targetUserId = 'user_2';
+          final role = 'member';
+          final updatedTrip = testTrip.copyWith(userId: targetUserId);
+
+          when(
+            () => mockRemoteDataSource.transferOwnership('trip_1', targetUserId, role),
+          ).thenAnswer((_) async => Success(updatedTrip));
+          when(() => mockLocalDataSource.updateTrip(any())).thenAnswer((_) async => {});
+
+          final result = await repository.transferOwnership('trip_1', targetUserId, role);
+
+          expect(result, isA<Success>());
+          verify(() => mockRemoteDataSource.transferOwnership('trip_1', targetUserId, role)).called(1);
+          verify(() => mockLocalDataSource.updateTrip(any())).called(1);
+        },
+      );
+
+      test(
+        'Given online status but remote fails, When calling transferOwnership, Then it should return Failure',
+        () async {
+          final targetUserId = 'user_2';
+          final role = 'member';
+          final remoteError = Exception('remote error');
+
+          when(
+            () => mockRemoteDataSource.transferOwnership('trip_1', targetUserId, role),
+          ).thenAnswer((_) async => Failure(remoteError));
+
+          final result = await repository.transferOwnership('trip_1', targetUserId, role);
+
+          expect(result, isA<Failure>());
+          expect((result as Failure).exception, remoteError);
+          verifyNever(() => mockLocalDataSource.updateTrip(any()));
+        },
+      );
     });
   });
 }

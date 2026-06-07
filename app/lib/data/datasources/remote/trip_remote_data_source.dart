@@ -95,6 +95,29 @@ class TripRemoteDataSource implements ITripRemoteDataSource {
   }
 
   @override
+  Future<Result<Trip, Exception>> transferOwnership(
+    String tripId,
+    String targetUserId,
+    String currentOwnerRole,
+  ) async {
+    try {
+      LogService.info('轉移行程所有權: $tripId 至 $targetUserId...', source: _source);
+      final response = await _tripApi.transferOwnership(
+        tripId,
+        TransferOwnershipRequest(
+          targetUserId: targetUserId,
+          currentOwnerRole: currentOwnerRole,
+        ),
+      );
+      return Success(TripApiMapper.fromResponse(response));
+    } catch (e) {
+      LogService.error('轉移行程所有權失敗: $e', source: _source);
+      return Failure(e is Exception ? e : GeneralException(e.toString()));
+    }
+  }
+
+
+  @override
   Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
     try {
       await _tripApi.removeMember(tripId, userId);

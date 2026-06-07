@@ -390,6 +390,55 @@ func (_c *MockTripMemberRepository_RemoveMember_Call) RunAndReturn(run func(cont
 	return _c
 }
 
+// UpdateMemberRole provides a mock function with given fields: ctx, tripID, userID, role
+func (_m *MockTripMemberRepository) UpdateMemberRole(ctx context.Context, tripID string, userID string, role string) error {
+	ret := _m.Called(ctx, tripID, userID, role)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateMemberRole")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, tripID, userID, role)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTripMemberRepository_UpdateMemberRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateMemberRole'
+type MockTripMemberRepository_UpdateMemberRole_Call struct {
+	*mock.Call
+}
+
+// UpdateMemberRole is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tripID string
+//   - userID string
+//   - role string
+func (_e *MockTripMemberRepository_Expecter) UpdateMemberRole(ctx interface{}, tripID interface{}, userID interface{}, role interface{}) *MockTripMemberRepository_UpdateMemberRole_Call {
+	return &MockTripMemberRepository_UpdateMemberRole_Call{Call: _e.mock.On("UpdateMemberRole", ctx, tripID, userID, role)}
+}
+
+func (_c *MockTripMemberRepository_UpdateMemberRole_Call) Run(run func(ctx context.Context, tripID string, userID string, role string)) *MockTripMemberRepository_UpdateMemberRole_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockTripMemberRepository_UpdateMemberRole_Call) Return(_a0 error) *MockTripMemberRepository_UpdateMemberRole_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockTripMemberRepository_UpdateMemberRole_Call) RunAndReturn(run func(context.Context, string, string, string) error) *MockTripMemberRepository_UpdateMemberRole_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockTripMemberRepository creates a new instance of MockTripMemberRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockTripMemberRepository(t interface {

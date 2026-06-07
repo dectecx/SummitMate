@@ -27,6 +27,10 @@ func (s *Server) DeleteTrip(w http.ResponseWriter, r *http.Request, tripId opena
 	s.TripHandler.DeleteTrip(w, r, tripId)
 }
 
+func (s *Server) TransferTripOwnership(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
+	s.TripHandler.TransferTripOwnership(w, r, tripId)
+}
+
 func (s *Server) AddTripMember(w http.ResponseWriter, r *http.Request, tripId openapi_types.UUID) {
 	s.TripHandler.AddTripMember(w, r, tripId)
 }

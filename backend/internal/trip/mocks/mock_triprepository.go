@@ -325,6 +325,54 @@ func (_c *MockTripRepository_Update_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
+// UpdateOwner provides a mock function with given fields: ctx, id, nextOwnerID
+func (_m *MockTripRepository) UpdateOwner(ctx context.Context, id string, nextOwnerID string) error {
+	ret := _m.Called(ctx, id, nextOwnerID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateOwner")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, id, nextOwnerID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockTripRepository_UpdateOwner_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateOwner'
+type MockTripRepository_UpdateOwner_Call struct {
+	*mock.Call
+}
+
+// UpdateOwner is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - nextOwnerID string
+func (_e *MockTripRepository_Expecter) UpdateOwner(ctx interface{}, id interface{}, nextOwnerID interface{}) *MockTripRepository_UpdateOwner_Call {
+	return &MockTripRepository_UpdateOwner_Call{Call: _e.mock.On("UpdateOwner", ctx, id, nextOwnerID)}
+}
+
+func (_c *MockTripRepository_UpdateOwner_Call) Run(run func(ctx context.Context, id string, nextOwnerID string)) *MockTripRepository_UpdateOwner_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *MockTripRepository_UpdateOwner_Call) Return(_a0 error) *MockTripRepository_UpdateOwner_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockTripRepository_UpdateOwner_Call) RunAndReturn(run func(context.Context, string, string) error) *MockTripRepository_UpdateOwner_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockTripRepository creates a new instance of MockTripRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockTripRepository(t interface {

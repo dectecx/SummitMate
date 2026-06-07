@@ -24,6 +24,9 @@ abstract interface class ITripRemoteDataSource {
   /// 更新成員角色
   Future<Result<void, Exception>> updateMemberRole(String tripId, String userId, String role);
 
+  /// 移轉所有權
+  Future<Result<Trip, Exception>> transferOwnership(String tripId, String targetUserId, String currentOwnerRole);
+
   /// 移除成員
   Future<Result<void, Exception>> removeMember(String tripId, String userId);
 

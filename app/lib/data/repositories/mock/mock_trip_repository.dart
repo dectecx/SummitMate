@@ -83,6 +83,16 @@ class MockTripRepository implements ITripRepository {
   }
 
   @override
+  Future<Result<void, Exception>> transferOwnership(
+    String tripId,
+    String targetUserId,
+    String currentOwnerRole,
+  ) async {
+    return const Success(null);
+  }
+
+
+  @override
   Future<Result<void, Exception>> removeMember(String tripId, String userId) async {
     return const Success(null);
   }

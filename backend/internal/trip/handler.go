@@ -148,6 +148,34 @@ func (h *TripHandler) DeleteTrip(w http.ResponseWriter, r *http.Request, tripID 
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// TransferTripOwnership 移轉行程所有權 (POST /trips/{tripId}/transfer)
+func (h *TripHandler) TransferTripOwnership(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
+	userID, ok := apiutil.GetUserIDFromRequest(r)
+	if !ok {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req api.TransferOwnershipRequest
+	if err := apiutil.DecodeBody(r, &req); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	role := RoleGuide
+	if req.CurrentOwnerRole != nil {
+		role = string(*req.CurrentOwnerRole)
+	}
+
+	trip, err := h.svc.TransferOwnership(r.Context(), tripID.String(), userID, req.TargetUserId.String(), role)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, ToTripGetResponse(*trip))
+}
+
 // ListTripMembers 取得行程成員列表 (GET /trips/{tripId}/members)
 func (h *TripHandler) ListTripMembers(w http.ResponseWriter, r *http.Request, tripID openapi_types.UUID) {
 	userID, ok := apiutil.GetUserIDFromRequest(r)
@@ -323,7 +351,7 @@ func (h *TripHandler) AddTripMealPlanDay(w http.ResponseWriter, r *http.Request,
 	}
 
 	var req struct {
-		Name              string  `json:"name"`
+		Name               string  `json:"name"`
 		LinkedItineraryDay *string `json:"linked_itinerary_day"`
 	}
 	if err := apiutil.DecodeBody(r, &req); err != nil {
@@ -349,7 +377,7 @@ func (h *TripHandler) UpdateTripMealPlanDay(w http.ResponseWriter, r *http.Reque
 	}
 
 	var req struct {
-		Name              string  `json:"name"`
+		Name               string  `json:"name"`
 		LinkedItineraryDay *string `json:"linked_itinerary_day"`
 	}
 	if err := apiutil.DecodeBody(r, &req); err != nil {
@@ -381,4 +409,3 @@ func (h *TripHandler) DeleteTripMealPlanDay(w http.ResponseWriter, r *http.Reque
 
 	w.WriteHeader(http.StatusNoContent)
 }
-

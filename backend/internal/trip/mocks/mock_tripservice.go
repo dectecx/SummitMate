@@ -936,6 +936,68 @@ func (_c *MockTripService_RemoveMember_Call) RunAndReturn(run func(context.Conte
 	return _c
 }
 
+// TransferOwnership provides a mock function with given fields: ctx, tripID, currentOwnerID, targetUserID, oldOwnerNewRole
+func (_m *MockTripService) TransferOwnership(ctx context.Context, tripID string, currentOwnerID string, targetUserID string, oldOwnerNewRole string) (*trip.Trip, error) {
+	ret := _m.Called(ctx, tripID, currentOwnerID, targetUserID, oldOwnerNewRole)
+
+	if len(ret) == 0 {
+		panic("no return value specified for TransferOwnership")
+	}
+
+	var r0 *trip.Trip
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) (*trip.Trip, error)); ok {
+		return rf(ctx, tripID, currentOwnerID, targetUserID, oldOwnerNewRole)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) *trip.Trip); ok {
+		r0 = rf(ctx, tripID, currentOwnerID, targetUserID, oldOwnerNewRole)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*trip.Trip)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, string) error); ok {
+		r1 = rf(ctx, tripID, currentOwnerID, targetUserID, oldOwnerNewRole)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockTripService_TransferOwnership_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'TransferOwnership'
+type MockTripService_TransferOwnership_Call struct {
+	*mock.Call
+}
+
+// TransferOwnership is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tripID string
+//   - currentOwnerID string
+//   - targetUserID string
+//   - oldOwnerNewRole string
+func (_e *MockTripService_Expecter) TransferOwnership(ctx interface{}, tripID interface{}, currentOwnerID interface{}, targetUserID interface{}, oldOwnerNewRole interface{}) *MockTripService_TransferOwnership_Call {
+	return &MockTripService_TransferOwnership_Call{Call: _e.mock.On("TransferOwnership", ctx, tripID, currentOwnerID, targetUserID, oldOwnerNewRole)}
+}
+
+func (_c *MockTripService_TransferOwnership_Call) Run(run func(ctx context.Context, tripID string, currentOwnerID string, targetUserID string, oldOwnerNewRole string)) *MockTripService_TransferOwnership_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string), args[4].(string))
+	})
+	return _c
+}
+
+func (_c *MockTripService_TransferOwnership_Call) Return(_a0 *trip.Trip, _a1 error) *MockTripService_TransferOwnership_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockTripService_TransferOwnership_Call) RunAndReturn(run func(context.Context, string, string, string, string) (*trip.Trip, error)) *MockTripService_TransferOwnership_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateItineraryItem provides a mock function with given fields: ctx, tripID, itemID, userID, req
 func (_m *MockTripService) UpdateItineraryItem(ctx context.Context, tripID string, itemID string, userID string, req *trip.ItineraryItemRequest) (*trip.ItineraryItem, error) {
 	ret := _m.Called(ctx, tripID, itemID, userID, req)
