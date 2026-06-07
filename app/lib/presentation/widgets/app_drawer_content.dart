@@ -330,7 +330,6 @@ class AppDrawerContent extends StatelessWidget {
         if (!isActive) {
           await context.read<TripCubit>().setActiveTrip(trip.id);
           if (context.mounted) {
-            context.read<ItineraryCubit>().loadItinerary();
             context.read<MessageCubit>().reset();
             if (!isSidebar) Navigator.pop(context);
           }

@@ -23,6 +23,8 @@ import '../../cubits/settings/settings_cubit.dart';
 import '../../cubits/settings/settings_state.dart';
 import '../../cubits/tutorial/tutorial_cubit.dart';
 import '../../cubits/tutorial/tutorial_state.dart';
+import '../../cubits/gear/gear_cubit.dart';
+import '../../cubits/meal/meal_cubit.dart';
 
 import '../map/map_screen.dart';
 
@@ -172,6 +174,14 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
           listener: (context, state) {
             if (state is TripLoaded) {
               context.read<ItineraryCubit>().loadItinerary();
+              final activeTripId = state.activeTrip?.id;
+              if (activeTripId != null) {
+                context.read<GearCubit>().loadGear(activeTripId);
+                context.read<MealCubit>().loadMealPlans(activeTripId);
+              } else {
+                context.read<GearCubit>().reset();
+                context.read<MealCubit>().reset();
+              }
             }
           },
         ),
