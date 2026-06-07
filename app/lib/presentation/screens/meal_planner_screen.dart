@@ -5,8 +5,6 @@ import '../cubits/meal/meal_cubit.dart';
 import '../cubits/meal/meal_state.dart';
 import 'food_reference_screen.dart';
 import '../widgets/responsive_layout.dart';
-import '../cubits/trip/trip_cubit.dart';
-import '../cubits/trip/trip_state.dart';
 import '../utils/meal_utils.dart';
 import '../widgets/meal/meal_day_management_dialog.dart';
 import '../cubits/tutorial/tutorial_cubit.dart';
@@ -18,116 +16,91 @@ import '../widgets/meal/add_meal_dialog.dart';
 ///
 /// 顯示每日的餐點規劃，支援依餐別 (早餐、午餐、晚餐等) 新增與編輯食材。
 /// 自動計算總熱量與總重量。
-class MealPlannerScreen extends StatefulWidget {
+class MealPlannerScreen extends StatelessWidget {
   const MealPlannerScreen({super.key});
 
   @override
-  State<MealPlannerScreen> createState() => _MealPlannerScreenState();
-}
-
-class _MealPlannerScreenState extends State<MealPlannerScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final tripState = context.read<TripCubit>().state;
-        if (tripState is TripLoaded && tripState.activeTrip != null) {
-          context.read<MealCubit>().loadMealPlans(tripState.activeTrip!.id);
-        }
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocListener<TripCubit, TripState>(
-      listener: (context, tripState) {
-        if (tripState is TripLoaded && tripState.activeTrip != null) {
-          context.read<MealCubit>().loadMealPlans(tripState.activeTrip!.id);
+    return TutorialAwareMealBuilder(
+      builder: (context, dailyPlans) {
+        final isTutorial = context.watch<TutorialCubit>().state is TutorialActive;
+        final mealState = context.watch<MealCubit>().state;
+
+        if (!isTutorial && mealState is! MealLoaded) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-      },
-      child: TutorialAwareMealBuilder(
-        builder: (context, dailyPlans) {
-          final isTutorial = context.watch<TutorialCubit>().state is TutorialActive;
-          final mealState = context.watch<MealCubit>().state;
+        final cubit = context.read<MealCubit>();
 
-          if (!isTutorial && mealState is! MealLoaded) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          }
-          final cubit = context.read<MealCubit>();
-
-          if (dailyPlans.isEmpty) {
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('糧食計畫'),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.edit_calendar),
-                    tooltip: '管理天數',
+        if (dailyPlans.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('糧食計畫'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit_calendar),
+                  tooltip: '管理天數',
+                  onPressed: () => MealDayManagementDialog.show(context),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  tooltip: '參考資訊',
+                  onPressed: () => FoodReferenceScreen.show(context),
+                ),
+              ],
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.restaurant_menu, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text('尚未建立糧食計畫', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('管理天數'),
                     onPressed: () => MealDayManagementDialog.show(context),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.info_outline),
-                    tooltip: '參考資訊',
-                    onPressed: () => FoodReferenceScreen.show(context),
-                  ),
                 ],
-              ),
-              body: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.restaurant_menu, size: 64, color: Colors.grey),
-                    const SizedBox(height: 16),
-                    const Text('尚未建立糧食計畫', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('管理天數'),
-                      onPressed: () => MealDayManagementDialog.show(context),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          return DefaultTabController(
-            length: dailyPlans.length,
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text('糧食計畫'),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.edit_calendar),
-                    tooltip: '管理天數',
-                    onPressed: () => MealDayManagementDialog.show(context),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.info_outline),
-                    tooltip: '參考資訊',
-                    onPressed: () => FoodReferenceScreen.show(context),
-                  ),
-                ],
-                bottom: TabBar(
-                  isScrollable: true,
-                  indicatorWeight: 4.0,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
-                  tabs: dailyPlans.map((plan) => Tab(text: plan.dayInfo.name)).toList(),
-                ),
-              ),
-              body: TabBarView(
-                children: dailyPlans.map((plan) {
-                  return _DailyPlanView(plan: plan, cubit: cubit);
-                }).toList(),
               ),
             ),
           );
-        },
-      ),
+        }
+
+        return DefaultTabController(
+          length: dailyPlans.length,
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text('糧食計畫'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit_calendar),
+                  tooltip: '管理天數',
+                  onPressed: () => MealDayManagementDialog.show(context),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  tooltip: '參考資訊',
+                  onPressed: () => FoodReferenceScreen.show(context),
+                ),
+              ],
+              bottom: TabBar(
+                isScrollable: true,
+                indicatorWeight: 4.0,
+                indicatorSize: TabBarIndicatorSize.label,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.0),
+                tabs: dailyPlans.map((plan) => Tab(text: plan.dayInfo.name)).toList(),
+              ),
+            ),
+            body: TabBarView(
+              children: dailyPlans.map((plan) {
+                return _DailyPlanView(plan: plan, cubit: cubit);
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -75,21 +75,7 @@ class _GearTabState extends State<GearTab> {
     final mealState = context.watch<MealCubit>().state;
     final mealWeight = mealState is MealLoaded ? mealState.totalWeightKg : 0.0;
 
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<TripCubit, TripState>(
-          listener: (context, state) {
-            if (state is TripLoaded && widget.tripId == null) {
-              // If trip changes and we are tracking active trip, reload
-              final activeTripId = state.activeTrip?.id;
-              if (activeTripId != null && context.read<GearCubit>().currentTripId != activeTripId) {
-                context.read<GearCubit>().loadGear(activeTripId);
-              }
-            }
-          },
-        ),
-      ],
-      child: TutorialAwareGearBuilder(
+    return TutorialAwareGearBuilder(
         builder: (context, items) {
           final totalWeight = items.fold(0.0, (sum, item) => sum + item.totalWeight) / 1000 + mealWeight;
 
@@ -260,8 +246,7 @@ class _GearTabState extends State<GearTab> {
             ),
           );
         },
-      ),
-    );
+      );
   }
 
   Widget _buildEmptyState(BuildContext context) {
