@@ -72,6 +72,31 @@ List<String> members; // 儲存 User ID 列表
 | **Delete Trip**    | Guide           | 是成員 + 有 `trip.delete`     | ✅ Allow      |                                          |
 | **Manage Members** | Guide           | 是成員 + 有 `member.manage`   | ✅ Allow      | 邀請/移除成員                            |
 
+### 後端 API 操作權限對照表
+
+後端 `tripService` 統一封裝的成員權限檢查機制：
+
+| 功能模組 (Module)               | API 操作 (Operation)                  | 限制條件 (Constraint)                   | 允許角色 / 行為者 (Allowed Roles / Actor)                  | 後端檢查函式 (Backend Helper)                |
+| :------------------------------ | :------------------------------------ | :-------------------------------------- | :--------------------------------------------------------- | :------------------------------------------- |
+| **行程 (Trip)**                 | 建立行程 (CreateTrip)                 | 無限制                                  | 登入之全域使用者                                           | (無)                                         |
+|                                 | 讀取行程 (GetTrip)                    | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
+|                                 | 更新行程 (UpdateTrip)                 | 行程管理權限                            | 擁有者 (Owner)、Leader、Guide                              | `requireTripRole(leader, guide)`             |
+|                                 | 刪除行程 (DeleteTrip)                 | 必須為行程擁有者                        | 擁有者 (Owner)                                             | `requireTripOwner`                           |
+| **成員 (Members)**              | 列出成員 (ListMembers)                | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
+|                                 | 透過 Email 邀請 (InviteMemberByEmail) | 必須為行程擁有者                        | 擁有者 (Owner)                                             | `requireTripOwner`                           |
+|                                 | 新增成員 (AddMember)                  | 必須為行程擁有者                        | 擁有者 (Owner)                                             | `requireTripOwner`                           |
+|                                 | 移除成員 (RemoveMember)               | 必須為行程擁有者或自行退出              | 擁有者 (Owner) 可移除他人；任何成員均可自行退出            | `requireTripOwner` (移除他人) / 自主退出免檢 |
+|                                 | 批次新增成員 (BatchAddMembers)        | 必須為行程擁有者                        | 擁有者 (Owner)                                             | `requireTripOwner`                           |
+|                                 | 批次移除成員 (BatchRemoveMembers)     | 必須為行程擁有者                        | 擁有者 (Owner)                                             | `requireTripOwner`                           |
+| **行程表 (Itinerary)**          | 列出項目 (ListItinerary)              | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
+|                                 | 新增項目 (AddItineraryItem)           | 行程管理權限                            | 擁有者 (Owner)、Leader、Guide                              | `requireTripRole(leader, guide)`             |
+|                                 | 更新項目 (UpdateItineraryItem)        | 行程管理權限                            | 擁有者 (Owner)、Leader、Guide                              | `requireTripRole(leader, guide)`             |
+|                                 | 刪除項目 (DeleteItineraryItem)        | 行程管理權限                            | 擁有者 (Owner)、Leader、Guide                              | `requireTripRole(leader, guide)`             |
+| **糧食計畫天數 (MealPlanDays)** | 列出天數 (ListMealPlanDays)           | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
+|                                 | 新增天數 (AddMealPlanDay)             | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
+|                                 | 更新天數 (UpdateMealPlanDay)          | 必須為行程成員或擁有者                  | 擁有者 (Owner)、Leader、Guide、Member                      | `requireTripMember`                          |
+|                                 | 刪除天數 (DeleteMealPlanDay)          | 必須為行程成員或擁有者 + 未綁定行程天數 | 擁有者 (Owner)、Leader、Guide、Member (已綁定天數禁止刪除) | `requireTripMember`                          |
+
 ---
 
 ## 實作細節
@@ -151,15 +176,16 @@ bool canDeleteTripSync(UserProfile? user, Trip trip) {
 
 揪團內的使用者角色狀態分為以下五類，對應不同的操作權限：
 
-| 使用者狀態 (Status) | 可看公開內容/快照 | 可看私密留言 | 可讀寫留言/投票 | 動作 (Actions) |
-| :----------------- | :--------------- | :----------- | :-------------- | :------------- |
-| **團長/主辦人 (Host)** | ✅ (擁有者) | ✅ (擁有者) | ✅ (可管理) | 編輯/刪除揪團、審核申請、移除成員 |
-| **已加入成員 (Approved)** | ✅ | ✅ | ✅ (透過 `trip_members`) | 退出揪團、瀏覽共享行程細節 |
-| **審核中 (Pending)** | ✅ | ❌ | ❌ | 取消申請、等待審核 |
-| **再次申請 (Rejected)** | ✅ | ❌ | ❌ | 查看 `rejection_reason`、再次發送申請 |
-| **一般非成員 (Public)** | ✅ | ❌ | ❌ | 申請加入 |
+| 使用者狀態 (Status)       | 可看公開內容/快照 | 可看私密留言 | 可讀寫留言/投票          | 動作 (Actions)                        |
+| :------------------------ | :---------------- | :----------- | :----------------------- | :------------------------------------ |
+| **團長/主辦人 (Host)**    | ✅ (擁有者)       | ✅ (擁有者)  | ✅ (可管理)              | 編輯/刪除揪團、審核申請、移除成員     |
+| **已加入成員 (Approved)** | ✅                | ✅           | ✅ (透過 `trip_members`) | 退出揪團、瀏覽共享行程細節            |
+| **審核中 (Pending)**      | ✅                | ❌           | ❌                       | 取消申請、等待審核                    |
+| **再次申請 (Rejected)**   | ✅                | ❌           | ❌                       | 查看 `rejection_reason`、再次發送申請 |
+| **一般非成員 (Public)**   | ✅                | ❌           | ❌                       | 申請加入                              |
 
 #### 申請與審核狀態流轉
+
 ```mermaid
 stateDiagram-v2
     [*] --> Public: 未申請
@@ -172,7 +198,7 @@ stateDiagram-v2
 
 ### 5. 私密留言 (Private Message) 存取安全控制
 
-- **安全過濾 (Security Filtering)**: 
+- **安全過濾 (Security Filtering)**:
   - 私密留言 (e.g. 集合地點、詳細通訊群組連結等) 儲存於 `group_events.private_message` 欄位。
   - **後端安全防護**：後端在回傳 `GetGroupEventDetail` 的 API 響應時，**必須**進行權限過濾。若 `request.user_id` 不是該揪團的 `host_id`，且未存在於批准的申請人名單中，該欄位必須被過濾為空字串 `""` 或不回傳。
   - **前端 UI 防護**：前端 APP 會依據目前的使用者狀態動態顯示私密留言卡片，若未被批准，私密卡片應顯示「審核通過後方可查看」並呈現鎖定狀態。
