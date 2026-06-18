@@ -43,6 +43,8 @@ CREATE TABLE users (
     updated_by          UUID
 );
 
+CREATE INDEX idx_users_role_id ON users(role_id);
+
 -- 3.2 Core
 -- ============================================================
 
@@ -61,6 +63,8 @@ CREATE TABLE trips (
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_by  UUID         NOT NULL REFERENCES users(id)
 );
+
+CREATE INDEX idx_trips_user_id ON trips(user_id);
 
 CREATE TABLE trip_meal_plan_days (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -101,6 +105,8 @@ CREATE TABLE itinerary_items (
     updated_by    UUID             REFERENCES users(id)
 );
 
+CREATE INDEX idx_itinerary_items_trip_id ON itinerary_items(trip_id);
+
 CREATE TABLE messages (
     id         UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id    UUID        REFERENCES trips(id) ON DELETE CASCADE,
@@ -114,6 +120,10 @@ CREATE TABLE messages (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID        NOT NULL REFERENCES users(id)
 );
+
+CREATE INDEX idx_messages_trip_id   ON messages(trip_id);
+CREATE INDEX idx_messages_user_id   ON messages(user_id);
+CREATE INDEX idx_messages_parent_id ON messages(parent_id);
 
 -- 3.3 Gear
 -- ============================================================
@@ -132,6 +142,8 @@ CREATE TABLE gear_library_items (
     updated_by  UUID             NOT NULL REFERENCES users(id)
 );
 
+CREATE INDEX idx_gear_library_items_user_id ON gear_library_items(user_id);
+
 CREATE TABLE gear_items (
     id              UUID PRIMARY KEY DEFAULT uuidv7(),
     trip_id         UUID             REFERENCES trips(id) ON DELETE CASCADE,
@@ -148,6 +160,9 @@ CREATE TABLE gear_items (
     updated_by      UUID             REFERENCES users(id)
 );
 
+CREATE INDEX idx_gear_items_trip_id         ON gear_items(trip_id);
+CREATE INDEX idx_gear_items_library_item_id ON gear_items(library_item_id);
+
 CREATE TABLE meal_library_items (
     id          UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id     UUID             NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -161,6 +176,8 @@ CREATE TABLE meal_library_items (
     updated_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     updated_by  UUID             NOT NULL REFERENCES users(id)
 );
+
+CREATE INDEX idx_meal_library_items_user_id ON meal_library_items(user_id);
 
 CREATE TABLE meal_items (
     id              UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -178,6 +195,10 @@ CREATE TABLE meal_items (
     updated_at      TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
     updated_by      UUID             NOT NULL REFERENCES users(id)
 );
+
+CREATE INDEX idx_meal_items_trip_id          ON meal_items(trip_id);
+CREATE INDEX idx_meal_items_meal_plan_day_id ON meal_items(meal_plan_day_id);
+CREATE INDEX idx_meal_items_library_item_id  ON meal_items(library_item_id);
 
 CREATE TABLE templates (
     id           UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -204,6 +225,8 @@ CREATE TABLE template_gear_items (
     order_index INT
 );
 
+CREATE INDEX idx_template_gear_items_template_id ON template_gear_items(template_id);
+
 CREATE TABLE template_meal_items (
     id          UUID PRIMARY KEY DEFAULT uuidv7(),
     template_id UUID             NOT NULL REFERENCES templates(id) ON DELETE CASCADE,
@@ -215,6 +238,8 @@ CREATE TABLE template_meal_items (
     quantity    INT              NOT NULL DEFAULT 1,
     note        TEXT
 );
+
+CREATE INDEX idx_template_meal_items_template_id ON template_meal_items(template_id);
 
 -- 3.4 Polls
 -- ============================================================
@@ -236,6 +261,8 @@ CREATE TABLE polls (
     updated_by           UUID         NOT NULL REFERENCES users(id)
 );
 
+CREATE INDEX idx_polls_trip_id ON polls(trip_id);
+
 CREATE TABLE poll_options (
     id         UUID PRIMARY KEY DEFAULT uuidv7(),
     poll_id    UUID         NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
@@ -245,6 +272,8 @@ CREATE TABLE poll_options (
     updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_by UUID         NOT NULL REFERENCES users(id)
 );
+
+CREATE INDEX idx_poll_options_poll_id ON poll_options(poll_id);
 
 CREATE TABLE poll_votes (
     poll_id        UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
@@ -283,6 +312,9 @@ CREATE TABLE group_events (
     updated_by        UUID         NOT NULL REFERENCES users(id)
 );
 
+CREATE INDEX idx_group_events_host_id        ON group_events(host_id);
+CREATE INDEX idx_group_events_linked_trip_id ON group_events(linked_trip_id);
+
 CREATE TABLE group_event_applications (
     id               UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id         UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
@@ -296,6 +328,9 @@ CREATE TABLE group_event_applications (
     updated_by       UUID        NOT NULL REFERENCES users(id)
 );
 
+CREATE INDEX idx_group_event_applications_event_id ON group_event_applications(event_id);
+CREATE INDEX idx_group_event_applications_user_id  ON group_event_applications(user_id);
+
 CREATE TABLE group_event_comments (
     id         UUID PRIMARY KEY DEFAULT uuidv7(),
     event_id   UUID        NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
@@ -306,6 +341,9 @@ CREATE TABLE group_event_comments (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID        NOT NULL REFERENCES users(id)
 );
+
+CREATE INDEX idx_group_event_comments_event_id ON group_event_comments(event_id);
+CREATE INDEX idx_group_event_comments_user_id  ON group_event_comments(user_id);
 
 CREATE TABLE group_event_likes (
     event_id   UUID NOT NULL REFERENCES group_events(id) ON DELETE CASCADE,
