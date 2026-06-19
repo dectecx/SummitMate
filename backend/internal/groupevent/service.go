@@ -127,23 +127,34 @@ func (s *groupEventService) DeleteEvent(ctx context.Context, id string, userID s
 		return apperror.ErrEventAccessDenied
 	}
 
-	// 如果活動有連結行程，移除所有已加入成員的權限 (批次處理優化)
-	if existing.LinkedTripID != nil {
-		apps, err := s.repo.ListApplications(ctx, id)
-		if err == nil {
-			var memberIDs []string
-			for _, app := range apps {
-				if app.Status == ApplicationStatusApproved {
-					memberIDs = append(memberIDs, app.UserID)
+	err = database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		// 如果活動有連結行程，移除所有已加入成員的權限 (批次處理優化)
+		if existing.LinkedTripID != nil {
+			apps, err := s.repo.ListApplications(txCtx, id)
+			if err == nil {
+				var memberIDs []string
+				for _, app := range apps {
+					if app.Status == ApplicationStatusApproved {
+						memberIDs = append(memberIDs, app.UserID)
+					}
 				}
-			}
-			if len(memberIDs) > 0 {
-				_ = s.tripServ.BatchRemoveMembers(ctx, *existing.LinkedTripID, userID, memberIDs)
+				if len(memberIDs) > 0 {
+					if err := s.tripServ.BatchRemoveMembers(txCtx, *existing.LinkedTripID, userID, memberIDs); err != nil {
+						return err
+					}
+				}
+			} else {
+				return err
 			}
 		}
-	}
 
-	if err := s.repo.DeleteEvent(ctx, id); err != nil {
+		if err := s.repo.DeleteEvent(txCtx, id); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
 		s.logger.ErrorContext(ctx, "刪除活動失敗", "event_id", id, "user_id", userID, "error", err)
 		return err
 	}
