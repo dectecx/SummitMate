@@ -178,8 +178,10 @@ class SyncEngine implements ISyncEngine {
             pushedCount++;
             final migration = res.value;
             if (migration != null) {
-              await _tripRepo.updateLocalTripId(migration.tempId, migration.permanentId);
-              await _db.markAsSynced('trips_table', migration.permanentId);
+              await _db.transaction(() async {
+                await _tripRepo.updateLocalTripId(migration.tempId, migration.permanentId);
+                await _db.markAsSynced('trips_table', migration.permanentId);
+              });
               idMigrationsCount++;
             } else {
               if (trip.syncStatus != SyncStatus.pendingDelete) {
@@ -211,8 +213,10 @@ class SyncEngine implements ISyncEngine {
           pushedCount++;
           final migration = res.value;
           if (migration != null) {
-            await _itineraryRepo.updateLocalId(migration.tempId, migration.permanentId);
-            await _db.markAsSynced('itinerary_items_table', migration.permanentId);
+            await _db.transaction(() async {
+              await _itineraryRepo.updateLocalId(migration.tempId, migration.permanentId);
+              await _db.markAsSynced('itinerary_items_table', migration.permanentId);
+            });
             idMigrationsCount++;
           } else {
             if (item.syncStatus != SyncStatus.pendingDelete) {
@@ -243,8 +247,10 @@ class SyncEngine implements ISyncEngine {
           pushedCount++;
           final migration = res.value;
           if (migration != null) {
-            await _gearRepo.updateLocalId(migration.tempId, migration.permanentId);
-            await _db.markAsSynced('gear_items_table', migration.permanentId);
+            await _db.transaction(() async {
+              await _gearRepo.updateLocalId(migration.tempId, migration.permanentId);
+              await _db.markAsSynced('gear_items_table', migration.permanentId);
+            });
             idMigrationsCount++;
           } else {
             if (item.syncStatus != SyncStatus.pendingDelete) {
@@ -496,44 +502,33 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Stream<int> watchPendingSyncCount() {
-    final tripStream = _db
-        .customSelect("SELECT COUNT(*) AS count FROM trips_table WHERE sync_status != 'synced'")
-        .watchSingle()
-        .map((row) => row.read<int>('count'));
-
-    final itineraryStream = _db
-        .customSelect("SELECT COUNT(*) AS count FROM itinerary_items_table WHERE sync_status != 'synced'")
-        .watchSingle()
-        .map((row) => row.read<int>('count'));
-
-    final gearStream = _db
-        .customSelect("SELECT COUNT(*) AS count FROM gear_items_table WHERE sync_status != 'synced'")
-        .watchSingle()
-        .map((row) => row.read<int>('count'));
-
-    final messageStream = _db
-        .customSelect("SELECT COUNT(*) AS count FROM messages_table WHERE sync_status != 'synced'")
-        .watchSingle()
-        .map((row) => row.read<int>('count'));
-
-    final eventStream = _db
-        .customSelect("SELECT COUNT(*) AS count FROM group_events_table WHERE sync_status != 'synced'")
-        .watchSingle()
-        .map((row) => row.read<int>('count'));
-
-    final applicationStream = _db
-        .customSelect("SELECT COUNT(*) AS count FROM group_event_applications_table WHERE sync_status != 'synced'")
-        .watchSingle()
-        .map((row) => row.read<int>('count'));
-
-    return CombineLatestStream.list<int>([
-      tripStream,
-      itineraryStream,
-      gearStream,
-      messageStream,
-      eventStream,
-      applicationStream,
-    ]).map((counts) => counts.fold<int>(0, (sum, count) => sum + count));
+    // 使用單一 UNION ALL 查詢取代 6 個獨立 Stream，避免大量同步時產生並發查詢風暴。
+    // readsFrom 聲明所有涉及的表，讓 Drift 在任一表格變更時觸發重新查詢（單次 I/O）。
+    return _db.customSelect(
+      '''
+      SELECT SUM(cnt) AS total FROM (
+        SELECT COUNT(*) AS cnt FROM trips_table                    WHERE sync_status != 'synced'
+        UNION ALL
+        SELECT COUNT(*) AS cnt FROM itinerary_items_table          WHERE sync_status != 'synced'
+        UNION ALL
+        SELECT COUNT(*) AS cnt FROM gear_items_table               WHERE sync_status != 'synced'
+        UNION ALL
+        SELECT COUNT(*) AS cnt FROM messages_table                 WHERE sync_status != 'synced'
+        UNION ALL
+        SELECT COUNT(*) AS cnt FROM group_events_table             WHERE sync_status != 'synced'
+        UNION ALL
+        SELECT COUNT(*) AS cnt FROM group_event_applications_table WHERE sync_status != 'synced'
+      )
+      ''',
+      readsFrom: {
+        _db.tripsTable,
+        _db.itineraryItemsTable,
+        _db.gearItemsTable,
+        _db.messagesTable,
+        _db.groupEventsTable,
+        _db.groupEventApplicationsTable,
+      },
+    ).watchSingle().map((row) => row.read<int>('total'));
   }
 
   @override
