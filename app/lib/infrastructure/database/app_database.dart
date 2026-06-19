@@ -58,6 +58,15 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (details) async {
+      // SQLite 預設不啟用外鍵約束，必須在每次連線後明確開啟。
+      // 使用 beforeOpen 可確保在 transaction 外執行（PRAGMA 不可在 transaction 內更改）。
+      await customStatement('PRAGMA foreign_keys = ON;');
+    },
+  );
+
   /// 清除所有資料
   Future<void> clearAllData() async {
     await transaction(() async {
