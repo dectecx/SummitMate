@@ -26,9 +26,14 @@ tags:
 
 paths:
   /health:
+    servers:
+      - url: http://localhost:8080
+        description: 根路徑健康檢查 (不含 /api/v1 前綴，供負載平衡器 / Cloud Run 探針使用)
     get:
       summary: Health Check
-      description: 檢查 API 服務是否正常運作
+      description: |
+        檢查 API 服務是否正常運作。
+        此端點同時掛載於根路徑 `/health` (免驗證，供基礎設施健康探針) 以及 API 版本前綴下的 `/api/v1/health`。
       operationId: getHealth
       tags:
         - system
@@ -110,14 +115,16 @@ paths:
       responses:
         "200":
           description: 驗證成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationMessageResponse"
         "400":
           description: 驗證碼錯誤或無效
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "501":
-          description: 功能尚未實作
 
   /auth/resend-verification:
     post:
@@ -135,8 +142,10 @@ paths:
       responses:
         "200":
           description: 重發成功
-        "501":
-          description: 功能尚未實作
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationMessageResponse"
 
   /auth/me:
     get:
@@ -2860,6 +2869,16 @@ components:
         version:
           type: string
           example: 0.1.0
+
+    OperationMessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: 操作結果的提示訊息
+          example: 驗證成功
 
     ErrorResponse:
       type: object
