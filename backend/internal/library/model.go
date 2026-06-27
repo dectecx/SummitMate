@@ -22,7 +22,7 @@ type MealLibraryItem struct {
 	ID          string    `json:"id" db:"id"`
 	UserID      string    `json:"user_id" db:"user_id"`
 	Name        string    `json:"name" db:"name"`
-	Calories    int       `json:"calories" db:"calories"`
+	Calories    float64   `json:"calories" db:"calories"`
 	Weight      float64   `json:"weight" db:"weight"`
 	Category    string    `json:"category" db:"category"`
 	Ingredients []string  `json:"ingredients" db:"ingredients"`

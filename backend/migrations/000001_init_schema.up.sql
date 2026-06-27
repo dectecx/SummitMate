@@ -179,6 +179,8 @@ CREATE TABLE meal_library_items (
     name        VARCHAR(200)     NOT NULL,
     weight      DOUBLE PRECISION NOT NULL DEFAULT 0,
     calories    DOUBLE PRECISION NOT NULL DEFAULT 0,
+    category    VARCHAR(50)      NOT NULL DEFAULT 'Other',
+    ingredients TEXT[]           NOT NULL DEFAULT '{}',
     notes       TEXT,
     is_archived BOOLEAN          NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMPTZ      NOT NULL DEFAULT NOW(),

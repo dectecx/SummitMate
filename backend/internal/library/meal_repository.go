@@ -28,13 +28,13 @@ func NewMealLibraryRepository(db database.DB) MealLibraryRepository {
 
 func (repo *mealLibraryRepository) Create(ctx context.Context, item *MealLibraryItem) (*MealLibraryItem, error) {
 	query := `
-		INSERT INTO meal_library_items (user_id, name, weight, calories, notes, is_archived, created_by, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
+		INSERT INTO meal_library_items (user_id, name, weight, calories, category, ingredients, notes, is_archived, created_by, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		RETURNING id, user_id, name, weight, calories, category, ingredients, notes, is_archived, created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query,
-		item.UserID, item.Name, item.Weight, item.Calories, item.Notes, item.IsArchived, item.CreatedBy, item.UpdatedBy,
+		item.UserID, item.Name, item.Weight, item.Calories, item.Category, item.Ingredients, item.Notes, item.IsArchived, item.CreatedBy, item.UpdatedBy,
 	)
 
 	it, err := repo.scanItem(row)
@@ -46,7 +46,7 @@ func (repo *mealLibraryRepository) Create(ctx context.Context, item *MealLibrary
 
 func (repo *mealLibraryRepository) GetByID(ctx context.Context, id string, userID string) (*MealLibraryItem, error) {
 	query := `
-		SELECT id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
+		SELECT id, user_id, name, weight, calories, category, ingredients, notes, is_archived, created_at, created_by, updated_at, updated_by
 		FROM meal_library_items
 		WHERE id = $1 AND user_id = $2
 	`
@@ -84,7 +84,7 @@ func (repo *mealLibraryRepository) ListByUserID(ctx context.Context, userID stri
 
 	dataArgs := append(args, limit, (page-1)*limit)
 	mainQuery := fmt.Sprintf(`
-		SELECT id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
+		SELECT id, user_id, name, weight, calories, category, ingredients, notes, is_archived, created_at, created_by, updated_at, updated_by
 		FROM meal_library_items
 		%s
 		ORDER BY created_at DESC, id DESC
@@ -115,13 +115,13 @@ func (repo *mealLibraryRepository) ListByUserID(ctx context.Context, userID stri
 func (repo *mealLibraryRepository) Update(ctx context.Context, item *MealLibraryItem) (*MealLibraryItem, error) {
 	query := `
 		UPDATE meal_library_items
-		SET name = $1, weight = $2, calories = $3, notes = $4, is_archived = $5, updated_at = NOW(), updated_by = $6
-		WHERE id = $7 AND user_id = $8
-		RETURNING id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by
+		SET name = $1, weight = $2, calories = $3, category = $4, ingredients = $5, notes = $6, is_archived = $7, updated_at = NOW(), updated_by = $8
+		WHERE id = $9 AND user_id = $10
+		RETURNING id, user_id, name, weight, calories, category, ingredients, notes, is_archived, created_at, created_by, updated_at, updated_by
 	`
 	db := database.GetQuerier(ctx, repo.db)
 	row := db.QueryRow(ctx, query,
-		item.Name, item.Weight, item.Calories, item.Notes, item.IsArchived, item.UpdatedBy, item.ID, item.UserID,
+		item.Name, item.Weight, item.Calories, item.Category, item.Ingredients, item.Notes, item.IsArchived, item.UpdatedBy, item.ID, item.UserID,
 	)
 
 	it, err := repo.scanItem(row)
@@ -160,12 +160,12 @@ func (repo *mealLibraryRepository) ReplaceAll(ctx context.Context, userID string
 	}
 
 	query := `
-		INSERT INTO meal_library_items (id, user_id, name, weight, calories, notes, is_archived, created_at, created_by, updated_at, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8, NOW()), $9, COALESCE($10, NOW()), $11)
+		INSERT INTO meal_library_items (id, user_id, name, weight, calories, category, ingredients, notes, is_archived, created_at, created_by, updated_at, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE($10, NOW()), $11, COALESCE($12, NOW()), $13)
 	`
 	for _, item := range items {
 		_, err := tx.Exec(ctx, query,
-			item.ID, userID, item.Name, item.Weight, item.Calories, item.Notes, item.IsArchived, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
+			item.ID, userID, item.Name, item.Weight, item.Calories, item.Category, item.Ingredients, item.Notes, item.IsArchived, item.CreatedAt, item.CreatedBy, item.UpdatedAt, item.UpdatedBy,
 		)
 		if err != nil {
 			return fmt.Errorf("replace all meal library (insert phase) item %s for user %s: %w", item.ID, userID, err)
@@ -179,6 +179,7 @@ func (repo *mealLibraryRepository) scanItem(row pgx.Row) (*MealLibraryItem, erro
 	var i MealLibraryItem
 	err := row.Scan(
 		&i.ID, &i.UserID, &i.Name, &i.Weight, &i.Calories,
+		&i.Category, &i.Ingredients,
 		&i.Notes, &i.IsArchived,
 		&i.CreatedAt, &i.CreatedBy, &i.UpdatedAt, &i.UpdatedBy,
 	)
