@@ -40,6 +40,7 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
   @override
   Widget build(BuildContext context) {
     final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return BlocProvider(
       create: (_) => getIt<GroupEventCommentCubit>(param1: widget.eventId)..loadComments(),
@@ -78,17 +79,21 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
 
             if (isOffline)
               Container(
-                color: Colors.orange.shade50,
+                color: colorScheme.tertiaryContainer,
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 width: double.infinity,
                 child: Row(
                   children: [
-                    Icon(Icons.wifi_off_rounded, size: 16, color: Colors.orange.shade800),
+                    Icon(Icons.wifi_off_rounded, size: 16, color: colorScheme.onTertiaryContainer),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '離線模式中，無法發送或刪除留言',
-                        style: TextStyle(color: Colors.orange.shade900, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: colorScheme.onTertiaryContainer,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -100,9 +105,13 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
               child: BlocConsumer<GroupEventCommentCubit, GroupEventCommentState>(
                 listener: (context, state) {
                   if (state is GroupEventCommentError) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(state.message), backgroundColor: Colors.red));
+                    final cs = Theme.of(context).colorScheme;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message, style: TextStyle(color: cs.onErrorContainer)),
+                        backgroundColor: cs.errorContainer,
+                      ),
+                    );
                   }
                 },
                 builder: (context, state) {
@@ -225,8 +234,12 @@ class _GroupEventCommentSheetState extends State<GroupEventCommentSheet> {
 
   void _confirmDelete(BuildContext context, GroupEventComment comment) {
     if (context.read<ConnectivityCubit>().state.isOffline) {
+      final cs = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ 離線模式下無法刪除留言'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('⚠️ 離線模式下無法刪除留言', style: TextStyle(color: cs.onErrorContainer)),
+          backgroundColor: cs.errorContainer,
+        ),
       );
       return;
     }
@@ -306,8 +319,12 @@ class _CommentItem extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: OfflineGate(
                       onOfflineTap: () {
+                        final cs = Theme.of(context).colorScheme;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('⚠️ 離線模式下無法刪除留言'), backgroundColor: Colors.red),
+                          SnackBar(
+                            content: Text('⚠️ 離線模式下無法刪除留言', style: TextStyle(color: cs.onErrorContainer)),
+                            backgroundColor: cs.errorContainer,
+                          ),
                         );
                       },
                       child: InkWell(
