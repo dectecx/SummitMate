@@ -44,6 +44,21 @@ class _MessageListScreenState extends State<MessageListScreen> {
             }
           },
         ),
+        BlocListener<MessageCubit, MessageState>(
+          listenWhen: (prev, curr) {
+            if (curr is! MessageLoaded || curr.transientError == null) return false;
+            if (prev is! MessageLoaded) return true;
+            return prev.transientError != curr.transientError;
+          },
+          listener: (context, state) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text((state as MessageLoaded).transientError!),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          },
+        ),
       ],
       child: BlocBuilder<ConnectivityCubit, ConnectivityState>(
         builder: (context, connectivityState) {
