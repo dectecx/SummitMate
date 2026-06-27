@@ -23,6 +23,7 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<int>? _pendingCountSubscription;
   DateTime? _lastSyncTime;
+  bool _syncInProgress = false;
 
   void _init() {
     _initLastSyncTime();
@@ -122,6 +123,11 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
   ///
   /// [force] 是否強制執行同步 (忽略節流與最小間隔)
   Future<void> syncAll({bool force = false}) async {
+    if (_syncInProgress) {
+      LogService.info('Sync already in progress, skipping.', source: _source);
+      return;
+    }
+
     if (_connectivityService.isOffline) {
       safeEmit(
         SyncFailure(
@@ -134,6 +140,7 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
       return;
     }
 
+    _syncInProgress = true;
     safeEmit(SyncInProgress(message: '正在同步資料...', pendingCount: state.pendingCount, isOnline: state.isOnline));
     LogService.info('Starting syncAll...', source: _source);
 
@@ -185,6 +192,8 @@ class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
           isOnline: state.isOnline,
         ),
       );
+    } finally {
+      _syncInProgress = false;
     }
   }
 
