@@ -139,7 +139,7 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
                   const Icon(Icons.people, size: 14, color: Colors.grey),
                   const SizedBox(width: 4),
                   Text(
-                    isGuest ? '?/?' : '${event.applicationCount}/${event.maxMembers}',
+                    isGuest ? '?/?' : '${event.applicationCount}/${event.maxMembers == 0 ? '不限' : event.maxMembers}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
 

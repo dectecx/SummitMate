@@ -31,7 +31,7 @@ class InfoGrid extends StatelessWidget {
               _buildVerticalDivider(context),
               _buildInfoItem(context, Icons.location_on_rounded, location.isNotEmpty ? location : '未指定', '地點'),
               _buildVerticalDivider(context),
-              _buildInfoItem(context, Icons.people_rounded, '$maxMembers', '預計人數'),
+              _buildInfoItem(context, Icons.people_rounded, maxMembers == 0 ? '不限' : '$maxMembers', '預計人數'),
             ],
           ),
           const SizedBox(height: 12),

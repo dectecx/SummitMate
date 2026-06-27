@@ -223,12 +223,16 @@ class _CreateGroupEventScreenState extends State<CreateGroupEventScreen> {
                       // 招募人數
                       TextFormField(
                         controller: _maxMembersController,
-                        decoration: const InputDecoration(labelText: '招募人數 *', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(
+                          labelText: '預計招收人數 *',
+                          helperText: '輸入 0 表示不限人數；此為預計人數，非報名上限',
+                          border: OutlineInputBorder(),
+                        ),
                         keyboardType: TextInputType.number,
                         validator: (value) {
                           final num = int.tryParse(value ?? '');
-                          if (num == null || num < 1) {
-                            return '請輸入有效人數';
+                          if (num == null || num < 0) {
+                            return '請輸入有效人數（0 表示不限）';
                           }
                           return null;
                         },

@@ -4028,6 +4028,7 @@ components:
           enum: [open, full, completed, cancelled]
         max_members:
           type: integer
+          description: 預計招收人數，0 代表不限人數（非硬性上限）
         approval_required:
           type: boolean
         private_message:
@@ -4104,7 +4105,8 @@ components:
           nullable: true
         max_members:
           type: integer
-          default: 10
+          default: 0
+          description: 預計招收人數，0 代表不限人數（非硬性上限）
         approval_required:
           type: boolean
           default: false

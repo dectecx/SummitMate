@@ -314,7 +314,7 @@ CREATE TABLE group_events (
     start_date        DATE         NOT NULL,
     end_date          DATE,
     status            VARCHAR(20)  NOT NULL DEFAULT 'open',
-    max_members       INT          NOT NULL DEFAULT 10,
+    max_members       INT          NOT NULL DEFAULT 0,
     approval_required BOOLEAN      NOT NULL DEFAULT FALSE,
     private_message   TEXT         NOT NULL DEFAULT '',
     linked_trip_id    UUID         REFERENCES trips(id) ON DELETE SET NULL,
