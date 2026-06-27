@@ -55,12 +55,14 @@ type Config struct {
 
 	AllowedOrigins []string
 
-	SMTPHost   string
-	SMTPPort   string
-	SMTPUser   string
-	SMTPPass   string
-	SMTPFrom   string
-	SMTPUseSSL bool
+	SMTPHost          string
+	SMTPPort          string
+	SMTPUser          string
+	SMTPPass          string
+	SMTPFrom          string
+	SMTPUseSSL        bool
+	SMTPWorkerCount   int
+	SMTPQueueCapacity int
 
 	CacheType     string
 	RedisAddr     string
@@ -110,12 +112,14 @@ func Load() *Config {
 
 		AllowedOrigins: getEnvAsSlice("ALLOWED_ORIGINS", defaultOrigins),
 
-		SMTPHost:   getEnv("SMTP_HOST", "smtp.gmail.com"),
-		SMTPPort:   getEnv("SMTP_PORT", "587"),
-		SMTPUser:   getEnv("SMTP_USER", ""),
-		SMTPPass:   getEnv("SMTP_PASS", ""),
-		SMTPFrom:   getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
-		SMTPUseSSL: getEnv("SMTP_USE_SSL", "false") == "true",
+		SMTPHost:          getEnv("SMTP_HOST", "smtp.gmail.com"),
+		SMTPPort:          getEnv("SMTP_PORT", "587"),
+		SMTPUser:          getEnv("SMTP_USER", ""),
+		SMTPPass:          getEnv("SMTP_PASS", ""),
+		SMTPFrom:          getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
+		SMTPUseSSL:        getEnv("SMTP_USE_SSL", "false") == "true",
+		SMTPWorkerCount:   getEnvAsInt("SMTP_WORKER_COUNT", 3),
+		SMTPQueueCapacity: getEnvAsInt("SMTP_QUEUE_CAPACITY", 50),
 
 		CacheType:     getEnv("CACHE_TYPE", "memory"),
 		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),

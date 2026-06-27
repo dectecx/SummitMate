@@ -165,13 +165,12 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 
 	// 非同步發送驗證信 (檢查旗標)
 	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
-		go func() {
-			mailCtx, cancel := context.WithTimeout(context.Background(), svc.durations.MailSendTimeout)
-			defer cancel()
-			if err := svc.emailService.SendVerificationCode(mailCtx, createdUser.Email, code, 10); err != nil {
-				svc.logger.Error("發送驗證信失敗", "user_id", createdUser.ID, "error", err)
-			}
-		}()
+		submitted := svc.emailService.SubmitAsync(svc.durations.MailSendTimeout, func(mailCtx context.Context) error {
+			return svc.emailService.SendVerificationCode(mailCtx, createdUser.Email, code, 10)
+		})
+		if !submitted {
+			svc.logger.Warn("mail queue full, verification email dropped", "user_id", createdUser.ID)
+		}
 	} else if !svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		svc.logger.Info("發送驗證信已停用 (旗標控制)", "email", createdUser.Email, "code", code)
 	}
@@ -260,13 +259,12 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 	}
 
 	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
-		go func() {
-			mailCtx, cancel := context.WithTimeout(context.Background(), svc.durations.MailSendTimeout)
-			defer cancel()
-			if err := svc.emailService.SendVerificationCode(mailCtx, user.Email, code, 10); err != nil {
-				svc.logger.Error("重發驗證信失敗", "user_id", user.ID, "error", err)
-			}
-		}()
+		submitted := svc.emailService.SubmitAsync(svc.durations.MailSendTimeout, func(mailCtx context.Context) error {
+			return svc.emailService.SendVerificationCode(mailCtx, user.Email, code, 10)
+		})
+		if !submitted {
+			svc.logger.Warn("mail queue full, resend verification email dropped", "user_id", user.ID)
+		}
 	} else if !svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		svc.logger.Info("重發驗證信已停用 (旗標控制)", "email", user.Email, "code", code)
 	}

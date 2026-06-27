@@ -38,11 +38,12 @@ import (
 )
 
 type App struct {
-	Config    *config.Config
-	Logger    *slog.Logger
-	Pool      *pgxpool.Pool
-	Server    *http.Server
-	AuthCache cache.Cache[string]
+	Config       *config.Config
+	Logger       *slog.Logger
+	Pool         *pgxpool.Pool
+	Server       *http.Server
+	AuthCache    cache.Cache[string]
+	EmailService *email.EmailService
 }
 
 func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
@@ -144,8 +145,12 @@ func (a *App) Run() error {
 	return nil
 }
 
-// releaseResources 釋放 App 持有的外部資源（DB pool、cache 等）。
+// releaseResources 釋放 App 持有的外部資源（DB pool、cache、mail worker 等）。
 func (a *App) releaseResources() {
+	if a.EmailService != nil {
+		a.EmailService.Shutdown()
+	}
+
 	if a.AuthCache != nil {
 		if err := a.AuthCache.Close(); err != nil {
 			a.Logger.Error("Failed to close auth cache", "error", err)
@@ -238,7 +243,9 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize email template manager: %w", err)
 	}
-	emailService := email.NewEmailService(mailer, templateManager)
+	mailWorkerPool := email.NewWorkerPool(cfg.SMTPWorkerCount, cfg.SMTPQueueCapacity, logger)
+	emailService := email.NewEmailServiceWithPool(mailer, templateManager, mailWorkerPool, logger)
+	a.EmailService = emailService
 
 	authCache, err := cache.NewCache[string](cache.Config{
 		Type:          cache.Provider(cfg.CacheType),

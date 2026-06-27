@@ -77,6 +77,12 @@ func (m *smtpMailer) Send(ctx context.Context, to []string, subject, body string
 		}
 		defer conn.Close()
 
+		if deadline, ok := ctx.Deadline(); ok {
+			if err := conn.SetDeadline(deadline); err != nil {
+				return fmt.Errorf("set deadline: %w", err)
+			}
+		}
+
 		c, err := smtp.NewClient(conn, m.config.Host)
 		if err != nil {
 			return fmt.Errorf("smtp new client: %w", err)
@@ -122,6 +128,12 @@ func (m *smtpMailer) Send(ctx context.Context, to []string, subject, body string
 		return fmt.Errorf("smtp dial: %w", err)
 	}
 	defer conn.Close()
+
+	if deadline, ok := ctx.Deadline(); ok {
+		if err := conn.SetDeadline(deadline); err != nil {
+			return fmt.Errorf("set deadline: %w", err)
+		}
+	}
 
 	c, err := smtp.NewClient(conn, m.config.Host)
 	if err != nil {
