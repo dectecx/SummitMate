@@ -129,22 +129,35 @@ class _GearTabState extends State<GearTab> {
 
                   // 列表內容
                   Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      children: [
-                        const GearQuickLinks(),
-                        const SizedBox(height: 8),
-                        GearTotalWeightCard(totalWeight: totalWeight),
-                        const SizedBox(height: 8),
-                        GearMealCard(mealWeight: mealWeight),
-                        const SizedBox(height: 16),
-                        if (items.isEmpty)
-                          _buildEmptyState(context)
-                        else
-                          ...itemsByCategory.entries.map(
-                            (entry) => GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                          sliver: SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                const GearQuickLinks(),
+                                const SizedBox(height: 8),
+                                GearTotalWeightCard(totalWeight: totalWeight),
+                                const SizedBox(height: 8),
+                                GearMealCard(mealWeight: mealWeight),
+                              ],
+                            ),
                           ),
-                        const SizedBox(height: 80),
+                        ),
+                        if (items.isEmpty)
+                          SliverToBoxAdapter(child: _buildEmptyState(context))
+                        else
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            sliver: SliverMainAxisGroup(
+                              slivers: [
+                                for (final entry in itemsByCategory.entries)
+                                  GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                              ],
+                            ),
+                          ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 80)),
                       ],
                     ),
                   ),
@@ -198,17 +211,25 @@ class _GearTabState extends State<GearTab> {
                             const VerticalDivider(width: 1),
                             // 右側裝備列表
                             Expanded(
-                              child: ListView(
-                                padding: const EdgeInsets.all(16),
-                                children: [
+                              child: CustomScrollView(
+                                slivers: [
                                   if (items.isEmpty)
-                                    _buildEmptyState(context)
+                                    SliverToBoxAdapter(child: _buildEmptyState(context))
                                   else
-                                    ...itemsByCategory.entries.map(
-                                      (entry) =>
-                                          GearCategorySection(category: entry.key, items: entry.value, mode: _mode),
+                                    SliverPadding(
+                                      padding: const EdgeInsets.all(16),
+                                      sliver: SliverMainAxisGroup(
+                                        slivers: [
+                                          for (final entry in itemsByCategory.entries)
+                                            GearCategorySection(
+                                              category: entry.key,
+                                              items: entry.value,
+                                              mode: _mode,
+                                            ),
+                                        ],
+                                      ),
                                     ),
-                                  const SizedBox(height: 80),
+                                  const SliverToBoxAdapter(child: SizedBox(height: 80)),
                                 ],
                               ),
                             ),
