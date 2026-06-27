@@ -112,6 +112,24 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.Equal(t, userID, w.Body.String())
 	})
 
+	t.Run("Given refresh token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
+		userID := "user-12345-uuid"
+		email := "test@example.com"
+		tokenStr, err := tokenManager.GenerateToken(userID, email, "refresh", time.Hour)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/private", nil)
+		ctx := context.WithValue(req.Context(), api.BearerAuthScopes, []string{})
+		req = req.WithContext(ctx)
+		req.Header.Set("Authorization", "Bearer "+tokenStr)
+		w := httptest.NewRecorder()
+
+		handlerToTest.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+		assert.Contains(t, w.Body.String(), "Token 類型錯誤")
+	})
+
 	t.Run("Given blacklisted token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
 		memoryCache := cache.NewMemoryCache[string]()
 		middlewareWithCache := JWTAuth(tokenManager, memoryCache)
