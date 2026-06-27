@@ -95,26 +95,38 @@ func (r *gearSetRepository) GetByID(ctx context.Context, id uuid.UUID) (*GearSet
 
 	qItems := `SELECT id, gear_set_id, name, category, weight, quantity, order_index FROM gear_set_items WHERE gear_set_id = $1 ORDER BY order_index ASC`
 	rows, err := db.Query(ctx, qItems, id)
-	if err == nil {
-		for rows.Next() {
-			var it GearSetItem
-			if err := rows.Scan(&it.ID, &it.GearSetID, &it.Name, &it.Category, &it.Weight, &it.Quantity, &it.OrderIndex); err == nil {
-				gs.Items = append(gs.Items, it)
-			}
+	if err != nil {
+		return nil, fmt.Errorf("failed to query gear set items: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var it GearSetItem
+		if err := rows.Scan(&it.ID, &it.GearSetID, &it.Name, &it.Category, &it.Weight, &it.Quantity, &it.OrderIndex); err != nil {
+			return nil, fmt.Errorf("failed to scan gear set item: %w", err)
 		}
-		rows.Close()
+		gs.Items = append(gs.Items, it)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate gear set items: %w", err)
 	}
 
 	qMeals := `SELECT id, gear_set_id, day, meal_type, name, calories, note FROM gear_set_meals WHERE gear_set_id = $1`
 	mrows, err := db.Query(ctx, qMeals, id)
-	if err == nil {
-		for mrows.Next() {
-			var m GearSetMeal
-			if err := mrows.Scan(&m.ID, &m.GearSetID, &m.Day, &m.MealType, &m.Name, &m.Calories, &m.Note); err == nil {
-				gs.Meals = append(gs.Meals, m)
-			}
+	if err != nil {
+		return nil, fmt.Errorf("failed to query gear set meals: %w", err)
+	}
+	defer mrows.Close()
+
+	for mrows.Next() {
+		var m GearSetMeal
+		if err := mrows.Scan(&m.ID, &m.GearSetID, &m.Day, &m.MealType, &m.Name, &m.Calories, &m.Note); err != nil {
+			return nil, fmt.Errorf("failed to scan gear set meal: %w", err)
 		}
-		mrows.Close()
+		gs.Meals = append(gs.Meals, m)
+	}
+	if err := mrows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate gear set meals: %w", err)
 	}
 
 	return &gs, nil
@@ -244,6 +256,9 @@ func (r *gearSetRepository) List(ctx context.Context, limit, offset int, search 
 			return nil, 0, fmt.Errorf("failed to scan gear set: %w", err)
 		}
 		sets = append(sets, &gs)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("failed to iterate gear sets: %w", err)
 	}
 
 	if len(sets) == 0 {
