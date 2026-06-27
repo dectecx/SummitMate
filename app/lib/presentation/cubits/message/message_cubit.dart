@@ -45,7 +45,8 @@ class MessageCubit extends Cubit<MessageState> {
     final messages = await _repository.getByTripId(currentTripId);
 
     if (state is MessageLoaded) {
-      emit((state as MessageLoaded).copyWith(allMessages: messages));
+      // 明確清除 transientError，避免舊錯誤在刷新後殘留
+      emit((state as MessageLoaded).copyWith(allMessages: messages, transientError: null));
     } else {
       emit(MessageLoaded(allMessages: messages));
     }
@@ -91,8 +92,10 @@ class MessageCubit extends Cubit<MessageState> {
       await syncMessages(isAuto: true);
     } catch (e) {
       LogService.error('Add message failed: $e', source: _source);
-      emit(MessageError(AppErrorHandler.getUserMessage(e)));
       await _refreshLocalMessages();
+      if (state is MessageLoaded) {
+        emit((state as MessageLoaded).copyWith(transientError: AppErrorHandler.getUserMessage(e)));
+      }
     }
   }
 
@@ -111,8 +114,10 @@ class MessageCubit extends Cubit<MessageState> {
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Delete message failed: $e', source: _source);
-      emit(MessageError(AppErrorHandler.getUserMessage(e)));
       await _refreshLocalMessages();
+      if (state is MessageLoaded) {
+        emit((state as MessageLoaded).copyWith(transientError: AppErrorHandler.getUserMessage(e)));
+      }
     }
   }
 
