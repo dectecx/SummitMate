@@ -184,7 +184,12 @@ func (h *TripHandler) ListTripMembers(w http.ResponseWriter, r *http.Request, tr
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, members)
+	resp := make([]api.TripMemberListItemResponse, 0, len(members))
+	for _, m := range members {
+		resp = append(resp, ToTripMemberListItemResponse(m))
+	}
+
+	apiutil.SendJSON(w, http.StatusOK, resp)
 }
 
 // AddTripMember 邀請成員加入行程 (POST /trips/{tripId}/members)
@@ -209,7 +214,7 @@ func (h *TripHandler) AddTripMember(w http.ResponseWriter, r *http.Request, trip
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusCreated, member)
+	apiutil.SendJSON(w, http.StatusCreated, ToTripMemberGetResponse(member))
 }
 
 // RemoveTripMember 移除非建立者的成員 (DELETE /trips/{tripId}/members/{userId})
