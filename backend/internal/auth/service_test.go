@@ -203,6 +203,55 @@ func TestAuthService_Login_RateLimit(t *testing.T) {
 	})
 }
 
+func TestAuthService_VerifyEmail_RateLimit(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	secret := "test-secret"
+	tokenManager := tokens.NewTokenManager(secret)
+
+	t.Run("Given verify attempts exceed limit, When verifying again, Then it returns too many requests error", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+
+		durations := auth.DefaultDurations()
+		durations.VerifyRateWindow = time.Minute
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, nil, mockFlag, secret, durations)
+
+		email := "verify@example.com"
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(
+			&auth.User{ID: "user-v", Email: email, IsVerified: false}, nil,
+		)
+		// 預存一個驗證碼讓前幾次通過到碼比對（碼錯誤，但不觸發限制）
+		_ = mockCache.Set(context.Background(), cache.Key{Module: "auth", Domain: "verify", ID: email}, "999999", time.Minute)
+
+		// 前 5 次：計數累積，碼錯誤但不觸發限制
+		for i := 0; i < 5; i++ {
+			err := svc.VerifyEmail(context.Background(), email, "000000")
+			assert.ErrorIs(t, err, apperror.ErrInvalidVerificationCode)
+		}
+
+		// 第 6 次：觸發限制（在 DB 查詢之前）
+		err := svc.VerifyEmail(context.Background(), email, "000000")
+		assert.ErrorIs(t, err, apperror.ErrTooManyRequests)
+	})
+
+	t.Run("Given nil cache, When verify rate limit check fails, Then it fails open and proceeds normally", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, nil, nil, mockFlag, secret, auth.DefaultDurations())
+
+		email := "nilcache@example.com"
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, auth.ErrNotFound)
+
+		// cache 為 nil 時應 fail-open，不回傳 ErrTooManyRequests
+		err := svc.VerifyEmail(context.Background(), email, "000000")
+		assert.NotErrorIs(t, err, apperror.ErrTooManyRequests)
+	})
+}
+
 func TestAuthService_ResendVerificationCode_RateLimit(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	secret := "test-secret"

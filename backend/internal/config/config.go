@@ -52,6 +52,7 @@ type Config struct {
 	// Rate limiting.
 	LoginRateWindow  time.Duration
 	ResendRateWindow time.Duration
+	VerifyRateWindow time.Duration
 
 	// External services.
 	CWAApiKey      string
@@ -113,6 +114,7 @@ func Load() *Config {
 
 		LoginRateWindow:  getEnvAsDuration("LOGIN_RATE_WINDOW", 15*time.Minute),
 		ResendRateWindow: getEnvAsDuration("RESEND_RATE_WINDOW", 30*time.Minute),
+		VerifyRateWindow: getEnvAsDuration("VERIFY_RATE_WINDOW", 10*time.Minute),
 
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
 		CWAHTTPTimeout: getEnvAsDuration("CWA_HTTP_TIMEOUT", 30*time.Second),
