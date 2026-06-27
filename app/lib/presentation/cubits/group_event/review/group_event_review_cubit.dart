@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/core.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -7,7 +8,7 @@ import 'package:summitmate/domain/domain.dart';
 part 'group_event_review_state.dart';
 
 @injectable
-class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
+class GroupEventReviewCubit extends Cubit<GroupEventReviewState> with SafeEmitMixin<GroupEventReviewState> {
   final IGroupEventRepository _repository;
   final String? eventId;
   final String? userId;
@@ -19,16 +20,16 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
 
   /// 載入報名列表
   Future<void> loadApplications() async {
-    emit(GroupEventReviewLoading());
+    safeEmit(GroupEventReviewLoading());
     try {
       final result = await _repository.getApplications(eventId: eventId!);
       if (result is Success<List<GroupEventApplication>, Exception>) {
-        emit(GroupEventReviewLoaded(result.value));
+        safeEmit(GroupEventReviewLoaded(result.value));
       } else if (result is Failure<List<GroupEventApplication>, Exception>) {
-        emit(GroupEventReviewError(result.exception.toString()));
+        safeEmit(GroupEventReviewError(result.exception.toString()));
       }
     } catch (e) {
-      emit(GroupEventReviewError(e.toString()));
+      safeEmit(GroupEventReviewError(e.toString()));
     }
   }
 
@@ -43,7 +44,7 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
     final currentApps = currentState.applications;
 
     try {
-      emit(GroupEventReviewSyncing(currentApps));
+      safeEmit(GroupEventReviewSyncing(currentApps));
 
       final result = await _repository.reviewApplication(
         eventId: eventId,
@@ -56,12 +57,12 @@ class GroupEventReviewCubit extends Cubit<GroupEventReviewState> {
         // Success: Refresh list to get updated status
         loadApplications();
       } else if (result is Failure) {
-        emit(GroupEventReviewError(result.exception.toString()));
-        emit(GroupEventReviewLoaded(currentApps));
+        safeEmit(GroupEventReviewError(result.exception.toString()));
+        safeEmit(GroupEventReviewLoaded(currentApps));
       }
     } catch (e) {
-      emit(GroupEventReviewError(e.toString()));
-      emit(GroupEventReviewLoaded(currentApps));
+      safeEmit(GroupEventReviewError(e.toString()));
+      safeEmit(GroupEventReviewLoaded(currentApps));
     }
   }
 }

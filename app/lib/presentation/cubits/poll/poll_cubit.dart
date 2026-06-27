@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -8,7 +9,7 @@ import '../../../infrastructure/tools/toast_service.dart';
 import 'poll_state.dart';
 
 @injectable
-class PollCubit extends Cubit<PollState> {
+class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState> {
   final IPollRepository _pollRepository;
   final ITripRepository _tripRepository;
   final IConnectivityService _connectivity;
@@ -34,11 +35,11 @@ class PollCubit extends Cubit<PollState> {
   }
 
   Future<void> loadPolls() async {
-    emit(const PollLoading());
+    safeEmit(const PollLoading());
 
     final tripId = await _currentTripId;
     if (tripId == null) {
-      emit(const PollError('尚未選擇行程'));
+      safeEmit(const PollError('尚未選擇行程'));
       return;
     }
 
@@ -46,7 +47,7 @@ class PollCubit extends Cubit<PollState> {
     final polls = await _pollRepository.getByTripId(tripId);
 
     // 初始載入
-    emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null));
+    safeEmit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null));
   }
 
   /// 透過 API 更新投票列表
@@ -61,9 +62,9 @@ class PollCubit extends Cubit<PollState> {
 
     // 設定同步中狀態
     if (state is PollLoaded) {
-      emit((state as PollLoaded).copyWith(isSyncing: true));
+      safeEmit((state as PollLoaded).copyWith(isSyncing: true));
     } else {
-      emit(const PollLoading());
+      safeEmit(const PollLoading());
     }
 
     try {
@@ -76,23 +77,23 @@ class PollCubit extends Cubit<PollState> {
       final fetchedPolls = paginatedList.items;
       final now = DateTime.now();
 
-      emit(PollLoaded(polls: fetchedPolls, currentUserId: _currentUserId, lastSyncTime: now, isSyncing: false));
+      safeEmit(PollLoaded(polls: fetchedPolls, currentUserId: _currentUserId, lastSyncTime: now, isSyncing: false));
 
       if (!isAuto) ToastService.success('投票同步成功');
     } catch (e) {
       LogService.error('Fetch polls failed: $e', source: _source);
       if (!isAuto) {
-        emit(PollError(AppErrorHandler.getUserMessage(e)));
+        safeEmit(PollError(AppErrorHandler.getUserMessage(e)));
         // 若失敗，恢復為舊資料的 Loaded 狀態
         final polls = await _pollRepository.getByTripId(tripId);
-        emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
+        safeEmit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
         ToastService.error(AppErrorHandler.getUserMessage(e));
       } else {
         if (state is PollLoaded) {
-          emit((state as PollLoaded).copyWith(isSyncing: false));
+          safeEmit((state as PollLoaded).copyWith(isSyncing: false));
         } else if (state is PollLoading) {
           final polls = await _pollRepository.getByTripId(tripId);
-          emit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
+          safeEmit(PollLoaded(polls: polls, currentUserId: _currentUserId, lastSyncTime: null, isSyncing: false));
         }
       }
     }
@@ -105,7 +106,7 @@ class PollCubit extends Cubit<PollState> {
       return false;
     }
 
-    if (state is PollLoaded) emit((state as PollLoaded).copyWith(isSyncing: true));
+    if (state is PollLoaded) safeEmit((state as PollLoaded).copyWith(isSyncing: true));
 
     try {
       final result = await action();
@@ -116,7 +117,7 @@ class PollCubit extends Cubit<PollState> {
     } catch (e) {
       LogService.error('Action failed: $e', source: _source);
       ToastService.error(AppErrorHandler.getUserMessage(e));
-      if (state is PollLoaded) emit((state as PollLoaded).copyWith(isSyncing: false));
+      if (state is PollLoaded) safeEmit((state as PollLoaded).copyWith(isSyncing: false));
       return false;
     }
   }
@@ -189,6 +190,6 @@ class PollCubit extends Cubit<PollState> {
   }
 
   void reset() {
-    emit(const PollInitial());
+    safeEmit(const PollInitial());
   }
 }

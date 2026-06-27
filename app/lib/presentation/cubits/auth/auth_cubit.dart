@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 
 import '../../../core/error/app_error_handler.dart';
 import 'package:summitmate/domain/domain.dart';
@@ -16,7 +17,7 @@ import '../app_error/app_error_cubit.dart';
 /// 負責協調 [IAuthService] 進行登入/登出，並追蹤使用者狀態。
 /// 使用 [UsageTrackingService] 進行行為追蹤。
 @injectable
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends Cubit<AuthState> with SafeEmitMixin<AuthState> {
   static const String _source = 'AuthCubit';
 
   final IAuthService _authService;
@@ -36,7 +37,7 @@ class AuthCubit extends Cubit<AuthState> {
         // 如果目前是已登入、載入中或初始狀態，則切換至未登入狀態
         if (state is AuthAuthenticated || state is AuthLoading || state is AuthInitial) {
           _usageTrackingService.stop();
-          emit(AuthUnauthenticated());
+          safeEmit(AuthUnauthenticated());
         }
       }
     });
@@ -59,7 +60,7 @@ class AuthCubit extends Cubit<AuthState> {
       // 如果 validateSession 失敗，且當前不是 AuthError 狀態，則發送 AuthError
       // 避免覆蓋 AuthLoading 等狀態
       if (state is! AuthError) {
-        emit(const AuthError('無法確認登入狀態'));
+        safeEmit(const AuthError('無法確認登入狀態'));
       }
     }
   }
@@ -77,7 +78,7 @@ class AuthCubit extends Cubit<AuthState> {
     String? avatar,
   }) async {
     LogService.info('Attempting register: $email', source: _source);
-    emit(AuthLoading());
+    safeEmit(AuthLoading());
 
     try {
       final result = await _authService.register(
@@ -89,15 +90,15 @@ class AuthCubit extends Cubit<AuthState> {
 
       if (result.isSuccess) {
         if (result.requiresVerification) {
-          emit(AuthRequiresVerification(email));
+          safeEmit(AuthRequiresVerification(email));
         }
         // 成功路徑會經由 Stream 自動發送 AuthAuthenticated
       } else {
-        emit(AuthError(result.errorMessage ?? '註冊失敗'));
+        safeEmit(AuthError(result.errorMessage ?? '註冊失敗'));
       }
     } catch (e) {
       LogService.error('Register failed: $e', source: _source);
-      emit(AuthError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(AuthError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -107,22 +108,22 @@ class AuthCubit extends Cubit<AuthState> {
   /// [password] 密碼
   Future<void> login(String email, String password) async {
     LogService.info('Attempting login: $email', source: _source);
-    emit(AuthLoading());
+    safeEmit(AuthLoading());
 
     try {
       final result = await _authService.login(email: email, password: password);
 
       if (result.isSuccess) {
         if (result.user != null && !result.user!.isVerified) {
-          emit(AuthRequiresVerification(email));
+          safeEmit(AuthRequiresVerification(email));
         }
         // 成功路徑會經由 Stream 自動發送 AuthAuthenticated
       } else {
-        emit(AuthError(result.errorMessage ?? '登入失敗'));
+        safeEmit(AuthError(result.errorMessage ?? '登入失敗'));
       }
     } catch (e) {
       LogService.error('Login failed: $e', source: _source);
-      emit(AuthError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(AuthError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -132,7 +133,7 @@ class AuthCubit extends Cubit<AuthState> {
     // 訪客沒有 UserProfile，手動建構 AuthAuthenticated
     _usageTrackingService.start('訪客', userId: 'guest');
     getIt<AppErrorCubit>().clearError();
-    emit(AuthAuthenticated(userId: 'guest', userName: '訪客', isGuest: true, isOffline: _authService.isOfflineMode));
+    safeEmit(AuthAuthenticated(userId: 'guest', userName: '訪客', isGuest: true, isOffline: _authService.isOfflineMode));
   }
 
   /// 驗證 Email
@@ -141,22 +142,22 @@ class AuthCubit extends Cubit<AuthState> {
   /// [code] 驗證碼
   Future<void> verifyEmail(String email, String code) async {
     LogService.info('Verifying email: $email', source: _source);
-    emit(AuthLoading());
+    safeEmit(AuthLoading());
 
     try {
       final result = await _authService.verifyEmail(email: email, code: code);
 
       if (result.isSuccess) {
-        emit(const AuthOperationSuccess('驗證成功，請登入'));
-        emit(AuthUnauthenticated());
+        safeEmit(const AuthOperationSuccess('驗證成功，請登入'));
+        safeEmit(AuthUnauthenticated());
       } else {
-        emit(AuthError(result.errorMessage ?? '驗證失敗'));
-        emit(AuthUnauthenticated());
+        safeEmit(AuthError(result.errorMessage ?? '驗證失敗'));
+        safeEmit(AuthUnauthenticated());
       }
     } catch (e) {
       LogService.error('Verification failed: $e', source: _source);
-      emit(AuthError(AppErrorHandler.getUserMessage(e)));
-      emit(AuthUnauthenticated());
+      safeEmit(AuthError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(AuthUnauthenticated());
     }
   }
 
@@ -165,29 +166,29 @@ class AuthCubit extends Cubit<AuthState> {
   /// [email] 使用者 Email
   Future<void> resendCode(String email) async {
     LogService.info('Resending code: $email', source: _source);
-    emit(AuthLoading());
+    safeEmit(AuthLoading());
 
     try {
       final result = await _authService.resendVerificationCode(email: email);
 
       if (result.isSuccess) {
-        emit(const AuthOperationSuccess('驗證碼已發送'));
-        emit(AuthUnauthenticated());
+        safeEmit(const AuthOperationSuccess('驗證碼已發送'));
+        safeEmit(AuthUnauthenticated());
       } else {
-        emit(AuthError(result.errorMessage ?? '發送失敗'));
-        emit(AuthUnauthenticated());
+        safeEmit(AuthError(result.errorMessage ?? '發送失敗'));
+        safeEmit(AuthUnauthenticated());
       }
     } catch (e) {
       LogService.error('Resend code failed: $e', source: _source);
-      emit(AuthError(AppErrorHandler.getUserMessage(e)));
-      emit(AuthUnauthenticated());
+      safeEmit(AuthError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(AuthUnauthenticated());
     }
   }
 
   /// 執行登出
   Future<void> logout() async {
     LogService.info('Logging out...', source: _source);
-    emit(AuthLoading());
+    safeEmit(AuthLoading());
 
     try {
       await _authService.logout();
@@ -196,7 +197,7 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e, stack) {
       LogService.error('Logout failed: $e', source: _source, stackTrace: stack);
       getIt<AppErrorCubit>().clearError();
-      emit(AuthUnauthenticated()); // 保底
+      safeEmit(AuthUnauthenticated()); // 保底
     }
   }
 
@@ -240,7 +241,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     getIt<AppErrorCubit>().clearError();
 
-    emit(
+    safeEmit(
       AuthAuthenticated(
         userId: user.id,
         userName: user.displayName,

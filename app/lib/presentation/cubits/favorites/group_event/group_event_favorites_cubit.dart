@@ -1,19 +1,20 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import '../../../../core/core.dart';
 import '../../../../domain/domain.dart';
 import 'group_event_favorites_state.dart';
 
 /// 管理揪團收藏功能的 Cubit
 @injectable
-class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
+class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> with SafeEmitMixin<GroupEventFavoritesState> {
   final IFavoritesRepository _favoritesRepository;
 
   GroupEventFavoritesCubit(this._favoritesRepository) : super(GroupEventFavoritesInitial());
 
   /// 載入收藏列表
   Future<void> loadFavorites() async {
-    emit(GroupEventFavoritesLoading());
+    safeEmit(GroupEventFavoritesLoading());
 
     final result = await _favoritesRepository.getFavorites();
 
@@ -23,9 +24,9 @@ class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
             .where((f) => f.type == FavoriteType.groupEvent)
             .map((f) => f.targetId)
             .toList();
-        emit(GroupEventFavoritesLoaded(ids));
+        safeEmit(GroupEventFavoritesLoaded(ids));
       case Failure(exception: final e):
-        emit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));
+        safeEmit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -45,9 +46,9 @@ class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
         } else {
           currentIds.remove(id);
         }
-        emit(GroupEventFavoritesLoaded(currentIds));
+        safeEmit(GroupEventFavoritesLoaded(currentIds));
       case Failure(exception: final e):
-        emit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));
+        safeEmit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));
         loadFavorites();
     }
   }
@@ -62,6 +63,6 @@ class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
 
   /// 重置狀態
   void reset() {
-    emit(GroupEventFavoritesInitial());
+    safeEmit(GroupEventFavoritesInitial());
   }
 }

@@ -1,12 +1,13 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import '../../../core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'group_event_state.dart';
 
 @injectable
-class GroupEventCubit extends Cubit<GroupEventState> {
+class GroupEventCubit extends Cubit<GroupEventState> with SafeEmitMixin<GroupEventState> {
   final IGroupEventRepository _groupEventRepository;
   final IConnectivityService _connectivity;
   final IAuthService _authService;
@@ -25,12 +26,12 @@ class GroupEventCubit extends Cubit<GroupEventState> {
 
   /// Load events from local repository
   Future<void> loadEvents() async {
-    emit(const GroupEventLoading());
+    safeEmit(const GroupEventLoading());
 
     final events = await _groupEventRepository.getAll();
     final lastSync = _groupEventRepository.getLastSyncTime();
 
-    emit(GroupEventLoaded(events: events, currentUserId: _currentUserId, lastSyncTime: lastSync, isGuest: _isGuest));
+    safeEmit(GroupEventLoaded(events: events, currentUserId: _currentUserId, lastSyncTime: lastSync, isGuest: _isGuest));
   }
 
   /// Fetch events from API
@@ -51,9 +52,9 @@ class GroupEventCubit extends Cubit<GroupEventState> {
 
     // Show syncing state
     if (state is GroupEventLoaded) {
-      emit((state as GroupEventLoaded).copyWith(isSyncing: true));
+      safeEmit((state as GroupEventLoaded).copyWith(isSyncing: true));
     } else {
-      emit(const GroupEventLoading());
+      safeEmit(const GroupEventLoading());
     }
 
     try {
@@ -65,7 +66,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
 
       final now = DateTime.now();
 
-      emit(
+      safeEmit(
         GroupEventLoaded(
           events: fetchedEvents,
           currentUserId: _currentUserId,
@@ -81,7 +82,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       if (!isAuto) {
         final events = await _groupEventRepository.getAll();
         final previousLastSync = state is GroupEventLoaded ? (state as GroupEventLoaded).lastSyncTime : null;
-        emit(
+        safeEmit(
           GroupEventLoaded(
             events: events,
             currentUserId: _currentUserId,
@@ -93,11 +94,11 @@ class GroupEventCubit extends Cubit<GroupEventState> {
         ToastService.error(AppErrorHandler.getUserMessage(e));
       } else {
         if (state is GroupEventLoaded) {
-          emit((state as GroupEventLoaded).copyWith(isSyncing: false));
+          safeEmit((state as GroupEventLoaded).copyWith(isSyncing: false));
         } else if (state is GroupEventLoading) {
           // 如果是第一次載入失敗，也要設法脫離 loading 狀態
           final events = await _groupEventRepository.getAll();
-          emit(
+          safeEmit(
             GroupEventLoaded(
               events: events,
               currentUserId: _currentUserId,
@@ -141,7 +142,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
         final updatedEvent = result.value;
         final currentState = state as GroupEventLoaded;
         final updatedEvents = currentState.events.map((e) => e.id == eventId ? updatedEvent : e).toList();
-        emit(currentState.copyWith(events: updatedEvents));
+        safeEmit(currentState.copyWith(events: updatedEvents));
       }
     } catch (e) {
       LogService.error('Refresh event $eventId failed: $e', source: _source);
@@ -164,7 +165,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     }
 
     if (state is GroupEventLoaded) {
-      emit((state as GroupEventLoaded).copyWith(isSyncing: true));
+      safeEmit((state as GroupEventLoaded).copyWith(isSyncing: true));
     }
 
     try {
@@ -176,7 +177,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       LogService.error('Action failed: $e', source: _source);
       ToastService.error(AppErrorHandler.getUserMessage(e));
       if (state is GroupEventLoaded) {
-        emit((state as GroupEventLoaded).copyWith(isSyncing: false));
+        safeEmit((state as GroupEventLoaded).copyWith(isSyncing: false));
       }
       return false;
     }
@@ -308,7 +309,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       }
       return e;
     }).toList();
-    emit(currentState.copyWith(events: updatedEvents));
+    safeEmit(currentState.copyWith(events: updatedEvents));
 
     final result = wasLiked
         ? await _groupEventRepository.unlikeEvent(eventId: eventId, userId: _currentUserId)
@@ -319,7 +320,7 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       ToastService.error('操作失敗');
 
       final freshEvents = await _groupEventRepository.getAll();
-      emit(currentState.copyWith(events: freshEvents));
+      safeEmit(currentState.copyWith(events: freshEvents));
       return false;
     }
 
@@ -338,13 +339,13 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       return;
     }
 
-    emit(const MyEventsLoading());
+    safeEmit(const MyEventsLoading());
 
     try {
       final result = await _groupEventRepository.syncMyEvents(type: type, page: 1);
       switch (result) {
         case Success(value: final paginated):
-          emit(
+          safeEmit(
             MyEventsLoaded(
               events: paginated.items,
               type: type,
@@ -354,11 +355,11 @@ class GroupEventCubit extends Cubit<GroupEventState> {
             ),
           );
         case Failure(exception: final e):
-          emit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
+          safeEmit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
       }
     } catch (e) {
       LogService.error('fetchMyEvents ($type) failed: $e', source: _source);
-      emit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
+      safeEmit(MyEventsError(message: AppErrorHandler.getUserMessage(e), type: type));
     }
   }
 
@@ -369,14 +370,14 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     if (!current.hasMore || current.isLoadingMore) return;
     if (_isOffline) return;
 
-    emit(current.copyWith(isLoadingMore: true));
+    safeEmit(current.copyWith(isLoadingMore: true));
 
     try {
       final nextPage = current.page + 1;
       final result = await _groupEventRepository.syncMyEvents(type: current.type, page: nextPage);
       switch (result) {
         case Success(value: final paginated):
-          emit(
+          safeEmit(
             current.copyWith(
               events: [...current.events, ...paginated.items],
               page: nextPage,
@@ -387,15 +388,15 @@ class GroupEventCubit extends Cubit<GroupEventState> {
           );
         case Failure(exception: final e):
           LogService.error('loadMoreMyEvents failed: $e', source: _source);
-          emit(current.copyWith(isLoadingMore: false));
+          safeEmit(current.copyWith(isLoadingMore: false));
       }
     } catch (e) {
       LogService.error('loadMoreMyEvents exception: $e', source: _source);
-      emit(current.copyWith(isLoadingMore: false));
+      safeEmit(current.copyWith(isLoadingMore: false));
     }
   }
 
   void reset() {
-    emit(const GroupEventInitial());
+    safeEmit(const GroupEventInitial());
   }
 }

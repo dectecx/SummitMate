@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_compass/flutter_compass.dart';
@@ -13,7 +14,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'map_state.dart';
 
 @injectable
-class MapCubit extends Cubit<MapState> {
+class MapCubit extends Cubit<MapState> with SafeEmitMixin<MapState> {
   StreamSubscription<Position>? _positionStreamSubscription;
   StreamSubscription<CompassEvent>? _compassStreamSubscription;
 
@@ -29,7 +30,7 @@ class MapCubit extends Cubit<MapState> {
   void reset() {
     _positionStreamSubscription?.cancel();
     _compassStreamSubscription?.cancel();
-    emit(const MapLoaded());
+    safeEmit(const MapLoaded());
   }
 
   /// 初始化定位與羅盤
@@ -79,9 +80,9 @@ class MapCubit extends Cubit<MapState> {
       Position position,
     ) {
       if (state is MapLoaded) {
-        emit((state as MapLoaded).copyWith(currentLocation: position));
+        safeEmit((state as MapLoaded).copyWith(currentLocation: position));
       } else {
-        emit(MapLoaded(currentLocation: position));
+        safeEmit(MapLoaded(currentLocation: position));
       }
     }, onError: (e) => LogService.error('Location Stream Error: $e', source: 'MapCubit'));
   }
@@ -90,7 +91,7 @@ class MapCubit extends Cubit<MapState> {
     _compassStreamSubscription?.cancel();
     _compassStreamSubscription = FlutterCompass.events?.listen((event) {
       if (state is MapLoaded) {
-        emit((state as MapLoaded).copyWith(currentHeading: event.heading));
+        safeEmit((state as MapLoaded).copyWith(currentHeading: event.heading));
       }
     });
   }
@@ -99,7 +100,7 @@ class MapCubit extends Cubit<MapState> {
   Future<void> loadGpxFile() async {
     try {
       if (state is MapLoaded) {
-        emit((state as MapLoaded).copyWith(isLoading: true));
+        safeEmit((state as MapLoaded).copyWith(isLoading: true));
       }
 
       // Web 必須使用 withData: true
@@ -138,20 +139,20 @@ class MapCubit extends Cubit<MapState> {
         final trackPoints = GpxUtils.extractTrackPoints(gpx);
 
         if (state is MapLoaded) {
-          emit((state as MapLoaded).copyWith(gpx: gpx, trackPoints: trackPoints, isLoading: false));
+          safeEmit((state as MapLoaded).copyWith(gpx: gpx, trackPoints: trackPoints, isLoading: false));
         } else {
-          emit(MapLoaded(gpx: gpx, trackPoints: trackPoints));
+          safeEmit(MapLoaded(gpx: gpx, trackPoints: trackPoints));
         }
       } else {
         // Cancelled
         if (state is MapLoaded) {
-          emit((state as MapLoaded).copyWith(isLoading: false));
+          safeEmit((state as MapLoaded).copyWith(isLoading: false));
         }
       }
     } catch (e) {
       LogService.error('Error loading GPX file: $e', source: 'MapCubit');
       if (state is MapLoaded) {
-        emit((state as MapLoaded).copyWith(isLoading: false));
+        safeEmit((state as MapLoaded).copyWith(isLoading: false));
       }
     }
   }
@@ -166,7 +167,7 @@ class MapCubit extends Cubit<MapState> {
       // I need to emit new state or fix copyWith.
       // Let's just emit new state preserving other fields.
       final current = state as MapLoaded;
-      emit(
+      safeEmit(
         MapLoaded(
           currentLocation: current.currentLocation,
           currentHeading: current.currentHeading,

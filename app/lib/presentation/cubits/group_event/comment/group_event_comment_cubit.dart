@@ -1,11 +1,12 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:summitmate/core/core.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'group_event_comment_state.dart';
 
 @injectable
-class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
+class GroupEventCommentCubit extends Cubit<GroupEventCommentState> with SafeEmitMixin<GroupEventCommentState> {
   final IGroupEventRepository _repository;
   final IAuthService _authService;
   final String? eventId;
@@ -18,15 +19,15 @@ class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
 
   /// 載入留言
   Future<void> loadComments() async {
-    emit(const GroupEventCommentLoading());
+    safeEmit(const GroupEventCommentLoading());
 
     final result = await _repository.getComments(eventId: eventId!);
 
     switch (result) {
       case Success(value: final comments):
-        emit(GroupEventCommentLoaded(comments: comments));
+        safeEmit(GroupEventCommentLoaded(comments: comments));
       case Failure(exception: final error):
-        emit(GroupEventCommentError(error.toString()));
+        safeEmit(GroupEventCommentError(error.toString()));
     }
   }
 
@@ -37,20 +38,20 @@ class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
     final currentState = state;
     if (currentState is! GroupEventCommentLoaded) return;
 
-    emit(currentState.copyWith(isSending: true));
+    safeEmit(currentState.copyWith(isSending: true));
 
     final result = await _repository.addComment(eventId: eventId!, userId: currentUserId, content: content);
 
     switch (result) {
       case Success(value: final newComment):
         final updatedComments = List<GroupEventComment>.from(currentState.comments)..insert(0, newComment);
-        emit(currentState.copyWith(comments: updatedComments, isSending: false));
+        safeEmit(currentState.copyWith(comments: updatedComments, isSending: false));
       case Failure(exception: final error):
         // 恢復原狀並顯示錯誤 (實際應用可能需要一次性錯誤事件)
-        emit(currentState.copyWith(isSending: false));
-        emit(GroupEventCommentError(error.toString()));
+        safeEmit(currentState.copyWith(isSending: false));
+        safeEmit(GroupEventCommentError(error.toString()));
         // 重新載入以恢復 UI
-        emit(GroupEventCommentLoaded(comments: currentState.comments));
+        safeEmit(GroupEventCommentLoaded(comments: currentState.comments));
     }
   }
 
@@ -62,15 +63,15 @@ class GroupEventCommentCubit extends Cubit<GroupEventCommentState> {
     // 樂觀更新
     final originalComments = currentState.comments;
     final updatedComments = originalComments.where((c) => c.id != commentId).toList();
-    emit(currentState.copyWith(comments: updatedComments));
+    safeEmit(currentState.copyWith(comments: updatedComments));
 
     final result = await _repository.deleteComment(commentId: commentId, userId: currentUserId);
 
     if (result is Failure) {
       // 失敗回滾
-      emit(currentState.copyWith(comments: originalComments));
-      emit(GroupEventCommentError(result.exception.toString()));
-      emit(currentState); // 恢復顯示列表
+      safeEmit(currentState.copyWith(comments: originalComments));
+      safeEmit(GroupEventCommentError(result.exception.toString()));
+      safeEmit(currentState); // 恢復顯示列表
     }
   }
 }

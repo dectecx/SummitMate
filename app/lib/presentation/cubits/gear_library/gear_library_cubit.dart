@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:uuid/uuid.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
@@ -7,7 +8,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'gear_library_state.dart';
 
 @injectable
-class GearLibraryCubit extends Cubit<GearLibraryState> {
+class GearLibraryCubit extends Cubit<GearLibraryState> with SafeEmitMixin<GearLibraryState> {
   final IGearLibraryRepository _repository;
   final IGearRepository _gearRepository;
   final ITripRepository _tripRepository;
@@ -17,14 +18,14 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
     : super(const GearLibraryInitial());
 
   Future<void> loadItems() async {
-    emit(const GearLibraryLoading());
+    safeEmit(const GearLibraryLoading());
     try {
       final userId = _authService.currentUserId ?? 'guest';
       final items = await _repository.getAll(userId);
-      emit(GearLibraryLoaded(items: items));
+      safeEmit(GearLibraryLoaded(items: items));
     } catch (e) {
       LogService.error('Failed to load gear library: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -33,12 +34,12 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       final userId = _authService.currentUserId ?? 'guest';
       final items = await _repository.getAll(userId);
       if (state is GearLibraryLoaded) {
-        emit((state as GearLibraryLoaded).copyWith(items: items));
+        safeEmit((state as GearLibraryLoaded).copyWith(items: items));
       } else {
-        emit(GearLibraryLoaded(items: items));
+        safeEmit(GearLibraryLoaded(items: items));
       }
     } catch (e) {
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -48,13 +49,13 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
 
   void setSearchQuery(String query) {
     if (state is GearLibraryLoaded) {
-      emit((state as GearLibraryLoaded).copyWith(searchQuery: query));
+      safeEmit((state as GearLibraryLoaded).copyWith(searchQuery: query));
     }
   }
 
   void selectCategory(String? category) {
     if (state is GearLibraryLoaded) {
-      emit((state as GearLibraryLoaded).copyWith(selectedCategory: category, clearCategory: category == null));
+      safeEmit((state as GearLibraryLoaded).copyWith(selectedCategory: category, clearCategory: category == null));
     }
   }
 
@@ -84,7 +85,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to add library item: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -98,7 +99,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to update library item: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -117,7 +118,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to delete library item: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -132,7 +133,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       }
     } catch (e) {
       LogService.error('Failed to toggle archive: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -147,7 +148,7 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to import items: $e', source: 'GearLibraryCubit');
-      emit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearLibraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -260,6 +261,6 @@ class GearLibraryCubit extends Cubit<GearLibraryState> {
   }
 
   void reset() {
-    emit(const GearLibraryInitial());
+    safeEmit(const GearLibraryInitial());
   }
 }
