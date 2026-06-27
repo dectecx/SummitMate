@@ -56,16 +56,20 @@ class ItineraryListView extends StatelessWidget {
       );
     }
 
+    // 預先計算累積距離 O(n)，避免 itemBuilder 內每次重算造成 O(n²)
+    final cumulativeDistances = List<double>.filled(items.length, 0);
+    double runningDistance = 0;
+    for (int i = 0; i < items.length; i++) {
+      runningDistance += items[i].distance;
+      cumulativeDistances[i] = runningDistance;
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 80),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        // 計算累積距離
-        double cumulativeDistance = 0;
-        for (int i = 0; i <= index; i++) {
-          cumulativeDistance += items[i].distance;
-        }
+        final cumulativeDistance = cumulativeDistances[index];
 
         final isCheckedIn = item.isCheckedIn;
         final primaryColor = Theme.of(context).colorScheme.primary;
