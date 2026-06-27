@@ -341,7 +341,7 @@ as String,
 /// @nodoc
 mixin _$PollOption {
 
- String get id; String get pollId; String get text; String get creatorId; int get voteCount; List<Map<String, dynamic>> get voters; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
+ String get id; String get pollId; String get text; String get creatorId; int get voteCount; List<String> get voters; DateTime get createdAt; String get createdBy; DateTime get updatedAt; String get updatedBy;
 /// Create a copy of PollOption
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -374,7 +374,7 @@ abstract mixin class $PollOptionCopyWith<$Res>  {
   factory $PollOptionCopyWith(PollOption value, $Res Function(PollOption) _then) = _$PollOptionCopyWithImpl;
 @useResult
 $Res call({
- String id, String pollId, String text, String creatorId, int voteCount, List<Map<String, dynamic>> voters, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String pollId, String text, String creatorId, int voteCount, List<String> voters, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -399,7 +399,7 @@ as String,text: null == text ? _self.text : text // ignore: cast_nullable_to_non
 as String,creatorId: null == creatorId ? _self.creatorId : creatorId // ignore: cast_nullable_to_non_nullable
 as String,voteCount: null == voteCount ? _self.voteCount : voteCount // ignore: cast_nullable_to_non_nullable
 as int,voters: null == voters ? _self.voters : voters // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -488,7 +488,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String pollId,  String text,  String creatorId,  int voteCount,  List<Map<String, dynamic>> voters,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String pollId,  String text,  String creatorId,  int voteCount,  List<String> voters,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PollOption() when $default != null:
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -509,7 +509,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String pollId,  String text,  String creatorId,  int voteCount,  List<Map<String, dynamic>> voters,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String pollId,  String text,  String creatorId,  int voteCount,  List<String> voters,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _PollOption():
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -529,7 +529,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String pollId,  String text,  String creatorId,  int voteCount,  List<Map<String, dynamic>> voters,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String pollId,  String text,  String creatorId,  int voteCount,  List<String> voters,  DateTime createdAt,  String createdBy,  DateTime updatedAt,  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _PollOption() when $default != null:
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -544,7 +544,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 @JsonSerializable()
 
 class _PollOption extends PollOption {
-  const _PollOption({required this.id, required this.pollId, required this.text, required this.creatorId, this.voteCount = 0, final  List<Map<String, dynamic>> voters = const [], required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): _voters = voters,super._();
+  const _PollOption({required this.id, required this.pollId, required this.text, required this.creatorId, this.voteCount = 0, final  List<String> voters = const [], required this.createdAt, required this.createdBy, required this.updatedAt, required this.updatedBy}): _voters = voters,super._();
   factory _PollOption.fromJson(Map<String, dynamic> json) => _$PollOptionFromJson(json);
 
 @override final  String id;
@@ -552,8 +552,8 @@ class _PollOption extends PollOption {
 @override final  String text;
 @override final  String creatorId;
 @override@JsonKey() final  int voteCount;
- final  List<Map<String, dynamic>> _voters;
-@override@JsonKey() List<Map<String, dynamic>> get voters {
+ final  List<String> _voters;
+@override@JsonKey() List<String> get voters {
   if (_voters is EqualUnmodifiableListView) return _voters;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_voters);
@@ -597,7 +597,7 @@ abstract mixin class _$PollOptionCopyWith<$Res> implements $PollOptionCopyWith<$
   factory _$PollOptionCopyWith(_PollOption value, $Res Function(_PollOption) _then) = __$PollOptionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String pollId, String text, String creatorId, int voteCount, List<Map<String, dynamic>> voters, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
+ String id, String pollId, String text, String creatorId, int voteCount, List<String> voters, DateTime createdAt, String createdBy, DateTime updatedAt, String updatedBy
 });
 
 
@@ -622,7 +622,7 @@ as String,text: null == text ? _self.text : text // ignore: cast_nullable_to_non
 as String,creatorId: null == creatorId ? _self.creatorId : creatorId // ignore: cast_nullable_to_non_nullable
 as String,voteCount: null == voteCount ? _self.voteCount : voteCount // ignore: cast_nullable_to_non_nullable
 as int,voters: null == voters ? _self._voters : voters // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

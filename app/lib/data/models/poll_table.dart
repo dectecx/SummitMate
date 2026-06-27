@@ -37,8 +37,7 @@ class PollOptionsTable extends Table {
   TextColumn get creatorId => text()();
   IntColumn get voteCount => integer().withDefault(const Constant(0))();
 
-  // TODO: 確認 Voters 的 JSON List 儲存是否為最佳實踐
-  TextColumn get voters => text().map(const VotersConverter()).withDefault(const Constant('[]'))();
+  TextColumn get voters => text().map(const PollListStringTypeConverter()).withDefault(const Constant('[]'))();
   DateTimeColumn get createdAt => dateTime()();
   TextColumn get createdBy => text()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -54,14 +53,6 @@ class PollListStringTypeConverter extends TypeConverter<List<String>, String> {
   List<String> fromSql(String fromDb) => List<String>.from(json.decode(fromDb));
   @override
   String toSql(List<String> value) => json.encode(value);
-}
-
-class VotersConverter extends TypeConverter<List<Map<String, dynamic>>, String> {
-  const VotersConverter();
-  @override
-  List<Map<String, dynamic>> fromSql(String fromDb) => List<Map<String, dynamic>>.from(json.decode(fromDb));
-  @override
-  String toSql(List<Map<String, dynamic>> value) => json.encode(value);
 }
 
 extension PollMapping on Poll {

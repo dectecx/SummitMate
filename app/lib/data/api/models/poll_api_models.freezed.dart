@@ -305,7 +305,7 @@ $PaginationMetadataCopyWith<$Res> get pagination {
 /// @nodoc
 mixin _$PollOptionResponse {
 
- String get id;@JsonKey(name: 'poll_id') String get pollId; String get text;@JsonKey(name: 'creator_id') String get creatorId;@JsonKey(name: 'vote_count', defaultValue: 0) int get voteCount;@JsonKey(defaultValue: []) List<Map<String, dynamic>> get voters;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
+ String get id;@JsonKey(name: 'poll_id') String get pollId; String get text;@JsonKey(name: 'creator_id') String get creatorId;@JsonKey(name: 'vote_count', defaultValue: 0) int get voteCount;@JsonKey(defaultValue: []) List<String> get voters;@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime get createdAt;@JsonKey(name: 'created_by') String get createdBy;@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime get updatedAt;@JsonKey(name: 'updated_by') String get updatedBy;
 /// Create a copy of PollOptionResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,7 +338,7 @@ abstract mixin class $PollOptionResponseCopyWith<$Res>  {
   factory $PollOptionResponseCopyWith(PollOptionResponse value, $Res Function(PollOptionResponse) _then) = _$PollOptionResponseCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<Map<String, dynamic>> voters,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<String> voters,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -363,7 +363,7 @@ as String,text: null == text ? _self.text : text // ignore: cast_nullable_to_non
 as String,creatorId: null == creatorId ? _self.creatorId : creatorId // ignore: cast_nullable_to_non_nullable
 as String,voteCount: null == voteCount ? _self.voteCount : voteCount // ignore: cast_nullable_to_non_nullable
 as int,voters: null == voters ? _self.voters : voters // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable
@@ -452,7 +452,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<String> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PollOptionResponse() when $default != null:
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -473,7 +473,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<String> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)  $default,) {final _that = this;
 switch (_that) {
 case _PollOptionResponse():
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -493,7 +493,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'poll_id')  String pollId,  String text, @JsonKey(name: 'creator_id')  String creatorId, @JsonKey(name: 'vote_count', defaultValue: 0)  int voteCount, @JsonKey(defaultValue: [])  List<String> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter()  DateTime createdAt, @JsonKey(name: 'created_by')  String createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter()  DateTime updatedAt, @JsonKey(name: 'updated_by')  String updatedBy)?  $default,) {final _that = this;
 switch (_that) {
 case _PollOptionResponse() when $default != null:
 return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount,_that.voters,_that.createdAt,_that.createdBy,_that.updatedAt,_that.updatedBy);case _:
@@ -508,7 +508,7 @@ return $default(_that.id,_that.pollId,_that.text,_that.creatorId,_that.voteCount
 @JsonSerializable()
 
 class _PollOptionResponse implements PollOptionResponse {
-  const _PollOptionResponse({required this.id, @JsonKey(name: 'poll_id') required this.pollId, required this.text, @JsonKey(name: 'creator_id') required this.creatorId, @JsonKey(name: 'vote_count', defaultValue: 0) required this.voteCount, @JsonKey(defaultValue: []) required final  List<Map<String, dynamic>> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _voters = voters;
+  const _PollOptionResponse({required this.id, @JsonKey(name: 'poll_id') required this.pollId, required this.text, @JsonKey(name: 'creator_id') required this.creatorId, @JsonKey(name: 'vote_count', defaultValue: 0) required this.voteCount, @JsonKey(defaultValue: []) required final  List<String> voters, @JsonKey(name: 'created_at')@DateTimeUtcConverter() required this.createdAt, @JsonKey(name: 'created_by') required this.createdBy, @JsonKey(name: 'updated_at')@DateTimeUtcConverter() required this.updatedAt, @JsonKey(name: 'updated_by') required this.updatedBy}): _voters = voters;
   factory _PollOptionResponse.fromJson(Map<String, dynamic> json) => _$PollOptionResponseFromJson(json);
 
 @override final  String id;
@@ -516,8 +516,8 @@ class _PollOptionResponse implements PollOptionResponse {
 @override final  String text;
 @override@JsonKey(name: 'creator_id') final  String creatorId;
 @override@JsonKey(name: 'vote_count', defaultValue: 0) final  int voteCount;
- final  List<Map<String, dynamic>> _voters;
-@override@JsonKey(defaultValue: []) List<Map<String, dynamic>> get voters {
+ final  List<String> _voters;
+@override@JsonKey(defaultValue: []) List<String> get voters {
   if (_voters is EqualUnmodifiableListView) return _voters;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_voters);
@@ -561,7 +561,7 @@ abstract mixin class _$PollOptionResponseCopyWith<$Res> implements $PollOptionRe
   factory _$PollOptionResponseCopyWith(_PollOptionResponse value, $Res Function(_PollOptionResponse) _then) = __$PollOptionResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<Map<String, dynamic>> voters,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
+ String id,@JsonKey(name: 'poll_id') String pollId, String text,@JsonKey(name: 'creator_id') String creatorId,@JsonKey(name: 'vote_count', defaultValue: 0) int voteCount,@JsonKey(defaultValue: []) List<String> voters,@JsonKey(name: 'created_at')@DateTimeUtcConverter() DateTime createdAt,@JsonKey(name: 'created_by') String createdBy,@JsonKey(name: 'updated_at')@DateTimeUtcConverter() DateTime updatedAt,@JsonKey(name: 'updated_by') String updatedBy
 });
 
 
@@ -586,7 +586,7 @@ as String,text: null == text ? _self.text : text // ignore: cast_nullable_to_non
 as String,creatorId: null == creatorId ? _self.creatorId : creatorId // ignore: cast_nullable_to_non_nullable
 as String,voteCount: null == voteCount ? _self.voteCount : voteCount // ignore: cast_nullable_to_non_nullable
 as int,voters: null == voters ? _self._voters : voters // ignore: cast_nullable_to_non_nullable
-as List<Map<String, dynamic>>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedBy: null == updatedBy ? _self.updatedBy : updatedBy // ignore: cast_nullable_to_non_nullable

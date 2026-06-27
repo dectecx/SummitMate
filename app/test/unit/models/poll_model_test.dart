@@ -23,9 +23,7 @@ void main() {
           'updatedAt': '2024-01-01T00:00:00Z',
           'updatedBy': 'user-1',
           'voteCount': 5,
-          'voters': [
-            {'userId': 'u1', 'userName': 'User 1'},
-          ],
+          'voters': ['u1'],
         },
       ],
       'myVotes': ['opt-1'],
@@ -45,7 +43,7 @@ void main() {
         expect(option.id, 'opt-1');
         expect(option.text, 'Option 1');
         expect(option.voteCount, 5);
-        expect(option.voters.first['userName'], 'User 1');
+        expect(option.voters.first, 'u1');
         expect(poll.myVotes, contains('opt-1'));
       },
     );
