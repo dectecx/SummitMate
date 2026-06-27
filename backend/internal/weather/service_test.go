@@ -127,6 +127,145 @@ func TestWeatherService_Aggregate(t *testing.T) {
 	})
 }
 
+func TestParseCWATime(t *testing.T) {
+	t.Run("Given RFC3339 string, When parsing, Then it succeeds", func(t *testing.T) {
+		got, err := parseCWATime("2026-06-07T12:00:00+08:00")
+		assert.NoError(t, err)
+		assert.False(t, got.IsZero())
+	})
+
+	t.Run("Given naive datetime string, When parsing, Then fallback layout succeeds", func(t *testing.T) {
+		got, err := parseCWATime("2026-06-07T12:00:00")
+		assert.NoError(t, err)
+		assert.False(t, got.IsZero())
+	})
+
+	t.Run("Given invalid string, When parsing, Then it returns error and zero time", func(t *testing.T) {
+		got, err := parseCWATime("not-a-time")
+		assert.Error(t, err)
+		assert.True(t, got.IsZero())
+	})
+}
+
+func TestParseFloat(t *testing.T) {
+	t.Run("Given valid number, When parsing, Then it returns value without error", func(t *testing.T) {
+		v, err := parseFloat(" 12.5 ")
+		assert.NoError(t, err)
+		assert.Equal(t, 12.5, v)
+	})
+
+	t.Run("Given missing-value sentinel, When parsing, Then it returns 0 without error", func(t *testing.T) {
+		for _, s := range []string{"", "-", "X", "x", "  "} {
+			v, err := parseFloat(s)
+			assert.NoError(t, err, "input %q should be treated as missing", s)
+			assert.Equal(t, 0.0, v)
+		}
+	})
+
+	t.Run("Given unparseable value, When parsing, Then it returns error", func(t *testing.T) {
+		v, err := parseFloat("abc")
+		assert.Error(t, err)
+		assert.Equal(t, 0.0, v)
+	})
+}
+
+func TestParseInt(t *testing.T) {
+	t.Run("Given valid integer, When parsing, Then it returns value without error", func(t *testing.T) {
+		v, err := parseInt(" 20 ")
+		assert.NoError(t, err)
+		assert.Equal(t, 20, v)
+	})
+
+	t.Run("Given missing-value sentinel, When parsing, Then it returns 0 without error", func(t *testing.T) {
+		v, err := parseInt("-")
+		assert.NoError(t, err)
+		assert.Equal(t, 0, v)
+	})
+
+	t.Run("Given unparseable value, When parsing, Then it returns error", func(t *testing.T) {
+		v, err := parseInt("12.5")
+		assert.Error(t, err)
+		assert.Equal(t, 0, v)
+	})
+}
+
+func TestWeatherService_Aggregate_MissingAndInvalidValues(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	svc := &weatherService{logger: logger}
+
+	startTime := time.Now()
+	endTime := startTime.Add(12 * time.Hour)
+
+	rows := []rawRow{
+		{Location: "玉山", StartTime: startTime, EndTime: endTime, ElementName: "12小時降雨機率", Value: "-"},
+		{Location: "玉山", StartTime: startTime, EndTime: endTime, ElementName: "平均溫度", Value: "bad"},
+		{Location: "玉山", StartTime: startTime, EndTime: endTime, ElementName: "天氣現象", Value: "多雲"},
+	}
+
+	records := svc.aggregate(rows, nil)
+
+	assert.Len(t, records, 1)
+	assert.Equal(t, 0, records[0].PoP)
+	assert.Equal(t, 0.0, records[0].Temp)
+	assert.Equal(t, "多雲", records[0].Wx)
+}
+
+func TestWeatherService_FetchAndStore_SkipsUnparseableTime(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	mockRepo := new(MockWeatherRepository)
+	mockDB := new(MockBeginner)
+	mockTx := new(MockTx)
+
+	jsonResponse := `{
+		"cwaopendata": {
+			"Dataset": {
+				"DatasetInfo": {"IssueTime": "2026-06-07T14:20:00+08:00"},
+				"Locations": {
+					"Location": [
+						{
+							"LocationName": "玉山",
+							"WeatherElement": [
+								{
+									"ElementName": "平均溫度",
+									"Time": [
+										{"StartTime": "broken", "EndTime": "2026-06-07T18:00:00+08:00", "ElementValue": {"Temperature": "12.5"}},
+										{"StartTime": "2026-06-07T12:00:00+08:00", "EndTime": "2026-06-07T18:00:00+08:00", "ElementValue": {"Temperature": "12.5"}}
+									]
+								}
+							]
+						}
+					]
+				}
+			}
+		}
+	}`
+
+	client := &http.Client{
+		Transport: RoundTripFunc(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(bytes.NewBufferString(jsonResponse)),
+				Header:     make(http.Header),
+			}
+		}),
+	}
+
+	svc := NewWeatherService(logger, mockDB, mockRepo, client, "valid-key", []string{"玉山"})
+
+	mockDB.On("Begin", mock.Anything).Return(mockTx, nil).Once()
+	mockRepo.On("ReplaceAll", mock.Anything, mock.MatchedBy(func(recs []WeatherRecord) bool {
+		return len(recs) == 1 && recs[0].Location == "玉山" && recs[0].Temp == 12.5
+	})).Return(nil).Once()
+	mockTx.On("Commit", mock.Anything).Return(nil).Once()
+
+	err := svc.FetchAndStore(context.Background())
+	assert.NoError(t, err)
+
+	mockDB.AssertExpectations(t)
+	mockTx.AssertExpectations(t)
+	mockRepo.AssertExpectations(t)
+}
+
 func TestWeatherService_FetchAndStore(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
