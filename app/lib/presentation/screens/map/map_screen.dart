@@ -24,10 +24,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   // 嘉明湖國家步道大致中心點
   static const LatLng _initialCenter = LatLng(23.29, 121.03);
   final MapController _mapController = MapController();
-  // 追蹤目前縮放層級
-  double _currentZoom = 13.0;
-  // 追蹤地圖旋轉角度 (for compass)
-  double _currentRotation = 0.0;
+  // 追蹤目前縮放層級（ValueNotifier 讓 Zoom 標籤局部更新）
+  final ValueNotifier<double> _zoomNotifier = ValueNotifier(13.0);
+  // 追蹤地圖旋轉角度（ValueNotifier 讓指北針局部更新）
+  final ValueNotifier<double> _rotationNotifier = ValueNotifier(0.0);
+  // 追蹤小地圖視窗框範圍（null 表示地圖尚未 ready）
+  final ValueNotifier<LatLngBounds?> _cameraBoundsNotifier = ValueNotifier(null);
 
   // 下載預覽框 (呈現當前視窗範圍)
   List<LatLng>? _previewBounds;
@@ -35,7 +37,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   // UI 狀態
   bool _isMiniMapExpanded = true; // Mini-map 展開/收合
   bool _isFabExpanded = true; // FAB 按鈕列展開/收合
-  bool _isMapReady = false; // 地圖是否已渲染完成
 
   // 追蹤進行中的動畫 Controller，確保 dispose() 時能一併清理
   final Set<AnimationController> _activeControllers = {};
@@ -58,6 +59,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     }
     _activeControllers.clear();
     _mapController.dispose();
+    _zoomNotifier.dispose();
+    _rotationNotifier.dispose();
+    _cameraBoundsNotifier.dispose();
     super.dispose();
   }
 
@@ -87,13 +91,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                       maxZoom: 20.0,
                       interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
                       onPositionChanged: (pos, hasGesture) {
-                        setState(() {
-                          _currentZoom = pos.zoom;
-                          _currentRotation = pos.rotation;
-                        });
+                        _zoomNotifier.value = pos.zoom;
+                        _rotationNotifier.value = pos.rotation;
+                        _cameraBoundsNotifier.value = _mapController.camera.visibleBounds;
                       },
                       onMapReady: () {
-                        setState(() => _isMapReady = true);
+                        _cameraBoundsNotifier.value = _mapController.camera.visibleBounds;
                       },
                     ),
                     children: [
@@ -271,22 +274,28 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                                                     )
                                                   : null,
                                             ),
-                                            if (_isMapReady)
-                                              PolygonLayer(
-                                                polygons: [
-                                                  Polygon(
-                                                    points: [
-                                                      _mapController.camera.visibleBounds.northWest,
-                                                      _mapController.camera.visibleBounds.northEast,
-                                                      _mapController.camera.visibleBounds.southEast,
-                                                      _mapController.camera.visibleBounds.southWest,
-                                                    ],
-                                                    color: Colors.red.withValues(alpha: 0.3),
-                                                    borderColor: Colors.red,
-                                                    borderStrokeWidth: 2,
-                                                  ),
-                                                ],
-                                              ),
+                                            // ValueListenableBuilder 讓視窗框隨地圖移動更新，不觸發整頁 rebuild
+                                            ValueListenableBuilder<LatLngBounds?>(
+                                              valueListenable: _cameraBoundsNotifier,
+                                              builder: (context, bounds, _) {
+                                                if (bounds == null) return const SizedBox.shrink();
+                                                return PolygonLayer(
+                                                  polygons: [
+                                                    Polygon(
+                                                      points: [
+                                                        bounds.northWest,
+                                                        bounds.northEast,
+                                                        bounds.southEast,
+                                                        bounds.southWest,
+                                                      ],
+                                                      color: Colors.red.withValues(alpha: 0.3),
+                                                      borderColor: Colors.red,
+                                                      borderStrokeWidth: 2,
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -299,16 +308,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // Info (Zoom)
+                  // Info (Zoom) — ValueListenableBuilder 局部更新，不觸發整頁 rebuild
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 60,
                     left: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
-                      child: Text(
-                        'Zoom: ${_currentZoom.toStringAsFixed(1)}',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: _zoomNotifier,
+                      builder: (context, zoom, _) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                        child: Text(
+                          'Zoom: ${zoom.toStringAsFixed(1)}',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
@@ -439,28 +451,29 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                  // Compass
+                  // Compass — ValueListenableBuilder 局部更新，不觸發整頁 rebuild
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 10,
                     right: 80,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 300),
-                      opacity: _currentRotation.abs() > 0.5 ? 1.0 : 0.0,
-                      child: GestureDetector(
-                        onTap: () {
-                          _animatedRotateNorth();
-                        },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
-                          ),
-                          child: Transform.rotate(
-                            angle: _currentRotation * (3.14159 / 180),
-                            child: const Icon(Icons.navigation, color: Colors.red, size: 28),
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: _rotationNotifier,
+                      builder: (context, rotation, _) => AnimatedOpacity(
+                        duration: const Duration(milliseconds: 300),
+                        opacity: rotation.abs() > 0.5 ? 1.0 : 0.0,
+                        child: GestureDetector(
+                          onTap: _animatedRotateNorth,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
+                            ),
+                            child: Transform.rotate(
+                              angle: rotation * (3.14159 / 180),
+                              child: const Icon(Icons.navigation, color: Colors.red, size: 28),
+                            ),
                           ),
                         ),
                       ),
@@ -654,7 +667,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     _activeControllers.add(controller);
 
     // 計算最短旋轉路徑，正規化至 -180 ~ 180
-    double startRotation = _currentRotation;
+    double startRotation = _rotationNotifier.value;
     while (startRotation > 180) {
       startRotation -= 360;
     }
@@ -669,8 +682,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       final newRotation = rotationTween.evaluate(animation);
       _mapController.rotate(newRotation);
-      // 同步更新 _currentRotation 讓指北針圖示即時旋轉
-      setState(() => _currentRotation = newRotation);
+      // ValueNotifier 局部更新指北針，不觸發整頁 rebuild
+      _rotationNotifier.value = newRotation;
     });
 
     animation.addStatusListener((status) {
