@@ -38,16 +38,14 @@ void main() {
   group('GearCubit', () {
     final gearItem1 = GearItem(id: 'item1', tripId: 'trip1', name: 'Tent', weight: 2000, category: 'Sleep');
 
-    final gearItem2 = GearItem(id: 'item2', tripId: 'trip2', name: 'Stove', weight: 500, category: 'Cook');
-
     test('Given GearCubit, When executing, Then initial state is GearInitial', () {
       expect(GearCubit(mockGearRepository, mockTripRepository).state, const GearInitial());
     });
 
     blocTest<GearCubit, GearState>(
-      'loadGear emits [GearLoading, GearLoaded] with filtered items',
+      'loadGear emits [GearLoading, GearLoaded] with trip items',
       build: () {
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => [gearItem1, gearItem2]);
+        when(() => mockGearRepository.getByTripId('trip1')).thenAnswer((_) async => [gearItem1]);
         return GearCubit(mockGearRepository, mockTripRepository);
       },
       act: (cubit) => cubit.loadGear('trip1'),
@@ -57,13 +55,16 @@ void main() {
             .having((state) => state.items.length, 'items count', 1)
             .having((state) => state.items.first.name, 'item name', 'Tent'),
       ],
+      verify: (_) {
+        verify(() => mockGearRepository.getByTripId('trip1')).called(1);
+      },
     );
 
     blocTest<GearCubit, GearState>(
       'addItem calls repo and reloads',
       build: () {
         var callCount = 0;
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async {
+        when(() => mockGearRepository.getByTripId(any())).thenAnswer((_) async {
           if (callCount == 0) {
             callCount++;
             return [];
@@ -94,7 +95,7 @@ void main() {
       'deleteItem calls repo and reloads',
       build: () {
         var callCount = 0;
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async {
+        when(() => mockGearRepository.getByTripId(any())).thenAnswer((_) async {
           if (callCount == 0) {
             callCount++;
             return [gearItem1];
@@ -139,7 +140,7 @@ void main() {
         );
 
         var callCount = 0;
-        when(() => mockGearRepository.getAllItems()).thenAnswer((_) async {
+        when(() => mockGearRepository.getByTripId(any())).thenAnswer((_) async {
           if (callCount == 0) {
             callCount++;
             return [uncheckedItem];
@@ -164,7 +165,7 @@ void main() {
     );
 
     test('Given failure, When calling GearCubit, Then loadGear emits GearError', () async {
-      when(() => mockGearRepository.getAllItems()).thenThrow(Exception('DB Error'));
+      when(() => mockGearRepository.getByTripId(any())).thenThrow(Exception('DB Error'));
 
       final cubit = GearCubit(mockGearRepository, mockTripRepository);
 
@@ -178,7 +179,7 @@ void main() {
 
     test('Given GearCubit, When executing, Then addItem fails gracefully', () async {
       when(() => mockGearRepository.addItem(any())).thenAnswer((_) async => Failure(Exception('Add Failed')));
-      when(() => mockGearRepository.getAllItems()).thenAnswer((_) async => []);
+      when(() => mockGearRepository.getByTripId(any())).thenAnswer((_) async => []);
 
       final cubit = GearCubit(mockGearRepository, mockTripRepository);
       await cubit.loadGear('trip1'); // Prepare tripId

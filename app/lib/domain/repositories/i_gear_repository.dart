@@ -13,6 +13,9 @@ abstract interface class IGearRepository {
   /// 取得行程的所有裝備
   Future<List<GearItem>> getAllItems();
 
+  /// 取得指定行程的裝備 (在資料層依 tripId 過濾，避免全表掃描)
+  Future<List<GearItem>> getByTripId(String tripId);
+
   /// 依分類取得裝備
   Future<List<GearItem>> getItemsByCategory(String category);
 

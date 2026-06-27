@@ -57,6 +57,10 @@ class MockGearRepository implements IGearRepository {
   Future<List<GearItem>> getAllItems() async => List.unmodifiable(_mockItems);
 
   @override
+  Future<List<GearItem>> getByTripId(String tripId) async =>
+      _mockItems.where((item) => item.tripId == tripId).toList();
+
+  @override
   Future<List<GearItem>> getItemsByCategory(String category) async =>
       _mockItems.where((item) => item.category == category).toList();
 

@@ -41,7 +41,7 @@ class GearCubit extends Cubit<GearState> {
     emit(const GearLoading());
 
     try {
-      final tripItems = (await _repository.getAllItems()).where((i) => i.tripId == tripId).toList();
+      final tripItems = await _repository.getByTripId(tripId);
       emit(GearLoaded(items: tripItems));
       LogService.debug('Loaded ${tripItems.length} gear items for trip $tripId', source: _source);
     } catch (e) {
@@ -53,7 +53,7 @@ class GearCubit extends Cubit<GearState> {
   /// 重新載入當前行程的裝備
   Future<void> reload() async {
     if (_currentTripId != null) {
-      final tripItems = (await _repository.getAllItems()).where((i) => i.tripId == _currentTripId).toList();
+      final tripItems = await _repository.getByTripId(_currentTripId!);
 
       if (state is GearLoaded) {
         emit((state as GearLoaded).copyWith(items: tripItems));
