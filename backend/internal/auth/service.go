@@ -37,6 +37,26 @@ type AuthService interface {
 	DeleteAccount(ctx context.Context, userID string) error
 }
 
+// Durations holds the configurable time windows for the auth flows
+// (token lifetimes, verification code TTL and outbound mail timeout).
+type Durations struct {
+	AccessTokenTTL      time.Duration
+	RefreshTokenTTL     time.Duration
+	VerificationCodeTTL time.Duration
+	MailSendTimeout     time.Duration
+}
+
+// DefaultDurations returns the built-in auth time windows. It is used as a
+// convenient default by callers (such as tests) that do not load app config.
+func DefaultDurations() Durations {
+	return Durations{
+		AccessTokenTTL:      1 * time.Hour,
+		RefreshTokenTTL:     14 * 24 * time.Hour,
+		VerificationCodeTTL: 10 * time.Minute,
+		MailSendTimeout:     15 * time.Second,
+	}
+}
+
 type authService struct {
 	logger       *slog.Logger
 	userRepo     UserRepository
@@ -45,6 +65,7 @@ type authService struct {
 	authCache    cache.Cache[string]
 	flagService  flag.FlagService
 	jwtSecret    []byte
+	durations    Durations
 }
 
 func NewAuthService(
@@ -55,6 +76,7 @@ func NewAuthService(
 	authCache cache.Cache[string],
 	flagService flag.FlagService,
 	jwtSecret string,
+	durations Durations,
 ) AuthService {
 	return &authService{
 		logger:       logger.With("component", "auth"),
@@ -64,6 +86,7 @@ func NewAuthService(
 		authCache:    authCache,
 		flagService:  flagService,
 		jwtSecret:    []byte(jwtSecret),
+		durations:    durations,
 	}
 }
 
@@ -103,7 +126,7 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	}
 
 	// 存入快取 (10 分鐘)
-	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, 10*time.Minute); err != nil {
+	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, svc.durations.VerificationCodeTTL); err != nil {
 		svc.logger.ErrorContext(ctx, "快取寫入失敗", "email", emailAddr, "error", err)
 		return nil, "", "", err
 	}
@@ -143,7 +166,7 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	// 非同步發送驗證信 (檢查旗標)
 	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		go func() {
-			mailCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			mailCtx, cancel := context.WithTimeout(context.Background(), svc.durations.MailSendTimeout)
 			defer cancel()
 			if err := svc.emailService.SendVerificationCode(mailCtx, createdUser.Email, code, 10); err != nil {
 				svc.logger.Error("發送驗證信失敗", "user_id", createdUser.ID, "error", err)
@@ -154,11 +177,11 @@ func (svc *authService) Register(ctx context.Context, emailAddr, password, displ
 	}
 
 	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
-	accessToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "access", 1*time.Hour)
+	accessToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "access", svc.durations.AccessTokenTTL)
 	if err != nil {
 		return nil, "", "", err
 	}
-	refreshToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "refresh", 14*24*time.Hour)
+	refreshToken, err := svc.tokenManager.GenerateToken(createdUser.ID, createdUser.Email, "refresh", svc.durations.RefreshTokenTTL)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -232,13 +255,13 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 	}
 
 	// 更新快取
-	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, 10*time.Minute); err != nil {
+	if err := svc.authCache.Set(ctx, authVerificationKey(emailAddr), code, svc.durations.VerificationCodeTTL); err != nil {
 		return err
 	}
 
 	if svc.emailService != nil && svc.flagService.IsEnabled(ctx, flag.EnableEmailSending) {
 		go func() {
-			mailCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			mailCtx, cancel := context.WithTimeout(context.Background(), svc.durations.MailSendTimeout)
 			defer cancel()
 			if err := svc.emailService.SendVerificationCode(mailCtx, user.Email, code, 10); err != nil {
 				svc.logger.Error("重發驗證信失敗", "user_id", user.ID, "error", err)
@@ -278,11 +301,11 @@ func (svc *authService) Login(ctx context.Context, email, password string) (*Use
 	svc.logger.InfoContext(ctx, "使用者登入成功", "user_id", user.ID, "email", email)
 
 	// 簽發 JWT Token (Access: 1 小時, Refresh: 14 天)
-	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
+	accessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", svc.durations.AccessTokenTTL)
 	if err != nil {
 		return nil, "", "", err
 	}
-	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
+	refreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", svc.durations.RefreshTokenTTL)
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -337,11 +360,11 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 		return nil, "", "", apperror.ErrUnauthorized.WithMessage("帳號已停用")
 	}
 
-	newAccessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", 1*time.Hour)
+	newAccessToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "access", svc.durations.AccessTokenTTL)
 	if err != nil {
 		return nil, "", "", err
 	}
-	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", 14*24*time.Hour)
+	newRefreshToken, err := svc.tokenManager.GenerateToken(user.ID, user.Email, "refresh", svc.durations.RefreshTokenTTL)
 	if err != nil {
 		return nil, "", "", err
 	}

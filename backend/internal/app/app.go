@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"summitmate/api"
 	appapi "summitmate/internal/app/api"
@@ -47,10 +46,17 @@ type App struct {
 }
 
 func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
-	initCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	initCtx, cancel := context.WithTimeout(context.Background(), cfg.DBConnectTimeout)
 	defer cancel()
 
-	pool, err := database.Connect(initCtx, cfg.DatabaseURL)
+	pool, err := database.Connect(initCtx, cfg.DatabaseURL, database.PoolConfig{
+		MaxConns:          cfg.DBMaxConns,
+		MinConns:          cfg.DBMinConns,
+		MaxConnLifetime:   cfg.DBMaxConnLifetime,
+		MaxConnIdleTime:   cfg.DBMaxConnIdleTime,
+		HealthCheckPeriod: cfg.DBHealthCheckPeriod,
+		ConnectTimeout:    cfg.DBConnectTimeout,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("database connection failed: %w", err)
 	}
@@ -75,7 +81,7 @@ func (a *App) InitRouter() (*chi.Mux, error) {
 	router.Use(middleware.ContextLogger(a.Logger))
 	router.Use(middleware.RequestLogger(a.Logger))
 	router.Use(middleware.CORS(a.Config.AllowedOrigins))
-	router.Use(chiMiddleware.Timeout(30 * time.Second))
+	router.Use(chiMiddleware.Timeout(a.Config.HTTPRequestTimeout))
 	router.Use(chiMiddleware.Recoverer)
 
 	// API Handler
@@ -115,7 +121,7 @@ func (a *App) Run() error {
 		<-sigChan
 
 		a.Logger.Info("Shutting down server...")
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), a.Config.ShutdownTimeout)
 		defer cancel()
 
 		if err := a.Server.Shutdown(ctx); err != nil {
@@ -248,7 +254,12 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	flagService := flag.NewFlagService(flagRepo, logger)
 
 	// --- Services ---
-	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret)
+	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret, auth.Durations{
+		AccessTokenTTL:      cfg.AccessTokenTTL,
+		RefreshTokenTTL:     cfg.RefreshTokenTTL,
+		VerificationCodeTTL: cfg.AuthCodeTTL,
+		MailSendTimeout:     cfg.AuthMailSendTimeout,
+	})
 	tripService := trip.NewTripService(logger, pool, tripRepo, tripMemberRepo, tripItineraryRepo, tripMealDayRepo, authService)
 	tripAccessChecker := trip.NewTripAccessChecker(tripRepo, tripMemberRepo)
 	gearLibService := library.NewGearLibraryService(logger, gearLibRepo)
@@ -262,7 +273,7 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	favoriteService := favorite.NewFavoriteService(logger, pool, favoriteRepo)
 	groupService := groupevent.NewGroupEventService(logger, pool, groupRepo, tripService, authService)
 	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: cfg.CWAHTTPTimeout,
 	}
 
 	weatherService := weather.NewWeatherService(logger, pool, weatherRepo, httpClient, cfg.CWAApiKey, nil)

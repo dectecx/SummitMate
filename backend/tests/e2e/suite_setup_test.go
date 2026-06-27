@@ -79,7 +79,7 @@ func (s *APITestSuite) SetupSuite() {
 	}
 
 	// 3. 連線 dbPool
-	pool, err := database.Connect(ctx, connStr)
+	pool, err := database.Connect(ctx, connStr, database.DefaultPoolConfig())
 	s.Require().NoError(err, "無法連接至測試資料庫")
 	s.dbPool = pool
 

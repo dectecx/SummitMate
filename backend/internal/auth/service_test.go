@@ -27,7 +27,7 @@ func TestAuthService_Register(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret, auth.DefaultDurations())
 
 		email := "test@example.com"
 		password := "password123"
@@ -59,7 +59,7 @@ func TestAuthService_Register(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret, auth.DefaultDurations())
 
 		email := "existing@example.com"
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(&auth.User{ID: "existing-id"}, nil)
@@ -74,7 +74,7 @@ func TestAuthService_Register(t *testing.T) {
 	})
 
 	t.Run("Given invalid email format, When registering, Then it returns invalid email error", func(t *testing.T) {
-		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
+		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret, auth.DefaultDurations())
 		user, accessToken, refreshToken, err := svc.Register(context.Background(), "invalid-email", "password123", "any", nil)
 		assert.Error(t, err)
 		assert.Equal(t, apperror.ErrInvalidEmail, err)
@@ -84,7 +84,7 @@ func TestAuthService_Register(t *testing.T) {
 	})
 
 	t.Run("Given weak password, When registering, Then it returns weak password error", func(t *testing.T) {
-		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret)
+		svc := auth.NewAuthService(logger, nil, tokenManager, nil, nil, nil, secret, auth.DefaultDurations())
 
 		// Too short
 		_, _, _, err := svc.Register(context.Background(), "test@example.com", "short1", "any", nil)
@@ -112,7 +112,7 @@ func TestAuthService_Login(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret, auth.DefaultDurations())
 
 		email := "login@example.com"
 		password := "correct-password"
@@ -139,7 +139,7 @@ func TestAuthService_Login(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret, auth.DefaultDurations())
 
 		email := "wrong@example.com"
 		mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, auth.ErrNotFound)
@@ -163,7 +163,7 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret, auth.DefaultDurations())
 
 		userID := "user-token"
 		email := "token@example.com"
@@ -190,7 +190,7 @@ func TestAuthService_Logout(t *testing.T) {
 		mockCache := cache.NewMemoryCache[string]()
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, nil, tokenManager, nil, mockCache, mockFlag, secret)
+		svc := auth.NewAuthService(logger, nil, tokenManager, nil, mockCache, mockFlag, secret, auth.DefaultDurations())
 
 		userID := "user-token"
 		email := "token@example.com"
@@ -220,7 +220,7 @@ func TestAuthService_ChangePassword(t *testing.T) {
 		mockCache := cache.NewMemoryCache[string]()
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret, auth.DefaultDurations())
 
 		userID := "user-token"
 		email := "token@example.com"

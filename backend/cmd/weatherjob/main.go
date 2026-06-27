@@ -28,7 +28,14 @@ func main() {
 	defer cancel()
 
 	// 連線資料庫
-	pool, err := database.Connect(ctx, cfg.DatabaseURL)
+	pool, err := database.Connect(ctx, cfg.DatabaseURL, database.PoolConfig{
+		MaxConns:          cfg.DBMaxConns,
+		MinConns:          cfg.DBMinConns,
+		MaxConnLifetime:   cfg.DBMaxConnLifetime,
+		MaxConnIdleTime:   cfg.DBMaxConnIdleTime,
+		HealthCheckPeriod: cfg.DBHealthCheckPeriod,
+		ConnectTimeout:    cfg.DBConnectTimeout,
+	})
 	if err != nil {
 		slog.Error("資料庫連線失敗", "error", err)
 		os.Exit(1)
@@ -38,7 +45,7 @@ func main() {
 	// 執行 ETL
 	weatherRepo := weather.NewWeatherRepository(pool)
 	httpClient := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: cfg.CWAHTTPTimeout,
 	}
 	weatherSvc := weather.NewWeatherService(logger, pool, weatherRepo, httpClient, cfg.CWAApiKey, nil)
 
