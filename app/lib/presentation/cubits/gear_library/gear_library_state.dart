@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/core/core.dart';
+import '../../utils/gear_utils.dart';
 
 abstract class GearLibraryState extends Equatable {
   const GearLibraryState();
@@ -43,36 +43,22 @@ class GearLibraryLoaded extends GearLibraryState {
   }
 
   /// 過濾後的裝備列表
-  List<GearLibraryItem> get filteredItems {
-    var result = items;
-
-    if (selectedCategory != null) {
-      result = result.where((item) => item.category == selectedCategory).toList();
-    }
-
-    if (searchQuery.isNotEmpty) {
-      final query = searchQuery.toLowerCase();
-      result = result.where((item) => item.name.toLowerCase().contains(query)).toList();
-    }
-
-    // TODO: 依最後使用時間或建立時間排序？目前尚無特別排序
-    return result;
-  }
+  ///
+  /// TODO: 依最後使用時間或建立時間排序？目前尚無特別排序
+  List<GearLibraryItem> get filteredItems => GearFilter.filter(
+    items,
+    categoryOf: (item) => item.category,
+    nameOf: (item) => item.name,
+    selectedCategory: selectedCategory,
+    searchQuery: searchQuery,
+  );
 
   /// 可用項目 (非封存)
   List<GearLibraryItem> get availableItems => items.where((i) => !i.isArchived).toList();
 
   /// 依分類分組
-  Map<String, List<GearLibraryItem>> get itemsByCategory {
-    final result = <String, List<GearLibraryItem>>{};
-    for (final cat in GearCategory.all) {
-      final filtered = filteredItems.where((item) => item.category == cat).toList();
-      if (filtered.isNotEmpty) {
-        result[cat] = filtered;
-      }
-    }
-    return result;
-  }
+  Map<String, List<GearLibraryItem>> get itemsByCategory =>
+      GearFilter.groupByCategory(filteredItems, categoryOf: (item) => item.category);
 
   @override
   List<Object?> get props => [items, selectedCategory, searchQuery];

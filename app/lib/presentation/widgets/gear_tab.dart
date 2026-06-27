@@ -12,8 +12,7 @@ import 'gear/gear_search_bar.dart';
 import 'gear/gear_summary_cards.dart';
 import 'gear/gear_category_section.dart';
 import 'gear/dialogs/add_gear_dialog.dart';
-import '../../../domain/domain.dart';
-import '../../../core/core.dart';
+import '../utils/gear_utils.dart';
 import 'responsive_layout.dart';
 import '../cubits/tutorial/tutorial_cubit.dart';
 import '../cubits/tutorial/tutorial_state.dart';
@@ -100,30 +99,11 @@ class _GearTabState extends State<GearTab> {
             }
           }
 
-          // Generate itemsByCategory and filteredItems manually since we only have List<GearItem>
-          final selectedCategory = !isTutorial && gearState is GearLoaded ? gearState.selectedCategory : null;
-          final showUncheckedOnly = !isTutorial && gearState is GearLoaded ? gearState.showUncheckedOnly : false;
-          final searchQuery = !isTutorial && gearState is GearLoaded ? gearState.searchQuery : '';
-
-          var filteredItems = items;
-          if (selectedCategory != null) {
-            filteredItems = filteredItems.where((item) => item.category == selectedCategory).toList();
-          }
-          if (showUncheckedOnly) {
-            filteredItems = filteredItems.where((item) => !item.isChecked).toList();
-          }
-          if (searchQuery.isNotEmpty) {
-            final query = searchQuery.toLowerCase();
-            filteredItems = filteredItems.where((item) => item.name.toLowerCase().contains(query)).toList();
-          }
-
-          final itemsByCategory = <String, List<GearItem>>{};
-          for (final cat in GearCategory.all) {
-            final filtered = filteredItems.where((item) => item.category == cat).toList();
-            if (filtered.isNotEmpty) {
-              itemsByCategory[cat] = filtered;
-            }
-          }
+          // 非教學模式直接沿用 GearLoaded 的篩選/分組 getter；
+          // 教學模式無 GearLoaded 狀態，對 mock items 做無篩選分組。
+          final itemsByCategory = !isTutorial && gearState is GearLoaded
+              ? gearState.itemsByCategory
+              : GearFilter.groupByCategory(items, categoryOf: (item) => item.category);
 
           return Scaffold(
             body: ResponsiveLayout(

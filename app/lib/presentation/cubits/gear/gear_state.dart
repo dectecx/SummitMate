@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/gear_item.dart';
-import 'package:summitmate/core/core.dart';
+import '../../utils/gear_utils.dart';
 
 /// 裝備清單狀態
 ///
@@ -50,36 +50,19 @@ class GearLoaded extends GearState {
   }
 
   /// 過濾後的裝備列表
-  List<GearItem> get filteredItems {
-    var result = items;
-
-    if (selectedCategory != null) {
-      result = result.where((item) => item.category == selectedCategory).toList();
-    }
-
-    if (showUncheckedOnly) {
-      result = result.where((item) => !item.isChecked).toList();
-    }
-
-    if (searchQuery.isNotEmpty) {
-      final query = searchQuery.toLowerCase();
-      result = result.where((item) => item.name.toLowerCase().contains(query)).toList();
-    }
-
-    return result;
-  }
+  List<GearItem> get filteredItems => GearFilter.filter(
+    items,
+    categoryOf: (item) => item.category,
+    nameOf: (item) => item.name,
+    isCheckedOf: (item) => item.isChecked,
+    selectedCategory: selectedCategory,
+    searchQuery: searchQuery,
+    showUncheckedOnly: showUncheckedOnly,
+  );
 
   /// 依分類分組的裝備
-  Map<String, List<GearItem>> get itemsByCategory {
-    final result = <String, List<GearItem>>{};
-    for (final cat in GearCategory.all) {
-      final filtered = filteredItems.where((item) => item.category == cat).toList();
-      if (filtered.isNotEmpty) {
-        result[cat] = filtered;
-      }
-    }
-    return result;
-  }
+  Map<String, List<GearItem>> get itemsByCategory =>
+      GearFilter.groupByCategory(filteredItems, categoryOf: (item) => item.category);
 
   /// 總重量 (克)
   double get totalWeight => items.fold(0.0, (sum, item) => sum + item.totalWeight);
