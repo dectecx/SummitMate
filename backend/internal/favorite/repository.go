@@ -105,7 +105,7 @@ func (r *favoriteRepository) BatchUpdate(ctx context.Context, userID string, ite
 			query := `
 				INSERT INTO favorites (user_id, target_id, type, created_by, updated_by)
 				VALUES ($1, $2, $3, $4, $5)
-				ON CONFLICT (user_id, target_id) DO NOTHING
+				ON CONFLICT (user_id, target_id, type) DO NOTHING
 			`
 			_, err := db.Exec(ctx, query, userID, item.TargetID, item.Type, userID, userID)
 			if err != nil {
