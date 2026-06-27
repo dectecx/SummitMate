@@ -5,14 +5,13 @@ import (
 	"fmt"
 
 	"summitmate/internal/database"
-	"summitmate/internal/middleware"
 )
 
 // FlagRepository 定義系統旗標資料存取介面。
 type FlagRepository interface {
 	GetByKey(ctx context.Context, key string) (*Flag, error)
 	GetAll(ctx context.Context) ([]Flag, error)
-	Update(ctx context.Context, key string, value bool) error
+	Update(ctx context.Context, key string, value bool, actorUserID string) error
 }
 
 type flagRepository struct {
@@ -56,11 +55,11 @@ func (r *flagRepository) GetAll(ctx context.Context) ([]Flag, error) {
 	return flags, nil
 }
 
-func (r *flagRepository) Update(ctx context.Context, key string, value bool) error {
+func (r *flagRepository) Update(ctx context.Context, key string, value bool, actorUserID string) error {
 	db := database.GetQuerier(ctx, r.db)
 
-	if userID, ok := middleware.GetUserIDFromContext(ctx); ok {
-		_ = database.SetSessionUser(ctx, db, userID)
+	if actorUserID != "" {
+		_ = database.SetSessionUser(ctx, db, actorUserID)
 	}
 
 	_, err := db.Exec(ctx, "UPDATE system_flags SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2", value, key)

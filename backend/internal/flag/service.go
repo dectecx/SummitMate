@@ -10,7 +10,7 @@ import (
 // FlagService 定義系統旗標相關的業務邏輯介面。
 type FlagService interface {
 	IsEnabled(ctx context.Context, key string) bool
-	SetFlag(ctx context.Context, key string, value bool) error
+	SetFlag(ctx context.Context, key string, value bool, actorUserID string) error
 	GetAll(ctx context.Context) ([]Flag, error)
 }
 
@@ -78,8 +78,8 @@ func (s *flagService) IsEnabled(ctx context.Context, key string) bool {
 	return val
 }
 
-func (s *flagService) SetFlag(ctx context.Context, key string, value bool) error {
-	err := s.repo.Update(ctx, key, value)
+func (s *flagService) SetFlag(ctx context.Context, key string, value bool, actorUserID string) error {
+	err := s.repo.Update(ctx, key, value, actorUserID)
 	if err != nil {
 		return err
 	}

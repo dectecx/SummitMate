@@ -3,6 +3,7 @@ package flag
 import (
 	"net/http"
 
+	"summitmate/internal/apperror"
 	"summitmate/internal/common/apiutil"
 )
 
@@ -37,7 +38,13 @@ func (h *FlagHandler) UpdateFlag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.svc.SetFlag(r.Context(), req.Key, req.Value); err != nil {
+	userID, ok := apiutil.GetUserIDFromRequest(r)
+	if !ok || userID == "" {
+		apiutil.SendError(w, r, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.svc.SetFlag(r.Context(), req.Key, req.Value, userID); err != nil {
 		apiutil.SendError(w, r, err)
 		return
 	}

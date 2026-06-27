@@ -33,8 +33,8 @@ func (m *MockFlagRepository) GetAll(ctx context.Context) ([]Flag, error) {
 	return args.Get(0).([]Flag), args.Error(1)
 }
 
-func (m *MockFlagRepository) Update(ctx context.Context, key string, value bool) error {
-	args := m.Called(ctx, key, value)
+func (m *MockFlagRepository) Update(ctx context.Context, key string, value bool, actorUserID string) error {
+	args := m.Called(ctx, key, value, actorUserID)
 	return args.Error(0)
 }
 
@@ -110,9 +110,9 @@ func TestFlagService_SetFlag(t *testing.T) {
 	svc := NewFlagService(mockRepo, logger)
 
 	t.Run("Given SuccessUpdateAndCacheWrite, When calling FlagService SetFlag, Then it behaves as expected", func(t *testing.T) {
-		mockRepo.On("Update", mock.Anything, "feature-x", true).Return(nil).Once()
+		mockRepo.On("Update", mock.Anything, "feature-x", true, "user-1").Return(nil).Once()
 
-		err := svc.SetFlag(context.Background(), "feature-x", true)
+		err := svc.SetFlag(context.Background(), "feature-x", true, "user-1")
 		assert.NoError(t, err)
 
 		// 驗證快取是否被即時更新，而不需要調用 repo.GetAll
@@ -121,9 +121,9 @@ func TestFlagService_SetFlag(t *testing.T) {
 	})
 
 	t.Run("Given UpdateError, When calling FlagService SetFlag, Then it behaves as expected", func(t *testing.T) {
-		mockRepo.On("Update", mock.Anything, "feature-x", false).Return(errors.New("db error")).Once()
+		mockRepo.On("Update", mock.Anything, "feature-x", false, "user-1").Return(errors.New("db error")).Once()
 
-		err := svc.SetFlag(context.Background(), "feature-x", false)
+		err := svc.SetFlag(context.Background(), "feature-x", false, "user-1")
 		assert.Error(t, err)
 
 		// 快取應該保持原樣 (還是 true)

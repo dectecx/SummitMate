@@ -127,17 +127,17 @@ func (_c *MockFlagService_IsEnabled_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// SetFlag provides a mock function with given fields: ctx, key, value
-func (_m *MockFlagService) SetFlag(ctx context.Context, key string, value bool) error {
-	ret := _m.Called(ctx, key, value)
+// SetFlag provides a mock function with given fields: ctx, key, value, actorUserID
+func (_m *MockFlagService) SetFlag(ctx context.Context, key string, value bool, actorUserID string) error {
+	ret := _m.Called(ctx, key, value, actorUserID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SetFlag")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, bool) error); ok {
-		r0 = rf(ctx, key, value)
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool, string) error); ok {
+		r0 = rf(ctx, key, value, actorUserID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -154,13 +154,14 @@ type MockFlagService_SetFlag_Call struct {
 //   - ctx context.Context
 //   - key string
 //   - value bool
-func (_e *MockFlagService_Expecter) SetFlag(ctx interface{}, key interface{}, value interface{}) *MockFlagService_SetFlag_Call {
-	return &MockFlagService_SetFlag_Call{Call: _e.mock.On("SetFlag", ctx, key, value)}
+//   - actorUserID string
+func (_e *MockFlagService_Expecter) SetFlag(ctx interface{}, key interface{}, value interface{}, actorUserID interface{}) *MockFlagService_SetFlag_Call {
+	return &MockFlagService_SetFlag_Call{Call: _e.mock.On("SetFlag", ctx, key, value, actorUserID)}
 }
 
-func (_c *MockFlagService_SetFlag_Call) Run(run func(ctx context.Context, key string, value bool)) *MockFlagService_SetFlag_Call {
+func (_c *MockFlagService_SetFlag_Call) Run(run func(ctx context.Context, key string, value bool, actorUserID string)) *MockFlagService_SetFlag_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(bool))
+		run(args[0].(context.Context), args[1].(string), args[2].(bool), args[3].(string))
 	})
 	return _c
 }
@@ -170,7 +171,7 @@ func (_c *MockFlagService_SetFlag_Call) Return(_a0 error) *MockFlagService_SetFl
 	return _c
 }
 
-func (_c *MockFlagService_SetFlag_Call) RunAndReturn(run func(context.Context, string, bool) error) *MockFlagService_SetFlag_Call {
+func (_c *MockFlagService_SetFlag_Call) RunAndReturn(run func(context.Context, string, bool, string) error) *MockFlagService_SetFlag_Call {
 	_c.Call.Return(run)
 	return _c
 }
