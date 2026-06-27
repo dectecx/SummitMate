@@ -42,7 +42,6 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 			HostID:     "user-1",
 			HostName:   "Host User",
 			HostAvatar: "avatar-1",
-			CreatedBy:  "user-1",
 		}
 		mockRepo.On("CreateEvent", mock.Anything, event).Return(nil).Once()
 
@@ -50,6 +49,8 @@ func TestGroupEventService_CreateEvent(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "open", event.Status)
+		assert.Equal(t, "user-1", event.CreatedBy)
+		assert.Equal(t, "user-1", event.UpdatedBy)
 		mockRepo.AssertExpectations(t)
 	})
 

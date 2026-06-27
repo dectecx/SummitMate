@@ -34,11 +34,10 @@ func TestGearSetService_Create_UUIDv7(t *testing.T) {
 
 		gs := &GearSet{
 			Title:      "Test Gear Set",
-			UserID:     "user-1",
 			Visibility: VisibilityPublic,
 		}
 
-		createdGS, err := service.Create(context.Background(), gs)
+		createdGS, err := service.Create(context.Background(), gs, "user-1")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, createdGS)
@@ -46,6 +45,11 @@ func TestGearSetService_Create_UUIDv7(t *testing.T) {
 		// Verify the mock was called
 		mockRepo.AssertExpectations(t)
 		mockAuth.AssertExpectations(t)
+
+		// Verify audit fields are set by service
+		assert.Equal(t, "user-1", capturedGS.UserID)
+		assert.Equal(t, "user-1", capturedGS.CreatedBy)
+		assert.Equal(t, "user-1", capturedGS.UpdatedBy)
 
 		// Verify the ID is a UUID v7
 		assert.NotEqual(t, uuid.Nil, capturedGS.ID)

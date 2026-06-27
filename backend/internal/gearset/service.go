@@ -13,7 +13,7 @@ import (
 
 // GearSetService 定義裝備組合相關的業務邏輯介面。
 type GearSetService interface {
-	Create(ctx context.Context, gs *GearSet) (*GearSet, error)
+	Create(ctx context.Context, gs *GearSet, requestingUserID string) (*GearSet, error)
 	Update(ctx context.Context, gs *GearSet, requestingUserID string) (*GearSet, error)
 	GetByID(ctx context.Context, id uuid.UUID, requestingUserID string, providedKey *string) (*GearSet, error)
 	Delete(ctx context.Context, id uuid.UUID, requestingUserID string) error
@@ -34,13 +34,28 @@ func NewGearSetService(logger *slog.Logger, repo GearSetRepository, authServ aut
 	}
 }
 
-func (s *gearSetService) Create(ctx context.Context, gs *GearSet) (*GearSet, error) {
+func (s *gearSetService) Create(ctx context.Context, gs *GearSet, requestingUserID string) (*GearSet, error) {
+	gs.UserID = requestingUserID
+	gs.CreatedBy = requestingUserID
+	gs.UpdatedBy = requestingUserID
+
 	if gs.ID == uuid.Nil {
 		gs.ID = uuid.Must(uuid.NewV7())
 	}
 	now := time.Now()
 	gs.CreatedAt = now
 	gs.UpdatedAt = now
+
+	for i := range gs.Items {
+		if gs.Items[i].ID == uuid.Nil {
+			gs.Items[i].ID = uuid.Must(uuid.NewV7())
+		}
+	}
+	for i := range gs.Meals {
+		if gs.Meals[i].ID == uuid.Nil {
+			gs.Meals[i].ID = uuid.Must(uuid.NewV7())
+		}
+	}
 
 	// Retrieve actual DisplayName for Author from auth service
 	user, err := s.authServ.GetUserByID(ctx, gs.UserID)
@@ -83,6 +98,17 @@ func (s *gearSetService) Update(ctx context.Context, gs *GearSet, requestingUser
 	gs.CreatedBy = existing.CreatedBy
 	gs.UpdatedAt = time.Now()
 	gs.UpdatedBy = requestingUserID
+
+	for i := range gs.Items {
+		if gs.Items[i].ID == uuid.Nil {
+			gs.Items[i].ID = uuid.Must(uuid.NewV7())
+		}
+	}
+	for i := range gs.Meals {
+		if gs.Meals[i].ID == uuid.Nil {
+			gs.Meals[i].ID = uuid.Must(uuid.NewV7())
+		}
+	}
 
 	// Retrieve actual DisplayName for Author from auth service
 	user, err := s.authServ.GetUserByID(ctx, gs.UserID)

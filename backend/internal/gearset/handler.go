@@ -8,9 +8,8 @@ import (
 	"summitmate/internal/common/apiutil"
 	"summitmate/internal/middleware"
 
-	openapi_types "github.com/oapi-codegen/runtime/types"
-
 	"github.com/google/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 type GearSetHandler struct {
@@ -89,14 +88,10 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 		Title:       req.Title,
 		Visibility:  GearSetVisibility(req.Visibility),
 		DownloadKey: req.DownloadKey,
-		UserID:      userID,
-		CreatedBy:   userID,
-		UpdatedBy:   userID,
 	}
 
 	for _, item := range req.Items {
 		gi := GearSetItem{
-			ID:       uuid.Must(uuid.NewV7()),
 			Name:     item.Name,
 			Category: item.Category,
 			Weight:   item.Weight,
@@ -111,7 +106,6 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 	if req.Meals != nil {
 		for _, meal := range *req.Meals {
 			gm := GearSetMeal{
-				ID:       uuid.Must(uuid.NewV7()),
 				Day:      meal.Day,
 				MealType: meal.MealType,
 				Name:     meal.Name,
@@ -124,7 +118,7 @@ func (h *GearSetHandler) CreateGearSet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	created, err := h.svc.Create(r.Context(), gs)
+	created, err := h.svc.Create(r.Context(), gs, userID)
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
@@ -180,7 +174,6 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 
 	for _, item := range req.Items {
 		gi := GearSetItem{
-			ID:       uuid.Must(uuid.NewV7()),
 			Name:     item.Name,
 			Category: item.Category,
 			Weight:   item.Weight,
@@ -195,7 +188,6 @@ func (h *GearSetHandler) UpdateGearSet(w http.ResponseWriter, r *http.Request, i
 	if req.Meals != nil {
 		for _, meal := range *req.Meals {
 			gm := GearSetMeal{
-				ID:       uuid.Must(uuid.NewV7()),
 				Day:      meal.Day,
 				MealType: meal.MealType,
 				Name:     meal.Name,
