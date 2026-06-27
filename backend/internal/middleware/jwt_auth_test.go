@@ -9,38 +9,31 @@ import (
 	"time"
 
 	"summitmate/api"
-	"summitmate/internal/auth/authkeys"
 	"summitmate/internal/auth/tokens"
 	"summitmate/pkg/cache"
 
 	"github.com/stretchr/testify/assert"
 )
 
-// failingCache 模擬快取後端（如 Redis）發生非 ErrKeyNotFound 的故障，
+// failingBlacklist 模擬 TokenBlacklist 後端（如 Redis）發生故障，
 // 用於驗證黑名單檢查的 fail-closed 行為。
-type failingCache struct {
+type failingBlacklist struct {
 	err error
 }
 
-func (f *failingCache) Set(context.Context, cache.Key, string, time.Duration) error {
+func (f *failingBlacklist) Revoke(context.Context, string, string, time.Time) error {
 	return f.err
 }
 
-func (f *failingCache) Get(context.Context, cache.Key) (string, error) {
-	return "", f.err
+func (f *failingBlacklist) IsRevoked(context.Context, string, string) (bool, error) {
+	return false, f.err
 }
 
-func (f *failingCache) Delete(context.Context, cache.Key) error {
+func (f *failingBlacklist) RevokeAll(context.Context, string) error {
 	return f.err
 }
 
-func (f *failingCache) Increment(context.Context, cache.Key, time.Duration) (int64, error) {
-	return 0, f.err
-}
-
-func (f *failingCache) Close() error {
-	return nil
-}
+func (f *failingBlacklist) Close() error { return nil }
 
 func TestJWTAuth_Middleware(t *testing.T) {
 	secret := "super_secret_test_key_12345"
@@ -159,8 +152,8 @@ func TestJWTAuth_Middleware(t *testing.T) {
 	})
 
 	t.Run("Given blacklisted token, When executing middleware, Then it returns 401 Unauthorized", func(t *testing.T) {
-		memoryCache := cache.NewMemoryCache[string]()
-		middlewareWithCache := JWTAuth(tokenManager, memoryCache)
+		memoryBlacklist := cache.NewMemoryTokenBlacklist()
+		middlewareWithCache := JWTAuth(tokenManager, memoryBlacklist)
 		handlerToTestWithCache := middlewareWithCache(nextHandler)
 
 		userID := "user-12345-uuid"
@@ -169,7 +162,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Blacklist the token
-		err = memoryCache.Set(context.Background(), authkeys.BlacklistKey(tokenStr), "1", time.Hour)
+		err = memoryBlacklist.Revoke(context.Background(), userID, tokenStr, time.Now().Add(time.Hour))
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
@@ -185,8 +178,8 @@ func TestJWTAuth_Middleware(t *testing.T) {
 	})
 
 	t.Run("Given non-blacklisted token with cache, When executing middleware, Then it passes successfully", func(t *testing.T) {
-		memoryCache := cache.NewMemoryCache[string]()
-		middlewareWithCache := JWTAuth(tokenManager, memoryCache)
+		memoryBlacklist := cache.NewMemoryTokenBlacklist()
+		middlewareWithCache := JWTAuth(tokenManager, memoryBlacklist)
 		handlerToTestWithCache := middlewareWithCache(nextHandler)
 
 		userID := "user-12345-uuid"
@@ -207,7 +200,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 	})
 
 	t.Run("Given cache failure during blacklist check, When executing middleware, Then it fails closed with 503", func(t *testing.T) {
-		brokenCache := &failingCache{err: errors.New("redis connection refused")}
+		brokenCache := &failingBlacklist{err: errors.New("redis connection refused")}
 		middlewareWithCache := JWTAuth(tokenManager, brokenCache)
 		handlerToTestWithCache := middlewareWithCache(nextHandler)
 

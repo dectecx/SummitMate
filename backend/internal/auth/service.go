@@ -76,14 +76,15 @@ func DefaultDurations() Durations {
 }
 
 type authService struct {
-	logger       *slog.Logger
-	userRepo     UserRepository
-	tokenManager *tokens.TokenManager
-	emailService *email.EmailService
-	authCache    cache.Cache[string]
-	flagService  flag.FlagService
-	jwtSecret    []byte
-	durations    Durations
+	logger         *slog.Logger
+	userRepo       UserRepository
+	tokenManager   *tokens.TokenManager
+	emailService   *email.EmailService
+	authCache      cache.Cache[string]
+	tokenBlacklist cache.TokenBlacklist
+	flagService    flag.FlagService
+	jwtSecret      []byte
+	durations      Durations
 }
 
 func NewAuthService(
@@ -92,19 +93,21 @@ func NewAuthService(
 	tokenManager *tokens.TokenManager,
 	emailService *email.EmailService,
 	authCache cache.Cache[string],
+	tokenBlacklist cache.TokenBlacklist,
 	flagService flag.FlagService,
 	jwtSecret string,
 	durations Durations,
 ) AuthService {
 	return &authService{
-		logger:       logger.With("component", "auth"),
-		userRepo:     userRepo,
-		tokenManager: tokenManager,
-		emailService: emailService,
-		authCache:    authCache,
-		flagService:  flagService,
-		jwtSecret:    []byte(jwtSecret),
-		durations:    durations,
+		logger:         logger.With("component", "auth"),
+		userRepo:       userRepo,
+		tokenManager:   tokenManager,
+		emailService:   emailService,
+		authCache:      authCache,
+		tokenBlacklist: tokenBlacklist,
+		flagService:    flagService,
+		jwtSecret:      []byte(jwtSecret),
+		durations:      durations,
 	}
 }
 
@@ -363,17 +366,16 @@ func (svc *authService) Logout(ctx context.Context, tokenStr string) error {
 		return nil
 	}
 
-	// 計算 Token 剩餘存活時間 (TTL)
 	expiration := claims.ExpiresAt.Time
-	ttl := time.Until(expiration)
-	if ttl <= 0 {
+	if time.Until(expiration) <= 0 {
 		return nil
 	}
 
-	// 存入黑名單，值可以使用 "1"
-	if err := svc.authCache.Set(ctx, AuthBlacklistKey(tokenStr), "1", ttl); err != nil {
-		svc.logger.ErrorContext(ctx, "寫入 Token 黑名單失敗", "error", err)
-		return err
+	if svc.tokenBlacklist != nil {
+		if err := svc.tokenBlacklist.Revoke(ctx, claims.UserID, tokenStr, expiration); err != nil {
+			svc.logger.ErrorContext(ctx, "寫入 Token 黑名單失敗", "error", err)
+			return err
+		}
 	}
 
 	return nil
@@ -392,17 +394,14 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 	}
 
 	// 檢查 refresh token 是否已被撤銷（黑名單）
-	if svc.authCache != nil {
-		_, cacheErr := svc.authCache.Get(ctx, AuthBlacklistKey(tokenString))
-		switch {
-		case cacheErr == nil:
-			// 命中黑名單，token 已被登出或已輪替
-			return nil, "", "", apperror.ErrUnauthorized.WithMessage("Token 已被撤銷")
-		case errors.Is(cacheErr, cache.ErrKeyNotFound):
-			// 未命中黑名單，繼續驗證
-		default:
-			svc.logger.ErrorContext(ctx, "refresh token 黑名單檢查失敗，fail-closed 拒絕請求", "error", cacheErr)
+	if svc.tokenBlacklist != nil {
+		revoked, blErr := svc.tokenBlacklist.IsRevoked(ctx, claims.UserID, tokenString)
+		if blErr != nil {
+			svc.logger.ErrorContext(ctx, "refresh token 黑名單檢查失敗，fail-closed 拒絕請求", "error", blErr)
 			return nil, "", "", apperror.ErrUnauthorized.WithMessage("服務暫時無法使用，請稍後再試")
+		}
+		if revoked {
+			return nil, "", "", apperror.ErrUnauthorized.WithMessage("Token 已被撤銷")
 		}
 	}
 
@@ -428,11 +427,10 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 	}
 
 	// 將舊 refresh token 加入黑名單（token 輪替），防止重放攻擊
-	if svc.authCache != nil {
-		ttl := time.Until(claims.ExpiresAt.Time)
-		if ttl > 0 {
-			if cacheErr := svc.authCache.Set(ctx, AuthBlacklistKey(tokenString), "1", ttl); cacheErr != nil {
-				svc.logger.ErrorContext(ctx, "舊 refresh token 加入黑名單失敗", "user_id", user.ID, "error", cacheErr)
+	if svc.tokenBlacklist != nil {
+		if expiration := claims.ExpiresAt.Time; time.Until(expiration) > 0 {
+			if blErr := svc.tokenBlacklist.Revoke(ctx, user.ID, tokenString, expiration); blErr != nil {
+				svc.logger.ErrorContext(ctx, "舊 refresh token 加入黑名單失敗", "user_id", user.ID, "error", blErr)
 			}
 		}
 	}

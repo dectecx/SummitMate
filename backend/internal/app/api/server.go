@@ -36,8 +36,8 @@ type Server struct {
 	// Cloud
 	GearSetHandler *gearset.GearSetHandler
 
-	TokenManager *tokens.TokenManager
-	AuthCache    cache.Cache[string]
+	TokenManager   *tokens.TokenManager
+	TokenBlacklist cache.TokenBlacklist
 }
 
 func NewServer(
@@ -54,8 +54,8 @@ func NewServer(
 	hbH *heartbeat.HeartbeatHandler,
 	flagH *flag.FlagHandler,
 	gearSetH *gearset.GearSetHandler,
-	tm *tokens.TokenManager,
-	authCache cache.Cache[string],
+	tm             *tokens.TokenManager,
+	tokenBlacklist cache.TokenBlacklist,
 ) *Server {
 	return &Server{
 		AuthHandler:        authH,
@@ -72,6 +72,6 @@ func NewServer(
 		HeartbeatHandler:   hbH,
 		GearSetHandler:     gearSetH,
 		TokenManager:       tm,
-		AuthCache:          authCache,
+		TokenBlacklist:     tokenBlacklist,
 	}
 }
