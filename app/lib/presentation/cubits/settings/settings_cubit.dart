@@ -64,8 +64,8 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
       safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update username: $e', source: _source);
-      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
-      // 復原狀態? 這裡暫時停留在 Error
+      // 復原至更新前的 Loaded 狀態並附帶一次性錯誤，避免卡在 SettingsError
+      safeEmit(currentState.copyWith(transientError: AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -82,7 +82,7 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
       safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update avatar: $e', source: _source);
-      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(currentState.copyWith(transientError: AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -104,7 +104,7 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
       safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update profile: $e', source: _source);
-      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(currentState.copyWith(transientError: AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -126,9 +126,8 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
       safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to toggle offline mode: $e', source: _source);
-      // 4. 發生錯誤時復原狀態
-      safeEmit(currentState);
-      safeEmit(SettingsError('狀態更新失敗: ${AppErrorHandler.getUserMessage(e)}'));
+      // 4. 發生錯誤時復原樂觀更新前的狀態，並附帶一次性錯誤（不離開 SettingsLoaded）
+      safeEmit(currentState.copyWith(transientError: '狀態更新失敗: ${AppErrorHandler.getUserMessage(e)}'));
     }
   }
 
@@ -194,12 +193,13 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
       safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update theme: $e', source: _source);
-      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(currentState.copyWith(transientError: AppErrorHandler.getUserMessage(e)));
     }
   }
 
   /// 重設身分 (Logout + Reset)
   Future<void> resetIdentity() async {
+    final previousState = state;
     try {
       LogService.info('Resetting identity', source: _source);
       await _repository.resetSettings();
@@ -209,7 +209,12 @@ class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsStat
       loadSettings();
     } catch (e) {
       LogService.error('Failed to reset identity: $e', source: _source);
-      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      // 若先前已載入，復原該狀態並附帶一次性錯誤，避免卡在 SettingsError
+      if (previousState is SettingsLoaded) {
+        safeEmit(previousState.copyWith(transientError: AppErrorHandler.getUserMessage(e)));
+      } else {
+        safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      }
     }
   }
 }

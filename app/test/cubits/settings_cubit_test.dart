@@ -110,5 +110,53 @@ void main() {
       },
       expect: () => [isA<SettingsLoaded>().having((s) => s.settings.theme, 'theme', AppThemeType.night)],
     );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'updateUsername failure stays in SettingsLoaded with transientError (no stuck error state)',
+      build: () => settingsCubit,
+      seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true),
+      act: (cubit) async {
+        when(() => mockRepo.updateUsername(any())).thenThrow(Exception('network down'));
+        await cubit.updateUsername('NewName');
+      },
+      expect: () => [
+        isA<SettingsLoaded>()
+            .having((s) => s.transientError, 'transientError', isNotNull)
+            .having((s) => s.settings.username, 'username', 'TestUser'),
+      ],
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'transientError is cleared after a subsequent successful update',
+      build: () => settingsCubit,
+      seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true, transientError: 'previous error'),
+      act: (cubit) async {
+        when(() => mockRepo.getSettings()).thenAnswer((_) async => testSettings.copyWith(username: 'NewName'));
+        await cubit.updateUsername('NewName');
+      },
+      expect: () => [
+        isA<SettingsLoaded>()
+            .having((s) => s.transientError, 'transientError', isNull)
+            .having((s) => s.settings.username, 'username', 'NewName'),
+      ],
+    );
+
+    blocTest<SettingsCubit, SettingsState>(
+      'toggleOfflineMode failure rolls back to original settings with transientError',
+      build: () => settingsCubit,
+      seed: () => SettingsLoaded(settings: testSettings, hasSeenOnboarding: true),
+      act: (cubit) async {
+        when(() => mockRepo.updateOfflineMode(any())).thenThrow(Exception('disk full'));
+        await cubit.toggleOfflineMode();
+      },
+      expect: () => [
+        // 1. 樂觀更新: 立即切換為 true
+        isA<SettingsLoaded>().having((s) => s.isOfflineMode, 'isOfflineMode', true),
+        // 2. 失敗復原: 回到原始 false 並帶一次性錯誤
+        isA<SettingsLoaded>()
+            .having((s) => s.isOfflineMode, 'isOfflineMode', false)
+            .having((s) => s.transientError, 'transientError', isNotNull),
+      ],
+    );
   });
 }

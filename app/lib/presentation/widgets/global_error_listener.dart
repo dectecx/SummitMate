@@ -19,6 +19,8 @@ import '../cubits/map/offline_map_cubit.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/favorites/mountain/mountain_favorites_cubit.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
+import '../cubits/settings/settings_cubit.dart';
+import '../cubits/settings/settings_state.dart';
 import 'common/error_snackbar.dart';
 import 'error_dialog.dart';
 
@@ -68,6 +70,16 @@ class GlobalErrorListener extends StatelessWidget {
                 ErrorSnackbar.show(context, message: '連線逾時，請檢查網路狀況');
               },
             );
+          },
+        ),
+        // 監聽設定的一次性錯誤 (局部更新失敗時的提示，狀態仍維持 SettingsLoaded)
+        BlocListener<SettingsCubit, SettingsState>(
+          listenWhen: (previous, current) =>
+              current is SettingsLoaded && current.transientError != null,
+          listener: (context, state) {
+            if (state is SettingsLoaded && state.transientError != null) {
+              ErrorSnackbar.show(context, message: state.transientError!);
+            }
           },
         ),
         // 監聽同步狀態
