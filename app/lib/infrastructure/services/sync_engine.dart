@@ -6,38 +6,29 @@ import 'package:summitmate/core/offline_config.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../../core/error/result.dart';
 import '../../core/models/paginated_list.dart';
-import '../../data/datasources/interfaces/i_itinerary_local_data_source.dart';
-import '../../data/datasources/interfaces/i_gear_local_data_source.dart';
+import '../../data/datasources/interfaces/i_trip_remote_data_source.dart';
 import '../database/app_database.dart';
 import '../tools/log_service.dart';
-import 'adapters/trip_sync_adapter.dart';
-import 'adapters/itinerary_sync_adapter.dart';
-import '../../data/datasources/interfaces/i_trip_remote_data_source.dart';
-import 'adapters/gear_sync_adapter.dart';
 
-/// 同步引擎實作
+/// 同步引擎實作（通用註冊式）
 ///
-/// 負責編排本地待同步資料的推送 (Push) 與遠端最新資料的拉取與 LWW 合併 (Pull & Merge)。
-/// 也負責管理基於設定的背景定時自動同步。
+/// 引擎本身**不認識任何領域**：它只依序編排所有已註冊的 [ISyncAdapter]，
+/// 先推送（Push）所有 C 模式表的待同步資料，再拉取（Pull）並 LWW 合併。
+/// 新增可同步領域時，只需新增一個 adapter 並在 `SyncModule` 註冊，無需改動本檔。
+///
+/// 另保留行程的手動雲端操作（瀏覽／上傳／刪除），這些屬獨立的 A 模式 API，
+/// 與通用同步週期分離。
 @LazySingleton(as: ISyncEngine)
 class SyncEngine implements ISyncEngine {
-  final ITripRepository _tripRepo;
-  final IItineraryRepository _itineraryRepo;
-  final IGearRepository _gearRepo;
-  final IMessageRepository _messageRepo;
-  final IGroupEventRepository _eventRepo;
+  final List<ISyncAdapter> _adapters;
   final ISettingsRepository _settingsRepo;
   final IConnectivityService _connectivity;
   final IAuthService _authService;
   final AppDatabase _db;
 
-  final IItineraryLocalDataSource _itineraryLocalDataSource;
-  final IGearLocalDataSource _gearLocalDataSource;
+  // 行程手動雲端操作所需（與通用同步週期無關）
+  final ITripRepository _tripRepo;
   final ITripRemoteDataSource _tripRemoteDataSource;
-
-  final TripSyncAdapter _tripSyncAdapter;
-  final ItinerarySyncAdapter _itinerarySyncAdapter;
-  final GearSyncAdapter _gearSyncAdapter;
 
   final _syncingTables = BehaviorSubject<Set<String>>.seeded({});
   Completer<SyncResult>? _syncCompleter;
@@ -45,50 +36,24 @@ class SyncEngine implements ISyncEngine {
   StreamSubscription<void>? _settingsSubscription;
 
   SyncEngine({
-    required ITripRepository tripRepo,
-    required IItineraryRepository itineraryRepo,
-    required IGearRepository gearRepo,
-    required IMessageRepository messageRepo,
-    required IGroupEventRepository eventRepo,
+    required List<ISyncAdapter> adapters,
     required ISettingsRepository settingsRepo,
     required IConnectivityService connectivity,
     required IAuthService authService,
     required AppDatabase db,
-    required IItineraryLocalDataSource itineraryLocalDataSource,
-    required IGearLocalDataSource gearLocalDataSource,
+    required ITripRepository tripRepo,
     required ITripRemoteDataSource tripRemoteDataSource,
-    required TripSyncAdapter tripSyncAdapter,
-    required ItinerarySyncAdapter itinerarySyncAdapter,
-    required GearSyncAdapter gearSyncAdapter,
-  }) : _tripRepo = tripRepo,
-       _itineraryRepo = itineraryRepo,
-       _gearRepo = gearRepo,
-       _messageRepo = messageRepo,
-       _eventRepo = eventRepo,
+  }) : _adapters = adapters,
        _settingsRepo = settingsRepo,
        _connectivity = connectivity,
        _authService = authService,
        _db = db,
-       _itineraryLocalDataSource = itineraryLocalDataSource,
-       _gearLocalDataSource = gearLocalDataSource,
-       _tripRemoteDataSource = tripRemoteDataSource,
-       _tripSyncAdapter = tripSyncAdapter,
-       _itinerarySyncAdapter = itinerarySyncAdapter,
-       _gearSyncAdapter = gearSyncAdapter {
-    // 監聽設定變更，以重啟自動同步定時器
+       _tripRepo = tripRepo,
+       _tripRemoteDataSource = tripRemoteDataSource {
     _settingsSubscription = _settingsRepo.watchSettings().listen((_) {
       reconfigureAutoSync();
     });
-    // 初始配置自動同步
     reconfigureAutoSync();
-  }
-
-  Future<String?> get _activeTripId async {
-    final result = await _tripRepo.getActiveTrip(_authService.currentUserId ?? 'guest');
-    return switch (result) {
-      Success(value: final trip) => trip?.id,
-      Failure() => null,
-    };
   }
 
   @override
@@ -112,10 +77,7 @@ class SyncEngine implements ISyncEngine {
     try {
       LogService.info('SyncEngine: Starting synchronization cycle...', source: 'SyncEngine');
 
-      // 1. Push pending offline changes first
       final pushResult = await pushPending();
-
-      // 2. Pull remote changes and merge
       final pullResult = await pullRemote();
 
       final success = pushResult.isSuccess && pullResult.isSuccess;
@@ -123,10 +85,6 @@ class SyncEngine implements ISyncEngine {
 
       final finalResult = SyncResult(
         isSuccess: success,
-        itinerarySynced: pullResult.itinerarySynced,
-        gearSynced: pullResult.gearSynced,
-        messagesSynced: pullResult.messagesSynced,
-        eventsSynced: pullResult.eventsSynced,
         pushedCount: pushResult.pushedCount,
         pulledCount: pullResult.pulledCount,
         conflictCount: pullResult.conflictCount,
@@ -153,260 +111,55 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Future<SyncResult> pushPending() async {
-    final userId = _authService.currentUserId ?? 'guest';
-    int pushedCount = 0;
-    int idMigrationsCount = 0;
-    final errors = <String>[];
+    var aggregate = const SyncPushResult();
 
-    // --- 1. Push Pending Trips ---
-    _setSyncing('trips_table', true);
-    try {
-      final tripsRes = await _tripRepo.getAllTrips(userId);
-      if (tripsRes is Success<List<Trip>, Exception>) {
-        final pendingTrips = tripsRes.value.where((t) => t.syncStatus != SyncStatus.synced).toList();
-
-        // 優先排序：pendingCreate/pendingUpdate 排在 pendingDelete 前面
-        pendingTrips.sort((a, b) {
-          if (a.syncStatus == SyncStatus.pendingDelete && b.syncStatus != SyncStatus.pendingDelete) return 1;
-          if (a.syncStatus != SyncStatus.pendingDelete && b.syncStatus == SyncStatus.pendingDelete) return -1;
-          return 0;
-        });
-
-        for (final trip in pendingTrips) {
-          final res = await _tripSyncAdapter.pushItem(trip, trip.syncStatus);
-          if (res is Success<IdMigration?, Exception>) {
-            pushedCount++;
-            final migration = res.value;
-            if (migration != null) {
-              await _db.transaction(() async {
-                await _tripRepo.updateLocalTripId(migration.tempId, migration.permanentId);
-                await _db.markAsSynced('trips_table', migration.permanentId);
-              });
-              idMigrationsCount++;
-            } else {
-              if (trip.syncStatus != SyncStatus.pendingDelete) {
-                await _db.markAsSynced('trips_table', trip.id);
-              }
-            }
-          } else {
-            final err = (res as Failure).exception;
-            errors.add('行程 ${trip.name} 推送失敗: $err');
-            await _db.markAsError('trips_table', trip.id);
-          }
-        }
+    for (final adapter in _adapters) {
+      _setSyncing(adapter.tableName, true);
+      try {
+        aggregate = aggregate + await adapter.pushPending();
+      } catch (e) {
+        aggregate = aggregate + SyncPushResult(errors: ['推送 ${adapter.tableName} 時發生異常: $e']);
+      } finally {
+        _setSyncing(adapter.tableName, false);
       }
-    } catch (e) {
-      errors.add('推送行程列表時發生異常: $e');
-    } finally {
-      _setSyncing('trips_table', false);
-    }
-
-    // --- 2. Push Pending Itinerary Items ---
-    _setSyncing('itinerary_items_table', true);
-    try {
-      final allItin = await _itineraryLocalDataSource.getAll();
-      final pendingItin = allItin.where((i) => i.syncStatus != SyncStatus.synced).toList();
-
-      for (final item in pendingItin) {
-        final res = await _itinerarySyncAdapter.pushItem(item, item.syncStatus);
-        if (res is Success<IdMigration?, Exception>) {
-          pushedCount++;
-          final migration = res.value;
-          if (migration != null) {
-            await _db.transaction(() async {
-              await _itineraryRepo.updateLocalId(migration.tempId, migration.permanentId);
-              await _db.markAsSynced('itinerary_items_table', migration.permanentId);
-            });
-            idMigrationsCount++;
-          } else {
-            if (item.syncStatus != SyncStatus.pendingDelete) {
-              await _db.markAsSynced('itinerary_items_table', item.id);
-            }
-          }
-        } else {
-          final err = (res as Failure).exception;
-          errors.add('行程節點 ${item.name} 推送失敗: $err');
-          await _db.markAsError('itinerary_items_table', item.id);
-        }
-      }
-    } catch (e) {
-      errors.add('推送行程節點時發生異常: $e');
-    } finally {
-      _setSyncing('itinerary_items_table', false);
-    }
-
-    // --- 3. Push Pending Gear Items ---
-    _setSyncing('gear_items_table', true);
-    try {
-      final allGear = await _gearLocalDataSource.getAll();
-      final pendingGear = allGear.where((g) => g.syncStatus != SyncStatus.synced).toList();
-
-      for (final item in pendingGear) {
-        final res = await _gearSyncAdapter.pushItem(item, item.syncStatus);
-        if (res is Success<IdMigration?, Exception>) {
-          pushedCount++;
-          final migration = res.value;
-          if (migration != null) {
-            await _db.transaction(() async {
-              await _gearRepo.updateLocalId(migration.tempId, migration.permanentId);
-              await _db.markAsSynced('gear_items_table', migration.permanentId);
-            });
-            idMigrationsCount++;
-          } else {
-            if (item.syncStatus != SyncStatus.pendingDelete) {
-              await _db.markAsSynced('gear_items_table', item.id);
-            }
-          }
-        } else {
-          final err = (res as Failure).exception;
-          errors.add('裝備 ${item.name} 推送失敗: $err');
-          await _db.markAsError('gear_items_table', item.id);
-        }
-      }
-    } catch (e) {
-      errors.add('推送裝備時發生異常: $e');
-    } finally {
-      _setSyncing('gear_items_table', false);
     }
 
     return SyncResult(
-      isSuccess: errors.isEmpty,
-      pushedCount: pushedCount,
-      idMigrationsCount: idMigrationsCount,
-      errors: errors,
+      isSuccess: aggregate.isSuccess,
+      pushedCount: aggregate.pushedCount,
+      idMigrationsCount: aggregate.idMigrationsCount,
+      errors: aggregate.errors,
       syncedAt: DateTime.now(),
     );
   }
 
   @override
   Future<SyncResult> pullRemote() async {
-    final userId = _authService.currentUserId ?? 'guest';
-    int pulledCount = 0;
-    int conflictCount = 0;
-    final errors = <String>[];
+    var aggregate = const SyncMergeResult();
 
-    var itinerarySynced = false;
-    var gearSynced = false;
-    var messagesSynced = false;
-    var eventsSynced = false;
-
-    // --- 1. Pull Trips ---
-    _setSyncing('trips_table', true);
-    try {
-      final res = await _tripSyncAdapter.pullAndMerge(userId);
-      if (res is Success<SyncMergeResult, Exception>) {
-        pulledCount += res.value.pulledCount;
-        conflictCount += res.value.conflictCount;
-      } else {
-        errors.add('拉取行程列表失敗: ${(res as Failure).exception}');
-      }
-    } catch (e) {
-      errors.add('拉取行程列表時發生異常: $e');
-    } finally {
-      _setSyncing('trips_table', false);
-    }
-
-    // 獲取最新本地行程列表以同步子節點
-    List<Trip> localTrips = [];
-    try {
-      final tripsRes = await _tripRepo.getAllTrips(userId);
-      if (tripsRes is Success<List<Trip>, Exception>) {
-        localTrips = tripsRes.value;
-      }
-    } catch (e) {
-      LogService.error('獲取本地行程列表失敗: $e', source: 'SyncEngine');
-    }
-
-    // --- 2. Pull Itinerary Items ---
-    _setSyncing('itinerary_items_table', true);
-    try {
-      for (final trip in localTrips) {
-        if (trip.syncStatus == SyncStatus.pendingDelete) continue;
-
-        final res = await _itinerarySyncAdapter.pullAndMerge(trip.id);
-        if (res is Success<SyncMergeResult, Exception>) {
-          pulledCount += res.value.pulledCount;
-          conflictCount += res.value.conflictCount;
-          itinerarySynced = true;
-        } else {
-          errors.add('拉取行程 ${trip.name} 的節點失敗: ${(res as Failure).exception}');
-        }
-      }
-    } catch (e) {
-      errors.add('拉取行程節點時發生異常: $e');
-    } finally {
-      _setSyncing('itinerary_items_table', false);
-    }
-
-    // --- 3. Pull Gear Items ---
-    _setSyncing('gear_items_table', true);
-    try {
-      for (final trip in localTrips) {
-        if (trip.syncStatus == SyncStatus.pendingDelete) continue;
-
-        final res = await _gearSyncAdapter.pullAndMerge(trip.id);
-        if (res is Success<SyncMergeResult, Exception>) {
-          pulledCount += res.value.pulledCount;
-          conflictCount += res.value.conflictCount;
-          gearSynced = true;
-        } else {
-          errors.add('拉取行程 ${trip.name} 的裝備失敗: ${(res as Failure).exception}');
-        }
-      }
-    } catch (e) {
-      errors.add('拉取裝備時發生異常: $e');
-    } finally {
-      _setSyncing('gear_items_table', false);
-    }
-
-    // --- 4. Pull T2 Data Types (Messages & Events) for the active trip ---
-    final activeTripId = await _activeTripId;
-    if (activeTripId != null) {
-      // Pull messages
-      _setSyncing('messages_table', true);
+    for (final adapter in _adapters) {
+      _setSyncing(adapter.tableName, true);
       try {
-        final res = await _messageRepo.getRemoteMessages(activeTripId);
-        if (res is Success) {
-          messagesSynced = true;
-        } else {
-          errors.add('拉取留言失敗: ${(res as Failure).exception}');
-        }
+        aggregate = aggregate + await adapter.pullRemote();
       } catch (e) {
-        errors.add('拉取留言時發生異常: $e');
+        aggregate = aggregate + SyncMergeResult(errors: ['拉取 ${adapter.tableName} 時發生異常: $e']);
       } finally {
-        _setSyncing('messages_table', false);
+        _setSyncing(adapter.tableName, false);
       }
-    }
-
-    // Pull events
-    _setSyncing('group_events_table', true);
-    _setSyncing('group_event_applications_table', true);
-    try {
-      final res = await _eventRepo.syncEvents();
-      if (res is Success) {
-        eventsSynced = true;
-      } else {
-        errors.add('拉取活動失敗: ${(res as Failure).exception}');
-      }
-    } catch (e) {
-      errors.add('拉取活動時發生異常: $e');
-    } finally {
-      _setSyncing('group_events_table', false);
-      _setSyncing('group_event_applications_table', false);
     }
 
     return SyncResult(
-      isSuccess: errors.isEmpty,
-      itinerarySynced: itinerarySynced,
-      gearSynced: gearSynced,
-      messagesSynced: messagesSynced,
-      eventsSynced: eventsSynced,
-      pulledCount: pulledCount,
-      conflictCount: conflictCount,
-      errors: errors,
+      isSuccess: aggregate.isSuccess,
+      pulledCount: aggregate.pulledCount,
+      conflictCount: aggregate.conflictCount,
+      errors: aggregate.errors,
       syncedAt: DateTime.now(),
     );
   }
+
+  // ──────────────────────────────────────────
+  // 行程手動雲端操作 (A 模式，與通用同步週期分離)
+  // ──────────────────────────────────────────
 
   @override
   Future<Result<PaginatedList<Trip>, Exception>> getCloudTrips({int? page, int? limit}) async {
@@ -453,6 +206,10 @@ class SyncEngine implements ISyncEngine {
     }
     return _tripRemoteDataSource.deleteTrip(tripId);
   }
+
+  // ──────────────────────────────────────────
+  // 觀測 / 自動同步 / 生命週期
+  // ──────────────────────────────────────────
 
   @override
   void resetLastSyncTimes() {
@@ -502,33 +259,18 @@ class SyncEngine implements ISyncEngine {
 
   @override
   Stream<int> watchPendingSyncCount() {
-    // 使用單一 UNION ALL 查詢取代 6 個獨立 Stream，避免大量同步時產生並發查詢風暴。
-    // readsFrom 聲明所有涉及的表，讓 Drift 在任一表格變更時觸發重新查詢（單次 I/O）。
-    return _db.customSelect(
-      '''
-      SELECT SUM(cnt) AS total FROM (
-        SELECT COUNT(*) AS cnt FROM trips_table                    WHERE sync_status != 'synced'
-        UNION ALL
-        SELECT COUNT(*) AS cnt FROM itinerary_items_table          WHERE sync_status != 'synced'
-        UNION ALL
-        SELECT COUNT(*) AS cnt FROM gear_items_table               WHERE sync_status != 'synced'
-        UNION ALL
-        SELECT COUNT(*) AS cnt FROM messages_table                 WHERE sync_status != 'synced'
-        UNION ALL
-        SELECT COUNT(*) AS cnt FROM group_events_table             WHERE sync_status != 'synced'
-        UNION ALL
-        SELECT COUNT(*) AS cnt FROM group_event_applications_table WHERE sync_status != 'synced'
-      )
-      ''',
-      readsFrom: {
-        _db.tripsTable,
-        _db.itineraryItemsTable,
-        _db.gearItemsTable,
-        _db.messagesTable,
-        _db.groupEventsTable,
-        _db.groupEventApplicationsTable,
-      },
-    ).watchSingle().map((row) => row.read<int>('total'));
+    // 依已註冊 adapter 的表名動態組成單一 UNION ALL 查詢，
+    // 避免多個獨立 Stream 造成並發查詢風暴。
+    final names = _adapters.map((a) => a.tableName).toList();
+    final union = names
+        .map((n) => "SELECT COUNT(*) AS cnt FROM $n WHERE sync_status != 'synced'")
+        .join('\n        UNION ALL\n        ');
+    final readsFrom = _db.allTables.where((t) => names.contains(t.actualTableName)).toSet();
+
+    return _db
+        .customSelect('SELECT SUM(cnt) AS total FROM (\n        $union\n      )', readsFrom: readsFrom)
+        .watchSingle()
+        .map((row) => row.read<int>('total'));
   }
 
   @override

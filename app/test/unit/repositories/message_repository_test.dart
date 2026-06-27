@@ -12,10 +12,13 @@ class MockMessageLocalDataSource extends Mock implements IMessageLocalDataSource
 
 class MockMessageRemoteDataSource extends Mock implements IMessageRemoteDataSource {}
 
+class MockConnectivityService extends Mock implements IConnectivityService {}
+
 void main() {
   late MessageRepository repository;
   late MockMessageLocalDataSource mockLocalDataSource;
   late MockMessageRemoteDataSource mockRemoteDataSource;
+  late MockConnectivityService mockConnectivity;
 
   late Message testMessage;
 
@@ -40,7 +43,9 @@ void main() {
   setUp(() {
     mockLocalDataSource = MockMessageLocalDataSource();
     mockRemoteDataSource = MockMessageRemoteDataSource();
-    repository = MessageRepository(mockLocalDataSource, mockRemoteDataSource);
+    mockConnectivity = MockConnectivityService();
+    when(() => mockConnectivity.isOffline).thenReturn(false);
+    repository = MessageRepository(mockLocalDataSource, mockRemoteDataSource, mockConnectivity);
   });
 
   group('MessageRepository', () {

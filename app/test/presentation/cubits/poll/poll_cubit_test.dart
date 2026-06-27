@@ -7,8 +7,6 @@ import 'package:summitmate/presentation/cubits/poll/poll_cubit.dart';
 import 'package:summitmate/presentation/cubits/poll/poll_state.dart';
 import 'package:summitmate/core/error/result.dart';
 
-class MockPollService extends Mock implements IPollService {}
-
 class MockPollRepository extends Mock implements IPollRepository {}
 
 class MockTripRepository extends Mock implements ITripRepository {}
@@ -87,15 +85,15 @@ void main() {
 
   group('fetchPolls', () {
     blocTest<PollCubit, PollState>(
-      'fetches polls from repository syncPolls',
+      'refreshes polls via repository',
       setUp: () {
         final paginated = PaginatedList<Poll>(items: [testPoll], page: 1, total: 1, hasMore: false);
-        when(() => mockRepo.syncPolls('trip1')).thenAnswer((_) async => Success(paginated));
+        when(() => mockRepo.refresh('trip1')).thenAnswer((_) async => Success(paginated));
       },
       build: () => cubit,
       act: (cubit) => cubit.fetchPolls(),
       verify: (_) {
-        verify(() => mockRepo.syncPolls('trip1')).called(1);
+        verify(() => mockRepo.refresh('trip1')).called(1);
       },
       expect: () => [
         const PollLoading(),
@@ -106,7 +104,7 @@ void main() {
 
   group('createPoll', () {
     blocTest<PollCubit, PollState>(
-      'calls repo to create poll',
+      'calls repository to create poll',
       setUp: () {
         when(
           () => mockRepo.create(
@@ -118,7 +116,7 @@ void main() {
         ).thenAnswer((_) async => const Success('p1'));
 
         final paginated = PaginatedList<Poll>(items: [testPoll], page: 1, total: 1, hasMore: false);
-        when(() => mockRepo.syncPolls('trip1')).thenAnswer((_) async => Success(paginated));
+        when(() => mockRepo.refresh('trip1')).thenAnswer((_) async => Success(paginated));
       },
       build: () => cubit,
       seed: () => const PollLoaded(polls: [], currentUserId: 'u1'),

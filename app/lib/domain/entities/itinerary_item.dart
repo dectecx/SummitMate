@@ -1,12 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../enums/sync_status.dart';
+import '../interfaces/i_syncable_entity.dart';
 
 part 'itinerary_item.freezed.dart';
 part 'itinerary_item.g.dart';
 
 /// 行程節點實體 (Domain Entity)
 @freezed
-abstract class ItineraryItem with _$ItineraryItem {
+abstract class ItineraryItem with _$ItineraryItem implements SyncableEntity {
   const ItineraryItem._();
 
   const factory ItineraryItem({

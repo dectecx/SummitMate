@@ -1,16 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:summitmate/core/error/result.dart';
 import 'package:summitmate/data/datasources/interfaces/i_gear_local_data_source.dart';
 import 'package:summitmate/data/datasources/interfaces/i_trip_gear_remote_data_source.dart';
+import 'package:summitmate/data/datasources/interfaces/i_trip_local_data_source.dart';
 import 'package:summitmate/domain/entities/gear_item.dart';
+import 'package:summitmate/domain/entities/trip.dart';
 import 'package:summitmate/domain/enums/sync_status.dart';
-import 'package:summitmate/domain/interfaces/i_sync_adapter.dart';
+import 'package:summitmate/infrastructure/database/app_database.dart';
 import 'package:summitmate/infrastructure/services/adapters/gear_sync_adapter.dart';
 
 class MockGearLocalDataSource extends Mock implements IGearLocalDataSource {}
 
 class MockTripGearRemoteDataSource extends Mock implements ITripGearRemoteDataSource {}
+
+class MockTripLocalDataSource extends Mock implements ITripLocalDataSource {}
+
+class MockAppDatabase extends Mock implements AppDatabase {}
 
 class FakeGearItem extends Fake implements GearItem {}
 
@@ -18,6 +23,8 @@ void main() {
   late GearSyncAdapter adapter;
   late MockGearLocalDataSource mockLocal;
   late MockTripGearRemoteDataSource mockRemote;
+  late MockTripLocalDataSource mockTripLocal;
+  late MockAppDatabase mockDb;
 
   setUpAll(() {
     registerFallbackValue(FakeGearItem());
@@ -26,7 +33,9 @@ void main() {
   setUp(() {
     mockLocal = MockGearLocalDataSource();
     mockRemote = MockTripGearRemoteDataSource();
-    adapter = GearSyncAdapter(mockLocal, mockRemote);
+    mockTripLocal = MockTripLocalDataSource();
+    mockDb = MockAppDatabase();
+    adapter = GearSyncAdapter(mockLocal, mockRemote, mockTripLocal, mockDb);
   });
 
   final defaultItem = GearItem(
@@ -41,96 +50,98 @@ void main() {
     updatedAt: DateTime(2026, 6, 6, 12, 0, 0),
   );
 
-  group('GearSyncAdapter - pushItem', () {
-    test('Given pendingCreate, When calling pushItem, Then it should add gear in remote', () async {
+  final scopeTrip = Trip(
+    id: 'trip1',
+    userId: 'u1',
+    name: 'Trip 1',
+    startDate: DateTime(2026, 6, 6),
+    createdAt: DateTime(2026, 6, 6),
+    createdBy: 'u1',
+    updatedAt: DateTime(2026, 6, 6),
+    updatedBy: 'u1',
+    syncStatus: SyncStatus.synced,
+  );
+
+  group('GearSyncAdapter - pushOne', () {
+    test('Given pendingCreate with same id, When pushOne, Then it adds remote gear and no migration', () async {
       when(() => mockRemote.addTripGear(any(), any())).thenAnswer((_) async => defaultItem);
 
-      final result = await adapter.pushItem(defaultItem, SyncStatus.pendingCreate);
+      final migration = await adapter.pushOne(defaultItem.copyWith(syncStatus: SyncStatus.pendingCreate));
 
-      expect(result, isA<Success<IdMigration?, Exception>>());
-      verify(() => mockRemote.addTripGear('trip1', defaultItem)).called(1);
+      expect(migration, isNull);
+      verify(() => mockRemote.addTripGear('trip1', any())).called(1);
     });
 
-    test('Given remote ID differs in pendingCreate, When calling pushItem, Then it should migrate ID', () async {
-      final remoteItem = defaultItem.copyWith(id: 'remote-gear-id');
-      when(() => mockRemote.addTripGear(any(), any())).thenAnswer((_) async => remoteItem);
+    test('Given remote id differs in pendingCreate, When pushOne, Then it returns an IdMigration', () async {
+      when(() => mockRemote.addTripGear(any(), any())).thenAnswer((_) async => defaultItem.copyWith(id: 'remote-gear-id'));
 
-      final result = await adapter.pushItem(defaultItem, SyncStatus.pendingCreate);
+      final migration = await adapter.pushOne(defaultItem.copyWith(syncStatus: SyncStatus.pendingCreate));
 
-      expect(result, isA<Success<IdMigration?, Exception>>());
-      final migration = (result as Success<IdMigration?, Exception>).value;
       expect(migration?.tempId, 'gear1');
       expect(migration?.permanentId, 'remote-gear-id');
     });
 
-    test('Given pendingUpdate/conflict, When calling pushItem, Then it should update gear in remote', () async {
+    test('Given pendingUpdate, When pushOne, Then it updates remote gear', () async {
       when(() => mockRemote.updateTripGear(any(), any())).thenAnswer((_) async => defaultItem);
 
-      final result = await adapter.pushItem(defaultItem, SyncStatus.pendingUpdate);
+      final migration = await adapter.pushOne(defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate));
 
-      expect(result, isA<Success<IdMigration?, Exception>>());
-      verify(() => mockRemote.updateTripGear('trip1', defaultItem)).called(1);
+      expect(migration, isNull);
+      verify(() => mockRemote.updateTripGear('trip1', any())).called(1);
     });
 
-    test('Given pendingDelete, When calling pushItem, Then it should delete gear from remote and local', () async {
+    test('Given pendingDelete, When pushOne, Then it deletes remote and local gear', () async {
       when(() => mockRemote.deleteTripGear(any(), any())).thenAnswer((_) async {});
       when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
 
-      final result = await adapter.pushItem(defaultItem, SyncStatus.pendingDelete);
+      final migration = await adapter.pushOne(defaultItem.copyWith(syncStatus: SyncStatus.pendingDelete));
 
-      expect(result, isA<Success<IdMigration?, Exception>>());
+      expect(migration, isNull);
       verify(() => mockRemote.deleteTripGear('trip1', 'gear1')).called(1);
       verify(() => mockLocal.deleteById('gear1')).called(1);
     });
   });
 
-  group('GearSyncAdapter - pullAndMerge', () {
-    test('Given not exists in local, When calling pullAndMerge, Then it should add gear to local', () async {
-      when(() => mockRemote.getTripGear(any())).thenAnswer((_) async => [defaultItem]);
+  group('GearSyncAdapter - pullRemote', () {
+    test('Given not exists in local, When pullRemote, Then it adds gear to local', () async {
+      when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
+      when(() => mockRemote.getTripGear('trip1')).thenAnswer((_) async => [defaultItem]);
       when(() => mockLocal.getAll()).thenAnswer((_) async => []);
       when(() => mockLocal.getById(any())).thenAnswer((_) async => null);
       when(() => mockLocal.addItem(any())).thenAnswer((_) async => 1);
 
-      final result = await adapter.pullAndMerge('trip1');
+      final result = await adapter.pullRemote();
 
-      expect(result, isA<Success<SyncMergeResult, Exception>>());
-      final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
-      expect(mergeResult.pulledCount, 1);
-      expect(mergeResult.remoteWinsCount, 1);
+      expect(result.pulledCount, 1);
+      expect(result.remoteWinsCount, 1);
       verify(() => mockLocal.addItem(any())).called(1);
     });
 
-    test(
-      'Given remote deleted and local has pending changes (wasEverSynced), When calling pullAndMerge, Then it should delete local gear',
-      () async {
-        final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
-        when(() => mockRemote.getTripGear(any())).thenAnswer((_) async => []);
-        when(() => mockLocal.getAll()).thenAnswer((_) async => [localItem]);
-        when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
+    test('Given remote deleted and local pending (wasEverSynced), When pullRemote, Then it deletes local gear', () async {
+      final localItem = defaultItem.copyWith(syncStatus: SyncStatus.pendingUpdate);
+      when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
+      when(() => mockRemote.getTripGear('trip1')).thenAnswer((_) async => []);
+      when(() => mockLocal.getAll()).thenAnswer((_) async => [localItem]);
+      when(() => mockLocal.deleteById(any())).thenAnswer((_) async {});
 
-        final result = await adapter.pullAndMerge('trip1');
+      final result = await adapter.pullRemote();
 
-        expect(result, isA<Success<SyncMergeResult, Exception>>());
-        final mergeResult = (result as Success<SyncMergeResult, Exception>).value;
-        expect(mergeResult.conflictCount, 1);
-        verify(() => mockLocal.deleteById('gear1')).called(1);
-      },
-    );
+      expect(result.conflictCount, 1);
+      verify(() => mockLocal.deleteById('gear1')).called(1);
+    });
 
-    test(
-      'Given local is synced and remote is updated, When calling pullAndMerge, Then it should overwrite local',
-      () async {
-        final remoteItem = defaultItem.copyWith(name: 'Remote updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));
-        when(() => mockRemote.getTripGear(any())).thenAnswer((_) async => [remoteItem]);
-        when(() => mockLocal.getAll()).thenAnswer((_) async => [defaultItem]);
-        when(() => mockLocal.getById('gear1')).thenAnswer((_) async => defaultItem);
-        when(() => mockLocal.updateItem(any())).thenAnswer((_) async {});
+    test('Given local synced and remote updated, When pullRemote, Then it overwrites local', () async {
+      final remoteItem = defaultItem.copyWith(name: 'Remote updated', updatedAt: DateTime(2026, 6, 6, 12, 1, 0));
+      when(() => mockTripLocal.getAllTrips()).thenAnswer((_) async => [scopeTrip]);
+      when(() => mockRemote.getTripGear('trip1')).thenAnswer((_) async => [remoteItem]);
+      when(() => mockLocal.getAll()).thenAnswer((_) async => [defaultItem]);
+      when(() => mockLocal.getById('gear1')).thenAnswer((_) async => defaultItem);
+      when(() => mockLocal.updateItem(any())).thenAnswer((_) async {});
 
-        final result = await adapter.pullAndMerge('trip1');
+      final result = await adapter.pullRemote();
 
-        expect(result, isA<Success<SyncMergeResult, Exception>>());
-        verify(() => mockLocal.updateItem(any())).called(1);
-      },
-    );
+      expect(result.remoteWinsCount, 1);
+      verify(() => mockLocal.updateItem(any())).called(1);
+    });
   });
 }

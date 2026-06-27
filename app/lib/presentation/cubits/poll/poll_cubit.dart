@@ -94,7 +94,7 @@ class PollCubit extends Cubit<PollState> with SafeEmitMixin<PollState>, RemoteSy
     }
 
     try {
-      final result = await _pollRepository.syncPolls(tripId);
+      final result = await _pollRepository.refresh(tripId);
       final paginatedList = switch (result) {
         Success(value: final p) => p,
         Failure(exception: final e) => throw e,

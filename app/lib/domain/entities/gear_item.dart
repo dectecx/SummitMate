@@ -1,12 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../enums/sync_status.dart';
+import '../interfaces/i_syncable_entity.dart';
 
 part 'gear_item.freezed.dart';
 part 'gear_item.g.dart';
 
 /// 裝備實體 (Domain Entity)
 @freezed
-abstract class GearItem with _$GearItem {
+abstract class GearItem with _$GearItem implements SyncableEntity {
   const GearItem._();
 
   const factory GearItem({

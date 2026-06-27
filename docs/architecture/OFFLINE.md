@@ -6,34 +6,49 @@
 
 ## 架構概覽
 
+**核心原則**：UI／Cubit 一律只透過該功能的 `Repository` 存取資料；「遠端」是 Repository 的實作細節。沒有平行的 `CloudService` 資料層。
+
 ```mermaid
 flowchart TB
     subgraph Presentation["Presentation Layer"]
-        C1["Cubits"]
         UI["Screens/Widgets"]
-    end
-
-    subgraph Services["Services Layer"]
-        CS["ConnectivityService"]
-        AS["AuthService"]
-        SS["SyncService"]
+        C1["Cubits"]
     end
 
     subgraph Data["Data Layer"]
-        REPO["Repositories"]
-        DB["Drift SQLite (Local)"]
-        API["Go API (Remote)"]
+        REPO["Repositories（唯一資料入口）"]
+        LOCAL["LocalDataSource (Drift)"]
+        REMOTE["RemoteDataSource (Go API)"]
+    end
+
+    subgraph Sync["背景同步 (C 模式)"]
+        ENGINE["SyncEngine"]
+        ADAPT["XxxSyncAdapter"]
     end
 
     UI --> C1
-    C1 --> CS
-    C1 --> SS
-    AS --> CS
-    SS --> CS
-    SS --> REPO
-    REPO --> DB
-    SS --> API
+    C1 --> REPO
+    REPO --> LOCAL
+    REPO -->|"A/B：online() 守門"| REMOTE
+    ENGINE --> ADAPT
+    ADAPT --> LOCAL
+    ADAPT --> REMOTE
 ```
+
+---
+
+## 資料存取架構：三模式
+
+每個**操作**屬於下列其一（同一 Repository 可混用），詳見 skill `flutter-offline-first-sync`。
+
+| 模式 | 讀 | 寫 | 遠端位置 | 典型功能 |
+| :--- | :--- | :--- | :--- | :--- |
+| **A. OnlineOnly** | 遠端（離線→`OfflineException`） | 遠端 | Repository（`online()` 守門） | 成員管理、雲端裝備庫、手動雲端行程 |
+| **B. CachedRead + OnlineWrite** | 本地快取（線上背景刷新） | 遠端 + 更新快取 | Repository（`online()` 守門） | 投票、留言、揪團 CRUD/社交 |
+| **C. OfflineFirst** | 本地 | 本地 + `syncStatus`（不阻塞網路） | `SyncEngine` + `ISyncAdapter` | 行程、節點、裝備、最愛 |
+
+- A/B 的遠端呼叫一律經 `RepositoryRemoteAccess` 守門 helper（`data/repositories/base/repository_remote_access.dart`）。
+- C 的背景推拉見 [`SYNC.md`](../database/SYNC.md)。
 
 ---
 
@@ -122,11 +137,11 @@ if (tokenAge < OfflineConfig.offlineGracePeriod) {
 
 ## 資料同步策略
 
-| 情境     | 策略                         |
-| -------- | ---------------------------- |
-| 線上模式 | 先讀本地快取，背景同步遠端   |
-| 離線模式 | 只讀本地 Drift，禁用寫入操作 |
-| 恢復連線 | 自動觸發同步 (有 5 分鐘節流) |
+| 情境     | 策略                                                         |
+| -------- | ------------------------------------------------------------ |
+| 線上模式 | A/B 先讀本地快取背景刷新；C 背景 push + pull                  |
+| 離線模式 | 只讀本地 Drift；A/B 寫入回 `OfflineException`，C 寫本地排 pending |
+| 恢復連線 | 自動觸發同步 (有 5 分鐘節流)                                 |
 
 ### 同步節流
 
@@ -219,29 +234,26 @@ Widget build(BuildContext context) {
 
 ## 離線處理策略 (Clean Architecture)
 
-採用 **Infrastructure 層內部處理** 方式，各 Service Impl 自行決定離線行為：
+離線判斷收斂在 **Data 層的 Repository**（透過共用 helper），UI 不重複判斷連線：
 
 ```dart
-class SyncService implements ISyncService {
-  final ConnectivityService _connectivity;
+// A/B 模式：Repository 經 online() 守門
+Future<Result<void, Exception>> vote(...) =>
+    online('vote', () => _remote.vote(...));
+// → 離線時直接回 Failure(OfflineException)，不發出網路請求
 
-  @override
-  Future<SyncResult> syncAll({bool isAuto = false}) async {
-    // 清楚的離線檢查，易於理解和除錯
-    if (_connectivity.isOffline) {
-      return SyncResult.skipped(reason: 'offline');
-    }
-
-    return await _doSync();
-  }
+// C 模式：背景同步引擎自行檢查
+Future<SyncResult> runSyncCycle({bool force = false}) async {
+  if (_connectivity.isOffline) return SyncResult.failure('目前為離線模式，無法同步');
+  // ... push pending → pull remote
 }
 ```
 
 **優點**：
 
-- 不同 API 可有不同離線策略
-- 邏輯清晰，易於除錯
-- 避免 Mixin 隱含邏輯
+- 單一資料入口（Repository），UI 不分散判斷連線
+- 每個操作的模式（A/B/C）明確、可測
+- C 模式新增領域零修改 `SyncEngine`
 
 ---
 
@@ -255,6 +267,8 @@ class SyncService implements ISyncService {
 | 防呆元件    | `lib/presentation/widgets/common/offline_gate.dart`            |
 | 離線例外    | `lib/core/exceptions/offline_exception.dart`                   |
 | 離線登入    | `lib/infrastructure/services/auth_service.dart`                |
-| 同步服務    | `lib/infrastructure/services/sync_service.dart`                |
+| 同步引擎    | `lib/infrastructure/services/sync_engine.dart`                 |
+| Adapter 基底 | `lib/infrastructure/services/adapters/base_sync_adapter.dart` |
+| A/B 守門 helper | `lib/data/repositories/base/repository_remote_access.dart` |
 | Cubit Reset | `lib/presentation/cubits/*/`                                   |
 | DI 註冊     | `lib/core/di/injection.dart`                                   |
