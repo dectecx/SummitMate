@@ -36,7 +36,7 @@ abstract class GroupEventResponse with _$GroupEventResponse {
     @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
     @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
     @JsonKey(defaultValue: 'open') required String status,
-    @JsonKey(name: 'max_members', defaultValue: 10) required int maxMembers,
+    @JsonKey(name: 'max_members', defaultValue: 0) required int maxMembers,
     @JsonKey(name: 'application_count', defaultValue: 0) required int applicationCount,
     @JsonKey(name: 'total_application_count', defaultValue: 0) required int totalApplicationCount,
     @JsonKey(name: 'approval_required', defaultValue: false) required bool approvalRequired,
@@ -124,7 +124,7 @@ abstract class GroupEventCreateRequest with _$GroupEventCreateRequest {
     // date-only fields (format: date in OpenAPI) - send YYYY-MM-DD
     @JsonKey(name: 'start_date') @DateOnlyConverter() required DateTime startDate,
     @JsonKey(name: 'end_date') @NullableDateOnlyConverter() DateTime? endDate,
-    @JsonKey(name: 'max_members', defaultValue: 10) required int maxMembers,
+    @JsonKey(name: 'max_members', defaultValue: 0) required int maxMembers,
     @JsonKey(name: 'approval_required', defaultValue: false) required bool approvalRequired,
     @JsonKey(name: 'private_message') String? privateMessage,
     @JsonKey(name: 'linked_trip_id') String? linkedTripId,

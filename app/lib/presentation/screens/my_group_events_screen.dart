@@ -278,7 +278,7 @@ class _EventCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.people, size: 13, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text('${event.applicationCount}/${event.maxMembers}', style: theme.textTheme.bodySmall),
+                  Text('${event.applicationCount}/${event.maxMembers == 0 ? '不限' : event.maxMembers}', style: theme.textTheme.bodySmall),
                   const Spacer(),
                   if (type == 'apply' && event.myApplicationStatus != null)
                     _AppStatusBadge(status: event.myApplicationStatus!),

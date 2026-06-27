@@ -18,7 +18,7 @@ class GroupEventsTable extends Table {
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
   TextColumn get status => text().map(const GroupEventStatusConverter()).withDefault(const Constant('open'))();
-  IntColumn get maxMembers => integer().withDefault(const Constant(10))();
+  IntColumn get maxMembers => integer().withDefault(const Constant(0))();
   IntColumn get applicationCount => integer().withDefault(const Constant(0))();
   IntColumn get totalApplicationCount => integer().withDefault(const Constant(0))();
   BoolColumn get approvalRequired => boolean().withDefault(const Constant(false))();

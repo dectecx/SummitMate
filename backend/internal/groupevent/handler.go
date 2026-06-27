@@ -92,6 +92,7 @@ func (h *GroupEventHandler) PostGroupEvents(w http.ResponseWriter, r *http.Reque
 		endDate = &t
 	}
 
+	// max_members 為預計招收人數而非硬性上限；0 代表不限人數（未提供時即視為不限）。
 	maxMembers := 0
 	if req.MaxMembers != nil {
 		maxMembers = *req.MaxMembers
@@ -169,6 +170,7 @@ func (h *GroupEventHandler) PatchGroupEventsId(w http.ResponseWriter, r *http.Re
 		endDate = &t
 	}
 
+	// max_members 為預計招收人數而非硬性上限；0 代表不限人數（未提供時即視為不限）。
 	maxMembers := 0
 	if req.MaxMembers != nil {
 		maxMembers = *req.MaxMembers
