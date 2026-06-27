@@ -37,6 +37,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   bool _isFabExpanded = true; // FAB 按鈕列展開/收合
   bool _isMapReady = false; // 地圖是否已渲染完成
 
+  // 追蹤進行中的動畫 Controller，確保 dispose() 時能一併清理
+  final Set<AnimationController> _activeControllers = {};
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +49,16 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       context.read<OfflineMapCubit>().initStore();
       context.read<MapCubit>().initLocation();
     });
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _activeControllers) {
+      controller.dispose();
+    }
+    _activeControllers.clear();
+    _mapController.dispose();
+    super.dispose();
   }
 
   @override
@@ -609,15 +622,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   /// 平滑移動地圖視角
   void _animatedMapMove(LatLng destLocation, double destZoom) {
-    // 建立 AnimationController (500ms 動畫)
     final controller = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
+    _activeControllers.add(controller);
 
-    // 起始位置與縮放
     final latTween = Tween<double>(begin: _mapController.camera.center.latitude, end: destLocation.latitude);
     final lngTween = Tween<double>(begin: _mapController.camera.center.longitude, end: destLocation.longitude);
     final zoomTween = Tween<double>(begin: _mapController.camera.zoom, end: destZoom);
 
-    // 動畫執行過程
     final animation = CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
 
     controller.addListener(() {
@@ -627,11 +638,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       );
     });
 
-    // 動畫結束後釋放 Controller
     animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-      } else if (status == AnimationStatus.dismissed) {
+      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        _activeControllers.remove(controller);
         controller.dispose();
       }
     });
@@ -642,10 +651,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   /// 平滑旋轉地圖至正北
   void _animatedRotateNorth() {
     final controller = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _activeControllers.add(controller);
 
-    // 計算最短旋轉路徑
+    // 計算最短旋轉路徑，正規化至 -180 ~ 180
     double startRotation = _currentRotation;
-    // 正規化至 -180 ~ 180
     while (startRotation > 180) {
       startRotation -= 360;
     }
@@ -657,6 +666,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     final animation = CurvedAnimation(parent: controller, curve: Curves.easeOutCubic);
 
     controller.addListener(() {
+      if (!mounted) return;
       final newRotation = rotationTween.evaluate(animation);
       _mapController.rotate(newRotation);
       // 同步更新 _currentRotation 讓指北針圖示即時旋轉
@@ -665,6 +675,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     animation.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        _activeControllers.remove(controller);
         controller.dispose();
       }
     });
