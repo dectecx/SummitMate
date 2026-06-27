@@ -153,19 +153,20 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
     }
 
     if (result != null && result.isNotEmpty && mounted) {
-      if (_localDays.contains(result)) {
+      final newDay = result;
+      if (_localDays.contains(newDay)) {
         ToastService.error('名稱已存在');
         return;
       }
 
       setState(() {
         _pendingActions++;
-        _localDays.add(result);
+        _localDays.add(newDay);
         _localDays = List.from(_localDays);
       });
 
       try {
-        await cubit.addDay(result);
+        await cubit.addDay(newDay);
       } finally {
         if (mounted) {
           setState(() {
@@ -202,19 +203,20 @@ class _DayManagementDialogState extends State<DayManagementDialog> {
     }
 
     if (result != null && result.isNotEmpty && result != oldName && mounted) {
-      if (_localDays.contains(result)) {
+      final newName = result;
+      if (_localDays.contains(newName)) {
         ToastService.error('名稱已存在');
         return;
       }
 
       setState(() {
         _pendingActions++;
-        _localDays[index] = result;
+        _localDays[index] = newName;
         _localDays = List.from(_localDays);
       });
 
       try {
-        await cubit.renameDay(oldName, result);
+        await cubit.renameDay(oldName, newName);
       } finally {
         if (mounted) {
           setState(() {
