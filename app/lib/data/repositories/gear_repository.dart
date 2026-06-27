@@ -27,6 +27,14 @@ class GearRepository implements IGearRepository {
     return items;
   }
 
+  /// 取得指定行程的裝備 (依 orderIndex 排序)
+  @override
+  Future<List<GearItem>> getByTripId(String tripId) async {
+    final items = await _localDataSource.getByTripId(tripId);
+    items.sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
+    return items;
+  }
+
   /// 依分類取得裝備
   @override
   Future<List<GearItem>> getItemsByCategory(String category) async {

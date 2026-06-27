@@ -120,31 +120,19 @@ class _GearCloudScreenState extends State<GearCloudScreen> {
       return;
     }
 
-    // Get items for current trip
+    // Capture cubit state before any async gap
     final gearRepo = getIt<IGearRepository>();
-    // Note: gearRepo.getAllItems() might return ALL. We should filter.
-    // Assuming gearRepo has method to get by trip or we filter manually.
-    // If we look at GearCubit logic, it filters loadGear(tripId).
-    // Let's rely on GearCubit state if it matches active trip, else manual fetch.
     final gearCubit = context.read<GearCubit>();
-    List<GearItem> items = []; // Initialize to empty list to be safe or just use local var in branches
-    if (gearCubit.currentTripId == currentTripId && gearCubit.state is GearLoaded) {
-      // Use loaded items
-      try {
-        items = (gearCubit.state as GearLoaded).items;
-      } catch (e) {
-        // Fallback
-        final all = await gearRepo.getAllItems();
-        items = all.where((i) => i.tripId == currentTripId).toList();
-      }
-    } else {
-      final all = await gearRepo.getAllItems();
-      items = all.where((i) => i.tripId == currentTripId).toList();
-    }
-
-    // Get meals for current trip
     final mealState = context.read<MealCubit>().state;
     final meals = mealState is MealLoaded ? mealState.dailyPlans : <DailyMealPlan>[];
+
+    // Get items for current trip
+    List<GearItem> items;
+    if (gearCubit.currentTripId == currentTripId && gearCubit.state is GearLoaded) {
+      items = (gearCubit.state as GearLoaded).items;
+    } else {
+      items = await gearRepo.getByTripId(currentTripId);
+    }
 
     if (items.isEmpty && meals.isEmpty) {
       if (mounted) {
