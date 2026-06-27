@@ -308,6 +308,32 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
 
+  /auth/rate-limit/{email}:
+    delete:
+      summary: Clear Rate Limit (Debug)
+      description: |
+        清除指定 Email 的登入與重發驗證碼 Rate Limit 計數器。
+        **僅供開發/測試環境使用**，用於重置計數以便重新測試流程。
+      operationId: clearRateLimit
+      tags:
+        - auth
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 要清除 Rate Limit 的 Email 地址
+      responses:
+        "204":
+          description: 清除成功
+        "400":
+          description: 參數錯誤
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /users/search:
     get:
       summary: Search User by Email

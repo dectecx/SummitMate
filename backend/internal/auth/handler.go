@@ -248,6 +248,22 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "密碼修改成功"})
 }
 
+// ClearRateLimit 處理 DELETE /auth/rate-limit/{email} 請求。
+// 僅供開發/測試環境使用。
+func (h *AuthHandler) ClearRateLimit(w http.ResponseWriter, r *http.Request, email string) {
+	if email == "" {
+		apiutil.SendError(w, r, apperror.ErrBadRequest.WithMessage("必須提供 email 參數"))
+		return
+	}
+
+	if err := h.authService.ClearRateLimit(r.Context(), email); err != nil {
+		apiutil.SendError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // --- 回應輔助函式 ---
 
 func (h *AuthHandler) writeAuthResponse(w http.ResponseWriter, statusCode int, user *User, token, refreshToken string) {

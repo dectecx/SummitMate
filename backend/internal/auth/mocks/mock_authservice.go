@@ -73,6 +73,53 @@ func (_c *MockAuthService_ChangePassword_Call) RunAndReturn(run func(context.Con
 }
 
 // DeleteAccount provides a mock function with given fields: ctx, userID
+// ClearRateLimit provides a mock function with given fields: ctx, email
+func (_m *MockAuthService) ClearRateLimit(ctx context.Context, email string) error {
+	ret := _m.Called(ctx, email)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ClearRateLimit")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, email)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockAuthService_ClearRateLimit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ClearRateLimit'
+type MockAuthService_ClearRateLimit_Call struct {
+	*mock.Call
+}
+
+// ClearRateLimit is a helper method to define mock.On call
+//   - ctx context.Context
+//   - email string
+func (_e *MockAuthService_Expecter) ClearRateLimit(ctx interface{}, email interface{}) *MockAuthService_ClearRateLimit_Call {
+	return &MockAuthService_ClearRateLimit_Call{Call: _e.mock.On("ClearRateLimit", ctx, email)}
+}
+
+func (_c *MockAuthService_ClearRateLimit_Call) Run(run func(ctx context.Context, email string)) *MockAuthService_ClearRateLimit_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockAuthService_ClearRateLimit_Call) Return(_a0 error) *MockAuthService_ClearRateLimit_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockAuthService_ClearRateLimit_Call) RunAndReturn(run func(context.Context, string) error) *MockAuthService_ClearRateLimit_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 func (_m *MockAuthService) DeleteAccount(ctx context.Context, userID string) error {
 	ret := _m.Called(ctx, userID)
 
