@@ -11,6 +11,7 @@ import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/trip/trip_cubit.dart';
 import '../cubits/trip/trip_state.dart';
 import 'itinerary_edit_dialog.dart';
+import 'itinerary_edit_result.dart';
 import 'itinerary/itinerary_day_selector.dart';
 import 'itinerary/itinerary_list_view.dart';
 import 'itinerary/itinerary_day_side_selector.dart';
@@ -223,18 +224,18 @@ class _ItineraryTabState extends State<ItineraryTab> {
 
   /// 顯示編輯行程節點對話框
   void _showEditDialog(BuildContext context, ItineraryItem item, String currentDay) async {
-    final result = await showDialog<Map<String, dynamic>>(
+    final result = await showDialog<ItineraryEditResult>(
       context: context,
       builder: (_) => ItineraryEditDialog(item: item, defaultDay: currentDay),
     );
 
     if (result != null && context.mounted) {
       final updatedItem = item.copyWith(
-        name: result['name'],
-        estTime: result['estTime'],
-        altitude: result['altitude'],
-        distance: result['distance'],
-        note: result['note'],
+        name: result.name,
+        estTime: result.estTime,
+        altitude: result.altitude,
+        distance: result.distance,
+        note: result.note,
         updatedAt: DateTime.now(),
       );
 

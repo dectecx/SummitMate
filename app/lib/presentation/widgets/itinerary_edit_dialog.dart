@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/itinerary_item.dart';
 import 'buttons/summit_destructive_button.dart';
+import 'itinerary_edit_result.dart';
 
 class ItineraryEditDialog extends StatefulWidget {
   final ItineraryItem? item; // Null for Add, non-null for Edit
@@ -136,8 +137,10 @@ class _ItineraryEditDialogState extends State<ItineraryEditDialog> {
     final timeStr =
         '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
 
-    // Return partial map or object to parent to handle submission
-    Navigator.pop(context, {'name': name, 'estTime': timeStr, 'altitude': alt, 'distance': dist, 'note': note});
+    Navigator.pop(
+      context,
+      ItineraryEditResult(name: name, estTime: timeStr, altitude: alt, distance: dist, note: note),
+    );
   }
 
   Future<bool> _checkDismiss() async {
