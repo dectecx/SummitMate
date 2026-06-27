@@ -175,9 +175,9 @@ func (_c *MockGearSetRepository_GetByID_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
-// List provides a mock function with given fields: ctx, limit, offset, search, userID
-func (_m *MockGearSetRepository) List(ctx context.Context, limit int, offset int, search string, userID *string) ([]*GearSet, int, error) {
-	ret := _m.Called(ctx, limit, offset, search, userID)
+// List provides a mock function with given fields: ctx, limit, offset, search, filter
+func (_m *MockGearSetRepository) List(ctx context.Context, limit int, offset int, search string, filter GearSetListFilter) ([]*GearSet, int, error) {
+	ret := _m.Called(ctx, limit, offset, search, filter)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -186,25 +186,25 @@ func (_m *MockGearSetRepository) List(ctx context.Context, limit int, offset int
 	var r0 []*GearSet
 	var r1 int
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, string, *string) ([]*GearSet, int, error)); ok {
-		return rf(ctx, limit, offset, search, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, string, GearSetListFilter) ([]*GearSet, int, error)); ok {
+		return rf(ctx, limit, offset, search, filter)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, string, *string) []*GearSet); ok {
-		r0 = rf(ctx, limit, offset, search, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, int, int, string, GearSetListFilter) []*GearSet); ok {
+		r0 = rf(ctx, limit, offset, search, filter)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*GearSet)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int, int, string, *string) int); ok {
-		r1 = rf(ctx, limit, offset, search, userID)
+	if rf, ok := ret.Get(1).(func(context.Context, int, int, string, GearSetListFilter) int); ok {
+		r1 = rf(ctx, limit, offset, search, filter)
 	} else {
 		r1 = ret.Get(1).(int)
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, int, int, string, *string) error); ok {
-		r2 = rf(ctx, limit, offset, search, userID)
+	if rf, ok := ret.Get(2).(func(context.Context, int, int, string, GearSetListFilter) error); ok {
+		r2 = rf(ctx, limit, offset, search, filter)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -222,14 +222,14 @@ type MockGearSetRepository_List_Call struct {
 //   - limit int
 //   - offset int
 //   - search string
-//   - userID *string
-func (_e *MockGearSetRepository_Expecter) List(ctx interface{}, limit interface{}, offset interface{}, search interface{}, userID interface{}) *MockGearSetRepository_List_Call {
-	return &MockGearSetRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset, search, userID)}
+//   - filter GearSetListFilter
+func (_e *MockGearSetRepository_Expecter) List(ctx interface{}, limit interface{}, offset interface{}, search interface{}, filter interface{}) *MockGearSetRepository_List_Call {
+	return &MockGearSetRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset, search, filter)}
 }
 
-func (_c *MockGearSetRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int, search string, userID *string)) *MockGearSetRepository_List_Call {
+func (_c *MockGearSetRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int, search string, filter GearSetListFilter)) *MockGearSetRepository_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int), args[2].(int), args[3].(string), args[4].(*string))
+		run(args[0].(context.Context), args[1].(int), args[2].(int), args[3].(string), args[4].(GearSetListFilter))
 	})
 	return _c
 }
@@ -239,7 +239,7 @@ func (_c *MockGearSetRepository_List_Call) Return(_a0 []*GearSet, _a1 int, _a2 e
 	return _c
 }
 
-func (_c *MockGearSetRepository_List_Call) RunAndReturn(run func(context.Context, int, int, string, *string) ([]*GearSet, int, error)) *MockGearSetRepository_List_Call {
+func (_c *MockGearSetRepository_List_Call) RunAndReturn(run func(context.Context, int, int, string, GearSetListFilter) ([]*GearSet, int, error)) *MockGearSetRepository_List_Call {
 	_c.Call.Return(run)
 	return _c
 }

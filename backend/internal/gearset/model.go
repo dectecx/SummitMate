@@ -42,6 +42,15 @@ type GearSetItem struct {
 	OrderIndex int       `json:"order_index" db:"order_index"`
 }
 
+// GearSetListFilter 封裝 Repository List 查詢條件，由 Service 組裝後傳入。
+// OwnerID 不為 nil 時僅列出該擁有者的裝備組合（不限 visibility）。
+// Visibilities 不為空時僅列出符合指定可見性的裝備組合。
+// 兩者同時設定時以 AND 連接。
+type GearSetListFilter struct {
+	OwnerID      *string
+	Visibilities []GearSetVisibility
+}
+
 type GearSetMeal struct {
 	ID        uuid.UUID `json:"id" db:"id"`
 	GearSetID uuid.UUID `json:"gear_set_id" db:"gear_set_id"`

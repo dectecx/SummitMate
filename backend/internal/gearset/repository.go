@@ -16,7 +16,7 @@ type GearSetRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*GearSet, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	Update(ctx context.Context, gs *GearSet) error
-	List(ctx context.Context, limit, offset int, search string, userID *string) ([]*GearSet, int, error)
+	List(ctx context.Context, limit, offset int, search string, filter GearSetListFilter) ([]*GearSet, int, error)
 }
 
 type gearSetRepository struct {
@@ -201,7 +201,7 @@ func (r *gearSetRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (r *gearSetRepository) List(ctx context.Context, limit, offset int, search string, userID *string) ([]*GearSet, int, error) {
+func (r *gearSetRepository) List(ctx context.Context, limit, offset int, search string, filter GearSetListFilter) ([]*GearSet, int, error) {
 	baseQuery := `
 		FROM gear_sets
 		WHERE 1=1
@@ -209,12 +209,23 @@ func (r *gearSetRepository) List(ctx context.Context, limit, offset int, search 
 	args := []interface{}{}
 	argIdx := 1
 
-	if userID != nil {
+	if filter.OwnerID != nil {
 		baseQuery += fmt.Sprintf(" AND user_id = $%d", argIdx)
-		args = append(args, *userID)
+		args = append(args, *filter.OwnerID)
 		argIdx++
-	} else {
-		baseQuery += " AND visibility IN ('public', 'protected')"
+	}
+
+	if len(filter.Visibilities) > 0 {
+		placeholders := ""
+		for i, v := range filter.Visibilities {
+			if i > 0 {
+				placeholders += ", "
+			}
+			placeholders += fmt.Sprintf("$%d", argIdx)
+			args = append(args, string(v))
+			argIdx++
+		}
+		baseQuery += fmt.Sprintf(" AND visibility IN (%s)", placeholders)
 	}
 
 	if search != "" {
