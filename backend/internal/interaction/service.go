@@ -256,6 +256,14 @@ func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 		return nil, apperror.ErrResourceNotFound.WithMessage("投票活動已結束")
 	}
 
+	opt, err := s.repo.GetPollOption(ctx, optionID)
+	if err != nil {
+		return nil, err
+	}
+	if opt == nil || opt.PollID != pollID {
+		return nil, apperror.ErrResourceNotFound.WithMessage("找不到該投票選項")
+	}
+
 	err = s.repo.VoteOption(ctx, pollID, optionID, userID, poll.AllowMultipleVotes)
 	if err != nil {
 		return nil, err
