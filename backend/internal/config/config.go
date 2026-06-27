@@ -112,7 +112,7 @@ func Load() *Config {
 		AuthMailSendTimeout: getEnvAsDuration("AUTH_MAIL_SEND_TIMEOUT", 15*time.Second),
 
 		LoginRateWindow:  getEnvAsDuration("LOGIN_RATE_WINDOW", 15*time.Minute),
-		ResendRateWindow: getEnvAsDuration("RESEND_RATE_WINDOW", 1*time.Hour),
+		ResendRateWindow: getEnvAsDuration("RESEND_RATE_WINDOW", 30*time.Minute),
 
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
 		CWAHTTPTimeout: getEnvAsDuration("CWA_HTTP_TIMEOUT", 30*time.Second),

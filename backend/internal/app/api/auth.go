@@ -43,3 +43,7 @@ func (s *Server) LogoutUser(w http.ResponseWriter, r *http.Request) {
 func (s *Server) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	s.AuthHandler.ChangePassword(w, r)
 }
+
+func (s *Server) ClearRateLimit(w http.ResponseWriter, r *http.Request, email string) {
+	s.AuthHandler.ClearRateLimit(w, r, email)
+}
