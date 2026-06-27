@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/http"
 	"time"
 
 	"summitmate/internal/apperror"
@@ -606,7 +605,7 @@ func (s *tripService) DeleteMealPlanDay(ctx context.Context, tripID, dayID, user
 
 	// 如果是綁定行程的天數，不能直接刪除糧食天數 (必須從行程那邊刪除天數來觸發解綁)
 	if existing.LinkedItineraryDay != nil {
-		return apperror.New(http.StatusBadRequest, apperror.TypeInvalidReq, "linked_day_deletion_forbidden", "此天數已綁定行程，請至行程管理中修改或刪除").WithParam("linked_itinerary_day")
+		return apperror.ErrLinkedDayDeletionForbidden
 	}
 
 	// 實作建議：資料庫已設定 ON DELETE CASCADE，故刪除天數時會自動刪除相關餐點。

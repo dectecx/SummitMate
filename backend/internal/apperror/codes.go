@@ -21,6 +21,8 @@ var (
 	ErrTripAccessDenied  = New(http.StatusForbidden, TypeAuth, "trip_permission_denied", "無權限操作此行程")
 	ErrUpdateConflict    = New(http.StatusConflict, TypeBusinessLogic, "update_conflict", "資料已被他人修改，請重新載入後再試一次")
 	ErrLinkedDayNotFound = New(http.StatusBadRequest, TypeInvalidReq, "linked_day_not_found", "綁定的行程天數不存在")
+
+	ErrLinkedDayDeletionForbidden = New(http.StatusBadRequest, TypeInvalidReq, "linked_day_deletion_forbidden", "此天數已綁定行程，請至行程管理中修改或刪除").WithParam("linked_itinerary_day")
 )
 
 // 通用資源
