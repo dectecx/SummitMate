@@ -177,21 +177,21 @@ class _PollListScreenState extends State<PollListScreen> {
         }
 
         List<Poll> filteredPolls;
-        switch (_selectedFilter) {
-          case 0:
-            filteredPolls = polls.where((p) => p.isActive).toList();
-            break;
-          case 1:
-            filteredPolls = polls.where((p) => !p.isActive).toList();
-            break;
-          case 2:
-            filteredPolls = polls.where((p) => p.creatorId == currentUserId).toList();
-            break;
-          default:
-            filteredPolls = polls.where((p) => p.isActive).toList();
+        if (state is PollLoaded) {
+          switch (_selectedFilter) {
+            case 1:
+              filteredPolls = state.endedPolls;
+              break;
+            case 2:
+              filteredPolls = state.myPolls;
+              break;
+            case 0:
+            default:
+              filteredPolls = state.activePolls;
+          }
+        } else {
+          filteredPolls = const [];
         }
-
-        filteredPolls.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
         return Scaffold(
           body: Center(
