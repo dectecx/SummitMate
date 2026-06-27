@@ -7,6 +7,7 @@ import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/connectivity/connectivity_state.dart';
 import '../cubits/group_event/group_event_cubit.dart';
 import '../cubits/group_event/group_event_state.dart';
+import '../cubits/base/toast_notification.dart';
 import '../cubits/favorites/group_event/group_event_favorites_cubit.dart';
 import '../cubits/favorites/group_event/group_event_favorites_state.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -265,8 +266,17 @@ class _GroupEventsListScreenState extends State<GroupEventsListScreen> {
     return BlocBuilder<GroupEventFavoritesCubit, GroupEventFavoritesState>(
       builder: (context, favoritesState) {
         return BlocConsumer<GroupEventCubit, GroupEventState>(
+          listenWhen: (_, state) => state.notification != null,
           listener: (context, state) {
-            // Handle errors if needed
+            final n = state.notification;
+            if (n == null) return;
+            switch (n.type) {
+              case ToastType.success: ToastService.success(n.message);
+              case ToastType.warning: ToastService.warning(n.message);
+              case ToastType.error: ToastService.error(n.message);
+              case ToastType.info: ToastService.info(n.message);
+            }
+            context.read<GroupEventCubit>().clearNotification();
           },
           builder: (context, state) {
             if (state is GroupEventLoading) {

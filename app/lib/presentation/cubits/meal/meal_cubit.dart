@@ -1,16 +1,23 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/trip_dirty_marker_mixin.dart';
 import '../../../core/error/result.dart';
 import '../../cubits/meal/meal_state.dart';
 import '../../../domain/domain.dart';
 
 @injectable
-class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
+class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState>, TripDirtyMarkerMixin<MealState> {
   final ITripRepository _tripRepository;
   String? _currentTripId;
 
   MealCubit(this._tripRepository) : super(const MealInitial());
+
+  @override
+  ITripRepository get tripRepository => _tripRepository;
+
+  @override
+  String? get currentTripId => _currentTripId;
 
   /// 載入行程的糧食計畫
   Future<void> loadMealPlans(String tripId) async {
@@ -29,12 +36,6 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
   void reset() {
     _currentTripId = null;
     safeEmit(const MealInitial());
-  }
-
-  Future<void> _markCurrentTripDirty() async {
-    if (_currentTripId != null) {
-      await _tripRepository.markTripAsPendingUpdate(_currentTripId!);
-    }
   }
 
   /// 新增餐點項目
@@ -129,7 +130,7 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
       final currentPlans = List<DailyMealPlan>.from(loadedState.dailyPlans);
       currentPlans.add(DailyMealPlan(dayInfo: newDay));
 
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
     } else if (result is Failure<MealPlanDay, Exception>) {
       safeEmit(MealError('新增天數失敗: ${result.exception.toString()}'));
@@ -159,7 +160,7 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
       if (result is Success<MealPlanDay, Exception>) {
         final newDay = result.value;
         currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
-        await _markCurrentTripDirty();
+        await markCurrentTripDirty();
         safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
       } else if (result is Failure<MealPlanDay, Exception>) {
         safeEmit(MealError('重新命名天數失敗: ${result.exception.toString()}'));
@@ -187,7 +188,7 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
       if (result is Success<MealPlanDay, Exception>) {
         final newDay = result.value;
         currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
-        await _markCurrentTripDirty();
+        await markCurrentTripDirty();
         safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
       } else if (result is Failure<MealPlanDay, Exception>) {
         safeEmit(MealError('綁定天數失敗: ${result.exception.toString()}'));
@@ -217,7 +218,7 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
       if (result is Success<MealPlanDay, Exception>) {
         final newDay = result.value;
         currentPlans[planIndex] = currentPlans[planIndex].copyWith(dayInfo: newDay);
-        await _markCurrentTripDirty();
+        await markCurrentTripDirty();
         safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
       } else if (result is Failure<MealPlanDay, Exception>) {
         safeEmit(MealError('解除綁定天數失敗: ${result.exception.toString()}'));
@@ -239,7 +240,7 @@ class MealCubit extends Cubit<MealState> with SafeEmitMixin<MealState> {
 
       if (result is Success<void, Exception>) {
         currentPlans.removeAt(planIndex);
-        await _markCurrentTripDirty();
+        await markCurrentTripDirty();
         safeEmit(loadedState.copyWith(dailyPlans: currentPlans));
       } else if (result is Failure<void, Exception>) {
         safeEmit(MealError('刪除天數失敗: ${result.exception.toString()}'));

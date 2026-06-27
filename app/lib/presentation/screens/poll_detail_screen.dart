@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:summitmate/domain/domain.dart';
 import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
+import '../cubits/base/toast_notification.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
 import '../widgets/common/summit_app_bar.dart';
@@ -99,7 +100,18 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PollCubit, PollState>(
-      listener: (context, state) {},
+      listenWhen: (_, state) => state.notification != null,
+      listener: (context, state) {
+        final n = state.notification;
+        if (n == null) return;
+        switch (n.type) {
+          case ToastType.success: ToastService.success(n.message);
+          case ToastType.warning: ToastService.warning(n.message);
+          case ToastType.error: ToastService.error(n.message);
+          case ToastType.info: ToastService.info(n.message);
+        }
+        context.read<PollCubit>().clearNotification();
+      },
       builder: (context, state) {
         final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
 

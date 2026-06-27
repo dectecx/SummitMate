@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:intl/intl.dart';
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'create_poll_screen.dart';
 import 'poll_detail_screen.dart';
 import '../cubits/connectivity/connectivity_cubit.dart';
 import '../cubits/connectivity/connectivity_state.dart';
 import '../cubits/poll/poll_cubit.dart';
 import '../cubits/poll/poll_state.dart';
-
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:intl/intl.dart';
-import 'package:summitmate/infrastructure/infrastructure.dart';
+import '../cubits/base/toast_notification.dart';
 import '../widgets/responsive_layout.dart';
 import '../widgets/common/offline_gate.dart';
 
@@ -127,11 +127,17 @@ class _PollListScreenState extends State<PollListScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PollCubit, PollState>(
+      listenWhen: (_, state) => state.notification != null,
       listener: (context, state) {
-        if (state is PollError) {
-          // Show error toast if needed, but usually Cubit handles it or we show UI error
-          // If we want to show a snackbar for critical errors not handled by ToastService
+        final n = state.notification;
+        if (n == null) return;
+        switch (n.type) {
+          case ToastType.success: ToastService.success(n.message);
+          case ToastType.warning: ToastService.warning(n.message);
+          case ToastType.error: ToastService.error(n.message);
+          case ToastType.info: ToastService.info(n.message);
         }
+        context.read<PollCubit>().clearNotification();
       },
       builder: (context, state) {
         if (state is PollLoading) {

@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
+import 'package:summitmate/presentation/cubits/base/trip_dirty_marker_mixin.dart';
 import 'package:flutter/services.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
@@ -9,13 +10,22 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'itinerary_state.dart';
 
 @injectable
-class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryState> {
+class ItineraryCubit extends Cubit<ItineraryState>
+    with SafeEmitMixin<ItineraryState>, TripDirtyMarkerMixin<ItineraryState> {
   final IItineraryRepository _repository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
   static const String _source = 'ItineraryCubit';
 
+  String? _currentTripId;
+
   ItineraryCubit(this._repository, this._tripRepository, this._authService) : super(const ItineraryInitial());
+
+  @override
+  ITripRepository get tripRepository => _tripRepository;
+
+  @override
+  String? get currentTripId => _currentTripId;
 
   Future<String?> _getCurrentTripId() async {
     final result = await _tripRepository.getActiveTrip(_authService.currentUserId ?? 'guest');
@@ -23,13 +33,6 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       Success(value: final trip) => trip?.id,
       Failure() => null,
     };
-  }
-
-  Future<void> _markCurrentTripDirty() async {
-    final tripId = await _getCurrentTripId();
-    if (tripId != null) {
-      await _tripRepository.markTripAsPendingUpdate(tripId);
-    }
   }
 
   /// 載入當前行程的項目
@@ -40,6 +43,8 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       }
 
       final currentTripId = await _getCurrentTripId();
+      _currentTripId = currentTripId;
+
       if (currentTripId == null) {
         safeEmit(const ItineraryLoaded(items: []));
         return;
@@ -227,7 +232,7 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       if (result is Failure) throw result.exception;
       HapticFeedback.mediumImpact();
       LogService.info('Toggle check-in: $id', source: _source);
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Toggle check-in failed: $e', source: _source);
@@ -254,7 +259,7 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       if (result is Failure) throw result.exception;
       HapticFeedback.mediumImpact();
       LogService.info('Check-in with time: $id at $time', source: _source);
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Check-in with time failed: $e', source: _source);
@@ -285,7 +290,7 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       final result = await _repository.add(itemToAdd);
       if (result is Failure) throw result.exception;
       LogService.info('Added item: ${item.name}', source: _source);
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Add item failed: $e', source: _source);
@@ -304,7 +309,7 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       final result = await _repository.update(itemToUpdate);
       if (result is Failure) throw result.exception;
       LogService.info('Updated item: ${item.name}', source: _source);
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Update item failed: $e', source: _source);
@@ -318,7 +323,7 @@ class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryS
       final result = await _repository.delete(id);
       if (result is Failure) throw result.exception;
       LogService.info('Deleted item: $id', source: _source);
-      await _markCurrentTripDirty();
+      await markCurrentTripDirty();
       await loadItinerary();
     } catch (e) {
       LogService.error('Delete item failed: $e', source: _source);

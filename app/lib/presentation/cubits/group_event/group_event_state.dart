@@ -1,19 +1,23 @@
 import 'package:equatable/equatable.dart';
 import 'package:summitmate/domain/domain.dart';
+import 'package:summitmate/presentation/cubits/base/toast_notification.dart';
 
 abstract class GroupEventState extends Equatable {
-  const GroupEventState();
+  /// 一次性 Toast 通知，由 UI 層 [BlocListener] 消費後應立即呼叫 `clearNotification()`。
+  final ToastNotification? notification;
+
+  const GroupEventState({this.notification});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [notification];
 }
 
 class GroupEventInitial extends GroupEventState {
-  const GroupEventInitial();
+  const GroupEventInitial({super.notification});
 }
 
 class GroupEventLoading extends GroupEventState {
-  const GroupEventLoading();
+  const GroupEventLoading({super.notification});
 }
 
 class GroupEventLoaded extends GroupEventState {
@@ -29,6 +33,7 @@ class GroupEventLoaded extends GroupEventState {
     this.lastSyncTime,
     this.isSyncing = false,
     this.isGuest = false,
+    super.notification,
   });
 
   /// Open events (recruiting)
@@ -54,6 +59,8 @@ class GroupEventLoaded extends GroupEventState {
     DateTime? lastSyncTime,
     bool? isSyncing,
     bool? isGuest,
+    ToastNotification? notification,
+    bool clearNotification = false,
   }) {
     return GroupEventLoaded(
       events: events ?? this.events,
@@ -61,20 +68,21 @@ class GroupEventLoaded extends GroupEventState {
       lastSyncTime: lastSyncTime ?? this.lastSyncTime,
       isSyncing: isSyncing ?? this.isSyncing,
       isGuest: isGuest ?? this.isGuest,
+      notification: clearNotification ? null : (notification ?? this.notification),
     );
   }
 
   @override
-  List<Object?> get props => [events, currentUserId, lastSyncTime, isSyncing, isGuest];
+  List<Object?> get props => [events, currentUserId, lastSyncTime, isSyncing, isGuest, notification];
 }
 
 class GroupEventError extends GroupEventState {
   final String message;
 
-  const GroupEventError(this.message);
+  const GroupEventError(this.message, {super.notification});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, notification];
 }
 
 /// ─────────────────────────────────────────────
@@ -82,7 +90,7 @@ class GroupEventError extends GroupEventState {
 /// ─────────────────────────────────────────────
 
 class MyEventsLoading extends GroupEventState {
-  const MyEventsLoading();
+  const MyEventsLoading({super.notification});
 }
 
 class MyEventsLoaded extends GroupEventState {
@@ -100,6 +108,7 @@ class MyEventsLoaded extends GroupEventState {
     required this.total,
     this.hasMore = false,
     this.isLoadingMore = false,
+    super.notification,
   });
 
   MyEventsLoaded copyWith({
@@ -109,6 +118,8 @@ class MyEventsLoaded extends GroupEventState {
     int? total,
     bool? hasMore,
     bool? isLoadingMore,
+    ToastNotification? notification,
+    bool clearNotification = false,
   }) {
     return MyEventsLoaded(
       events: events ?? this.events,
@@ -117,19 +128,20 @@ class MyEventsLoaded extends GroupEventState {
       total: total ?? this.total,
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      notification: clearNotification ? null : (notification ?? this.notification),
     );
   }
 
   @override
-  List<Object?> get props => [events, type, page, total, hasMore, isLoadingMore];
+  List<Object?> get props => [events, type, page, total, hasMore, isLoadingMore, notification];
 }
 
 class MyEventsError extends GroupEventState {
   final String message;
   final String type;
 
-  const MyEventsError({required this.message, required this.type});
+  const MyEventsError({required this.message, required this.type, super.notification});
 
   @override
-  List<Object?> get props => [message, type];
+  List<Object?> get props => [message, type, notification];
 }
