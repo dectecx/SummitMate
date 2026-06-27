@@ -9,6 +9,20 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// incrementScript 以單一 Lua script 讓 INCR + PEXPIRE 原子化執行，
+// 避免 INCR 成功但 EXPIRE 失敗（或兩指令之間崩潰）導致計數 key 永久殘留。
+// KEYS[1]=key、ARGV[1]=ttl(毫秒，<=0 表示不設定過期)。
+var incrementScript = redis.NewScript(`
+local current = redis.call('INCR', KEYS[1])
+if current == 1 then
+    local ttl = tonumber(ARGV[1])
+    if ttl and ttl > 0 then
+        redis.call('PEXPIRE', KEYS[1], ttl)
+    end
+end
+return current
+`)
+
 type redisCache[T any] struct {
 	client *redis.Client
 	prefix string
@@ -62,13 +76,9 @@ func (r *redisCache[T]) Delete(ctx context.Context, key Key) error {
 
 func (r *redisCache[T]) Increment(ctx context.Context, key Key, ttl time.Duration) (int64, error) {
 	fullKey := r.resolveKey(key)
-	val, err := r.client.Incr(ctx, fullKey).Result()
+	val, err := incrementScript.Run(ctx, r.client, []string{fullKey}, ttl.Milliseconds()).Int64()
 	if err != nil {
 		return 0, fmt.Errorf("redis increment: %w", err)
-	}
-
-	if val == 1 && ttl > 0 {
-		r.client.Expire(ctx, fullKey, ttl)
 	}
 
 	return val, nil
