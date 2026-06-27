@@ -40,13 +40,17 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
     }
 
     if (widget.weather == null) {
+      final colorScheme = Theme.of(context).colorScheme;
       return ListTile(
         leading: const Icon(Icons.cloud_off),
-        title: Text(widget.isLoading ? '讀取中...' : '請更新氣象資料', style: const TextStyle(color: Colors.grey)),
+        title: Text(
+          widget.isLoading ? '讀取中...' : '請更新氣象資料',
+          style: TextStyle(color: colorScheme.onSurfaceVariant),
+        ),
         subtitle: const Text('點擊右側按鈕取得最新預報'),
         trailing: IconButton(
           onPressed: widget.onRefresh,
-          icon: const Icon(Icons.refresh, color: Colors.blue),
+          icon: Icon(Icons.refresh, color: colorScheme.primary),
         ),
       );
     }
@@ -144,14 +148,15 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
   }
 
   Widget _buildHeader(WeatherData w, String timeStr) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DropdownButton<String>(
           value: widget.selectedLocation,
           underline: const SizedBox(),
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 16),
+          icon: Icon(Icons.arrow_drop_down, color: colorScheme.primary),
+          style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface, fontSize: 16),
           onChanged: (String? newValue) {
             if (newValue != null && newValue != widget.selectedLocation) {
               setState(() => _selectedForecastIndex = -1);
@@ -163,7 +168,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
               value: value,
               child: Row(
                 children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                  Icon(Icons.location_on, size: 16, color: colorScheme.onSurfaceVariant),
                   const SizedBox(width: 4),
                   Text(value),
                 ],
@@ -183,10 +188,10 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
               children: [
                 Text(
                   '更新: $timeStr${w.isStale ? " (過期)" : ""}',
-                  style: TextStyle(fontSize: 10, color: w.isStale ? Colors.red : Colors.grey),
+                  style: TextStyle(fontSize: 10, color: w.isStale ? colorScheme.error : colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.refresh, size: 14, color: Colors.grey),
+                Icon(Icons.refresh, size: 14, color: colorScheme.onSurfaceVariant),
               ],
             ),
           ),
@@ -195,16 +200,20 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
   }
 
   Widget _buildStaleWarning() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(color: colorScheme.errorContainer, borderRadius: BorderRadius.circular(4)),
       child: Row(
         children: [
-          Icon(Icons.warning_amber, size: 16, color: Colors.red.shade700),
+          Icon(Icons.warning_amber, size: 16, color: colorScheme.onErrorContainer),
           const SizedBox(width: 8),
           Expanded(
-            child: Text('資料已過期，請點擊右上角重整更新', style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
+            child: Text(
+              '資料已過期，請點擊右上角重整更新',
+              style: TextStyle(fontSize: 12, color: colorScheme.onErrorContainer),
+            ),
           ),
         ],
       ),
@@ -212,6 +221,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
   }
 
   Widget _buildMainWeatherDisplay(_WeatherViewModel vm) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () {
         setState(() {
@@ -227,7 +237,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
         children: [
           Text(
             vm.dateTitle,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 8),
           Row(
@@ -239,7 +249,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
                   const SizedBox(height: 2),
                   Text(
                     vm.temp,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                   ),
                   Text(vm.condition, style: const TextStyle(fontSize: 14)),
                 ],
@@ -258,7 +268,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
                   _buildWeatherRow(Icons.wb_twilight, Colors.orange, vm.sun),
                 ],
               ),
-              Icon(_isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey),
+              Icon(_isExpanded ? Icons.expand_less : Icons.expand_more, color: colorScheme.onSurfaceVariant),
             ],
           ),
         ],
@@ -297,6 +307,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
   }
 
   Widget _buildForecastItem(int index, DailyForecast d) {
+    final colorScheme = Theme.of(context).colorScheme;
     final dateStr = DateFormat('MM/dd').format(d.date);
     final isWeekend = d.date.weekday == 6 || d.date.weekday == 7;
     final isSelected = index == _selectedForecastIndex;
@@ -315,15 +326,18 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.shade50 : Colors.grey.shade50,
+          color: isSelected ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? Colors.blue : Colors.grey.shade200, width: isSelected ? 2 : 1),
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Column(
           children: [
             Text(
               dateStr,
-              style: TextStyle(fontWeight: FontWeight.bold, color: isWeekend ? Colors.red : Colors.black87),
+              style: TextStyle(fontWeight: FontWeight.bold, color: isWeekend ? Colors.red : colorScheme.onSurface),
             ),
             const SizedBox(height: 4),
             Icon(_getWeatherIcon(d.dayCondition), color: isSelected ? Colors.blue : Colors.orange, size: 24),
@@ -334,7 +348,7 @@ class _WeatherForecastContentState extends State<WeatherForecastContent> {
             if ((d.maxApparentTemp ?? 0) != 0)
               Text(
                 '體感 ${(d.minApparentTemp ?? d.minTemp).round()}~${(d.maxApparentTemp ?? d.maxTemp).round()}',
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
               ),
             const SizedBox(height: 2),
             Row(
