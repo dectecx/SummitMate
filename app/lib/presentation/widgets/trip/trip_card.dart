@@ -91,20 +91,24 @@ class TripCard extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: isActive
                               ? [colorScheme.primary, colorScheme.tertiary]
-                              : [Colors.grey.shade400, Colors.grey.shade600],
+                              : [colorScheme.surfaceContainerHighest, colorScheme.surfaceContainerHigh],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: (isActive ? colorScheme.primary : Colors.grey).withValues(alpha: 0.3),
+                            color: (isActive ? colorScheme.primary : colorScheme.shadow).withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.terrain, color: Colors.white, size: 32),
+                      child: Icon(
+                        Icons.terrain,
+                        color: isActive ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                        size: 32,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     // Content
@@ -147,21 +151,18 @@ class TripCard extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: isLeader
-                                      ? Colors.orange.withValues(alpha: 0.1)
-                                      : Colors.blueGrey.withValues(alpha: 0.1),
+                                      ? colorScheme.tertiaryContainer
+                                      : colorScheme.secondaryContainer,
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isLeader
-                                        ? Colors.orange.withValues(alpha: 0.3)
-                                        : Colors.blueGrey.withValues(alpha: 0.3),
-                                  ),
                                 ),
                                 child: Text(
                                   roleLabel,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: isLeader ? Colors.orange[800] : Colors.blueGrey[700],
+                                    color: isLeader
+                                        ? colorScheme.onTertiaryContainer
+                                        : colorScheme.onSecondaryContainer,
                                   ),
                                 ),
                               ),

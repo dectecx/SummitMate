@@ -175,12 +175,15 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
         // Badge widget
         Widget? badgeWidget;
         if (badgeText != null) {
+          final badgeTextColor = ThemeData.estimateBrightnessForColor(statusColor) == Brightness.dark
+              ? Colors.white
+              : Colors.black;
           badgeWidget = Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(20)),
             child: Text(
               badgeText,
-              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(color: badgeTextColor, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           );
           if (widget.animate) {
@@ -203,12 +206,15 @@ class _WeatherAlertCardState extends State<WeatherAlertCard> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text(_weather!.condition, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        Text(
+                          _weather!.condition,
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           '降雨率 ${_weather!.rainProbability}%',
                           style: TextStyle(
-                            color: isRainy ? statusColor : Colors.grey[600],
+                            color: isRainy ? statusColor : Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
