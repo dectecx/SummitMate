@@ -80,7 +80,8 @@ func Load() *Config {
 	env := getEnv("ENV", "development")
 	defaultOrigins := []string{"https://summitmate-tw.netlify.app"}
 	if env == "development" {
-		// 開發模式允許所有 localhost 變體與模擬器 (由中間件進行 Prefix 匹配)
+		// 開發模式允許所有 localhost 變體與模擬器；中間件以 host 完全比對
+		// (任意 port 皆可) 取代字串 prefix，避免 http://localhost.evil.com 繞過。
 		defaultOrigins = append(defaultOrigins, "http://localhost", "http://127.0.0.1", "http://10.0.2.2")
 	}
 
