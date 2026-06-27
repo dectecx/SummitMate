@@ -159,11 +159,12 @@ func TestAuthService_RefreshToken(t *testing.T) {
 	secret := "test-secret"
 	tokenManager := tokens.NewTokenManager(secret)
 
-	t.Run("Given valid refresh token, When refreshing token, Then it returns new access token", func(t *testing.T) {
+	t.Run("Given valid refresh token, When refreshing token, Then it returns new tokens and blacklists old token", func(t *testing.T) {
 		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
 		mockFlag := new(flagmocks.MockFlagService)
 		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
-		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, cache.NewMemoryCache[string](), mockFlag, secret, auth.DefaultDurations())
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret, auth.DefaultDurations())
 
 		userID := "user-token"
 		email := "token@example.com"
@@ -178,6 +179,34 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		assert.NotEmpty(t, newAccessToken)
 		assert.NotEmpty(t, newRefreshToken)
 		assert.NotEqual(t, oldToken, newRefreshToken)
+
+		// 舊 refresh token 應已加入黑名單
+		blacklistKey := cache.Key{Module: cache.ModuleAuth, Domain: "blacklist", ID: oldToken}
+		val, cacheErr := mockCache.Get(context.Background(), blacklistKey)
+		assert.NoError(t, cacheErr)
+		assert.Equal(t, "1", val)
+	})
+
+	t.Run("Given already-used refresh token, When refreshing again, Then it returns unauthorized error", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret, auth.DefaultDurations())
+
+		userID := "user-token"
+		email := "token@example.com"
+		oldToken, _ := tokenManager.GenerateToken(userID, email, "refresh", time.Hour)
+
+		mockRepo.On("GetByID", mock.Anything, userID).Return(&auth.User{ID: userID, Email: email, IsActive: true}, nil)
+
+		// 第一次 refresh：成功，舊 token 被輪替入黑名單
+		_, _, _, err := svc.RefreshToken(context.Background(), oldToken)
+		assert.NoError(t, err)
+
+		// 第二次以同一舊 token refresh：應被拒絕
+		_, _, _, err = svc.RefreshToken(context.Background(), oldToken)
+		assert.Error(t, err)
 	})
 }
 
