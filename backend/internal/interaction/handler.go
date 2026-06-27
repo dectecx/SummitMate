@@ -31,16 +31,10 @@ func (h *InteractionHandler) ListTripMessages(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil && *params.Limit > 0 {
-		limit = *params.Limit
-		if limit > 100 {
-			limit = 100
-		}
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 
 	messages, total, hasMore, err := h.msgSvc.ListTripMessages(r.Context(), tripId.String(), userID, page, limit)
@@ -153,16 +147,10 @@ func (h *InteractionHandler) ListTripPolls(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	page := 1
-	if params.Page != nil {
-		page = *params.Page
-	}
-	limit := 20
-	if params.Limit != nil && *params.Limit > 0 {
-		limit = *params.Limit
-		if limit > 100 {
-			limit = 100
-		}
+	page, limit, err := apiutil.NormalizePagination(params.Page, params.Limit)
+	if err != nil {
+		apiutil.SendError(w, r, err)
+		return
 	}
 
 	polls, total, hasMore, err := h.pollSvc.ListTripPolls(r.Context(), tripId.String(), userID, page, limit)
