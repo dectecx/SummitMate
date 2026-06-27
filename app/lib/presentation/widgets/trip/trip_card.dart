@@ -193,8 +193,10 @@ class TripCard extends StatelessWidget {
                 Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.5)),
                 const SizedBox(height: 8),
                 // Action Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 4,
+                  runSpacing: 4,
                   children: [
                     _ActionButton(
                       icon: Icons.people_outline,
@@ -202,33 +204,27 @@ class TripCard extends StatelessWidget {
                       onTap: onManageMembers,
                       color: colorScheme.primary,
                     ),
-                    if (onEdit != null) ...[
-                      const SizedBox(width: 8),
+                    if (onEdit != null)
                       _ActionButton(
                         icon: Icons.edit_outlined,
                         label: '編輯',
                         onTap: onEdit,
                         color: colorScheme.secondary,
                       ),
-                    ],
-                    if (onUpload != null) ...[
-                      const SizedBox(width: 8),
+                    if (onUpload != null)
                       _ActionButton(
                         icon: Icons.cloud_upload_outlined,
                         label: '同步',
                         onTap: onUpload,
                         color: Colors.teal,
                       ),
-                    ],
-                    if (onDelete != null) ...[
-                      const SizedBox(width: 8),
+                    if (onDelete != null)
                       _ActionButton(
                         icon: Icons.delete_outline,
                         label: '刪除',
                         onTap: onDelete,
                         color: theme.colorScheme.error,
                       ),
-                    ],
                   ],
                 ),
               ],

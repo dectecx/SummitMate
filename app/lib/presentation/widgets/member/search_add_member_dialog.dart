@@ -157,7 +157,7 @@ class _SearchAddMemberDialogState extends State<SearchAddMemberDialog> {
     return AlertDialog(
       title: const Text('新增成員'),
       content: SizedBox(
-        width: 400,
+        width: (MediaQuery.sizeOf(context).width * 0.9).clamp(0.0, 400.0),
         child: AbsorbPointer(
           absorbing: _isLoading,
           child: Column(

@@ -147,7 +147,7 @@ class _AddGearDialogState extends State<AddGearDialog> {
           child: AlertDialog(
             title: const Text('新增裝備'),
             content: SizedBox(
-              width: 400,
+              width: (MediaQuery.sizeOf(context).width * 0.9).clamp(0.0, 400.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
