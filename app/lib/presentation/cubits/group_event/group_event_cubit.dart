@@ -295,8 +295,12 @@ class GroupEventCubit extends Cubit<GroupEventState> {
     final currentState = state;
     if (currentState is! GroupEventLoaded) return false;
 
-    final event = currentState.events.firstWhere((e) => e.id == eventId, orElse: () => currentState.events.first);
-    final wasLiked = event.isLiked;
+    final eventIndex = currentState.events.indexWhere((e) => e.id == eventId);
+    if (eventIndex == -1) {
+      LogService.error('Like event failed: event not found ($eventId)', source: _source);
+      return false;
+    }
+    final wasLiked = currentState.events[eventIndex].isLiked;
 
     final updatedEvents = currentState.events.map((e) {
       if (e.id == eventId) {
