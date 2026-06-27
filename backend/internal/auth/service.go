@@ -37,6 +37,14 @@ type AuthService interface {
 	DeleteAccount(ctx context.Context, userID string) error
 }
 
+// maxLoginAttempts is the maximum number of failed login attempts allowed
+// within the LoginRateWindow before the account is temporarily locked out.
+const maxLoginAttempts int64 = 10
+
+// maxResendAttempts is the maximum number of verification code resend requests
+// allowed within the ResendRateWindow per email address.
+const maxResendAttempts int64 = 3
+
 // Durations holds the configurable time windows for the auth flows
 // (token lifetimes, verification code TTL and outbound mail timeout).
 type Durations struct {
@@ -44,6 +52,14 @@ type Durations struct {
 	RefreshTokenTTL     time.Duration
 	VerificationCodeTTL time.Duration
 	MailSendTimeout     time.Duration
+
+	// LoginRateWindow is the sliding window during which login attempts are counted.
+	// After maxLoginAttempts failed attempts the caller receives ErrTooManyRequests.
+	LoginRateWindow time.Duration
+
+	// ResendRateWindow is the sliding window for resend-verification-code requests.
+	// After maxResendAttempts requests the caller receives ErrTooManyRequests.
+	ResendRateWindow time.Duration
 }
 
 // DefaultDurations returns the built-in auth time windows. It is used as a
@@ -54,6 +70,8 @@ func DefaultDurations() Durations {
 		RefreshTokenTTL:     14 * 24 * time.Hour,
 		VerificationCodeTTL: 10 * time.Minute,
 		MailSendTimeout:     15 * time.Second,
+		LoginRateWindow:     15 * time.Minute,
+		ResendRateWindow:    1 * time.Hour,
 	}
 }
 
@@ -235,6 +253,19 @@ func (svc *authService) VerifyEmail(ctx context.Context, emailAddr, code string)
 
 // ResendVerificationCode 重發驗證碼。
 func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr string) error {
+	// 頻率限制：同一 email 在視窗內最多允許 maxResendAttempts 次重發。
+	// 在 DB 查詢之前就計數，無論 email 是否存在，防止 timing side-channel 洩漏使用者存在與否。
+	// 計數失敗時 fail-open。
+	if svc.authCache != nil {
+		count, err := svc.authCache.Increment(ctx, resendRateKey(emailAddr), svc.durations.ResendRateWindow)
+		if err != nil {
+			svc.logger.WarnContext(ctx, "重發驗證碼頻率限制計數失敗，跳過限制", "email", emailAddr, "error", err)
+		} else if count > maxResendAttempts {
+			svc.logger.WarnContext(ctx, "重發驗證碼次數過多", "email", emailAddr, "count", count)
+			return apperror.ErrTooManyRequests
+		}
+	}
+
 	user, err := svc.userRepo.GetByEmail(ctx, emailAddr)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -273,12 +304,25 @@ func (svc *authService) ResendVerificationCode(ctx context.Context, emailAddr st
 }
 
 // Login 處理使用者登入流程：
-//  1. 以 Email 查詢使用者
-//  2. 驗證密碼
-//  3. 簽發 JWT Token
+//  1. 檢查登入頻率限制
+//  2. 以 Email 查詢使用者
+//  3. 驗證密碼
+//  4. 簽發 JWT Token
 //
 // 回傳 User、JWT Token、或錯誤。
 func (svc *authService) Login(ctx context.Context, email, password string) (*User, string, string, error) {
+	// 頻率限制：同一 email 在視窗內最多允許 maxLoginAttempts 次嘗試。
+	// 計數失敗時 fail-open，避免 Redis 中斷連帶影響登入功能。
+	if svc.authCache != nil {
+		count, err := svc.authCache.Increment(ctx, loginRateKey(email), svc.durations.LoginRateWindow)
+		if err != nil {
+			svc.logger.WarnContext(ctx, "登入頻率限制計數失敗，跳過限制", "email", email, "error", err)
+		} else if count > maxLoginAttempts {
+			svc.logger.WarnContext(ctx, "登入嘗試次數過多", "email", email, "count", count)
+			return nil, "", "", apperror.ErrTooManyRequests
+		}
+	}
+
 	// 查詢使用者
 	user, err := svc.userRepo.GetByEmail(ctx, email)
 	if err != nil {
