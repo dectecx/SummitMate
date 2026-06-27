@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 import '../../../core/di/injection.dart';
@@ -27,30 +29,19 @@ import '../../cubits/gear/gear_cubit.dart';
 import '../../cubits/meal/meal_cubit.dart';
 
 import '../map/map_screen.dart';
+import '../collaboration_tab.dart';
 
 import '../../widgets/info_tab.dart';
-import '../../widgets/app_drawer.dart';
-import '../../widgets/app_drawer_content.dart';
 import '../../widgets/itinerary_tab.dart';
 import '../../widgets/gear_tab.dart';
 import '../../widgets/itinerary_edit_dialog.dart';
 import '../../widgets/settings_dialog.dart';
-import '../../widgets/ads/banner_ad_widget.dart';
-import '../../widgets/responsive_layout.dart';
-
 import '../../widgets/tutorial/tutorial_aware_builder.dart';
-import '../collaboration_tab.dart';
 
-import '../../widgets/common/offline_status_banner.dart';
-import '../../cubits/connectivity/connectivity_cubit.dart';
-import 'dart:async';
-
-import 'widgets/main_app_bar.dart';
-import 'widgets/main_bottom_nav_bar.dart';
-import 'dialogs/trip_selection_dialog.dart';
+import 'widgets/main_tab_scaffold.dart';
+import 'widgets/empty_trip_scaffold.dart';
 import 'dialogs/welcome_dialog.dart';
 import 'utils/cloud_upload_helper.dart';
-import '../../../presentation/widgets/trip/cloud_sync_bar.dart';
 
 /// App 的主要導航結構 (BottomNavigationBar + Drawer)
 class MainNavigationScreen extends StatefulWidget {
@@ -69,12 +60,10 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void initState() {
     super.initState();
-    // 連接同步回調
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final settingsCubit = context.read<SettingsCubit>();
 
-      // 初次啟動顯示歡迎畫面
       final state = settingsCubit.state;
       bool hasSeenOnboarding = false;
       String currentUsername = '';
@@ -93,7 +82,6 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         });
       }
 
-      // 啟動使用狀態追蹤 (Web only)
       _usageTrackingService = getIt<UsageTrackingService>();
       getIt<IAuthSessionRepository>().getUserProfile().then((profile) {
         if (context.mounted && profile != null) {
@@ -154,6 +142,16 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
     WelcomeDialog.show(context);
   }
 
+  void _handleTabChanged(BuildContext context, int index, bool isEditMode) {
+    setState(() {
+      _currentIndex = index;
+      _updateTrackingView(index);
+    });
+    if (isEditMode) {
+      context.read<ItineraryCubit>().toggleEditMode();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -188,36 +186,7 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         BlocListener<TutorialCubit, TutorialState>(
           listener: (context, state) {
             if (state is TutorialActive) {
-              // 根據教學章節切換底層 Tab
-              int targetIndex = -1;
-              switch (state.chapterId) {
-                case 'itinerary':
-                  targetIndex = 0;
-                  break;
-                case 'gear':
-                  targetIndex = 1;
-                  break;
-                case 'collaboration':
-                case 'groupEvent':
-                  targetIndex = 2;
-                  break;
-                case 'cloud':
-                  targetIndex = 0; // 在首頁較容易看到上傳雲端與指示燈
-                  break;
-                case 'quick_tour':
-                  // 根據 Quick Tour 的步驟切換背景畫面，便於使用者對照
-                  if (state.currentStepIndex == 0) {
-                    targetIndex = 0; // 探索行程 -> 行程 Tab
-                  } else if (state.currentStepIndex == 1) {
-                    targetIndex = 1; // 準備裝備 -> 裝備 Tab
-                  } else if (state.currentStepIndex == 2) {
-                    targetIndex = 1; // 糧食計畫 -> 裝備 Tab (其中包含糧食區塊)
-                  } else if (state.currentStepIndex == 3) {
-                    targetIndex = 0; // 隨時同步 -> 切回行程 Tab (同步 Banner 皆可見)
-                  }
-                  break;
-              }
-
+              int targetIndex = _resolveTutorialTabIndex(state);
               if (targetIndex != -1 && targetIndex != _currentIndex) {
                 setState(() {
                   _currentIndex = targetIndex;
@@ -234,238 +203,38 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
             builder: (context, messageState) {
               return BlocBuilder<PollCubit, PollState>(
                 builder: (context, pollState) {
-                  // TutorialAwareTripBuilder: 教學模式下使用 mock trip，解決 hasTrips 判斷問題
                   return TutorialAwareTripBuilder(
                     builder: (context, activeTrip, trips) {
                       return BlocBuilder<SyncCubit, SyncState>(
                         builder: (context, syncState) {
                           final bool isTripLoading = context.watch<TripCubit>().state is TripLoading;
-                          final bool hasTrips = trips.isNotEmpty;
-
                           final bool isMessageSyncing = messageState is MessageLoaded && messageState.isSyncing;
                           final bool isPollSyncing = pollState is PollLoaded && pollState.isSyncing;
                           final bool isSyncInProgress = syncState is SyncInProgress;
-                          final isLoading = isMessageSyncing || isPollSyncing || isTripLoading || isSyncInProgress;
-
-                          final isOffline = context.watch<ConnectivityCubit>().state.isOffline;
+                          final bool isLoading = isMessageSyncing || isPollSyncing || isTripLoading || isSyncInProgress;
                           final bool isEditMode = itineraryState is ItineraryLoaded ? itineraryState.isEditMode : false;
 
-                          if (!hasTrips && !isTripLoading) {
-                            final theme = Theme.of(context);
-                            return Scaffold(
-                              key: _scaffoldKey,
-                              appBar: AppBar(
-                                leading: IconButton(
-                                  icon: const Icon(Icons.menu),
-                                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                                  tooltip: '選單',
-                                ),
-                                title: const Text('SummitMate 山友'),
-                                actions: [
-                                  IconButton(
-                                    icon: const Icon(Icons.info_outline),
-                                    tooltip: '歡迎訊息 / 教學',
-                                    onPressed: () => _showWelcomeDialog(context),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.settings),
-                                    onPressed: () => _showSettingsDialog(context),
-                                    tooltip: '設定',
-                                  ),
-                                ],
-                              ),
-                              drawer: const AppDrawer(),
-                              body: Column(
-                                children: [
-                                  const OfflineStatusBanner(),
-                                  Expanded(
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.hiking, size: 80, color: Colors.grey),
-                                          const SizedBox(height: 16),
-                                          const Text(
-                                            '歡迎使用 SummitMate',
-                                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          const Text('您目前還沒有任何行程', style: TextStyle(color: Colors.grey)),
-                                          const SizedBox(height: 32),
-                                          FilledButton.icon(
-                                            onPressed: isOffline
-                                                ? () => ToastService.error('離線模式下無法從雲端匯入行程')
-                                                : () => TripSelectionDialog.show(context),
-                                            icon: const Icon(Icons.cloud_download),
-                                            label: const Text('從雲端匯入行程'),
-                                            style: isOffline
-                                                ? FilledButton.styleFrom(
-                                                    backgroundColor: theme.disabledColor,
-                                                    foregroundColor: theme.colorScheme.onSurface.withValues(
-                                                      alpha: 0.38,
-                                                    ),
-                                                  )
-                                                : null,
-                                          ),
-                                          const SizedBox(height: 16),
-                                          OutlinedButton.icon(
-                                            onPressed: () => context.read<TripCubit>().createDefaultTrip(),
-                                            icon: const Icon(Icons.add),
-                                            label: const Text('建立新行程'),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          if (trips.isEmpty && !isTripLoading) {
+                            return EmptyTripScaffold(
+                              scaffoldKey: _scaffoldKey,
+                              onWelcomePressed: () => _showWelcomeDialog(context),
+                              onSettingsPressed: () => _showSettingsDialog(context),
                             );
                           }
 
-                          return Scaffold(
-                            key: _scaffoldKey,
-                            drawer: ResponsiveLayout.isDesktop(context) ? null : const AppDrawer(),
-                            drawerEnableOpenDragGesture: !ResponsiveLayout.isDesktop(context),
-                            appBar: MainAppBar(
-                              activeTrip: activeTrip,
-                              isLoading: isLoading,
-                              currentIndex: _currentIndex,
-                              isEditMode: isEditMode,
-                              showLeading: !ResponsiveLayout.isDesktop(context),
-                              onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                              onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
-                              onUpload: () => CloudUploadHelper.handleCloudUpload(context),
-                              onMap: () => _handleMapNavigation(context),
-                              onSettings: () => _showSettingsDialog(context),
-                            ),
-                            body: ResponsiveLayout(
-                              mobile: Column(
-                                children: [
-                                  const OfflineStatusBanner(),
-                                  const CloudSyncBanner(),
-                                  Expanded(
-                                    child: AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 250),
-                                      transitionBuilder: (child, animation) {
-                                        return FadeTransition(opacity: animation, child: child);
-                                      },
-                                      child: _buildTabContent(_currentIndex),
-                                    ),
-                                  ),
-                                  const BannerAdWidget(location: 'navigation_bottom'),
-                                ],
-                              ),
-                              desktop: Row(
-                                children: [
-                                  AppDrawerContent(
-                                    isSidebar: true,
-                                    currentIndex: _currentIndex,
-                                    onTabSelected: (index) {
-                                      setState(() {
-                                        _currentIndex = index;
-                                        _updateTrackingView(index);
-                                      });
-                                      if (isEditMode) {
-                                        context.read<ItineraryCubit>().toggleEditMode();
-                                      }
-                                    },
-                                  ),
-                                  const VerticalDivider(thickness: 1, width: 1),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        const OfflineStatusBanner(),
-                                        const CloudSyncBanner(),
-                                        Expanded(child: _buildTabContent(_currentIndex)),
-                                        const BannerAdWidget(location: 'navigation_bottom'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              tablet: Row(
-                                children: [
-                                  NavigationRail(
-                                    selectedIndex: _currentIndex,
-                                    onDestinationSelected: (index) {
-                                      setState(() {
-                                        _currentIndex = index;
-                                        _updateTrackingView(index);
-                                      });
-                                      if (isEditMode) {
-                                        context.read<ItineraryCubit>().toggleEditMode();
-                                      }
-                                    },
-                                    labelType: NavigationRailLabelType.all,
-                                    leading: Column(
-                                      children: [
-                                        const SizedBox(height: 8),
-                                        IconButton(
-                                          icon: const Icon(Icons.menu),
-                                          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                                          tooltip: '選單',
-                                        ),
-                                        const SizedBox(height: 20),
-                                      ],
-                                    ),
-                                    destinations: const [
-                                      NavigationRailDestination(
-                                        icon: Icon(Icons.hiking),
-                                        selectedIcon: Icon(Icons.hiking),
-                                        label: Text('行程'),
-                                      ),
-                                      NavigationRailDestination(
-                                        icon: Icon(Icons.backpack_outlined),
-                                        selectedIcon: Icon(Icons.backpack),
-                                        label: Text('裝備'),
-                                      ),
-                                      NavigationRailDestination(
-                                        icon: Icon(Icons.groups_outlined),
-                                        selectedIcon: Icon(Icons.groups),
-                                        label: Text('揪團/訊息'),
-                                      ),
-                                      NavigationRailDestination(
-                                        icon: Icon(Icons.info_outline),
-                                        selectedIcon: Icon(Icons.info),
-                                        label: Text('資訊'),
-                                      ),
-                                    ],
-                                  ),
-                                  const VerticalDivider(thickness: 1, width: 1),
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        const OfflineStatusBanner(),
-                                        const CloudSyncBanner(),
-                                        Expanded(child: _buildTabContent(_currentIndex)),
-                                        const BannerAdWidget(location: 'navigation_bottom'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            bottomNavigationBar: ResponsiveLayout(
-                              mobile: MainBottomNavigationBar(
-                                currentIndex: _currentIndex,
-                                onDestinationSelected: (index) {
-                                  setState(() {
-                                    _currentIndex = index;
-                                    _updateTrackingView(index);
-                                  });
-                                  if (isEditMode) {
-                                    context.read<ItineraryCubit>().toggleEditMode();
-                                  }
-                                },
-                              ),
-                              desktop: const SizedBox.shrink(),
-                            ),
-                            floatingActionButton: (_currentIndex == 0 && isEditMode)
-                                ? FloatingActionButton(
-                                    onPressed: () => _showAddItineraryDialog(context),
-                                    child: const Icon(Icons.add),
-                                  )
-                                : null,
+                          return MainTabScaffold(
+                            scaffoldKey: _scaffoldKey,
+                            activeTrip: activeTrip,
+                            isLoading: isLoading,
+                            currentIndex: _currentIndex,
+                            isEditMode: isEditMode,
+                            onTabChanged: (index) => _handleTabChanged(context, index, isEditMode),
+                            onEditToggle: () => context.read<ItineraryCubit>().toggleEditMode(),
+                            onUpload: () => CloudUploadHelper.handleCloudUpload(context),
+                            onMap: () => _handleMapNavigation(context),
+                            onSettings: () => _showSettingsDialog(context),
+                            onAddItinerary: () => _showAddItineraryDialog(context),
+                            buildTabContent: _buildTabContent,
                           );
                         },
                       );
@@ -478,6 +247,28 @@ class MainNavigationScreenState extends State<MainNavigationScreen> {
         },
       ),
     );
+  }
+
+  int _resolveTutorialTabIndex(TutorialActive state) {
+    switch (state.chapterId) {
+      case 'itinerary':
+        return 0;
+      case 'gear':
+        return 1;
+      case 'collaboration':
+      case 'groupEvent':
+        return 2;
+      case 'cloud':
+        return 0;
+      case 'quick_tour':
+        if (state.currentStepIndex == 0) return 0;
+        if (state.currentStepIndex == 1) return 1;
+        if (state.currentStepIndex == 2) return 1;
+        if (state.currentStepIndex == 3) return 0;
+        return -1;
+      default:
+        return -1;
+    }
   }
 
   Widget _buildTabContent(int index) {

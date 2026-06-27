@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:summitmate/core/core.dart';
 import '../utils/gear_utils.dart';
 
 import 'package:summitmate/domain/domain.dart';
-import 'package:summitmate/infrastructure/infrastructure.dart';
 
 import '../cubits/gear_library/gear_library_cubit.dart';
 import '../cubits/gear_library/gear_library_state.dart';
-import '../cubits/connectivity/connectivity_cubit.dart';
 import '../widgets/ads/banner_ad_widget.dart';
 import '../widgets/common/summit_app_bar.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/gear/dialogs/gear_library_item_dialog.dart';
+import '../widgets/gear/dialogs/gear_library_cloud_sync_dialog.dart';
 
 /// 我的裝備庫畫面
 ///
@@ -308,7 +307,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   void _showAddDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => _GearLibraryItemDialog(
+      builder: (dialogContext) => GearLibraryItemDialog(
         onSave: (name, weight, category, notes) async {
           await context.read<GearLibraryCubit>().addItem(name: name, weight: weight, category: category, notes: notes);
           if (dialogContext.mounted) Navigator.pop(dialogContext);
@@ -320,7 +319,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   void _showEditDialog(BuildContext context, GearLibraryItem item) {
     showDialog(
       context: context,
-      builder: (dialogContext) => _GearLibraryItemDialog(
+      builder: (dialogContext) => GearLibraryItemDialog(
         item: item,
         onSave: (name, weight, category, notes) async {
           final updatedItem = item.copyWith(name: name, weight: weight, category: category, notes: notes);
@@ -423,7 +422,7 @@ class _GearLibraryScreenState extends State<GearLibraryScreen> {
   }
 
   void _showCloudSyncDialog() {
-    showDialog(context: context, builder: (context) => const _CloudSyncDialog());
+    showDialog(context: context, builder: (context) => const GearLibraryCloudSyncDialog());
   }
 }
 
@@ -443,301 +442,5 @@ class _StatItem extends StatelessWidget {
         Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
       ],
     );
-  }
-}
-
-class _GearLibraryItemDialog extends StatefulWidget {
-  final GearLibraryItem? item;
-  final Future<void> Function(String name, double weight, String category, String? notes) onSave;
-
-  const _GearLibraryItemDialog({this.item, required this.onSave});
-
-  @override
-  State<_GearLibraryItemDialog> createState() => _GearLibraryItemDialogState();
-}
-
-class _GearLibraryItemDialogState extends State<_GearLibraryItemDialog> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
-  late final TextEditingController _weightController;
-  late final TextEditingController _notesController;
-  late String _selectedCategory;
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.item?.name ?? '');
-    _weightController = TextEditingController(text: widget.item?.weight.toString() ?? '');
-    _notesController = TextEditingController(text: widget.item?.notes ?? '');
-    _selectedCategory = widget.item?.category ?? 'Other';
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _weightController.dispose();
-    _notesController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isEdit = widget.item != null;
-
-    return AlertDialog(
-      title: Text(isEdit ? '編輯裝備' : '新增裝備'),
-      content: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: '裝備名稱', hintText: '例如：睡袋'),
-                validator: (v) => v == null || v.isEmpty ? '請輸入名稱' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _weightController,
-                decoration: const InputDecoration(labelText: '重量 (公克)', hintText: '例如：500'),
-                keyboardType: TextInputType.number,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return '請輸入重量';
-                  if (double.tryParse(v) == null) return '請輸入有效數字';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
-                decoration: const InputDecoration(labelText: '分類'),
-                items: GearCategory.all
-                    .map((cat) => DropdownMenuItem(value: cat, child: Text(GearCategoryHelper.getName(cat))))
-                    .toList(),
-                onChanged: (v) => setState(() => _selectedCategory = v!),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(labelText: '備註 (選填)', hintText: '例如：品牌、型號'),
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: _isSaving ? null : () => Navigator.pop(context), child: const Text('取消')),
-        FilledButton(
-          onPressed: _isSaving ? null : _handleSave,
-          child: _isSaving
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(isEdit ? '更新' : '新增'),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSaving = true);
-    try {
-      await widget.onSave(
-        _nameController.text.trim(),
-        double.parse(_weightController.text),
-        _selectedCategory,
-        _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-}
-
-class _CloudSyncDialog extends StatefulWidget {
-  const _CloudSyncDialog();
-
-  @override
-  State<_CloudSyncDialog> createState() => _CloudSyncDialogState();
-}
-
-class _CloudSyncDialogState extends State<_CloudSyncDialog> {
-  bool _isLoading = false;
-  String? _resultMessage;
-  bool? _isSuccess;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('☁️ 雲端備份'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('將個人裝備庫與您的帳號同步。'),
-            const SizedBox(height: 16),
-            const Text(
-              '【同步說明】\n• 上傳：覆蓋雲端資料 (以您的帳號儲存)\n• 下載：覆蓋本地資料',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-            if (_resultMessage != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: _isSuccess == true ? Colors.green.shade50 : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _isSuccess == true ? Colors.green.shade200 : Colors.red.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _isSuccess == true ? Icons.check_circle : Icons.error,
-                      color: _isSuccess == true ? Colors.green : Colors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: Text(
-                        _resultMessage!,
-                        style: TextStyle(
-                          color: _isSuccess == true ? Colors.green.shade800 : Colors.red.shade800,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: _isLoading ? null : () => Navigator.pop(context), child: const Text('關閉')),
-        OutlinedButton.icon(
-          onPressed: _isLoading ? null : _handleDownload,
-          icon: _isLoading ? const SizedBox.shrink() : const Icon(Icons.download),
-          label: const Text('下載'),
-        ),
-        FilledButton.icon(
-          onPressed: _isLoading ? null : _handleUpload,
-          icon: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : const Icon(Icons.upload),
-          label: const Text('上傳'),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _handleUpload() async {
-    final isOffline = context.read<ConnectivityCubit>().state.isOffline;
-    if (isOffline) {
-      ToastService.warning('離線模式，無法上傳');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _resultMessage = null;
-    });
-
-    try {
-      final cubit = context.read<GearLibraryCubit>();
-      final state = cubit.state;
-      if (state is! GearLibraryLoaded) throw Exception('未載入裝備庫');
-      final items = state.items;
-
-      if (items.isEmpty) {
-        setState(() {
-          _isLoading = false;
-          _isSuccess = false;
-          _resultMessage = '裝備庫是空的，無法上傳';
-        });
-        return;
-      }
-
-      final result = await cubit.uploadLibrary();
-
-      setState(() {
-        _isLoading = false;
-        if (result is Success<int, Exception>) {
-          _isSuccess = true;
-          _resultMessage = '成功上傳 ${result.value} 個裝備';
-        } else {
-          _isSuccess = false;
-          _resultMessage = '上傳失敗: ${(result as Failure).exception}';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _isSuccess = false;
-        _resultMessage = '上傳失敗: $e';
-      });
-    }
-  }
-
-  Future<void> _handleDownload() async {
-    final isOffline = context.read<ConnectivityCubit>().state.isOffline;
-    if (isOffline) {
-      ToastService.warning('離線模式，無法下載');
-      return;
-    }
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('確認下載'),
-        content: const Text('下載將覆蓋本地裝備庫所有資料。\n\n確定要繼續嗎？'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('確定下載'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = true;
-      _resultMessage = null;
-    });
-
-    try {
-      final result = await context.read<GearLibraryCubit>().downloadLibrary();
-
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-        if (result is Success<int, Exception>) {
-          _isSuccess = true;
-          _resultMessage = '成功下載 ${result.value} 個裝備';
-        } else {
-          _isSuccess = false;
-          _resultMessage = '下載失敗: ${(result as Failure).exception}';
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _isSuccess = false;
-        _resultMessage = '下載失敗: $e';
-      });
-    }
   }
 }
