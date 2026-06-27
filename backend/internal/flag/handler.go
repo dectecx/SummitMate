@@ -23,7 +23,7 @@ func (h *FlagHandler) GetFlags(w http.ResponseWriter, r *http.Request) {
 		apiutil.SendError(w, r, err)
 		return
 	}
-	apiutil.SendJSON(w, http.StatusOK, flags)
+	apiutil.SendJSON(w, http.StatusOK, ToSystemFlagResponseList(flags))
 }
 
 // UpdateFlag 更新特定系統旗標
