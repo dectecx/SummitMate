@@ -29,17 +29,33 @@ class _MountainListScreenState extends State<MountainListScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  List<MountainLocation> get _filteredMountains {
-    final favoritesCubit = context.read<MountainFavoritesCubit>();
+  /// 快取「靜態篩選」(搜尋/區域/分類/新手) 後的結果。
+  ///
+  /// 收藏相關的篩選不在此計算，避免每次收藏狀態變動都重新全量掃描
+  /// [MountainData.all]；收藏篩選改於 [BlocBuilder] 內針對此較小的結果集套用。
+  List<MountainLocation> _baseFilteredMountains = const [];
 
-    return MountainData.all.where((m) {
-      final matchesSearch = m.name.contains(_searchQuery) || m.id.contains(_searchQuery);
-      final matchesRegion = _selectedRegion == null || m.region == _selectedRegion;
-      final matchesCategory = _selectedCategory == null || m.category == _selectedCategory;
+  @override
+  void initState() {
+    super.initState();
+    _recomputeBaseFiltered();
+  }
+
+  /// 僅在靜態篩選條件變動時呼叫，重新計算並快取 [_baseFilteredMountains]。
+  void _recomputeBaseFiltered() {
+    _baseFilteredMountains = MountainData.all.where((m) {
+      final matchesSearch =
+          m.name.contains(_searchQuery) || m.id.contains(_searchQuery);
+      final matchesRegion =
+          _selectedRegion == null || m.region == _selectedRegion;
+      final matchesCategory =
+          _selectedCategory == null || m.category == _selectedCategory;
       final matchesBeginner = !_onlyBeginnerFriendly || m.isBeginnerFriendly;
-      final matchesFavorites = !_onlyFavorites || favoritesCubit.isFavorite(m.id);
 
-      return matchesSearch && matchesRegion && matchesCategory && matchesBeginner && matchesFavorites;
+      return matchesSearch &&
+          matchesRegion &&
+          matchesCategory &&
+          matchesBeginner;
     }).toList();
   }
 
@@ -56,266 +72,347 @@ class _MountainListScreenState extends State<MountainListScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     // 使用 CustomScrollView 營造現代感
-    return BlocBuilder<MountainFavoritesCubit, MountainFavoritesState>(
-      builder: (context, favoritesState) {
-        return Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          body: CustomScrollView(
-            slivers: [
-              // 1. 大型標題 App Bar
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 120.0,
-                backgroundColor: theme.appBarTheme.backgroundColor ?? theme.canvasColor,
-                surfaceTintColor: theme.appBarTheme.surfaceTintColor,
-                flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-                  title: Text(
-                    '台灣山岳百科',
-                    style: TextStyle(
-                      color: theme.appBarTheme.foregroundColor ?? colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20, // Collapsed size
-                    ),
-                  ),
-                  background: Container(
-                    alignment: Alignment.bottomRight,
-                    padding: const EdgeInsets.all(24),
-                    // 這裡可以放一個淡淡的背景圖案
-                    child: Icon(Icons.terrain, size: 100, color: colorScheme.primary.withValues(alpha: 0.1)),
-                  ),
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: CustomScrollView(
+        slivers: [
+          // 1. 大型標題 App Bar
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 120.0,
+            backgroundColor:
+                theme.appBarTheme.backgroundColor ?? theme.canvasColor,
+            surfaceTintColor: theme.appBarTheme.surfaceTintColor,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+              title: Text(
+                '台灣山岳百科',
+                style: TextStyle(
+                  color:
+                      theme.appBarTheme.foregroundColor ??
+                      colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20, // Collapsed size
                 ),
               ),
+              background: Container(
+                alignment: Alignment.bottomRight,
+                padding: const EdgeInsets.all(24),
+                // 這裡可以放一個淡淡的背景圖案
+                child: Icon(
+                  Icons.terrain,
+                  size: 100,
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                ),
+              ),
+            ),
+          ),
 
-              // 2. 搜尋與過濾器區域 (固定在頂部下方)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          // 2. 搜尋與過濾器區域 (固定在頂部下方)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 搜尋欄
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? colorScheme.surfaceContainerHighest
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: isDark
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) => setState(() {
+                        _searchQuery = value;
+                        _recomputeBaseFiltered();
+                      }),
+                      style: theme.textTheme.bodyLarge,
+                      decoration: InputDecoration(
+                        hintText: '搜尋山岳名稱...',
+                        hintStyle: TextStyle(color: theme.hintColor),
+                        prefixIcon: Icon(Icons.search, color: theme.hintColor),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                    _recomputeBaseFiltered();
+                                  });
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 分類過濾 (Pills design)
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _buildCategoryPill(context, null, '全部'),
+                        const SizedBox(width: 8),
+                        ...MountainCategory.values.map(
+                          (c) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _buildCategoryPill(context, c, c.label),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 第二排過濾器 (區域 + 新手開關)
+                  Row(
                     children: [
-                      // 搜尋欄
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: isDark
-                              ? []
-                              : [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          onChanged: (value) => setState(() => _searchQuery = value),
-                          style: theme.textTheme.bodyLarge,
-                          decoration: InputDecoration(
-                            hintText: '搜尋山岳名稱...',
-                            hintStyle: TextStyle(color: theme.hintColor),
-                            prefixIcon: Icon(Icons.search, color: theme.hintColor),
-                            suffixIcon: _searchQuery.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      setState(() => _searchQuery = '');
-                                    },
-                                  )
-                                : null,
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // 分類過濾 (Pills design)
-                      SizedBox(
-                        height: 40,
-                        child: ListView(
+                      // 區域選擇 (Drop-down or Horizontal list) - 這裡用精簡的按鈕觸發
+                      Expanded(
+                        child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
-                          children: [
-                            _buildCategoryPill(context, null, '全部'),
-                            const SizedBox(width: 8),
-                            ...MountainCategory.values.map(
-                              (c) => Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: _buildCategoryPill(context, c, c.label),
-                              ),
-                            ),
-                          ],
+                          child: Row(
+                            children: [
+                              _buildRegionFilterButton(context),
+                              if (_selectedRegion != null) ...[
+                                const SizedBox(width: 8),
+                                Chip(
+                                  label: Text(_selectedRegion!.label),
+                                  onDeleted: () => setState(() {
+                                    _selectedRegion = null;
+                                    _recomputeBaseFiltered();
+                                  }),
+                                  backgroundColor:
+                                      colorScheme.secondaryContainer,
+                                  labelStyle: TextStyle(
+                                    color: colorScheme.onSecondaryContainer,
+                                  ),
+                                  deleteIconColor:
+                                      colorScheme.onSecondaryContainer,
+                                  side: BorderSide.none,
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-
-                      // 第二排過濾器 (區域 + 新手開關)
-                      Row(
-                        children: [
-                          // 區域選擇 (Drop-down or Horizontal list) - 這裡用精簡的按鈕觸發
-                          Expanded(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  _buildRegionFilterButton(context),
-                                  if (_selectedRegion != null) ...[
-                                    const SizedBox(width: 8),
-                                    Chip(
-                                      label: Text(_selectedRegion!.label),
-                                      onDeleted: () => setState(() => _selectedRegion = null),
-                                      backgroundColor: colorScheme.secondaryContainer,
-                                      labelStyle: TextStyle(color: colorScheme.onSecondaryContainer),
-                                      deleteIconColor: colorScheme.onSecondaryContainer,
-                                      side: BorderSide.none,
-                                    ),
-                                  ],
-                                ],
-                              ),
+                      // 新手友善開關 (獨立)
+                      InkWell(
+                        onTap: () => setState(() {
+                          _onlyBeginnerFriendly = !_onlyBeginnerFriendly;
+                          _recomputeBaseFiltered();
+                        }),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _onlyBeginnerFriendly
+                                ? Colors.green.withValues(alpha: 0.2)
+                                : theme.disabledColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _onlyBeginnerFriendly
+                                  ? Colors.green
+                                  : Colors.transparent,
+                              width: 1,
                             ),
                           ),
-                          // 新手友善開關 (獨立)
-                          InkWell(
-                            onTap: () => setState(() => _onlyBeginnerFriendly = !_onlyBeginnerFriendly),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.eco,
+                                size: 16,
                                 color: _onlyBeginnerFriendly
-                                    ? Colors.green.withValues(alpha: 0.2)
-                                    : theme.disabledColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _onlyBeginnerFriendly ? Colors.green : Colors.transparent,
-                                  width: 1,
+                                    ? (isDark
+                                          ? Colors.greenAccent
+                                          : Colors.green.shade800)
+                                    : theme.disabledColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '新手推薦',
+                                style: TextStyle(
+                                  color: _onlyBeginnerFriendly
+                                      ? (isDark
+                                            ? Colors.greenAccent
+                                            : Colors.green.shade800)
+                                      : theme.disabledColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.eco,
-                                    size: 16,
-                                    color: _onlyBeginnerFriendly
-                                        ? (isDark ? Colors.greenAccent : Colors.green.shade800)
-                                        : theme.disabledColor,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '新手推薦',
-                                    style: TextStyle(
-                                      color: _onlyBeginnerFriendly
-                                          ? (isDark ? Colors.greenAccent : Colors.green.shade800)
-                                          : theme.disabledColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          // 收藏篩選開關
-                          InkWell(
-                            onTap: () => setState(() => _onlyFavorites = !_onlyFavorites),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // 收藏篩選開關
+                      InkWell(
+                        onTap: () =>
+                            setState(() => _onlyFavorites = !_onlyFavorites),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _onlyFavorites
+                                ? Colors.red.withValues(alpha: 0.2)
+                                : theme.disabledColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: _onlyFavorites
-                                    ? Colors.red.withValues(alpha: 0.2)
-                                    : theme.disabledColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: _onlyFavorites ? Colors.red : Colors.transparent, width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _onlyFavorites ? Icons.favorite : Icons.favorite_border,
-                                    size: 16,
-                                    color: _onlyFavorites
-                                        ? (isDark ? Colors.redAccent : Colors.red.shade800)
-                                        : theme.disabledColor,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '我的收藏',
-                                    style: TextStyle(
-                                      color: _onlyFavorites
-                                          ? (isDark ? Colors.redAccent : Colors.red.shade800)
-                                          : theme.disabledColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            border: Border.all(
+                              color: _onlyFavorites
+                                  ? Colors.red
+                                  : Colors.transparent,
+                              width: 1,
                             ),
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _onlyFavorites
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 16,
+                                color: _onlyFavorites
+                                    ? (isDark
+                                          ? Colors.redAccent
+                                          : Colors.red.shade800)
+                                    : theme.disabledColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '我的收藏',
+                                style: TextStyle(
+                                  color: _onlyFavorites
+                                      ? (isDark
+                                            ? Colors.redAccent
+                                            : Colors.red.shade800)
+                                      : theme.disabledColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
+            ),
+          ),
 
-              // 3. 列表內容
-              _filteredMountains.isEmpty
-                  ? SliverFillRemaining(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.landscape_outlined, size: 64, color: theme.disabledColor),
-                            const SizedBox(height: 16),
-                            Text('沒有符合條件的山岳', style: TextStyle(color: theme.disabledColor)),
-                          ],
+          // 3. 列表內容
+          //
+          // 僅此區塊依賴收藏狀態：用 BlocBuilder 局部 rebuild，並在已快取的
+          // [_baseFilteredMountains] 上套用收藏篩選，避免全量掃描 MountainData.all。
+          BlocBuilder<MountainFavoritesCubit, MountainFavoritesState>(
+            builder: (context, favoritesState) {
+              final favoritesCubit = context.read<MountainFavoritesCubit>();
+              final mountains = _onlyFavorites
+                  ? _baseFilteredMountains
+                        .where((m) => favoritesCubit.isFavorite(m.id))
+                        .toList()
+                  : _baseFilteredMountains;
+
+              if (mountains.isEmpty) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.landscape_outlined,
+                          size: 64,
+                          color: theme.disabledColor,
                         ),
-                      ),
-                    )
-                  : SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final mountain = _filteredMountains[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: MountainCard(
-                              mountain: mountain,
-                              isFavorite: context.read<MountainFavoritesCubit>().isFavorite(mountain.id),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => MountainDetailScreen(mountain: mountain)),
-                                );
-                              },
+                        const SizedBox(height: 16),
+                        Text(
+                          '沒有符合條件的山岳',
+                          style: TextStyle(color: theme.disabledColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final mountain = mountains[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: MountainCard(
+                        mountain: mountain,
+                        isFavorite: favoritesCubit.isFavorite(mountain.id),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  MountainDetailScreen(mountain: mountain),
                             ),
                           );
-                        }, childCount: _filteredMountains.length),
+                        },
                       ),
-                    ),
-              // Bottom padding
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
+                    );
+                  }, childCount: mountains.length),
+                ),
+              );
+            },
           ),
-        );
-      },
+          // Bottom padding
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
     );
   }
 
   /// 自訂樣式 Pill (無 Checkmark，避免抖動)
-  Widget _buildCategoryPill(BuildContext context, MountainCategory? category, String label) {
+  Widget _buildCategoryPill(
+    BuildContext context,
+    MountainCategory? category,
+    String label,
+  ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isSelected = _selectedCategory == category;
 
     return GestureDetector(
-      onTap: () => setState(() => _selectedCategory = category),
+      onTap: () => setState(() {
+        _selectedCategory = category;
+        _recomputeBaseFiltered();
+      }),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -323,7 +420,9 @@ class _MountainListScreenState extends State<MountainListScreen> {
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? colorScheme.primary : theme.dividerColor),
+          border: Border.all(
+            color: isSelected ? colorScheme.primary : theme.dividerColor,
+          ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -352,18 +451,25 @@ class _MountainListScreenState extends State<MountainListScreen> {
       onTap: () {
         showModalBottomSheet(
           context: context,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
           builder: (context) => Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: theme.scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('選擇區域', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  '選擇區域',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
                 Wrap(
                   spacing: 8,
@@ -376,6 +482,7 @@ class _MountainListScreenState extends State<MountainListScreen> {
                       onSelected: (selected) {
                         setState(() {
                           _selectedRegion = selected ? region : null;
+                          _recomputeBaseFiltered();
                         });
                         Navigator.pop(context);
                       },
@@ -399,7 +506,10 @@ class _MountainListScreenState extends State<MountainListScreen> {
           children: [
             Icon(Icons.tune, size: 16, color: theme.iconTheme.color),
             const SizedBox(width: 4),
-            Text('區域篩選', style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+            Text(
+              '區域篩選',
+              style: TextStyle(color: theme.textTheme.bodyMedium?.color),
+            ),
           ],
         ),
       ),
