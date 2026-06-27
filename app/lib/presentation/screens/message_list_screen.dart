@@ -331,22 +331,23 @@ class _MessageListScreenState extends State<MessageListScreen> {
     _showAddMessageDialog(context, cubit, category, username, avatar, parentId);
   }
 
-  void _showAddMessageDialog(
+  Future<void> _showAddMessageDialog(
     BuildContext context,
     MessageCubit cubit,
     String category,
     String username,
     String avatar,
     String? parentId,
-  ) {
+  ) async {
     final contentController = TextEditingController();
     final isReply = parentId != null;
     bool isSubmitting = false;
 
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => StatefulBuilder(
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        builder: (dialogContext) => StatefulBuilder(
         builder: (innerContext, setState) {
           Future<bool> checkDismiss() async {
             if (contentController.text.trim().isEmpty) return true;
@@ -468,6 +469,9 @@ class _MessageListScreenState extends State<MessageListScreen> {
         },
       ),
     );
+    } finally {
+      contentController.dispose();
+    }
   }
 
   String _getCategoryName(String category) {
