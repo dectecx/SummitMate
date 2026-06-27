@@ -246,31 +246,64 @@ func (r *gearSetRepository) List(ctx context.Context, limit, offset int, search 
 		sets = append(sets, &gs)
 	}
 
-	// Fetch items and meals for the listed sets
-	for _, gs := range sets {
-		qItems := `SELECT id, gear_set_id, name, category, weight, quantity, order_index FROM gear_set_items WHERE gear_set_id = $1 ORDER BY order_index ASC`
-		ir, err := db.Query(ctx, qItems, gs.ID)
-		if err == nil {
-			for ir.Next() {
-				var it GearSetItem
-				if err := ir.Scan(&it.ID, &it.GearSetID, &it.Name, &it.Category, &it.Weight, &it.Quantity, &it.OrderIndex); err == nil {
-					gs.Items = append(gs.Items, it)
-				}
-			}
-			ir.Close()
-		}
+	if len(sets) == 0 {
+		return sets, total, nil
+	}
 
-		qMeals := `SELECT id, gear_set_id, day, meal_type, name, calories, note FROM gear_set_meals WHERE gear_set_id = $1`
-		mr, err := db.Query(ctx, qMeals, gs.ID)
-		if err == nil {
-			for mr.Next() {
-				var m GearSetMeal
-				if err := mr.Scan(&m.ID, &m.GearSetID, &m.Day, &m.MealType, &m.Name, &m.Calories, &m.Note); err == nil {
-					gs.Meals = append(gs.Meals, m)
-				}
-			}
-			mr.Close()
+	// Collect IDs for batch queries
+	setIDs := make([]uuid.UUID, len(sets))
+	setMap := make(map[uuid.UUID]*GearSet, len(sets))
+	for i, gs := range sets {
+		setIDs[i] = gs.ID
+		setMap[gs.ID] = gs
+	}
+
+	// Batch load items
+	iRows, err := db.Query(ctx,
+		`SELECT id, gear_set_id, name, category, weight, quantity, order_index
+		 FROM gear_set_items WHERE gear_set_id = ANY($1) ORDER BY gear_set_id, order_index ASC`,
+		setIDs,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf("batch query gear set items: %w", err)
+	}
+	defer iRows.Close()
+
+	for iRows.Next() {
+		var it GearSetItem
+		if err := iRows.Scan(&it.ID, &it.GearSetID, &it.Name, &it.Category, &it.Weight, &it.Quantity, &it.OrderIndex); err != nil {
+			return nil, 0, fmt.Errorf("scan gear set item row: %w", err)
 		}
+		if gs, ok := setMap[it.GearSetID]; ok {
+			gs.Items = append(gs.Items, it)
+		}
+	}
+	if err := iRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("iterate gear set item rows: %w", err)
+	}
+
+	// Batch load meals
+	mRows, err := db.Query(ctx,
+		`SELECT id, gear_set_id, day, meal_type, name, calories, note
+		 FROM gear_set_meals WHERE gear_set_id = ANY($1)`,
+		setIDs,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf("batch query gear set meals: %w", err)
+	}
+	defer mRows.Close()
+
+	for mRows.Next() {
+		var m GearSetMeal
+		if err := mRows.Scan(&m.ID, &m.GearSetID, &m.Day, &m.MealType, &m.Name, &m.Calories, &m.Note); err != nil {
+			return nil, 0, fmt.Errorf("scan gear set meal row: %w", err)
+		}
+		if gs, ok := setMap[m.GearSetID]; ok {
+			gs.Meals = append(gs.Meals, m)
+		}
+	}
+	if err := mRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("iterate gear set meal rows: %w", err)
 	}
 
 	return sets, total, nil
