@@ -49,6 +49,10 @@ type Config struct {
 	AuthCodeTTL         time.Duration
 	AuthMailSendTimeout time.Duration
 
+	// Rate limiting.
+	LoginRateWindow  time.Duration
+	ResendRateWindow time.Duration
+
 	// External services.
 	CWAApiKey      string
 	CWAHTTPTimeout time.Duration
@@ -106,6 +110,9 @@ func Load() *Config {
 
 		AuthCodeTTL:         getEnvAsDuration("AUTH_CODE_TTL", 10*time.Minute),
 		AuthMailSendTimeout: getEnvAsDuration("AUTH_MAIL_SEND_TIMEOUT", 15*time.Second),
+
+		LoginRateWindow:  getEnvAsDuration("LOGIN_RATE_WINDOW", 15*time.Minute),
+		ResendRateWindow: getEnvAsDuration("RESEND_RATE_WINDOW", 1*time.Hour),
 
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
 		CWAHTTPTimeout: getEnvAsDuration("CWA_HTTP_TIMEOUT", 30*time.Second),

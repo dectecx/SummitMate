@@ -19,3 +19,21 @@ func authVerificationKey(email string) cache.Key {
 func AuthBlacklistKey(token string) cache.Key {
 	return authkeys.BlacklistKey(token)
 }
+
+// loginRateKey returns the cache key for counting login attempts per email.
+func loginRateKey(email string) cache.Key {
+	return cache.Key{
+		Module: cache.ModuleAuth,
+		Domain: "rate:login",
+		ID:     email,
+	}
+}
+
+// resendRateKey returns the cache key for counting resend verification attempts per email.
+func resendRateKey(email string) cache.Key {
+	return cache.Key{
+		Module: cache.ModuleAuth,
+		Domain: "rate:resend",
+		ID:     email,
+	}
+}

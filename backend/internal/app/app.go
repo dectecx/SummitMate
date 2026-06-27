@@ -266,6 +266,8 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 		RefreshTokenTTL:     cfg.RefreshTokenTTL,
 		VerificationCodeTTL: cfg.AuthCodeTTL,
 		MailSendTimeout:     cfg.AuthMailSendTimeout,
+		LoginRateWindow:     cfg.LoginRateWindow,
+		ResendRateWindow:    cfg.ResendRateWindow,
 	})
 	tripService := trip.NewTripService(logger, pool, tripRepo, tripMemberRepo, tripItineraryRepo, tripMealDayRepo, authService)
 	tripAccessChecker := trip.NewTripAccessChecker(tripRepo, tripMemberRepo)

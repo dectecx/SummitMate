@@ -12,6 +12,7 @@ var (
 	ErrTokenExpired            = New(http.StatusUnauthorized, TypeAuth, "token_expired", "Token 已過期")
 	ErrInvalidVerificationCode = New(http.StatusBadRequest, TypeBusinessLogic, "invalid_verification_code", "驗證碼錯誤")
 	ErrVerificationCodeExpired = New(http.StatusBadRequest, TypeBusinessLogic, "verification_code_expired", "驗證碼已過期，請重新發送")
+	ErrTooManyRequests         = New(http.StatusTooManyRequests, TypeAuth, "too_many_requests", "請求次數過多，請稍後再試")
 )
 
 // Trip 相關

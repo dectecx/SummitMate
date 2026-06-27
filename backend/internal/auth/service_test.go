@@ -155,6 +155,110 @@ func TestAuthService_Login(t *testing.T) {
 	})
 }
 
+func TestAuthService_Login_RateLimit(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	secret := "test-secret"
+	tokenManager := tokens.NewTokenManager(secret)
+
+	t.Run("Given login attempts exceed limit, When logging in again, Then it returns too many requests error", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+
+		durations := auth.DefaultDurations()
+		durations.LoginRateWindow = time.Minute
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret, durations)
+
+		email := "ratelimit@example.com"
+		hashed, _ := auth.HashPassword("correctPassword1")
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(
+			&auth.User{ID: "user-rl", Email: email, PasswordHash: hashed}, nil,
+		)
+
+		// 前 10 次：成功登入
+		for i := 0; i < 10; i++ {
+			_, _, _, err := svc.Login(context.Background(), email, "correctPassword1")
+			assert.NoError(t, err)
+		}
+
+		// 第 11 次：觸發限制
+		_, _, _, err := svc.Login(context.Background(), email, "correctPassword1")
+		assert.ErrorIs(t, err, apperror.ErrTooManyRequests)
+	})
+
+	t.Run("Given cache is nil, When logging in, Then rate limit is skipped and login proceeds normally", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, nil, mockFlag, secret, auth.DefaultDurations())
+
+		email := "nocache@example.com"
+		hashed, _ := auth.HashPassword("correctPassword1")
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(
+			&auth.User{ID: "user-nc", Email: email, PasswordHash: hashed}, nil,
+		)
+
+		_, _, _, err := svc.Login(context.Background(), email, "correctPassword1")
+		assert.NoError(t, err)
+	})
+}
+
+func TestAuthService_ResendVerificationCode_RateLimit(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	secret := "test-secret"
+	tokenManager := tokens.NewTokenManager(secret)
+
+	t.Run("Given resend attempts exceed limit, When resending again, Then it returns too many requests error", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+		mockFlag.On("IsEnabled", mock.Anything, mock.Anything).Return(false)
+
+		durations := auth.DefaultDurations()
+		durations.ResendRateWindow = time.Minute
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret, durations)
+
+		email := "resend@example.com"
+		mockRepo.On("GetByEmail", mock.Anything, email).Return(
+			&auth.User{ID: "user-rs", Email: email, IsVerified: false}, nil,
+		)
+
+		// 前 3 次：成功重發
+		for i := 0; i < 3; i++ {
+			err := svc.ResendVerificationCode(context.Background(), email)
+			assert.NoError(t, err)
+		}
+
+		// 第 4 次：觸發限制
+		err := svc.ResendVerificationCode(context.Background(), email)
+		assert.ErrorIs(t, err, apperror.ErrTooManyRequests)
+	})
+
+	t.Run("Given rate limit reached with non-existent email, When resending, Then it returns too many requests without revealing user existence", func(t *testing.T) {
+		mockRepo := new(authmocks.MockUserRepository)
+		mockCache := cache.NewMemoryCache[string]()
+		mockFlag := new(flagmocks.MockFlagService)
+
+		durations := auth.DefaultDurations()
+		durations.ResendRateWindow = time.Minute
+		svc := auth.NewAuthService(logger, mockRepo, tokenManager, nil, mockCache, mockFlag, secret, durations)
+
+		email := "ghost@example.com"
+
+		// 先消耗完配額（不需要 email 存在）
+		for i := 0; i < 3; i++ {
+			mockRepo.On("GetByEmail", mock.Anything, email).Return(nil, auth.ErrNotFound).Once()
+			_ = svc.ResendVerificationCode(context.Background(), email)
+		}
+
+		// 第 4 次：rate limit 在 DB 查詢之前觸發，不需要再 mock DB
+		err := svc.ResendVerificationCode(context.Background(), email)
+		assert.ErrorIs(t, err, apperror.ErrTooManyRequests)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
 func TestAuthService_RefreshToken(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	secret := "test-secret"
