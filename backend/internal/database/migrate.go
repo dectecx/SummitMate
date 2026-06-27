@@ -29,9 +29,18 @@ func newMigrate(databaseURL string) (*migrate.Migrate, error) {
 		driver,
 	)
 	if err != nil {
+		db.Close()
 		return nil, fmt.Errorf("create migrate: %w", err)
 	}
 	return m, nil
+}
+
+// closeMigrate closes the migrate instance (and its underlying DB connection),
+// logging any error without overriding the operation's own result.
+func closeMigrate(m *migrate.Migrate) {
+	if srcErr, dbErr := m.Close(); srcErr != nil || dbErr != nil {
+		slog.Warn("Failed to close migrate instance", "source_err", srcErr, "db_err", dbErr)
+	}
 }
 
 // MigrateUp applies all pending migrations.
@@ -40,6 +49,7 @@ func MigrateUp(databaseURL string) error {
 	if err != nil {
 		return err
 	}
+	defer closeMigrate(m)
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("up: %w", err)
@@ -55,6 +65,7 @@ func MigrateDown(databaseURL string) error {
 	if err != nil {
 		return err
 	}
+	defer closeMigrate(m)
 
 	if err := m.Steps(-1); err != nil {
 		return fmt.Errorf("down: %w", err)
@@ -70,6 +81,8 @@ func MigrateVersion(databaseURL string) (uint, bool, error) {
 	if err != nil {
 		return 0, false, err
 	}
+	defer closeMigrate(m)
+
 	return m.Version()
 }
 
@@ -79,6 +92,7 @@ func MigrateDrop(databaseURL string) error {
 	if err != nil {
 		return err
 	}
+	defer closeMigrate(m)
 
 	if err := m.Down(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("drop: %w", err)
@@ -94,6 +108,7 @@ func MigrateForce(databaseURL string, version int) error {
 	if err != nil {
 		return err
 	}
+	defer closeMigrate(m)
 
 	if err := m.Force(version); err != nil {
 		return fmt.Errorf("force: %w", err)

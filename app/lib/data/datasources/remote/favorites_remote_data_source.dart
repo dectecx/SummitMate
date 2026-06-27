@@ -43,7 +43,7 @@ class FavoritesRemoteDataSource implements IFavoritesRemoteDataSource {
       if (isFavorite) {
         await _favoritesApi.addFavorite(FavoriteAddRequest(targetId: id, type: type.value));
       } else {
-        await _favoritesApi.removeFavorite(id);
+        await _favoritesApi.removeFavorite(id, type: type.value);
       }
       return const Success(null);
     } catch (e) {

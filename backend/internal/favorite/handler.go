@@ -69,7 +69,7 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fav, err := h.service.AddFavorite(r.Context(), userID, req.TargetId.String(), req.Type)
+	fav, err := h.service.AddFavorite(r.Context(), userID, req.TargetId.String(), string(req.Type))
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
@@ -78,14 +78,14 @@ func (h *FavoriteHandler) AddFavorite(w http.ResponseWriter, r *http.Request) {
 	apiutil.SendJSON(w, http.StatusCreated, ToFavoriteResponse(fav))
 }
 
-func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetID openapi_types.UUID) {
+func (h *FavoriteHandler) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetID openapi_types.UUID, params api.RemoveFavoriteParams) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		apiutil.SendError(w, r, apperror.ErrUnauthorized)
 		return
 	}
 
-	err := h.service.RemoveFavorite(r.Context(), targetID.String(), userID)
+	err := h.service.RemoveFavorite(r.Context(), targetID.String(), userID, string(params.Type))
 	if err != nil {
 		apiutil.SendError(w, r, err)
 		return
@@ -111,7 +111,7 @@ func (h *FavoriteHandler) BatchUpdateFavorites(w http.ResponseWriter, r *http.Re
 	for _, req := range reqBody {
 		items = append(items, BatchFavoriteItem{
 			TargetID:   req.TargetId.String(),
-			Type:       req.Type,
+			Type:       string(req.Type),
 			IsFavorite: req.IsFavorite,
 		})
 	}

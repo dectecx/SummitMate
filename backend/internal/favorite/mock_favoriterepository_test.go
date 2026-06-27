@@ -116,17 +116,17 @@ func (_c *MockFavoriteRepository_Create_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
-// DeleteByTargetAndUser provides a mock function with given fields: ctx, targetID, userID
-func (_m *MockFavoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID string, userID string) error {
-	ret := _m.Called(ctx, targetID, userID)
+// DeleteByTargetAndUser provides a mock function with given fields: ctx, targetID, userID, favType
+func (_m *MockFavoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID string, userID string, favType string) error {
+	ret := _m.Called(ctx, targetID, userID, favType)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteByTargetAndUser")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, targetID, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, targetID, userID, favType)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -143,13 +143,14 @@ type MockFavoriteRepository_DeleteByTargetAndUser_Call struct {
 //   - ctx context.Context
 //   - targetID string
 //   - userID string
-func (_e *MockFavoriteRepository_Expecter) DeleteByTargetAndUser(ctx interface{}, targetID interface{}, userID interface{}) *MockFavoriteRepository_DeleteByTargetAndUser_Call {
-	return &MockFavoriteRepository_DeleteByTargetAndUser_Call{Call: _e.mock.On("DeleteByTargetAndUser", ctx, targetID, userID)}
+//   - favType string
+func (_e *MockFavoriteRepository_Expecter) DeleteByTargetAndUser(ctx interface{}, targetID interface{}, userID interface{}, favType interface{}) *MockFavoriteRepository_DeleteByTargetAndUser_Call {
+	return &MockFavoriteRepository_DeleteByTargetAndUser_Call{Call: _e.mock.On("DeleteByTargetAndUser", ctx, targetID, userID, favType)}
 }
 
-func (_c *MockFavoriteRepository_DeleteByTargetAndUser_Call) Run(run func(ctx context.Context, targetID string, userID string)) *MockFavoriteRepository_DeleteByTargetAndUser_Call {
+func (_c *MockFavoriteRepository_DeleteByTargetAndUser_Call) Run(run func(ctx context.Context, targetID string, userID string, favType string)) *MockFavoriteRepository_DeleteByTargetAndUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string))
 	})
 	return _c
 }
@@ -159,7 +160,7 @@ func (_c *MockFavoriteRepository_DeleteByTargetAndUser_Call) Return(_a0 error) *
 	return _c
 }
 
-func (_c *MockFavoriteRepository_DeleteByTargetAndUser_Call) RunAndReturn(run func(context.Context, string, string) error) *MockFavoriteRepository_DeleteByTargetAndUser_Call {
+func (_c *MockFavoriteRepository_DeleteByTargetAndUser_Call) RunAndReturn(run func(context.Context, string, string, string) error) *MockFavoriteRepository_DeleteByTargetAndUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
