@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type MockBeginner struct {
@@ -458,5 +459,105 @@ func TestGroupEventService_UpdateTripLink(t *testing.T) {
 		mockTrip.AssertNotCalled(t, "BatchAddMembers", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 		mockRepo.AssertExpectations(t)
 		mockTx.AssertExpectations(t)
+	})
+}
+
+func TestGroupEventService_CancelApplication(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	newSetup := func() (*MockGroupEventRepository, *tripmocks.MockTripService, *MockBeginner, *MockTx, GroupEventService) {
+		mockRepo := new(MockGroupEventRepository)
+		mockTrip := new(tripmocks.MockTripService)
+		mockAuth := new(authmocks.MockAuthService)
+		mockDB := new(MockBeginner)
+		mockTx := new(MockTx)
+		svc := NewGroupEventService(logger, mockDB, mockRepo, mockTrip, mockAuth)
+		return mockRepo, mockTrip, mockDB, mockTx, svc
+	}
+
+	t.Run("Given approved application with linked trip, When cancelling, Then it atomically deletes application and removes trip member", func(t *testing.T) {
+		mockRepo, mockTrip, mockDB, mockTx, svc := newSetup()
+		appID := "app-1"
+		userID := "user-1"
+		tripID := "trip-1"
+
+		app := &GroupEventApplication{ID: appID, EventID: "event-1", UserID: userID, Status: ApplicationStatusApproved}
+		event := &GroupEvent{ID: "event-1", CreatedBy: "host-1", LinkedTripID: &tripID}
+
+		mockRepo.On("GetApplicationByID", mock.Anything, appID).Return(app, nil).Once()
+		mockDB.On("Begin", mock.Anything).Return(mockTx, nil).Once()
+		mockRepo.On("DeleteApplication", mock.Anything, appID).Return(nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, "event-1", userID).Return(event, nil).Once()
+		mockTrip.On("RemoveMember", mock.Anything, tripID, "host-1", userID).Return(nil).Once()
+		mockTx.On("Commit", mock.Anything).Return(nil).Once()
+
+		err := svc.CancelApplication(context.Background(), appID, userID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockTrip.AssertExpectations(t)
+		mockTx.AssertExpectations(t)
+	})
+
+	t.Run("Given approved application with linked trip, When RemoveMember fails, Then it rolls back application deletion", func(t *testing.T) {
+		mockRepo, mockTrip, mockDB, mockTx, svc := newSetup()
+		appID := "app-1"
+		userID := "user-1"
+		tripID := "trip-1"
+
+		app := &GroupEventApplication{ID: appID, EventID: "event-1", UserID: userID, Status: ApplicationStatusApproved}
+		event := &GroupEvent{ID: "event-1", CreatedBy: "host-1", LinkedTripID: &tripID}
+
+		mockRepo.On("GetApplicationByID", mock.Anything, appID).Return(app, nil).Once()
+		mockDB.On("Begin", mock.Anything).Return(mockTx, nil).Once()
+		mockRepo.On("DeleteApplication", mock.Anything, appID).Return(nil).Once()
+		mockRepo.On("GetEventByID", mock.Anything, "event-1", userID).Return(event, nil).Once()
+		mockTrip.On("RemoveMember", mock.Anything, tripID, "host-1", userID).Return(errors.New("remove failed")).Once()
+		mockTx.On("Rollback", mock.Anything).Return(nil).Once()
+
+		err := svc.CancelApplication(context.Background(), appID, userID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "remove failed")
+		mockRepo.AssertExpectations(t)
+		mockTrip.AssertExpectations(t)
+		mockTx.AssertExpectations(t)
+	})
+
+	t.Run("Given pending application, When cancelling, Then it deletes application without trip operations", func(t *testing.T) {
+		mockRepo, mockTrip, mockDB, mockTx, svc := newSetup()
+		appID := "app-1"
+		userID := "user-1"
+
+		app := &GroupEventApplication{ID: appID, EventID: "event-1", UserID: userID, Status: ApplicationStatusPending}
+
+		mockRepo.On("GetApplicationByID", mock.Anything, appID).Return(app, nil).Once()
+		mockDB.On("Begin", mock.Anything).Return(mockTx, nil).Once()
+		mockRepo.On("DeleteApplication", mock.Anything, appID).Return(nil).Once()
+		mockTx.On("Commit", mock.Anything).Return(nil).Once()
+
+		err := svc.CancelApplication(context.Background(), appID, userID)
+
+		assert.NoError(t, err)
+		mockTrip.AssertNotCalled(t, "RemoveMember", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		mockRepo.AssertExpectations(t)
+		mockTx.AssertExpectations(t)
+	})
+
+	t.Run("Given another user's application, When cancelling, Then it returns access denied before transaction", func(t *testing.T) {
+		mockRepo, _, mockDB, _, svc := newSetup()
+		appID := "app-1"
+		userID := "user-other"
+
+		app := &GroupEventApplication{ID: appID, UserID: "user-1", Status: ApplicationStatusApproved}
+		mockRepo.On("GetApplicationByID", mock.Anything, appID).Return(app, nil).Once()
+
+		err := svc.CancelApplication(context.Background(), appID, userID)
+
+		require.Error(t, err)
+		var appErr *apperror.AppError
+		require.True(t, errors.As(err, &appErr))
+		assert.Equal(t, "permission_denied", appErr.Code)
+		mockDB.AssertNotCalled(t, "Begin", mock.Anything)
 	})
 }
