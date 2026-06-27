@@ -31,6 +31,11 @@ var (
 	ErrBadRequest       = New(http.StatusBadRequest, TypeInvalidReq, "invalid_body", "參數格式錯誤")
 )
 
+// Favorite 相關
+var (
+	ErrInvalidFavoriteType = New(http.StatusBadRequest, TypeValidation, "invalid_favorite_type", "不支援的收藏類型").WithParam("type")
+)
+
 // GroupEvent 相關
 var (
 	ErrEventNotFound       = New(http.StatusNotFound, TypeInvalidReq, "event_not_found", "找不到該活動")

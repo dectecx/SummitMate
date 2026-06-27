@@ -2182,6 +2182,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: type
+          in: query
+          description: 收藏類型 (用於唯一定位收藏項目)
+          required: true
+          schema:
+            $ref: "#/components/schemas/FavoriteType"
       responses:
         "204":
           description: 成功移除
@@ -3839,6 +3845,15 @@ components:
           type: string
           default: "realtime"
 
+    FavoriteType:
+      type: string
+      description: 收藏類型
+      enum:
+        - mountain
+        - group_event
+        - route
+        - other
+
     Favorite:
       type: object
       required:
@@ -3857,7 +3872,7 @@ components:
           type: string
           format: uuid
         type:
-          type: string
+          $ref: "#/components/schemas/FavoriteType"
         created_at:
           type: string
           format: date-time
@@ -3881,8 +3896,7 @@ components:
           type: string
           format: uuid
         type:
-          type: string
-          maxLength: 30
+          $ref: "#/components/schemas/FavoriteType"
 
     BatchFavoriteRequest:
       type: object
@@ -3895,8 +3909,7 @@ components:
           type: string
           format: uuid
         type:
-          type: string
-          maxLength: 30
+          $ref: "#/components/schemas/FavoriteType"
         is_favorite:
           type: boolean
 

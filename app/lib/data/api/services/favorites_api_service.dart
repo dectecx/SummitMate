@@ -22,5 +22,5 @@ abstract class FavoritesApiService {
   Future<void> batchUpdate(@Body() List<BatchFavoriteItem> items);
 
   @DELETE('/favorites/{targetId}')
-  Future<void> removeFavorite(@Path('targetId') String targetId);
+  Future<void> removeFavorite(@Path('targetId') String targetId, {@Query('type') required String type});
 }

@@ -11,7 +11,7 @@ func ToFavoriteResponse(f *Favorite) api.Favorite {
 	return api.Favorite{
 		Id:        uuid.MustParse(f.ID),
 		TargetId:  uuid.MustParse(f.TargetID),
-		Type:      f.Type,
+		Type:      api.FavoriteType(f.Type),
 		CreatedAt: f.CreatedAt,
 		CreatedBy: uuid.MustParse(f.CreatedBy),
 		UpdatedAt: f.UpdatedAt,

@@ -15,8 +15,8 @@ func (s *Server) AddFavorite(w http.ResponseWriter, r *http.Request) {
 	s.FavoriteHandler.AddFavorite(w, r)
 }
 
-func (s *Server) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID) {
-	s.FavoriteHandler.RemoveFavorite(w, r, targetId)
+func (s *Server) RemoveFavorite(w http.ResponseWriter, r *http.Request, targetId openapi_types.UUID, params api.RemoveFavoriteParams) {
+	s.FavoriteHandler.RemoveFavorite(w, r, targetId, params)
 }
 
 func (s *Server) BatchUpdateFavorites(w http.ResponseWriter, r *http.Request) {

@@ -17,7 +17,7 @@ type BatchFavoriteItem struct {
 type FavoriteRepository interface {
 	ListByUserID(ctx context.Context, userID string, page int, limit int) ([]*Favorite, int, bool, error)
 	Create(ctx context.Context, fav *Favorite) error
-	DeleteByTargetAndUser(ctx context.Context, targetID, userID string) error
+	DeleteByTargetAndUser(ctx context.Context, targetID, userID, favType string) error
 	BatchUpdate(ctx context.Context, userID string, items []BatchFavoriteItem) error
 }
 
@@ -84,12 +84,12 @@ func (r *favoriteRepository) Create(ctx context.Context, fav *Favorite) error {
 	return nil
 }
 
-func (r *favoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID, userID string) error {
-	query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2`
+func (r *favoriteRepository) DeleteByTargetAndUser(ctx context.Context, targetID, userID, favType string) error {
+	query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2 AND type = $3`
 	db := database.GetQuerier(ctx, r.db)
-	cmd, err := db.Exec(ctx, query, targetID, userID)
+	cmd, err := db.Exec(ctx, query, targetID, userID, favType)
 	if err != nil {
-		return fmt.Errorf("delete favorite for user %s on target %s: %w", userID, targetID, err)
+		return fmt.Errorf("delete favorite for user %s on target %s (%s): %w", userID, targetID, favType, err)
 	}
 	if cmd.RowsAffected() == 0 {
 		return pgx.ErrNoRows
@@ -112,10 +112,10 @@ func (r *favoriteRepository) BatchUpdate(ctx context.Context, userID string, ite
 				return fmt.Errorf("batch insert favorite for user %s on target %s: %w", userID, item.TargetID, err)
 			}
 		} else {
-			query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2`
-			_, err := db.Exec(ctx, query, item.TargetID, userID)
+			query := `DELETE FROM favorites WHERE target_id = $1 AND user_id = $2 AND type = $3`
+			_, err := db.Exec(ctx, query, item.TargetID, userID, item.Type)
 			if err != nil {
-				return fmt.Errorf("batch delete favorite for user %s on target %s: %w", userID, item.TargetID, err)
+				return fmt.Errorf("batch delete favorite for user %s on target %s (%s): %w", userID, item.TargetID, item.Type, err)
 			}
 		}
 	}

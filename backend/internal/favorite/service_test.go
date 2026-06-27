@@ -60,7 +60,7 @@ func TestFavoriteService_AddFavorite(t *testing.T) {
 	t.Run("Given valid setup, When calling FavoriteService AddFavorite, Then it returns success without error", func(t *testing.T) {
 		userID := "user-1"
 		targetID := "target-1"
-		favType := "trip"
+		favType := TypeMountain
 
 		mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*favorite.Favorite")).Return(nil).Once()
 
@@ -83,10 +83,11 @@ func TestFavoriteService_RemoveFavorite(t *testing.T) {
 	t.Run("Given valid setup, When calling FavoriteService RemoveFavorite, Then it returns success without error", func(t *testing.T) {
 		userID := "user-1"
 		targetID := "target-1"
+		favType := TypeMountain
 
-		mockRepo.On("DeleteByTargetAndUser", mock.Anything, targetID, userID).Return(nil).Once()
+		mockRepo.On("DeleteByTargetAndUser", mock.Anything, targetID, userID, favType).Return(nil).Once()
 
-		err := svc.RemoveFavorite(context.Background(), targetID, userID)
+		err := svc.RemoveFavorite(context.Background(), targetID, userID, favType)
 
 		assert.NoError(t, err)
 		mockRepo.AssertExpectations(t)
@@ -104,7 +105,7 @@ func TestFavoriteService_ListFavorites(t *testing.T) {
 		page := 1
 		limit := 10
 		expectedList := []*Favorite{
-			{UserID: userID, TargetID: "t1", Type: "trip"},
+			{UserID: userID, TargetID: "t1", Type: TypeMountain},
 		}
 
 		mockRepo.On("ListByUserID", mock.Anything, userID, page, limit).Return(expectedList, 1, false, nil).Once()
@@ -129,7 +130,7 @@ func TestFavoriteService_BatchUpdateFavorites(t *testing.T) {
 		svc := NewFavoriteService(logger, mockDB, mockRepo)
 		userID := "user-1"
 		items := []BatchFavoriteItem{
-			{TargetID: "t1", Type: "trip", IsFavorite: true},
+			{TargetID: "t1", Type: TypeMountain, IsFavorite: true},
 		}
 
 		mockDB.On("Begin", mock.Anything).Return(mockTx, nil).Once()
@@ -150,7 +151,7 @@ func TestFavoriteService_BatchUpdateFavorites(t *testing.T) {
 		svc := NewFavoriteService(logger, mockDB, mockRepo)
 		userID := "user-1"
 		items := []BatchFavoriteItem{
-			{TargetID: "t1", Type: "trip", IsFavorite: true},
+			{TargetID: "t1", Type: TypeMountain, IsFavorite: true},
 		}
 		expectedErr := errors.New("batch error")
 

@@ -98,12 +98,12 @@ void main() {
     test(
       'Given isFavorite is false, When calling FavoritesRemoteDataSource.updateFavorite, Then calls removeFavorite',
       () async {
-        when(() => mockApi.removeFavorite('1')).thenAnswer((_) async {});
+        when(() => mockApi.removeFavorite('1', type: any(named: 'type'))).thenAnswer((_) async {});
 
         final result = await dataSource.updateFavorite('1', FavoriteType.mountain, false);
 
         expect(result, isA<Success>());
-        verify(() => mockApi.removeFavorite('1')).called(1);
+        verify(() => mockApi.removeFavorite('1', type: FavoriteType.mountain.value)).called(1);
       },
     );
   });
