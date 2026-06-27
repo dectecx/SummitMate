@@ -4,7 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"testing"
 )
+
+// minJWTSecretLength is the minimum acceptable length (in characters) for the
+// JWT signing secret. A short or empty secret would let attackers brute-force
+// or forge HS256 tokens.
+const minJWTSecretLength = 16
 
 // Config holds all application configuration.
 type Config struct {
@@ -82,6 +88,22 @@ func getEnvAsSlice(key string, fallback []string) []string {
 // Addr returns the listen address (e.g. ":8080").
 func (c *Config) Addr() string {
 	return fmt.Sprintf(":%s", c.Port)
+}
+
+// Validate checks that security-critical configuration is present and safe
+// before the API server starts. It is intended to be called by the API server
+// entrypoint so that misconfiguration fails fast instead of silently signing
+// tokens with an empty/weak key. Validation is skipped under `go test`.
+func (c *Config) Validate() error {
+	if testing.Testing() {
+		return nil
+	}
+
+	if len(c.JWTSecret) < minJWTSecretLength {
+		return fmt.Errorf("JWT_SECRET is required and must be at least %d characters long", minJWTSecretLength)
+	}
+
+	return nil
 }
 
 func getEnv(key, fallback string) string {
