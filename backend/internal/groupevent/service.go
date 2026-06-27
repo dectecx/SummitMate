@@ -197,22 +197,28 @@ func (s *groupEventService) ApplyToEvent(ctx context.Context, app *GroupEventApp
 
 	if !event.ApprovalRequired {
 		app.Status = ApplicationStatusApproved
-		// 如果活動有連結行程，自動加入行程成員
-		if event.LinkedTripID != nil {
-			_, _ = s.tripServ.AddMember(ctx, *event.LinkedTripID, event.CreatedBy, app.UserID)
-		}
 	} else {
 		app.Status = ApplicationStatusPending
 	}
 
-	// Fetch user details for the response
+	// Fetch user details (read-only, safe outside transaction)
 	user, err := s.authServ.GetUserByID(ctx, app.UserID)
 	if err == nil && user != nil {
 		app.UserName = user.DisplayName
 		app.UserAvatar = user.Avatar
 	}
 
-	if err := s.repo.ApplyToEvent(ctx, app); err != nil {
+	if err := database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		if err := s.repo.ApplyToEvent(txCtx, app); err != nil {
+			return err
+		}
+		if app.Status == ApplicationStatusApproved && event.LinkedTripID != nil {
+			if _, err := s.tripServ.AddMember(txCtx, *event.LinkedTripID, event.CreatedBy, app.UserID); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
 		s.logger.ErrorContext(ctx, "活動報名失敗", "event_id", app.EventID, "user_id", app.UserID, "error", err)
 		return err
 	}
@@ -234,15 +240,23 @@ func (s *groupEventService) CancelApplication(ctx context.Context, appID string,
 		return apperror.ErrAccessDenied.WithMessage("無權取消他人報名")
 	}
 
-	// 如果報名已被核准且活動有連結行程，移除行程權限
-	if app.Status == ApplicationStatusApproved {
-		event, err := s.repo.GetEventByID(ctx, app.EventID, userID)
-		if err == nil && event != nil && event.LinkedTripID != nil {
-			_ = s.tripServ.RemoveMember(ctx, *event.LinkedTripID, event.CreatedBy, userID)
+	if err := database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		if err := s.repo.DeleteApplication(txCtx, appID); err != nil {
+			return err
 		}
-	}
-
-	if err := s.repo.DeleteApplication(ctx, appID); err != nil {
+		if app.Status == ApplicationStatusApproved {
+			event, err := s.repo.GetEventByID(txCtx, app.EventID, userID)
+			if err != nil {
+				return err
+			}
+			if event != nil && event.LinkedTripID != nil {
+				if err := s.tripServ.RemoveMember(txCtx, *event.LinkedTripID, event.CreatedBy, userID); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}); err != nil {
 		s.logger.ErrorContext(ctx, "取消報名失敗", "app_id", appID, "user_id", userID, "error", err)
 		return err
 	}
@@ -291,26 +305,26 @@ func (s *groupEventService) ProcessApplication(ctx context.Context, appID, statu
 		return apperror.ErrEventAccessDenied
 	}
 
-	if err := s.repo.UpdateApplicationStatus(ctx, appID, status, rejectionReason, executorID); err != nil {
+	if err := database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		if err := s.repo.UpdateApplicationStatus(txCtx, appID, status, rejectionReason, executorID); err != nil {
+			return err
+		}
+		if event.LinkedTripID != nil {
+			switch status {
+			case ApplicationStatusApproved:
+				if _, err := s.tripServ.AddMember(txCtx, *event.LinkedTripID, executorID, app.UserID); err != nil {
+					return err
+				}
+			case ApplicationStatusRejected:
+				if err := s.tripServ.RemoveMember(txCtx, *event.LinkedTripID, executorID, app.UserID); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}); err != nil {
 		s.logger.ErrorContext(ctx, "更新活動報名狀態失敗", "app_id", appID, "status", status, "executor_id", executorID, "error", err)
 		return err
-	}
-
-	// 如果審核通過且活動有連結行程，自動將該成員加入行程 (Role: member)
-	if status == ApplicationStatusApproved && event.LinkedTripID != nil {
-		// 防呆：這裡 AddMember 內部已經有權限檢查與重複加入檢查，直接呼叫即可
-		_, err := s.tripServ.AddMember(ctx, *event.LinkedTripID, executorID, app.UserID)
-		if err != nil {
-			s.logger.ErrorContext(ctx, "自動加入行程成員失敗", "event_id", app.EventID, "trip_id", *event.LinkedTripID, "user_id", app.UserID, "error", err)
-		} else {
-			s.logger.InfoContext(ctx, "自動加入行程成員完成", "event_id", app.EventID, "trip_id", *event.LinkedTripID, "user_id", app.UserID)
-		}
-	} else if (status == ApplicationStatusRejected) && event.LinkedTripID != nil {
-		// 如果從 Approved 變為 Rejected，需移除行程權限
-		err := s.tripServ.RemoveMember(ctx, *event.LinkedTripID, executorID, app.UserID)
-		if err != nil {
-			s.logger.WarnContext(ctx, "移除行程成員失敗 (可能本就不是成員)", "event_id", app.EventID, "trip_id", *event.LinkedTripID, "user_id", app.UserID, "error", err)
-		}
 	}
 
 	s.logger.InfoContext(ctx, "活動報名狀態更新成功", "event_id", app.EventID, "target_user_id", app.UserID, "status", status, "executor_id", executorID)
@@ -397,29 +411,31 @@ func (s *groupEventService) UpdateTripLink(ctx context.Context, eventID string, 
 		}
 	}
 
-	// 權限搬遷邏輯：如果原本有連結行程，現在更換或取消，應移除團員權限
-	if event.LinkedTripID != nil && (tripID == nil || *tripID != *event.LinkedTripID) {
-		apps, err := s.repo.ListApplications(ctx, eventID)
-		if err == nil {
+	return database.WithTransaction(ctx, s.db, func(txCtx context.Context) error {
+		if event.LinkedTripID != nil && (tripID == nil || *tripID != *event.LinkedTripID) {
+			apps, err := s.repo.ListApplications(txCtx, eventID)
+			if err != nil {
+				return err
+			}
 			var memberIDs []string
 			for _, app := range apps {
 				if app.Status == ApplicationStatusApproved {
 					memberIDs = append(memberIDs, app.UserID)
 				}
 			}
-
 			if len(memberIDs) > 0 {
-				// 移除舊行程權限
-				_ = s.tripServ.BatchRemoveMembers(ctx, *event.LinkedTripID, userID, memberIDs)
-				// 如果有新行程，加入新行程權限
+				if err := s.tripServ.BatchRemoveMembers(txCtx, *event.LinkedTripID, userID, memberIDs); err != nil {
+					return err
+				}
 				if tripID != nil {
-					_ = s.tripServ.BatchAddMembers(ctx, *tripID, userID, memberIDs)
+					if err := s.tripServ.BatchAddMembers(txCtx, *tripID, userID, memberIDs); err != nil {
+						return err
+					}
 				}
 			}
 		}
-	}
-
-	return s.repo.UpdateTripLink(ctx, eventID, tripID, userID)
+		return s.repo.UpdateTripLink(txCtx, eventID, tripID, userID)
+	})
 }
 
 func (s *groupEventService) UpdateTripSnapshot(ctx context.Context, eventID string, userID string) (*GroupEvent, error) {
