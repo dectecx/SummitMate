@@ -11,10 +11,13 @@ class GroupEventRepository implements IGroupEventRepository {
   final IGroupEventLocalDataSource _localDataSource;
   final IGroupEventRemoteDataSource _remoteDataSource;
 
+  DateTime? _lastSyncTime;
+
   GroupEventRepository(this._localDataSource, this._remoteDataSource);
 
   @override
   Future<Result<void, Exception>> init() async {
+    _lastSyncTime = await _localDataSource.getLastSyncTime();
     return const Success(null);
   }
 
@@ -40,7 +43,7 @@ class GroupEventRepository implements IGroupEventRepository {
   }
 
   @override
-  DateTime? getLastSyncTime() => null;
+  DateTime? getLastSyncTime() => _lastSyncTime;
 
   @override
   Future<Result<List<GroupEvent>, Exception>> syncEvents({GroupEventCategory? category}) async {
@@ -48,6 +51,8 @@ class GroupEventRepository implements IGroupEventRepository {
       final result = await _remoteDataSource.getEvents(category: category);
       if (result is Success<PaginatedList<GroupEvent>, Exception>) {
         await _localDataSource.saveEvents(result.value.items);
+        _lastSyncTime = DateTime.now();
+        await _localDataSource.saveLastSyncTime(_lastSyncTime!);
         return Success(result.value.items);
       }
       return Failure((result as Failure).exception);

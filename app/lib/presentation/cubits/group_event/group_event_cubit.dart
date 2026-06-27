@@ -80,12 +80,12 @@ class GroupEventCubit extends Cubit<GroupEventState> {
       LogService.error('Fetch group events failed: $e', source: _source);
       if (!isAuto) {
         final events = await _groupEventRepository.getAll();
-        final lastSync = DateTime.now();
+        final previousLastSync = state is GroupEventLoaded ? (state as GroupEventLoaded).lastSyncTime : null;
         emit(
           GroupEventLoaded(
             events: events,
             currentUserId: _currentUserId,
-            lastSyncTime: lastSync,
+            lastSyncTime: previousLastSync,
             isSyncing: false,
             isGuest: _isGuest,
           ),

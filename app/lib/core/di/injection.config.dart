@@ -339,13 +339,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i460.SharedPreferences>(),
       ),
     );
-    gh.factory<_i115.GroupEventFavoritesCubit>(
-      () =>
-          _i115.GroupEventFavoritesCubit(gh<_i307.IFavoritesLocalDataSource>()),
-    );
-    gh.factory<_i748.MountainFavoritesCubit>(
-      () => _i748.MountainFavoritesCubit(gh<_i307.IFavoritesLocalDataSource>()),
-    );
     gh.lazySingleton<_i750.IItineraryRepository>(
       () => _i790.ItineraryRepository(
         localDataSource: gh<_i116.IItineraryLocalDataSource>(),
@@ -536,6 +529,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i614.ITripRepository>(),
         gh<_i614.IAuthService>(),
       ),
+    );
+    gh.factory<_i115.GroupEventFavoritesCubit>(
+      () => _i115.GroupEventFavoritesCubit(gh<_i614.IFavoritesRepository>()),
+    );
+    gh.factory<_i748.MountainFavoritesCubit>(
+      () => _i748.MountainFavoritesCubit(gh<_i614.IFavoritesRepository>()),
     );
     gh.factory<_i757.GearLibraryCubit>(
       () => _i757.GearLibraryCubit(
