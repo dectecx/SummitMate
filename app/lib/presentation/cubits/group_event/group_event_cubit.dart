@@ -316,6 +316,7 @@ class GroupEventCubit extends Cubit<GroupEventState>
       }
     }
     _likeDebounceMap[eventId] = now;
+    Future.delayed(const Duration(milliseconds: 300), () => _likeDebounceMap.remove(eventId));
 
     final currentState = state;
     if (currentState is! GroupEventLoaded) return false;
