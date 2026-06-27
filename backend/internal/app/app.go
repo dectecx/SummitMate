@@ -42,8 +42,9 @@ type App struct {
 	Logger       *slog.Logger
 	Pool         *pgxpool.Pool
 	Server       *http.Server
-	AuthCache    cache.Cache[string]
-	EmailService *email.EmailService
+	AuthCache      cache.Cache[string]
+	TokenBlacklist cache.TokenBlacklist
+	EmailService   *email.EmailService
 }
 
 func NewApp(cfg *config.Config, logger *slog.Logger) (*App, error) {
@@ -89,7 +90,7 @@ func (a *App) InitRouter() (*chi.Mux, error) {
 	apiHandler := api.HandlerWithOptions(apiServer, api.ChiServerOptions{
 		BaseURL: "/api/v1",
 		Middlewares: []api.MiddlewareFunc{
-			middleware.JWTAuth(apiServer.TokenManager, apiServer.AuthCache),
+			middleware.JWTAuth(apiServer.TokenManager, apiServer.TokenBlacklist),
 		},
 	})
 	router.Mount("/", apiHandler)
@@ -154,6 +155,12 @@ func (a *App) releaseResources() {
 	if a.AuthCache != nil {
 		if err := a.AuthCache.Close(); err != nil {
 			a.Logger.Error("Failed to close auth cache", "error", err)
+		}
+	}
+
+	if a.TokenBlacklist != nil {
+		if err := a.TokenBlacklist.Close(); err != nil {
+			a.Logger.Error("Failed to close token blacklist", "error", err)
 		}
 	}
 
@@ -247,21 +254,29 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	emailService := email.NewEmailServiceWithPool(mailer, templateManager, mailWorkerPool, logger)
 	a.EmailService = emailService
 
-	authCache, err := cache.NewCache[string](cache.Config{
+	cacheConfig := cache.Config{
 		Type:          cache.Provider(cfg.CacheType),
 		RedisAddr:     cfg.RedisAddr,
 		RedisPassword: cfg.RedisPassword,
 		RedisDB:       cfg.RedisDB,
-	})
+	}
+
+	authCache, err := cache.NewCache[string](cacheConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize auth cache: %w", err)
 	}
 	a.AuthCache = authCache
 
+	tokenBlacklist, err := cache.NewTokenBlacklist(cacheConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize token blacklist: %w", err)
+	}
+	a.TokenBlacklist = tokenBlacklist
+
 	flagService := flag.NewFlagService(flagRepo, logger)
 
 	// --- Services ---
-	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret, auth.Durations{
+	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, tokenBlacklist, flagService, cfg.JWTSecret, auth.Durations{
 		AccessTokenTTL:      cfg.AccessTokenTTL,
 		RefreshTokenTTL:     cfg.RefreshTokenTTL,
 		VerificationCodeTTL: cfg.AuthCodeTTL,
@@ -313,6 +328,6 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 		groupHandler, weatherHandler, logHandler, heartbeatHandler,
 		flagHandler, gearSetHandler,
 		tokenManager,
-		authCache,
+		tokenBlacklist,
 	), nil
 }

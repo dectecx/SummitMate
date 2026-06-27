@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"summitmate/internal/auth/authkeys"
 	"summitmate/pkg/cache"
 )
 
@@ -12,12 +11,6 @@ func authVerificationKey(email string) cache.Key {
 		Domain: "verify",
 		ID:     email,
 	}
-}
-
-// AuthBlacklistKey returns the cache key for a blacklisted JWT token.
-// Delegates to authkeys.BlacklistKey to share the implementation with middleware.
-func AuthBlacklistKey(token string) cache.Key {
-	return authkeys.BlacklistKey(token)
 }
 
 // loginRateKey returns the cache key for counting login attempts per email.

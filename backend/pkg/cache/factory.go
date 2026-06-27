@@ -24,31 +24,57 @@ type Config struct {
 	RedisDB       string
 }
 
+// newRedisClient creates and health-checks a Redis client from cfg.
+// The caller is responsible for closing the client.
+func newRedisClient(cfg Config) (*redis.Client, error) {
+	db, err := strconv.Atoi(cfg.RedisDB)
+	if err != nil {
+		return nil, fmt.Errorf("invalid redis db: %w", err)
+	}
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddr,
+		Password: cfg.RedisPassword,
+		DB:       db,
+	})
+
+	// 檢查 Redis 連線；失敗時須關閉 client 避免連線資源洩漏。
+	if err := client.Ping(context.Background()).Err(); err != nil {
+		_ = client.Close()
+		return nil, fmt.Errorf("redis connection failed: %w", err)
+	}
+
+	return client, nil
+}
+
 // NewCache 根據配置建立適當的快取實作。
 func NewCache[T any](cfg Config) (Cache[T], error) {
 	switch cfg.Type {
 	case ProviderRedis:
-		db, err := strconv.Atoi(cfg.RedisDB)
+		client, err := newRedisClient(cfg)
 		if err != nil {
-			return nil, fmt.Errorf("invalid redis db: %w", err)
+			return nil, err
 		}
-
-		client := redis.NewClient(&redis.Options{
-			Addr:     cfg.RedisAddr,
-			Password: cfg.RedisPassword,
-			DB:       db,
-		})
-
-		// 檢查 Redis 連線；失敗時須關閉 client 避免連線資源洩漏。
-		if err := client.Ping(context.Background()).Err(); err != nil {
-			_ = client.Close()
-			return nil, fmt.Errorf("redis connection failed: %w", err)
-		}
-
 		return NewRedisCache[T](client, ""), nil
 	case ProviderMemory:
 		fallthrough
 	default:
 		return NewMemoryCache[T](), nil
+	}
+}
+
+// NewTokenBlacklist 根據配置建立適當的 TokenBlacklist 實作。
+func NewTokenBlacklist(cfg Config) (TokenBlacklist, error) {
+	switch cfg.Type {
+	case ProviderRedis:
+		client, err := newRedisClient(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return NewRedisTokenBlacklist(client), nil
+	case ProviderMemory:
+		fallthrough
+	default:
+		return NewMemoryTokenBlacklist(), nil
 	}
 }
