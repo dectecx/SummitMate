@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:injectable/injectable.dart';
 import 'tutorial_state.dart';
 import '../../../infrastructure/tools/tutorial_mock_data.dart';
 
 @injectable
-class TutorialCubit extends Cubit<TutorialState> {
+class TutorialCubit extends Cubit<TutorialState> with SafeEmitMixin<TutorialState> {
   TutorialCubit() : super(const TutorialInitial());
 
   /// 開啟教學模式 (Quick Tour 或一般章節教學)
@@ -14,7 +15,7 @@ class TutorialCubit extends Cubit<TutorialState> {
   /// 業務 Cubit 完全不受影響。
   Future<void> startTutorial({required String chapterId, bool isQuickTour = false}) async {
     final snapshot = TutorialMockData.createSnapshot();
-    emit(
+    safeEmit(
       TutorialActive(
         chapterId: chapterId,
         isQuickTour: isQuickTour,
@@ -32,7 +33,7 @@ class TutorialCubit extends Cubit<TutorialState> {
   /// 恢復至初始狀態。UI 層的 TutorialAwareBuilder 將自動
   /// 切換回讀取各業務 Cubit 的真實資料。
   Future<void> endTutorial() async {
-    emit(const TutorialInitial());
+    safeEmit(const TutorialInitial());
   }
 
   /// 切換到上一個步驟
@@ -40,7 +41,7 @@ class TutorialCubit extends Cubit<TutorialState> {
     if (state is TutorialActive) {
       final activeState = state as TutorialActive;
       if (activeState.currentStepIndex > 0) {
-        emit(activeState.copyWith(currentStepIndex: activeState.currentStepIndex - 1));
+        safeEmit(activeState.copyWith(currentStepIndex: activeState.currentStepIndex - 1));
       }
     }
   }
@@ -49,7 +50,7 @@ class TutorialCubit extends Cubit<TutorialState> {
   void nextStep() {
     if (state is TutorialActive) {
       final activeState = state as TutorialActive;
-      emit(activeState.copyWith(currentStepIndex: activeState.currentStepIndex + 1));
+      safeEmit(activeState.copyWith(currentStepIndex: activeState.currentStepIndex + 1));
     }
   }
 
@@ -58,7 +59,7 @@ class TutorialCubit extends Cubit<TutorialState> {
     if (state is TutorialActive) {
       final activeState = state as TutorialActive;
       if (index >= 0) {
-        emit(activeState.copyWith(currentStepIndex: index));
+        safeEmit(activeState.copyWith(currentStepIndex: index));
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -9,7 +10,7 @@ import 'sync_state.dart';
 
 /// 管理資料同步狀態的 Cubit
 @injectable
-class SyncCubit extends Cubit<SyncState> {
+class SyncCubit extends Cubit<SyncState> with SafeEmitMixin<SyncState> {
   static const String _source = 'SyncCubit';
 
   final ISyncEngine _syncEngine;
@@ -30,13 +31,13 @@ class SyncCubit extends Cubit<SyncState> {
     _connectivitySubscription = _connectivityService.onConnectivityChanged.listen((isOnline) {
       if (state is SyncInitial) {
         final s = state as SyncInitial;
-        emit(SyncInitial(lastSyncTime: s.lastSyncTime, pendingCount: s.pendingCount, isOnline: isOnline));
+        safeEmit(SyncInitial(lastSyncTime: s.lastSyncTime, pendingCount: s.pendingCount, isOnline: isOnline));
       } else if (state is SyncInProgress) {
         final s = state as SyncInProgress;
-        emit(SyncInProgress(message: s.message, pendingCount: s.pendingCount, isOnline: isOnline));
+        safeEmit(SyncInProgress(message: s.message, pendingCount: s.pendingCount, isOnline: isOnline));
       } else if (state is SyncSuccess) {
         final s = state as SyncSuccess;
-        emit(
+        safeEmit(
           SyncSuccess(
             timestamp: s.timestamp,
             message: s.message,
@@ -49,7 +50,7 @@ class SyncCubit extends Cubit<SyncState> {
         );
       } else if (state is SyncFailure) {
         final s = state as SyncFailure;
-        emit(
+        safeEmit(
           SyncFailure(
             errorMessage: s.errorMessage,
             lastSuccessTime: s.lastSuccessTime,
@@ -71,13 +72,13 @@ class SyncCubit extends Cubit<SyncState> {
     _pendingCountSubscription = _syncEngine.watchPendingSyncCount().listen((count) {
       if (state is SyncInitial) {
         final s = state as SyncInitial;
-        emit(SyncInitial(lastSyncTime: s.lastSyncTime, pendingCount: count, isOnline: s.isOnline));
+        safeEmit(SyncInitial(lastSyncTime: s.lastSyncTime, pendingCount: count, isOnline: s.isOnline));
       } else if (state is SyncInProgress) {
         final s = state as SyncInProgress;
-        emit(SyncInProgress(message: s.message, pendingCount: count, isOnline: s.isOnline));
+        safeEmit(SyncInProgress(message: s.message, pendingCount: count, isOnline: s.isOnline));
       } else if (state is SyncSuccess) {
         final s = state as SyncSuccess;
-        emit(
+        safeEmit(
           SyncSuccess(
             timestamp: s.timestamp,
             message: s.message,
@@ -90,7 +91,7 @@ class SyncCubit extends Cubit<SyncState> {
         );
       } else if (state is SyncFailure) {
         final s = state as SyncFailure;
-        emit(
+        safeEmit(
           SyncFailure(
             errorMessage: s.errorMessage,
             lastSuccessTime: s.lastSuccessTime,
@@ -112,8 +113,8 @@ class SyncCubit extends Cubit<SyncState> {
   /// 初始化上次同步時間
   void _initLastSyncTime() async {
     _lastSyncTime = await _syncEngine.getLastSyncTime();
-    if (_lastSyncTime != null && !isClosed) {
-      emit(SyncInitial(lastSyncTime: _lastSyncTime, pendingCount: state.pendingCount, isOnline: state.isOnline));
+    if (_lastSyncTime != null) {
+      safeEmit(SyncInitial(lastSyncTime: _lastSyncTime, pendingCount: state.pendingCount, isOnline: state.isOnline));
     }
   }
 
@@ -122,7 +123,7 @@ class SyncCubit extends Cubit<SyncState> {
   /// [force] 是否強制執行同步 (忽略節流與最小間隔)
   Future<void> syncAll({bool force = false}) async {
     if (_connectivityService.isOffline) {
-      emit(
+      safeEmit(
         SyncFailure(
           errorMessage: '目前處於離線模式，無法同步',
           lastSuccessTime: _lastSyncTime,
@@ -133,7 +134,7 @@ class SyncCubit extends Cubit<SyncState> {
       return;
     }
 
-    emit(SyncInProgress(message: '正在同步資料...', pendingCount: state.pendingCount, isOnline: state.isOnline));
+    safeEmit(SyncInProgress(message: '正在同步資料...', pendingCount: state.pendingCount, isOnline: state.isOnline));
     LogService.info('Starting syncAll...', source: _source);
 
     try {
@@ -143,7 +144,7 @@ class SyncCubit extends Cubit<SyncState> {
         _lastSyncTime = result.syncedAt;
         if (result.skipReason != null) {
           LogService.info('Sync skipped: ${result.skipReason}', source: _source);
-          emit(
+          safeEmit(
             SyncSuccess(
               timestamp: result.syncedAt,
               message: '同步完成 (已略過: ${result.skipReason})',
@@ -152,7 +153,7 @@ class SyncCubit extends Cubit<SyncState> {
             ),
           );
         } else {
-          emit(
+          safeEmit(
             SyncSuccess(
               timestamp: result.syncedAt,
               message: '同步成功',
@@ -165,7 +166,7 @@ class SyncCubit extends Cubit<SyncState> {
           );
         }
       } else {
-        emit(
+        safeEmit(
           SyncFailure(
             errorMessage: result.errorMessage ?? '同步失敗',
             lastSuccessTime: _lastSyncTime,
@@ -176,7 +177,7 @@ class SyncCubit extends Cubit<SyncState> {
       }
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);
-      emit(
+      safeEmit(
         SyncFailure(
           errorMessage: AppErrorHandler.getUserMessage(e),
           lastSuccessTime: _lastSyncTime,
@@ -199,6 +200,6 @@ class SyncCubit extends Cubit<SyncState> {
 
   /// 重置狀態
   void reset() {
-    emit(const SyncInitial());
+    safeEmit(const SyncInitial());
   }
 }

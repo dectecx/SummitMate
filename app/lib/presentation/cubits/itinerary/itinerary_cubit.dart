@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:flutter/services.dart';
 import 'package:summitmate/domain/domain.dart';
 import 'package:summitmate/core/core.dart';
@@ -8,7 +9,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'itinerary_state.dart';
 
 @injectable
-class ItineraryCubit extends Cubit<ItineraryState> {
+class ItineraryCubit extends Cubit<ItineraryState> with SafeEmitMixin<ItineraryState> {
   final IItineraryRepository _repository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
@@ -35,12 +36,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   Future<void> loadItinerary() async {
     try {
       if (state is! ItineraryLoaded) {
-        emit(const ItineraryLoading());
+        safeEmit(const ItineraryLoading());
       }
 
       final currentTripId = await _getCurrentTripId();
       if (currentTripId == null) {
-        emit(const ItineraryLoaded(items: []));
+        safeEmit(const ItineraryLoaded(items: []));
         return;
       }
 
@@ -83,12 +84,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
         isEditMode = loaded.isEditMode;
       }
 
-      emit(ItineraryLoaded(items: tripItems, selectedDay: selectedDay, isEditMode: isEditMode, dayNames: dayNames));
+      safeEmit(ItineraryLoaded(items: tripItems, selectedDay: selectedDay, isEditMode: isEditMode, dayNames: dayNames));
 
       LogService.debug('Loaded ${tripItems.length} items for ${dayNames.length} days', source: _source);
     } catch (e) {
       LogService.error('Failed to load itinerary: $e', source: _source);
-      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -100,7 +101,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     if (trip == null) return;
 
     if (trip.dayNames.contains(name)) {
-      emit(ItineraryError('天數名稱 "$name" 已存在'));
+      safeEmit(ItineraryError('天數名稱 "$name" 已存在'));
       await loadItinerary();
       return;
     }
@@ -108,7 +109,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     final updatedTrip = trip.copyWith(dayNames: List<String>.from(trip.dayNames)..add(name));
     final updateResult = await _tripRepository.updateTrip(updatedTrip);
     if (updateResult is Failure) {
-      emit(ItineraryError(updateResult.exception.toString()));
+      safeEmit(ItineraryError(updateResult.exception.toString()));
       return;
     }
     await loadItinerary();
@@ -122,7 +123,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
 
     if (oldName == newName) return;
     if (trip.dayNames.contains(newName)) {
-      emit(ItineraryError('名稱 "$newName" 已重複'));
+      safeEmit(ItineraryError('名稱 "$newName" 已重複'));
       await loadItinerary();
       return;
     }
@@ -159,7 +160,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     // 1. 檢查是否有行程項目
     final hasItems = (await _repository.getByTripId(trip.id)).any((i) => i.day == name);
     if (hasItems) {
-      emit(ItineraryError('無法刪除 "$name"，請先清空該天行程'));
+      safeEmit(ItineraryError('無法刪除 "$name"，請先清空該天行程'));
       await loadItinerary();
       return;
     }
@@ -173,7 +174,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       );
 
       if (linkedDay != null && !confirmUnlink) {
-        emit(ItineraryDayRemovalWarning(dayName: name, mealPlanDayId: linkedDay.id));
+        safeEmit(ItineraryDayRemovalWarning(dayName: name, mealPlanDayId: linkedDay.id));
         return;
       }
 
@@ -198,7 +199,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
     final updatedTrip = trip.copyWith(dayNames: newOrder);
     final updateResult = await _tripRepository.updateTrip(updatedTrip);
     if (updateResult is Failure) {
-      emit(ItineraryError(updateResult.exception.toString()));
+      safeEmit(ItineraryError(updateResult.exception.toString()));
       return;
     }
     await loadItinerary();
@@ -207,7 +208,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   /// 選擇日期
   void selectDay(String day) {
     if (state is ItineraryLoaded) {
-      emit((state as ItineraryLoaded).copyWith(selectedDay: day));
+      safeEmit((state as ItineraryLoaded).copyWith(selectedDay: day));
     }
   }
 
@@ -215,7 +216,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
   void toggleEditMode() {
     if (state is ItineraryLoaded) {
       final current = state as ItineraryLoaded;
-      emit(current.copyWith(isEditMode: !current.isEditMode));
+      safeEmit(current.copyWith(isEditMode: !current.isEditMode));
     }
   }
 
@@ -230,7 +231,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Toggle check-in failed: $e', source: _source);
-      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(ItineraryError(AppErrorHandler.getUserMessage(e)));
       await loadItinerary();
     }
   }
@@ -257,7 +258,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Check-in with time failed: $e', source: _source);
-      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(ItineraryError(AppErrorHandler.getUserMessage(e)));
       await loadItinerary();
     }
   }
@@ -288,7 +289,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Add item failed: $e', source: _source);
-      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -307,7 +308,7 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Update item failed: $e', source: _source);
-      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -321,12 +322,12 @@ class ItineraryCubit extends Cubit<ItineraryState> {
       await loadItinerary();
     } catch (e) {
       LogService.error('Delete item failed: $e', source: _source);
-      emit(ItineraryError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(ItineraryError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
   /// 重置狀態
   void reset() {
-    emit(const ItineraryInitial());
+    safeEmit(const ItineraryInitial());
   }
 }

@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get_it/get_it.dart';
@@ -12,7 +13,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'offline_map_state.dart';
 
 @injectable
-class OfflineMapCubit extends Cubit<OfflineMapState> {
+class OfflineMapCubit extends Cubit<OfflineMapState> with SafeEmitMixin<OfflineMapState> {
   final FMTCStore _store = FMTCStore('osm_store');
   bool _isQueueProcessing = false;
   final Map<String, StreamSubscription> _subscriptions = {};
@@ -28,7 +29,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     } catch (e) {
       LogService.error('Failed to get package info: $e', source: 'OfflineMapCubit');
     }
-    emit(OfflineMapLoaded(store: _store, packageName: packageName));
+    safeEmit(OfflineMapLoaded(store: _store, packageName: packageName));
   }
 
   /// 初始化/確保 Store 存在
@@ -45,13 +46,13 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     }
 
     if (state is OfflineMapLoaded) {
-      emit((state as OfflineMapLoaded).copyWith(isStoreReady: true));
+      safeEmit((state as OfflineMapLoaded).copyWith(isStoreReady: true));
     } else {
       String packageName = '';
       try {
         packageName = GetIt.instance<PackageInfo>().packageName;
       } catch (_) {}
-      emit(OfflineMapLoaded(store: _store, isStoreReady: true, packageName: packageName));
+      safeEmit(OfflineMapLoaded(store: _store, isStoreReady: true, packageName: packageName));
     }
   }
 
@@ -86,7 +87,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
       final currentState = state as OfflineMapLoaded;
       final currentQueue = List<DownloadTask>.from(currentState.downloadQueue);
       currentQueue.add(task);
-      emit(currentState.copyWith(downloadQueue: currentQueue));
+      safeEmit(currentState.copyWith(downloadQueue: currentQueue));
     }
 
     LogService.info('Task added to queue: ${task.name}', source: 'OfflineMapCubit');
@@ -111,7 +112,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
     var workingQueue = List<DownloadTask>.from(currentQueue);
     var task = workingQueue[nextTaskIndex].copyWith(status: TaskStatus.downloading);
     workingQueue[nextTaskIndex] = task;
-    emit(currentState.copyWith(downloadQueue: workingQueue));
+    safeEmit(currentState.copyWith(downloadQueue: workingQueue));
 
     try {
       LogService.info('Starting task: ${task.name}', source: 'OfflineMapCubit');
@@ -138,7 +139,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
           final idx = q.indexWhere((t) => t.id == task.id);
           if (idx != -1) {
             q[idx] = q[idx].copyWith(progress: progress.percentageProgress / 100.0);
-            emit(loadedState.copyWith(downloadQueue: q));
+            safeEmit(loadedState.copyWith(downloadQueue: q));
           }
         },
         onError: (e) {
@@ -149,7 +150,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
             final idx = q.indexWhere((t) => t.id == task.id);
             if (idx != -1) {
               q[idx] = q[idx].copyWith(status: TaskStatus.failed);
-              emit(loadedState.copyWith(downloadQueue: q));
+              safeEmit(loadedState.copyWith(downloadQueue: q));
             }
           }
           _subscriptions[task.id]?.cancel();
@@ -165,7 +166,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
             final idx = q.indexWhere((t) => t.id == task.id);
             if (idx != -1) {
               q[idx] = q[idx].copyWith(status: TaskStatus.completed, progress: 1.0);
-              emit(loadedState.copyWith(downloadQueue: q));
+              safeEmit(loadedState.copyWith(downloadQueue: q));
             }
           }
           _subscriptions.remove(task.id);
@@ -182,7 +183,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
         final idx = q.indexWhere((t) => t.id == task.id);
         if (idx != -1) {
           q[idx] = q[idx].copyWith(status: TaskStatus.failed);
-          emit(loadedState.copyWith(downloadQueue: q));
+          safeEmit(loadedState.copyWith(downloadQueue: q));
         }
       }
       _isQueueProcessing = false;
@@ -203,7 +204,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
         _subscriptions.remove(taskId);
       }
       q[idx] = task.copyWith(status: TaskStatus.cancelled);
-      emit(loadedState.copyWith(downloadQueue: q));
+      safeEmit(loadedState.copyWith(downloadQueue: q));
 
       if (task.status == TaskStatus.downloading) {
         _isQueueProcessing = false;
@@ -226,22 +227,22 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
       }
     }
     _isQueueProcessing = false;
-    emit(loadedState.copyWith(downloadQueue: q));
+    safeEmit(loadedState.copyWith(downloadQueue: q));
   }
 
   Future<void> getStoreStats() async {
     await initStore();
     if (state is! OfflineMapLoaded) return;
 
-    emit((state as OfflineMapLoaded).copyWith(isLoadingStats: true));
+    safeEmit((state as OfflineMapLoaded).copyWith(isLoadingStats: true));
 
     try {
       final stats = await _store.stats.all;
       final mb = stats.size / 1024;
-      emit((state as OfflineMapLoaded).copyWith(tileCount: stats.length, sizeMb: mb, isLoadingStats: false));
+      safeEmit((state as OfflineMapLoaded).copyWith(tileCount: stats.length, sizeMb: mb, isLoadingStats: false));
     } catch (e) {
       LogService.error('Error getting store stats: $e', source: 'OfflineMapCubit');
-      emit((state as OfflineMapLoaded).copyWith(isLoadingStats: false));
+      safeEmit((state as OfflineMapLoaded).copyWith(isLoadingStats: false));
     }
   }
 
@@ -269,7 +270,7 @@ class OfflineMapCubit extends Cubit<OfflineMapState> {
   void reset() {
     cancelAllDownloads();
     if (state is OfflineMapLoaded) {
-      emit((state as OfflineMapLoaded).copyWith(downloadQueue: []));
+      safeEmit((state as OfflineMapLoaded).copyWith(downloadQueue: []));
     }
   }
 }

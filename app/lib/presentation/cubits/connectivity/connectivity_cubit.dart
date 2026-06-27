@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:injectable/injectable.dart';
 import 'package:summitmate/domain/domain.dart';
 
@@ -7,7 +8,7 @@ import 'connectivity_state.dart';
 
 /// 管理連線與離線狀態的 Cubit
 @injectable
-class ConnectivityCubit extends Cubit<ConnectivityState> {
+class ConnectivityCubit extends Cubit<ConnectivityState> with SafeEmitMixin<ConnectivityState> {
   final IConnectivityService _connectivityService;
   StreamSubscription<bool>? _connectivitySubscription;
 
@@ -18,7 +19,7 @@ class ConnectivityCubit extends Cubit<ConnectivityState> {
 
   void _init() {
     _connectivitySubscription = _connectivityService.onConnectivityChanged.listen((isOnline) {
-      emit(ConnectivityUpdated(isOffline: !isOnline));
+      safeEmit(ConnectivityUpdated(isOffline: !isOnline));
     });
   }
 

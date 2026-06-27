@@ -1,19 +1,20 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import '../../../../core/core.dart';
 import '../../../../domain/domain.dart';
 import 'mountain_favorites_state.dart';
 
 /// 管理山岳收藏功能的 Cubit
 @injectable
-class MountainFavoritesCubit extends Cubit<MountainFavoritesState> {
+class MountainFavoritesCubit extends Cubit<MountainFavoritesState> with SafeEmitMixin<MountainFavoritesState> {
   final IFavoritesRepository _favoritesRepository;
 
   MountainFavoritesCubit(this._favoritesRepository) : super(MountainFavoritesInitial());
 
   /// 載入收藏列表
   Future<void> loadFavorites() async {
-    emit(MountainFavoritesLoading());
+    safeEmit(MountainFavoritesLoading());
 
     final result = await _favoritesRepository.getFavorites();
 
@@ -23,9 +24,9 @@ class MountainFavoritesCubit extends Cubit<MountainFavoritesState> {
             .where((f) => f.type == FavoriteType.mountain)
             .map((f) => f.targetId)
             .toList();
-        emit(MountainFavoritesLoaded(ids));
+        safeEmit(MountainFavoritesLoaded(ids));
       case Failure(exception: final e):
-        emit(MountainFavoritesError(AppErrorHandler.getUserMessage(e)));
+        safeEmit(MountainFavoritesError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -45,9 +46,9 @@ class MountainFavoritesCubit extends Cubit<MountainFavoritesState> {
         } else {
           currentIds.remove(id);
         }
-        emit(MountainFavoritesLoaded(currentIds));
+        safeEmit(MountainFavoritesLoaded(currentIds));
       case Failure(exception: final e):
-        emit(MountainFavoritesError(AppErrorHandler.getUserMessage(e)));
+        safeEmit(MountainFavoritesError(AppErrorHandler.getUserMessage(e)));
         loadFavorites();
     }
   }
@@ -62,6 +63,6 @@ class MountainFavoritesCubit extends Cubit<MountainFavoritesState> {
 
   /// 重置狀態
   void reset() {
-    emit(MountainFavoritesInitial());
+    safeEmit(MountainFavoritesInitial());
   }
 }

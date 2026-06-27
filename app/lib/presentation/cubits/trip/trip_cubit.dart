@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:injectable/injectable.dart';
 import 'package:uuid/uuid.dart';
 
@@ -13,7 +14,7 @@ import 'trip_state.dart';
 
 /// Manage Trip state and operations
 @injectable
-class TripCubit extends Cubit<TripState> {
+class TripCubit extends Cubit<TripState> with SafeEmitMixin<TripState> {
   final ITripRepository _tripRepository;
   final IAuthService _authService;
   final ISyncEngine _syncEngine;
@@ -47,7 +48,7 @@ class TripCubit extends Cubit<TripState> {
   Future<void> loadTrips({bool silent = false}) async {
     if (_isLoading) return;
     _isLoading = true;
-    if (!silent) emit(const TripLoading());
+    if (!silent) safeEmit(const TripLoading());
     try {
       final userId = _authService.currentUserId ?? '';
       final result = await _tripRepository.getAllTrips(userId);
@@ -61,11 +62,11 @@ class TripCubit extends Cubit<TripState> {
           activeTrip = activeTripResult.value;
         }
 
-        if (!isClosed) emit(TripLoaded(trips: trips, activeTrip: activeTrip));
+        safeEmit(TripLoaded(trips: trips, activeTrip: activeTrip));
       } else if (!silent) {
         final error = (result as Failure).exception;
         getIt<AppErrorCubit>().reportError(error);
-        if (!isClosed) emit(TripError(AppErrorHandler.getUserMessage(error)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage(error)));
       }
     } catch (e) {
       if (silent) {
@@ -73,7 +74,7 @@ class TripCubit extends Cubit<TripState> {
       } else {
         LogService.error('載入行程失敗: $e', source: _source);
         getIt<AppErrorCubit>().reportError(e);
-        if (!isClosed) emit(TripError(AppErrorHandler.getUserMessage(e)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
       }
     } finally {
       _isLoading = false;
@@ -107,12 +108,12 @@ class TripCubit extends Cubit<TripState> {
         await loadTrips();
         return newTrip;
       } else {
-        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
         return null;
       }
     } catch (e) {
       LogService.error('新增行程失敗: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
       return null;
     }
   }
@@ -133,23 +134,21 @@ class TripCubit extends Cubit<TripState> {
         // stream 觸發的 debounced silent refresh 會在背景補齊最新資料。
         final currentState = state as TripLoaded;
         final updatedTrips = currentState.trips.map((t) => t.id == updatedTrip.id ? updatedTrip : t).toList();
-        if (!isClosed) {
-          emit(
-            currentState.copyWith(
-              trips: updatedTrips,
-              activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
-            ),
-          );
-        }
+        safeEmit(
+          currentState.copyWith(
+            trips: updatedTrips,
+            activeTrip: currentState.activeTrip?.id == updatedTrip.id ? updatedTrip : currentState.activeTrip,
+          ),
+        );
       } else if (result is Success) {
         // 邊界情況：成功但狀態非 TripLoaded，做完整載入
         await loadTrips();
       } else {
-        if (!isClosed) emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
     } catch (e) {
       LogService.error('更新行程失敗: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -164,17 +163,17 @@ class TripCubit extends Cubit<TripState> {
 
   /// 設定目前活躍行程
   Future<void> setActiveTrip(String tripId) async {
-    emit(const TripLoading());
+    safeEmit(const TripLoading());
     try {
       final result = await _tripRepository.setActiveTrip(_authService.currentUserId ?? '', tripId);
       if (result is Success) {
         await loadTrips();
       } else {
-        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
     } catch (e) {
       LogService.error('設定活躍行程失敗: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -185,12 +184,12 @@ class TripCubit extends Cubit<TripState> {
 
   /// 重置狀態
   void reset() {
-    emit(const TripInitial());
+    safeEmit(const TripInitial());
   }
 
   /// 匯入行程
   Future<void> importTrip(Trip trip) async {
-    emit(const TripLoading());
+    safeEmit(const TripLoading());
     try {
       final newTrip = trip.copyWith(
         id: trip.id,
@@ -205,11 +204,11 @@ class TripCubit extends Cubit<TripState> {
       if (result is Success) {
         await loadTrips();
       } else {
-        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
     } catch (e) {
       LogService.error('匯入行程失敗: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -234,11 +233,11 @@ class TripCubit extends Cubit<TripState> {
       if (result is Success) {
         await loadTrips();
       } else {
-        emit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
+        safeEmit(TripError(AppErrorHandler.getUserMessage((result as Failure).exception)));
       }
     } catch (e) {
       LogService.error('刪除行程失敗: $e', source: _source);
-      emit(TripError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(TripError(AppErrorHandler.getUserMessage(e)));
     }
   }
 

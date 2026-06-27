@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:flutter/services.dart';
 import '../../../domain/entities/gear_item.dart';
 import '../../../domain/repositories/i_gear_repository.dart';
@@ -19,7 +20,7 @@ import '../../cubits/gear/gear_state.dart';
 /// - 勾選/取消勾選裝備 (透過 [IGearRepository])
 /// - 從個人庫匯入裝備
 @injectable
-class GearCubit extends Cubit<GearState> {
+class GearCubit extends Cubit<GearState> with SafeEmitMixin<GearState> {
   final IGearRepository _repository;
   final ITripRepository _tripRepository;
   String? _currentTripId;
@@ -38,15 +39,15 @@ class GearCubit extends Cubit<GearState> {
     }
 
     _currentTripId = tripId;
-    emit(const GearLoading());
+    safeEmit(const GearLoading());
 
     try {
       final tripItems = await _repository.getByTripId(tripId);
-      emit(GearLoaded(items: tripItems));
+      safeEmit(GearLoaded(items: tripItems));
       LogService.debug('Loaded ${tripItems.length} gear items for trip $tripId', source: _source);
     } catch (e) {
       LogService.error('Failed to load gear: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -56,9 +57,9 @@ class GearCubit extends Cubit<GearState> {
       final tripItems = await _repository.getByTripId(_currentTripId!);
 
       if (state is GearLoaded) {
-        emit((state as GearLoaded).copyWith(items: tripItems));
+        safeEmit((state as GearLoaded).copyWith(items: tripItems));
       } else {
-        emit(GearLoaded(items: tripItems));
+        safeEmit(GearLoaded(items: tripItems));
       }
     }
   }
@@ -72,7 +73,7 @@ class GearCubit extends Cubit<GearState> {
   /// 清除狀態 (登出或切換時)
   void reset() {
     _currentTripId = null;
-    emit(const GearInitial());
+    safeEmit(const GearInitial());
   }
 
   // ========================================
@@ -81,20 +82,20 @@ class GearCubit extends Cubit<GearState> {
 
   void setSearchQuery(String query) {
     if (state is GearLoaded) {
-      emit((state as GearLoaded).copyWith(searchQuery: query));
+      safeEmit((state as GearLoaded).copyWith(searchQuery: query));
     }
   }
 
   void selectCategory(String? category) {
     if (state is GearLoaded) {
-      emit((state as GearLoaded).copyWith(selectedCategory: category, clearCategory: category == null));
+      safeEmit((state as GearLoaded).copyWith(selectedCategory: category, clearCategory: category == null));
     }
   }
 
   void toggleShowUncheckedOnly() {
     if (state is GearLoaded) {
       final current = state as GearLoaded;
-      emit(current.copyWith(showUncheckedOnly: !current.showUncheckedOnly));
+      safeEmit(current.copyWith(showUncheckedOnly: !current.showUncheckedOnly));
     }
   }
 
@@ -111,7 +112,7 @@ class GearCubit extends Cubit<GearState> {
     int quantity = 1,
   }) async {
     if (_currentTripId == null) {
-      emit(const GearError('No active trip selected'));
+      safeEmit(const GearError('No active trip selected'));
       return;
     }
 
@@ -134,7 +135,7 @@ class GearCubit extends Cubit<GearState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to add item: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -147,7 +148,7 @@ class GearCubit extends Cubit<GearState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to update item: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -161,7 +162,7 @@ class GearCubit extends Cubit<GearState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to update quantity: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -176,7 +177,7 @@ class GearCubit extends Cubit<GearState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to delete item: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -189,7 +190,7 @@ class GearCubit extends Cubit<GearState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to toggle checked: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -230,7 +231,7 @@ class GearCubit extends Cubit<GearState> {
       await reload();
     } catch (e) {
       LogService.error('Failed to reorder: $e', source: _source);
-      emit(GearError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(GearError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -238,7 +239,7 @@ class GearCubit extends Cubit<GearState> {
   Future<void> replaceItems(List<GearItem> newItems) async {
     if (_currentTripId == null) return;
     try {
-      emit(const GearLoading());
+      safeEmit(const GearLoading());
       await _repository.clearByTripId(_currentTripId!);
 
       for (final item in newItems) {
@@ -249,7 +250,7 @@ class GearCubit extends Cubit<GearState> {
       await loadGear(_currentTripId!);
     } catch (e) {
       LogService.error('Failed to replace items: $e', source: _source);
-      emit(GearError('匯入失敗: ${AppErrorHandler.getUserMessage(e)}'));
+      safeEmit(GearError('匯入失敗: ${AppErrorHandler.getUserMessage(e)}'));
       await loadGear(_currentTripId!);
     }
   }

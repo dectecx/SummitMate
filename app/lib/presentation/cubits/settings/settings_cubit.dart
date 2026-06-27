@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:summitmate/core/core.dart';
 import '../../../domain/repositories/i_settings_repository.dart';
@@ -7,7 +8,7 @@ import 'package:summitmate/infrastructure/infrastructure.dart';
 import 'settings_state.dart';
 
 @injectable
-class SettingsCubit extends Cubit<SettingsState> {
+class SettingsCubit extends Cubit<SettingsState> with SafeEmitMixin<SettingsState> {
   final ISettingsRepository _repository;
   final SharedPreferences _prefs;
   final String _source = 'SettingsCubit';
@@ -16,7 +17,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   /// 載入設定
   Future<void> loadSettings() async {
-    emit(SettingsLoading());
+    safeEmit(SettingsLoading());
     try {
       final settings = await _repository.getSettings();
       // 向下相容: 從 Prefs 讀取 username 如果 Settings 裡沒有
@@ -26,7 +27,7 @@ class SettingsCubit extends Cubit<SettingsState> {
           await _repository.updateUsername(savedUsername);
           // 重新載入設定
           final updatedSettings = await _repository.getSettings();
-          emit(
+          safeEmit(
             SettingsLoaded(
               settings: updatedSettings,
               hasSeenOnboarding: _prefs.getBool('has_seen_onboarding') ?? false,
@@ -38,10 +39,10 @@ class SettingsCubit extends Cubit<SettingsState> {
 
       final hasSeenOnboarding = _prefs.getBool('has_seen_onboarding') ?? false;
 
-      emit(SettingsLoaded(settings: settings, hasSeenOnboarding: hasSeenOnboarding));
+      safeEmit(SettingsLoaded(settings: settings, hasSeenOnboarding: hasSeenOnboarding));
     } catch (e) {
       LogService.error('Failed to load settings: $e', source: _source);
-      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -60,10 +61,10 @@ class SettingsCubit extends Cubit<SettingsState> {
 
       // 重新載入設定以取得更新後的物件
       final updatedSettings = await _repository.getSettings();
-      emit(currentState.copyWith(settings: updatedSettings));
+      safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update username: $e', source: _source);
-      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
       // 復原狀態? 這裡暫時停留在 Error
     }
   }
@@ -78,10 +79,10 @@ class SettingsCubit extends Cubit<SettingsState> {
     try {
       await _repository.updateAvatar(avatar);
       final updatedSettings = await _repository.getSettings();
-      emit(currentState.copyWith(settings: updatedSettings));
+      safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update avatar: $e', source: _source);
-      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -100,10 +101,10 @@ class SettingsCubit extends Cubit<SettingsState> {
       await _prefs.setString(PrefKeys.username, name);
 
       final updatedSettings = await _repository.getSettings();
-      emit(currentState.copyWith(settings: updatedSettings));
+      safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update profile: $e', source: _source);
-      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -115,19 +116,19 @@ class SettingsCubit extends Cubit<SettingsState> {
 
     // 1. 樂觀更新 UI (立刻發送新狀態，不等待資料庫寫入)
     final tempSettings = currentState.settings.copyWith(isOfflineMode: newStatus);
-    emit(currentState.copyWith(settings: tempSettings));
+    safeEmit(currentState.copyWith(settings: tempSettings));
 
     try {
       // 2. 執行實際儲存
       await _repository.updateOfflineMode(newStatus);
       // 3. 儲存後再次確認狀態 (以防 repository 內部有其他邏輯或需要同步最新物件)
       final updatedSettings = await _repository.getSettings();
-      emit(currentState.copyWith(settings: updatedSettings));
+      safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to toggle offline mode: $e', source: _source);
       // 4. 發生錯誤時復原狀態
-      emit(currentState);
-      emit(SettingsError('狀態更新失敗: ${AppErrorHandler.getUserMessage(e)}'));
+      safeEmit(currentState);
+      safeEmit(SettingsError('狀態更新失敗: ${AppErrorHandler.getUserMessage(e)}'));
     }
   }
 
@@ -141,7 +142,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     try {
       await _repository.updateLastSyncTime(time);
       final updatedSettings = await _repository.getSettings();
-      emit(currentState.copyWith(settings: updatedSettings));
+      safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update last sync time: $e', source: _source);
       // 同步時間更新失敗可靜默處理
@@ -153,7 +154,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     try {
       await _prefs.setBool('has_seen_onboarding', true);
       if (state is SettingsLoaded) {
-        emit((state as SettingsLoaded).copyWith(hasSeenOnboarding: true));
+        safeEmit((state as SettingsLoaded).copyWith(hasSeenOnboarding: true));
       } else {
         // 若尚未載入，則進行載入
         loadSettings();
@@ -168,7 +169,7 @@ class SettingsCubit extends Cubit<SettingsState> {
     try {
       await _prefs.setBool('has_seen_onboarding', false);
       if (state is SettingsLoaded) {
-        emit((state as SettingsLoaded).copyWith(hasSeenOnboarding: false));
+        safeEmit((state as SettingsLoaded).copyWith(hasSeenOnboarding: false));
       } else {
         loadSettings();
       }
@@ -190,10 +191,10 @@ class SettingsCubit extends Cubit<SettingsState> {
       await _repository.updateTheme(theme);
       final updatedSettings = await _repository.getSettings();
 
-      emit(currentState.copyWith(settings: updatedSettings));
+      safeEmit(currentState.copyWith(settings: updatedSettings));
     } catch (e) {
       LogService.error('Failed to update theme: $e', source: _source);
-      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
@@ -208,7 +209,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       loadSettings();
     } catch (e) {
       LogService.error('Failed to reset identity: $e', source: _source);
-      emit(SettingsError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(SettingsError(AppErrorHandler.getUserMessage(e)));
     }
   }
 }

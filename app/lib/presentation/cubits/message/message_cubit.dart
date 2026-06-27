@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:summitmate/presentation/cubits/base/safe_emit_mixin.dart';
 import 'package:summitmate/domain/domain.dart';
 
 import 'package:summitmate/infrastructure/infrastructure.dart';
@@ -7,7 +8,7 @@ import 'package:summitmate/core/core.dart';
 import 'message_state.dart';
 
 @injectable
-class MessageCubit extends Cubit<MessageState> {
+class MessageCubit extends Cubit<MessageState> with SafeEmitMixin<MessageState> {
   final IMessageRepository _repository;
   final ITripRepository _tripRepository;
   final IAuthService _authService;
@@ -26,19 +27,19 @@ class MessageCubit extends Cubit<MessageState> {
   }
 
   Future<void> loadMessages() async {
-    emit(const MessageLoading());
+    safeEmit(const MessageLoading());
     try {
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Failed to load messages: $e', source: _source);
-      emit(MessageError(AppErrorHandler.getUserMessage(e)));
+      safeEmit(MessageError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
   Future<void> _refreshLocalMessages() async {
     final currentTripId = await _currentTripId;
     if (currentTripId == null) {
-      emit(const MessageError('尚未選擇行程'));
+      safeEmit(const MessageError('尚未選擇行程'));
       return;
     }
 
@@ -46,21 +47,21 @@ class MessageCubit extends Cubit<MessageState> {
 
     if (state is MessageLoaded) {
       // 明確清除 transientError，避免舊錯誤在刷新後殘留
-      emit((state as MessageLoaded).copyWith(allMessages: messages, transientError: null));
+      safeEmit((state as MessageLoaded).copyWith(allMessages: messages, transientError: null));
     } else {
-      emit(MessageLoaded(allMessages: messages));
+      safeEmit(MessageLoaded(allMessages: messages));
     }
   }
 
   void selectCategory(String category) {
     if (state is MessageLoaded) {
-      emit((state as MessageLoaded).copyWith(selectedCategory: category));
+      safeEmit((state as MessageLoaded).copyWith(selectedCategory: category));
     }
   }
 
   void setSearchQuery(String query) {
     if (state is MessageLoaded) {
-      emit((state as MessageLoaded).copyWith(searchQuery: query));
+      safeEmit((state as MessageLoaded).copyWith(searchQuery: query));
     }
   }
 
@@ -94,7 +95,7 @@ class MessageCubit extends Cubit<MessageState> {
       LogService.error('Add message failed: $e', source: _source);
       await _refreshLocalMessages();
       if (state is MessageLoaded) {
-        emit((state as MessageLoaded).copyWith(transientError: AppErrorHandler.getUserMessage(e)));
+        safeEmit((state as MessageLoaded).copyWith(transientError: AppErrorHandler.getUserMessage(e)));
       }
     }
   }
@@ -116,7 +117,7 @@ class MessageCubit extends Cubit<MessageState> {
       LogService.error('Delete message failed: $e', source: _source);
       await _refreshLocalMessages();
       if (state is MessageLoaded) {
-        emit((state as MessageLoaded).copyWith(transientError: AppErrorHandler.getUserMessage(e)));
+        safeEmit((state as MessageLoaded).copyWith(transientError: AppErrorHandler.getUserMessage(e)));
       }
     }
   }
@@ -124,34 +125,34 @@ class MessageCubit extends Cubit<MessageState> {
   /// 同步留言
   Future<void> syncMessages({bool isAuto = false}) async {
     if (!isAuto && state is MessageLoaded) {
-      emit((state as MessageLoaded).copyWith(isSyncing: true));
+      safeEmit((state as MessageLoaded).copyWith(isSyncing: true));
     }
 
     try {
       final tripId = await _currentTripId;
       if (tripId == null) {
-        if (!isAuto) emit(const MessageError('找不到活動行程，無法同步'));
+        if (!isAuto) safeEmit(const MessageError('找不到活動行程，無法同步'));
         return;
       }
 
       final result = await _repository.getRemoteMessages(tripId);
 
       if (result case Failure(:final exception) when !isAuto) {
-        emit(MessageError(AppErrorHandler.getUserMessage(exception)));
+        safeEmit(MessageError(AppErrorHandler.getUserMessage(exception)));
       }
 
       await _refreshLocalMessages();
     } catch (e) {
       LogService.error('Sync failed: $e', source: _source);
-      if (!isAuto) emit(MessageError(AppErrorHandler.getUserMessage(e)));
+      if (!isAuto) safeEmit(MessageError(AppErrorHandler.getUserMessage(e)));
     } finally {
       if (state is MessageLoaded) {
-        emit((state as MessageLoaded).copyWith(isSyncing: false));
+        safeEmit((state as MessageLoaded).copyWith(isSyncing: false));
       }
     }
   }
 
   void reset() {
-    emit(const MessageInitial());
+    safeEmit(const MessageInitial());
   }
 }
