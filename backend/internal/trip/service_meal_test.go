@@ -16,14 +16,13 @@ import (
 func TestTripMealService_ListItems(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(tripmocks.MockTripMealRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := trip.NewTripMealService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := trip.NewTripMealService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling TripMealService ListItems, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
 		mockRepo.On("ListByTripID", mock.Anything, tripID).Return([]*trip.TripMealItem{
 			{ID: "tm1", Name: "Dinner Day 1"},
 		}, nil)
@@ -38,15 +37,14 @@ func TestTripMealService_ListItems(t *testing.T) {
 func TestTripMealService_CreateItem(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(tripmocks.MockTripMealRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := trip.NewTripMealService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := trip.NewTripMealService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling TripMealService CreateItem, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
 		item := &trip.TripMealItem{Name: "Lunch Day 1"}
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
 		mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(m *trip.TripMealItem) bool {
 			return m.Name == "Lunch Day 1" && m.TripID == tripID
 		})).Return(&trip.TripMealItem{ID: "tm1", Name: "Lunch Day 1", TripID: tripID}, nil)
@@ -60,9 +58,8 @@ func TestTripMealService_CreateItem(t *testing.T) {
 func TestTripMealService_ReplaceAllItems(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(tripmocks.MockTripMealRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := trip.NewTripMealService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := trip.NewTripMealService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling TripMealService ReplaceAllItems, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
@@ -70,7 +67,7 @@ func TestTripMealService_ReplaceAllItems(t *testing.T) {
 		items := []*trip.TripMealItem{
 			{ID: "tm1", Name: "Breakfast Day 1"},
 		}
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
 		mockRepo.On("ReplaceAll", mock.Anything, tripID, mock.MatchedBy(func(args []*trip.TripMealItem) bool {
 			return len(args) == 1 && args[0].Name == "Breakfast Day 1"
 		})).Return(nil)

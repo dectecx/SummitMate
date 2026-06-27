@@ -17,23 +17,21 @@ type MessageService interface {
 }
 
 type messageService struct {
-	logger     *slog.Logger
-	repo       MessageRepository
-	tripRepo   trip.TripRepository
-	memberRepo trip.TripMemberRepository
+	logger        *slog.Logger
+	repo          MessageRepository
+	accessChecker trip.TripAccessChecker
 }
 
-func NewMessageService(logger *slog.Logger, repo MessageRepository, tripRepo trip.TripRepository, memberRepo trip.TripMemberRepository) MessageService {
+func NewMessageService(logger *slog.Logger, repo MessageRepository, accessChecker trip.TripAccessChecker) MessageService {
 	return &messageService{
-		logger:     logger.With("component", "message"),
-		repo:       repo,
-		tripRepo:   tripRepo,
-		memberRepo: memberRepo,
+		logger:        logger.With("component", "message"),
+		repo:          repo,
+		accessChecker: accessChecker,
 	}
 }
 
 func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID string, page int, limit int) ([]*TripMessage, int, bool, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		s.logger.WarnContext(ctx, "讀取行程留言失敗", "trip_id", tripID, "user_id", userID, "error", err)
 		return nil, 0, false, err
 	}
@@ -47,7 +45,7 @@ func (s *messageService) ListTripMessages(ctx context.Context, tripID, userID st
 }
 
 func (s *messageService) AddTripMessage(ctx context.Context, tripID, userID string, msg *TripMessage) (*TripMessage, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		return nil, err
 	}
 
@@ -96,8 +94,7 @@ func (s *messageService) DeleteTripMessage(ctx context.Context, tripID, messageI
 	}
 
 	if existing.UserID != userID {
-		trip, err := s.tripRepo.GetByID(ctx, tripID)
-		if err != nil || trip.UserID != userID {
+		if err := s.accessChecker.RequireOwnerByID(ctx, tripID, userID); err != nil {
 			return apperror.ErrAccessDenied.WithMessage("無權限刪除此留言")
 		}
 	}
@@ -105,30 +102,6 @@ func (s *messageService) DeleteTripMessage(ctx context.Context, tripID, messageI
 	if err := s.repo.DeleteMessage(ctx, messageID); err != nil {
 		return err
 	}
-	return nil
-}
-
-func (s *messageService) checkTripAccess(ctx context.Context, tripID, userID string) error {
-	trip, err := s.tripRepo.GetByID(ctx, tripID)
-	if err != nil {
-		return err
-	}
-	if trip == nil {
-		return apperror.ErrTripNotFound
-	}
-
-	if trip.UserID == userID {
-		return nil
-	}
-
-	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return err
-	}
-	if !isMember {
-		return apperror.ErrTripAccessDenied
-	}
-
 	return nil
 }
 
@@ -166,23 +139,21 @@ type PollService interface {
 }
 
 type pollService struct {
-	logger     *slog.Logger
-	repo       PollRepository
-	tripRepo   trip.TripRepository
-	memberRepo trip.TripMemberRepository
+	logger        *slog.Logger
+	repo          PollRepository
+	accessChecker trip.TripAccessChecker
 }
 
-func NewPollService(logger *slog.Logger, repo PollRepository, tripRepo trip.TripRepository, memberRepo trip.TripMemberRepository) PollService {
+func NewPollService(logger *slog.Logger, repo PollRepository, accessChecker trip.TripAccessChecker) PollService {
 	return &pollService{
-		logger:     logger.With("component", "poll"),
-		repo:       repo,
-		tripRepo:   tripRepo,
-		memberRepo: memberRepo,
+		logger:        logger.With("component", "poll"),
+		repo:          repo,
+		accessChecker: accessChecker,
 	}
 }
 
 func (s *pollService) CreateTripPoll(ctx context.Context, tripID, userID string, poll *Poll) (*Poll, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		return nil, err
 	}
 
@@ -198,14 +169,14 @@ func (s *pollService) CreateTripPoll(ctx context.Context, tripID, userID string,
 }
 
 func (s *pollService) ListTripPolls(ctx context.Context, tripID, userID string, page int, limit int) ([]*Poll, int, bool, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		return nil, 0, false, err
 	}
 	return s.repo.ListTripPolls(ctx, tripID, page, limit)
 }
 
 func (s *pollService) GetTripPoll(ctx context.Context, tripID, pollID, userID string) (*Poll, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		return nil, err
 	}
 
@@ -229,8 +200,7 @@ func (s *pollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 	}
 
 	if poll.CreatedBy != userID {
-		trip, err := s.tripRepo.GetByID(ctx, tripID)
-		if err != nil || trip == nil || trip.UserID != userID {
+		if err := s.accessChecker.RequireOwnerByID(ctx, tripID, userID); err != nil {
 			return apperror.ErrAccessDenied
 		}
 	}
@@ -239,7 +209,7 @@ func (s *pollService) DeleteTripPoll(ctx context.Context, tripID, pollID, userID
 }
 
 func (s *pollService) AddPollOption(ctx context.Context, tripID, pollID, userID string, text string) (*Poll, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		return nil, err
 	}
 
@@ -270,7 +240,7 @@ func (s *pollService) AddPollOption(ctx context.Context, tripID, pollID, userID 
 }
 
 func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, userID string) (*Poll, error) {
-	if err := s.checkTripAccess(ctx, tripID, userID); err != nil {
+	if err := s.accessChecker.RequireMember(ctx, tripID, userID); err != nil {
 		return nil, err
 	}
 
@@ -294,26 +264,3 @@ func (s *pollService) VoteOption(ctx context.Context, tripID, pollID, optionID, 
 	return s.repo.GetPollByID(ctx, pollID)
 }
 
-func (s *pollService) checkTripAccess(ctx context.Context, tripID, userID string) error {
-	trip, err := s.tripRepo.GetByID(ctx, tripID)
-	if err != nil {
-		return err
-	}
-	if trip == nil {
-		return apperror.ErrTripNotFound
-	}
-
-	if trip.UserID == userID {
-		return nil
-	}
-
-	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return err
-	}
-	if !isMember {
-		return apperror.ErrTripAccessDenied
-	}
-
-	return nil
-}

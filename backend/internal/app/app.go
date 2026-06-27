@@ -222,14 +222,15 @@ func (a *App) initializeAPI() (*appapi.Server, error) {
 	// --- Services ---
 	authService := auth.NewAuthService(logger, authRepo, tokenManager, emailService, authCache, flagService, cfg.JWTSecret)
 	tripService := trip.NewTripService(logger, pool, tripRepo, tripMemberRepo, tripItineraryRepo, tripMealDayRepo, authService)
+	tripAccessChecker := trip.NewTripAccessChecker(tripRepo, tripMemberRepo)
 	gearLibService := library.NewGearLibraryService(logger, gearLibRepo)
 	mealLibService := library.NewMealLibraryService(logger, mealLibRepo)
-	messageService := interaction.NewMessageService(logger, messageRepo, tripRepo, tripMemberRepo)
-	pollService := interaction.NewPollService(logger, pollRepo, tripRepo, tripMemberRepo)
+	messageService := interaction.NewMessageService(logger, messageRepo, tripAccessChecker)
+	pollService := interaction.NewPollService(logger, pollRepo, tripAccessChecker)
 
 	// --- Feature Services ---
-	tripGearService := trip.NewTripGearService(logger, tripGearRepo, tripRepo, tripMemberRepo)
-	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripRepo, tripMemberRepo)
+	tripGearService := trip.NewTripGearService(logger, tripGearRepo, tripAccessChecker)
+	tripMealService := trip.NewTripMealService(logger, tripMealRepo, tripAccessChecker)
 	favoriteService := favorite.NewFavoriteService(logger, pool, favoriteRepo)
 	groupService := groupevent.NewGroupEventService(logger, pool, groupRepo, tripService, authService)
 	httpClient := &http.Client{

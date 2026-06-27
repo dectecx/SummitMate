@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"summitmate/internal/apperror"
-	"summitmate/internal/trip"
 	tripmocks "summitmate/internal/trip/mocks"
 
 	"github.com/stretchr/testify/assert"
@@ -17,16 +16,15 @@ import (
 func TestMessageService_AddTripMessage(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockMessageRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := NewMessageService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := NewMessageService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling MessageService AddTripMessage, Then it returns success without error", func(t *testing.T) {
 		tripID := "trip-1"
 		userID := "user-1"
 		msg := &TripMessage{Content: "Hello"}
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil).Once()
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil).Once()
 		mockRepo.On("CreateMessage", mock.Anything, msg).Return(nil).Once()
 
 		result, err := svc.AddTripMessage(context.Background(), tripID, userID, msg)
@@ -42,8 +40,7 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 		userID := "user-other"
 		msg := &TripMessage{Content: "Hello"}
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: "creator"}, nil).Once()
-		mockMemberRepo.On("IsMember", mock.Anything, tripID, userID).Return(false, nil).Once()
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(apperror.ErrTripAccessDenied).Once()
 
 		result, err := svc.AddTripMessage(context.Background(), tripID, userID, msg)
 
@@ -55,9 +52,8 @@ func TestMessageService_AddTripMessage(t *testing.T) {
 func TestPollService_VoteOption(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(MockPollRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := NewPollService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := NewPollService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling PollService VoteOption, Then it returns success without error", func(t *testing.T) {
 		tripID := "trip-1"
@@ -65,7 +61,7 @@ func TestPollService_VoteOption(t *testing.T) {
 		optionID := "opt-1"
 		userID := "user-1"
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil).Once()
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil).Once()
 		mockRepo.On("GetPollByID", mock.Anything, pollID).Return(&Poll{ID: pollID, TripID: tripID, Status: "open", AllowMultipleVotes: false}, nil).Once()
 		mockRepo.On("VoteOption", mock.Anything, pollID, optionID, userID, false).Return(nil).Once()
 		mockRepo.On("GetPollByID", mock.Anything, pollID).Return(&Poll{ID: pollID}, nil).Once()
@@ -82,7 +78,7 @@ func TestPollService_VoteOption(t *testing.T) {
 		pollID := "poll-1"
 		userID := "user-1"
 
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil).Once()
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil).Once()
 		mockRepo.On("GetPollByID", mock.Anything, pollID).Return(&Poll{ID: pollID, TripID: tripID, Status: "closed"}, nil).Once()
 
 		result, err := svc.VoteOption(context.Background(), tripID, pollID, "opt-1", userID)
