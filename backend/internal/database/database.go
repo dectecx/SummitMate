@@ -93,6 +93,13 @@ func DefaultPoolConfig() PoolConfig {
 }
 
 // Connect creates a pgx connection pool using the supplied pool configuration.
+//
+// Acquire timeout note: pgx v5's pgxpool has no pool-level acquire timeout
+// (the v4 AcquireTimeout option was removed). The time spent waiting for a free
+// connection when the pool is exhausted is bounded by the context passed to the
+// query/acquire call. For HTTP traffic this is the request-scoped context set by
+// the chi Timeout middleware (HTTP_REQUEST_TIMEOUT). ConnectTimeout below only
+// bounds establishing a brand-new TCP/TLS connection, not waiting on the pool.
 func Connect(ctx context.Context, databaseURL string, poolCfg PoolConfig) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
