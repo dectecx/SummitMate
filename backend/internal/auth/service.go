@@ -329,7 +329,7 @@ func (svc *authService) Logout(ctx context.Context, tokenStr string) error {
 	}
 
 	// 存入黑名單，值可以使用 "1"
-	if err := svc.authCache.Set(ctx, authBlacklistKey(tokenStr), "1", ttl); err != nil {
+	if err := svc.authCache.Set(ctx, AuthBlacklistKey(tokenStr), "1", ttl); err != nil {
 		svc.logger.ErrorContext(ctx, "寫入 Token 黑名單失敗", "error", err)
 		return err
 	}
@@ -351,7 +351,7 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 
 	// 檢查 refresh token 是否已被撤銷（黑名單）
 	if svc.authCache != nil {
-		_, cacheErr := svc.authCache.Get(ctx, authBlacklistKey(tokenString))
+		_, cacheErr := svc.authCache.Get(ctx, AuthBlacklistKey(tokenString))
 		switch {
 		case cacheErr == nil:
 			// 命中黑名單，token 已被登出或已輪替
@@ -389,7 +389,7 @@ func (svc *authService) RefreshToken(ctx context.Context, tokenString string) (*
 	if svc.authCache != nil {
 		ttl := time.Until(claims.ExpiresAt.Time)
 		if ttl > 0 {
-			if cacheErr := svc.authCache.Set(ctx, authBlacklistKey(tokenString), "1", ttl); cacheErr != nil {
+			if cacheErr := svc.authCache.Set(ctx, AuthBlacklistKey(tokenString), "1", ttl); cacheErr != nil {
 				svc.logger.ErrorContext(ctx, "舊 refresh token 加入黑名單失敗", "user_id", user.ID, "error", cacheErr)
 			}
 		}

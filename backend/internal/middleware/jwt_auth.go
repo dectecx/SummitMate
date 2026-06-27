@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"summitmate/api"
+	"summitmate/internal/auth/authkeys"
 	"summitmate/internal/auth/tokens"
 	"summitmate/pkg/cache"
 )
@@ -17,14 +18,6 @@ type contextKey string
 
 // UserIDKey 是存放在 context 中的使用者 ID 鍵值。
 const UserIDKey contextKey = "user_id"
-
-func authBlacklistKey(token string) cache.Key {
-	return cache.Key{
-		Module: cache.ModuleAuth,
-		Domain: "blacklist",
-		ID:     token,
-	}
-}
 
 // JWTAuth 目標：
 // 1. 自動偵測 oapi-codegen 注入的 BearerAuthScopes (Context Key)
@@ -92,7 +85,7 @@ func JWTAuth(tokenManager *tokens.TokenManager, authCache cache.Cache[string]) f
 
 			// 檢查 Token 是否在黑名單中
 			if authCache != nil {
-				_, err := authCache.Get(request.Context(), authBlacklistKey(tokenStr))
+				_, err := authCache.Get(request.Context(), authkeys.BlacklistKey(tokenStr))
 				switch {
 				case err == nil:
 					// 找到 Key 代表已被註銷/列入黑名單

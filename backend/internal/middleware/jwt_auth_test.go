@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"summitmate/api"
+	"summitmate/internal/auth/authkeys"
 	"summitmate/internal/auth/tokens"
 	"summitmate/pkg/cache"
 
@@ -168,7 +169,7 @@ func TestJWTAuth_Middleware(t *testing.T) {
 		assert.NoError(t, err)
 
 		// Blacklist the token
-		err = memoryCache.Set(context.Background(), authBlacklistKey(tokenStr), "1", time.Hour)
+		err = memoryCache.Set(context.Background(), authkeys.BlacklistKey(tokenStr), "1", time.Hour)
 		assert.NoError(t, err)
 
 		req := httptest.NewRequest("GET", "/private", nil)
