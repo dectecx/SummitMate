@@ -81,6 +81,13 @@ func JWTAuth(tokenManager *tokens.TokenManager, authCache cache.Cache[string]) f
 				return
 			}
 
+			// 僅接受 access token；refresh token 不可用於存取受保護 API，
+			// 避免長效 refresh token 被當作 access token 使用，擴大被竊風險。
+			if claims.TokenType != "access" {
+				http.Error(writer, `{"message":"Token 類型錯誤"}`, http.StatusUnauthorized)
+				return
+			}
+
 			// 檢查 Token 是否在黑名單中
 			if authCache != nil {
 				_, err := authCache.Get(request.Context(), authBlacklistKey(tokenStr))
