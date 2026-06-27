@@ -1,54 +1,54 @@
 import 'package:injectable/injectable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../domain/enums/favorite_type.dart';
-import '../../../../data/datasources/interfaces/i_favorites_local_data_source.dart';
+import '../../../../core/core.dart';
+import '../../../../domain/domain.dart';
 import 'group_event_favorites_state.dart';
 
 /// 管理揪團收藏功能的 Cubit
-/// 負責與 Drift 資料庫互動，並管理揪團收藏列表的狀態
 @injectable
 class GroupEventFavoritesCubit extends Cubit<GroupEventFavoritesState> {
-  final IFavoritesLocalDataSource _favoritesDataSource;
+  final IFavoritesRepository _favoritesRepository;
 
-  GroupEventFavoritesCubit(this._favoritesDataSource) : super(GroupEventFavoritesInitial());
+  GroupEventFavoritesCubit(this._favoritesRepository) : super(GroupEventFavoritesInitial());
 
   /// 載入收藏列表
   Future<void> loadFavorites() async {
-    try {
-      emit(GroupEventFavoritesLoading());
-      final favorites = await _favoritesDataSource.getFavorites();
+    emit(GroupEventFavoritesLoading());
 
-      // 只過濾出揪團類型的 ID
-      final ids = favorites.where((f) => f.type == FavoriteType.groupEvent).map((f) => f.targetId).toList();
+    final result = await _favoritesRepository.getFavorites();
 
-      emit(GroupEventFavoritesLoaded(ids));
-    } catch (e) {
-      emit(GroupEventFavoritesError("無法載入收藏: $e"));
+    switch (result) {
+      case Success(value: final list):
+        final ids = list.items
+            .where((f) => f.type == FavoriteType.groupEvent)
+            .map((f) => f.targetId)
+            .toList();
+        emit(GroupEventFavoritesLoaded(ids));
+      case Failure(exception: final e):
+        emit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));
     }
   }
 
   /// 切換收藏狀態 (加入/移除)
-  /// [id] 為要操作的項目 ID
   Future<void> toggleFavorite(String id) async {
     if (state is! GroupEventFavoritesLoaded) return;
 
-    try {
-      final currentIds = List<String>.from((state as GroupEventFavoritesLoaded).favoriteIds);
-      final isNowFavorite = !currentIds.contains(id);
+    final currentIds = List<String>.from((state as GroupEventFavoritesLoaded).favoriteIds);
+    final isNowFavorite = !currentIds.contains(id);
 
-      await _favoritesDataSource.toggleFavorite(id, FavoriteType.groupEvent, isNowFavorite);
+    final result = await _favoritesRepository.toggleFavorite(id, FavoriteType.groupEvent, isNowFavorite);
 
-      if (isNowFavorite) {
-        currentIds.add(id);
-      } else {
-        currentIds.remove(id);
-      }
-
-      emit(GroupEventFavoritesLoaded(currentIds));
-    } catch (e) {
-      emit(GroupEventFavoritesError("更新收藏失敗: $e"));
-      // 發生錯誤時重新載入以確保狀態一致
-      loadFavorites();
+    switch (result) {
+      case Success():
+        if (isNowFavorite) {
+          currentIds.add(id);
+        } else {
+          currentIds.remove(id);
+        }
+        emit(GroupEventFavoritesLoaded(currentIds));
+      case Failure(exception: final e):
+        emit(GroupEventFavoritesError(AppErrorHandler.getUserMessage(e)));
+        loadFavorites();
     }
   }
 
