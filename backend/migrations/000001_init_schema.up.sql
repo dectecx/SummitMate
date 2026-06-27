@@ -3,6 +3,9 @@
 -- Migration: 000001_init_schema
 -- ============================================================
 
+-- Extensions
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- 3.1 Auth & RBAC
 -- ============================================================
 
@@ -75,7 +78,8 @@ CREATE TABLE trip_meal_plan_days (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_trip_meal_plan_days_trip_id ON trip_meal_plan_days(trip_id);
+-- Composite covers WHERE trip_id = ? ORDER BY created_at ASC
+CREATE INDEX idx_trip_meal_plan_days_trip_id ON trip_meal_plan_days(trip_id, created_at ASC);
 
 
 CREATE TABLE trip_members (
@@ -85,6 +89,9 @@ CREATE TABLE trip_members (
     joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (trip_id, user_id)
 );
+
+-- PK leads with trip_id; this index supports reverse lookup: find all trips a user is a member of.
+CREATE INDEX idx_trip_members_user_id ON trip_members(user_id);
 
 CREATE TABLE itinerary_items (
     id            UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -105,7 +112,8 @@ CREATE TABLE itinerary_items (
     updated_by    UUID             REFERENCES users(id)
 );
 
-CREATE INDEX idx_itinerary_items_trip_id ON itinerary_items(trip_id);
+-- Composite covers WHERE trip_id = ? ORDER BY day, est_time
+CREATE INDEX idx_itinerary_items_trip_id ON itinerary_items(trip_id, day ASC, est_time ASC);
 
 CREATE TABLE messages (
     id         UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -142,7 +150,8 @@ CREATE TABLE gear_library_items (
     updated_by  UUID             NOT NULL REFERENCES users(id)
 );
 
-CREATE INDEX idx_gear_library_items_user_id ON gear_library_items(user_id);
+-- Composite covers: WHERE user_id = ? AND is_archived = false ORDER BY created_at DESC, id DESC
+CREATE INDEX idx_gear_library_items_user_id ON gear_library_items(user_id, is_archived, created_at DESC, id DESC);
 
 CREATE TABLE gear_items (
     id              UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -160,7 +169,8 @@ CREATE TABLE gear_items (
     updated_by      UUID             REFERENCES users(id)
 );
 
-CREATE INDEX idx_gear_items_trip_id         ON gear_items(trip_id);
+-- Composite covers WHERE trip_id = ? ORDER BY order_index ASC NULLS LAST, created_at ASC
+CREATE INDEX idx_gear_items_trip_id         ON gear_items(trip_id, order_index ASC, created_at ASC);
 CREATE INDEX idx_gear_items_library_item_id ON gear_items(library_item_id);
 
 CREATE TABLE meal_library_items (
@@ -177,7 +187,8 @@ CREATE TABLE meal_library_items (
     updated_by  UUID             NOT NULL REFERENCES users(id)
 );
 
-CREATE INDEX idx_meal_library_items_user_id ON meal_library_items(user_id);
+-- Composite covers: WHERE user_id = ? AND is_archived = false ORDER BY created_at DESC, id DESC
+CREATE INDEX idx_meal_library_items_user_id ON meal_library_items(user_id, is_archived, created_at DESC, id DESC);
 
 CREATE TABLE meal_items (
     id              UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -196,7 +207,8 @@ CREATE TABLE meal_items (
     updated_by      UUID             NOT NULL REFERENCES users(id)
 );
 
-CREATE INDEX idx_meal_items_trip_id          ON meal_items(trip_id);
+-- Composite covers WHERE trip_id = ? ORDER BY meal_plan_day_id, meal_type, created_at
+CREATE INDEX idx_meal_items_trip_id          ON meal_items(trip_id, meal_plan_day_id ASC, meal_type ASC, created_at ASC);
 CREATE INDEX idx_meal_items_meal_plan_day_id ON meal_items(meal_plan_day_id);
 CREATE INDEX idx_meal_items_library_item_id  ON meal_items(library_item_id);
 
@@ -316,6 +328,10 @@ CREATE TABLE group_events (
 
 CREATE INDEX idx_group_events_host_id        ON group_events(host_id);
 CREATE INDEX idx_group_events_linked_trip_id ON group_events(linked_trip_id);
+-- Covers ListEvents filtered by status/category, ordered by created_at DESC
+CREATE INDEX idx_group_events_status_cat_created ON group_events(status, category, created_at DESC, id DESC);
+-- GIN trigram index for ILIKE title search
+CREATE INDEX idx_group_events_title_trgm ON group_events USING GIN (title gin_trgm_ops);
 
 CREATE TABLE group_event_applications (
     id               UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -330,8 +346,11 @@ CREATE TABLE group_event_applications (
     updated_by       UUID        NOT NULL REFERENCES users(id)
 );
 
-CREATE INDEX idx_group_event_applications_event_id ON group_event_applications(event_id);
-CREATE INDEX idx_group_event_applications_user_id  ON group_event_applications(user_id);
+-- Composite covers COUNT approved: WHERE event_id = ? AND status = 'approved'
+CREATE INDEX idx_group_event_applications_event_status  ON group_event_applications(event_id, status);
+CREATE INDEX idx_group_event_applications_user_id        ON group_event_applications(user_id);
+-- Covers LATERAL lookup: WHERE event_id = ? AND user_id = ? ORDER BY created_at DESC LIMIT 1
+CREATE INDEX idx_group_event_applications_event_user_created ON group_event_applications(event_id, user_id, created_at DESC);
 
 CREATE TABLE group_event_comments (
     id         UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -355,6 +374,9 @@ CREATE TABLE group_event_likes (
     PRIMARY KEY (event_id, user_id)
 );
 
+-- PK leads with event_id; this index supports: find all events a user has liked.
+CREATE INDEX idx_group_event_likes_user_id ON group_event_likes(user_id);
+
 -- 3.6 Favorites
 -- ============================================================
 
@@ -369,6 +391,9 @@ CREATE TABLE favorites (
     updated_by UUID        NOT NULL REFERENCES users(id),
     UNIQUE (user_id, target_id, type)
 );
+
+-- Covers: WHERE user_id = ? ORDER BY created_at DESC, id DESC
+CREATE INDEX idx_favorites_user_id_created ON favorites(user_id, created_at DESC, id DESC);
 
 -- 3.7 System
 -- ============================================================
@@ -451,8 +476,10 @@ CREATE TABLE IF NOT EXISTS weather_data (
     UNIQUE (location, start_time, end_time)
 );
 
-CREATE INDEX idx_weather_location ON weather_data (location);
+CREATE INDEX idx_weather_location  ON weather_data (location);
 CREATE INDEX idx_weather_start_time ON weather_data (start_time);
+-- Covers periodic cleanup: DELETE FROM weather_data WHERE end_time < ?
+CREATE INDEX idx_weather_data_end_time ON weather_data (end_time);
 
 -- 3.9 System Flags
 -- ============================================================
