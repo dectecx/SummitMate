@@ -267,7 +267,7 @@ func TestGearSetService_Delete(t *testing.T) {
 }
 
 func TestGearSetService_List(t *testing.T) {
-	t.Run("Given request list, When calling List, Then it passes params correctly", func(t *testing.T) {
+	t.Run("Given myUploadedOnly=true, When calling List, Then it filters by ownerID only", func(t *testing.T) {
 		mockRepo := new(MockGearSetRepository)
 		mockAuth := new(authmocks.MockAuthService)
 		service := NewGearSetService(slog.Default(), mockRepo, mockAuth)
@@ -277,7 +277,8 @@ func TestGearSetService_List(t *testing.T) {
 			{UserID: userID, Title: "Set 1"},
 		}
 
-		mockRepo.On("List", mock.Anything, 10, 0, "search", &userID).Return(expectedList, 1, nil).Once()
+		expectedFilter := GearSetListFilter{OwnerID: &userID}
+		mockRepo.On("List", mock.Anything, 10, 0, "search", expectedFilter).Return(expectedList, 1, nil).Once()
 
 		res, total, err := service.List(context.Background(), 10, 0, "search", userID, true)
 		assert.NoError(t, err)
@@ -286,7 +287,7 @@ func TestGearSetService_List(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
-	t.Run("Given request list without myUploadedOnly, When calling List, Then it passes nil filterUserID", func(t *testing.T) {
+	t.Run("Given myUploadedOnly=false, When calling List, Then it filters by public and protected visibility", func(t *testing.T) {
 		mockRepo := new(MockGearSetRepository)
 		mockAuth := new(authmocks.MockAuthService)
 		service := NewGearSetService(slog.Default(), mockRepo, mockAuth)
@@ -295,7 +296,8 @@ func TestGearSetService_List(t *testing.T) {
 			{UserID: "user-1", Title: "Set 1"},
 		}
 
-		mockRepo.On("List", mock.Anything, 10, 0, "search", (*string)(nil)).Return(expectedList, 1, nil).Once()
+		expectedFilter := GearSetListFilter{Visibilities: []GearSetVisibility{VisibilityPublic, VisibilityProtected}}
+		mockRepo.On("List", mock.Anything, 10, 0, "search", expectedFilter).Return(expectedList, 1, nil).Once()
 
 		res, total, err := service.List(context.Background(), 10, 0, "search", "user-1", false)
 		assert.NoError(t, err)

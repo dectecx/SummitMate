@@ -188,9 +188,11 @@ func (s *gearSetService) Delete(ctx context.Context, id uuid.UUID, requestingUse
 }
 
 func (s *gearSetService) List(ctx context.Context, limit, offset int, search string, requestingUserID string, myUploadedOnly bool) ([]*GearSet, int, error) {
-	var filterUserID *string
+	var filter GearSetListFilter
 	if myUploadedOnly {
-		filterUserID = &requestingUserID
+		filter = GearSetListFilter{OwnerID: &requestingUserID}
+	} else {
+		filter = GearSetListFilter{Visibilities: []GearSetVisibility{VisibilityPublic, VisibilityProtected}}
 	}
-	return s.repo.List(ctx, limit, offset, search, filterUserID)
+	return s.repo.List(ctx, limit, offset, search, filter)
 }

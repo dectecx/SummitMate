@@ -201,24 +201,25 @@ func TestGearSetRepository_Delete(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// List – filter logic (userID vs. public/protected)
+// List – filter logic (OwnerID vs. Visibilities)
 // ---------------------------------------------------------------------------
 
 func TestGearSetRepository_List(t *testing.T) {
-	t.Run("Given no userID filter, When listing, Then only public/protected sets are returned", func(t *testing.T) {
+	t.Run("Given visibility filter (public+protected), When listing, Then only matching sets are returned", func(t *testing.T) {
 		repo, mock := newGearSetRepoMock(t)
 		defer func() { assert.NoError(t, mock.ExpectationsWereMet()) }()
 
 		now := time.Now()
 		gsID := sampleGearSetID()
 
-		// COUNT query: no userID, no search → 0 args (only "public/protected" filter in SQL text)
+		// COUNT query: 2 args (VisibilityPublic, VisibilityProtected)
 		mock.ExpectQuery(`SELECT COUNT`).
+			WithArgs(anyArgs(2)...).
 			WillReturnRows(pgxmock.NewRows([]string{"count"}).AddRow(1))
 
-		// Main SELECT query: limit + offset = 2 args
+		// Main SELECT query: visibility args + limit + offset = 4 args
 		mock.ExpectQuery(`SELECT`).
-			WithArgs(anyArgs(2)...).
+			WithArgs(anyArgs(4)...).
 			WillReturnRows(pgxmock.NewRows(gearSetColumns).AddRow(sampleGearSetRow(gsID, now)...))
 
 		// Batch items query (1 arg: array of set IDs)
@@ -231,14 +232,17 @@ func TestGearSetRepository_List(t *testing.T) {
 			WithArgs(pgxmock.AnyArg()).
 			WillReturnRows(pgxmock.NewRows(mealColumns))
 
-		sets, total, err := repo.List(context.Background(), 10, 0, "", nil)
+		filter := gearset.GearSetListFilter{
+			Visibilities: []gearset.GearSetVisibility{gearset.VisibilityPublic, gearset.VisibilityProtected},
+		}
+		sets, total, err := repo.List(context.Background(), 10, 0, "", filter)
 
 		require.NoError(t, err)
 		assert.Equal(t, 1, total)
 		assert.Len(t, sets, 1)
 	})
 
-	t.Run("Given userID filter, When listing, Then only that user's sets are returned", func(t *testing.T) {
+	t.Run("Given ownerID filter, When listing, Then only that user's sets are returned", func(t *testing.T) {
 		repo, mock := newGearSetRepoMock(t)
 		defer func() { assert.NoError(t, mock.ExpectationsWereMet()) }()
 
@@ -264,28 +268,32 @@ func TestGearSetRepository_List(t *testing.T) {
 			WithArgs(pgxmock.AnyArg()).
 			WillReturnRows(pgxmock.NewRows(mealColumns))
 
-		sets, total, err := repo.List(context.Background(), 10, 0, "", &userID)
+		filter := gearset.GearSetListFilter{OwnerID: &userID}
+		sets, total, err := repo.List(context.Background(), 10, 0, "", filter)
 
 		require.NoError(t, err)
 		assert.Equal(t, 1, total)
 		assert.Len(t, sets, 1)
 	})
 
-	t.Run("Given search keyword, When listing, Then count and data queries are executed", func(t *testing.T) {
+	t.Run("Given search keyword with visibility filter, When listing, Then count and data queries are executed", func(t *testing.T) {
 		repo, mock := newGearSetRepoMock(t)
 		defer func() { assert.NoError(t, mock.ExpectationsWereMet()) }()
 
-		// COUNT query: 1 arg (searchPattern)
+		// COUNT query: 3 args (VisibilityPublic, VisibilityProtected, searchPattern)
 		mock.ExpectQuery(`SELECT COUNT`).
-			WithArgs(pgxmock.AnyArg()).
+			WithArgs(anyArgs(3)...).
 			WillReturnRows(pgxmock.NewRows([]string{"count"}).AddRow(0))
 
-		// Empty result set → skip child queries. 3 args: searchPattern + limit + offset
+		// Empty result set → skip child queries. 5 args: visibility×2 + searchPattern + limit + offset
 		mock.ExpectQuery(`SELECT`).
-			WithArgs(anyArgs(3)...).
+			WithArgs(anyArgs(5)...).
 			WillReturnRows(pgxmock.NewRows(gearSetColumns))
 
-		sets, total, err := repo.List(context.Background(), 10, 0, "tent", nil)
+		filter := gearset.GearSetListFilter{
+			Visibilities: []gearset.GearSetVisibility{gearset.VisibilityPublic, gearset.VisibilityProtected},
+		}
+		sets, total, err := repo.List(context.Background(), 10, 0, "tent", filter)
 
 		require.NoError(t, err)
 		assert.Equal(t, 0, total)
