@@ -46,6 +46,7 @@ type tripService struct {
 	itineraryRepo ItineraryRepository
 	mealDayRepo   TripMealPlanDayRepository
 	authService   auth.AuthService
+	accessChecker TripAccessChecker
 }
 
 func NewTripService(
@@ -65,6 +66,7 @@ func NewTripService(
 		itineraryRepo: itineraryRepo,
 		mealDayRepo:   mealDayRepo,
 		authService:   authService,
+		accessChecker: NewTripAccessChecker(tripRepo, memberRepo),
 	}
 }
 
@@ -141,7 +143,7 @@ func (s *tripService) GetTrip(ctx context.Context, tripID, userID string) (*Trip
 		}
 		return nil, err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return nil, err
 	}
 
@@ -184,7 +186,7 @@ func (s *tripService) UpdateTrip(ctx context.Context, tripID, userID string, req
 		}
 		return nil, err
 	}
-	if err := s.requireTripRole(ctx, existingTrip, userID, RoleLeader, RoleGuide); err != nil {
+	if err := s.accessChecker.RequireRole(ctx, existingTrip, userID, RoleLeader, RoleGuide); err != nil {
 		s.logger.WarnContext(ctx, "更新行程權限不足", "trip_id", tripID, "user_id", userID)
 		return nil, err
 	}
@@ -255,7 +257,7 @@ func (s *tripService) DeleteTrip(ctx context.Context, tripID, userID string) err
 		}
 		return err
 	}
-	if err := s.requireTripOwner(trip, userID); err != nil {
+	if err := s.accessChecker.RequireOwner(trip, userID); err != nil {
 		s.logger.WarnContext(ctx, "刪除行程權限不足", "trip_id", tripID, "user_id", userID)
 		return err
 	}
@@ -276,7 +278,7 @@ func (s *tripService) ListMembers(ctx context.Context, tripID, userID string) ([
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return nil, err
 	}
 	return s.memberRepo.ListByTripID(ctx, tripID)
@@ -287,7 +289,7 @@ func (s *tripService) InviteMemberByEmail(ctx context.Context, tripID, userID, t
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireTripOwner(trip, userID); err != nil {
+	if err := s.accessChecker.RequireOwner(trip, userID); err != nil {
 		return nil, err
 	}
 
@@ -321,7 +323,7 @@ func (s *tripService) AddMember(ctx context.Context, tripID, userID, targetUserI
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireTripOwner(trip, userID); err != nil {
+	if err := s.accessChecker.RequireOwner(trip, userID); err != nil {
 		return nil, err
 	}
 
@@ -355,7 +357,7 @@ func (s *tripService) RemoveMember(ctx context.Context, tripID, actionUserID, ta
 
 	isSelfExit := actionUserID == targetUserID
 	if !isSelfExit {
-		if err := s.requireTripOwner(trip, actionUserID); err != nil {
+		if err := s.accessChecker.RequireOwner(trip, actionUserID); err != nil {
 			return err
 		}
 	}
@@ -380,7 +382,7 @@ func (s *tripService) BatchAddMembers(ctx context.Context, tripID, actionUserID 
 		}
 		return err
 	}
-	if err := s.requireTripOwner(trip, actionUserID); err != nil {
+	if err := s.accessChecker.RequireOwner(trip, actionUserID); err != nil {
 		return apperror.ErrTripAccessDenied
 	}
 
@@ -400,7 +402,7 @@ func (s *tripService) BatchRemoveMembers(ctx context.Context, tripID, actionUser
 		}
 		return err
 	}
-	if err := s.requireTripOwner(trip, actionUserID); err != nil {
+	if err := s.accessChecker.RequireOwner(trip, actionUserID); err != nil {
 		return apperror.ErrTripAccessDenied
 	}
 
@@ -414,7 +416,7 @@ func (s *tripService) ListItinerary(ctx context.Context, tripID, userID string) 
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return nil, err
 	}
 	return s.itineraryRepo.ListByTripID(ctx, tripID)
@@ -425,7 +427,7 @@ func (s *tripService) AddItineraryItem(ctx context.Context, tripID, userID strin
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireTripRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
+	if err := s.accessChecker.RequireRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
 		return nil, err
 	}
 
@@ -450,7 +452,7 @@ func (s *tripService) UpdateItineraryItem(ctx context.Context, tripID, itemID, u
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireTripRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
+	if err := s.accessChecker.RequireRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
 		return nil, err
 	}
 
@@ -480,7 +482,7 @@ func (s *tripService) DeleteItineraryItem(ctx context.Context, tripID, itemID, u
 	if err != nil {
 		return err
 	}
-	if err := s.requireTripRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
+	if err := s.accessChecker.RequireRole(ctx, trip, userID, RoleLeader, RoleGuide); err != nil {
 		return err
 	}
 
@@ -505,7 +507,7 @@ func (s *tripService) ListMealPlanDays(ctx context.Context, tripID, userID strin
 		}
 		return nil, err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return nil, err
 	}
 	return s.mealDayRepo.ListByTripID(ctx, tripID)
@@ -519,7 +521,7 @@ func (s *tripService) AddMealPlanDay(ctx context.Context, tripID, userID string,
 		}
 		return nil, err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return nil, err
 	}
 
@@ -555,7 +557,7 @@ func (s *tripService) UpdateMealPlanDay(ctx context.Context, tripID, dayID, user
 		}
 		return nil, err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return nil, err
 	}
 
@@ -593,7 +595,7 @@ func (s *tripService) DeleteMealPlanDay(ctx context.Context, tripID, dayID, user
 		}
 		return err
 	}
-	if err := s.requireTripMember(ctx, trip, userID); err != nil {
+	if err := s.accessChecker.RequireMemberForTrip(ctx, trip, userID); err != nil {
 		return err
 	}
 
@@ -622,7 +624,7 @@ func (s *tripService) TransferOwnership(ctx context.Context, tripID, currentOwne
 	}
 
 	// 2. 驗證權限：只有當前擁有者可以發起轉讓
-	if err := s.requireTripOwner(trip, currentOwnerID); err != nil {
+	if err := s.accessChecker.RequireOwner(trip, currentOwnerID); err != nil {
 		return nil, err
 	}
 
@@ -681,50 +683,6 @@ func (s *tripService) TransferOwnership(ctx context.Context, tripID, currentOwne
 	return updatedTrip, nil
 }
 
-
-// isTripMember 判斷給定的 userID 是否已加入該行程。
-func (s *tripService) isTripMember(ctx context.Context, tripID, userID string) bool {
-	isMember, err := s.memberRepo.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return false
-	}
-	return isMember
-}
-
-// requireTripOwner verifies that the user is the creator/owner of the trip.
-func (s *tripService) requireTripOwner(trip *Trip, userID string) error {
-	if trip.UserID != userID {
-		return apperror.ErrAccessDenied
-	}
-	return nil
-}
-
-// requireTripRole verifies that the user is a member with one of the allowed roles.
-func (s *tripService) requireTripRole(ctx context.Context, trip *Trip, userID string, allowedRoles ...string) error {
-	role, err := s.memberRepo.GetRole(ctx, trip.ID, userID)
-	if err != nil {
-		if trip.UserID == userID {
-			role = RoleLeader
-		} else {
-			return apperror.ErrAccessDenied
-		}
-	}
-
-	for _, allowed := range allowedRoles {
-		if role == allowed {
-			return nil
-		}
-	}
-	return apperror.ErrAccessDenied
-}
-
-// requireTripMember verifies that the user is a member of the trip or the owner.
-func (s *tripService) requireTripMember(ctx context.Context, trip *Trip, userID string) error {
-	if trip.UserID == userID || s.isTripMember(ctx, trip.ID, userID) {
-		return nil
-	}
-	return apperror.ErrAccessDenied
-}
 
 // --- Requests models used in service logic ---
 

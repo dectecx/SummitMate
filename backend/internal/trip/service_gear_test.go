@@ -16,14 +16,13 @@ import (
 func TestTripGearService_ListItems(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(tripmocks.MockTripGearRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := trip.NewTripGearService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := trip.NewTripGearService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling TripGearService ListItems, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
 		mockRepo.On("ListByTripID", mock.Anything, tripID).Return([]*trip.TripGearItem{
 			{ID: "tg1", Name: "Rope"},
 		}, nil)
@@ -38,15 +37,14 @@ func TestTripGearService_ListItems(t *testing.T) {
 func TestTripGearService_CreateItem(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(tripmocks.MockTripGearRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := trip.NewTripGearService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := trip.NewTripGearService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling TripGearService CreateItem, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
 		userID := "u1"
 		item := &trip.TripGearItem{Name: "Carabiner"}
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
 		mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(g *trip.TripGearItem) bool {
 			return g.Name == "Carabiner" && g.TripID == tripID
 		})).Return(&trip.TripGearItem{ID: "tg1", Name: "Carabiner", TripID: tripID}, nil)
@@ -61,9 +59,8 @@ func TestTripGearService_CreateItem(t *testing.T) {
 func TestTripGearService_ReplaceAllItems(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	mockRepo := new(tripmocks.MockTripGearRepository)
-	mockTripRepo := new(tripmocks.MockTripRepository)
-	mockMemberRepo := new(tripmocks.MockTripMemberRepository)
-	svc := trip.NewTripGearService(logger, mockRepo, mockTripRepo, mockMemberRepo)
+	mockChecker := new(tripmocks.MockTripAccessChecker)
+	svc := trip.NewTripGearService(logger, mockRepo, mockChecker)
 
 	t.Run("Given valid setup, When calling TripGearService ReplaceAllItems, Then it returns success without error", func(t *testing.T) {
 		tripID := "t1"
@@ -72,7 +69,7 @@ func TestTripGearService_ReplaceAllItems(t *testing.T) {
 			{ID: "tg1", Name: "Rope"},
 			{ID: "tg2", Name: "Harness"},
 		}
-		mockTripRepo.On("GetByID", mock.Anything, tripID).Return(&trip.Trip{ID: tripID, UserID: userID}, nil)
+		mockChecker.On("RequireMember", mock.Anything, tripID, userID).Return(nil)
 		mockRepo.On("ReplaceAll", mock.Anything, tripID, mock.MatchedBy(func(args []*trip.TripGearItem) bool {
 			return len(args) == 2 && args[0].Name == "Rope" && args[1].Name == "Harness"
 		})).Return(nil)
