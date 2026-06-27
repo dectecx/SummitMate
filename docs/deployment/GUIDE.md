@@ -8,13 +8,48 @@
 
 ### 環境變數
 
-| 變數           | 說明                                    | 預設值                                                              |
-| :------------- | :-------------------------------------- | :------------------------------------------------------------------ |
-| `PORT`         | 監聽埠                                  | `8080`                                                              |
-| `DATABASE_URL` | PostgreSQL 連線字串                     | `postgres://dev:dev2026!@localhost:5432/summitmate?sslmode=disable` |
-| `JWT_SECRET`   | JWT 簽章密鑰                            | 開發用預設值 (正式環境必須更換)                                     |
-| `CWA_API_KEY`  | 中央氣象署 API 授權碼                   | 空 (Weather ETL 所需)                                               |
-| `ENV`          | 環境標識 (`development` / `production`) | `development`                                                       |
+連線字串由各 `DB_*` 變數於啟動時組合而成 (`postgres://<user>:<pass>@<host>:<port>/<name>?sslmode=<mode>`)，本服務**不直接讀取** `DATABASE_URL`。
+
+#### 核心
+
+| 變數      | 說明                                    | 預設值          |
+| :-------- | :-------------------------------------- | :-------------- |
+| `PORT`    | 監聽埠                                  | `8080`          |
+| `ENV`     | 環境標識 (`development` / `production`) | `development`   |
+| `JWT_SECRET` | JWT 簽章密鑰 (正式環境**必須**設定)  | 空字串          |
+| `CWA_API_KEY` | 中央氣象署 API 授權碼 (Weather ETL) | 空字串          |
+| `ALLOWED_ORIGINS` | CORS 允許來源 (逗號分隔)        | `https://summitmate-tw.netlify.app` (dev 另含 localhost) |
+
+#### 資料庫 (PostgreSQL)
+
+| 變數         | 說明        | 預設值        |
+| :----------- | :---------- | :------------ |
+| `DB_HOST`    | 主機        | `localhost`   |
+| `DB_PORT`    | 埠          | `5432`        |
+| `DB_USER`    | 帳號        | `dev`         |
+| `DB_PASS`    | 密碼        | `dev2026!`    |
+| `DB_NAME`    | 資料庫名    | `summitmate`  |
+| `DB_SSLMODE` | SSL 模式    | `disable`     |
+
+#### Email (SMTP)
+
+| 變數           | 說明              | 預設值                                  |
+| :------------- | :---------------- | :-------------------------------------- |
+| `SMTP_HOST`    | SMTP 主機         | `smtp.gmail.com`                        |
+| `SMTP_PORT`    | SMTP 埠           | `587`                                   |
+| `SMTP_USER`    | SMTP 帳號         | 空字串                                  |
+| `SMTP_PASS`    | SMTP 密碼         | 空字串                                  |
+| `SMTP_FROM`    | 寄件者            | `SummitMate <noreply@summitmate.com>`   |
+| `SMTP_USE_SSL` | 是否使用 SSL      | `false`                                 |
+
+#### 快取 (Cache)
+
+| 變數             | 說明                          | 預設值            |
+| :--------------- | :---------------------------- | :---------------- |
+| `CACHE_TYPE`     | 快取類型 (`memory` / `redis`) | `memory`          |
+| `REDIS_ADDR`     | Redis 位址                    | `localhost:6379`  |
+| `REDIS_PASSWORD` | Redis 密碼                    | 空字串            |
+| `REDIS_DB`       | Redis DB 編號                 | `0`               |
 
 ### 本地開發
 
@@ -39,7 +74,11 @@ docker build -t summitmate-api ./backend
 
 # 執行
 docker run -p 8080:8080 \
-  -e DATABASE_URL="postgres://..." \
+  -e DB_HOST="your-db-host" \
+  -e DB_USER="your-db-user" \
+  -e DB_PASS="your-db-pass" \
+  -e DB_NAME="summitmate" \
+  -e DB_SSLMODE="require" \
   -e JWT_SECRET="your-prod-secret" \
   -e ENV="production" \
   summitmate-api

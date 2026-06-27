@@ -38,18 +38,31 @@ graph LR
 
     subgraph internal
         App[app]
-        Common[common]
+        Common[common / middleware / logger]
         subgraph Domains
             Trip[trip]
             Auth[auth]
             Interaction[interaction]
             GroupEvent[groupevent]
+            Library[library]
+            GearSet[gearset]
+            Favorite[favorite]
+            Weather[weather]
+            Flag[flag]
+            Log[log]
+            Heartbeat[heartbeat]
         end
+    end
+
+    subgraph pkg
+        Cache[cache]
+        Email[email]
     end
 
     API --> App
     App --> Domains
     Domains --> Common
+    Domains --> pkg
 ```
 
 ---
@@ -67,7 +80,9 @@ graph LR
 | DI / Service Loc.  | Injectable + GetIt                                |
 | Backend            | Go 1.26 + Chi v5 + PostgreSQL                     |
 | API Style          | OpenAPI 3.0 (Code-Gen via oapi-codegen)           |
-| Authentication     | JWT (Access + Refresh Token)                      |
+| Authentication     | JWT (Access 1h + Refresh 14d) + Token 黑名單      |
+| Cache              | 可抽換 (Memory / Redis，`CACHE_TYPE` 切換)        |
+| Email              | SMTP (驗證碼寄送)                                 |
 | Logging            | `log/slog` (JSON prod / Text dev)                 |
 | Architecture       | Clean Architecture (Frontend) / Layered (Backend) |
 
@@ -77,26 +92,29 @@ graph LR
 
 Go Backend 提供 `/api/v1` 前綴的 RESTful API，包含以下模組：
 
-| 模組         | 端點範例                                                  | 認證       |
-| :----------- | :-------------------------------------------------------- | :--------- |
-| Health       | `GET /health`                                             | 無         |
-| Auth         | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` | 部分需 JWT |
-| Trips        | `GET /trips`, `POST /trips`, `PUT /trips/{id}`            | JWT        |
-| Trip Members | `GET /trips/{id}/members`, `POST /trips/{id}/members`     | JWT        |
-| Itinerary    | `GET /trips/{id}/itinerary`, `POST /trips/{id}/itinerary` | JWT        |
-| Trip Gear    | `GET /trips/{id}/gear`, `PUT /trips/{id}/gear/batch`      | JWT        |
-| Trip Meals   | `GET /trips/{id}/meals`, `PUT /trips/{id}/meals/batch`    | JWT        |
-| Messages     | `GET /trips/{id}/messages`, `POST /trips/{id}/messages`   | JWT        |
-| Polls        | `GET /trips/{id}/polls`, `POST /trips/{id}/polls`         | JWT        |
-| Gear Library | `GET /gear-library`, `PUT /gear-library/batch`            | JWT        |
-| Meal Library | `GET /meal-library`, `PUT /meal-library/batch`            | JWT        |
-| Favorites    | `GET /favorites`, `PUT /favorites/batch`                  | JWT        |
-| Group Events | `GET /group-events`, `POST /group-events`                 | 部分需 JWT |
-| Weather      | `GET /weather/hiking`, `GET /weather/hiking/{location}`   | 無         |
-| Logs         | `POST /logs`                                              | 無         |
-| Heartbeat    | `POST /system/heartbeat`                                  | JWT        |
+| 模組         | 端點範例                                                       | 認證       |
+| :----------- | :------------------------------------------------------------- | :--------- |
+| Health       | `GET /health`                                                  | 無         |
+| Auth         | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`      | 部分需 JWT |
+| Users        | `GET /users/search`, `GET /users/{userId}`                     | JWT        |
+| Trips        | `GET /trips`, `POST /trips`, `POST /trips/{id}/transfer`        | JWT        |
+| Trip Members | `GET /trips/{id}/members`, `POST /trips/{id}/members`          | JWT        |
+| Itinerary    | `GET /trips/{id}/itinerary`, `POST /trips/{id}/itinerary`      | JWT        |
+| Trip Gear    | `GET /trips/{id}/gear`, `POST /trips/{id}/gear`               | JWT        |
+| Trip Meals   | `GET /trips/{id}/meal-plan-days`, `GET /trips/{id}/meals`      | JWT        |
+| Messages     | `GET /trips/{id}/messages`, `POST /trips/{id}/messages`        | JWT        |
+| Polls        | `GET /trips/{id}/polls`, `POST /trips/{id}/polls`              | JWT        |
+| Gear Library | `GET /gear-library`, `POST /gear-library`                      | JWT        |
+| Meal Library | `GET /meal-library`, `POST /meal-library`                      | JWT        |
+| Gear Sets    | `GET /gear-sets`, `POST /gear-sets`                            | JWT        |
+| Favorites    | `GET /favorites`, `PUT /favorites/batch`                       | JWT        |
+| Group Events | `GET /group-events`, `POST /group-events`, `GET /group-events/my` | 部分需 JWT |
+| Weather      | `GET /weather/hiking`, `GET /weather/hiking/{location}`        | 無         |
+| Logs         | `POST /logs`                                                   | 無         |
+| Heartbeat    | `POST /system/heartbeat`                                       | JWT        |
+| System Flags | `GET /system/flags`, `POST /system/flags`                      | 無         |
 
-完整 OpenAPI Spec 可透過 `GET /openapi.json` 取得，互動式文件位於 `GET /docs` (Scalar UI)。
+完整端點規格請見 [API Contract](../api/CONTRACT.md)。完整 OpenAPI Spec 可透過 `GET /openapi.json` 取得，互動式文件位於 `GET /docs` (Scalar UI)。
 
 ---
 

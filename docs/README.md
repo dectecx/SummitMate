@@ -1,5 +1,13 @@
 # SummitMate 文件索引
 
+> SummitMate 是一款 **Offline-First** 登山行程管理應用 (Flutter)，搭配 Go + PostgreSQL 後端。
+>
+> **單一可信源 (Single Source of Truth)**：
+> - 資料庫結構以 `backend/migrations/` 為準，並由 [Schema](./database/SCHEMA.md) 同步說明。
+> - API 端點以 `backend/api/openapi.yaml` 為準，並由 [API Contract](./api/CONTRACT.md) 同步說明。
+>
+> _最後校對：2026-06_
+
 ## 架構
 
 | 文件                                            | 說明                        |

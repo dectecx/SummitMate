@@ -1,5 +1,10 @@
 # SummitMate 開發路線圖
 
+> [!NOTE]
+> 本路線圖記錄專案的演進歷程。部分早期階段提及 **Google Apps Script (GAS) / Google Sheets / Hive / Isar**，
+> 為當時的技術選型；目前正式架構已收斂為 **Flutter + Drift (本地)** 與 **Go + PostgreSQL (後端)**，
+> 相關遷移已於 Phase 24 完成。各階段標題的編號為歷史順序，非實際時間先後。
+
 ## 開發原則
 
 **TDD (Test-Driven Development)** 為核心開發策略：
