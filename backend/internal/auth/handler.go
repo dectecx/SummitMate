@@ -140,7 +140,7 @@ func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "驗證成功"})
+	apiutil.SendJSON(w, http.StatusOK, api.OperationMessageResponse{Message: "驗證成功"})
 }
 
 // ResendVerificationCode 處理 POST /auth/resend-verification 請求。
@@ -156,7 +156,7 @@ func (h *AuthHandler) ResendVerificationCode(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	apiutil.SendJSON(w, http.StatusOK, map[string]string{"message": "驗證碼已寄出"})
+	apiutil.SendJSON(w, http.StatusOK, api.OperationMessageResponse{Message: "驗證碼已寄出"})
 }
 
 // SearchUserByEmail 處理搜尋使用者請求。
