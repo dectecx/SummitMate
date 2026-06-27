@@ -150,7 +150,7 @@ class _MemberManagementScreenState extends State<MemberManagementScreen> {
     String selectedRole = (currentRole == RoleConstants.guide) ? RoleConstants.guide : RoleConstants.member;
 
     final isTargetLeader = currentRole == RoleConstants.leader || currentRole == RoleConstants.admin;
-    final isCurrentUserOwner = widget.trip.userId == _currentUserId;
+    final isCurrentUserOwner = _permissionService.isOwner(widget.trip, _currentUserId);
 
     showDialog(
       context: context,

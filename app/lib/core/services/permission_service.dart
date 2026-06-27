@@ -118,6 +118,14 @@ class PermissionService {
     return me.role == RoleConstants.leader || me.role == RoleConstants.admin;
   }
 
+  /// 是否為行程擁有者
+  ///
+  /// 用於取代 widget 層直接比對 `trip.userId == userId` 的散落寫法。
+  bool isOwner(Trip trip, String? userId) {
+    if (userId == null) return false;
+    return trip.userId == userId;
+  }
+
   /// 是否可以刪除留言 (Sync)
   bool canDeleteMessageSync(UserProfile? user, Message message) {
     if (user == null) return false;
