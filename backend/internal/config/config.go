@@ -3,8 +3,10 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 // minJWTSecretLength is the minimum acceptable length (in characters) for the
@@ -14,28 +16,56 @@ const minJWTSecretLength = 16
 
 // Config holds all application configuration.
 type Config struct {
-	Port           string
-	DBHost         string
-	DBPort         string
-	DBUser         string
-	DBPass         string
-	DBName         string
-	DBSSLMode      string
-	DatabaseURL    string
-	JWTSecret      string
+	Port string
+	Env  string
+
+	// HTTP server / lifecycle timeouts.
+	HTTPRequestTimeout time.Duration
+	ShutdownTimeout    time.Duration
+
+	// Database connection.
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPass      string
+	DBName      string
+	DBSSLMode   string
+	DatabaseURL string
+
+	// Database connection pool tuning.
+	DBMaxConns          int
+	DBMinConns          int
+	DBMaxConnLifetime   time.Duration
+	DBMaxConnIdleTime   time.Duration
+	DBHealthCheckPeriod time.Duration
+	DBConnectTimeout    time.Duration
+
+	// Auth / JWT.
+	JWTSecret       string
+	AccessTokenTTL  time.Duration
+	RefreshTokenTTL time.Duration
+
+	// Email verification.
+	AuthCodeTTL         time.Duration
+	AuthMailSendTimeout time.Duration
+
+	// External services.
 	CWAApiKey      string
-	Env            string
+	CWAHTTPTimeout time.Duration
+
 	AllowedOrigins []string
-	SMTPHost       string
-	SMTPPort       string
-	SMTPUser       string
-	SMTPPass       string
-	SMTPFrom       string
-	SMTPUseSSL     bool
-	CacheType      string
-	RedisAddr      string
-	RedisPassword  string
-	RedisDB        string
+
+	SMTPHost   string
+	SMTPPort   string
+	SMTPUser   string
+	SMTPPass   string
+	SMTPFrom   string
+	SMTPUseSSL bool
+
+	CacheType     string
+	RedisAddr     string
+	RedisPassword string
+	RedisDB       string
 }
 
 // Load reads configuration from environment variables with defaults.
@@ -48,27 +78,49 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
-		Port:           getEnv("PORT", "8080"),
-		DBHost:         getEnv("DB_HOST", "localhost"),
-		DBPort:         getEnv("DB_PORT", "5432"),
-		DBUser:         getEnv("DB_USER", "dev"),
-		DBPass:         getEnv("DB_PASS", "dev2026!"),
-		DBName:         getEnv("DB_NAME", "summitmate"),
-		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
-		JWTSecret:      getEnv("JWT_SECRET", ""),
+		Port: getEnv("PORT", "8080"),
+		Env:  env,
+
+		HTTPRequestTimeout: getEnvAsDuration("HTTP_REQUEST_TIMEOUT", 30*time.Second),
+		ShutdownTimeout:    getEnvAsDuration("SHUTDOWN_TIMEOUT", 10*time.Second),
+
+		DBHost:    getEnv("DB_HOST", "localhost"),
+		DBPort:    getEnv("DB_PORT", "5432"),
+		DBUser:    getEnv("DB_USER", "dev"),
+		DBPass:    getEnv("DB_PASS", "dev2026!"),
+		DBName:    getEnv("DB_NAME", "summitmate"),
+		DBSSLMode: getEnv("DB_SSLMODE", "disable"),
+
+		DBMaxConns:          getEnvAsInt("DB_MAX_CONNS", 10),
+		DBMinConns:          getEnvAsInt("DB_MIN_CONNS", 2),
+		DBMaxConnLifetime:   getEnvAsDuration("DB_MAX_CONN_LIFETIME", 30*time.Minute),
+		DBMaxConnIdleTime:   getEnvAsDuration("DB_MAX_CONN_IDLE_TIME", 5*time.Minute),
+		DBHealthCheckPeriod: getEnvAsDuration("DB_HEALTH_CHECK_PERIOD", 1*time.Minute),
+		DBConnectTimeout:    getEnvAsDuration("DB_CONNECT_TIMEOUT", 10*time.Second),
+
+		JWTSecret:       getEnv("JWT_SECRET", ""),
+		AccessTokenTTL:  getEnvAsDuration("ACCESS_TOKEN_TTL", 1*time.Hour),
+		RefreshTokenTTL: getEnvAsDuration("REFRESH_TOKEN_TTL", 14*24*time.Hour),
+
+		AuthCodeTTL:         getEnvAsDuration("AUTH_CODE_TTL", 10*time.Minute),
+		AuthMailSendTimeout: getEnvAsDuration("AUTH_MAIL_SEND_TIMEOUT", 15*time.Second),
+
 		CWAApiKey:      getEnv("CWA_API_KEY", ""),
-		Env:            env,
+		CWAHTTPTimeout: getEnvAsDuration("CWA_HTTP_TIMEOUT", 30*time.Second),
+
 		AllowedOrigins: getEnvAsSlice("ALLOWED_ORIGINS", defaultOrigins),
-		SMTPHost:       getEnv("SMTP_HOST", "smtp.gmail.com"),
-		SMTPPort:       getEnv("SMTP_PORT", "587"),
-		SMTPUser:       getEnv("SMTP_USER", ""),
-		SMTPPass:       getEnv("SMTP_PASS", ""),
-		SMTPFrom:       getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
-		SMTPUseSSL:     getEnv("SMTP_USE_SSL", "false") == "true",
-		CacheType:      getEnv("CACHE_TYPE", "memory"),
-		RedisAddr:      getEnv("REDIS_ADDR", "localhost:6379"),
-		RedisPassword:  getEnv("REDIS_PASSWORD", ""),
-		RedisDB:        getEnv("REDIS_DB", "0"),
+
+		SMTPHost:   getEnv("SMTP_HOST", "smtp.gmail.com"),
+		SMTPPort:   getEnv("SMTP_PORT", "587"),
+		SMTPUser:   getEnv("SMTP_USER", ""),
+		SMTPPass:   getEnv("SMTP_PASS", ""),
+		SMTPFrom:   getEnv("SMTP_FROM", "SummitMate <noreply@summitmate.com>"),
+		SMTPUseSSL: getEnv("SMTP_USE_SSL", "false") == "true",
+
+		CacheType:     getEnv("CACHE_TYPE", "memory"),
+		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisDB:       getEnv("REDIS_DB", "0"),
 	}
 
 	cfg.DatabaseURL = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
@@ -109,6 +161,28 @@ func (c *Config) Validate() error {
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return fallback
+}
+
+// getEnvAsInt reads an integer env var, falling back to the default when the
+// variable is unset or cannot be parsed.
+func getEnvAsInt(key string, fallback int) int {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	return fallback
+}
+
+// getEnvAsDuration reads a Go duration string (e.g. "30s", "10m", "336h"),
+// falling back to the default when the variable is unset or cannot be parsed.
+func getEnvAsDuration(key string, fallback time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			return d
+		}
 	}
 	return fallback
 }

@@ -69,17 +69,46 @@ func GetQuerier(ctx context.Context, fallback Querier) Querier {
 	return fallback
 }
 
-// Connect creates a pgx connection pool.
-func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
+// PoolConfig holds the tunable parameters for the pgx connection pool.
+type PoolConfig struct {
+	MaxConns          int
+	MinConns          int
+	MaxConnLifetime   time.Duration
+	MaxConnIdleTime   time.Duration
+	HealthCheckPeriod time.Duration
+	ConnectTimeout    time.Duration
+}
+
+// DefaultPoolConfig returns the built-in pool defaults. It is used by callers
+// (such as tests and the weather job) that do not load the full app config.
+func DefaultPoolConfig() PoolConfig {
+	return PoolConfig{
+		MaxConns:          10,
+		MinConns:          2,
+		MaxConnLifetime:   30 * time.Minute,
+		MaxConnIdleTime:   5 * time.Minute,
+		HealthCheckPeriod: 1 * time.Minute,
+		ConnectTimeout:    10 * time.Second,
+	}
+}
+
+// Connect creates a pgx connection pool using the supplied pool configuration.
+func Connect(ctx context.Context, databaseURL string, poolCfg PoolConfig) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("parse database URL: %w", err)
 	}
 
-	config.MaxConns = 10
-	config.MinConns = 2
-	config.MaxConnLifetime = 30 * time.Minute
-	config.MaxConnIdleTime = 5 * time.Minute
+	config.MaxConns = int32(poolCfg.MaxConns)
+	config.MinConns = int32(poolCfg.MinConns)
+	config.MaxConnLifetime = poolCfg.MaxConnLifetime
+	config.MaxConnIdleTime = poolCfg.MaxConnIdleTime
+	if poolCfg.HealthCheckPeriod > 0 {
+		config.HealthCheckPeriod = poolCfg.HealthCheckPeriod
+	}
+	if poolCfg.ConnectTimeout > 0 {
+		config.ConnConfig.ConnectTimeout = poolCfg.ConnectTimeout
+	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
