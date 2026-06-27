@@ -50,5 +50,18 @@ abstract class Trip with _$Trip implements SyncableEntity {
     return diff >= 0 ? diff + 1 : 1;
   }
 
+  /// 行程是否已封存（結束日早於今日）
+  ///
+  /// 以 `endDate ?? startDate` 與今日（去除時分秒）比較。
+  bool get isArchived {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final end = endDate ?? startDate;
+    return end.isBefore(today);
+  }
+
+  /// 行程是否進行中（含今日及未來，即尚未封存）
+  bool get isOngoing => !isArchived;
+
   factory Trip.fromJson(Map<String, dynamic> json) => _$TripFromJson(json);
 }

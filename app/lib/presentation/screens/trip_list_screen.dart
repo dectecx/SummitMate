@@ -59,18 +59,8 @@ class TripListScreen extends StatelessWidget {
                 return Center(child: Text('載入失敗: ${state.message}'));
               }
 
-              final now = DateTime.now();
-              final today = DateTime(now.year, now.month, now.day);
-
-              final ongoingTrips = allTrips.where((t) {
-                final end = t.endDate ?? t.startDate;
-                return !end.isBefore(today);
-              }).toList();
-
-              final archivedTrips = allTrips.where((t) {
-                final end = t.endDate ?? t.startDate;
-                return end.isBefore(today);
-              }).toList();
+              final ongoingTrips = allTrips.where((t) => t.isOngoing).toList();
+              final archivedTrips = allTrips.where((t) => t.isArchived).toList();
 
               return CustomScrollView(
                 slivers: [
