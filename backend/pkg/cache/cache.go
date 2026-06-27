@@ -24,4 +24,7 @@ type Cache[T any] interface {
 
 	// Increment 將指定的 Key 數值加一 (通常用於限流)，若 Key 不存在則初始化為 1。
 	Increment(ctx context.Context, key Key, ttl time.Duration) (int64, error)
+
+	// Close 釋放快取所持有的資源（如 Redis 連線、背景清理 goroutine）。
+	Close() error
 }
